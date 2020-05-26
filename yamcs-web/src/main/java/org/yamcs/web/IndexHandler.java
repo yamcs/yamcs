@@ -21,7 +21,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
-import org.yamcs.http.api.GeneralApi;
+import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
@@ -115,7 +115,7 @@ public class IndexHandler extends Handler {
 
         List<Map<String, Object>> commandOptions = new ArrayList<>();
         for (CommandOption option : YamcsServer.getServer().getCommandOptions()) {
-            String json = JsonFormat.printer().print(GeneralApi.toCommandOptionInfo(option));
+            String json = JsonFormat.printer().print(ServerApi.toCommandOptionInfo(option));
             commandOptions.add(new Gson().fromJson(json, Map.class));
         }
         webConfig.put("commandOptions", commandOptions);

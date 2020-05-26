@@ -40,7 +40,7 @@ These commands will produce an optimized production version of the web interface
 
 For demo and development purposes we work with an all-in-one simulation environment that uses many Yamcs features. In this simulation, Yamcs receives TM from a simple simulator of a landing spacecraft. Yamcs can also send some basic TC. The simulator starts together with Yamcs as a subprocess.
 
-    ./run-simulation.sh
+    ./run-example.sh simulation
 
 This configuration stores data to `/storage/yamcs-data`. Ensure this folder exists and that you can write to it.
 

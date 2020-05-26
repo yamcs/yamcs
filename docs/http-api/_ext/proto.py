@@ -255,17 +255,9 @@ class RouteDirective(SphinxDirective):
                 param_template = get_route_param_template(route_text, param)
                 comment = find_comment(descriptor.input_type + '.' + param, prefix='') or ''
 
-                # Highlight individual variable
-                # FIXME doesn't seem to find lexer
-                raw = '``' + param_template + '``'
-                #raw = '.. role:: urivariable(code)\n'
-                #raw += '    :language: urivariable\n\n'
-                #raw += ':urivariable:`' + param_template  + '`'
-                param_template_node = produce_nodes(self.state, raw)[0]
-
                 dl_items.append(nodes.definition_list_item(
                     '',
-                    nodes.term('', '', param_template_node),
+                    nodes.term('', '', nodes.literal('', param_template)),
                     nodes.definition('', nodes.paragraph(text=comment)),
                 ))
 
@@ -361,7 +353,7 @@ def path_to_symbol(file, path):
     return symbol
 
 
-def find_comment(symbol, indent='', prefix='// '):
+def find_comment(symbol, indent='', prefix='//'):
     if symbol in comments_by_symbol:
         comment = comments_by_symbol[symbol]
         buf = ''

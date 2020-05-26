@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,21 +21,19 @@ import org.yamcs.client.BulkRestDataSender;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.HttpClient;
-import org.yamcs.client.WebSocketRequest;
+import org.yamcs.client.ParameterSubscription;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
-import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.CreateProcessorRequest;
-import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.EditProcessorRequest;
 import org.yamcs.protobuf.IndexResponse;
-import org.yamcs.protobuf.ParameterSubscriptionRequest;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
+import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.TableData;
@@ -44,6 +41,7 @@ import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
 import org.yamcs.utils.TimeEncoding;
@@ -59,6 +57,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
+import com.google.protobuf.util.Timestamps;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -67,8 +66,8 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
-    ColumnSerializer csint = ColumnSerializerFactory.getBasicColumnSerializer(DataType.INT);
-    ColumnSerializer csstr = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
+    ColumnSerializer<Integer> csint = ColumnSerializerFactory.getBasicColumnSerializer(DataType.INT);
+    ColumnSerializer<String> csstr = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
 
     static { // to avoid getting the warning in the console in the test below that loads invalid table records
         Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
@@ -76,191 +75,240 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testReplay() throws Exception {
+        /*
+         * Generate some realtime data (processor: realtime).
+         * Then create a replay within the previous range of data (processor: testReplay).
+         */
         generatePkt13AndPps("2015-01-01T10:00:00", 300);
 
-        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
-                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
-                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double",
-                "/REFMDB/SUBSYS1/processed_para_enum_nc");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
-        wsClient.sendRequest(wsr);
-
-        // these are from the realtime processor cache
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertEquals(5, pdata.getParameterCount());
-        ParameterValue p1_1_6 = pdata.getParameter(0);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        // assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
-
-        ConnectionInfo connectionInfo = wsClient.getConnectionInfo();
-        assertNotNull(connectionInfo);
-
-        // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
                 .setInstance("IntegrationTest")
-                .addClientId(connectionInfo.getClientId())
                 .setName("testReplay")
+                .setPersistent(true) // TODO temp
                 .setType("Archive")
                 .setConfig("{\"utcStart\": \"2015-01-01T10:01:00\", \"utcStop\": \"2015-01-01T10:05:00\"}")
                 .build();
-
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
-
         Thread.sleep(2000);
-        connectionInfo = wsClient.getConnectionInfo();
-        assertEquals("testReplay", connectionInfo.getProcessor().getName());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
+        /*
+         * Listen to these parameters against testReplay.
+         */
+        ParameterSubscription subscription = yamcsClient.createParameterSubscription();
+        ParameterCaptor captor = ParameterCaptor.of(subscription);
+        SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("testReplay")
+                .setSendFromCache(false)
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_enum_nc"))
+                .build();
+        subscription.sendMessage(request);
 
-        assertEquals(2, pdata.getParameterCount());
-        p1_1_6 = pdata.getParameter(0);
+        // Give Yamcs some time to establish the subscription.
+        Thread.sleep(2000);
+
+        /*
+         * Pause the replay.
+         */
+        EditProcessorRequest editRequest = EditProcessorRequest.newBuilder()
+                .setState("paused")
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplay", HttpMethod.PATCH, editRequest).get();
+        captor.clear();
+        captor.assertSilence();
+
+        /*
+         * Now seek to the beginning (this also starts it)
+         */
+        editRequest = EditProcessorRequest.newBuilder()
+                .setSeek(Timestamps.parse("2015-01-01T10:01:00Z"))
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplay", HttpMethod.PATCH, editRequest).get();
+
+        /*
+         * Verify the delivery on testReplay
+         */
+        List<ParameterValue> values = captor.expectTimely();
+        assertEquals(2, values.size());
+        ParameterValue p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-01-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-        assertEquals(3, pdata.getParameterCount());
-        ParameterValue pp_para_uint = pdata.getParameter(0);
+        values = captor.expectTimely();
+        assertEquals(3, values.size());
+        ParameterValue pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
         assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
 
-        ParameterValue pp_para_enum_nc = pdata.getParameter(1);
+        ParameterValue pp_para_enum_nc = values.get(1);
         assertEquals("/REFMDB/SUBSYS1/processed_para_enum_nc", pp_para_enum_nc.getId().getName());
         assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
         assertEquals(1, pp_para_enum_nc.getRawValue().getUint32Value());
         assertEquals("one_why not", pp_para_enum_nc.getEngValue().getStringValue());
 
-        ParameterValue pp_para_double = pdata.getParameter(2);
+        ParameterValue pp_para_double = values.get(2);
         assertEquals("/REFMDB/SUBSYS1/processed_para_double", pp_para_double.getId().getName());
         assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-        assertEquals(1, pdata.getParameterCount());
-        pp_para_uint = pdata.getParameter(0);
+        values = captor.expectTimely();
+        assertEquals(1, values.size());
+        pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
         assertEquals("2015-01-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-
-        assertEquals(2, pdata.getParameterCount());
-        p1_1_6 = pdata.getParameter(0);
+        values = captor.expectTimely();
+        assertEquals(2, values.size());
+        p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-01-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
-
-        // go back to realtime
-        EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
-        restClient.doRequest("/clients/" + connectionInfo.getClientId(), HttpMethod.PATCH, pcrequest).get();
-
-        Thread.sleep(500); // Allow new connection info to arrive
-        connectionInfo = wsClient.getConnectionInfo();
-        assertEquals("realtime", connectionInfo.getProcessor().getName());
     }
 
     @Test
     public void testReplayWithTm2() throws Exception {
         generatePkt1AndTm2Pkt1("2019-01-01T10:00:00", 300);
 
-        ParameterSubscriptionRequest subscrList = getSubscription(false, false, false,
-                "/REFMDB/tm2_para1",
-                "/REFMDB/col-packet_id",
-                "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
-        wsClient.sendRequest(wsr);
-
-        ConnectionInfo connectionInfo = wsClient.getConnectionInfo();
-        assertNotNull(connectionInfo);
-        // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
                 .setInstance("IntegrationTest")
-                .addClientId(connectionInfo.getClientId())
-                .setName("testReplay")
+                .setName("testReplayWithTm2")
+                .setPersistent(true) // TODO temp
                 .setType("Archive")
                 .setConfig("{\"utcStart\": \"2019-01-01T10:01:00\", \"utcStop\": \"2019-01-01T10:05:00\"}")
                 .build();
-
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
+        Thread.sleep(2000);
 
-        connectionInfo = wsClient.getConnectionInfo();
-        assertEquals("testReplay", connectionInfo.getProcessor().getName());
+        /*
+         * Listen to these parameters against testReplayWithTm2.
+         */
+        ParameterSubscription subscription = yamcsClient.createParameterSubscription();
+        ParameterCaptor captor = ParameterCaptor.of(subscription);
+        SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("testReplayWithTm2")
+                .setSendFromCache(false)
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/tm2_para1"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/col-packet_id"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
+                .build();
+        subscription.sendMessage(request);
 
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
+        // Give Yamcs some time to establish the subscription.
+        Thread.sleep(2000);
 
-        assertEquals(1, pdata.getParameterCount());
-        ParameterValue pv1 = pdata.getParameter(0);
+        /*
+         * Pause the replay.
+         */
+        EditProcessorRequest editRequest = EditProcessorRequest.newBuilder()
+                .setState("paused")
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplayWithTm2", HttpMethod.PATCH, editRequest).get();
+        captor.clear();
+        captor.assertSilence();
+
+        /*
+         * Now seek to the beginning (this also starts it)
+         */
+        editRequest = EditProcessorRequest.newBuilder()
+                .setSeek(Timestamps.parse("2019-01-01T10:01:00Z"))
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplayWithTm2", HttpMethod.PATCH, editRequest).get();
+
+        List<ParameterValue> values = captor.expectTimely();
+
+        assertEquals(1, values.size());
+        ParameterValue pv1 = values.get(0);
         assertEquals("/REFMDB/tm2_para1", pv1.getId().getName());
         assertEquals("2019-01-01T10:01:00.000Z", pv1.getGenerationTimeUTC());
         assertEquals(20, pv1.getEngValue().getUint32Value());
 
-        pdata = wsListener.parameterDataList.poll(1, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-        assertEquals(2, pdata.getParameterCount());
+        values = captor.expectTimely();
+        assertEquals(2, values.size());
 
-        ParameterValue pv2 = pdata.getParameter(0);
+        ParameterValue pv2 = values.get(0);
         assertEquals("/REFMDB/col-packet_id", pv2.getId().getName());
         assertEquals("2019-01-01T10:01:00.000Z", pv2.getGenerationTimeUTC());
 
-        ParameterValue pv3 = pdata.getParameter(1);
+        ParameterValue pv3 = values.get(1);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", pv3.getId().getName());
         assertEquals("2019-01-01T10:01:00.000Z", pv3.getGenerationTimeUTC());
         assertEquals(packetGenerator.pIntegerPara1_1_7, pv3.getEngValue().getUint32Value());
-
     }
 
     @Test
     public void testReplayWithPpExclusion() throws Exception {
         generatePkt13AndPps("2015-02-01T10:00:00", 300);
 
-        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
-                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
-                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double",
-                "/REFMDB/SUBSYS1/processed_para_enum_nc");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
-        wsClient.sendRequest(wsr);
-
-        // these are from the realtime processor cache
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertEquals(5, pdata.getParameterCount());
-        ParameterValue p1_1_6 = pdata.getParameter(0);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        // assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
-
-        ConnectionInfo cinfo = wsClient.getConnectionInfo();
-
-        // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
                 .setInstance("IntegrationTest")
-                .addClientId(cinfo.getClientId())
                 .setName("testReplayWithPpExclusion")
                 .setType("ArchiveWithPpExclusion")
+                .setPersistent(true) // TODO temp
                 .setConfig("{\"utcStart\": \"2015-02-01T10:01:00\", \"utcStop\": \"2015-02-01T10:05:00\"}")
                 .build();
-
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
+        Thread.sleep(2000);
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
+        /*
+         * Listen to these parameters against testReplayWithPpExclusion.
+         */
+        ParameterSubscription subscription = yamcsClient.createParameterSubscription();
+        ParameterCaptor captor = ParameterCaptor.of(subscription);
+        SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("testReplayWithPpExclusion")
+                .setSendFromCache(false)
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_enum_nc"))
+                .build();
+        subscription.sendMessage(request);
 
-        assertEquals(2, pdata.getParameterCount());
-        p1_1_6 = pdata.getParameter(0);
+        // Give Yamcs some time to establish the subscription.
+        Thread.sleep(2000);
+
+        /*
+         * Pause the replay.
+         */
+        EditProcessorRequest editRequest = EditProcessorRequest.newBuilder()
+                .setState("paused")
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplayWithPpExclusion", HttpMethod.PATCH, editRequest)
+                .get();
+        captor.clear();
+        captor.assertSilence();
+
+        /*
+         * Now seek to the beginning (this also starts it)
+         */
+        editRequest = EditProcessorRequest.newBuilder()
+                .setSeek(Timestamps.parse("2015-02-01T10:01:00Z"))
+                .build();
+        restClient.doRequest("/processors/IntegrationTest/testReplayWithPpExclusion", HttpMethod.PATCH, editRequest)
+                .get();
+
+        List<ParameterValue> values = captor.expectTimely();
+
+        assertEquals(2, values.size());
+        ParameterValue p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-02-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-        assertEquals(1, pdata.getParameterCount());
-        ParameterValue pp_para_uint = pdata.getParameter(0);
+        values = captor.expectTimely();
+        assertEquals(1, values.size());
+        ParameterValue pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
         assertEquals("2015-02-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
 
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
+        values = captor.expectTimely();
 
-        assertEquals(2, pdata.getParameterCount());
-        p1_1_6 = pdata.getParameter(0);
+        assertEquals(2, values.size());
+        p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-02-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
     }
@@ -530,15 +578,13 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    @SuppressWarnings({ "unchecked" })
     private Row getRecord(int i) {
         // the column info is only required for the first record actually
         Row tr = Row.newBuilder()
-                .addColumns(Row.ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build())
-                .addColumns(Row.ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
-                .addCells(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))).build())
-                .addCells(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test " + i)))
-                        .build())
+                .addColumns(Row.ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT"))
+                .addColumns(Row.ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING"))
+                .addCells(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))))
+                .addCells(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test " + i))))
                 .build();
         return tr;
     }
@@ -554,7 +600,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     private void verifyRecordsDumpFormat(String tblName, int n) throws Exception {
         List<Row> trList = new ArrayList<>();
         CompletableFuture<Void> cf1 = restClient
-                .doBulkRequest(HttpMethod.POST, "/archive/IntegrationTest/tables/" + tblName + ":readRows", (data) -> {
+                .doBulkRequest(HttpMethod.POST, "/archive/IntegrationTest/tables/" + tblName + ":readRows", data -> {
                     Row tr;
                     try {
                         tr = Row.parseFrom(data);
@@ -591,11 +637,11 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     ByteBuf encode(MessageLite... msgl) throws IOException {
         ByteBuf buf = Unpooled.buffer();
-        ByteBufOutputStream bufstream = new ByteBufOutputStream(buf);
-        for (MessageLite msg : msgl) {
-            msg.writeDelimitedTo(bufstream);
+        try (ByteBufOutputStream bufstream = new ByteBufOutputStream(buf)) {
+            for (MessageLite msg : msgl) {
+                msg.writeDelimitedTo(bufstream);
+            }
         }
-        bufstream.close();
         return buf;
     }
 }

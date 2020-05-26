@@ -103,7 +103,7 @@ service BucketsApi {
   //     POST /api/buckets/_global/my_bucket HTTP/1.1
   //     Host: localhost:8090
   //     User-Agent: curl/7.58.0
-  //     Accept: *&#47;*
+  //     Accept: */*
   //     Content-Length: 1090
   //     Content-Type: multipart/form-data; boundary=------------------------7109c709802f7ae4
   // 

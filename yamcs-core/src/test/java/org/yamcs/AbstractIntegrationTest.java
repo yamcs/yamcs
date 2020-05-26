@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -10,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -20,29 +18,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.client.BulkRestDataReceiver;
 import org.yamcs.client.ClientException;
+import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
-import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.AlarmData;
-import org.yamcs.protobuf.ClientInfo;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandQueueInfo;
-import org.yamcs.protobuf.ConnectionInfo;
-import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.LinkEvent;
-import org.yamcs.protobuf.ParameterSubscriptionRequest;
-import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Statistics;
-import org.yamcs.protobuf.Table.StreamData;
-import org.yamcs.protobuf.TimeInfo;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
@@ -59,10 +41,9 @@ import com.google.protobuf.Message;
 import io.netty.handler.codec.http.HttpMethod;
 
 public abstract class AbstractIntegrationTest {
-    final String yamcsInstance = "IntegrationTest";
+    protected final String yamcsInstance = "IntegrationTest";
     ParameterProvider parameterProvider;
-    YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
-    MyWsListener wsListener;
+    MyConnectionListener connectionListener;
     YamcsClient yamcsClient;
 
     WebSocketClient wsClient;
@@ -88,12 +69,11 @@ public abstract class AbstractIntegrationTest {
         parameterProvider = ParameterProvider.instance;
         assertNotNull(parameterProvider);
 
-        wsListener = new MyWsListener();
-        yamcsClient = YamcsClient.newBuilder(ycp.getHost(), ycp.getPort())
+        connectionListener = new MyConnectionListener();
+        yamcsClient = YamcsClient.newBuilder("localhost", 9190)
                 .withUserAgent("it-junit")
-                .withInitialInstance("IntegrationTest")
                 .build();
-        yamcsClient.addWebSocketListener(wsListener);
+        yamcsClient.addConnectionListener(connectionListener);
         if (!yamcs.getSecurityStore().getGuestUser().isActive()) {
             yamcsClient.connect(adminUsername, adminPassword);
         }
@@ -121,39 +101,10 @@ public abstract class AbstractIntegrationTest {
         yamcs.start();
     }
 
-    IssueCommandRequest getCommand(int seq, String... args) {
-        IssueCommandRequest.Builder b = IssueCommandRequest.newBuilder();
-        b.setOrigin("IntegrationTest");
-        b.setSequenceNumber(seq);
-        for (int i = 0; i < args.length; i += 2) {
-            b.addAssignment(IssueCommandRequest.Assignment.newBuilder().setName(args[i]).setValue(args[i + 1]).build());
-        }
-
-        return b.build();
-    }
-
-    protected ParameterSubscriptionRequest getSubscription(String... pfqname) {
-        return getSubscription(true, false, false, pfqname);
-    }
-
-    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,
-            boolean usedNumericId,
-            String... pfqname) {
-        ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
-        for (String p : pfqname) {
-            b.addId(NamedObjectId.newBuilder().setName(p).build());
-        }
-        b.setSendFromCache(sendFromCache);
-        b.setUpdateOnExpiration(updateOnExpiration);
-        b.setAbortOnInvalid(false);
-        b.setUseNumericIds(usedNumericId);
-        return b.build();
-    }
-
     @After
     public void after() throws InterruptedException {
         yamcsClient.close();
-        assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
+        assertTrue(connectionListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
     }
 
     @AfterClass
@@ -201,54 +152,39 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    protected void checkNextCmdHistoryAttr(String name) throws InterruptedException {
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(name, cha.getName());
-    }
-
-    protected void checkNextCmdHistoryAttr(String name, String value) throws InterruptedException {
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(name, cha.getName());
-        assertEquals(value, cha.getValue().getStringValue());
-    }
-
-    protected void checkNextCmdHistoryAttrStatusTime(String name, String value) throws InterruptedException {
-        checkNextCmdHistoryAttr(name + "_Status", value);
-        checkNextCmdHistoryAttr(name + "_Time");
-    }
-
     protected <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
         return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
     }
 
-    static class MyWsListener implements WebSocketClientCallback {
+    protected RestClient getRestClient(String username, String password) throws ClientException {
+        RestClient restClient1 = null;
+        try {
+            YamcsConnectionProperties yprops = new YamcsConnectionProperties("localhost", 9190);
+            restClient1 = new RestClient(yprops);
+            restClient1.login(username, password.toCharArray());
+            restClient1.setAutoclose(false);
+            return restClient1;
+        } catch (ClientException e) {
+            restClient1.close();
+            throw e;
+        }
+    }
+
+    static class MyConnectionListener implements ConnectionListener {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
-        LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<AlarmData> alarmDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<ConnectionInfo> connInfoList = new LinkedBlockingQueue<>();
-
-        int count = 0;
+        @Override
+        public void connecting(String url) {
+        }
 
         @Override
-        public void connected() {
+        public void connected(String url) {
             onConnect.release();
+        }
+
+        @Override
+        public void connectionFailed(String url, ClientException exception) {
         }
 
         @Override
@@ -257,48 +193,7 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void onMessage(WebSocketSubscriptionData data) {
-            switch (data.getType()) {
-            case PARAMETER:
-                count++;
-                parameterDataList.add(data.getParameterData());
-                break;
-            case CMD_HISTORY:
-                cmdHistoryDataList.add(data.getCommand());
-                break;
-            case CLIENT_INFO:
-                clientInfoList.add(data.getClientInfo());
-                break;
-            case PROCESSOR_INFO:
-                processorInfoList.add(data.getProcessorInfo());
-                break;
-            case PROCESSING_STATISTICS:
-                statisticsList.add(data.getStatistics());
-                break;
-            case ALARM_DATA:
-                alarmDataList.add(data.getAlarmData());
-                break;
-            case EVENT:
-                eventList.add(data.getEvent());
-                break;
-            case STREAM_DATA:
-                streamDataList.add(data.getStreamData());
-                break;
-            case TIME_INFO:
-                timeInfoList.add(data.getTimeInfo());
-                break;
-            case LINK_EVENT:
-                linkEventList.add(data.getLinkEvent());
-                break;
-            case COMMAND_QUEUE_INFO:
-                cmdQueueInfoList.add(data.getCommandQueueInfo());
-                break;
-            case CONNECTION_INFO:
-                connInfoList.add(data.getConnectionInfo());
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected type " + data.getType());
-            }
+        public void log(String message) {
         }
     }
 

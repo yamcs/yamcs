@@ -1,8 +1,7 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,16 +13,16 @@ import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.AbstractIntegrationTest.MyWsListener;
-import org.yamcs.client.WebSocketClient;
-import org.yamcs.client.WebSocketRequest;
-import org.yamcs.client.YamcsConnectionProperties;
+import org.yamcs.AbstractIntegrationTest.MyConnectionListener;
+import org.yamcs.client.ParameterSubscription;
+import org.yamcs.client.WebSocketClientHandler;
+import org.yamcs.client.YamcsClient;
 import org.yamcs.http.HttpServer;
-import org.yamcs.protobuf.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.SubscribeParametersData;
+import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public class LongWebsocketFrameTest {
-    YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9191, "LongWebsocketFrameTest");
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -44,7 +43,7 @@ public class LongWebsocketFrameTest {
         httpServer.startServer();
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
-        Logger.getLogger("org.yamcs.client.WebSocketClientHandler").setLevel(Level.OFF);
+        Logger.getLogger(WebSocketClientHandler.class.getName()).setLevel(Level.OFF);
     }
 
     @AfterClass
@@ -52,49 +51,51 @@ public class LongWebsocketFrameTest {
         YamcsServer.getServer().shutDown();
     }
 
-    @Test
+    @Test(expected = TimeoutException.class)
     public void testWithSmallFrame() throws Exception {
-        assertNotNull(testit(65536));
+        runIt(65536);
     }
 
     @Test
     public void testWithBigFrame() throws Exception {
-        assertNull(testit(1024 * 1024));
-    }
-
-    private TimeoutException testit(int frameSize) throws Exception {
-        MyWsListener wsListener = new MyWsListener();
-        WebSocketClient wsClient = new WebSocketClient(ycp, wsListener);
-        wsClient.enableReconnection(false);
-        wsClient.setMaxFramePayloadLength(frameSize);
-        wsClient.connect(null);
-
-        assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
-        ParameterSubscriptionRequest req = getRequest();
-
-        assertTrue(req.toByteArray().length > 65535);
-
-        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", req);
-        TimeoutException timeout = null;
         try {
-            wsClient.sendRequest(wsr).get(5, TimeUnit.SECONDS);
+            runIt(1024 * 1024);
         } catch (TimeoutException e) {
-            timeout = e;
+            fail();
         }
-
-        wsClient.disconnect();
-
-        return timeout;
     }
 
-    private ParameterSubscriptionRequest getRequest() {
+    private void runIt(int frameSize) throws Exception {
+        MyConnectionListener connectionListener = new MyConnectionListener();
+        YamcsClient client = YamcsClient.newBuilder("localhost", 9191).build();
+        client.getWebSocketClient().setMaxFramePayloadLength(frameSize);
+        client.addConnectionListener(connectionListener);
 
-        ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
-        for (int i = 0; i < 10000; i++) {
-            b.addId(NamedObjectId.newBuilder().setName("/very/long/parameter/name" + i).build());
+        try {
+            client.connectAnonymously();
+            assertTrue(connectionListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
+
+            SubscribeParametersRequest.Builder requestb = SubscribeParametersRequest.newBuilder()
+                    .setAbortOnInvalid(false)
+                    .setInstance("LongWebsocketFrameTest")
+                    .setProcessor("realtime");
+            for (int i = 0; i < 10000; i++) {
+                requestb.addId(NamedObjectId.newBuilder().setName("/very/long/parameter/name" + i));
+            }
+
+            SubscribeParametersRequest request = requestb.build();
+            assertTrue(request.toByteArray().length > 65535);
+
+            ParameterSubscription subscription = client.createParameterSubscription();
+            MessageCaptor<SubscribeParametersData> captor = MessageCaptor.of(subscription);
+            subscription.sendMessage(request);
+
+            // If our frame is sufficiently large, we should get a first message
+            // (all parameters being invalid, is irrelevant to this)
+            // Else this will throw a TimeoutException
+            captor.expectTimely();
+        } finally {
+            client.close();
         }
-        b.setAbortOnInvalid(false);
-        return b.build();
     }
-
 }

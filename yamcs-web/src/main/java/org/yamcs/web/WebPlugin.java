@@ -117,7 +117,7 @@ public class WebPlugin implements Plugin {
         if (Files.exists(staticRoot)) {
             log.debug("Serving yamcs-web from {}", staticRoot);
         } else {
-            log.warn("Static root for yamcs yamcs-web not found at '{}'", staticRoot);
+            log.warn("Static root for yamcs-web not found at '{}'", staticRoot);
         }
         httpServer.addStaticRoot(staticRoot);
 

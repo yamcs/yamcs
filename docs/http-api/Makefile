@@ -8,6 +8,11 @@ PYTHON = python
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+clean:
+	@echo Removing everything under \'$(SOURCEDIR)\'...
+	@rm -rf $(SOURCEDIR)/*
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
 autogen:
 	@echo Generating automated sections
 	@mkdir -p $(SOURCEDIR)

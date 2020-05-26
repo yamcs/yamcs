@@ -26,7 +26,7 @@ dataLinks:
     class: org.yamcs.AbstractIntegrationTest$ParameterProvider
     stream: pp_realtime
   - name: tc_realtime
-    class: org.yamcs.CmdIntegrationTest$MyTcDataLink
+    class: org.yamcs.CommandIntegrationTest$MyTcDataLink
     stream: tc_realtime
 
 mdb:

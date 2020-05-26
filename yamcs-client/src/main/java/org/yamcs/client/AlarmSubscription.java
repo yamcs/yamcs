@@ -1,0 +1,14 @@
+package org.yamcs.client;
+
+import org.yamcs.protobuf.AlarmData;
+import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
+
+/**
+ * Subscription for receiving alarm detail.
+ */
+public class AlarmSubscription extends AbstractSubscription<SubscribeAlarmsRequest, AlarmData> {
+
+    protected AlarmSubscription(WebSocketClient client) {
+        super(client, "alarms", AlarmData.class);
+    }
+}

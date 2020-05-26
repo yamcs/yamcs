@@ -11,9 +11,22 @@ import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
  
+// Methods for working with 'clients'.
+//
+// .. warning::
+//     This API is gradually being phased out and subject to removal.
+//     It dates from a time when client software was not knowledgeable about
+//     Yamcs and where their state (instance, processor) had to be managed
+//     server-side.
 service ClientsApi {
 
   // List clients
+  //
+  // .. warning::
+  //     It is recommended to avoid using this method. It dates from a time
+  //     when clients were not knowledgeable about Yamcs and their state had
+  //     to be managed server-side. Nowadays we are favouring stateless APIs
+  //     and leave state management entirely to the client software.
   rpc ListClients(google.protobuf.Empty) returns (ListClientsResponse) {
     option (yamcs.api.route) = {
       get: "/api/clients"
@@ -21,6 +34,12 @@ service ClientsApi {
   }
   
   // Get a client
+  //
+  // .. warning::
+  //     It is recommended to avoid using this method. It dates from a time
+  //     when clients were not knowledgeable about Yamcs and their state had
+  //     to be managed server-side. Nowadays we are favouring stateless APIs
+  //     and leave state management entirely to the client software.
   rpc GetClient(GetClientRequest) returns (ClientInfo) {
     option (yamcs.api.route) = {
       get: "/api/clients/{id}"
@@ -28,6 +47,12 @@ service ClientsApi {
   }
   
   // Update a client
+  //
+  // .. warning::
+  //     It is recommended to avoid using this method. It dates from a time
+  //     when clients were not knowledgeable about Yamcs and their state had
+  //     to be managed server-side. Nowadays we are favouring stateless APIs
+  //     and leave state management entirely to the client software.
   rpc UpdateClient(EditClientRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       patch: "/api/clients/{id}"

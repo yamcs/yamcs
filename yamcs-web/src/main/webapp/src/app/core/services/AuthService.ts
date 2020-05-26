@@ -233,12 +233,7 @@ export class AuthService {
   }
 
   public buildOpenIDRedirectURI() {
-    let redirectURI = `${location.protocol}//${location.host}`;
-    if (this.baseHref !== '/') {
-      redirectURI += this.baseHref.substring(1);
-    }
-    redirectURI += '/oidc-browser-callback';
-    return redirectURI;
+    return `${location.protocol}//${location.host}${this.baseHref}oidc-browser-callback`;
   }
 
   private extractClaims(jwt: string): Claims {

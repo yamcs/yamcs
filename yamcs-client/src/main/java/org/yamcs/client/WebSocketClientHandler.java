@@ -2,16 +2,11 @@ package org.yamcs.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
+import java.io.UncheckedIOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.yamcs.client.WebSocketClient.RequestResponsePair;
-import org.yamcs.protobuf.WebSocketServerMessage;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
-
-import com.google.protobuf.InvalidProtocolBufferException;
+import org.yamcs.protobuf.ServerMessage;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.Channel;
@@ -64,13 +59,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected");
+        client.completeAll();
         callback.disconnected();
-
-        if (client.isReconnectionEnabled()) {
-            ctx.channel().eventLoop().schedule(() -> client.connect(client.getAccessToken()),
-                    client.reconnectionInterval,
-                    TimeUnit.MILLISECONDS);
-        }
     }
 
     @Override
@@ -99,7 +89,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             if (log.isLoggable(Level.FINEST)) {
                 log.finest("WebSocket Client received message of size " + binaryFrame.content().readableBytes());
             }
-            processFrame(binaryFrame);
+            handleFrame(binaryFrame);
         } else if (frame instanceof PingWebSocketFrame) {
             frame.content().retain();
             ch.writeAndFlush(new PongWebSocketFrame(frame.content()));
@@ -114,56 +104,16 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         }
     }
 
-    private void processFrame(BinaryWebSocketFrame frame) {
+    private void handleFrame(BinaryWebSocketFrame frame) {
         try (InputStream in = new ByteBufInputStream(frame.content())) {
-            WebSocketServerMessage message = WebSocketServerMessage.newBuilder()
-                    .mergeFrom(in).build();
-            switch (message.getType()) {
-            case REPLY:
-                processReplyData(message.getReply());
-                break;
-            case EXCEPTION:
-                processExceptionData(message.getException());
-                break;
-            case DATA:
-                if (message.getData().hasConnectionInfo()) {
-                    client.setConnectionInfo(message.getData().getConnectionInfo());
-                }
-                callback.onMessage(message.getData());
-                break;
-            default:
-                throw new IllegalStateException("Invalid message type received: " + message.getType());
+            ServerMessage message = ServerMessage.newBuilder().mergeFrom(in).build();
+            if ("reply".equals(message.getType())) {
+                client.handleReply(message);
+            } else {
+                client.handleMessage(message);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void processReplyData(WebSocketReplyData reply) throws InvalidProtocolBufferException {
-        int reqId = reply.getSequenceNumber();
-        RequestResponsePair pair = client.removeUpstreamRequest(reqId);
-        if (pair == null) {
-            log.warning(
-                    "Received an exception for a request I did not send (or was already finished) seqNum: " + reqId);
-            return;
-        }
-        if (pair.responseHandler != null) {
-            pair.responseHandler.onCompletion(reply);
-        }
-    }
-
-    private void processExceptionData(WebSocketExceptionData exceptionData) throws IOException {
-        int reqId = exceptionData.getSequenceNumber();
-        RequestResponsePair pair = client.getRequestResponsePair(reqId);
-        if (pair == null) {
-            log.warning(
-                    "Received an exception for a request I did not send (or was already finished) seqNum: " + reqId);
-            return;
-        }
-
-        log.warning("Got exception message " + exceptionData.getMessage());
-        if (pair.responseHandler != null) {
-            pair.responseHandler.onException(exceptionData);
+            throw new UncheckedIOException(e);
         }
     }
 

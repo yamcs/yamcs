@@ -15,15 +15,10 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.UnauthorizedException;
-import org.yamcs.client.WebSocketRequest;
-import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.IssueCommandResponse;
-import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
@@ -89,45 +84,23 @@ public class PermissionsTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testPermissionSendCommand() throws Exception {
-        RestClient restClient1 = getRestClient("testuser", "password");
-
-        // Command INT_ARG_TC is allowed
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
-        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        byte[] resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
-                HttpMethod.POST, cmdreq).get();
-        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
-        assertTrue(response.hasBinary());
-
-        // Command FLOAT_ARG_TC is denied
-        cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
-        try {
-            resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
-                    HttpMethod.POST, cmdreq).get();
-            fail("should have thrown an exception");
-        } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof ClientException);
-        }
-
-    }
-
-    @Test
     public void testPermissionGetParameter() throws Exception {
         RestClient restClient1 = getRestClient("testuser", "password");
 
         // Allowed to subscribe to Integer parameter from cache
-        ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
-                "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
-                .addAllId(validSubscrList.getIdList()).build();
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder()
+                .setFromCache(true)
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
+                .build();
         restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
                 .get();
 
         // Denied to subscribe to Float parameter from cache
-        validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
+        req = BatchGetParameterValuesRequest.newBuilder()
+                .setFromCache(true)
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_1_3"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_1_2"))
                 .build();
         try {
             restClient1
@@ -192,19 +165,5 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, updateHistoryRequest.build())
                 .get();
-    }
-
-    private RestClient getRestClient(String username, String password) throws ClientException {
-        RestClient restClient1 = null;
-        try {
-            YamcsConnectionProperties ycp1 = ycp.copy();
-            restClient1 = new RestClient(ycp1);
-            restClient1.login(username, password.toCharArray());
-            restClient1.setAutoclose(false);
-            return restClient1;
-        } catch (ClientException e) {
-            restClient1.close();
-            throw e;
-        }
     }
 }

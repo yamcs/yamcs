@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConnectedClient;
-import org.yamcs.ErrorInCommand;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
@@ -24,10 +23,6 @@ import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
-import org.yamcs.commanding.CommandQueue;
-import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.commanding.CommandingManager;
-import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
@@ -49,16 +44,11 @@ import org.yamcs.protobuf.AbstractProcessingApi;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.GetProcessorRequest;
-import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.IssueCommandRequest.Assignment;
-import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ListProcessorTypesResponse;
 import org.yamcs.protobuf.ListProcessorsRequest;
 import org.yamcs.protobuf.ListProcessorsResponse;
@@ -71,29 +61,19 @@ import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
-import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.EnumeratedArgumentType;
-import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yaml.snakeyaml.util.UriEncoder;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 public class ProcessingApi extends AbstractProcessingApi<Context> {
@@ -414,202 +394,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
-    public void issueCommand(Context ctx, IssueCommandRequest request, Observer<IssueCommandResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.Command);
-
-        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        if (!processor.hasCommanding()) {
-            throw new BadRequestException("Commanding not activated for this processor");
-        }
-
-        String requestCommandName = UriEncoder.decode(request.getName());
-        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        MetaCommand cmd = MdbApi.verifyCommand(mdb, requestCommandName);
-
-        ctx.checkObjectPrivileges(ObjectPrivilegeType.Command, cmd.getQualifiedName());
-
-        String origin = ctx.getClientAddress();
-        int sequenceNumber = 0;
-        boolean dryRun = false;
-        String comment = null;
-        List<ArgumentAssignment> assignments = new ArrayList<>();
-
-        if (request.hasOrigin()) { // TODO remove this override?
-            origin = request.getOrigin();
-        }
-        if (request.hasDryRun()) {
-            dryRun = request.getDryRun();
-        }
-        if (request.hasSequenceNumber()) {
-            sequenceNumber = request.getSequenceNumber();
-        }
-        if (request.hasComment()) {
-            comment = request.getComment();
-        }
-        for (Assignment a : request.getAssignmentList()) {
-            assignments.add(new ArgumentAssignment(a.getName(), a.getValue()));
-        }
-
-        // Prepare the command
-        PreparedCommand preparedCommand;
-        try {
-            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber,
-                    ctx.user);
-            if (comment != null && !comment.trim().isEmpty()) {
-                preparedCommand.setComment(comment);
-            }
-
-            if (request.getExtraCount() > 0) {
-                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                request.getExtraMap().forEach((k, v) -> {
-                    if (!YamcsServer.getServer().hasCommandOption(k)) {
-                        throw new BadRequestException("Unknown command option '" + k + "'");
-                    }
-                    preparedCommand.addAttribute(CommandHistoryAttribute.newBuilder()
-                            .setName(k).setValue(v).build());
-                });
-            }
-
-            if (request.hasDisableVerifiers()) {
-                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                preparedCommand.disableCommandVerifiers(request.getDisableVerifiers());
-            }
-
-            if (request.hasDisableTransmissionConstraints()) {
-                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                preparedCommand.disableTransmissionContraints(request.getDisableTransmissionConstraints());
-            } else if (request.getVerifierConfigCount() > 0) {
-                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                List<String> invalidVerifiers = new ArrayList<>();
-                for (String stage : request.getVerifierConfigMap().keySet()) {
-                    if (!hasVerifier(cmd, stage)) {
-                        invalidVerifiers.add(stage);
-                    }
-                }
-                if (!invalidVerifiers.isEmpty()) {
-                    throw new BadRequestException(
-                            "The command does not have the following verifiers: " + invalidVerifiers.toString());
-                }
-
-                request.getVerifierConfigMap().forEach((k, v) -> {
-                    preparedCommand.addVerifierConfig(k, v);
-                });
-            }
-
-            // make the source - should perhaps come from the client
-            StringBuilder sb = new StringBuilder();
-            sb.append(cmd.getQualifiedName());
-            sb.append("(");
-            boolean first = true;
-            for (ArgumentAssignment aa : assignments) {
-                Argument a = preparedCommand.getMetaCommand().getArgument(aa.getArgumentName());
-                if (!first) {
-                    sb.append(", ");
-                } else {
-                    first = false;
-                }
-                sb.append(aa.getArgumentName()).append(": ");
-
-                boolean needDelimiter = a != null && (a.getArgumentType() instanceof StringArgumentType
-                        || a.getArgumentType() instanceof EnumeratedArgumentType);
-                if (needDelimiter) {
-                    sb.append("\"");
-                }
-                sb.append(aa.getArgumentValue());
-                if (needDelimiter) {
-                    sb.append("\"");
-                }
-            }
-            sb.append(")");
-            preparedCommand.setSource(sb.toString());
-
-        } catch (NoPermissionException e) {
-            throw new ForbiddenException(e);
-        } catch (ErrorInCommand e) {
-            throw new BadRequestException(e);
-        } catch (YamcsException e) { // could be anything, consider as internal server error
-            throw new InternalServerErrorException(e);
-        }
-
-        if (!dryRun && processor.getConfig().checkCommandClearance()) {
-            if (ctx.user.getClearance() == null) {
-                throw new ForbiddenException("Not cleared for commanding");
-            }
-            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
-            Levels level = null;
-            if (preparedCommand.getMetaCommand().getDefaultSignificance() != null) {
-                level = preparedCommand.getMetaCommand().getDefaultSignificance().getConsequenceLevel();
-            }
-            if (level != null && level.isMoreSevere(clearance)) {
-                throw new ForbiddenException("Not cleared for this level of commands");
-            }
-        }
-
-        // Good, now send
-        CommandQueue queue;
-        if (dryRun) {
-            CommandQueueManager mgr = processor.getCommandingManager().getCommandQueueManager();
-            queue = mgr.getQueue(ctx.user, preparedCommand);
-        } else {
-            queue = processor.getCommandingManager().sendCommand(ctx.user, preparedCommand);
-        }
-
-        IssueCommandResponse.Builder responseb = IssueCommandResponse.newBuilder()
-                .setId(toStringIdentifier(preparedCommand.getCommandId()))
-                .setGenerationTime(TimeEncoding.toProtobufTimestamp(preparedCommand.getGenerationTime()))
-                .setOrigin(preparedCommand.getCommandId().getOrigin())
-                .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
-                .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
-                .setSource(preparedCommand.getSource())
-                .setUsername(preparedCommand.getUsername());
-
-        byte[] binary = preparedCommand.getBinary();
-        if (binary != null) {
-            responseb.setBinary(ByteString.copyFrom(binary))
-                    .setHex(StringConverter.arrayToHexString(binary));
-        }
-
-        if (queue != null) {
-            responseb.setQueue(queue.getName());
-        }
-
-        observer.complete(responseb.build());
-    }
-
-    private boolean hasVerifier(MetaCommand cmd, String stage) {
-        boolean hasVerifier = cmd.getCommandVerifiers().stream().anyMatch(cv -> cv.getStage().equals(stage));
-        if (hasVerifier) {
-            return true;
-        } else {
-            MetaCommand parent = cmd.getBaseMetaCommand();
-            if (parent == null) {
-                return false;
-            } else {
-                return hasVerifier(parent, stage);
-            }
-        }
-    }
-
-    @Override
-    public void updateCommandHistory(Context ctx, UpdateCommandHistoryRequest request, Observer<Empty> observer) {
-        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        if (!processor.hasCommanding()) {
-            throw new BadRequestException("Commanding not activated for this processor");
-        }
-        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.ModifyCommandHistory)) {
-            throw new ForbiddenException("User has no privilege to update command history");
-        }
-
-        CommandId cmdId = fromStringIdentifier(request.getName(), request.getId());
-        CommandingManager manager = processor.getCommandingManager();
-        for (CommandHistoryAttribute attr : request.getAttributesList()) {
-            manager.setCommandAttribute(cmdId, attr);
-        }
-
-        observer.complete(Empty.getDefaultInstance());
-    }
-
-    @Override
     public void subscribeTMStatistics(Context ctx, SubscribeTMStatisticsRequest request,
             Observer<Statistics> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
@@ -697,33 +481,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } else {
             return mgr;
         }
-    }
-
-    private static CommandId fromStringIdentifier(String commandName, String id) {
-        CommandId.Builder b = CommandId.newBuilder();
-        b.setCommandName(commandName);
-        int firstDash = id.indexOf('-');
-        long generationTime = Long.parseLong(id.substring(0, firstDash));
-        b.setGenerationTime(generationTime);
-        int lastDash = id.lastIndexOf('-');
-        int sequenceNumber = Integer.parseInt(id.substring(lastDash + 1));
-        b.setSequenceNumber(sequenceNumber);
-        if (firstDash != lastDash) {
-            String origin = id.substring(firstDash + 1, lastDash);
-            b.setOrigin(origin);
-        } else {
-            b.setOrigin("");
-        }
-
-        return b.build();
-    }
-
-    private static String toStringIdentifier(CommandId commandId) {
-        String id = commandId.getGenerationTime() + "-";
-        if (commandId.hasOrigin() && !"".equals(commandId.getOrigin())) {
-            id += commandId.getOrigin() + "-";
-        }
-        return id + commandId.getSequenceNumber();
     }
 
     public static ProcessorInfo toProcessorInfo(Processor processor, boolean detail) {
