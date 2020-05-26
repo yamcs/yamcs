@@ -3,7 +3,7 @@ package org.yamcs.client;
 import java.util.EventListener;
 
 /**
- * A connection listener interface for clients connecting to a yamcs server.
+ * A connection listener interface for clients connecting to Yamcs.
  */
 public interface ConnectionListener extends EventListener {
 

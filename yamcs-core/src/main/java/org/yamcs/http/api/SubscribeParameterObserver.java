@@ -112,7 +112,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 numericIdMap.put(id, numericId);
                 datab.putMapping(numericId, id);
             }
-            if (!request.hasSendFromCache() || request.getSendFromCache()) {
+            if (subscriptionId != -1 && (!request.hasSendFromCache() || request.getSendFromCache())) {
                 for (ParameterValueWithId rec : pidrm.getValuesFromCache(subscriptionId)) {
                     ParameterValue pval = rec.getParameterValue();
                     int numericId = numericIdMap.get(rec.getId());

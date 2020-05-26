@@ -1,13 +1,7 @@
 package org.yamcs.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Properties;
 
 public class YamcsConnectionProperties {
 
@@ -18,23 +12,21 @@ public class YamcsConnectionProperties {
 
     private String host = "localhost";
     private int port;
-    private String instance;
+    private String context;
     private String username;
     private char[] password;
 
     private boolean tls;
     private AuthType authType = AuthType.STANDARD;
 
-    static final private String PREF_FILENAME = "YamcsConnectionProperties"; // relative to the <home>/.yamcs directory
-
     public YamcsConnectionProperties() {
 
     }
 
-    public YamcsConnectionProperties(String host, int port, String instance) {
+    public YamcsConnectionProperties(String host, int port, String context) {
         this.host = host;
         this.port = port;
-        this.instance = instance;
+        this.context = context;
     }
 
     public YamcsConnectionProperties(String host, int port) {
@@ -56,8 +48,8 @@ public class YamcsConnectionProperties {
         return port;
     }
 
-    public String getInstance() {
-        return instance;
+    public String getContext() {
+        return context;
     }
 
     public AuthType getAuthType() {
@@ -69,66 +61,19 @@ public class YamcsConnectionProperties {
             relativePath = "/" + relativePath;
         }
         try {
-            return new URI((tls ? "https" : "http") + "://" + host + ":" + port + "/api/" + relativePath);
+            if (context == null) {
+                return new URI((tls ? "https" : "http") + "://" + host + ":" + port + "/api/" + relativePath);
+            } else {
+                return new URI((tls ? "https" : "http") + "://" + host + ":" + port
+                        + "/" + context + "/api/" + relativePath);
+            }
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid URL", e);
         }
     }
 
-    public URI webSocketURI() {
-        String urlString = (tls ? "wss" : "ws") + "://" + host + ":" + port + "/_websocket";
-        if (instance != null) {
-            urlString += "/" + instance;
-        }
-        try {
-            return new URI(urlString);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid URL", e);
-        }
-    }
-
-    public static File getPreferenceFile() {
-        String home = System.getProperty("user.home") + "/.yamcs";
-        return new File(home, PREF_FILENAME);
-    }
-
-    public void load() throws FileNotFoundException, IOException {
-        Properties p = new Properties();
-        p.load(new FileInputStream(getPreferenceFile()));
-        host = p.getProperty("host");
-        try {
-            port = Integer.parseInt(p.getProperty("port"));
-        } catch (NumberFormatException e) {
-        }
-
-        instance = p.getProperty("instance");
-        if (p.containsKey("username")) {
-            username = p.getProperty("username");
-            password = null;
-        }
-    }
-
-    public void save() {
-        Properties p = new Properties();
-        p.setProperty("host", host);
-        p.setProperty("port", Integer.toString(port));
-        if (instance != null) {
-            p.setProperty("instance", instance);
-        }
-        if (username != null) {
-            p.setProperty("username", username);
-        }
-        try {
-            String home = System.getProperty("user.home") + "/.yamcs";
-            (new File(home)).mkdirs();
-            p.store(new FileOutputStream(home + "/" + PREF_FILENAME), null);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-    }
-
-    public void setInstance(String instance) {
-        this.instance = instance;
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public void setTls(boolean tls) {
@@ -140,7 +85,7 @@ public class YamcsConnectionProperties {
     }
 
     public YamcsConnectionProperties copy() {
-        YamcsConnectionProperties ycp1 = new YamcsConnectionProperties(this.host, this.port, this.instance);
+        YamcsConnectionProperties ycp1 = new YamcsConnectionProperties(this.host, this.port, this.context);
         ycp1.tls = this.tls;
         ycp1.username = this.username;
         ycp1.password = this.password;
@@ -158,7 +103,11 @@ public class YamcsConnectionProperties {
     }
 
     public String getBaseURL() {
-        return (tls ? "https" : "http") + "://" + host + ":" + port;
+        if (context == null) {
+            return (tls ? "https" : "http") + "://" + host + ":" + port;
+        } else {
+            return (tls ? "https" : "http") + "://" + host + ":" + port + "/" + context;
+        }
     }
 
     /**
@@ -184,19 +133,24 @@ public class YamcsConnectionProperties {
     }
 
     /**
-     * uri is http[s]://[[username]:[password]@][host[:port]]/[instance]
+     * uri is http[s]://[[username]:[password]@][host[:port]]/[context]
      * 
      * @param uri
      * @return an object containing the connection properties
-     * @throws URISyntaxException
+     * @throws IllegalArgumentException
      */
-    public static YamcsConnectionProperties parse(String uri) throws URISyntaxException {
+    public static YamcsConnectionProperties parse(String uri) throws IllegalArgumentException {
         YamcsConnectionProperties ycd = new YamcsConnectionProperties();
         ycd.port = 8090; // Default
 
-        URI u = new URI(uri);
-        if (!"http".equalsIgnoreCase(u.getScheme()) && !"https".equalsIgnoreCase(u.getScheme())) {
-            throw new URISyntaxException(uri, "URL must be of http or https scheme");
+        URI u = null;
+        try {
+            u = new URI(uri);
+            if (!"http".equalsIgnoreCase(u.getScheme()) && !"https".equalsIgnoreCase(u.getScheme())) {
+                throw new IllegalArgumentException("URL must be of http or https scheme. Was given '" + uri + "'");
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid address '" + uri + "'");
         }
 
         if ("https".equals(u.getScheme())) {
@@ -220,10 +174,10 @@ public class YamcsConnectionProperties {
 
         String[] pc = u.getPath().split("/");
         if (pc.length > 3) {
-            throw new URISyntaxException(uri, "Can only support instance/address paths");
+            throw new IllegalArgumentException("Invalid address '" + uri + "'");
         }
         if (pc.length > 1) {
-            ycd.instance = pc[1];
+            ycd.context = pc[1];
         }
 
         return ycd;
@@ -239,8 +193,8 @@ public class YamcsConnectionProperties {
             }
         }
         sb.append("/");
-        if (instance != null) {
-            sb.append(instance);
+        if (context != null) {
+            sb.append(context);
         }
         return sb.toString();
     }

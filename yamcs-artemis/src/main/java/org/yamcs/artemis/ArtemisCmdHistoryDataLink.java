@@ -24,7 +24,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
 
     private ServerLocator locator;
-    private ClientSession session;
+    private ClientSession artemisSession;
     private ClientConsumer client;
     private ClientSessionFactory factory;
 
@@ -38,7 +38,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
     protected void doStart() {
         try {
             factory = locator.createSessionFactory();
-            session = factory.createSession();
+            artemisSession = factory.createSession();
             CmdHistoryTupleTranslator translator = new CmdHistoryTupleTranslator();
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
@@ -47,8 +47,8 @@ public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
                 String address = yamcsInstance + "." + streamName;
                 String queue = address + "-StreamAdapter";
                 log.debug("Subscribing to {}:{}", address, queue);
-                session.createTemporaryQueue(address, queue);
-                client = session.createConsumer(queue);
+                artemisSession.createTemporaryQueue(address, queue);
+                client = artemisSession.createConsumer(queue);
                 client.setMessageHandler(msg -> {
                     try {
                         Tuple tuple = translator.buildTuple(msg);
@@ -58,7 +58,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
                     }
                 });
             }
-            session.start();
+            artemisSession.start();
             notifyStarted();
         } catch (Exception e) {
             log.error("Error creating the subcription to artemis", e);
@@ -69,8 +69,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
     @Override
     protected void doStop() {
         try {
-            session.stop();
-            session.close();
+            artemisSession.close();
             locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {

@@ -4,20 +4,17 @@
 
   <parent>
     <groupId>org.yamcs</groupId>
-    <artifactId>yamcs</artifactId>
+    <artifactId>examples</artifactId>
     <version>4.11.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>example-replication1</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs :: Example Simulation</name>
-  <description>
-    All-in-one configuration example using an embedded simulator
-  </description>
 
-  <properties>
-    <javaModuleName>org.yamcs.example.replication</javaModuleName>
-  </properties>
+  <name>Yamcs :: Examples :: Replication</name>
+  <description>
+    Example demonstrating the use of replication
+  </description>
 
   <dependencies>
     <dependency>
@@ -34,11 +31,6 @@
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
     </dependency>
   </dependencies>
 </project>

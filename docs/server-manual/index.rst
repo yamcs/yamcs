@@ -19,8 +19,12 @@ Yamcs Server Manual
     programs/index
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Extending Yamcs
+
+    configuration-sections
+    command-options
+    yamcs-plugin-format
 
 .. toctree::
     :maxdepth: 2

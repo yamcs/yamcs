@@ -5,15 +5,14 @@ import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
 import org.yamcs.StreamConfig;
+import org.yamcs.YConfiguration;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Receives event data from Artemis queues and publishes into yamcs streams
@@ -21,34 +20,34 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisEventDataLink extends AbstractService {
-    String instance;
-    ServerLocator locator;
-    ClientSession session;
-    ClientConsumer client;
-    ClientSessionFactory factory;
-    
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
+public class ArtemisEventDataLink extends AbstractYamcsService {
 
-    public ArtemisEventDataLink(String instance) {
-        this.instance = instance;
-        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+    private ServerLocator locator;
+    private ClientSession artemisSession;
+    private ClientConsumer client;
+    private ClientSessionFactory factory;
+
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+        locator = AbstractArtemisTranslatorService.getServerLocator(yamcsInstance);
     }
 
     @Override
     protected void doStart() {
         try {
             factory = locator.createSessionFactory();
-            session = factory.createSession();
+            artemisSession = factory.createSession();
             EventTupleTranslator translator = new EventTupleTranslator();
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-            StreamConfig sc = StreamConfig.getInstance(instance);
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             for (String streamName : sc.getStreamNames(StreamConfig.StandardStreamType.event)) {
                 Stream stream = ydb.getStream(streamName);
-                String address = instance + "." + streamName;
+                String address = yamcsInstance + "." + streamName;
                 String queue = address + "-StreamAdapter";
-                session.createTemporaryQueue(address, queue);
-                client = session.createConsumer(queue);
+                log.debug("Subscribing to {}:{}", address, queue);
+                artemisSession.createTemporaryQueue(address, queue);
+                client = artemisSession.createConsumer(queue);
                 client.setMessageHandler((msg) -> {
                     try {
                         msg.acknowledge();
@@ -59,23 +58,22 @@ public class ArtemisEventDataLink extends AbstractService {
                     }
                 });
             }
-            session.start();
+            artemisSession.start();
+            notifyStarted();
         } catch (Exception e) {
+            log.error("Error creating the subcription to artemis", e);
             notifyFailed(e);
         }
-        notifyStarted();
     }
 
     @Override
     protected void doStop() {
         try {
-            session.stop();
-            session.close();
+            artemisSession.close();
             locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             notifyFailed(e);
         }
     }
-
 }

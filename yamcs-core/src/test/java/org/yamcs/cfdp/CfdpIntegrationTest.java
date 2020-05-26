@@ -51,8 +51,6 @@ public class CfdpIntegrationTest {
     // MyReceiver will place the file in this bucket
     static Bucket incomingBucket;
 
-    YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9193, yamcsInstance);
-
     RestClient restClient;
 
     @BeforeClass
@@ -72,7 +70,7 @@ public class CfdpIntegrationTest {
 
     @Before
     public void before() throws InterruptedException {
-        restClient = new RestClient(ycp);
+        restClient = new RestClient(new YamcsConnectionProperties("localhost", 9193));
         restClient.setAutoclose(false);
     }
 

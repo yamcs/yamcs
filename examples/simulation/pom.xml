@@ -4,20 +4,16 @@
 
   <parent>
     <groupId>org.yamcs</groupId>
-    <artifactId>yamcs</artifactId>
+    <artifactId>examples</artifactId>
     <version>4.11.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>simulation</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs :: Example Simulation</name>
+  <name>Yamcs :: Examples :: Simulation</name>
   <description>
     All-in-one configuration example using an embedded simulator
   </description>
-
-  <properties>
-    <javaModuleName>org.yamcs.simulation</javaModuleName>
-  </properties>
 
   <dependencies>
     <dependency>

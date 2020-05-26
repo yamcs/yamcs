@@ -224,10 +224,7 @@ public class YarchReplay implements StreamSubscriber {
 
     public void seek(long newReplayTime) throws YamcsException {
         if (state != ReplayState.INITIALIZATION) {
-            if (state == ReplayState.PAUSED) {
-                dropTuple = true;
-                pausedSemaphore.release();
-            }
+            boolean wasPaused = (state == ReplayState.PAUSED);
             state = ReplayState.INITIALIZATION;
             String query = "CLOSE STREAM " + streamName;
             ignoreClose = true;
@@ -238,6 +235,13 @@ public class YarchReplay implements StreamSubscriber {
                     db.execute(query);
                 } else {
                     log.debug("Stream already closed");
+                }
+
+                // Do this _after_ the stream was closed, to prevent more tuples
+                // from the (paused) stream to be pushed.
+                if (wasPaused) {
+                    dropTuple = true;
+                    pausedSemaphore.release();
                 }
             } catch (Exception e) {
                 log.error("Got exception when closing the stream: ", e);

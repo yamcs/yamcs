@@ -82,16 +82,15 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
-import org.yamcs.client.WebSocketClientCallback;
-import org.yamcs.client.WebSocketRequest;
+import org.yamcs.client.MessageListener;
+import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.SubscribePacketsRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.tctm.CcsdsPacketInputStream;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketInputStream;
@@ -114,7 +113,7 @@ import com.google.common.io.CountingInputStream;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class PacketViewer extends JFrame implements ActionListener,
-        TreeSelectionListener, ParameterListener, ConnectionListener, WebSocketClientCallback {
+        TreeSelectionListener, ParameterListener, ConnectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(PacketViewer.class);
@@ -637,11 +636,11 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        String effectiveInstance = client.getConnectionInfo().getInstance().getName();
-        log("Loading remote XTCE db for yamcs instance " + effectiveInstance);
+        String instance = connectDialog.getInstance();
+        log("Loading remote XTCE db for yamcs instance " + instance);
         try {
             byte[] serializedMdb = client.getRestClient()
-                    .doRequest("/mdb/" + effectiveInstance + ":exportJava", HttpMethod.GET).get();
+                    .doRequest("/mdb/" + instance + ":exportJava", HttpMethod.GET).get();
             ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
             Object o = ois.readObject();
             xtcedb = (XtceDb) o;
@@ -812,7 +811,6 @@ public class PacketViewer extends JFrame implements ActionListener,
         disconnect();
         client = YamcsClient.newBuilder(ycd.getHost(), ycd.getPort())
                 .withTls(ycd.isTls())
-                .withInitialInstance(ycd.getInstance(), true, false)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
                 .build();
@@ -957,48 +955,40 @@ public class PacketViewer extends JFrame implements ActionListener,
     public void connected(String url) {
         try {
             log("connected to " + url);
-            if (connectDialog != null) {
-                if (connectDialog.getUseServerMdb()) {
-                    if (!loadRemoteXtcedb(connectDialog.getServerMdbConfig())) {
-                        return;
-                    }
-                } else {
-                    if (!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) {
-                        return;
-                    }
+            if (connectDialog.getUseServerMdb()) {
+                if (!loadRemoteXtcedb(connectDialog.getInstance())) {
+                    return;
                 }
             } else {
-                List<YamcsInstance> list = client.getRestClient().blockingGetYamcsInstances();
-
-                String effectiveInstance = client.getConnectionInfo().getInstance().getName();
-                for (YamcsInstance yi : list) {
-                    if (effectiveInstance.equals(yi.getName())) {
-                        String mdbConfig = yi.getMissionDatabase().getConfigName();
-                        if (!loadRemoteXtcedb(mdbConfig)) {
-                            return;
-                        }
-                    }
+                if (!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) {
+                    return;
                 }
             }
-            WebSocketRequest wsr = new WebSocketRequest("packets", "subscribe " + streamName);
-            client.performSubscription(wsr, this, e -> {
-                showError("Error subscribing to " + streamName + ": " + e.getMessage());
+
+            PacketSubscription subscription = client.createPacketSubscription();
+            subscription.addMessageListener(new MessageListener<TmPacketData>() {
+
+                @Override
+                public void onMessage(TmPacketData message) {
+                    TmPacket pwt = new TmPacket(TimeEncoding.fromProtobufTimestamp(message.getReceptionTime()),
+                            TimeEncoding.fromProtobufTimestamp(message.getGenerationTime()),
+                            message.getSequenceNumber(), message.getPacket().toByteArray());
+                    packetsTable.packetReceived(pwt);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    showError("Error subscribing to " + streamName + ": " + t.getMessage());
+                }
             });
+
+            subscription.sendMessage(SubscribePacketsRequest.newBuilder()
+                    .setInstance(connectDialog.getInstance())
+                    .setStream(streamName)
+                    .build());
         } catch (Exception e) {
             log(e.toString());
             e.printStackTrace();
-        }
-
-    }
-
-    @Override
-    public void onMessage(WebSocketSubscriptionData data) {
-        if (data.hasTmPacket()) {
-            TmPacketData tm = data.getTmPacket();
-            TmPacket pwt = new TmPacket(TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime()),
-                    TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
-                    tm.getSequenceNumber(), tm.getPacket().toByteArray());
-            packetsTable.packetReceived(pwt);
         }
     }
 
@@ -1114,10 +1104,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
             System.err.println("               mdb.yaml configuration file.");
             System.err.println();
-            System.err.println(
-                    "    -s  name  Name of the stream to connect to (if not specified, it connects to tm_realtime");
             System.err.println("EXAMPLES");
-            System.err.println("        packetviewer.sh http://localhost:8090/yops");
             System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
         }
         System.exit(1);
@@ -1128,13 +1115,9 @@ public class PacketViewer extends JFrame implements ActionListener,
         printUsageAndExit(false);
     }
 
-    private void setStreamName(String streamName) {
-        this.streamName = streamName;
-    }
-
     public static void main(String[] args) throws ConfigurationException, URISyntaxException {
         // Scan args
-        String fileOrUrl = null;
+        String file = null;
         Map<String, String> options = new HashMap<>();
         for (int i = 0; i < args.length; i++) {
             if ("-h".equals(args[i])) {
@@ -1151,12 +1134,6 @@ public class PacketViewer extends JFrame implements ActionListener,
                 } else {
                     printArgsError("Name of XTCE DB not specified for -x option");
                 }
-            } else if ("-s".equals(args[i])) {
-                if (i + 1 < args.length) {
-                    options.put(args[i], args[++i]);
-                } else {
-                    printArgsError("Name of stream not specified for -s option");
-                }
             } else if ("--etc-dir".equals(args[i])) {
                 if (i + 1 < args.length) {
                     options.put(args[i], args[++i]);
@@ -1167,9 +1144,9 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("Unknown option: " + args[i]);
             } else { // i should now be positioned at [file|url]
                 if (i == args.length - 1) {
-                    fileOrUrl = args[i];
+                    file = args[i];
                 } else {
-                    printArgsError("Too many arguments. Only one file or url can be opened at a time");
+                    printArgsError("Too many arguments. Only one file can be opened at a time");
                 }
             }
         }
@@ -1182,19 +1159,14 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("-l argument must be integer. Got: " + options.get("-l"));
             }
         }
-        if (fileOrUrl != null && fileOrUrl.startsWith("http://")) {
+        if (file != null && file.startsWith("http://")) {
             if (!options.containsKey("-l")) {
                 maxLines = 1000; // Default for realtime connections
             }
         }
-        if (fileOrUrl != null && !fileOrUrl.startsWith("http://")) {
+        if (file != null) {
             if (!options.containsKey("-x")) {
                 printArgsError("-x argument must be specified when opening a file");
-            }
-        }
-        if (fileOrUrl != null && !fileOrUrl.startsWith("http://")) {
-            if (options.containsKey("-s")) {
-                printArgsError("-s argument only valid for yamcs connections");
             }
         }
 
@@ -1206,19 +1178,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             YConfiguration.setupTool();
         }
         theApp = new PacketViewer(maxLines);
-        if (fileOrUrl != null) {
-            if (fileOrUrl.startsWith("http://")) {
-                YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);
-                String streamName = options.get("-s");
-                if (streamName == null) {
-                    streamName = "tm_realtime";
-                }
-                theApp.setStreamName(streamName);
-                theApp.connectYamcs(ycd);
-            } else {
-                File file = new File(fileOrUrl);
-                theApp.openFile(file, (String) options.get("-x"));
-            }
+        if (file != null) {
+            theApp.openFile(new File(file), (String) options.get("-x"));
         }
     }
 

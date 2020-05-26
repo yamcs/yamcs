@@ -22,9 +22,9 @@ import org.yamcs.yarch.DataType._type;
 import com.google.common.collect.BiMap;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
-import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 import com.google.protobuf.MessageLite.Builder;
 
 public class ColumnSerializerFactory {
@@ -51,14 +51,15 @@ public class ColumnSerializerFactory {
         }
     }
 
-    public static ColumnSerializer<?> getColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
+    @SuppressWarnings("unchecked")
+    public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
         DataType type = cd.getType();
         if (type.val == _type.ENUM) {
-            return new EnumColumnSerializer(tblDef, cd);
+            return (ColumnSerializer<T>) new EnumColumnSerializer(tblDef, cd);
         } else if (type.val == _type.PROTOBUF) {
-            return getProtobufSerializer(cd);
+            return (ColumnSerializer<T>) getProtobufSerializer(cd);
         } else {
-            return getBasicColumnSerializer(cd.getType());
+            return (ColumnSerializer<T>) getBasicColumnSerializer(cd.getType());
         }
     }
 
@@ -79,28 +80,28 @@ public class ColumnSerializerFactory {
      * @param type
      * @return
      */
-    @SuppressWarnings("incomplete-switch")
-    public static <T>ColumnSerializer<T> getBasicColumnSerializer(DataType type) {
+    @SuppressWarnings({ "incomplete-switch", "unchecked" })
+    public static <T> ColumnSerializer<T> getBasicColumnSerializer(DataType type) {
         switch (type.val) {
         case BOOLEAN:
             return (ColumnSerializer<T>) BOOLEAN_CS;
         case BYTE:
-            return (ColumnSerializer<T>)BYTE_CS;
+            return (ColumnSerializer<T>) BYTE_CS;
         case SHORT:
-            return (ColumnSerializer<T>)SHORT_CS;
+            return (ColumnSerializer<T>) SHORT_CS;
         case INT:
-            return (ColumnSerializer<T>)INT_CS;
+            return (ColumnSerializer<T>) INT_CS;
         case DOUBLE:
-            return (ColumnSerializer<T>)DOUBLE_CS;
+            return (ColumnSerializer<T>) DOUBLE_CS;
         case TIMESTAMP:
         case LONG: // intentional fall through
-            return (ColumnSerializer<T>)LONG_CS;
+            return (ColumnSerializer<T>) LONG_CS;
         case STRING:
-            return (ColumnSerializer<T>)STRING_CS;
+            return (ColumnSerializer<T>) STRING_CS;
         case BINARY:
-            return (ColumnSerializer<T>)BINARY_CS;
+            return (ColumnSerializer<T>) BINARY_CS;
         case PARAMETER_VALUE:
-            return (ColumnSerializer<T>)PARAMETER_VALUE_CS;
+            return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
         case LIST:
         case TUPLE:
             // TODO
@@ -109,6 +110,7 @@ public class ColumnSerializerFactory {
         throw new IllegalArgumentException("' " + type + " is not a basic type");
     }
 
+    @SuppressWarnings("unchecked")
     static public <T extends MessageLite> ColumnSerializer<T> getProtobufSerializer(ColumnDefinition cd) {
         String className = ((ProtobufDataType) cd.getType()).getClassName();
 
@@ -550,7 +552,7 @@ public class ColumnSerializerFactory {
                 CodedOutputStream cos = CodedOutputStream.newInstance(byteBuf);
                 v.writeTo(cos);
                 int size = cos.getTotalBytesWritten();
-                byteBuf.position(position+size+4);
+                byteBuf.position(position + size + 4);
                 byteBuf.putInt(position, size);
             } catch (IOException e) {
                 if (e instanceof OutOfSpaceException) {

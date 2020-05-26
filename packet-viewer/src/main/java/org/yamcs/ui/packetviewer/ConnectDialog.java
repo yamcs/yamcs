@@ -4,12 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -32,28 +40,43 @@ import javax.swing.SwingConstants;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsInstance;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 /**
- * Dialog for entering yamcs connection parameters. This is a copy of the YamcsConnectDialog with options to get also
- * dbConfigName. We may replace the main one at some point.
+ * Dialog for entering yamcs connection parameters.
  * 
  * @author nm
  *
  */
 public class ConnectDialog extends JDialog implements ActionListener {
+
     private static final long serialVersionUID = 1L;
-    private YamcsConnectionProperties connectionProps;
+    private static final String PREF_FILENAME = "YamcsConnectionProperties"; // relative to the <home>/.yamcs directory
+
+    private String PREF_HOST = "host";
+    private String PREF_PORT = "port";
+    private String PREF_USERNAME = "username";
+    private String PREF_INSTANCE = "instance";
+
+    private String host;
+    private Integer port;
+    private String username;
+    private String password;
+    private String instance;
+
     JTextField hostTextField;
     JTextField portTextField;
     JTextField usernameTextField;
     private JPasswordField passwordTextField;
     // JCheckBox sslCheckBox;
-    private JComboBox<String> instanceCombo, serverMdbConfigCombo, localMdbConfigCombo;
+    private JComboBox<String> instanceCombo;
+    private JComboBox<String> localMdbConfigCombo;
     boolean getInstance = false;
-    boolean getMdbConfig = false;
     boolean getStreamName = false;
 
     String dbConfig;
@@ -73,16 +96,58 @@ public class ConnectDialog extends JDialog implements ActionListener {
      */
     public static final int APPROVE_OPTION = 0;
 
+    private void loadConnectionPreferences() throws FileNotFoundException, IOException {
+        String home = System.getProperty("user.home") + "/.yamcs";
+        Properties prefs = new Properties();
+        try (InputStream in = new FileInputStream(new File(home, PREF_FILENAME))) {
+            prefs.load(in);
+        }
+
+        host = prefs.getProperty("host");
+        try {
+            port = Integer.parseInt(prefs.getProperty("port"));
+        } catch (NumberFormatException e) {
+        }
+
+        instance = prefs.getProperty("instance");
+        if (prefs.containsKey("username")) {
+            username = prefs.getProperty("username");
+            password = null;
+        }
+    }
+
+    private void saveConnectionPreferences() {
+        String home = System.getProperty("user.home") + "/.yamcs";
+        new File(home).mkdirs();
+        Properties prefs = new Properties();
+        if (host != null) {
+            prefs.setProperty(PREF_HOST, host);
+        }
+        if (port != null) {
+            prefs.setProperty(PREF_PORT, Integer.toString(port));
+        }
+        if (instance != null) {
+            prefs.setProperty(PREF_INSTANCE, instance);
+        }
+        if (username != null) {
+            prefs.setProperty(PREF_USERNAME, username);
+        }
+
+        try (OutputStream out = new FileOutputStream(home + "/" + PREF_FILENAME)) {
+            prefs.store(out, null);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
     ConnectDialog(JFrame parent, boolean getInstance, boolean getStreamName, boolean getDbConfig) {
         super(parent, "Connect to Yamcs", true);
         this.getInstance = getInstance;
-        this.getMdbConfig = getDbConfig;
         this.getStreamName = getStreamName;
         installActions();
 
-        connectionProps = new YamcsConnectionProperties();
         try {
-            connectionProps.load();
+            loadConnectionPreferences();
         } catch (IOException e) {
             // ignore
         }
@@ -108,7 +173,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         ceast.gridy = 1;
         inputPanel.add(lab, ceast);
-        hostTextField = new JTextField(connectionProps.getHost());
+        hostTextField = new JTextField(host);
         hostTextField.setPreferredSize(new Dimension(160, hostTextField.getPreferredSize().height));
         cwest.gridy = 1;
         inputPanel.add(hostTextField, cwest);
@@ -117,7 +182,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         ceast.gridy = 2;
         inputPanel.add(lab, ceast);
-        portTextField = new JTextField(Integer.toString(connectionProps.getPort()));
+        portTextField = new JTextField(String.valueOf(port != null ? port : 8090));
         cwest.gridy = 2;
         inputPanel.add(portTextField, cwest);
         /*
@@ -133,7 +198,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         lab = new JLabel("Username: ");
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         inputPanel.add(lab, ceast);
-        usernameTextField = new JTextField(connectionProps.getUsername());
+        usernameTextField = new JTextField(username);
         usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
         inputPanel.add(usernameTextField, cwest);
 
@@ -154,7 +219,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             cwest.gridy++;
 
             inputPanel.add(lab, ceast);
-            instanceCombo = new JComboBox<>(new String[] { connectionProps.getInstance() });
+            instanceCombo = new JComboBox<>(new String[] { instance });
             instanceCombo.setPreferredSize(hostTextField.getPreferredSize());
             instanceCombo.setEditable(true);
 
@@ -188,7 +253,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             useServerMdb = prefs.getBoolean("useServerMdb", true);
 
             ButtonGroup bgroup = new ButtonGroup();
-            JRadioButton jrb = new JRadioButton("Server MDB: ");
+            JRadioButton jrb = new JRadioButton("Server MDB");
             if (useServerMdb) {
                 jrb.setSelected(true);
             }
@@ -202,29 +267,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
             c.anchor = GridBagConstraints.WEST;
             inputPanel.add(jrb, c);
 
-            String selectedServerMdbConfig = prefs.get("selectedServerMdbConfig", null);
-            serverMdbConfigCombo = new JComboBox<>(new String[] { selectedServerMdbConfig });
-            serverMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
-            serverMdbConfigCombo.setEditable(true);
-            inputPanel.add(serverMdbConfigCombo, cwest);
-            // if(!useServerMdb)
-            // CHANGE in 0.30 with migration to REST -> it is not possible to load the MDB by name and this feature is
-            // not really used,
-            // so we allow only loading the MDB from the same instance where the data comes.
-            serverMdbConfigCombo.setEnabled(false);
-
-            button = new JButton("Update");
-            button.setActionCommand("getInstances");
-            button.addActionListener(this);
-            inputPanel.add(button, ceast);
-
-            // when changing the instance, change also the database (but not the other way around)
-            instanceCombo.addActionListener(e -> {
-                int i = instanceCombo.getSelectedIndex();
-                if (serverMdbConfigCombo.getItemCount() > i) {
-                    serverMdbConfigCombo.setSelectedIndex(i);
-                }
-            });
+            inputPanel.add(new Label(), cwest);
+            inputPanel.add(new Label(), ceast);
 
             ceast.gridy++;
             cwest.gridy++;
@@ -320,38 +364,46 @@ public class ConnectDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if ("connect".equals(cmd)) {
-            connectionProps.setHost(hostTextField.getText());
+            host = hostTextField.getText();
             try {
-                connectionProps.setPort(Integer.parseInt(portTextField.getText()));
+                port = Integer.parseInt(portTextField.getText());
             } catch (NumberFormatException x) {
                 JOptionPane.showMessageDialog(this, "Cannot parse port number; please enter a number", "Invalid port",
                         JOptionPane.ERROR_MESSAGE);
-                return; // do not close the dialogue
+                return; // do not close the dialog
             }
 
             // values.ssl= sslCheckBox.isSelected();
             if (!usernameTextField.getText().isEmpty()) {
-                connectionProps.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
+                username = usernameTextField.getText();
+                password = new String(passwordTextField.getPassword());
             } else {
                 // If not authenticating, don't use last credentials
-                connectionProps.setCredentials(null, null);
+                username = null;
+                password = null;
             }
             passwordTextField.setText("");
 
-            if (instanceCombo != null) {
-                connectionProps.setInstance((String) instanceCombo.getSelectedItem());
+            instance = (String) instanceCombo.getSelectedItem();
+            if (instance == null) {
+                JOptionPane.showMessageDialog(this, "You must specify an instance", "Missing instance",
+                        JOptionPane.ERROR_MESSAGE);
+                return; // do not close the dialog
             }
-            connectionProps.save();
+
+            // Verify the instance
+            try {
+                RestClient restClient = createClientForUseInDialogOnly();
+                restClient.doRequest("/instances/" + instance, HttpMethod.GET).get();
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(this, "Cannot verify instance: " + e1.getMessage(),
+                        e1.getMessage(), JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            saveConnectionPreferences();
             prefs.putBoolean("useServerMdb", useServerMdb);
-            if (useServerMdb) {
-                String selectedServerMbConfig = (String) serverMdbConfigCombo.getSelectedItem();
-                if (selectedServerMbConfig == null) {
-                    JOptionPane.showMessageDialog(this, "Please enter the server MDB config that shall be used",
-                            "Invalid MDB config", JOptionPane.ERROR_MESSAGE);
-                    return; // do not close the dialogue
-                }
-                prefs.put("selectedServerMdbConfig", (String) serverMdbConfigCombo.getSelectedItem());
-            } else {
+            if (!useServerMdb) {
                 prefs.put("selectedLocalMdbConfig", (String) localMdbConfigCombo.getSelectedItem());
             }
 
@@ -365,23 +417,12 @@ public class ConnectDialog extends JDialog implements ActionListener {
             setVisible(false);
         } else if ("getInstances".equals(cmd)) {
             try {
-                String host = hostTextField.getText();
-                int port = Integer.parseInt(portTextField.getText());
-                YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
-
-                RestClient restClient = new RestClient(ycp);
-                if (!usernameTextField.getText().isEmpty()) {
-                    restClient.login(usernameTextField.getText(), passwordTextField.getPassword());
-                }
+                RestClient restClient = createClientForUseInDialogOnly();
                 List<YamcsInstance> list = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();
-                serverMdbConfigCombo.removeAllItems();
                 for (YamcsInstance ai : list) {
                     if (getInstance) {
                         instanceCombo.addItem(ai.getName());
-                    }
-                    if (getMdbConfig) {
-                        serverMdbConfigCombo.addItem(ai.getMissionDatabase().getConfigName());
                     }
                 }
             } catch (NumberFormatException x) {
@@ -393,17 +434,35 @@ public class ConnectDialog extends JDialog implements ActionListener {
             }
         } else if ("use-server-mdb".equals(cmd)) {
             useServerMdb = true;
-            serverMdbConfigCombo.setEnabled(true);
             localMdbConfigCombo.setEnabled(false);
         } else if ("use-local-mdb".equals(cmd)) {
             useServerMdb = false;
-            serverMdbConfigCombo.setEnabled(false);
             localMdbConfigCombo.setEnabled(true);
         }
     }
 
+    private RestClient createClientForUseInDialogOnly() throws ClientException {
+        String host = hostTextField.getText();
+        int port = Integer.parseInt(portTextField.getText());
+        YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
+        RestClient restClient = new RestClient(ycp);
+        if (!usernameTextField.getText().isEmpty()) {
+            restClient.login(usernameTextField.getText(), passwordTextField.getPassword());
+        }
+
+        return new RestClient(ycp);
+    }
+
     public YamcsConnectionProperties getConnectData() {
-        return connectionProps.copy();
+        YamcsConnectionProperties yprops = new YamcsConnectionProperties(host, port);
+        if (username != null) {
+            yprops.setCredentials(username, password.toCharArray());
+        }
+        return yprops;
+    }
+
+    public String getInstance() {
+        return instance;
     }
 
     public boolean getUseServerMdb() {
@@ -412,10 +471,6 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
     public String getLocalMdbConfig() {
         return (String) localMdbConfigCombo.getSelectedItem();
-    }
-
-    public String getServerMdbConfig() {
-        return (String) serverMdbConfigCombo.getSelectedItem();
     }
 
     public int showDialog() {

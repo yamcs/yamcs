@@ -3,7 +3,7 @@ syntax = "proto2";
 package yamcs.protobuf.web;
 
 option java_package = "org.yamcs.protobuf";
-option java_outer_classname = "GeneralServiceProto";
+option java_outer_classname = "ServerServiceProto";
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
@@ -11,10 +11,10 @@ import "google/protobuf/empty.proto";
 import "yamcs/api/annotations.proto";
 
 // Handles incoming requests related to api routes
-service GeneralApi {
+service ServerApi {
 
-  // Get general info
-  rpc GetGeneralInfo(google.protobuf.Empty) returns (GetGeneralInfoResponse) {
+  // Get general server info
+  rpc GetServerInfo(google.protobuf.Empty) returns (GetServerInfoResponse) {
     option (yamcs.api.route) = {
       get: "/api"
     };
@@ -88,7 +88,7 @@ message TopicInfo {
   optional bool deprecated = 7;
 }
 
-message GetGeneralInfoResponse {
+message GetServerInfoResponse {
   message PluginInfo {
     optional string name = 1;
     optional string description = 2;
