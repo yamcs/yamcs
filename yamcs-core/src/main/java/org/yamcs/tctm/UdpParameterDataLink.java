@@ -3,11 +3,13 @@ package org.yamcs.tctm;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -18,7 +20,7 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Receives PP data via UDP.
@@ -28,7 +30,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  * @author nm
  *
  */
-public class UdpParameterDataLink extends AbstractExecutionThreadService implements ParameterDataLink {
+public class UdpParameterDataLink extends AbstractService implements ParameterDataLink, Runnable {
 
     private volatile int validDatagramCount = 0;
     private volatile int invalidDatagramCount = 0;
@@ -50,6 +52,8 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     YConfiguration config;
     final String name;
 
+    private ScheduledThreadPoolExecutor timer;
+
     /**
      * Creates a new UDP data link
      * 
@@ -59,8 +63,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      * @throws ConfigurationException
      *             if port is not defined in the config
      */
-    public UdpParameterDataLink(String instance, String name, YConfiguration config)
-            throws ConfigurationException {
+    public UdpParameterDataLink(String instance, String name, YConfiguration config) {
         this.config = config;
         this.name = name;
         log = new Log(getClass(), instance);
@@ -71,13 +74,34 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public void startUp() throws IOException {
-        udpSocket = new DatagramSocket(port);
+    protected void doStart() {
+        if (!isDisabled()) {
+            timer = new ScheduledThreadPoolExecutor(1);
+            try {
+                udpSocket = new DatagramSocket(port);
+                new Thread(this).start();
+            } catch (SocketException e) {
+                notifyFailed(e);
+            }
+        }
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        udpSocket.close();
+        timer.shutdown();
+        notifyStopped();
+    }
+
+    private boolean isRunningAndEnabled() {
+        State state = state();
+        return (state == State.RUNNING || state == State.STARTING) && !disabled;
     }
 
     @Override
     public void run() {
-        while (isRunning()) {
+        while (isRunningAndEnabled()) {
             ParameterData pdata = getNextData();
             if (pdata == null) {
                 continue;
@@ -121,27 +145,23 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
     public ParameterData getNextData() {
-
-        while (isRunning() && disabled) {
+        while (isRunning()) {
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return null;
+                udpSocket.receive(datagram);
+                validDatagramCount++;
+                return ParameterData.newBuilder()
+                        .mergeFrom(datagram.getData(), datagram.getOffset(), datagram.getLength())
+                        .build();
+            } catch (IOException e) {
+                // Shutdown or disable will close the socket. That generates an exception
+                // which we ignore here.
+                if (!isRunning() || isDisabled()) {
+                    return null;
+                }
+                log.warn("Exception when receiving parameter data: {}'", e.getMessage());
+                invalidDatagramCount++;
             }
         }
-
-        try {
-            udpSocket.receive(datagram);
-            ParameterData.Builder pdb = ParameterData.newBuilder().mergeFrom(datagram.getData(), datagram.getOffset(),
-                    datagram.getLength());
-            validDatagramCount++;
-            return pdb.build();
-        } catch (IOException e) {
-            log.warn("Exception when receiving parameter data: {}'", e.getMessage());
-            invalidDatagramCount++;
-        }
-
         return null;
     }
 
