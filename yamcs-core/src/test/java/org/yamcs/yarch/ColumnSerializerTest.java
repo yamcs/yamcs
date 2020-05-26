@@ -28,7 +28,6 @@ public class ColumnSerializerTest {
         bb.mark();
         
         cs.serialize(bb, ev);
-        System.out.println("bbposition: "+bb.position());
         bb.reset();
         Event ev1 = cs.deserialize(bb, cd);
         

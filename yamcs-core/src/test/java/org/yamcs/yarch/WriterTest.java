@@ -130,7 +130,6 @@ public class WriterTest extends YarchTestCase {
         assertEquals(1, tuples.size());
 
         Tuple t1 = tuples.get(0);
-        System.out.println("t1: "+t1);
         assertEquals("pn1", t1.getColumn("name"));
         for(int i=0; i<10; i++) {
             assertEquals("v"+i, (String) t1.getColumn("p"+i));
