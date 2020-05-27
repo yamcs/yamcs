@@ -1085,7 +1085,7 @@ limitations under the License.
 							</xtce:EntryList>
 						</xtce:CommandContainer>
 					</xtce:MetaCommand>
-					<!-- 
+					 
 					<xtce:MetaCommand name="Reaction_Wheel_Control" shortDescription="Power on/off reaction wheel">
 						<xtce:LongDescription>This hardware telecommand directs the hardware to power on or off either of the 2 reaction wheels</xtce:LongDescription>
 						<xtce:AliasSet>
@@ -1104,7 +1104,7 @@ limitations under the License.
 							<xtce:BaseContainer containerRef="../../CCSDSDirectTelecommand"/>
 						</xtce:CommandContainer>
 					</xtce:MetaCommand>
-					 
+					 <!--
 					<xtce:MetaCommand name="Reaction_Wheel_1_On" shortDescription="Turn power on for reaction wheel 1">
 						<xtce:LongDescription>This hardware telecommand is a derived form of 'Reaction_Wheel_Control' that turns ON reaction wheel 1</xtce:LongDescription>
 						<xtce:AliasSet>
@@ -1425,6 +1425,7 @@ limitations under the License.
 							<xtce:Unit description="current">Amperes</xtce:Unit>
 						</xtce:UnitSet>
 						<xtce:FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"/>
+						<xtce:ValidRange minInclusive="0.00" maxInclusive="4000.00" rangeAppliesToCalibrated="true"/>
 					</xtce:FloatArgumentType>
 					<xtce:AggregateArgumentType name="Config_Item_Type">
 						<xtce:MemberList>

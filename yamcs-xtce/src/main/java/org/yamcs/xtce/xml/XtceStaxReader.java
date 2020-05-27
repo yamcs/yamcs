@@ -75,11 +75,14 @@ import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatDataEncoding.Encoding;
 import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathAlgorithm;
@@ -268,6 +271,7 @@ public class XtceStaxReader {
     private static final String XTCE_ENDING_INDEX = "EndingIndex";
     private static final String XTCE_ANCILLARY_DATA_SET = "AncillaryDataSet";
     private static final String XTCE_VALID_RANGE = "ValidRange";
+    private static final String XTCE_VALID_RANGE_SET = "ValidRangeSet";
     private static final String XTCE_BINARY_ENCODING = "BinaryEncoding";
     private static final String XTCE_DEFAULT_SIGNIFICANCE = "DefaultSignificance";
     private static final String XTCE_VERIFIER_SET = "VerifierSet";
@@ -895,8 +899,12 @@ public class XtceStaxReader {
                 floatParamType.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 floatParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
+            } else if (isStartElementWithName(XTCE_VALID_RANGE)) {
+                floatParamType.setValidRange(readFloatValidRange());
             } else if (isEndElementWithName(XTCE_FLOAT_PARAMETER_TYPE)) {
                 return floatParamType;
+            } else {
+                logUnknown();
             }
         }
     }
@@ -1015,14 +1023,88 @@ public class XtceStaxReader {
     }
 
     private DoubleRange readFloatRange() throws XMLStreamException {
-        StartElement e = xmlEvent.asStartElement();
-        double minExclusive = readDoubleAttribute("minExclusive", e, Double.NaN);
-        double maxExclusive = readDoubleAttribute("maxExclusive", e, Double.NaN);
-        double minInclusive = readDoubleAttribute("minInclusive", e, Double.NaN);
-        double maxInclusive = readDoubleAttribute("maxInclusive", e, Double.NaN);
+        StartElement element = xmlEvent.asStartElement();
+        double minExclusive = readDoubleAttribute("minExclusive", element, Double.NaN);
+        double maxExclusive = readDoubleAttribute("maxExclusive", element, Double.NaN);
+        double minInclusive = readDoubleAttribute("minInclusive", element, Double.NaN);
+        double maxInclusive = readDoubleAttribute("maxInclusive", element, Double.NaN);
 
         return DoubleRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
     }
+    
+    
+    private FloatValidRange readFloatValidRange() throws XMLStreamException {
+        StartElement element = xmlEvent.asStartElement();
+        FloatValidRange fvr = new FloatValidRange(readFloatRange());
+        boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
+        fvr.setValidRangeAppliesToCalibrated(calib);
+        return fvr;
+    }
+
+
+    private IntegerRange readIntegerRange() throws XMLStreamException {
+        StartElement element = xmlEvent.asStartElement();
+        long minInclusive = readLongAttribute("minInclusive", element);
+        long maxInclusive = readLongAttribute("maxInclusive", element);
+        return new IntegerRange(minInclusive, maxInclusive);
+    }
+    
+
+    private IntegerValidRange readIntegerValidRange() throws XMLStreamException {
+        StartElement element = xmlEvent.asStartElement();
+        IntegerValidRange ivr = new IntegerValidRange(readIntegerRange());
+        boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
+        ivr.setValidRangeAppliesToCalibrated(calib);
+
+        return ivr;
+    }
+    
+    private IntegerValidRange readIntegerValidRangeSet() throws XMLStreamException {
+        log.trace(XTCE_VALID_RANGE_SET);
+        StartElement element = xmlEvent.asStartElement();
+        boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
+        
+        IntegerValidRange ivr = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName("ValidRange")) {
+                if(ivr!=null) {
+                    throw new XMLStreamException("Only one ValidRange supported. ", xmlEvent.getLocation());
+                }
+                ivr = readIntegerValidRange();
+            } else if (isEndElementWithName(XTCE_VALID_RANGE_SET)) {
+                if(ivr == null) {
+                    throw new XMLStreamException("No ValidRange supecified ", xmlEvent.getLocation());
+                }
+                ivr.setValidRangeAppliesToCalibrated(calib);
+                return ivr;
+            }
+        }
+    }
+    
+    private FloatValidRange readFloatValidRangeSet() throws XMLStreamException {
+        log.trace(XTCE_VALID_RANGE_SET);
+        StartElement element = xmlEvent.asStartElement();
+        boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
+        
+        FloatValidRange fvr = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName("ValidRange")) {
+                if(fvr!=null) {
+                    throw new XMLStreamException("Only one ValidRange supported. ", xmlEvent.getLocation());
+                }
+                fvr = readFloatValidRange();
+            } else if (isEndElementWithName(XTCE_VALID_RANGE_SET)) {
+                if(fvr == null) {
+                    throw new XMLStreamException("No ValidRange supecified ", xmlEvent.getLocation());
+                }
+                fvr.setValidRangeAppliesToCalibrated(calib);
+                return fvr;
+            }
+        }
+    }
+    
 
     private void readAlarmAttributes(AlarmType alarm) {
         String value = readAttribute("minViolations", xmlEvent.asStartElement(), null);
@@ -1252,7 +1334,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 integerParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isStartElementWithName(XTCE_VALID_RANGE)) {
-                skipXtceSection(XTCE_VALID_RANGE);
+                integerParamType.setValidRange(readIntegerValidRange());
             } else if (isEndElementWithName(XTCE_INTEGER_PARAMETER_TYPE)) {
                 return integerParamType;
             } else {
@@ -2788,6 +2870,10 @@ public class XtceStaxReader {
                 floatArgType.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 floatArgType.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_VALID_RANGE)) {
+                floatArgType.setValidRange(readFloatValidRange());
+            } else if (isStartElementWithName(XTCE_VALID_RANGE_SET)) {
+                floatArgType.setValidRange(readFloatValidRangeSet());
             } else if (isEndElementWithName(XTCE_FLOAT_ARGUMENT_TYPE)) {
                 return floatArgType;
             } else {
@@ -2874,8 +2960,14 @@ public class XtceStaxReader {
                 integerArgType.addAllUnits(readUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 integerArgType.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_VALID_RANGE)) {//XTCE 1.1
+                integerArgType.setValidRange(readIntegerValidRange());
+            } else if (isStartElementWithName(XTCE_VALID_RANGE_SET)) {//XTCE 1.2
+                integerArgType.setValidRange(readIntegerValidRangeSet());
             } else if (isEndElementWithName(XTCE_INTEGER_ARGUMENT_TYPE)) {
                 return integerArgType;
+            } else {
+                logUnknown();
             }
         }
     }
@@ -3539,6 +3631,7 @@ public class XtceStaxReader {
 
         return outp;
     }
+    
 
     /**
      * Increase the skip statistics for the section.

@@ -68,7 +68,10 @@ The other elements are supported one way or another, exceptions or changes from 
 .. rubric:: Data Types
 
 * | ValidRange
-  | Not supported for any parameter type.
+  | Not supported for any parameter type. Supported for command arguments. Note than in XTCE 1.2 this has been replaced by ValidRangeSet.
+  
+* | ValidRangeSet
+  | Introduced in XTCE 1.2 for command arguments. Yamcs only supports one range in the set.
 
 * | BooleanDataType
   | In XTCE, each ``BooleanDataType`` has a string representation. In Yamcs the value is mapped to a org.yacms.parameter.BooleanValue or the protobuf equivalnet that is a wrapper for a boolean (either true or false in all sane programming languages). The string value is neverhteless supported in comparisons and mathalgorithms but they are converted internally to the boolean value. If you want to get to the string representation from the client, use an ``EnumeratedParameterType``.

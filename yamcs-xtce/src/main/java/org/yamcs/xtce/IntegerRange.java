@@ -16,6 +16,14 @@ public class IntegerRange implements Serializable {
         this.minInclusive=minInclusive;
         this.maxInclusive=maxInclusive;
     }
+    
+    /**
+     * copy constructor
+     */
+    public IntegerRange(IntegerRange range) {
+        this.minInclusive = range.minInclusive;
+        this.maxInclusive = range.maxInclusive;
+    }
 
     public long getMaxInclusive() {
         return maxInclusive;

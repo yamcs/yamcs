@@ -33,6 +33,14 @@ public class DoubleRange implements Serializable {
         this.maxIncl = true;
     }
 
+    //copy constructor
+    public DoubleRange(DoubleRange range) {
+        this.min = range.min;
+        this.max = range.max;
+        this.minIncl = range.minIncl;
+        this.maxIncl = range.maxIncl;
+    }
+
     /**
      * Returns a range from the XTCE float range used for alarms which is in fact a union of two ranges
      * 
