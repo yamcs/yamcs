@@ -23,12 +23,12 @@ cd %{name}-%{version}-%{release}
 cd examples/simulation
 
 mkdir -p %{buildroot}/%{prefix}/lib
-cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib
+cp target/simulation*.jar %{buildroot}/%{prefix}/lib
 
-cp -r simulation/src/main/yamcs/mdb %{buildroot}/%{prefix}
+cp -r src/main/yamcs/mdb %{buildroot}/%{prefix}
 
-cp -r simulation/src/main/yamcs/etc %{buildroot}/%{prefix}
-cp -r simulation/src/main/yamcs/etc-rpm/* %{buildroot}/%{prefix}/etc
+cp -r src/main/yamcs/etc %{buildroot}/%{prefix}
+cp -r src/main/yamcs/etc-rpm/* %{buildroot}/%{prefix}/etc
 
 mkdir -p %{buildroot}/%{prefix}/displays
 mkdir -p %{buildroot}/%{prefix}/stacks
@@ -36,7 +36,6 @@ mkdir -p %{buildroot}/storage/yamcs-data
 mkdir -p %{buildroot}/storage/yamcs-incoming
 
 # Clean-up
-rm %{buildroot}/%{prefix}/lib/*-javadoc.jar
 rm %{buildroot}/%{prefix}/lib/*-sources.jar
 
 

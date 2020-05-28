@@ -60,7 +60,7 @@ rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
 
 # Build Yamcs RPM
-cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/distribution/target
+cp distribution/target/yamcs-$pomversion-linux64.tar.gz $yamcshome/distribution/target
 
 rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
 
