@@ -58,8 +58,7 @@ public class ParameterRecorder extends AbstractYamcsService {
             String cols = PARAMETER.getStringDefinition1();
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + cols + ", primary key(gentime, seqNum)) histogram("
-                        + PARAMETER_COL_GROUP + ") partition by time_and_value(gentime"
-                        + XtceTmRecorder.getTimePartitioningSchemaSql() + ",group) table_format=compressed";
+                        + PARAMETER_COL_GROUP + ") partition by value(group) table_format=compressed";
                 ydb.execute(query);
             }
 

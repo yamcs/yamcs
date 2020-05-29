@@ -32,7 +32,7 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable("cmdhist") == null) {
                 String q = "create table cmdhist (" + keycols
-                        + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) partition by time(gentime) table_format=compressed";
+                        + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) table_format=compressed";
                 ydb.execute(q);
             }
 

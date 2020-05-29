@@ -56,6 +56,7 @@ public class RdbStorageEngine implements StorageEngine {
 
     public void loadTablespaces(boolean readOnly) throws YarchException {
         File dir = new File(YarchDatabase.getDataDir());
+        log.debug("Loading tablespaces from {}", dir);
         if (dir.exists()) {
             File[] dirFiles = dir.listFiles();
             if (dirFiles == null) {

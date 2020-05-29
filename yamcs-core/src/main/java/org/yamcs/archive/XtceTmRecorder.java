@@ -42,7 +42,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
-
+    
     static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
     static public String DUMP_TM_STREAM_NAME = "tm_dump";
     static public final String TABLE_NAME = "tm";
@@ -80,9 +80,8 @@ public class XtceTmRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"
-                        + getTimePartitioningSchemaSql() + ", pname) table_format=compressed";
-
+                        + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) table_format=compressed";
+                System.out.println("query: "+query);
                 ydb.execute(query);
             }
             ydb.execute("create stream tm_is" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
@@ -110,15 +109,6 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
-    }
-
-    static String getTimePartitioningSchemaSql() {
-        YConfiguration yconfig = YamcsServer.getServer().getConfig();
-        String partSchema = "";
-        if (yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
-            partSchema = "('" + yconfig.getSubString("archiveConfig", "timePartitioningSchema") + "')";
-        }
-        return partSchema;
     }
 
     private void createRecorder(StreamConfigEntry streamConf) {
