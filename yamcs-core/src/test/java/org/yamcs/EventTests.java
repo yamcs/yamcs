@@ -9,8 +9,6 @@ import org.yamcs.protobuf.SubscribeEventsRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 public class EventTests extends AbstractIntegrationTest {
 
     @Test
@@ -26,10 +24,11 @@ public class EventTests extends AbstractIntegrationTest {
 
         long now = TimeEncoding.getWallclockTime();
         CreateEventRequest createRequest = CreateEventRequest.newBuilder()
+                .setInstance(yamcsInstance)
                 .setTime(TimeEncoding.toString(now))
                 .setMessage("event1")
                 .build();
-        restClient.doRequest("/archive/" + yamcsInstance + "/events", HttpMethod.POST, createRequest);
+        yamcsClient.createEvent(createRequest).get();
 
         Event receivedEvent = captor.expectTimely();
         assertEquals(now, TimeEncoding.parse(receivedEvent.getGenerationTimeUTC()));

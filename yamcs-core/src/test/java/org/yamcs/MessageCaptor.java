@@ -23,7 +23,7 @@ public class MessageCaptor<T extends Message> {
     private BlockingQueue<T> queue = new LinkedBlockingQueue<>();
 
     private MessageCaptor(Subscription<?, T> subscription) {
-        subscription.addMessageListener(message -> queue.add(message));
+        subscription.addMessageListener(queue::add);
     }
 
     /**

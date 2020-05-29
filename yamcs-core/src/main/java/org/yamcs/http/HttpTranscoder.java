@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.HttpBody;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.ByteString;
@@ -25,6 +26,8 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * distinguish between route params, query params, request bodies and so on.
  */
 public class HttpTranscoder {
+
+    private static final Log log = new Log(HttpTranscoder.class);
 
     public static Message transcode(RouteContext ctx) throws HttpTranscodeException {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.getURI());
@@ -46,6 +49,9 @@ public class HttpTranscoder {
                     requestb.setField(field, fieldValue);
                 }
             }
+        } else if (!ctx.isClientStreaming() && ctx.hasBody()) {
+            log.warn("Received a request with a body, but the method {} does not support request bodies",
+                    ctx.getMethod().getFullName());
         }
 
         for (FieldDescriptor field : requestPrototype.getDescriptorForType().getFields()) {
