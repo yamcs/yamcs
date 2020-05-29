@@ -8,7 +8,7 @@
     <version>4.11.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>example-ccsds-frames</artifactId>
+  <artifactId>ccsds-frames</artifactId>
   <packaging>jar</packaging>
 
   <name>Yamcs :: Examples :: CCSDS Frames</name>

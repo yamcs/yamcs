@@ -8,7 +8,7 @@
     <version>4.11.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>example-replication1</artifactId>
+  <artifactId>replication1</artifactId>
   <packaging>jar</packaging>
 
   <name>Yamcs :: Examples :: Replication</name>

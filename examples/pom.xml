@@ -24,6 +24,7 @@
   </properties>
 
   <modules>
+    <module>ccsds-frames</module>
     <module>replication1</module>
     <module>simulation</module>
   </modules>
