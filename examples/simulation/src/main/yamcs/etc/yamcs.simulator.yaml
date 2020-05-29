@@ -40,13 +40,7 @@ services:
       perfTest: 
         numPackets: 0 
         packetSize: 1476 #length of the performance testing packets
-        interval: 10 
-      frame: #send TM UDP frames 
-        tmPort: 10017
-        tmHost: "localhost"
-        type: AOS # AOS, TM or USLP
-        tmFrameLength: 512
-        tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+        interval: 10
   - class: org.yamcs.cfdp.CfdpService
     args:
      sourceId: 5
@@ -59,7 +53,7 @@ services:
 
 dataLinks:
   - name: tm_realtime
-    enabledAtStartup: false
+    enabledAtStartup: true
     class: org.yamcs.tctm.TcpTmDataLink
     stream: tm_realtime
     host: localhost
@@ -67,7 +61,7 @@ dataLinks:
     # Give the embedded simulator some time to boot up
     initialDelay: 2000      
   - name: tm2_realtime
-    enabledAtStartup: false
+    enabledAtStartup: true
     class: org.yamcs.tctm.TcpTmDataLink
     stream: tm2_realtime
     host: localhost
@@ -117,75 +111,13 @@ dataLinks:
         errorDetection:
           type: 16-SUM
         enforceEvenNumberOfBytes: true
-  - name: UDP_FRAME_OUT
-    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
-    host: localhost #host and port where to send the frames to
-    port: 10018
-    spacecraftId: 0xAB
-    maxFrameLength: 1024
-    cltuEncoding: BCH
-    virtualChannels:
-         - vcId: 0
-           service: "PACKET" 
-           commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
-           commandPostprocessorArgs:
-              errorDetection:
-                  type: 16-SUM
-              enforceEvenNumberOfBytes: true
-           stream: "tc_sim" #which yamcs stream to get the data from
-           useCop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
-           clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
-           initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
-
+        
   - name: TSE
     class: org.yamcs.tctm.TseDataLink
     host: localhost
     port: 8135
     # Give the embedded simulator some time to boot up
     initialDelay: 2000
-  # The link below receives AOS frames (CCSDS 732.0-B-3) on three virtual channels and
-  # distributes them on the the three streams like the TCP links above
-  # This works as alternative to the TCP links 
-  - name: UDP_FRAME_IN
-    enabledAtStartup: true
-    class: org.yamcs.tctm.ccsds.UdpTmFrameLink
-    port: 10017 #UDP port to listen to
-    #one of AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
-    frameType: "AOS"
-    spacecraftId: 0xAB
-    frameLength: 512
-    frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
-    insertZoneLength: 0
-    errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
-    clcwStream: "clcw" #published the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1 
-    virtualChannels:
-          - vcId: 0
-            ocfPresent: true
-            service: "PACKET"  #supported services for AOS are M_PDU, B_PDU or VCA_SDU
-            maxPacketLength: 2048
-            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
-            stream: "tm_realtime" #which yamcs stream to put the data on
-          - vcId: 1
-            ocfPresent: true
-            service: "PACKET"  #supported services for AOS are PACKET(M_PDU), B_PDU or VCA_SDU
-            maxPacketLength: 2048
-            stripEncapsulationHeader: true # drop the header before passing the packet to the preprocessor
-            packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-            packetPreprocessorArgs:
-              timestampOffset: 2 #where to read the 8 bytes timestamp offset from
-              seqCountOffset: 10 #where to read the 4 bytes sequence count from
-              errorDetection: #last two bytes are used for the error detection
-                type: "CRC-16-CCIIT" 
-            stream: "tm2_realtime"
-            invalidPackets: DIVERT
-            invalidPacketsStream: invalid_tm_stream
-          - vcId: 2
-            ocfPresent: true
-            service: "PACKET" 
-            maxPacketLength: 2048
-            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
-            stream: "tm_dump"
-          #vcId 63 is reserved for idle data and it does not have to be defined
 
 mdb:
   # Configuration of the active loaders

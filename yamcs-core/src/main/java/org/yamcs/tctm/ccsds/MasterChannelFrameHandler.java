@@ -22,10 +22,15 @@ public class MasterChannelFrameHandler {
     Map<Integer, VcDownlinkHandler> handlers = new HashMap<>();
     int idleFrameCount;
     int frameCount;
+    int badframeCount;
+    
     DownlinkManagedParameters params;
-    ClcwStreamHelper clcwHelper;
+    final ClcwStreamHelper clcwHelper;
+    final FrameStreamHelper frameStreamHelper;
+
     String yamcsInstance;
     Log log;
+
     /**
      * Constructs based on the configuration
      * 
@@ -34,12 +39,17 @@ public class MasterChannelFrameHandler {
     public MasterChannelFrameHandler(String yamcsInstance, String linkName, YConfiguration config) {
         log = new Log(getClass(), yamcsInstance);
         log.setContext(linkName);
-        
+
         frameType = config.getEnum("frameType", CcsdsFrameType.class);
+
         String clcwStreamName = config.getString("clcwStream", null);
-        if (clcwStreamName != null) {
-            clcwHelper = new ClcwStreamHelper(yamcsInstance, clcwStreamName);
-        }
+        clcwHelper = clcwStreamName == null ? null : new ClcwStreamHelper(yamcsInstance, clcwStreamName);
+
+        String goodFrameStreamName = config.getString("goodFrameStream", null);
+        String badFrameStreamName = config.getString("badFrameStream", null);
+        
+        frameStreamHelper = new FrameStreamHelper(yamcsInstance, goodFrameStreamName, badFrameStreamName);
+
         switch (frameType) {
         case AOS:
             AosManagedParameters amp = new AosManagedParameters(config);
@@ -63,13 +73,28 @@ public class MasterChannelFrameHandler {
     }
 
     public void handleFrame(long ertime, byte[] data, int offset, int length) throws TcTmException {
-        DownlinkTransferFrame frame = frameDecoder.decode(data, offset, length);
+        DownlinkTransferFrame frame = null;
+        try {
+            frame = frameDecoder.decode(data, offset, length);
+        } catch (TcTmException e) {
+            badframeCount++;
+            frameStreamHelper.sendBadFrame(badframeCount, ertime, data, offset, length, e.getMessage());
+            throw e;
+        }
+       
+       
         if (frame.getSpacecraftId() != params.spacecraftId) {
-            log.warn("Ignoring frame with unexpected spacraftId {} (expected {})", frame.getSpacecraftId(), params.spacecraftId);
+            log.warn("Ignoring frame with unexpected spacecraftId {} (expected {})", frame.getSpacecraftId(),
+                    params.spacecraftId);
+            badframeCount++;
+            frameStreamHelper.sendBadFrame(badframeCount, ertime, data, offset, length, "wrong spacecraft id");
             return;
         }
+        
         frame.setEearthRceptionTime(ertime);
         frameCount++;
+        
+        frameStreamHelper.sendGoodFrame(frameCount, frame, data, offset, length);
         
         if (frame.hasOcf() && clcwHelper != null) {
             clcwHelper.sendClcw(frame.getOcf());
@@ -79,7 +104,7 @@ public class MasterChannelFrameHandler {
             idleFrameCount++;
             return;
         }
-        
+
         int vcid = frame.getVirtualChannelId();
         VcDownlinkHandler vch = handlers.get(vcid);
         if (vch == null) {
@@ -99,12 +124,13 @@ public class MasterChannelFrameHandler {
     public Collection<VcDownlinkHandler> getVcHandlers() {
         return handlers.values();
     }
-    
+
     public int getSpacecraftId() {
         return params.spacecraftId;
     }
+
     public CcsdsFrameType getFrameType() {
         return frameType;
     }
-    
+
 }

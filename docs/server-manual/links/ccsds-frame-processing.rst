@@ -49,6 +49,8 @@ An example of a UDP TM frame link specification is below:
         insertZoneLength: 0
         errorDetection: CRC16
         clcwStream: clcw
+        goodFrameStream: good_frames
+        badFrameStream: bad_frames
         virtualChannels:
           - vcId: 0
             ocfPresent: true
@@ -228,6 +230,12 @@ cop1TxLimit (integer)
            
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
+    
+goodFrameStream (string)
+    If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
+    
+badFrameStream (string)
+    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid. 
     
            
 Priority Schemes
