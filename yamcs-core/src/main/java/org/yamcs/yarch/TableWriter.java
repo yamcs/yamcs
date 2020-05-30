@@ -1,5 +1,7 @@
 package org.yamcs.yarch;
 
+import java.util.concurrent.CompletableFuture;
+
 public abstract class TableWriter implements StreamSubscriber {         
     public enum InsertMode {
         /**
@@ -27,6 +29,7 @@ public abstract class TableWriter implements StreamSubscriber {
     final protected TableDefinition tableDefinition;
     final protected InsertMode mode;
     final protected YarchDatabaseInstance ydb;
+    final private CompletableFuture<Void> closeFuture = new CompletableFuture<Void>();
     
     public TableWriter(YarchDatabaseInstance ydb, TableDefinition tableDefinition, InsertMode mode) {
         this.tableDefinition = tableDefinition;
@@ -37,9 +40,24 @@ public abstract class TableWriter implements StreamSubscriber {
     public TableDefinition getTableDefinition() {
         return tableDefinition;
     }
+    /**
+     * future which will be called (completed) when the writer is closed.
+     * 
+     * @return
+     */
+    public CompletableFuture<Void> closeFuture() {
+        return closeFuture;
+    }
 
     /**
-     * close histogram db and any open resources
+     * close writer and any open resources
+     * <p> call the close future after closing has been completed
      */
-    public abstract void close();
+    public void close() {
+        doClose();
+        closeFuture.complete(null);
+    }
+    
+    
+    protected abstract void doClose();
 }

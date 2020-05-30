@@ -40,6 +40,7 @@ public class RdbTableWriter extends TableWriter {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     static final byte[] zerobytes = new byte[0];
     Tablespace tablespace;
+    volatile boolean closed = false;
 
     public RdbTableWriter(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             InsertMode mode, RdbPartitionManager pm) {
@@ -51,6 +52,20 @@ public class RdbTableWriter extends TableWriter {
 
     @Override
     public void onTuple(Stream stream, Tuple t) {
+        /*
+         * since this method is not synchronised to the RdbStorageEngine#dropTable, it could be that one records is
+         * still written after the table has been dropped. This happens if the onTuple is already running when dropTable
+         * is called and the write operation ends up after the deleteRange used in the dropTable.
+         * 
+         * The record will have an invalid tbsIndex (not part of the tablespace metadata) so we can safely ignore it.
+         * 
+         * The closed volatile check below is mostly for safety if someone keeps pushing data after the table has been
+         * dropped.
+         */
+
+        if (closed) {
+            return;
+        }
         try {
             RdbPartition partition = getDbPartition(t);
             YRDB rdb = tablespace.getRdb(partition.dir, false);
@@ -243,12 +258,12 @@ public class RdbTableWriter extends TableWriter {
         return (RdbPartition) partitionManager.createAndGetPartition(time, value);
     }
 
-    public void close() {
+    protected void doClose() {
+        closed = true;
     }
 
     @Override
     public void streamClosed(Stream stream) {
-
     }
 
     protected synchronized void addHistogram(YRDB rdb, Tuple t) throws IOException, RocksDBException {
@@ -267,7 +282,7 @@ public class RdbTableWriter extends TableWriter {
 
     private void addHistogramForColumn(YRDB rdb, int histoTbsIndex, byte[] columnv, long time) throws RocksDBException {
         long sstart = segmentStart(time);
-        
+
         int dtime = (int) (time % HistogramSegment.GROUPING_FACTOR);
 
         HistogramSegment segment;
@@ -282,5 +297,5 @@ public class RdbTableWriter extends TableWriter {
         segment.merge(dtime);
         rdb.put(histoDbKey, segment.val());
     }
-    
+
 }

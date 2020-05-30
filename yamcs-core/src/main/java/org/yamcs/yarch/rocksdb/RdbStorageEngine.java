@@ -3,7 +3,9 @@ package org.yamcs.yarch.rocksdb;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
@@ -20,7 +22,6 @@ import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -37,11 +38,11 @@ public class RdbStorageEngine implements StorageEngine {
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
+    Map<TableDefinition, List<RdbTableWriter>> tableWriters = new HashMap<>();
 
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
     public static final byte[] ZERO_BYTES = new byte[0];
-
 
     static {
         RocksDB.loadLibrary();
@@ -97,6 +98,17 @@ public class RdbStorageEngine implements StorageEngine {
         RdbPartitionManager pm = partitionManagers.remove(tbl);
         Tablespace tablespace = getTablespace(ydb, tbl);
 
+        List<RdbTableWriter> l = null;
+        synchronized (tableWriters) {
+            l = tableWriters.remove(tbl);
+        }
+
+        if (l != null) {
+            for (RdbTableWriter w : l) {
+                w.close();
+            }
+        }
+
         log.info("Dropping table {}.{}", ydb.getName(), tbl.getName());
         for (Partition p : pm.getPartitions()) {
             RdbPartition rdbp = (RdbPartition) p;
@@ -115,13 +127,29 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
+    public RdbTableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
         if (!partitionManagers.containsKey(tblDef)) {
             throw new IllegalStateException("Do not have a partition manager for this table");
         }
         checkFormatVersion(ydb, tblDef);
 
-        return new RdbTableWriter(getTablespace(ydb, tblDef), ydb, tblDef, insertMode, partitionManagers.get(tblDef));
+        RdbTableWriter writer = new RdbTableWriter(getTablespace(ydb, tblDef), ydb, tblDef, insertMode,
+                partitionManagers.get(tblDef));
+        synchronized (tableWriters) {
+            List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
+            l.add(writer);
+        }
+        writer.closeFuture().thenAccept(v -> writerClosed(tblDef, writer));
+        return writer;
+    }
+
+    private void writerClosed(TableDefinition tblDef, RdbTableWriter writer) {
+        synchronized (tableWriters) {
+            List<RdbTableWriter> l = tableWriters.get(tblDef);
+            if (l != null) {
+                l.remove(writer);
+            }
+        }
     }
 
     @Override

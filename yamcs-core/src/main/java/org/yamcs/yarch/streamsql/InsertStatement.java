@@ -40,22 +40,22 @@ public class InsertStatement extends StreamSqlStatement {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
 
         TableDefinition outputTableDef = ydb.getTable(name);
-        Stream outputStream = outputTableDef==null?  ydb.getStream(name): null;
-        
-        if(outputTableDef==null && outputStream==null) {
-            throw new ResourceNotFoundException(name); 
+        Stream outputStream = outputTableDef == null ? ydb.getStream(name) : null;
+
+        if (outputTableDef == null && outputStream == null) {
+            throw new ResourceNotFoundException(name);
         }
-        
+
         expression.bind(c);
         Stream inputStream = expression.execute(c);
 
         if (outputTableDef != null) {
             try {
                 // writing into a table
-                TableWriter tableWriter = ydb.getStorageEngine(outputTableDef).newTableWriter(ydb, outputTableDef,
-                        insertMode);
+                TableWriter tableWriter = ydb.getStorageEngine(outputTableDef)
+                        .newTableWriter(ydb, outputTableDef, insertMode);
                 inputStream.addSubscriber(tableWriter);
-                
+                tableWriter.closeFuture().thenAccept(v -> inputStream.removeSubscriber(tableWriter));
             } catch (YarchException e) {
                 log.warn("Got exception when creatin table", e);
                 throw new GenericStreamSqlException(e.getMessage());
@@ -63,14 +63,15 @@ public class InsertStatement extends StreamSqlStatement {
         } else {
             inputStream.addSubscriber(new StreamSubscriber() {
                 @Override
-                public void streamClosed(Stream stream) {}
-                
+                public void streamClosed(Stream stream) {
+                }
+
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     outputStream.emitTuple(tuple);
                 }
             });
-            
+
         }
         return new StreamSqlResult();
     }
