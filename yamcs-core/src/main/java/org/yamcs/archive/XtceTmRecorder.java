@@ -1,7 +1,7 @@
 package org.yamcs.archive;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -26,7 +26,6 @@ import org.yamcs.xtceproc.XtceTmExtractor;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -35,14 +34,22 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Records XTCE TM sequence containers.
+ * <p>
+ * The main job of this class is to populate the "pname" column of the tm table. The other columns are copied verbatim
+ * from the TM input streams. It does that by creating a {@link XtceTmExtractor} and subscribing to all sequence
+ * containers having the flag {@link SequenceContainer#useAsArchivePartition()} set. The pname is the qualified name of
+ * the most specific (lowest in the XTCE hierarchy) container matching the telemetry packet.
  * 
- * It creates a stream for each sequence container under the root.
+ * <p>
+ * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams defined
+ * in the instance (streamConfig section of the instance configuration).
  * 
  * @author nm
  *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
-    
+    static public String REC_STREAM_NAME = "xtce_tm_recorder_stream";
+
     static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
     static public String DUMP_TM_STREAM_NAME = "tm_dump";
     static public final String TABLE_NAME = "tm";
@@ -81,29 +88,29 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
                         + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) table_format=compressed";
-                System.out.println("query: "+query);
+                System.out.println("query: " + query);
                 ydb.execute(query);
             }
-            ydb.execute("create stream tm_is" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
-            ydb.execute("insert into " + TABLE_NAME + " select * from tm_is");
+            ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
+            ydb.execute("insert into " + TABLE_NAME + " select * from " + REC_STREAM_NAME);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-        if (!config.containsKey("streams")) {
-            List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
-            for (StreamConfigEntry sce : sceList) {
-                createRecorder(sce);
-            }
-        } else if (config.containsKey("streams")) {
+        if (config.containsKey("streams")) {
             List<String> streamNames = config.getList("streams");
             for (String sn : streamNames) {
                 StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
                 if (sce == null) {
                     throw new ConfigurationException("No stream config found for '" + sn + "'");
                 }
+                createRecorder(sce);
+            }
+        } else {
+            List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
+            for (StreamConfigEntry sce : sceList) {
                 createRecorder(sce);
             }
         }
@@ -128,8 +135,8 @@ public class XtceTmRecorder extends AbstractYamcsService {
         if (inputStream == null) {
             throw new ConfigurationException("Cannot find stream '" + streamConf.getName() + "'");
         }
-        Stream tm_is = ydb.getStream("tm_is");
-        StreamRecorder recorder = new StreamRecorder(inputStream, tm_is, rootsc, streamConf.isAsync());
+        Stream stream = ydb.getStream(REC_STREAM_NAME);
+        StreamRecorder recorder = new StreamRecorder(inputStream, stream, rootsc, streamConf.isAsync());
         recorders.add(recorder);
     }
 
@@ -151,14 +158,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
             sr.inputStream.removeSubscriber(sr);
         }
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        Stream s = ydb.getStream("tm_is");
-        Collection<StreamSubscriber> subscribers = s.getSubscribers();
+        Stream s = ydb.getStream(REC_STREAM_NAME);
         s.close();
-        for (StreamSubscriber ss : subscribers) {
-            if (ss instanceof TableWriter) {
-                ((TableWriter) ss).close();
-            }
-        }
+        Utils.closeTableWriters(ydb, Arrays.asList(REC_STREAM_NAME));
         notifyStopped();
     }
 
