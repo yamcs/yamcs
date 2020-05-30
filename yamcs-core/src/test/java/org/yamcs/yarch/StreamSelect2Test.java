@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSelect2Test extends YarchTestCase {
-    StreamSqlResult res;
+
     final int n = 1000000;
 
     public void createFeeder1() throws YarchException {
@@ -42,7 +41,7 @@ public class StreamSelect2Test extends YarchTestCase {
     public void testAdd() throws Exception {
         createFeeder1();
 
-        res = execute("create stream stream_out1 as select x+y from stream_in");
+        execute("create stream stream_out1 as select x+y from stream_in");
         // res=execute("create output stream tm_out1 as select * from tm_in where id=3");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
@@ -73,7 +72,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow1() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT SUM(y) from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT SUM(y) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -108,7 +107,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow2() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT SUM(y+3) from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT SUM(y+3) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -142,7 +141,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow3() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT 2+SUM(x+y+1) from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT 2+SUM(x+y+1) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -176,7 +175,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow4() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT aggregatelist(*) from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT aggregatelist(*) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -212,7 +211,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow5() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT firstval(x) AS fvx from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT firstval(x) AS fvx from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -245,7 +244,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow6() throws Exception {
         createFeeder1();
-        res = execute("CREATE STREAM stream_out1 AS SELECT firstval(x+y) from stream_in[SIZE 5 ADVANCE 5 ON x]");
+        execute("CREATE STREAM stream_out1 AS SELECT firstval(x+y) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
@@ -279,7 +278,7 @@ public class StreamSelect2Test extends YarchTestCase {
     @Test
     public void testWindow7() throws Exception {
         createFeeder1();
-        res = execute(
+        execute(
                 "CREATE STREAM stream_out1 AS SELECT firstval(x),firstval(y),aggregatelist(*) from stream_in[SIZE 5 ADVANCE 5 ON x]");
         YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
         Stream s = dict.getStream("stream_out1");

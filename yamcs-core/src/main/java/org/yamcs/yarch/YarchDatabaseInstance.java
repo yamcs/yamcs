@@ -28,9 +28,9 @@ import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.streamsql.ExecutionContext;
+import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
 import org.yaml.snakeyaml.Yaml;
@@ -402,23 +402,43 @@ public class YarchDatabaseInstance {
 
     /**
      * Returns the root directory for this database instance. It is usually home/instance_name.
-     * 
-     * @return the root directory for this database instance
      */
     public String getRoot() {
         return YarchDatabase.getHome() + "/" + instanceName;
     }
 
-    public StreamSqlResult execute(String query, Object... args) throws StreamSqlException, ParseException {
-        ExecutionContext context = new ExecutionContext(instanceName);
+    public StreamSqlStatement createStatement(String query, Object... args) throws StreamSqlException, ParseException {
         StreamSqlParser parser = new StreamSqlParser(new java.io.StringReader(query));
         parser.setArgs(args);
         try {
-            StreamSqlStatement s = parser.OneStatement();
-            return s.execute(context);
+            return parser.OneStatement();
         } catch (TokenMgrError e) {
             throw new ParseException(e.getMessage());
         }
+    }
+
+    public void execute(StreamSqlStatement stmt, ResultListener resultListener)
+            throws StreamSqlException, ParseException {
+        ExecutionContext context = new ExecutionContext(instanceName);
+        stmt.execute(context, resultListener);
+    }
+
+    public void execute(String query, Object... args) throws StreamSqlException, ParseException {
+        StreamSqlStatement stmt = createStatement(query, args);
+        execute(stmt, new ResultListener() { // Discards everything
+
+            @Override
+            public void next(Tuple tuple) {
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+            }
+
+            @Override
+            public void complete() {
+            }
+        });
     }
 
     public void close() {

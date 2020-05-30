@@ -5,10 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class InsertSelectTest extends YarchTestCase {
-    StreamSqlResult res;
+
     int n = 10;
 
     void createFeeder() throws Exception {
@@ -37,7 +36,7 @@ public class InsertSelectTest extends YarchTestCase {
     @Test
     public void testStar1() throws Exception {
         createFeeder();
-        res = execute("create stream tm_out1 as select 3, \'cucu\' as bau, * from tm_in");
+        execute("create stream tm_out1 as select 3, \'cucu\' as bau, * from tm_in");
         List<Tuple> tlist = fetchAll("tm_out1");
         assertEquals(n, tlist.size());
         for (int k = 0; k < n; k++) {

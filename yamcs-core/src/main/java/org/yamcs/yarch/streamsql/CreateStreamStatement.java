@@ -7,7 +7,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CreateStreamStatement extends StreamSqlStatement {
+public class CreateStreamStatement implements StreamSqlStatement {
+
     String streamName;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
@@ -23,7 +24,7 @@ public class CreateStreamStatement extends StreamSqlStatement {
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
+    public void execute(ExecutionContext c, ResultListener listener) throws StreamSqlException {
         YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
         synchronized (dict) {
             if (dict.streamOrTableExists(streamName)) {
@@ -43,7 +44,7 @@ public class CreateStreamStatement extends StreamSqlStatement {
             } catch (YarchException e) {
                 throw new GenericStreamSqlException(e.getMessage());
             }
-            return new StreamSqlResult();
+            listener.complete();
         }
     }
 }

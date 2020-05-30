@@ -1,13 +1,28 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-public class DescribeStatement extends StreamSqlStatement {
+public class DescribeStatement implements StreamSqlStatement {
+
+    private static final TupleDefinition TDEF_TABLE = new TupleDefinition();
+    static {
+        TDEF_TABLE.addColumn("column", DataType.STRING);
+        TDEF_TABLE.addColumn("type", DataType.STRING);
+        TDEF_TABLE.addColumn("key", DataType.STRING);
+    }
+
+    private static final TupleDefinition TDEF_STREAM = new TupleDefinition();
+    static {
+        TDEF_STREAM.addColumn("column", DataType.STRING);
+        TDEF_STREAM.addColumn("type", DataType.STRING);
+    }
 
     private String objectName;
 
@@ -16,10 +31,8 @@ public class DescribeStatement extends StreamSqlStatement {
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
+    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
         YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
-        StreamSqlResult res = new StreamSqlResult();
-        res.setHeader("name");
 
         TableDefinition tdef = null;
         Stream stream = null;
@@ -28,40 +41,42 @@ public class DescribeStatement extends StreamSqlStatement {
             stream = dict.getStream(objectName);
         }
         if (tdef != null) {
-            return describeTable(tdef);
+            describeTable(tdef, resultListener);
         } else if (stream != null) {
-            return describeStream(stream);
+            describeStream(stream, resultListener);
         } else {
             throw new ResourceNotFoundException(objectName);
         }
     }
 
-    private StreamSqlResult describeTable(TableDefinition tdef) {
-        StreamSqlResult res = new StreamSqlResult();
-        res.setHeader("column", "type", "key");
+    private void describeTable(TableDefinition tdef, ResultListener resultListener) {
         for (ColumnDefinition cdef : tdef.getKeyDefinition().getColumnDefinitions()) {
-            res.addRow(
-                    ValueHelper.newValue(cdef.getName()),
-                    ValueHelper.newValue(cdef.getType().toString()),
-                    ValueHelper.newValue("*"));
+            Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
+                    cdef.getName(),
+                    cdef.getType().toString(),
+                    "*"
+            });
+            resultListener.next(tuple);
         }
         for (ColumnDefinition cdef : tdef.getValueDefinition().getColumnDefinitions()) {
-            res.addRow(
-                    ValueHelper.newValue(cdef.getName()),
-                    ValueHelper.newValue(cdef.getType().toString()),
-                    null);
+            Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
+                    cdef.getName(),
+                    cdef.getType().toString(),
+                    null
+            });
+            resultListener.next(tuple);
         }
-        return res;
+        resultListener.complete();
     }
 
-    private StreamSqlResult describeStream(Stream stream) {
-        StreamSqlResult res = new StreamSqlResult();
-        res.setHeader("column", "type");
+    private void describeStream(Stream stream, ResultListener resultListener) {
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
-            res.addRow(
-                    ValueHelper.newValue(cdef.getName()),
-                    ValueHelper.newValue(cdef.getType().toString()));
+            Tuple tuple = new Tuple(TDEF_STREAM, new Object[] {
+                    cdef.getName(),
+                    cdef.getType().toString(),
+            });
+            resultListener.next(tuple);
         }
-        return res;
+        resultListener.complete();
     }
 }

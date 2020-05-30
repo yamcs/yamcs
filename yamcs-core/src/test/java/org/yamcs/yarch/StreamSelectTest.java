@@ -5,10 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSelectTest extends YarchTestCase {
-    StreamSqlResult res;
     int blength = 100;
     int n = 1000;
 

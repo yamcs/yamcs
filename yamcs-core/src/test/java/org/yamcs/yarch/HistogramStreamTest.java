@@ -1,5 +1,8 @@
 package org.yamcs.yarch;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -7,14 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
-
-import static org.junit.Assert.*;
 
 public class HistogramStreamTest extends YarchTestCase {
     StreamSqlStatement statement;
-    StreamSqlResult res;
     String cmd;
     int n = 1200;
     int m = 3;
@@ -44,7 +43,7 @@ public class HistogramStreamTest extends YarchTestCase {
             }
         }
 
-        Tuple t = new Tuple(td, new Object[] { 1000*100000L, 1, "histotest1m"  });
+        Tuple t = new Tuple(td, new Object[] { 1000 * 100000L, 1, "histotest1m" });
         s.emitTuple(t);
         execute("close stream " + tblName + "_in");
     }
@@ -90,8 +89,9 @@ public class HistogramStreamTest extends YarchTestCase {
                     stream.close();
                     return;
                 }
-                if (count.get() >= 2)
+                if (count.get() >= 2) {
                     throw new RuntimeException();
+                }
                 assertTrue(count.get() < 2);
             }
         });
@@ -144,14 +144,15 @@ public class HistogramStreamTest extends YarchTestCase {
     @Test
     public void test4() throws Exception {
         populate("test1");
-        String query = "create stream test1_out as select * from test1 histogram(name) where first>"+(n*3000) +" and last<100000000";
+        String query = "create stream test1_out as select * from test1 histogram(name) where first>" + (n * 3000)
+                + " and last<100000000";
         ydb.execute(query);
         final List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(1, tuples.size());
         Tuple t = tuples.get(0);
         // tuples should contain (name String, start TIMESTAMP, stop TIMESTAMP,
         // num int)
-        
+
         t = tuples.get(0);
         assertEquals("histotest1m", (String) t.getColumn(0));
         ydb.execute("drop table test1");

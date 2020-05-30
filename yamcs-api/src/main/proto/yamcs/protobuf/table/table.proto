@@ -18,7 +18,15 @@ service TableApi {
       body: "*"
     };
   }
-  
+
+  // Execute streaming SQL
+  rpc ExecuteStreamingSql(ExecuteSqlRequest) returns (stream ResultSet) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}:executeStreamingSql"
+      body: "*"
+    };
+  }
+
   // List streams
   //
   // Note that this will only list the fixed columns of the stream.

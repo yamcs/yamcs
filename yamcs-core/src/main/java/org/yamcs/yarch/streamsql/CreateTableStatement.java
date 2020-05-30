@@ -10,7 +10,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CreateTableStatement extends StreamSqlStatement {
+public class CreateTableStatement implements StreamSqlStatement {
 
     boolean ifNotExists;
     String tableName;
@@ -22,85 +22,84 @@ public class CreateTableStatement extends StreamSqlStatement {
     String dataDir;
     String engine;
 
-    private boolean compressed=false;
+    private boolean compressed = false;
 
-    public CreateTableStatement(boolean ifNotExists, String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
-        this.ifNotExists=ifNotExists;
-        this.tableName=tableName;
-        this.tupleDefinition=tupleDefinition;
-        this.primaryKey=primaryKey;
+    public CreateTableStatement(boolean ifNotExists, String tableName, TupleDefinition tupleDefinition,
+            ArrayList<String> primaryKey) {
+        this.ifNotExists = ifNotExists;
+        this.tableName = tableName;
+        this.tupleDefinition = tupleDefinition;
+        this.primaryKey = primaryKey;
     }
 
-
-
     public void setDataDir(String dataDir) {
-        this.dataDir=dataDir;
+        this.dataDir = dataDir;
 
     }
 
     public void setPartitioning(PartitioningSpec pspec) {
-        this.partitioningSpec=pspec;
+        this.partitioningSpec = pspec;
     }
+
     public void setCompressed(boolean c) {
-        this.compressed=c;
+        this.compressed = c;
     }
 
     public void addHistogramColumn(String columnName) {
-        if(histoColumns==null) {
-            histoColumns=new ArrayList<>();
+        if (histoColumns == null) {
+            histoColumns = new ArrayList<>();
         }
         histoColumns.add(columnName);
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance ydb=YarchDatabase.getInstance(c.getDbName());
-        synchronized(ydb) {
-            TableDefinition tableDefinition=new TableDefinition(tableName, tupleDefinition, primaryKey);
+    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+        synchronized (ydb) {
+            TableDefinition tableDefinition = new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
 
-            if(dataDir!=null) {
+            if (dataDir != null) {
                 tableDefinition.setDataDir(dataDir);
                 tableDefinition.setCustomDataDir(true);
             } else {
                 tableDefinition.setDataDir(ydb.getRoot());
                 tableDefinition.setCustomDataDir(false);
             }
-            if(engine!=null) {
+            if (engine != null) {
                 tableDefinition.setStorageEngineName(engine);
             } else {
                 tableDefinition.setStorageEngineName(YarchDatabase.getDefaultStorageEngineName());
             }
 
             tableDefinition.setCompressed(compressed);
-            if(partitioningSpec!=null) {
+            if (partitioningSpec != null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
             } else {
                 tableDefinition.setPartitioningSpec(PartitioningSpec.noneSpec());
             }
-            if(histoColumns!=null) {
+            if (histoColumns != null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
-            
-            if(partitionStorage!=null) {
+
+            if (partitionStorage != null) {
                 tableDefinition.setPartitionStorage(partitionStorage);
             }
 
             try {
-                if(!ifNotExists || ydb.getTable(tableName)==null) {
+                if (!ifNotExists || ydb.getTable(tableName) == null) {
                     ydb.createTable(tableDefinition);
                 }
-                return new StreamSqlResult();
-            } catch(YarchException e) {
-                throw new GenericStreamSqlException("Cannot create table: "+e.getMessage());
+                resultListener.complete();
+            } catch (YarchException e) {
+                throw new GenericStreamSqlException("Cannot create table: " + e.getMessage());
             }
         }
     }
 
     public void setEngine(String engine) {
-        this.engine=engine;		
+        this.engine = engine;
     }
-
 
     public void setPartitionStorage(PartitionStorage pstorage) {
         this.partitionStorage = pstorage;

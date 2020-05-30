@@ -20,7 +20,6 @@ import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public abstract class YarchTestCase {
     protected StreamSqlParser parser;
@@ -71,8 +70,8 @@ public abstract class YarchTestCase {
         ydb = YarchDatabase.getInstance(instance);
     }
 
-    protected StreamSqlResult execute(String cmd, Object... args) throws StreamSqlException, ParseException {
-        return ydb.execute(cmd, args);
+    protected void execute(String cmd, Object... args) throws StreamSqlException, ParseException {
+        ydb.execute(cmd, args);
     }
 
     protected List<Tuple> fetchAllFromTable(String tableName) throws Exception {

@@ -7,10 +7,8 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSqlParserTest extends YarchTestCase {
-    StreamSqlResult res;
 
     @Test
     public void testCreateDropTable() throws ParseException, StreamSqlException {
@@ -61,7 +59,7 @@ public class StreamSqlParserTest extends YarchTestCase {
     public void testErrors() throws Exception {
         StreamSqlException e = null;
         try {
-            res = execute("close stream testerr_stream");
+            execute("close stream testerr_stream");
         } catch (StreamSqlException e1) {
             e = e1;
         }
@@ -70,7 +68,7 @@ public class StreamSqlParserTest extends YarchTestCase {
 
         e = null;
         try {
-            res = execute("show stream unexistent_stream");
+            execute("show stream unexistent_stream");
         } catch (StreamSqlException e1) {
             e = e1;
         }
@@ -78,28 +76,28 @@ public class StreamSqlParserTest extends YarchTestCase {
         assertEquals("RESOURCE_NOT_FOUND Stream or table 'unexistent_stream' not found", e.getMessage());
     }
 
-    // @Test
+    /* @Test
     public void testShowStreams() throws Exception {
         ydb.execute("create input stream testshow_is1(a int, b timestamp)");
-
-        res = execute("create input stream testshow_is2(c binary, d int)");
+    
+        execute("create input stream testshow_is2(c binary, d int)");
         int iport2 = (Integer) res.getParam("port");
-
-        res = execute("create output stream testshow_os as select * from testshow_is1");
+    
+        execute("create output stream testshow_os as select * from testshow_is1");
         int oport = (Integer) res.getParam("port");
-
-        res = execute("show streams");
+    
+        execute("show streams");
         assertEquals(
                 "INPUT STREAM testshow_is1(a INT, b TIMESTAMP)\nOUTPUT STREAM testshow_os(a INT, b TIMESTAMP)\nINPUT STREAM testshow_is2(c BINARY, d INT)\n",
                 res.toString());
-
-        res = execute("show stream testshow_is1");
+    
+        execute("show stream testshow_is1");
         assertEquals("INPUT STREAM testshow_is1(a INT, b TIMESTAMP)", res.toString());
-
-        res = execute("show stream testshow_is2 port");
+    
+        execute("show stream testshow_is2 port");
         assertEquals("port=" + iport2, res.toString());
-
-        res = execute("show stream testshow_os port");
+        
+        execute("show stream testshow_os port");
         assertEquals("port=" + oport, res.toString());
-    }
+    }*/
 }

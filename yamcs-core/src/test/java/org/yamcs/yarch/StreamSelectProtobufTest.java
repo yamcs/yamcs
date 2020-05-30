@@ -11,10 +11,9 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSelectProtobufTest extends YarchTestCase {
-    StreamSqlResult res;
+
     final int n = 20;
 
     public void createFeeder1() throws YarchException {
@@ -52,7 +51,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
         createFeeder1();
         GenericStreamSqlException ge = null;
         try {
-            res = execute("create stream stream_out1 as select event from stream_in where event.invalidFieldName > 3");
+            execute("create stream stream_out1 as select event from stream_in where event.invalidFieldName > 3");
         } catch (GenericStreamSqlException e) {
             ge = e;
         }
@@ -64,7 +63,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test1() throws Exception {
         createFeeder1();
-        res = execute("create stream stream_out1 as select event from stream_in where event.seqNumber >= ?", 3);
+        execute("create stream stream_out1 as select event from stream_in where event.seqNumber >= ?", 3);
 
         List<Tuple> tlist = fetchAll("stream_out1");
 
@@ -76,7 +75,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test2() throws Exception {
         createFeeder1();
-        res = execute("create stream stream_out1 as select event from stream_in where event.message like '%15%'");
+        execute("create stream stream_out1 as select event from stream_in where event.message like '%15%'");
 
         List<Tuple> tlist = fetchAll("stream_out1");
 
@@ -88,7 +87,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test3() throws Exception {
         createFeeder1();
-        res = execute("create stream stream_out1 as select event from stream_in where event.severity in ('INFO')");
+        execute("create stream stream_out1 as select event from stream_in where event.severity in ('INFO')");
 
         List<Tuple> tlist = fetchAll("stream_out1");
 
@@ -100,7 +99,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test4() throws Exception {
         createFeeder1();
-        res = execute(
+        execute(
                 "create stream stream_out1 as select event from stream_in where event.severity in (?) and event.message LIKE ? ",
                 "WARNING", "%7%");
 

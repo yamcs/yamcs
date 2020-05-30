@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ExecutionContext;
+import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -77,9 +79,23 @@ public class StreamInitializer {
     }
 
     private void createStream(String streamName, TupleDefinition tdef) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + tdef.getStringDefinition());
-    }
+        StreamSqlStatement stmt = ydb.createStatement("create stream " + streamName + tdef.getStringDefinition());
+        ydb.execute(stmt, new ResultListener() {
+            @Override
+            public void next(Tuple tuple) {
+            }
 
+            @Override
+            public void completeExceptionally(Throwable t) {
+                log.error("Error while creating stream {}", streamName, t);
+            }
+
+            @Override
+            public void complete() {
+                log.debug("Created stream {}", streamName);
+            }
+        });
+    }
 
     private void loadSqlFile(Object o) throws IOException, StreamSqlException, ParseException {
         if (!(o instanceof String)) {
@@ -89,11 +105,23 @@ public class StreamInitializer {
         String filename = (String) o;
         File f = new File(filename);
         ExecutionContext context = new ExecutionContext(yamcsInstance);
-        try(FileReader reader = new FileReader(f)){
+        try (FileReader reader = new FileReader(f)) {
             StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;
             while ((stmt = parser.StreamSqlStatement()) != null) {
-                stmt.execute(context);
+                stmt.execute(context, new ResultListener() {
+                    @Override
+                    public void next(Tuple tuple) {
+                    }
+
+                    @Override
+                    public void completeExceptionally(Throwable t) {
+                    }
+
+                    @Override
+                    public void complete() {
+                    }
+                });
             }
         } catch (TokenMgrError e) {
             throw new ParseException(e.getMessage());
