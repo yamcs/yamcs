@@ -1,29 +1,27 @@
 package org.yamcs.yarch.streamsql;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+
+import org.yamcs.protobuf.Yamcs.Value;
 
 public class StreamSqlResult {
 
     private String[] header;
-    private List<Object[]> rows = new ArrayList<>(); // TODO should probably be smarter about types
+    private List<Value[]> rows = new ArrayList<>();
 
     HashMap<String, Object> params;
 
     /**
-     * Constructors for results with 0 parameters
+     * Constructor for results with 0 parameters
      */
     public StreamSqlResult() {
-
     }
 
     /**
      * Constructor for results with one parameter
-     * 
-     * @param p1name
-     * @param p1value
      */
     public StreamSqlResult(String p1name, Object p1value) {
         params = new HashMap<>();
@@ -34,33 +32,19 @@ public class StreamSqlResult {
         return params.get(p);
     }
 
+    public List<String> getHeader() {
+        return Arrays.asList(header);
+    }
+
+    public Iterable<Value[]> iterateRows() {
+        return () -> rows.iterator();
+    }
+
     public void setHeader(String... header) {
         this.header = header;
     }
 
-    public void addRow(Object... data) {
-        String[] dataStrings = new String[data.length];
-        for (int i = 0; i < data.length; i++) {
-            String stringValue = data[i] != null ? data[i].toString() : null;
-            dataStrings[i] = stringValue;
-        }
-        rows.add(dataStrings);
-    }
-
-    @Override
-    public String toString() {
-        if (params != null) {
-            StringBuffer sb = new StringBuffer();
-            for (Entry<String, Object> entry : params.entrySet()) {
-                sb.append(entry.getKey() + "=" + entry.getValue());
-            }
-            return sb.toString();
-        } else if (header != null) {
-            ResultSetPrinter printer = new ResultSetPrinter(header);
-            rows.forEach(row -> printer.addRow(row));
-            return printer.toString();
-        } else {
-            return null;
-        }
+    public void addRow(Value... data) {
+        rows.add(data);
     }
 }

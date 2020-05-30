@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.YarchDatabase;
 
 public class ShowEnginesStatement extends StreamSqlStatement {
@@ -17,7 +18,9 @@ public class ShowEnginesStatement extends StreamSqlStatement {
         res.setHeader("engine", "default");
         for (String engine : engines) {
             String def = engine.equals(YarchDatabase.getDefaultStorageEngineName()) ? "*" : null;
-            res.addRow(engine, def);
+            res.addRow(
+                    ValueHelper.newValue(engine),
+                    ValueHelper.newValue(def));
         }
         return res;
     }

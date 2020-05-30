@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
@@ -46,7 +47,9 @@ public class ShowStreamStatement extends StreamSqlStatement {
             StreamSqlResult res = new StreamSqlResult();
             res.setHeader("column", "type");
             for (ColumnDefinition cdef : s.getDefinition().getColumnDefinitions()) {
-                res.addRow(cdef.getName(), cdef.getType().toString());
+                res.addRow(
+                        ValueHelper.newValue(cdef.getName()),
+                        ValueHelper.newValue(cdef.getType().toString()));
             }
             return res;
         }

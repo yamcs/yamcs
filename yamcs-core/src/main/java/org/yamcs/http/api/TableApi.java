@@ -26,7 +26,6 @@ import org.yamcs.protobuf.Table.ColumnData;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.EnumValue;
 import org.yamcs.protobuf.Table.ExecuteSqlRequest;
-import org.yamcs.protobuf.Table.ExecuteSqlResponse;
 import org.yamcs.protobuf.Table.GetStreamRequest;
 import org.yamcs.protobuf.Table.GetTableDataRequest;
 import org.yamcs.protobuf.Table.GetTableRequest;
@@ -34,9 +33,11 @@ import org.yamcs.protobuf.Table.ListStreamsRequest;
 import org.yamcs.protobuf.Table.ListStreamsResponse;
 import org.yamcs.protobuf.Table.ListTablesRequest;
 import org.yamcs.protobuf.Table.ListTablesResponse;
+import org.yamcs.protobuf.Table.ListValue;
 import org.yamcs.protobuf.Table.PartitioningInfo;
 import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
+import org.yamcs.protobuf.Table.ResultSet;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.StreamData;
@@ -391,19 +392,29 @@ public class TableApi extends AbstractTableApi<Context> {
     }
 
     @Override
-    public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ExecuteSqlResponse> observer) {
+    public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        ExecuteSqlResponse.Builder responseb = ExecuteSqlResponse.newBuilder();
+        ResultSet.Builder responseb = ResultSet.newBuilder();
         if (request.hasStatement()) {
             try {
                 StreamSqlResult result = ydb.execute(request.getStatement());
-                String stringOutput = result.toString();
-                if (stringOutput != null) {
-                    responseb.setResult(stringOutput);
+
+                for (String header : result.getHeader()) {
+                    responseb.addColumns(ColumnInfo.newBuilder()
+                            .setName(header)
+                            .build());
+                }
+
+                for (Value[] row : result.iterateRows()) {
+                    ListValue.Builder rowPb = ListValue.newBuilder();
+                    for (Value cell : row) {
+                        rowPb.addValues(cell);
+                    }
+                    responseb.addRows(rowPb);
                 }
             } catch (ParseException e) {
                 throw new BadRequestException(e);

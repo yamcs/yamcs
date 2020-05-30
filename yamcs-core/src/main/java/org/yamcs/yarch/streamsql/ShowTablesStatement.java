@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -19,7 +20,7 @@ public class ShowTablesStatement extends StreamSqlStatement {
             List<TableDefinition> tdefs = new ArrayList<>(dict.getTableDefinitions());
             Collections.sort(tdefs, (t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
             for (TableDefinition td : tdefs) {
-                res.addRow(td.getName());
+                res.addRow(ValueHelper.newValue(td.getName()));
             }
         }
         return res;

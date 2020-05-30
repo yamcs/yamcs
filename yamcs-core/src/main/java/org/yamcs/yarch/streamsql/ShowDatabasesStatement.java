@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.YarchDatabase;
 
 public class ShowDatabasesStatement extends StreamSqlStatement {
@@ -16,7 +17,7 @@ public class ShowDatabasesStatement extends StreamSqlStatement {
         StreamSqlResult res = new StreamSqlResult();
         res.setHeader("database");
         for (String database : databases) {
-            res.addRow(database);
+            res.addRow(ValueHelper.newValue(database));
         }
         return res;
     }

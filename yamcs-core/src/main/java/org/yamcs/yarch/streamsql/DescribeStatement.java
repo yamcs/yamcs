@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -39,10 +40,16 @@ public class DescribeStatement extends StreamSqlStatement {
         StreamSqlResult res = new StreamSqlResult();
         res.setHeader("column", "type", "key");
         for (ColumnDefinition cdef : tdef.getKeyDefinition().getColumnDefinitions()) {
-            res.addRow(cdef.getName(), cdef.getType().toString(), "*");
+            res.addRow(
+                    ValueHelper.newValue(cdef.getName()),
+                    ValueHelper.newValue(cdef.getType().toString()),
+                    ValueHelper.newValue("*"));
         }
         for (ColumnDefinition cdef : tdef.getValueDefinition().getColumnDefinitions()) {
-            res.addRow(cdef.getName(), cdef.getType().toString(), null);
+            res.addRow(
+                    ValueHelper.newValue(cdef.getName()),
+                    ValueHelper.newValue(cdef.getType().toString()),
+                    null);
         }
         return res;
     }
@@ -51,7 +58,9 @@ public class DescribeStatement extends StreamSqlStatement {
         StreamSqlResult res = new StreamSqlResult();
         res.setHeader("column", "type");
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
-            res.addRow(cdef.getName(), cdef.getType().toString());
+            res.addRow(
+                    ValueHelper.newValue(cdef.getName()),
+                    ValueHelper.newValue(cdef.getType().toString()));
         }
         return res;
     }

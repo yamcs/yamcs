@@ -8,11 +8,11 @@ import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 option java_package = "org.yamcs.protobuf";
 
-// Service for reading and writing to Yarch tables and streams
+// Service for reading and writing to Yamcs tables and streams
 service TableApi {
 
   // Execute SQL
-  rpc ExecuteSql(ExecuteSqlRequest) returns (ExecuteSqlResponse) {
+  rpc ExecuteSql(ExecuteSqlRequest) returns (ResultSet) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:executeSql"
       body: "*"
@@ -170,6 +170,10 @@ message WriteRowsExceptionDetail {
   optional uint32 count = 1;
 }
 
+message ListValue {
+  repeated Value values = 1;
+}
+
 message ExecuteSqlRequest {
   // Yamcs instance name.
   optional string instance = 1;
@@ -178,8 +182,9 @@ message ExecuteSqlRequest {
   optional string statement = 2;
 }
 
-message ExecuteSqlResponse {
-  optional string result = 1;
+message ResultSet {
+  repeated ColumnInfo columns = 1;
+  repeated ListValue rows = 2;
 }
 
 message ListTablesRequest {
