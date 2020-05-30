@@ -12,7 +12,7 @@ import org.yamcs.xtce.xml.XtceStaxReader;
 
 public class TestValidRange {
     @Test
-    public void test1() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+    public void testXtce11Range() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
         XtceStaxReader reader = new XtceStaxReader();
         SpaceSystem ss = reader.readXmlDocument("src/test/resources/BogusSAT-1.xml");
         IntegerArgumentType argType = ( IntegerArgumentType) ss.getSubsystem("SC001")
@@ -23,6 +23,35 @@ public class TestValidRange {
         IntegerValidRange range = argType.getValidRange();
         assertEquals(1, range.getMinInclusive());
         assertEquals(2, range.getMaxInclusive());
+        assertTrue(range.isValidRangeAppliesToCalibrated());
+    }
+    
+    @Test
+    public void testFloatArgRangeXTCE12() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+        XtceStaxReader reader = new XtceStaxReader();
+        SpaceSystem ss = reader.readXmlDocument("src/test/resources/ranges-test.xml");
+        FloatArgumentType argType = (FloatArgumentType) ss.getMetaCommand("SetTemperature")
+                .getArgument("temperature")
+                .getArgumentType();
+        FloatValidRange range = argType.getValidRange();
+        assertEquals(10.0, range.getMin(), 1e-6);
+        assertEquals(40.0, range.getMax(), 1e-6);
+        assertTrue(range.isMinInclusive());
+        assertFalse(range.isMaxInclusive());
+        assertTrue(range.isValidRangeAppliesToCalibrated());
+    }
+   
+    @Test
+    public void testParamRange() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+        XtceStaxReader reader = new XtceStaxReader();
+        SpaceSystem ss = reader.readXmlDocument("src/test/resources/ranges-test.xml");
+        FloatParameterType ptype = (FloatParameterType) ss.getParameter("latitude").getParameterType();
+        FloatValidRange range = ptype.getValidRange();
+        
+        assertEquals(-90.0, range.getMin(), 1e-6);
+        assertEquals(90.0, range.getMax(), 1e-6);
+        assertTrue(range.isMinInclusive());
+        assertTrue(range.isMaxInclusive());
         assertTrue(range.isValidRangeAppliesToCalibrated());
     }
 }

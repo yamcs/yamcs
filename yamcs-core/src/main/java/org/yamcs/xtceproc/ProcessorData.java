@@ -46,7 +46,7 @@ public class ProcessorData {
     /**
      * converts raw values into engineering values
      */
-    final ParameterTypeProcessor parameterTypeProcessor = new ParameterTypeProcessor(this);
+    final ParameterTypeProcessor parameterTypeProcessor;
 
     private Map<Calibrator, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
@@ -89,6 +89,7 @@ public class ProcessorData {
         this.yamcsInstance = instance;
         this.xtcedb = xtcedb;
         this.processorConfig = config;
+        parameterTypeProcessor = new ParameterTypeProcessor(this);
 
         if ((instance != null) && config.generateEvents()) {
             eventProducer = EventProducerFactory.getEventProducer(instance);

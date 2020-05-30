@@ -47,7 +47,4 @@ public abstract class Value {
     public long getTimestampValue() {
         throw new UnsupportedOperationException();
     }
-    
-  
-
 }

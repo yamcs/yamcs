@@ -24,7 +24,9 @@ import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.NumericDataEncoding;
 import org.yamcs.xtce.NumericParameterType;
@@ -46,29 +48,37 @@ public class ParameterTypeProcessor {
     ProcessorData pdata;
     static Logger log = LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
 
+    boolean checkValidityRanges;
+
     public ParameterTypeProcessor(ProcessorData pdata) {
         this.pdata = pdata;
+        checkValidityRanges = pdata.getProcessorConfig().checkParameterValidityRanges();
     }
 
     /**
      * Sets the value of a pval, based on the raw value, the applicable calibrator and the expected parameter type
+     * <p>
+     * Also checks the validity if a ValidRange is defined for the parameter type
      * 
      * @param pval
      */
     public void calibrate(ContainerProcessingContext pcontext, ParameterValue pval) {
-        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator,
-                pdata.getParameterType(pval.getParameter()), pval.getRawValue());
-        if (engValue != null) {
-            pval.setEngineeringValue(engValue);
-        } else {
-            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
-        }
+        calibrate(pcontext.result.params, pcontext.criteriaEvaluator, pval);
     }
 
     public void calibrate(ParameterValue pval) {
-        Value engValue = doCalibrate(null, null, pdata.getParameterType(pval.getParameter()), pval.getRawValue());
+        calibrate(null, null, pval);
+    }
+
+    private void calibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterValue pval) {
+        ParameterType ptype = pdata.getParameterType(pval.getParameter());
+
+        Value engValue = doCalibrate(pvalues, contextEvaluator, ptype, pval.getRawValue());
         if (engValue != null) {
             pval.setEngineeringValue(engValue);
+            if (checkValidityRanges) {
+                checkValidity(ptype, pval);
+            }
         } else {
             pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
         }
@@ -452,4 +462,38 @@ public class ParameterTypeProcessor {
         }
         return engValue;
     }
+
+    private void checkValidity(ParameterType ptype, ParameterValue pval) {
+        if (ptype instanceof FloatParameterType) {
+            FloatValidRange fvr = ((FloatParameterType) ptype).getValidRange();
+            if (fvr != null) {
+                Value v;
+                if (fvr.isValidRangeAppliesToCalibrated()) {
+                    v = pval.getEngValue();
+                } else {
+                    v = pval.getRawValue();
+                }
+                boolean valid = ValidRangeChecker.checkFloatRange(fvr, v);
+                if (!valid) {
+                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                }
+            }
+        } else if (ptype instanceof IntegerParameterType) {
+            IntegerValidRange ivr = ((IntegerParameterType) ptype).getValidRange();
+            if (ivr != null) {
+                Value v;
+                if (ivr.isValidRangeAppliesToCalibrated()) {
+                    v = pval.getEngValue();
+                } else {
+                    v = pval.getRawValue();
+                }
+                boolean valid = ValidRangeChecker.checkIntegerRange(ivr, v);
+                if (!valid) {
+                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                }
+            }
+        }
+
+    }
+
 }

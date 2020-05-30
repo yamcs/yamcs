@@ -67,9 +67,6 @@ The other elements are supported one way or another, exceptions or changes from 
 
 .. rubric:: Data Types
 
-* | ValidRange
-  | Not supported for any parameter type. Supported for command arguments. Note than in XTCE 1.2 this has been replaced by ValidRangeSet.
-  
 * | ValidRangeSet
   | Introduced in XTCE 1.2 for command arguments. Yamcs only supports one range in the set.
 

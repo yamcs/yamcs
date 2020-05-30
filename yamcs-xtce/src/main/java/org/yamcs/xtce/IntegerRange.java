@@ -3,7 +3,8 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
- * An integral range of numbers.  "min", and "max"
+ * An integral range of numbers. "min", and "max"
+ * 
  * @author nm
  *
  */
@@ -12,11 +13,12 @@ public class IntegerRange implements Serializable {
 
     long minInclusive;
     long maxInclusive;
+
     public IntegerRange(long minInclusive, long maxInclusive) {
-        this.minInclusive=minInclusive;
-        this.maxInclusive=maxInclusive;
+        this.minInclusive = minInclusive;
+        this.maxInclusive = maxInclusive;
     }
-    
+
     /**
      * copy constructor
      */
@@ -28,12 +30,13 @@ public class IntegerRange implements Serializable {
     public long getMaxInclusive() {
         return maxInclusive;
     }
+
     public long getMinInclusive() {
         return minInclusive;
     }
 
     /**
-     * E.g. a low limit of ]-Infinity, -22] and a high limit of [40, +Infinity[ 
+     * E.g. a low limit of ]-Infinity, -22] and a high limit of [40, +Infinity[
      * intersect to [-22, 40] (which for practical purposes is actually the range
      * inside of which pvals are _not_ out of limits)
      */
@@ -43,14 +46,14 @@ public class IntegerRange implements Serializable {
 
     @Override
     public String toString() {
-        return "["+minInclusive+","+maxInclusive+"]";
+        return "[" + minInclusive + "," + maxInclusive + "]";
     }
-    
+
     public String toString(boolean signed) {
-        if(signed) {
-            return "["+minInclusive+","+maxInclusive+"]";
+        if (signed) {
+            return "[" + minInclusive + "," + maxInclusive + "]";
         } else {
-            return "["+Long.toUnsignedString(minInclusive)+","+Long.toUnsignedString(maxInclusive)+"]";
+            return "[" + Long.toUnsignedString(minInclusive) + "," + Long.toUnsignedString(maxInclusive) + "]";
         }
     }
 

@@ -23,6 +23,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_MAX_TC_SIZE = "maxTcSize";
     private static final String CONFIG_KEY_CONTAINERLESS_CMDS = "allowContainerlessCommands";
     private static final String CONFIG_KEY_CHECK_COMMAND_CLEARANCE = "checkCommandClearance";
+    private static final String CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES = "checkParameterValidityRanges";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -34,6 +35,7 @@ public class ProcessorConfig {
     boolean subscribeAll = false;
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
+    boolean checkParameterValidityRanges = true;
     /**
      * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
      * MetaCommand has no container associated.
@@ -75,6 +77,8 @@ public class ProcessorConfig {
                     allowContainerlessCommands = config.getBoolean(key);
                 } else if (CONFIG_KEY_CHECK_COMMAND_CLEARANCE.equals(key)) {
                     checkCommandClearance = config.getBoolean(key);
+                } else if (CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES.equals(key)) {
+                    checkParameterValidityRanges = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -140,7 +144,10 @@ public class ProcessorConfig {
     public boolean checkCommandClearance() {
         return checkCommandClearance;
     }
-
+    
+    public boolean checkParameterValidityRanges() {
+        return checkParameterValidityRanges;
+    }
     @Override
     public String toString() {
         return "ProcessorConfig [checkParameterAlarms=" + checkParameterAlarms + ", parameterAlarmServerEnabled="
@@ -150,4 +157,6 @@ public class ProcessorConfig {
                 + subscribeAll + ", generateEvents=" + generateEvents + ", containerProcOptions=" + containerProcOptions
                 + ", parameterCacheConfig=" + parameterCacheConfig + "]";
     }
+
+  
 }

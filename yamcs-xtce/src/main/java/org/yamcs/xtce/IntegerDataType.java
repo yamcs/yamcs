@@ -33,6 +33,7 @@ public abstract class IntegerDataType extends NumericDataType {
         super(t);
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
+        this.validRange = t.validRange;
     }
 
     public void setSigned(boolean signed) {

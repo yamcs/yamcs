@@ -242,7 +242,7 @@ public class XtceAssembler {
     private void writeEnumeratedParameterType(XMLStreamWriter doc, EnumeratedParameterType ptype)
             throws XMLStreamException {
         doc.writeStartElement("EnumeratedParameterType");
-        
+
         writeEnumeratedDataType(doc, ptype);
 
         if (ptype.getDefaultAlarm() != null) {
@@ -254,13 +254,13 @@ public class XtceAssembler {
             doc.writeStartElement("ContextAlarmList");
             for (EnumerationContextAlarm eca : ptype.getContextAlarmList()) {
                 doc.writeStartElement("ContextAlarm");
-               
+
                 writeEnumerationAlarm(doc, eca.getAlarmList());
 
                 doc.writeStartElement("ContextMatch");
                 writeMatchCriteria(doc, eca.getContextMatch());
                 doc.writeEndElement();// ContextMatch
-                
+
                 doc.writeEndElement();// ContextAlarm
             }
             doc.writeEndElement();// ContextAlarmList
@@ -277,18 +277,19 @@ public class XtceAssembler {
         doc.writeEndElement();
     }
 
-    private static void writeAggregateDataType(XMLStreamWriter doc, AggregateDataType type)  throws XMLStreamException {
+    private static void writeAggregateDataType(XMLStreamWriter doc, AggregateDataType type) throws XMLStreamException {
         writeNameDescription(doc, type);
 
         doc.writeStartElement("MemberList");
         for (Member member : type.getMemberList()) {
             doc.writeStartElement("Member");
-            writeNameDescription(doc,  member);
+            writeNameDescription(doc, member);
             doc.writeAttribute("typeRef", member.getType().getName());
             doc.writeEndElement();
         }
         doc.writeEndElement();
     }
+
     private void writeIntegerParameterType(XMLStreamWriter doc, IntegerParameterType ptype)
             throws XMLStreamException {
         doc.writeStartElement("IntegerParameterType");
@@ -303,10 +304,10 @@ public class XtceAssembler {
             doc.writeStartElement("ValidRange");
             doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
             doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
+            if(!range.isValidRangeAppliesToCalibrated()) {
+                doc.writeAttribute("validRangeAppliesToCalibrated","false");    
+            }
             doc.writeEndElement();
-
-            doc.writeAttribute("validRangeAppliesToCalibrated",
-                    Boolean.toString(ptype.getValidRange().isValidRangeAppliesToCalibrated()));
         }
         writeUnitSet(doc, ptype.getUnitSet());
 
@@ -326,9 +327,7 @@ public class XtceAssembler {
         writeNameDescription(doc, ptype);
         if (ptype.getValidRange() != null) {
             FloatValidRange range = ptype.getValidRange();
-            writeRange(doc, "ValidRange", range);
-
-            doc.writeAttribute("validRangeAppliesToCalibrated", "true");
+            writeRange(doc, "ValidRange", range, range.isValidRangeAppliesToCalibrated() ? null : Boolean.FALSE);
         }
         writeUnitSet(doc, ptype.getUnitSet());
 
@@ -359,6 +358,12 @@ public class XtceAssembler {
 
     private static void writeRange(XMLStreamWriter doc, String elementName, DoubleRange range)
             throws XMLStreamException {
+        writeRange(doc, elementName, range, null);
+    }
+
+    private static void writeRange(XMLStreamWriter doc, String elementName, DoubleRange range,
+            Boolean appliesToCalibrated)
+            throws XMLStreamException {
         if (range == null) {
             return;
         }
@@ -372,6 +377,9 @@ public class XtceAssembler {
             doc.writeAttribute("maxInclusive", String.valueOf(range.getMax()));
         } else {
             doc.writeAttribute("maxExclusive", String.valueOf(range.getMax()));
+        }
+        if (appliesToCalibrated != null) {
+            doc.writeAttribute("validRangeAppliesToCalibrated", appliesToCalibrated.toString());
         }
         doc.writeEndElement();
     }
@@ -536,19 +544,18 @@ public class XtceAssembler {
         for (ValueEnumerationRange ver : type.getValueEnumerationRangeList()) {
             doc.writeStartElement("Enumeration");
             doc.writeAttribute("label", ver.getLabel());
-            doc.writeAttribute("value", Long.toString((long)ver.min));
-            doc.writeAttribute("maxValue", Long.toString((long)ver.max));
+            doc.writeAttribute("value", Long.toString((long) ver.min));
+            doc.writeAttribute("maxValue", Long.toString((long) ver.max));
             doc.writeEndElement();
         }
-        
-        
+
         doc.writeEndElement();
         writeUnitSet(doc, type.getUnitSet());
-        if(type.getEncoding()!=null) {
+        if (type.getEncoding() != null) {
             writeDataEncoding(doc, type.getEncoding());
         }
     }
-    
+
     private void writeIntegerArgumentType(XMLStreamWriter doc, IntegerArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("IntegerArgumentType");
@@ -564,9 +571,9 @@ public class XtceAssembler {
             doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
             doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
             doc.writeEndElement();
-
-            doc.writeAttribute("validRangeAppliesToCalibrated",
-                    Boolean.toString(atype.getValidRange().isValidRangeAppliesToCalibrated()));
+            if(!range.isValidRangeAppliesToCalibrated()) {
+                doc.writeAttribute("validRangeAppliesToCalibrated", "false");
+            }
         }
         writeUnitSet(doc, atype.getUnitSet());
 
@@ -633,7 +640,7 @@ public class XtceAssembler {
     private static void writeAggregateArgumentType(XMLStreamWriter doc, AggregateArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("AggregateArgumentType");
-        writeAggregateDataType(doc,atype);
+        writeAggregateDataType(doc, atype);
         doc.writeEndElement();
     }
 
@@ -951,21 +958,21 @@ public class XtceAssembler {
         for (SequenceEntry entry : container.getEntryList()) {
             writeSequenceEntry(doc, entry);
         }
-        doc.writeEndElement();//EntryList
-        
-        if(container.getBaseContainer()!=null) {
+        doc.writeEndElement();// EntryList
+
+        if (container.getBaseContainer() != null) {
             doc.writeStartElement("BaseContainer");
             doc.writeAttribute("containerRef", getNameReference(container.getBaseContainer()));
-            
-            if(container.getRestrictionCriteria()!=null) {
+
+            if (container.getRestrictionCriteria() != null) {
                 doc.writeStartElement("RestrictionCriteria");
                 writeMatchCriteria(doc, container.getRestrictionCriteria());
-                doc.writeEndElement();//RestrictionCriteria
+                doc.writeEndElement();// RestrictionCriteria
             }
-            doc.writeEndElement();//BaseContainer
+            doc.writeEndElement();// BaseContainer
         }
-        
-        doc.writeEndElement();//SequenceContainer
+
+        doc.writeEndElement();// SequenceContainer
     }
 
     private void writeSequenceEntry(XMLStreamWriter doc, SequenceEntry entry) throws XMLStreamException {
@@ -983,8 +990,8 @@ public class XtceAssembler {
             doc.writeAttribute("argumentRef", ((ArgumentEntry) entry).getArgument().getName());
         } else if (entry instanceof FixedValueEntry) {
             doc.writeStartElement("FixedValueEntry");
-            FixedValueEntry fve = (FixedValueEntry)entry;
-            if(fve.getName()!=null) {
+            FixedValueEntry fve = (FixedValueEntry) entry;
+            if (fve.getName() != null) {
                 doc.writeAttribute("name", fve.getName());
             }
             doc.writeAttribute("binaryValue", StringConverter.arrayToHexString(fve.getBinaryValue()));
@@ -1047,7 +1054,7 @@ public class XtceAssembler {
 
     private void writeComparisonList(XMLStreamWriter doc, ComparisonList comparisonList) throws XMLStreamException {
         doc.writeStartElement("ComparisonList");
-        for(Comparison c: comparisonList.getComparisonList()) {
+        for (Comparison c : comparisonList.getComparisonList()) {
             writeComparison(doc, c);
         }
         doc.writeEndElement();
@@ -1055,7 +1062,7 @@ public class XtceAssembler {
 
     private void writeComparison(XMLStreamWriter doc, Comparison comparison) throws XMLStreamException {
         doc.writeStartElement("Comparison");
-        
+
         doc.writeAttribute("parameterRef", getNameReference(comparison.getParameterInstanceRef()));
         boolean ucv = comparison.getParameterInstanceRef().useCalibratedValue();
         if (!ucv) {
@@ -1077,33 +1084,33 @@ public class XtceAssembler {
             writeSequenceEntry(doc, entry);
         }
         doc.writeEndElement();// EntryList
-        
-        if(container.getBaseContainer()!=null) {
+
+        if (container.getBaseContainer() != null) {
             doc.writeStartElement("BaseContainer");
             doc.writeAttribute("containerRef", getNameReference(container.getBaseContainer()));
-            
-            if(container.getRestrictionCriteria()!=null) {
+
+            if (container.getRestrictionCriteria() != null) {
                 doc.writeStartElement("RestrictionCriteria");
                 writeMatchCriteria(doc, container.getRestrictionCriteria());
-                doc.writeEndElement();//RestrictionCriteria
+                doc.writeEndElement();// RestrictionCriteria
             }
-            doc.writeEndElement();//BaseContainer
+            doc.writeEndElement();// BaseContainer
         }
-        
+
         doc.writeEndElement();// CommandContainer
     }
 
     private String getNameReference(ParameterInstanceRef pinstRef) {
-        StringBuilder sb  = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append(getNameReference(pinstRef.getParameter()));
-        if(pinstRef.getMemberPath()!=null) {
-            for(PathElement pe: pinstRef.getMemberPath()) {
+        if (pinstRef.getMemberPath() != null) {
+            for (PathElement pe : pinstRef.getMemberPath()) {
                 sb.append("/").append(pe.getName());
             }
         }
         return sb.toString();
     }
-    
+
     private String getNameReference(NameDescription nd) {
         String ssname = currentSpaceSystem.getQualifiedName();
         if (nd.getQualifiedName().startsWith(ssname)) {

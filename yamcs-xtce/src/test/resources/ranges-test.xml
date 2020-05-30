@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="Example"
+  xmlns="http://www.omg.org/spec/XTCE/20180204"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  shortDescription="Example XTCE to illustrate setting validity ranges for parameters and arguments">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="latitude_t" sizeInBits="64" shortDescription="A type to represent a latitude value">
+        <UnitSet>
+          <Unit description="Degrees of Mercator projection latitude">degrees</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64" byteOrder="mostSignificantByteFirst" encoding="IEEE754_1985" />
+        <ValidRange minInclusive="-90.0" maxInclusive="90.0" />
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter parameterTypeRef="latitude_t" name="latitude" />
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="telemetry">
+        <EntryList>
+          <ParameterRefEntry parameterRef="latitude" />
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  
+  
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <EnumeratedArgumentType name="opcode_t">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+        <EnumerationList>
+          <Enumeration value="1" label="SetTemperature"/>
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <FloatArgumentType name="temperature_t" sizeInBits="64">
+        <UnitSet>
+          <Unit description="Desired temperature in degrees Celcius">degC</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64" byteOrder="mostSignificantByteFirst" encoding="IEEE754_1985" />
+        <ValidRangeSet>
+          <ValidRange minInclusive="10.0" maxExclusive="40.0" />
+        </ValidRangeSet>
+      </FloatArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      
+      <MetaCommand name="BaseCommand">
+        <ArgumentList>
+          <Argument argumentTypeRef="opcode_t" name="opcode" />
+        </ArgumentList>
+      </MetaCommand>
+      
+      <MetaCommand name="SetTemperature">
+        <BaseMetaCommand metaCommandRef="BaseCommand">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="opcode" argumentValue="SetTemperature" />
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument argumentTypeRef="temperature_t" name="temperature" />
+        </ArgumentList>
+        <CommandContainer name="SetTemperature">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="temperature" />
+          </EntryList>
+        </CommandContainer>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+  
+</SpaceSystem>

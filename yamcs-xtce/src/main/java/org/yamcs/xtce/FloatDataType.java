@@ -10,7 +10,7 @@ public abstract class FloatDataType extends NumericDataType {
      * if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link DataEncoding.
      * 
      */
-    FloatValidRange validRange;
+    private FloatValidRange validRange;
 
 
     int sizeInBits = 32;

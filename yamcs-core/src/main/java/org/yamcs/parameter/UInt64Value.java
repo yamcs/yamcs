@@ -31,6 +31,13 @@ public class UInt64Value extends Value {
         return false;
     }
     
+    static public double unsignedAsDouble(long x) {
+        double d = (double)x;
+        if (d < 0) {
+            d += 18446744073709551616.0;
+        }
+        return d;
+    }
     @Override
     public String toString() {
         return Long.toUnsignedString(v);
