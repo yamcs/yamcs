@@ -1,11 +1,13 @@
 package org.yamcs.tse;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -13,6 +15,7 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.YObjectLoader;
 
 public abstract class InstrumentDriver {
 
@@ -20,34 +23,52 @@ public abstract class InstrumentDriver {
 
     private static final int DEFAULT_POLLING_INTERVAL = 20;
 
-    protected String name;
+    protected String instrument;
 
     protected String commandSeparation;
     protected String responseTermination;
     protected int responseTimeout = 3000;
+    protected List<Interceptor> interceptors = new ArrayList<>();
 
     private int pollingInterval;
 
     protected Charset encoding = StandardCharsets.US_ASCII;
 
-    public InstrumentDriver(String name, Map<String, Object> args) {
-        this.name = name;
+    public void init(String name, YConfiguration config) {
+        this.instrument = name;
 
-        if (args.containsKey("commandSeparation")) {
-            commandSeparation = YConfiguration.getString(args, "commandSeparation");
+        if (config.containsKey("commandSeparation")) {
+            commandSeparation = config.getString("commandSeparation");
         }
-        if (args.containsKey("responseTermination")) {
-            responseTermination = YConfiguration.getString(args, "responseTermination");
+        if (config.containsKey("responseTermination")) {
+            responseTermination = config.getString("responseTermination");
         }
-        if (args.containsKey("responseTimeout")) {
-            responseTimeout = YConfiguration.getInt(args, "responseTimeout");
+        if (config.containsKey("responseTimeout")) {
+            responseTimeout = config.getInt("responseTimeout");
+        }
+
+        String requestTermination = config.getString("requestTermination", getDefaultRequestTermination());
+        if (requestTermination != null) {
+            Map<String, Object> interceptorConfig = new HashMap<>();
+            interceptorConfig.put(RequestTerminator.CONFIG_TERMINATION, requestTermination);
+            interceptors.add(new RequestTerminator(YConfiguration.wrap(interceptorConfig)));
+        }
+        if (config.containsKey("interceptors")) {
+            for (YConfiguration interceptorConfig : config.getConfigList("interceptors")) {
+                try {
+                    Interceptor interceptor = YObjectLoader.loadObject(interceptorConfig.toMap());
+                    interceptors.add(interceptor);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
         }
 
         pollingInterval = Math.min(DEFAULT_POLLING_INTERVAL, responseTimeout);
     }
 
     public String getName() {
-        return name;
+        return instrument;
     }
 
     public String getCommandSeparation() {
@@ -65,25 +86,32 @@ public abstract class InstrumentDriver {
     public List<String> command(String command, boolean expectResponse) throws IOException, TimeoutException {
         try {
             connect();
-            log.info("{} <<< {}", name, command);
-            write(command);
+            byte[] bytes = command.getBytes();
+            for (Interceptor interceptor : interceptors) {
+                bytes = interceptor.interceptCommand(instrument, bytes, encoding);
+            }
+            write(bytes);
             if (expectResponse) {
-                ResponseBuffer responseBuffer = new ResponseBuffer(encoding, getResponseTermination());
+                ResponseBuffer responseBuffer = new ResponseBuffer(getResponseTermination());
                 if (commandSeparation == null) {
-                    String response = readSingleResponse(responseBuffer);
+                    byte[] response = readSingleResponse(responseBuffer);
                     if (response != null) {
-                        log.info("{} >>> {}", name, response);
-                        return Arrays.asList(response);
+                        for (Interceptor interceptor : interceptors) {
+                            response = interceptor.interceptResponse(instrument, response, encoding);
+                        }
+                        return Arrays.asList(new String(response, encoding));
                     }
                 } else { // Compound command where distinct responses are sent
                     String[] parts = command.split(commandSeparation);
                     List<String> responses = new ArrayList<>();
                     for (String part : parts) {
                         if (part.contains("?") || part.contains("!")) {
-                            String response = readSingleResponse(responseBuffer);
+                            byte[] response = readSingleResponse(responseBuffer);
                             if (response != null) {
-                                log.info("{} >>> {}", name, response);
-                                responses.add(response);
+                                for (Interceptor interceptor : interceptors) {
+                                    response = interceptor.interceptResponse(instrument, response, encoding);
+                                }
+                                responses.add(new String(response, encoding));
                             }
                         }
                     }
@@ -102,8 +130,8 @@ public abstract class InstrumentDriver {
      * Attemps to read a full delimited TSE response by triggering repeated read polls on the underlying transport,
      * until either a full response was assembled, or the global response timeout has been reached.
      */
-    private String readSingleResponse(ResponseBuffer responseBuffer) throws IOException, TimeoutException {
-        String response = responseBuffer.readSingleResponse();
+    private byte[] readSingleResponse(ResponseBuffer responseBuffer) throws IOException, TimeoutException {
+        byte[] response = responseBuffer.readSingleResponse();
         if (response != null) {
             return response;
         }
@@ -125,7 +153,9 @@ public abstract class InstrumentDriver {
         if (getResponseTermination() == null) {
             return response;
         } else {
-            throw new TimeoutException(response != null ? "Unterminated response: " + response : null);
+            throw new TimeoutException(response != null
+                    ? "Unterminated response: " + new String(response, encoding)
+                    : null);
         }
     }
 
@@ -133,7 +163,15 @@ public abstract class InstrumentDriver {
 
     public abstract void disconnect() throws IOException;
 
-    public abstract void write(String cmd) throws IOException;
+    public abstract void write(byte[] cmd) throws IOException;
 
     public abstract void readAvailable(ResponseBuffer buffer, int timeout) throws IOException;
+
+    /**
+     * Returns the driver-specific default pattern for terminating requests. This is the termination that gets used if
+     * the user does not explicitly configure anything.
+     * <p>
+     * Return <tt>null</tt> to do no request termination.
+     */
+    public abstract String getDefaultRequestTermination();
 }

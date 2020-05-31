@@ -79,6 +79,32 @@ commandSeparation (string)
 responseTimeout (integer)
     Timeout in milliseconds for a response to arrive. Default: ``3000``
 
+requestTermination (string)
+    Character(s) to append to generated string commands. This is typically used for adding newline characters with make the instrument detect a complete request.
+
+    Set this to null if you do not want to disable request termination.
+
+    The default value is driver-specific. For the TCP/IP driver it defaults to ``\n`` whereas for the Serial Port driver, it is unset.
+
+interceptors (list of maps)
+    Adds an interceptor chain where each interceptor must be an implementation of :javadoc:`org.yamcs.tse.Interceptor`. Interceptors are executed top-down on these events:
+    
+    #. A new command is about to be issued. The interceptor can inspect it, or make final changes. The input is in the form of a raw byte array and includes any request termination characters (if applicable).
+
+    #. A non-null response was received. The interceptor can inspect it, or make adjustments before handing it over to the next interceptor. Only at the end of the chain, the response bytes are interpreted by the TSE Commander. Note that the response bytes do **not** include the response termination characters (if any), because the driver already strips them off while delimiting messages from the incoming stream.
+
+    Yamcs ships with one standard interceptor which you can add to an instrument's configuration if you want to enable logging of its command and response messages:
+
+    .. code-block:: yaml
+
+        - name: myinstrument
+          class: org.yamcs.tse.TcpIpDriver
+          args:
+            ...
+            interceptors:
+              - class: org.yamcs.tse.LoggingInterceptor
+
+
 In addition each driver supports driver-specific arguments:
 
 
