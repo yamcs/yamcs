@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +48,11 @@ public class TcpIpDriver extends InstrumentDriver {
     private Selector selector;
     private SelectionKey selectionKey;
 
-    public TcpIpDriver(String name, Map<String, Object> args) {
-        super(name, args);
-        host = YConfiguration.getString(args, "host");
-        port = YConfiguration.getInt(args, "port");
+    @Override
+    public void init(String name, YConfiguration config) {
+        super.init(name, config);
+        host = config.getString("host");
+        port = config.getInt("port");
     }
 
     @Override
@@ -88,7 +88,12 @@ public class TcpIpDriver extends InstrumentDriver {
     }
 
     @Override
-    public void write(String cmd) throws IOException {
+    public String getDefaultRequestTermination() {
+        return "\n";
+    }
+
+    @Override
+    public void write(byte[] cmd) throws IOException {
         boolean sent = false;
         while (!sent) {
             selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
@@ -116,8 +121,7 @@ public class TcpIpDriver extends InstrumentDriver {
             }
             if (selectionKey.isWritable()) {
                 try {
-                    byte[] barr = (cmd + "\n").getBytes(encoding);
-                    ByteBuffer bb = ByteBuffer.wrap(barr);
+                    ByteBuffer bb = ByteBuffer.wrap(cmd);
                     socketChannel.write(bb); // TODO write remainder in case of partial write
                     sent = true;
                 } catch (IOException e) { // Ex.: Broken pipe

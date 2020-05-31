@@ -31,7 +31,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         log.info("Telnet client connected: " + ctx.channel().remoteAddress());
 
         String names = instrumentController.getInstruments().stream()
-                .map(d -> d.name)
+                .map(d -> d.instrument)
                 .collect(Collectors.joining(", "));
 
         ctx.write("======================================================================\r\n");
@@ -80,7 +80,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
             break;
         case ":tse:instrument?":
             if (currentInstrument != null) {
-                ctx.write(currentInstrument.name);
+                ctx.write(currentInstrument.instrument);
             }
             ctx.writeAndFlush("\r\n");
             break;

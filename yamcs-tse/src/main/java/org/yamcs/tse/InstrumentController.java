@@ -54,7 +54,7 @@ public class InstrumentController extends AbstractService {
 
     public List<InstrumentDriver> getInstruments() {
         return instruments.stream()
-                .sorted((i1, i2) -> i1.name.compareTo(i2.name))
+                .sorted((i1, i2) -> i1.instrument.compareTo(i2.instrument))
                 .collect(Collectors.toList());
     }
 
