@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/space/xtce"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="XTCE_V12_UT"
+    xsi:schemaLocation="http://www.omg.org/space/xtce xtcev1_2.xsd"
+    shortDescription="Defines telemetry tabble for the IIF subsystems">
+    <xtce:Header version="0.5.0" validationStatus="draft"/>
+    <!-- All things pertaining to telemetry fall within the TelemetryMetaData section. -->
+    <!-- Some system level parameter type definitions in this section can be used by both telemetry and commands. -->
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:BinaryParameterType name="Byte">
+                <xtce:BinaryDataEncoding>
+                    <xtce:SizeInBits>
+                        <xtce:FixedValue>8</xtce:FixedValue>
+                    </xtce:SizeInBits>
+                </xtce:BinaryDataEncoding>
+            </xtce:BinaryParameterType>
+          
+            <!-- These define a set of generic parameter types that can be used for both telemetry and commands.    -->
+            <!-- The name reflects the encoded size of the parameter and the native size is large enough to hold it -->
+            <xtce:IntegerParameterType name="UInt3">
+                <xtce:IntegerDataEncoding sizeInBits="3"/>
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="UInt5">
+                <xtce:IntegerDataEncoding sizeInBits="5"/>
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="UInt12">
+                <xtce:IntegerDataEncoding sizeInBits="12"/>
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="UInt32">
+                <xtce:IntegerDataEncoding sizeInBits="32"/>
+            </xtce:IntegerParameterType>
+            <xtce:FloatParameterType name="Float32"/>
+            <xtce:BooleanParameterType name="Boolean"/>
+            <!-- The following represents a bit pattern of some telemetry value using a binary type with binary data encoding.
+                 This type as defined here is not much different from the Unsigned8BitInteger type defined above except
+                 the telemetry values using this type are interpreted as hex bit patterns rather than as numbers.    -->
+        </xtce:ParameterTypeSet>
+        <!-- These are the parameters that can be used in containers. -->
+        <xtce:ParameterSet>
+            <!-- These are parameters that may be used in abstract telemetry or command containers to define system-level settings. -->
+            <xtce:Parameter name="SyncByte1" parameterTypeRef="Byte"/>
+            <xtce:Parameter name="SyncByte2" parameterTypeRef="Byte"/>
+            <xtce:Parameter name="SubsystemID" parameterTypeRef="UInt3"/>
+            <xtce:Parameter name="EventID" parameterTypeRef="UInt5"/>
+            <xtce:Parameter name="NumberOfDataBytesFollowing" parameterTypeRef="UInt32"/>
+            <xtce:Parameter name="NumberOfSamples" parameterTypeRef="UInt32"/>
+            <xtce:Parameter name="Samples" parameterTypeRef="UInt12"/>
+        </xtce:ParameterSet>
+
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="FrameHeader" abstract="true">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="SyncByte1"/>
+                    <xtce:ParameterRefEntry parameterRef="SyncByte2"/>
+                    <xtce:ParameterRefEntry parameterRef="SubsystemID"/>
+                    <xtce:ParameterRefEntry parameterRef="EventID"/>
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+            <xtce:SequenceContainer name="SENSOR_X_EVENT_Y">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="NumberOfDataBytesFollowing"/>
+                    <xtce:ParameterRefEntry parameterRef="Samples">
+                        <xtce:RepeatEntry>
+                            <xtce:Count>
+                                <xtce:FixedValue>4</xtce:FixedValue>
+                            </xtce:Count>
+                        </xtce:RepeatEntry>
+                    </xtce:ParameterRefEntry>
+                </xtce:EntryList>
+                <xtce:BaseContainer containerRef="FrameHeader">
+                    <xtce:RestrictionCriteria>
+                        <xtce:ComparisonList>
+                            <xtce:Comparison parameterRef="SyncByte1" value="A7"/>
+                            <xtce:Comparison parameterRef="SyncByte2" value="F3"/>
+                            <xtce:Comparison parameterRef="SubsystemID" value="5"/>
+                            <xtce:Comparison parameterRef="EventID" value="31"/>
+                        </xtce:ComparisonList>
+                    </xtce:RestrictionCriteria>
+                </xtce:BaseContainer>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+</xtce:SpaceSystem>

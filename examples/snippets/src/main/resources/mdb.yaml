@@ -1,0 +1,6 @@
+example:
+  - type: org.yamcs.xtce.XtceLoader
+    args:
+      # This path reference is resolved from the file system.
+      # Relative paths start from your cwd
+      file: "mdb/xtce_v12_UT.xml"
