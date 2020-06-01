@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -13,10 +12,8 @@ import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
-import org.yamcs.protobuf.alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
 import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 public class AlarmIntegrationTest extends AbstractIntegrationTest {
 
@@ -33,12 +30,13 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         Thread.sleep(2000);
 
         CreateEventRequest createRequest = CreateEventRequest.newBuilder()
+                .setInstance(yamcsInstance)
                 .setSeverity("warning")
                 .setSource("IntegrationTest")
                 .setType("Event-Alarm-Test")
                 .setMessage("event1")
                 .build();
-        restClient.doRequest("/archive/" + yamcsInstance + "/events", HttpMethod.POST, createRequest);
+        yamcsClient.createEvent(createRequest).get();
 
         AlarmData a1 = captor.expectTimely();
         EventAlarmData ea1 = a1.getEventDetail();
@@ -48,11 +46,15 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Event-Alarm-Test", ea1.getTriggerEvent().getType());
         assertEquals("event1", ea1.getTriggerEvent().getMessage());
 
-        EditAlarmRequest ear = EditAlarmRequest.newBuilder().setState("shelved")
+        EditAlarmRequest ear = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
+                .setSeqnum(a1.getSeqNum())
+                .setState("shelved")
                 .setComment("I will deal with this later")
                 .setShelveDuration(500).build();
-        restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
-                + a1.getId().getName() + "/" + a1.getSeqNum(), HttpMethod.PATCH, ear).get();
+        yamcsClient.editAlarm(ear).get();
         AlarmData a2 = captor.expectTimely();
         assertEquals(AlarmNotificationType.SHELVED, a2.getNotificationType());
         assertTrue(a2.hasShelveInfo());
@@ -63,45 +65,54 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         assertEquals(AlarmNotificationType.UNSHELVED, a3.getNotificationType());
 
         // shelve it again
-        ear = EditAlarmRequest.newBuilder().setState("shelved").setComment("I will deal with this later#2")
+        ear = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
+                .setSeqnum(a1.getSeqNum())
+                .setState("shelved")
+                .setComment("I will deal with this later#2")
                 .build();
-        restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
-                + a1.getId().getName() + "/" + a1.getSeqNum(), HttpMethod.PATCH, ear).get();
+        yamcsClient.editAlarm(ear).get();
         a2 = captor.expectTimely();
         assertEquals(AlarmNotificationType.SHELVED, a2.getNotificationType());
         a3 = captor.poll(2000);
         assertNull(a3);
 
-        // System.out.println("a1: " + a1);
-        ear = EditAlarmRequest.newBuilder().setState("acknowledged").setComment("a nice ack explanation")
+        ear = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
+                .setSeqnum(a1.getSeqNum())
+                .setState("acknowledged")
+                .setComment("a nice ack explanation")
                 .build();
-        restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
-                + a1.getId().getName() + "/" + a1.getSeqNum(), HttpMethod.PATCH, ear).get();
+        yamcsClient.editAlarm(ear).get();
         AlarmData a4 = captor.expectTimely();
 
-        assertNotNull(a4);
         assertEquals("a nice ack explanation", a4.getAcknowledgeInfo().getAcknowledgeMessage());
 
-        byte[] resp = restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET)
-                .get();
-        ListAlarmsResponse lar = ListAlarmsResponse.parseFrom(resp);
+        ListProcessorAlarmsResponse lar = yamcsClient.listAlarms(yamcsInstance, "realtime").get();
 
         assertEquals(1, lar.getAlarmsCount());
         assertEquals("a nice ack explanation", lar.getAlarms(0).getAcknowledgeInfo().getAcknowledgeMessage());
 
-        ear = EditAlarmRequest.newBuilder().setState("cleared").setComment("a nice clear explanation")
+        ear = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
+                .setSeqnum(a1.getSeqNum())
+                .setState("cleared")
+                .setComment("a nice clear explanation")
                 .build();
-        restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
-                + a1.getId().getName() + "/" + a1.getSeqNum(), HttpMethod.PATCH, ear).get();
-        AlarmData a5 = captor.expectTimely();
 
-        assertNotNull(a5);
+        yamcsClient.editAlarm(ear).get();
+
+        AlarmData a5 = captor.expectTimely();
         assertTrue(a5.hasClearInfo());
         assertEquals("a nice clear explanation", a5.getClearInfo().getClearMessage());
 
-        resp = restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET).get();
-
-        lar = ListAlarmsResponse.parseFrom(resp);
+        lar = yamcsClient.listAlarms(yamcsInstance, "realtime").get();
         assertEquals(0, lar.getAlarmsCount());
     }
 }

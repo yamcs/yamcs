@@ -26,7 +26,6 @@ import org.yamcs.protobuf.Table.ColumnData;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.EnumValue;
 import org.yamcs.protobuf.Table.ExecuteSqlRequest;
-import org.yamcs.protobuf.Table.ExecuteSqlResponse;
 import org.yamcs.protobuf.Table.GetStreamRequest;
 import org.yamcs.protobuf.Table.GetTableDataRequest;
 import org.yamcs.protobuf.Table.GetTableRequest;
@@ -34,9 +33,11 @@ import org.yamcs.protobuf.Table.ListStreamsRequest;
 import org.yamcs.protobuf.Table.ListStreamsResponse;
 import org.yamcs.protobuf.Table.ListTablesRequest;
 import org.yamcs.protobuf.Table.ListTablesResponse;
+import org.yamcs.protobuf.Table.ListValue;
 import org.yamcs.protobuf.Table.PartitioningInfo;
 import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
+import org.yamcs.protobuf.Table.ResultSet;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.StreamData;
@@ -68,8 +69,9 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
+import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
@@ -391,27 +393,116 @@ public class TableApi extends AbstractTableApi<Context> {
     }
 
     @Override
-    public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ExecuteSqlResponse> observer) {
+    public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        ExecuteSqlResponse.Builder responseb = ExecuteSqlResponse.newBuilder();
         if (request.hasStatement()) {
             try {
-                StreamSqlResult result = ydb.execute(request.getStatement());
-                String stringOutput = result.toString();
-                if (stringOutput != null) {
-                    responseb.setResult(stringOutput);
-                }
+                StreamSqlStatement stmt = ydb.createStatement(request.getStatement());
+
+                ResultSet.Builder rsBuilder = ResultSet.newBuilder();
+                ydb.execute(stmt, new ResultListener() {
+
+                    boolean first = true;
+
+                    @Override
+                    public void next(Tuple tuple) {
+                        if (first) {
+                            for (int i = 0; i < tuple.getDefinition().size(); i++) {
+                                ColumnDefinition cdef = tuple.getColumnDefinition(i);
+                                rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
+                            }
+                            first = false;
+                        }
+                        rsBuilder.addRows(ListValue.newBuilder()
+                                .addAllValues(getTupleValues(tuple)));
+                    }
+
+                    @Override
+                    public void completeExceptionally(Throwable t) {
+                        observer.completeExceptionally(t);
+                    }
+
+                    @Override
+                    public void complete() {
+                        observer.complete(rsBuilder.build());
+                    }
+                });
             } catch (ParseException e) {
                 throw new BadRequestException(e);
             } catch (StreamSqlException e) {
                 throw new InternalServerErrorException(e);
             }
         }
-        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void executeStreamingSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        if (request.hasStatement()) {
+            try {
+                StreamSqlStatement stmt = ydb.createStatement(request.getStatement());
+
+                // Note: we batch rows together in result sets despite knowing that
+                // there is already batching going on before an http chunk is emitted.
+                // The advantage though would be if in the future we add some sort of
+                // resume token per result set. This would help to recover from abrupt
+                // failures.
+                final int RESULT_SET_SIZE_TRESHOLD = 2000;
+
+                ydb.execute(stmt, new ResultListener() {
+
+                    boolean first = true;
+                    int sizeEstimate;
+                    ResultSet.Builder rsBuilder = ResultSet.newBuilder();
+
+                    @Override
+                    public void next(Tuple tuple) {
+                        if (first) {
+                            for (int i = 0; i < tuple.getDefinition().size(); i++) {
+                                ColumnDefinition cdef = tuple.getColumnDefinition(i);
+                                ColumnInfo column = toColumnInfo(cdef, null);
+                                rsBuilder.addColumns(column);
+                                sizeEstimate += column.getSerializedSize();
+                            }
+                            first = false;
+                        }
+                        ListValue row = ListValue.newBuilder().addAllValues(getTupleValues(tuple)).build();
+                        rsBuilder.addRows(row);
+                        sizeEstimate += row.getSerializedSize();
+                        if (sizeEstimate > RESULT_SET_SIZE_TRESHOLD) {
+                            observer.next(rsBuilder.build());
+                            rsBuilder = ResultSet.newBuilder();
+                            sizeEstimate = 0;
+                        }
+                    }
+
+                    @Override
+                    public void completeExceptionally(Throwable t) {
+                        observer.completeExceptionally(t);
+                    }
+
+                    @Override
+                    public void complete() {
+                        if (rsBuilder.getRowsCount() > 0) {
+                            observer.next(rsBuilder.build());
+                        }
+                        observer.complete();
+                    }
+                });
+            } catch (ParseException e) {
+                throw new BadRequestException(e);
+            } catch (StreamSqlException e) {
+                throw new InternalServerErrorException(e);
+            }
+        }
     }
 
     public static Stream verifyStream(Context ctx, YarchDatabaseInstance ydb, String streamName) {
@@ -600,8 +691,8 @@ public class TableApi extends AbstractTableApi<Context> {
         return infob.build();
     }
 
-    public final static List<ColumnData> toColumnDataList(Tuple tuple) {
-        List<ColumnData> result = new ArrayList<>();
+    private static List<Value> getTupleValues(Tuple tuple) {
+        List<Value> result = new ArrayList<>();
         int i = 0;
         for (Object column : tuple.getColumns()) {
             ColumnDefinition cdef = tuple.getColumnDefinition(i);
@@ -610,55 +701,85 @@ public class TableApi extends AbstractTableApi<Context> {
             switch (cdef.getType().val) {
             case SHORT:
                 v.setType(Type.SINT32);
-                v.setSint32Value((Short) column);
+                if (column != null) {
+                    v.setSint32Value((Short) column);
+                }
                 break;
             case DOUBLE:
                 v.setType(Type.DOUBLE);
-                v.setDoubleValue((Double) column);
+                if (column != null) {
+                    v.setDoubleValue((Double) column);
+                }
                 break;
             case BINARY:
                 v.setType(Type.BINARY);
-                v.setBinaryValue(ByteString.copyFrom((byte[]) column));
+                if (column != null) {
+                    v.setBinaryValue(ByteString.copyFrom((byte[]) column));
+                }
                 break;
             case INT:
                 v.setType(Type.SINT32);
-                v.setSint32Value((Integer) column);
+                if (column != null) {
+                    v.setSint32Value((Integer) column);
+                }
                 break;
             case TIMESTAMP:
                 v.setType(Type.TIMESTAMP);
-                v.setTimestampValue((Long) column);
-                v.setStringValue(TimeEncoding.toString((Long) column));
+                if (column != null) {
+                    v.setTimestampValue((Long) column);
+                    v.setStringValue(TimeEncoding.toString((Long) column));
+                }
                 break;
             case ENUM:
             case STRING:
                 v.setType(Type.STRING);
-                v.setStringValue((String) column);
+                if (column != null) {
+                    v.setStringValue((String) column);
+                }
                 break;
             case BOOLEAN:
                 v.setType(Type.BOOLEAN);
-                v.setBooleanValue((Boolean) column);
+                if (column != null) {
+                    v.setBooleanValue((Boolean) column);
+                }
                 break;
             case LONG:
                 v.setType(Type.SINT64);
-                v.setSint64Value((Long) column);
+                if (column != null) {
+                    v.setSint64Value((Long) column);
+                }
                 break;
             case PARAMETER_VALUE:
                 org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
                 v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
                 break;
             case PROTOBUF:
-                MessageLite message = (MessageLite) column;
                 v.setType(Type.BINARY);
-                v.setBinaryValue(message.toByteString());
+                if (column != null) {
+                    MessageLite message = (MessageLite) column;
+                    v.setBinaryValue(message.toByteString());
+                }
                 break;
             default:
                 throw new IllegalArgumentException(
                         "Tuple column type " + cdef.getType().val + " is currently not supported");
             }
 
+            result.add(v.build());
+            i++;
+        }
+        return result;
+    }
+
+    public final static List<ColumnData> toColumnDataList(Tuple tuple) {
+        List<ColumnData> result = new ArrayList<>();
+        int i = 0;
+        for (Value value : getTupleValues(tuple)) {
+            ColumnDefinition cdef = tuple.getColumnDefinition(i);
+
             ColumnData.Builder colData = ColumnData.newBuilder();
             colData.setName(cdef.getName());
-            colData.setValue(v);
+            colData.setValue(value);
             result.add(colData.build());
             i++;
         }

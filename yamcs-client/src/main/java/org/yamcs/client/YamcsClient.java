@@ -14,8 +14,29 @@ import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.SpnegoUtils.SpnegoException;
+import org.yamcs.client.mdb.MissionDatabaseClient;
+import org.yamcs.protobuf.CreateEventRequest;
+import org.yamcs.protobuf.CreateInstanceRequest;
+import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.LeapSecondsTable;
+import org.yamcs.protobuf.ListInstancesRequest;
+import org.yamcs.protobuf.ListInstancesResponse;
+import org.yamcs.protobuf.ManagementApiClient;
+import org.yamcs.protobuf.StartInstanceRequest;
+import org.yamcs.protobuf.StopInstanceRequest;
+import org.yamcs.protobuf.TimeApiClient;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.protobuf.alarms.AlarmsApiClient;
+import org.yamcs.protobuf.alarms.EditAlarmRequest;
+import org.yamcs.protobuf.alarms.ListAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
 
+import com.google.protobuf.Empty;
 import com.google.protobuf.MessageLite;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -42,6 +63,13 @@ public class YamcsClient {
 
     private List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
 
+    private MethodHandler methodHandler;
+
+    private AlarmsApiClient alarmService;
+    private TimeApiClient timeService;
+    private ManagementApiClient managementService;
+    private EventsApiClient eventService;
+
     private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
         this.host = host;
         this.port = port;
@@ -63,18 +91,21 @@ public class YamcsClient {
             public void disconnected() {
                 if (!closed) {
                     String msg = String.format("Connection to %s:%s lost", host, port);
-                    connectionListeners.forEach(l -> {
-                        l.log(msg);
-                    });
+                    connectionListeners.forEach(l -> l.log(msg));
                     log.warning(msg);
                 }
                 connected = false;
-                connectionListeners.forEach(l -> {
-                    l.disconnected();
-                });
+                connectionListeners.forEach(l -> l.disconnected());
             }
         });
         websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
+
+        methodHandler = new HttpMethodHandler(this);
+
+        alarmService = new AlarmsApiClient(methodHandler);
+        eventService = new EventsApiClient(methodHandler);
+        timeService = new TimeApiClient(methodHandler);
+        managementService = new ManagementApiClient(methodHandler);
     }
 
     public static Builder newBuilder(String host, int port) {
@@ -227,6 +258,87 @@ public class YamcsClient {
                 throw new ClientException(cause);
             }
         }
+    }
+
+    public CompletableFuture<YamcsInstance> createInstance(CreateInstanceRequest request) {
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.createInstance(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<ListInstancesResponse> listInstances() {
+        CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
+        managementService.listInstances(null, ListInstancesRequest.getDefaultInstance(), new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<ListInstancesResponse> listInstances(InstanceFilter filter) {
+        ListInstancesRequest.Builder requestb = ListInstancesRequest.newBuilder();
+        for (String expression : filter.getFilterExpressions()) {
+            requestb.addFilter(expression);
+        }
+        CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
+        managementService.listInstances(null, requestb.build(), new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<YamcsInstance> startInstance(String instance) {
+        StartInstanceRequest request = StartInstanceRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.startInstance(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<YamcsInstance> stopInstance(String instance) {
+        StopInstanceRequest request = StopInstanceRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.stopInstance(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<LeapSecondsTable> getLeapSeconds() {
+        CompletableFuture<LeapSecondsTable> f = new CompletableFuture<>();
+        timeService.getLeapSeconds(null, Empty.getDefaultInstance(), new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Event> createEvent(CreateEventRequest request) {
+        CompletableFuture<Event> f = new CompletableFuture<>();
+        eventService.createEvent(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<ListAlarmsResponse> listAlarms(String instance) {
+        ListAlarmsRequest request = ListAlarmsRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
+        alarmService.listAlarms(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<ListProcessorAlarmsResponse> listAlarms(String instance, String processor) {
+        ListProcessorAlarmsRequest request = ListProcessorAlarmsRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .build();
+        CompletableFuture<ListProcessorAlarmsResponse> f = new CompletableFuture<>();
+        alarmService.listProcessorAlarms(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Empty> editAlarm(EditAlarmRequest request) {
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        alarmService.editAlarm(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public MissionDatabaseClient getMissionDatabase(String instance) {
+        return new MissionDatabaseClient(methodHandler, instance);
     }
 
     public String getHost() {

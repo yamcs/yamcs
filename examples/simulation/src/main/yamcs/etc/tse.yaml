@@ -20,6 +20,8 @@ instruments:
       host: localhost
       port: 10023
       responseTermination: "\r\n"
+      interceptors:
+        - class: org.yamcs.tse.LoggingInterceptor
 
   - name: rigol
     class: org.yamcs.tse.TcpIpDriver

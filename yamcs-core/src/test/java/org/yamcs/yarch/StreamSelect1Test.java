@@ -8,10 +8,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSelect1Test extends YarchTestCase {
-    StreamSqlResult res;
+
     final int n = 200;
 
     public void createFeeder1() throws YarchException {
@@ -44,7 +43,7 @@ public class StreamSelect1Test extends YarchTestCase {
     public void testLike() throws Exception {
         createFeeder1();
 
-        res = execute("create stream stream_out1 as select * from stream_in where y like \'s1%\'");
+        execute("create stream stream_out1 as select * from stream_in where y like \'s1%\'");
         Stream s = ydb.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
         final AtomicInteger counter = new AtomicInteger(0);
@@ -77,7 +76,7 @@ public class StreamSelect1Test extends YarchTestCase {
     public void testNotLike() throws Exception {
         createFeeder1();
 
-        res = execute("create stream stream_out1 as select * from stream_in where y NOT LIKE \'s1%\'");
+        execute("create stream stream_out1 as select * from stream_in where y NOT LIKE \'s1%\'");
         Stream s = ydb.getStream("stream_out1");
         final Semaphore finished = new Semaphore(0);
         final AtomicInteger counter = new AtomicInteger(0);

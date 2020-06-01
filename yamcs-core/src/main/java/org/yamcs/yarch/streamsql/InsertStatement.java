@@ -6,24 +6,14 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchException;
 
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.InsertStatement;
-import org.yamcs.yarch.streamsql.NotImplementedException;
-import org.yamcs.yarch.streamsql.ResourceNotFoundException;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
+public class InsertStatement implements StreamSqlStatement {
 
-public class InsertStatement extends StreamSqlStatement {
     String name;
     StreamExpression expression;
     static Logger log = LoggerFactory.getLogger(InsertStatement.class.getName());
@@ -36,7 +26,7 @@ public class InsertStatement extends StreamSqlStatement {
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
+    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
 
         TableDefinition outputTableDef = ydb.getTable(name);
@@ -57,7 +47,7 @@ public class InsertStatement extends StreamSqlStatement {
                 inputStream.addSubscriber(tableWriter);
                 tableWriter.closeFuture().thenAccept(v -> inputStream.removeSubscriber(tableWriter));
             } catch (YarchException e) {
-                log.warn("Got exception when creatin table", e);
+                log.warn("Exception while creating table", e);
                 throw new GenericStreamSqlException(e.getMessage());
             }
         } else {
@@ -73,6 +63,6 @@ public class InsertStatement extends StreamSqlStatement {
             });
 
         }
-        return new StreamSqlResult();
+        resultListener.complete();
     }
 }

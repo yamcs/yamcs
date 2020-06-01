@@ -4,21 +4,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-public class ShowEnginesStatement extends StreamSqlStatement {
+public class ShowEnginesStatement implements StreamSqlStatement {
+
+    private static final TupleDefinition TDEF = new TupleDefinition();
+    static {
+        TDEF.addColumn("engine", DataType.STRING);
+        TDEF.addColumn("default", DataType.STRING);
+    }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
+    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
         List<String> engines = new ArrayList<>(YarchDatabase.getStorageEngineNames());
         Collections.sort(engines);
-
-        StreamSqlResult res = new StreamSqlResult();
-        res.setHeader("engine", "default");
         for (String engine : engines) {
             String def = engine.equals(YarchDatabase.getDefaultStorageEngineName()) ? "*" : null;
-            res.addRow(engine, def);
+            Tuple tuple = new Tuple(TDEF, new Object[] { engine, def });
+            resultListener.next(tuple);
         }
-        return res;
+        resultListener.complete();
     }
 }

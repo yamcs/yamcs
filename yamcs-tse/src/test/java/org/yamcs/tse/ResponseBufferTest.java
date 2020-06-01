@@ -1,8 +1,6 @@
 package org.yamcs.tse;
 
-import static org.junit.Assert.assertEquals;
-
-import java.nio.charset.StandardCharsets;
+import static org.junit.Assert.assertArrayEquals;
 
 import org.junit.Test;
 
@@ -10,21 +8,21 @@ public class ResponseBufferTest {
 
     @Test
     public void testMultipleResponses() {
-        ResponseBuffer responseBuffer = new ResponseBuffer(StandardCharsets.US_ASCII, "\r\n");
+        ResponseBuffer responseBuffer = new ResponseBuffer("\r\n");
         responseBuffer.append("ABC\r\nDEF\r\nGHI\r\nJKL".getBytes());
 
-        assertEquals("ABC", responseBuffer.readSingleResponse());
-        assertEquals("DEF", responseBuffer.readSingleResponse());
-        assertEquals("GHI", responseBuffer.readSingleResponse());
-        assertEquals(null, responseBuffer.readSingleResponse());
+        assertArrayEquals("ABC".getBytes(), responseBuffer.readSingleResponse());
+        assertArrayEquals("DEF".getBytes(), responseBuffer.readSingleResponse());
+        assertArrayEquals("GHI".getBytes(), responseBuffer.readSingleResponse());
+        assertArrayEquals(null, responseBuffer.readSingleResponse());
 
-        assertEquals("JKL", responseBuffer.readSingleResponse(true));
-        assertEquals(null, responseBuffer.readSingleResponse());
-        assertEquals(null, responseBuffer.readSingleResponse(true));
+        assertArrayEquals("JKL".getBytes(), responseBuffer.readSingleResponse(true));
+        assertArrayEquals(null, responseBuffer.readSingleResponse());
+        assertArrayEquals(null, responseBuffer.readSingleResponse(true));
 
         responseBuffer.append("MN".getBytes());
-        assertEquals(null, responseBuffer.readSingleResponse());
+        assertArrayEquals(null, responseBuffer.readSingleResponse());
         responseBuffer.append("O\r\n".getBytes());
-        assertEquals("MNO", responseBuffer.readSingleResponse());
+        assertArrayEquals("MNO".getBytes(), responseBuffer.readSingleResponse());
     }
 }

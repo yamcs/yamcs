@@ -126,8 +126,14 @@ public class TseCommander extends ProcessRunner {
         if (yconf.containsKey("instruments")) {
             for (YConfiguration instrumentConfig : yconf.getConfigList("instruments")) {
                 String name = instrumentConfig.getString("name");
+                String instrumentClass = instrumentConfig.getString("class");
+                YConfiguration instrumentArgs = YConfiguration.emptyConfig();
+                if (instrumentConfig.containsKey("args")) {
+                    instrumentArgs = instrumentConfig.getConfig("args");
+                }
                 try {
-                    InstrumentDriver instrument = YObjectLoader.loadObject(instrumentConfig.toMap(), name);
+                    InstrumentDriver instrument = YObjectLoader.loadObject(instrumentClass);
+                    instrument.init(name, instrumentArgs);
                     instrumentController.addInstrument(instrument);
                 } catch (IOException e) {
                     throw new Error(e);

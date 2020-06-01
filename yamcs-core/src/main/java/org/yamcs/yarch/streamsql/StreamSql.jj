@@ -272,6 +272,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     |
     statement=InsertAppendStatement()
     |
+    statement=SelectTableStatement()
+    |
     statement=UpsertStatement()
     |
     statement=UpsertAppendStatement()
@@ -403,7 +405,16 @@ CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
             return new CreateStreamStatement(name,tupleDefinition);
         }
    )
+}
 
+SelectTableStatement SelectTableStatement() throws StreamSqlException: {
+    String name;
+    SelectExpression expression;
+} {
+    expression = SelectExpression() 
+    {
+        return new SelectTableStatement(expression); 
+    }
 }
 
 SpeedLimitStreamExpression SpeedLimitStreamExpression() throws StreamSqlException: {
@@ -496,7 +507,7 @@ DescribeStatement DescribeStatement() throws StreamSqlException: {
 StreamExpression StreamExpression() throws StreamSqlException:  {
     StreamExpression expression;
 } {
-   (expression=SelectStatement()
+   (expression=SelectExpression()
    |
    expression=MergeExpression()
    )
@@ -516,7 +527,7 @@ void IntoClause() throws StreamSqlException:{
 void ColumnValues() throws StreamSqlException: {
 } {
     ColumnValue() ("," ColumnValue())*
-  | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectStatement() ")"
+  | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectExpression() ")"
 }
 
 void ColumnValue() throws StreamSqlException: {
@@ -857,7 +868,7 @@ void Argument() throws StreamSqlException: {
 
 /* ----------- SQL productions start here ----------------- */
 
-SelectExpression SelectStatement() throws StreamSqlException: {
+SelectExpression SelectExpression() throws StreamSqlException: {
     SelectExpression expression;
     boolean ascending;
     BigDecimal offset = null;

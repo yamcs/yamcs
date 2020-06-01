@@ -1,51 +1,60 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamAlreadyExistsException;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
+public class CreateOutputStreamStatement implements StreamSqlStatement {
 
-public class CreateOutputStreamStatement extends StreamSqlStatement {
+    private static final TupleDefinition TDEF = new TupleDefinition();
+    static {
+        TDEF.addColumn("port", DataType.INT);
+    }
+
     String streamName;
     StreamExpression expression;
+
     public CreateOutputStreamStatement(String streamName, StreamExpression expression) {
-        this.streamName=streamName;
-        this.expression=expression;
+        this.streamName = streamName;
+        this.expression = expression;
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
+    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
+        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
         expression.bind(c);
 
-        Stream s=expression.execute(c);
+        Stream s = expression.execute(c);
 
-        OutputStream os=null;
-        synchronized(dict) {
-            if(dict.streamOrTableExists(streamName)) {
+        OutputStream os = null;
+        synchronized (dict) {
+            if (dict.streamOrTableExists(streamName)) {
                 throw new StreamAlreadyExistsException(streamName);
             }
             try {
-                os=new OutputStream(dict, streamName,s.getDefinition());
+                os = new OutputStream(dict, streamName, s.getDefinition());
                 dict.addStream(os);
                 s.addSubscriber(os);
                 os.setSubscribedStream(s);
 
-                if(s.getState()==Stream.SETUP) s.start();
+                if (s.getState() == Stream.SETUP) {
+                    s.start();
+                }
             } catch (YarchException e) {
-                if(os!=null)os.close();
+                if (os != null) {
+                    os.close();
+                }
                 throw new GenericStreamSqlException(e.getMessage());
             }
-            return new StreamSqlResult("port",os.getPort());
+
+            Tuple tuple = new Tuple(TDEF, new Object[] { os.getPort() });
+            resultListener.next(tuple);
+            resultListener.complete();
         }
     }
 }

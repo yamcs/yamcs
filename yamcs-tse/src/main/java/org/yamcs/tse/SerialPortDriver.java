@@ -1,7 +1,6 @@
 package org.yamcs.tse;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.yamcs.YConfiguration;
 
@@ -21,18 +20,19 @@ public class SerialPortDriver extends InstrumentDriver {
     private int dataBits = 8;
     private String parity;
 
-    public SerialPortDriver(String name, Map<String, Object> args) {
-        super(name, args);
-        this.devicePath = YConfiguration.getString(args, "path");
+    @Override
+    public void init(String name, YConfiguration config) {
+        super.init(name, config);
+        this.devicePath = config.getString("path");
 
-        if (args.containsKey("baudrate")) {
-            baudrate = YConfiguration.getInt(args, "baudrate");
+        if (config.containsKey("baudrate")) {
+            baudrate = config.getInt("baudrate");
         }
-        if (args.containsKey("dataBits")) {
-            dataBits = YConfiguration.getInt(args, "dataBits");
+        if (config.containsKey("dataBits")) {
+            dataBits = config.getInt("dataBits");
         }
-        if (args.containsKey("parity")) {
-            parity = YConfiguration.getString(args, "parity");
+        if (config.containsKey("parity")) {
+            parity = config.getString("parity");
         }
     }
 
@@ -75,8 +75,7 @@ public class SerialPortDriver extends InstrumentDriver {
     }
 
     @Override
-    public void write(String cmd) {
-        byte[] bytes = cmd.getBytes();
+    public void write(byte[] bytes) {
         link.writeBytes(bytes, bytes.length);
     }
 
@@ -104,5 +103,10 @@ public class SerialPortDriver extends InstrumentDriver {
         if (link != null) {
             link.closePort();
         }
+    }
+
+    @Override
+    public String getDefaultRequestTermination() {
+        return null;
     }
 }
