@@ -2,6 +2,7 @@ package org.yamcs.client;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +17,9 @@ import org.yamcs.api.Observer;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringEncoder;
@@ -59,26 +62,51 @@ public class HttpMethodHandler implements MethodHandler {
         }
 
         HttpMethod httpMethod = getMethod(route);
-        CompletableFuture<byte[]> requestFuture;
-        if (body == null) {
-            appendQueryString(uri, partial.build(), method.getInputType());
-            requestFuture = httpClient.doRequest(uri.toString(), httpMethod);
-        } else {
-            requestFuture = httpClient.doRequest(uri.toString(), httpMethod, body);
-        }
 
-        requestFuture.whenComplete((data, err) -> {
-            if (err == null) {
+        if (method.toProto().getServerStreaming()) {
+            BulkRestDataReceiver receiver = data -> {
                 try {
                     Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
-                    ((Observer<Message>) observer).complete(serverMessage);
-                } catch (Exception e) {
-                    observer.completeExceptionally(e);
+                    ((Observer<Message>) observer).next(serverMessage);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new IllegalArgumentException(e);
                 }
+            };
+            CompletableFuture<Void> future;
+            if (body == null) {
+                future = httpClient.doBulkRequest(httpMethod, uri.toString(), receiver);
             } else {
-                observer.completeExceptionally(err);
+                future = httpClient.doBulkRequest(httpMethod, uri.toString(), body.toByteArray(), receiver);
             }
-        });
+            future.whenComplete((v, err) -> {
+                if (err == null) {
+                    observer.complete();
+                } else {
+                    observer.completeExceptionally(err);
+                }
+            });
+        } else {
+            CompletableFuture<byte[]> requestFuture;
+            if (body == null) {
+                appendQueryString(uri, partial.build(), method.getInputType());
+                requestFuture = httpClient.doRequest(uri.toString(), httpMethod);
+            } else {
+                requestFuture = httpClient.doRequest(uri.toString(), httpMethod, body);
+            }
+
+            requestFuture.whenComplete((data, err) -> {
+                if (err == null) {
+                    try {
+                        Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
+                        ((Observer<Message>) observer).complete(serverMessage);
+                    } catch (Exception e) {
+                        observer.completeExceptionally(e);
+                    }
+                } else {
+                    observer.completeExceptionally(err);
+                }
+            });
+        }
     }
 
     private QueryStringEncoder resolveUri(String template, Message input, Descriptor inputType,
@@ -113,11 +141,21 @@ public class HttpMethodHandler implements MethodHandler {
             if (descriptor.isRepeated()) {
                 List<?> params = (List<?>) entry.getValue();
                 for (Object param : params) {
-                    encoder.addParam(descriptor.getJsonName(), String.valueOf(param));
+                    encoder.addParam(descriptor.getJsonName(), formatQueryParam(param));
                 }
             } else {
-                encoder.addParam(descriptor.getJsonName(), String.valueOf(entry.getValue()));
+                encoder.addParam(descriptor.getJsonName(), formatQueryParam(entry.getValue()));
             }
+        }
+    }
+
+    private static String formatQueryParam(Object value) {
+        if (value instanceof Timestamp) {
+            Timestamp proto = (Timestamp) value;
+            Instant instant = Instant.ofEpochSecond(proto.getSeconds(), proto.getNanos());
+            return instant.toString();
+        } else {
+            return String.valueOf(value);
         }
     }
 

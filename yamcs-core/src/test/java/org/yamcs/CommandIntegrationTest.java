@@ -5,7 +5,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -13,7 +17,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.CommandSubscription;
-import org.yamcs.client.RestClient;
+import org.yamcs.client.Page;
+import org.yamcs.client.archive.ArchiveClient;
+import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -21,29 +27,25 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Commanding.VerifierConfig.CheckWindow;
-import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.IssueCommandRequest.Assignment;
+import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.IssueCommandResponse;
-import org.yamcs.protobuf.ListCommandsResponse;
-import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.SubscribeCommandsRequest;
-import org.yamcs.protobuf.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractTcDataLink;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 public class CommandIntegrationTest extends AbstractIntegrationTest {
 
+    private ProcessorClient processorClient;
+    private ArchiveClient archiveClient;
     private CommandSubscription subscription;
     private MessageCaptor<CommandHistoryEntry> captor;
 
     @Before
     public void prepareTests() throws InterruptedException {
+        processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
+        archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
         subscription = yamcsClient.createCommandSubscription();
         captor = MessageCaptor.of(subscription);
 
@@ -57,10 +59,13 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testSendCommandNoTransmissionConstraint() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC")
+                .withArgument("uint32_arg", 1000)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(5)
+                .issue()
+                .get();
+        assertTrue(response.hasBinary());
 
         CommandHistoryEntry entry = captor.expectTimely();
         CommandId cmdid = entry.getCommandId();
@@ -71,10 +76,13 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CRITICAL_TC1")
+                .withArgument("p1", 2)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(6)
+                .issue()
+                .get();
+        assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
         CommandId cmdid = cmdhist.getCommandId();
@@ -98,12 +106,14 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testSendCommandDisableTransmissionConstraint() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder()
-                .setDisableTransmissionConstraints(true)
-                .build();
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CRITICAL_TC1")
+                .withArgument("p1", 2)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(6)
+                .withDisableTransmissionConstraints()
+                .issue()
+                .get();
+        assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
         CommandId cmdid = cmdhist.getCommandId();
@@ -120,10 +130,13 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testSendCommandSucceedTransmissionConstraint() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CRITICAL_TC2")
+                .withArgument("p1", 2)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(6)
+                .issue()
+                .get();
+        assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
         CommandId cmdid = cmdhist.getCommandId();
@@ -140,8 +153,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         cmdhist = captor.poll(2000);
         assertNull(cmdhist);
         Value v = ValueHelper.newValue(true);
-        restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/AllowCriticalTC2",
-                HttpMethod.POST, v).get();
+        processorClient.setValue("/REFMDB/SUBSYS1/AllowCriticalTC2", v).get();
 
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
@@ -149,10 +161,13 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandVerificationContainer() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(7);
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
-                HttpMethod.POST, cmdreq).get();
-        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
+        IssueCommandResponse response = processorClient
+                .prepareCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC")
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(7)
+                .issue()
+                .get();
+
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
@@ -177,24 +192,26 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
 
         // check commands histogram
-        long now = TimeEncoding.getWallclockTime();
-        StreamCommandIndexRequest options = StreamCommandIndexRequest.newBuilder()
-                .setStart(TimeEncoding.toProtobufTimestamp(cmdid.getGenerationTime() - 1))
-                .setStop(TimeEncoding.toProtobufTimestamp(now))
-                .build();
-        resp = restClient.doRequest("/archive/IntegrationTest:streamCommandIndex",
-                HttpMethod.POST, options).get();
-        ArchiveRecord ar = ArchiveRecord.parseDelimitedFrom(new ByteArrayInputStream(resp));
-        assertEquals(1, ar.getNum());
-        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());
+        Instant start = Instant.parse(cmdhist.getGenerationTimeUTC()).minusMillis(1);
+        Page<IndexGroup> page = archiveClient.listCommandIndex(start, Instant.now()).get();
+        List<IndexGroup> allItems = new ArrayList<>();
+        page.iterator().forEachRemaining(allItems::add);
+
+        assertEquals(1, allItems.size());
+        IndexGroup item = allItems.get(0);
+        assertEquals(1, item.getEntryCount());
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", item.getId().getName());
     }
 
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
-        IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
-                HttpMethod.POST, cmdreq).get();
-        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/ALG_VERIF_TC")
+                .withArgument("p1", 10)
+                .withArgument("p2", 20)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(4)
+                .issue()
+                .get();
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
@@ -230,9 +247,16 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandWithOneVerifierDisabled() throws Exception {
-        issueCommand(getCommand(8).toBuilder()
-                .putVerifierConfig("Execution", VerifierConfig.newBuilder().setDisable(true).build())
-                .build());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC")
+                .withSequenceNumber(8)
+                .withVerifierConfig("Execution", VerifierConfig.newBuilder().setDisable(true).build())
+                .issue()
+                .get();
+
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
+
+        CommandHistoryEntry cmdhist = captor.expectTimely();
+        assertEquals(8, cmdhist.getCommandId().getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -252,7 +276,15 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandWithAllVerifiersDisabled() throws Exception {
-        issueCommand(getCommand(9).toBuilder().setDisableVerifiers(true).build());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC")
+                .withSequenceNumber(9)
+                .withDisableVerification()
+                .issue()
+                .get();
+
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
+        CommandHistoryEntry cmdhist = captor.expectTimely();
+        assertEquals(9, cmdhist.getCommandId().getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -271,15 +303,19 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
     public void testCommandVerificationWithModifiedWindow() throws Exception {
         // modify the timeout for the Complete stage from 1000 (in refmdb.xls) to 5000 and sleep 1500 before sending the
         // ack
-        IssueCommandRequest cmdreq = getCommand(10);
-        cmdreq = cmdreq.toBuilder()
-                .putVerifierConfig("Complete", VerifierConfig.newBuilder()
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC")
+                .withSequenceNumber(10)
+                .withVerifierConfig("Complete", VerifierConfig.newBuilder()
                         .setCheckWindow(CheckWindow.newBuilder()
                                 .setTimeToStartChecking(0)
                                 .setTimeToStopChecking(5000))
                         .build())
-                .build();
-        issueCommand(cmdreq);
+                .issue()
+                .get();
+
+        CommandHistoryEntry cmdhist = captor.expectTimely();
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
+        assertEquals(10, cmdhist.getCommandId().getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -300,20 +336,24 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testPermissionSendCommand() throws Exception {
-        RestClient restClient1 = getRestClient("testuser", "password");
+        yamcsClient.connect("testuser", "password".toCharArray());
 
         // Command INT_ARG_TC is allowed
-        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        byte[] resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
-                HttpMethod.POST, cmdreq).get();
-        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/INT_ARG_TC")
+                .withSequenceNumber(5)
+                .withArgument("uint32_arg", 1000)
+                .issue()
+                .get();
         assertTrue(response.hasBinary());
 
         // Command FLOAT_ARG_TC is denied
-        cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
         try {
-            resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
-                    HttpMethod.POST, cmdreq).get();
+            response = processorClient.prepareCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC")
+                    .withSequenceNumber(5)
+                    .withArgument("float_arg", -15)
+                    .withArgument("double_arg", 0)
+                    .issue()
+                    .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof ClientException);
@@ -340,36 +380,36 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
     public void testUpdateCommandHistory() throws Exception {
 
         // Send a command a store its commandId
-        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
+        IssueCommandResponse response = processorClient.prepareCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC")
+                .withArgument("uint32_arg", 1000)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(5)
+                .issue()
+                .get();
+        assertTrue(response.hasBinary());
 
-        // insert two values in the command history
-        String commandId = commandResponse.getId();
-        UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
-                .setId(commandId);
-        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
-                .setName("testKey1")
-                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue1")));
-        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
-                .setName("testKey2")
-                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue2")));
-        doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST,
-                updateHistoryRequest.build());
+        // Insert two values in the command history
+        Map<String, Value> attributes = new HashMap<>();
+        attributes.put("testKey1", Value.newBuilder()
+                .setType(Type.STRING)
+                .setStringValue("testValue1")
+                .build());
+        attributes.put("testKey2", Value.newBuilder()
+                .setType(Type.STRING)
+                .setStringValue("testValue2")
+                .build());
+        processorClient.updateCommandHistory(response.getCommandName(), response.getId(), attributes);
 
         // Query command history and check that we can retreive the inserted values
-        byte[] respDl = restClient.doRequest("/archive/IntegrationTest/commands", HttpMethod.GET).get();
-        ListCommandsResponse lastPage = ListCommandsResponse.parseFrom(respDl);
-        CommandHistoryEntry lastEntry = lastPage.getEntry(0);
+        CommandHistoryEntry command = archiveClient.listCommands().get().iterator().next();
         boolean foundKey1 = false, foundKey2 = false;
-        for (CommandHistoryAttribute cha : lastEntry.getAttrList()) {
-            if (cha.getName().equals("testKey1") &&
-                    cha.getValue().getStringValue().equals("testValue1")) {
+        for (CommandHistoryAttribute attribute : command.getAttrList()) {
+            if (attribute.getName().equals("testKey1") &&
+                    attribute.getValue().getStringValue().equals("testValue1")) {
                 foundKey1 = true;
             }
-            if (cha.getName().equals("testKey2") &&
-                    cha.getValue().getStringValue().equals("testValue2")) {
+            if (attribute.getName().equals("testKey2") &&
+                    attribute.getValue().getStringValue().equals("testValue2")) {
                 foundKey2 = true;
             }
         }
@@ -388,16 +428,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
      * 
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
-
-    private void issueCommand(IssueCommandRequest cmdreq) throws Exception {
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
-                HttpMethod.POST, cmdreq).get();
-        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
-        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
-
-        CommandHistoryEntry cmdhist = captor.expectTimely();
-        assertEquals(cmdreq.getSequenceNumber(), cmdhist.getCommandId().getSequenceNumber());
-    }
 
     private void checkNextCmdHistoryAttr(String name) throws InterruptedException, TimeoutException {
         CommandHistoryEntry cmdhist = captor.expectTimely();
@@ -418,17 +448,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
             throws InterruptedException, TimeoutException {
         checkNextCmdHistoryAttr(name + "_Status", value);
         checkNextCmdHistoryAttr(name + "_Time");
-    }
-
-    private IssueCommandRequest getCommand(int seq, String... args) {
-        IssueCommandRequest.Builder b = IssueCommandRequest.newBuilder();
-        b.setOrigin("IntegrationTest");
-        b.setSequenceNumber(seq);
-        for (int i = 0; i < args.length; i += 2) {
-            b.addAssignment(Assignment.newBuilder().setName(args[i]).setValue(args[i + 1]).build());
-        }
-
-        return b.build();
     }
 
     public static class MyTcDataLink extends AbstractTcDataLink {

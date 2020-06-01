@@ -16,16 +16,24 @@ import javax.net.ssl.SSLException;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.client.SpnegoUtils.SpnegoException;
+import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.mdb.MissionDatabaseClient;
+import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
+import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
+import org.yamcs.protobuf.ListServicesRequest;
+import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.ManagementApiClient;
+import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.StartInstanceRequest;
+import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
+import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.TimeApiClient;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.YamcsInstance;
@@ -69,6 +77,7 @@ public class YamcsClient {
     private TimeApiClient timeService;
     private ManagementApiClient managementService;
     private EventsApiClient eventService;
+    private ProcessingApiClient processingService;
 
     private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
         this.host = host;
@@ -106,6 +115,7 @@ public class YamcsClient {
         eventService = new EventsApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
+        processingService = new ProcessingApiClient(methodHandler);
     }
 
     public static Builder newBuilder(String host, int port) {
@@ -300,10 +310,45 @@ public class YamcsClient {
         return f;
     }
 
+    public CompletableFuture<ListServicesResponse> listServices(String instance) {
+        ListServicesRequest request = ListServicesRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<ListServicesResponse> f = new CompletableFuture<>();
+        managementService.listServices(null, request, new FutureObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Void> startService(String instance, String service) {
+        StartServiceRequest request = StartServiceRequest.newBuilder()
+                .setInstance(instance)
+                .setName(service)
+                .build();
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        managementService.startService(null, request, new FutureObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<Void> stopService(String instance, String service) {
+        StopServiceRequest request = StopServiceRequest.newBuilder()
+                .setInstance(instance)
+                .setName(service)
+                .build();
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        managementService.stopService(null, request, new FutureObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
     public CompletableFuture<LeapSecondsTable> getLeapSeconds() {
         CompletableFuture<LeapSecondsTable> f = new CompletableFuture<>();
         timeService.getLeapSeconds(null, Empty.getDefaultInstance(), new FutureObserver<>(f));
         return f;
+    }
+
+    public CompletableFuture<ProcessorClient> createProcessor(CreateProcessorRequest request) {
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        processingService.createProcessor(null, request, new FutureObserver<>(f));
+        return f.thenApply(response -> new ProcessorClient(methodHandler, request.getInstance(), request.getName()));
     }
 
     public CompletableFuture<Event> createEvent(CreateEventRequest request) {
@@ -331,14 +376,22 @@ public class YamcsClient {
         return f;
     }
 
-    public CompletableFuture<Empty> editAlarm(EditAlarmRequest request) {
+    public CompletableFuture<Void> editAlarm(EditAlarmRequest request) {
         CompletableFuture<Empty> f = new CompletableFuture<>();
         alarmService.editAlarm(null, request, new FutureObserver<>(f));
-        return f;
+        return f.thenApply(response -> null);
     }
 
-    public MissionDatabaseClient getMissionDatabase(String instance) {
+    public ArchiveClient createArchiveClient(String instance) {
+        return new ArchiveClient(methodHandler, instance);
+    }
+
+    public MissionDatabaseClient createMissionDatabaseClient(String instance) {
         return new MissionDatabaseClient(methodHandler, instance);
+    }
+
+    public ProcessorClient createProcessorClient(String instance, String processor) {
+        return new ProcessorClient(methodHandler, instance, processor);
     }
 
     public String getHost() {

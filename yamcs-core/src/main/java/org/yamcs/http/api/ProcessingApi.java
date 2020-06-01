@@ -257,6 +257,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter, pid.getParameter().getQualifiedName());
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 
