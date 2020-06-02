@@ -20,7 +20,7 @@
   <ng-container cdkColumnDef="name">
     <th mat-header-cell *cdkHeaderCellDef>Name</th>
     <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
-      <a [routerLink]="['/mdb/parameters', row.name]"
+      <a [routerLink]="['/telemetry/parameters', row.name]"
          [queryParams]="{c: yamcs.context}">
         {{ row.name }}
       </a>

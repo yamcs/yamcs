@@ -11,7 +11,7 @@
 
   <ng-container *ngFor="let parameter of model.parameters; let i = index" [cdkColumnDef]="parameter">
     <th mat-header-cell *cdkHeaderCellDef>
-      <a [routerLink]="['/mdb/parameters', parameter]"
+      <a [routerLink]="['/telemetry/parameters', parameter]"
          [queryParams]="{c: yamcs.context}">
         {{ parameter }}
       </a>
