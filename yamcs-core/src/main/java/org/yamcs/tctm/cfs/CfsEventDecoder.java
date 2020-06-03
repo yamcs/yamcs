@@ -1,13 +1,19 @@
 package org.yamcs.tctm.cfs;
 
 import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
+import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.yamcs.AbstractYamcsService;
+import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -44,12 +50,17 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     Set<Integer> msgIds = new HashSet<>();
     EventProducer eventProducer;
     TimeService timeService;
+    ByteOrder byteOrder;
+    Charset charset;
 
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("msgIds", OptionType.LIST).withElementType(OptionType.INTEGER);
+        spec.addOption("byteOrder", OptionType.STRING);
+        spec.addOption("charset", OptionType.STRING);
+
         return spec;
     }
 
@@ -68,6 +79,23 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
                 }
             }
         }
+        String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
+        if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else {
+            throw new ConfigurationException(
+                    "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
+        }
+        String chrname = config.getString("charset", "US-ASCII");
+        try {
+            charset = Charset.forName(chrname);
+        } catch (UnsupportedCharsetException e) {
+            throw new ConfigurationException(
+                    "Unsupported charset '" + chrname + "'. Please use one of " + Charset.availableCharsets().keySet());
+        }
+
         List<Integer> l = config.getList("msgIds");
         l.forEach(x -> msgIds.add(x));
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
@@ -104,8 +132,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
 
         if (msgIds.contains(msgId)) {
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);
-            // long gentime = (Long) t.getColumn(TM_GENTIME_COLUMN);
-            long gentime = timeService.getMissionTime();
+            long gentime = (Long) t.getColumn(GENTIME_COLUMN);
 
             try {
                 processPacket(rectime, gentime, packet);
@@ -116,19 +143,15 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     }
 
     private void processPacket(long rectime, long gentime, byte[] packet) {
-        int offset = 12;
-        String app = decodeString(packet, offset, 20);
-        offset += 20;
-        int eventId = ByteArrayUtils.decodeShortLE(packet, offset);
-        offset += 2;
-        int eventType = ByteArrayUtils.decodeShortLE(packet, offset);
-        offset += 2;
-        // int spacecraftId = ByteArrayUtils.decodeInt(packet, offset);
-        offset += 4;
-
-        int processorId = ByteArrayUtils.decodeIntLE(packet, offset);
-        offset += 4;
-        String msg = decodeString(packet, offset, 122);
+        ByteBuffer buf = ByteBuffer.wrap(packet);
+        buf.order(byteOrder);
+        buf.position(12);
+        String app = decodeString(buf, 20);
+        int eventId = buf.getShort();
+        int eventType = buf.getShort();
+        buf.getInt();// int spacecraftId = */
+        int processorId = buf.getInt();
+        String msg = decodeString(buf, 122);
 
         EventSeverity evSev;
 
@@ -150,15 +173,23 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         eventProducer.sendEvent(ev);
     }
 
-    private String decodeString(byte[] packet, int offset, int maxLength) {
-        int length;
-        maxLength = Math.min(maxLength, packet.length - offset);
-        for (length = 0; length < maxLength; length++) {
-            if (packet[offset + length] == 0) {
+    private String decodeString(ByteBuffer buf, int maxLength) {
+        maxLength = Math.min(maxLength, buf.remaining());
+        ByteBuffer buf1 = buf.slice();
+        buf1.limit(maxLength);
+        int k =0;
+        while (k<maxLength) {
+            if (buf1.get(k) == 0) {
                 break;
             }
+            k++;
         }
-        return new String(packet, offset, length);
+        buf1.limit(k);
+
+        String r = charset.decode(buf1).toString();
+        buf.position(buf.position() + maxLength);
+
+        return r;
     }
 
     @Override

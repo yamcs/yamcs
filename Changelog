@@ -8,6 +8,8 @@ Version 4.11.0 released
 - implemented a replication service
 - removed default yearly partitions for tm/pp data (can still be done by creating manually the tables)
 - added an option to send raw frame data over streams (such that they can be monitored externally or saved into tables)
+- CfsEventDecoder: added an option to specify byte endianess with default to big endian (used to be hardcoded to little endian)
+                   added also an option for the charset used to decode the text string, default to US-ASCII
 
 Version 4.10.9 released 24-Apr-2020
 - reorganized the links by removing the DataLinkInitializer and creating a LinkManager 
