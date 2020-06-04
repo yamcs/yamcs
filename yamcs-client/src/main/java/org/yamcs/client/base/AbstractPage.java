@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.Observer;
+import org.yamcs.client.Page;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -39,7 +40,7 @@ public abstract class AbstractPage<RequestT extends Message, ResponseT extends M
         }
 
         future = new CompletableFuture<>();
-        fetch(request, new FutureObserver<>(future));
+        fetch(request, new ResponseObserver<>(future));
     }
 
     public CompletableFuture<Page<ItemT>> future() {

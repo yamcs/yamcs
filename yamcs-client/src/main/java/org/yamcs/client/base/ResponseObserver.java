@@ -1,14 +1,17 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.Observer;
 
-public class FutureObserver<T> implements Observer<T> {
+/**
+ * An observer that completes a future based on a single response.
+ */
+public class ResponseObserver<T> implements Observer<T> {
 
     private CompletableFuture<T> future;
 
-    public FutureObserver(CompletableFuture<T> future) {
+    public ResponseObserver(CompletableFuture<T> future) {
         this.future = future;
     }
 

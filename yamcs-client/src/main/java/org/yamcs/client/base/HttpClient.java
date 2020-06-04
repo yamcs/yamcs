@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -21,7 +21,11 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.ExceptionMessage;
+import org.yamcs.client.CertUtil;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
+import org.yamcs.client.Credentials;
+import org.yamcs.client.UnauthorizedException;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

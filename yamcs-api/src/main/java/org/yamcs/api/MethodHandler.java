@@ -5,6 +5,9 @@ import com.google.protobuf.Message;
 
 public interface MethodHandler {
 
-    void callMethod(MethodDescriptor method, Message request, Message responsePrototype,
+    void call(MethodDescriptor method, Message request, Message responsePrototype,
             Observer<? extends Message> observer);
+
+    Observer<? extends Message> streamingCall(MethodDescriptor method, Message request, Message responsePrototype,
+            Observer<? extends Message> responseObserver);
 }

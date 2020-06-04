@@ -20,7 +20,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
@@ -64,7 +64,7 @@
               <id>yamcs</id>
               <groupId>org.yamcs</groupId>
               <artifactId>yamcs-protoc-plugin</artifactId>
-              <version>5.2.1</version>
+              <version>5.2.3</version>
               <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
             </protocPlugin>
           </protocPlugins>

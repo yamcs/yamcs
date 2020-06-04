@@ -110,8 +110,6 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.io.CountingInputStream;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 public class PacketViewer extends JFrame implements ActionListener,
         TreeSelectionListener, ParameterListener, ConnectionListener {
 
@@ -632,19 +630,18 @@ public class PacketViewer extends JFrame implements ActionListener,
         return true;
     }
 
-    private boolean loadRemoteXtcedb(String configName) {
+    private boolean loadRemoteMissionDatabase(String configName) {
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
         String instance = connectDialog.getInstance();
-        log("Loading remote XTCE db for yamcs instance " + instance);
+        log("Loading remote mission database for Uamcs instance " + instance);
         try {
-            byte[] serializedMdb = client.getRestClient()
-                    .doRequest("/mdb/" + instance + ":exportJava", HttpMethod.GET).get();
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
-            Object o = ois.readObject();
-            xtcedb = (XtceDb) o;
-            ois.close();
+            byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb))) {
+                Object o = ois.readObject();
+                xtcedb = (XtceDb) o;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             showError(e.getMessage());
@@ -956,7 +953,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             log("connected to " + url);
             if (connectDialog.getUseServerMdb()) {
-                if (!loadRemoteXtcedb(connectDialog.getInstance())) {
+                if (!loadRemoteMissionDatabase(connectDialog.getInstance())) {
                     return;
                 }
             } else {

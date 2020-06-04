@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,6 +10,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.yamcs.client.ClientException;
+import org.yamcs.client.Credentials;
+import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 
@@ -330,6 +333,10 @@ public class RestClient {
 
     public boolean isAutoclose() {
         return autoclose;
+    }
+
+    public Credentials getCredentials() {
+        return httpClient.getCredentials();
     }
 
     /**

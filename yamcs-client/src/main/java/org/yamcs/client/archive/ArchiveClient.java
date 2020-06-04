@@ -6,10 +6,9 @@ import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
-import org.yamcs.client.AbstractPage;
-import org.yamcs.client.FutureObserver;
 import org.yamcs.client.Page;
-import org.yamcs.client.StreamConsumer;
+import org.yamcs.client.StreamReceiver;
+import org.yamcs.client.StreamSender;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.AscendingOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.LimitOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.ListOption;
@@ -18,6 +17,8 @@ import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRepeatOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.SourceOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumGapOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
+import org.yamcs.client.base.AbstractPage;
+import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
@@ -46,6 +47,14 @@ import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
+import org.yamcs.protobuf.Table.GetTableDataRequest;
+import org.yamcs.protobuf.Table.ReadRowsRequest;
+import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.TableData;
+import org.yamcs.protobuf.Table.TableData.TableRecord;
+import org.yamcs.protobuf.Table.WriteRowsRequest;
+import org.yamcs.protobuf.Table.WriteRowsResponse;
+import org.yamcs.protobuf.TableApiClient;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
@@ -60,6 +69,7 @@ public class ArchiveClient {
     private CommandsApiClient commandService;
     private ParameterArchiveApiClient parameterArchiveService;
     private AlarmsApiClient alarmService;
+    private TableApiClient tableService;
 
     public ArchiveClient(MethodHandler handler, String instance) {
         this.instance = instance;
@@ -67,6 +77,7 @@ public class ArchiveClient {
         commandService = new CommandsApiClient(handler);
         parameterArchiveService = new ParameterArchiveApiClient(handler);
         alarmService = new AlarmsApiClient(handler);
+        tableService = new TableApiClient(handler);
     }
 
     public String getInstance() {
@@ -169,7 +180,8 @@ public class ArchiveClient {
         return new CompletenessIndexPage(requestb.build()).future();
     }
 
-    public void streamPacketIndex(StreamConsumer<ArchiveRecord> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamPacketIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
+            Instant stop) {
         StreamPacketIndexRequest.Builder requestb = StreamPacketIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -178,10 +190,29 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
-        indexService.streamPacketIndex(null, requestb.build(), consumer);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        indexService.streamPacketIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
+
+            @Override
+            public void next(ArchiveRecord message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
-    public void streamParameterIndex(StreamConsumer<ArchiveRecord> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamParameterIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
+            Instant stop) {
         StreamParameterIndexRequest.Builder requestb = StreamParameterIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -190,10 +221,29 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
-        indexService.streamParameterIndex(null, requestb.build(), consumer);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        indexService.streamParameterIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
+
+            @Override
+            public void next(ArchiveRecord message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
-    public void streamCommandIndex(StreamConsumer<ArchiveRecord> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamCommandIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
+            Instant stop) {
         StreamCommandIndexRequest.Builder requestb = StreamCommandIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -202,10 +252,29 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
-        indexService.streamCommandIndex(null, requestb.build(), consumer);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        indexService.streamCommandIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
+
+            @Override
+            public void next(ArchiveRecord message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
-    public void streamEventIndex(StreamConsumer<ArchiveRecord> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamEventIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
+            Instant stop) {
         StreamEventIndexRequest.Builder requestb = StreamEventIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -214,10 +283,29 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
-        indexService.streamEventIndex(null, requestb.build(), consumer);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        indexService.streamEventIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
+
+            @Override
+            public void next(ArchiveRecord message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
-    public void streamCompletenessIndex(StreamConsumer<ArchiveRecord> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamCompletenessIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
+            Instant stop) {
         StreamCompletenessIndexRequest.Builder requestb = StreamCompletenessIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -226,7 +314,25 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
-        indexService.streamCompletenessIndex(null, requestb.build(), consumer);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        indexService.streamCompletenessIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
+
+            @Override
+            public void next(ArchiveRecord message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
     public CompletableFuture<Page<CommandHistoryEntry>> listCommands() {
@@ -261,8 +367,18 @@ public class ArchiveClient {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
-        alarmService.listAlarms(null, requestb.build(), new FutureObserver<>(f));
+        alarmService.listAlarms(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getAlarmsList());
+    }
+
+    public CompletableFuture<List<TableRecord>> listRecords(String table) {
+        // TODO add pagination on server
+        GetTableDataRequest.Builder requestb = GetTableDataRequest.newBuilder()
+                .setInstance(instance)
+                .setName(table);
+        CompletableFuture<TableData> f = new CompletableFuture<>();
+        tableService.getTableData(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getRecordList());
     }
 
     public CompletableFuture<Page<ParameterValue>> listValues(String parameter, ListOption... options) {
@@ -305,7 +421,7 @@ public class ArchiveClient {
                 .setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()))
                 .setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         CompletableFuture<TimeSeries> f = new CompletableFuture<>();
-        parameterArchiveService.getParameterSamples(null, requestb.build(), new FutureObserver<>(f));
+        parameterArchiveService.getParameterSamples(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getSampleList());
     }
 
@@ -324,8 +440,43 @@ public class ArchiveClient {
             }
         }
         CompletableFuture<Ranges> f = new CompletableFuture<>();
-        parameterArchiveService.getParameterRanges(null, requestb.build(), new FutureObserver<>(f));
+        parameterArchiveService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(ranges -> ranges.getRangeList());
+    }
+
+    public CompletableFuture<Void> dumpTable(String table, StreamReceiver<Row> consumer) {
+        ReadRowsRequest.Builder requestb = ReadRowsRequest.newBuilder()
+                .setInstance(instance)
+                .setTable(table);
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        tableService.readRows(null, requestb.build(), new Observer<Row>() {
+
+            @Override
+            public void next(Row message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
+    }
+
+    public TableLoader createTableLoader(String table) {
+        WriteRowsRequest.Builder requestb = WriteRowsRequest.newBuilder()
+                .setInstance(instance)
+                .setTable(table);
+        CompletableFuture<WriteRowsResponse> f = new CompletableFuture<>();
+        Observer<WriteRowsRequest> clientObserver = tableService.writeRows(null, new ResponseObserver<>(f));
+        clientObserver.next(requestb.build());
+        return new TableLoader(clientObserver, f);
     }
 
     private class CommandIndexPage extends AbstractPage<ListCommandHistoryIndexRequest, IndexResponse, IndexGroup> {
@@ -410,6 +561,29 @@ public class ArchiveClient {
         @Override
         protected void fetch(ListParameterHistoryRequest request, Observer<ListParameterHistoryResponse> observer) {
             parameterArchiveService.listParameterHistory(null, request, observer);
+        }
+    }
+
+    public static class TableLoader implements StreamSender<Row, WriteRowsResponse> {
+
+        private Observer<WriteRowsRequest> clientObserver;
+        private CompletableFuture<WriteRowsResponse> responseFuture;
+
+        private TableLoader(Observer<WriteRowsRequest> clientObserver,
+                CompletableFuture<WriteRowsResponse> responseFuture) {
+            this.clientObserver = clientObserver;
+            this.responseFuture = responseFuture;
+        }
+
+        @Override
+        public void send(Row message) {
+            clientObserver.next(WriteRowsRequest.newBuilder().setRow(message).build());
+        }
+
+        @Override
+        public CompletableFuture<WriteRowsResponse> complete() {
+            clientObserver.complete();
+            return responseFuture;
         }
     }
 

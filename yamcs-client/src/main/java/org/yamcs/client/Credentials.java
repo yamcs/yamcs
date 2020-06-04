@@ -15,14 +15,14 @@ public class Credentials {
     private String refreshToken;
     private Date expiry;
 
-    Credentials(Map<String, Object> tokenResponse) {
+    public Credentials(Map<String, Object> tokenResponse) {
         this.accessToken = (String) tokenResponse.get("access_token");
         this.refreshToken = (String) tokenResponse.get("refresh_token");
         int ttl = ((Number) tokenResponse.get("expires_in")).intValue();
         expiry = new Date(new Date().getTime() + (ttl * 1000));
     }
 
-    Credentials(String accessToken, String refreshToken) {
+    public Credentials(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }

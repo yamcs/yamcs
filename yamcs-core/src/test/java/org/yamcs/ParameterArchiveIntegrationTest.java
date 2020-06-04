@@ -118,7 +118,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(20, values.size());
         long t = TimeEncoding.parse("2015-01-02T12:00:09.000");
         for (ParameterValue value : values) {
-            assertEquals(TimeEncoding.toString(t), Timestamps.toString(value.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t -= 1000;
         }
 
@@ -130,7 +130,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(9, values.size());
         t = TimeEncoding.parse("2015-01-02T12:00:09.000");
         for (ParameterValue value : values) {
-            assertEquals(TimeEncoding.toString(t), Timestamps.toString(value.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t -= 1000;
         }
 
@@ -151,7 +151,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(20, values.size());
         t = TimeEncoding.parse("2015-01-02T11:59:50");
         for (ParameterValue value : values) {
-            assertEquals(TimeEncoding.toString(t), Timestamps.toString(value.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t += 1000;
         }
     }

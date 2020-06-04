@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MethodHandler;
-import org.yamcs.client.FutureObserver;
+import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.FromCacheOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.GetOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.TimeoutOption;
@@ -83,7 +83,7 @@ public class ProcessorClient {
             }
         }
         CompletableFuture<ParameterValue> f = new CompletableFuture<>();
-        processingService.getParameterValue(null, requestb.build(), new FutureObserver<>(f));
+        processingService.getParameterValue(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -105,7 +105,7 @@ public class ProcessorClient {
             requestb.addId(toNamedObjectId(parameter));
         }
         CompletableFuture<BatchGetParameterValuesResponse> f = new CompletableFuture<>();
-        processingService.batchGetParameterValues(null, requestb.build(), new FutureObserver<>(f));
+        processingService.batchGetParameterValues(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getValueList());
     }
 
@@ -117,7 +117,7 @@ public class ProcessorClient {
                 .setValue(value)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        processingService.setParameterValue(null, request, new FutureObserver<>(f));
+        processingService.setParameterValue(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -131,7 +131,7 @@ public class ProcessorClient {
                     .setValue(entry.getValue()).build());
         }
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        processingService.batchSetParameterValues(null, requestb.build(), new FutureObserver<>(f));
+        processingService.batchSetParameterValues(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -147,7 +147,7 @@ public class ProcessorClient {
                     .setValue(stringValue));
         }
         CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
-        commandService.issueCommand(null, requestb.build(), new FutureObserver<>(f));
+        commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -162,7 +162,7 @@ public class ProcessorClient {
                 .setState("paused")
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        processingService.editProcessor(null, request, new FutureObserver<>(f));
+        processingService.editProcessor(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -173,7 +173,7 @@ public class ProcessorClient {
                 .setState("running")
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        processingService.editProcessor(null, request, new FutureObserver<>(f));
+        processingService.editProcessor(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -184,7 +184,7 @@ public class ProcessorClient {
                 .setSeek(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()))
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        processingService.editProcessor(null, request, new FutureObserver<>(f));
+        processingService.editProcessor(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -207,7 +207,7 @@ public class ProcessorClient {
         }
 
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        commandService.updateCommandHistory(null, request.build(), new FutureObserver<>(f));
+        commandService.updateCommandHistory(null, request.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -220,7 +220,7 @@ public class ProcessorClient {
                 .setDefaultCalibrator(calibrator)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new FutureObserver<>(f));
+        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -236,7 +236,7 @@ public class ProcessorClient {
             requestb.setDefaultCalibrator(defaultCalibrator);
         }
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, requestb.build(), new FutureObserver<>(f));
+        mdbService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -252,7 +252,7 @@ public class ProcessorClient {
                 .setAction(ActionType.RESET_CALIBRATORS)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new FutureObserver<>(f));
+        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -265,7 +265,7 @@ public class ProcessorClient {
                 .setDefaultAlarm(alarm)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new FutureObserver<>(f));
+        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -281,7 +281,7 @@ public class ProcessorClient {
             requestb.setDefaultAlarm(defaultAlarm);
         }
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, requestb.build(), new FutureObserver<>(f));
+        mdbService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -297,7 +297,7 @@ public class ProcessorClient {
                 .setAction(ActionType.RESET_ALARMS)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new FutureObserver<>(f));
+        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -310,7 +310,7 @@ public class ProcessorClient {
                 .setAlgorithm(definition)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        mdbService.updateAlgorithm(null, request, new FutureObserver<>(f));
+        mdbService.updateAlgorithm(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -322,7 +322,7 @@ public class ProcessorClient {
                 .setAction(UpdateAlgorithmRequest.ActionType.RESET)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        mdbService.updateAlgorithm(null, request, new FutureObserver<>(f));
+        mdbService.updateAlgorithm(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -409,7 +409,7 @@ public class ProcessorClient {
 
         public CompletableFuture<IssueCommandResponse> issue() {
             CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
-            commandService.issueCommand(null, requestb.build(), new FutureObserver<>(f));
+            commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
             return f;
         }
     }

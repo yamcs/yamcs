@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
-import org.yamcs.client.AbstractPage;
+import org.yamcs.client.base.AbstractPage;
+import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.Page;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.protobuf.Mdb.ListContainersRequest;
@@ -79,6 +82,15 @@ public class MissionDatabaseClient {
                 .setInstance(instance)
                 .build();
         return (CompletableFuture<SystemPage<CommandInfo>>) (Object) new CommandPage(request).future();
+    }
+
+    public CompletableFuture<byte[]> getSerializedJavaDump() {
+        ExportJavaMissionDatabaseRequest request = ExportJavaMissionDatabaseRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<HttpBody> f = new CompletableFuture<>();
+        mdbService.exportJavaMissionDatabase(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getData().toByteArray());
     }
 
     private class ParameterPage extends AbstractPage<ListParametersRequest, ListParametersResponse, ParameterInfo>

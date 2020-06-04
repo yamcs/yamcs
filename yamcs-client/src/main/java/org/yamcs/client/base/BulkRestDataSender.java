@@ -1,8 +1,10 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.yamcs.client.ClientException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
