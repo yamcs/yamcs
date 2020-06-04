@@ -169,7 +169,6 @@ public abstract class PartitionManager {
     public synchronized HistogramInfo createAndGetHistogram(long instant, String columnName) throws IOException {
         HistogramInfo histo;
         Interval tmpInterval = pcache;
-        boolean newlyCreated = false;
         if ((partitioningSpec.timeColumn != null) &&
                 ((tmpInterval == null) || (!tmpInterval.contains0(instant)))) {
             tmpInterval = intervals.getFit(instant);
@@ -218,7 +217,23 @@ public abstract class PartitionManager {
         }
         return createAndGetPartition(time, value);
     }
+    /**
+     * Get the name of the table whose partitions are managed by this object.
+     * 
+     * @return the name of the table.
+     */
+    public String getTableName() {
+        return tableDefinition.getName();
+    }
+    
 
+    public TableDefinition getTableDefinition() {
+        return tableDefinition;
+    }
+
+    public PartitioningSpec getPartitioningSpec() {
+        return partitioningSpec;
+    }
     /**
      * Create a partition for time (and possible value) based partitioning
      * 
@@ -255,6 +270,7 @@ public abstract class PartitionManager {
         return plist;
     }
 
+    
     /**
      * Keeps a value -&gt; partition map for a specific time interval
      *
@@ -336,4 +352,5 @@ public abstract class PartitionManager {
             return l;
         }
     }
+
 }

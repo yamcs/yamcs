@@ -127,7 +127,7 @@ public class HistogramRebuilder {
 
     void deleteHistograms(TimeInterval timeInterval) throws RocksDBException, IOException {
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
-        PartitionManager partMgr = rse.getPartitionManager(tblDef);
+        PartitionManager partMgr = rse.getPartitionManager(ydb, tblDef);
         IntArray a = new IntArray();
         Iterator<Interval> intervalIterator = partMgr.intervalIterator(timeInterval);
         

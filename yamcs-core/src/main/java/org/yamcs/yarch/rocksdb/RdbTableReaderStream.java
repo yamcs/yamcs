@@ -16,6 +16,7 @@ import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.IndexFilter;
 import org.yamcs.yarch.Partition;
+import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
@@ -33,12 +34,11 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     private final Tablespace tablespace;
     
     
-    protected RdbTableReaderStream(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tblDef, RdbPartitionManager partitionManager,
-            boolean ascending, boolean follow) {
-        super(ydb, tblDef, partitionManager, ascending, follow);
+    protected RdbTableReaderStream(Tablespace tablespace, YarchDatabaseInstance ydb, PartitionManager pmgr,  boolean ascending, boolean follow) {
+        super(ydb, pmgr, ascending, follow);
         
         this.tablespace = tablespace;
-        partitioningSpec = tblDef.getPartitioningSpec();
+        partitioningSpec = pmgr.getPartitioningSpec();
     }
 
 

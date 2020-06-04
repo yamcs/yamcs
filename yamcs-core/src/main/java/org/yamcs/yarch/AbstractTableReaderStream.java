@@ -42,10 +42,11 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
     final protected boolean ascending;
     final protected boolean follow;
 
-    protected AbstractTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef,
-            PartitionManager partitionManager, boolean ascending, boolean follow) {
-        super(ydb, tblDef.getName() + "_" + count.getAndIncrement(), tblDef.getTupleDefinition());
-        this.tableDefinition = tblDef;
+    protected AbstractTableReaderStream(YarchDatabaseInstance ydb, PartitionManager partitionManager
+            , boolean ascending, boolean follow) {
+        super(ydb, partitionManager.getTableName() + "_" + count.getAndIncrement(),
+                partitionManager.getTableDefinition().getTupleDefinition());
+        this.tableDefinition = partitionManager.getTableDefinition();
         this.partitionManager = partitionManager;
         this.ascending = ascending;
         this.follow = follow;

@@ -31,13 +31,12 @@ import com.google.common.collect.HashBiMap;
  * tuple has to contain all the columns from the key while it can contain only a
  * few of the columns from the value (basically it's a sparse table).
  * 
- * 
+ * <p>
  * The key is encoded as a bytestream of all the columns in order The value is
  * encoded as a bytestream of all the columns prceded by their index.
  * 
- * 
- * A table can also be partitioned in multiple files on disc, according to the
- * partitioningSpec.
+ * <p>
+ * A table can also be partitioned according to the partitioningSpec.
  * 
  * @author nm
  *
@@ -46,27 +45,16 @@ public class TableDefinition {
     static Logger log = LoggerFactory.getLogger(TableDefinition.class.getName());
 
     /*
-     * table version history 
-     *  0: yamcs version < 3.0 
-     *  1: - the histogram were stored in a separate rocksdb database. 
-     *     - pp table contained a column ppgroup instead of group 
-     *  2: - the PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue) is replaced by PARAMETER_VALUE in the pp table
+     * table version history
+     * 0: yamcs version < 3.0
+     * 1: - the histogram were stored in a separate rocksdb database.
+     * - pp table contained a column ppgroup instead of group
+     * 2: - the PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue) is replaced by PARAMETER_VALUE in the pp table
      * 
      * To switch to the latest version, use the bin/yamcs archive upgrade command
      */
     public static final int CURRENT_FORMAT_VERSION = 2;
     private int formatVersion = CURRENT_FORMAT_VERSION;
-
-    // used for rocksdb - IN_KEY means storing the partition in front of the key
-    // - COLUMN_FAMILY : store data for each partition in a different column
-    // family
-    // this is used only if the table is partitioned by value
-    public enum PartitionStorage {
-        IN_KEY, COLUMN_FAMILY
-    }
-
-    @Deprecated
-    private PartitionStorage partitionStorage;
 
     private final TupleDefinition keyDef;
 
@@ -84,12 +72,6 @@ public class TableDefinition {
 
     private YarchDatabaseInstance ydb;
 
-    private boolean customDataDir = false; // if not null, dataDir represents a
-                                           // directory different than the
-                                           // YarchDatabase root.
-    // It will not be discarded after serialisation.
-    private String dataDir;
-
     private boolean compressed;
     private PartitioningSpec partitioningSpec = PartitioningSpec.noneSpec();
 
@@ -106,9 +88,6 @@ public class TableDefinition {
     // mapping from String to short for the columns of type enum
     Map<String, BiMap<String, Short>> serializedEmumValues;
     private volatile Map<String, BiMap<String, Short>> enumValues;
-
-    // used for new rocksdb storage engine
-    private String tablespaceName;
 
     /**
      * Used when creating an "empty"(i.e. no enum values) table via sql.
@@ -145,7 +124,7 @@ public class TableDefinition {
      * @param valueDef
      * @param enumValues
      */
-    TableDefinition(TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String, Short>> enumValues) {
+    public TableDefinition(TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String, Short>> enumValues) {
         this.valueDef = valueDef;
         this.serializedValueDef = valueDef;
         this.keyDef = keyDef;
@@ -238,43 +217,6 @@ public class TableDefinition {
         this.name = name;
     }
 
-    /**
-     * sets the customDataDir - if true, the dataDir will not be discarded after
-     * serialisation, so the next time the server is restarted it will stay to
-     * the set value. - if false, at restart the dataDir will be set to the
-     * YarchDatabase.dataDir
-     * 
-     * @param customDataDir
-     */
-    public void setCustomDataDir(boolean customDataDir) {
-        this.customDataDir = customDataDir;
-    }
-
-    public boolean hasCustomDataDir() {
-        return customDataDir;
-    }
-
-    /**
-     * 
-     * @deprecated - used by the oldrocksdb - for the new one tablespaces can be
-     *             used
-     */
-    @Deprecated
-    public String getDataDir() {
-        return dataDir;
-    }
-
-    /**
-     * sets dataDir to this value
-     * 
-     * @deprecated - used by the oldrocksdb - for the new one tablespaces can be
-     *             used
-     */
-    @Deprecated
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
-    }
-
     public TupleDefinition getTupleDefinition() {
         return tupleDef;
     }
@@ -336,32 +278,17 @@ public class TableDefinition {
                 continue;
             }
             int cidx = valueDef.getColumnIndex(cd.getName());
-            if (cidx == -1) { 
+            if (cidx == -1) {
                 serializedValueDef.addColumn(cd);
                 valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
             }
         }
-            
-        ydb.serializeTableDefinition(this);
+
+        ydb.saveTableDefinition(this);
         valueDef = serializedValueDef;
         computeTupleDef();
     }
 
-    /**
-     * Changes the formatVersion and serializes the table definition to disk
-     * 
-     * @param formatVersion
-     *            new format version
-     */
-    public synchronized void changeFormatDefinition(int formatVersion) {
-        this.formatVersion = formatVersion;
-        ydb.serializeTableDefinition(this);
-    }
-
-    public synchronized void changeStorageEngineName(String newStorageEngineName) {
-        this.storageEngineName = newStorageEngineName;
-        ydb.serializeTableDefinition(this);
-    }
     /**
      * Renames column and serializes the table definition to disk.
      * 
@@ -403,7 +330,7 @@ public class TableDefinition {
             BiMap<String, Short> b = enumValues.remove(oldName);
             serializedEmumValues.put(newName, b);
         }
-        ydb.serializeTableDefinition(this);
+        ydb.saveTableDefinition(this);
         enumValues = serializedEmumValues;
     }
 
@@ -434,7 +361,7 @@ public class TableDefinition {
         }
         b2.put(v, (short) b2.size());
         serializedEmumValues.put(columnName, b2);
-        ydb.serializeTableDefinition(this);
+        ydb.saveTableDefinition(this);
         enumValues = serializedEmumValues;
         cs.setEnumValues(b2);
     }
@@ -564,7 +491,7 @@ public class TableDefinition {
     }
 
     public boolean hasPartitioning() {
-        return partitioningSpec != null;
+        return partitioningSpec.type != _type.NONE;
     }
 
     public PartitioningSpec getPartitioningSpec() {
@@ -606,13 +533,7 @@ public class TableDefinition {
         return histoColumns;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(name).append("(").append(keyDef.toString()).append(", ").append(valueDef.toString())
-                .append(", primaryKey(").append(keyDef).append("))");
-        return sb.toString();
-    }
+   
 
     public ColumnSerializer getColumnSerializer(String columnName) {
         if (keyDef.hasColumn(columnName)) {
@@ -634,26 +555,7 @@ public class TableDefinition {
         this.storageEngineName = storageEngineName;
     }
 
-    /**
-     * @deprecated used for the oldrocksdb
-     */
-    @Deprecated
-    public PartitionStorage getPartitionStorage() {
-        return partitionStorage;
-    }
-
-    /**
-     * @deprecated used for the oldrocksdb
-     */
-    @Deprecated
-    public void setPartitionStorage(PartitionStorage partitionStorage) {
-        this.partitionStorage = partitionStorage;
-    }
-
-    public boolean isPartitionedByValue() {
-        return partitioningSpec.type == _type.TIME_AND_VALUE || partitioningSpec.type == _type.VALUE;
-    }
-
+    
     public int getFormatVersion() {
         return formatVersion;
     }
@@ -661,12 +563,12 @@ public class TableDefinition {
     void setFormatVersion(int formatVersion) {
         this.formatVersion = formatVersion;
     }
-
-    public String getTablespaceName() {
-        return tablespaceName;
-    }
-
-    public void setTablespaceName(String tablespaceName) {
-        this.tablespaceName = tablespaceName;
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name).append("(").append(keyDef.toString()).append(", ").append(valueDef.toString())
+                .append(", primaryKey(").append(keyDef).append("))");
+        return sb.toString();
     }
 }

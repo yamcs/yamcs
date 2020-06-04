@@ -7,13 +7,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.yarch.PartitioningSpec._type;
-import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
@@ -32,7 +30,6 @@ public class TableDefinitionConstructor  extends Constructor {
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
         this.yamlConstructors.put(new Tag("TupleDefinition"), new ConstructTupleDefinition());
         this.yamlConstructors.put(new Tag("PartitioningSpec"), new ConstructPartitioningSpec());
-        this.yamlConstructors.put(new Tag("PartitionStorage"), new ConstructPartitionStorage());
     }
 
     private class ConstructTableDefinition extends AbstractConstruct {
@@ -62,10 +59,6 @@ public class TableDefinitionConstructor  extends Constructor {
                     throw new IllegalArgumentException(e);
                 }
             }
-            if(m.containsKey(K_DATA_DIR)) {
-                tdef.setCustomDataDir(true);
-                tdef.setDataDir((String)m.get(K_DATA_DIR));
-            }
             try {
                 if(m.containsKey(K_PARTITIONING_SPEC)) {
                     tdef.setPartitioningSpec((PartitioningSpec)m.get(K_PARTITIONING_SPEC));
@@ -92,10 +85,6 @@ public class TableDefinitionConstructor  extends Constructor {
                 tdef.setStorageEngineName("TokyoCabinet");
             }
             
-            if(m.containsKey(K_PARTITION_STORAGE)) {
-                tdef.setPartitionStorage((PartitionStorage)m.get(K_PARTITION_STORAGE));
-            }
-
             return tdef;
         }
     }
@@ -176,14 +165,6 @@ public class TableDefinitionConstructor  extends Constructor {
                 pspec.setTimePartitioningSchema("YYYY/DOY");
             }
             return pspec;
-        }
-    }
-    
-    private class ConstructPartitionStorage extends AbstractConstruct {
-        @Override
-        public Object construct(Node node) {
-            String ps = (String) constructScalar((ScalarNode)node);
-            return PartitionStorage.valueOf(ps.toUpperCase());
         }
     }
 }

@@ -112,7 +112,7 @@ public class RdbBucket implements Bucket {
                     .setNumObjects(numobj).setSize(bsize).build();
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
                     .setBucketProperties(bucketProps1).setTbsIndex(tbsIndex);
-            tablespace.updateRecord(yamcsInstance, writeBatch, trb);
+            tablespace.writeToBatch(yamcsInstance, writeBatch, trb);
 
             tablespace.getRdb().getDb().write(writeOpts, writeBatch);
             bucketProps = bucketProps1;
@@ -161,14 +161,14 @@ public class RdbBucket implements Bucket {
                     WriteOptions writeOpts = new WriteOptions()) {
                 byte[] mk = getKey(TYPE_OBJ_METADATA, objectName);
                 byte[] dk = getKey(TYPE_OBJ_DATA, objectName);
-                writeBatch.remove(mk);
-                writeBatch.remove(dk);
+                writeBatch.delete(mk);
+                writeBatch.delete(dk);
                 BucketProperties bucketProps1 = BucketProperties.newBuilder().mergeFrom(bucketProps)
                         .setNumObjects(bucketProps.getNumObjects() - 1).setSize(bucketProps.getSize() - props.getSize())
                         .build();
                 TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
                         .setBucketProperties(bucketProps1).setTbsIndex(tbsIndex);
-                tablespace.updateRecord(objectName, writeBatch, trb);
+                tablespace.writeToBatch(objectName, writeBatch, trb);
                 tablespace.getRdb().getDb().write(writeOpts, writeBatch);
                 bucketProps = bucketProps1;
             }

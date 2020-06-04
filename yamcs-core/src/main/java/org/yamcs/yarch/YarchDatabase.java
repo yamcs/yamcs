@@ -3,6 +3,7 @@ package org.yamcs.yarch;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,6 +146,10 @@ public class YarchDatabase {
         return storageEngines.get(storageEngineName);
     }
 
+    public static Collection<StorageEngine> getStorageEngines() {
+        return storageEngines.values();
+    }
+    
     public static Set<String> getStorageEngineNames() {
         return storageEngines.keySet();
     }

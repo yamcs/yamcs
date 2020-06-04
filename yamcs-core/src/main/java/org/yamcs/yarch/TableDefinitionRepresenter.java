@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.yarch.PartitioningSpec._type;
-import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -38,7 +37,6 @@ public class TableDefinitionRepresenter extends Representer {
         this.representers.put(TableDefinition.class, new RepresentTableDefinition());
         this.representers.put(TupleDefinition.class, new RepresentTupleDefinition());
         this.representers.put(PartitioningSpec.class, new RepresentPartitioningSpec());
-        this.representers.put(PartitionStorage.class, new RepresentPartitioningStorage());
     }
 
     private class RepresentTableDefinition implements Represent {
@@ -50,9 +48,6 @@ public class TableDefinitionRepresenter extends Representer {
             m.put(K_KEY_DEF, td.getKeyDefinition());
             m.put(K_VALUE_DEF, td.serializedValueDef);
             m.put(K_STORAGE_ENGINE, td.getStorageEngineName());
-            if (td.getPartitionStorage() != null) {
-                m.put(K_PARTITION_STORAGE, td.getPartitionStorage());
-            }
             m.put(K_FORMAT_VERSION, td.getFormatVersion());
 
             if (td.hasHistogram()) {
@@ -60,9 +55,6 @@ public class TableDefinitionRepresenter extends Representer {
             }
             if (td.serializedEmumValues != null) {
                 m.put(K_ENUM_VALUE, td.serializedEmumValues);
-            }
-            if (td.hasCustomDataDir()) {
-                m.put(K_DATA_DIR, td.getDataDir());
             }
             if (td.hasPartitioning()) {
                 m.put(K_PARTITIONING_SPEC, td.getPartitioningSpec());
@@ -103,15 +95,6 @@ public class TableDefinitionRepresenter extends Representer {
             }
 
             return representMapping(new Tag("PartitioningSpec"), m, FlowStyle.FLOW);
-        }
-    }
-
-    private class RepresentPartitioningStorage implements Represent {
-        @Override
-        public Node representData(Object data) {
-            PartitionStorage p = (PartitionStorage) data;
-
-            return representScalar(new Tag("PartitionStorage"), p.name());
         }
     }
 }

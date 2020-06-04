@@ -589,9 +589,6 @@ public class TableApi extends AbstractTableApi<Context> {
         infob.setCompressed(def.isCompressed());
         infob.setFormatVersion(def.getFormatVersion());
         infob.setStorageEngine(def.getStorageEngineName());
-        if (def.getTablespaceName() != null) {
-            infob.setTablespace(def.getTablespaceName());
-        }
         if (def.hasHistogram()) {
             infob.addAllHistogramColumn(def.getHistogramColumns());
         }

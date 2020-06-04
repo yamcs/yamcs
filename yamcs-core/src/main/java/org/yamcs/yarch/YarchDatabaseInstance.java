@@ -1,15 +1,12 @@
 package org.yamcs.yarch;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,11 +35,12 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Handles tables and streams for one Yamcs Instance
  * 
- * 
+ * <p>
  * Synchronisation policy: to avoid problems with stream disappearing when clients connect to them, all the
  * creation/closing/subscription to streams/tables shall be done while acquiring a lock on the YarchDatabase object.
  * This is done in the StreamSqlStatement.java
  * 
+ * <p>
  * Delivery of tuples does not require locking, this means subscription can change while delivering (for that a
  * concurrent list is used in Stream.java)
  * 
@@ -55,15 +53,16 @@ public class YarchDatabaseInstance {
 
     Map<String, TableDefinition> tables = new HashMap<>();
     transient Map<String, Stream> streams = new HashMap<>();
-
+    
+    //the tablespace where the data from this yarch instance is stored
     String tablespaceName;
 
-    BucketDatabase bucketDatabase;
-    FileSystemBucketDatabase fileSystemBucketDatabase;
+    private BucketDatabase bucketDatabase;
+    private FileSystemBucketDatabase fileSystemBucketDatabase;
 
     final ManagementService managementService;
 
-    // yamcs instance name (used to be called dbname)
+    // yamcs instance name
     private String instanceName;
 
     YarchDatabaseInstance(String instanceName) throws YarchException {
@@ -93,6 +92,7 @@ public class YarchDatabaseInstance {
                 loadBucketDatabase(dbConfig);
             }
         }
+        migrateTableDefinitions();
         loadTables();
 
         if (bucketDatabase == null) {
@@ -172,52 +172,64 @@ public class YarchDatabaseInstance {
     }
 
     /**
-     * loads all the .def files from the disk. The ascii def file is structed as follows col1 type1, col2 type2, col3
-     * type3 <- definition of the columns col1, col2 <- definition of the primary key
+     * loads all the tables via the storage engine
      * 
      * @throws YarchException
      */
     void loadTables() throws YarchException {
-        File dir = new File(getRoot());
-        if (dir.exists()) {
-            File[] dirFiles = dir.listFiles();
-            if (dirFiles == null) {
-                return; // no tables found
+        for (StorageEngine storageEngine : YarchDatabase.getStorageEngines()) {
+            List<TableDefinition>  list =  storageEngine.loadTables(this);
+            for (TableDefinition tblDef : list) {
+                tblDef.setDb(this);
+                managementService.registerTable(instanceName, tblDef);
+                tables.put(tblDef.getName(), tblDef);
             }
-            for (File f : dirFiles) {
-                String fn = f.getName();
-                if (fn.endsWith(".def")) {
-                    try {
-                        TableDefinition tblDef = deserializeTableDefinition(f);
-                        StorageEngine storageEngine = getStorageEngine(tblDef);
-                        if (storageEngine == null) {
-                            throw new YarchException("Do not have a storage engine '" + tblDef.getStorageEngineName()
-                                    + "'. Check storageEngines key in yamcs.yaml");
-                        }
+        }
 
-                        getStorageEngine(tblDef).loadTable(this, tblDef);
-                        managementService.registerTable(instanceName, tblDef);
-                        tables.put(tblDef.getName(), tblDef);
-                        log.debug("Loaded table definition {} from {}", tblDef.getName(), f);
-                    } catch (IOException e) {
-                        log.warn("Got exception when reading the table definition from {}: ", f, e);
-                        throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
-                    } catch (ClassNotFoundException e) {
-                        log.warn("Got exception when reading the table definition from {}: ", f, e);
-                        throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
-                    }
+    }
+
+    private void migrateTableDefinitions() throws YarchException {
+
+        File dir = new File(getRoot());
+
+        if (!dir.exists()) {
+            return;
+        }
+        File[] dirFiles = dir.listFiles();
+        if (dirFiles == null) {
+            return;
+        }
+
+        dirFiles = Arrays.stream(dirFiles).filter(f -> f.getName().endsWith(".def")).toArray(size -> new File[size]);
+        if (dirFiles.length == 0) {
+            return;
+        }
+        File oldTblDefs = new File(dir.getAbsolutePath() + "/" + "old-tbl-defs");
+        oldTblDefs.mkdir();
+
+        for (File f : dirFiles) {
+            try {
+                TableDefinition tblDef = deserializeTableDefinition(f);
+                StorageEngine storageEngine = getStorageEngine(tblDef);
+                if (storageEngine == null) {
+                    throw new YarchException("Do not have a storage engine '" + tblDef.getStorageEngineName()
+                            + "'. Check storageEngines key in yamcs.yaml");
                 }
-            }
-        } else {
-            log.info("Creating directory for db {}: {}", instanceName, dir.getAbsolutePath());
-            if (!dir.mkdirs()) {
-                YamcsServer.getServer().getCrashHandler(instanceName).handleCrash("Archive",
-                        "Cannot create directory: " + dir);
-                log.error("Cannot create directory: {}", dir);
+                log.debug("Migrating table definition {} from {}", tblDef.getName(), f);
+                storageEngine.migrateTableDefinition(this, tblDef);
+
+                f.renameTo(new File(oldTblDefs.getAbsolutePath() + File.separator + f.getName()));
+            } catch (IOException e) {
+                log.warn("Got exception when reading the table definition from {}: ", f, e);
+                throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
+            } catch (ClassNotFoundException e) {
+                log.warn("Got exception when reading the table definition from {}: ", f, e);
+                throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
             }
         }
     }
 
+    @Deprecated // table definitions are stored now by the storage engine
     TableDefinition deserializeTableDefinition(File f) throws IOException, ClassNotFoundException {
         if (f.length() == 0) {
             throw new IOException("Cannot load table definition from empty file " + f);
@@ -237,9 +249,6 @@ public class YarchDatabaseInstance {
 
         tblDef.setName(tblName);
         tblDef.setDb(this);
-        if (!tblDef.hasCustomDataDir()) {
-            tblDef.setDataDir(getRoot());
-        }
 
         if (tblDef.getFormatVersion() != TableDefinition.CURRENT_FORMAT_VERSION) {
             // temporary upgrade to version 2 from version 1 - should be removed in a future version
@@ -249,7 +258,7 @@ public class YarchDatabaseInstance {
                     changeParaValueType(tblDef);
                 }
                 tblDef.setFormatVersion(2);
-                serializeTableDefinition(tblDef);
+                saveTableDefinition(tblDef);
                 return deserializeTableDefinition(f);
             }
         }
@@ -271,60 +280,50 @@ public class YarchDatabaseInstance {
     }
 
     /**
-     * serializes to disk to the rootDir/name.def
+     * saves the table definition (called after it changes)
      * 
      * @param algorithmDef
      */
-    void serializeTableDefinition(TableDefinition td) {
-        String fn = getRoot() + "/" + td.getName() + ".def";
-        try (FileOutputStream fos = new FileOutputStream(fn)) {
-            Yaml yaml = new Yaml(new TableDefinitionRepresenter());
-
-            Writer w = new BufferedWriter(new OutputStreamWriter(fos));
-            yaml.dump(td, w);
-            w.flush();
-            fos.getFD().sync();
-            w.close();
-        } catch (IOException e) {
+    void saveTableDefinition(TableDefinition tblDef) {
+        try {
+            getStorageEngine(tblDef).saveTableDefinition(this, tblDef);
+        } catch (Exception e) {
             YamcsServer.getServer().getCrashHandler(instanceName).handleCrash("Archive",
-                    "Cannot write table definition to " + fn + " :" + e);
-            log.error("Got exception when writing table definition to {} ", fn, e);
+                    "Cannot save table definition for" + tblDef.getName() + " :" + e);
+            log.error("Got exception when writing table definition to {} ", tblDef.getName(), e);
         }
     }
 
     /**
      * add a table to the dictionary throws exception if a table or a stream with the same name already exist
      * 
-     * @param def
+     * @param tbldef
      *            - table definition
      * @throws YarchException
      *             - thrown in case a table or a stream with the same name already exists or if there was an error in
      *             creating the table
      * 
      */
-    public void createTable(TableDefinition def) throws YarchException {
-        if (tables.containsKey(def.getName())) {
-            throw new YarchException("A table named '" + def.getName() + "' already exists");
+    public void createTable(TableDefinition tbldef) throws YarchException {
+        if (tables.containsKey(tbldef.getName())) {
+            throw new YarchException("A table named '" + tbldef.getName() + "' already exists");
         }
-        if (streams.containsKey(def.getName())) {
-            throw new YarchException("A stream named '" + def.getName() + "' already exists");
+        if (streams.containsKey(tbldef.getName())) {
+            throw new YarchException("A stream named '" + tbldef.getName() + "' already exists");
         }
 
-        if (!def.hasCustomDataDir()) {
-            def.setDataDir(getRoot());
-        }
-        StorageEngine se = YarchDatabase.getStorageEngine(def.getStorageEngineName());
+        StorageEngine se = YarchDatabase.getStorageEngine(tbldef.getStorageEngineName());
         if (se == null) {
-            throw new YarchException("Invalid storage engine '" + def.getStorageEngineName()
+            throw new YarchException("Invalid storage engine '" + tbldef.getStorageEngineName()
                     + "' specified. Valid names are: " + YarchDatabase.getStorageEngineNames());
         }
-        se.createTable(this, def);
+        se.createTable(this, tbldef);
 
-        tables.put(def.getName(), def);
-        def.setDb(this);
-        serializeTableDefinition(def);
+        tables.put(tbldef.getName(), tbldef);
+        tbldef.setDb(this);
+        saveTableDefinition(tbldef);
         if (managementService != null) {
-            managementService.registerTable(instanceName, def);
+            managementService.registerTable(instanceName, tbldef);
         }
     }
 
@@ -375,10 +374,6 @@ public class YarchDatabaseInstance {
             managementService.unregisterTable(instanceName, tblName);
         }
         getStorageEngine(tbl).dropTable(this, tbl);
-        File f = new File(getRoot() + "/" + tblName + ".def");
-        if (!f.delete()) {
-            throw new YarchException("Cannot remove " + f);
-        }
     }
 
     public synchronized void removeStream(String name) {
@@ -473,42 +468,6 @@ public class YarchDatabaseInstance {
 
     public Bucket createBucket(String bucketName) throws IOException {
         return bucketDatabase.createBucket(bucketName);
-    }
-
-    /**
-     * Creates a bucket that maps to the file system. This bucket will be located in a default folder.
-     * 
-     * @param bucketName
-     *            the name of the bucket
-     * @return the created bucket
-     * @throws IOException
-     *             on I/O issues
-     * @deprecated Use {@link #addFileSystemBucket(String, Path)}
-     */
-    @Deprecated
-    public FileSystemBucket createFileSystemBucket(String bucketName) throws IOException {
-        FileSystemBucket bucket = fileSystemBucketDatabase.getBucket(bucketName);
-        if (bucket == null) {
-            bucket = fileSystemBucketDatabase.createBucket(bucketName);
-        }
-        return bucket;
-    }
-
-    /**
-     * Creates a bucket that maps to the file system.
-     * 
-     * @param bucketName
-     *            the name of the bucket
-     * @param location
-     *            the path to the bucket contents
-     * @return the created bucket
-     * @throws IOException
-     *             on I/O issues
-     * @deprecated Use {@link #addFileSystemBucket(String, Path)}
-     */
-    @Deprecated
-    public FileSystemBucket createFileSystemBucket(String bucketName, Path location) throws IOException {
-        return addFileSystemBucket(bucketName, location);
     }
 
     /**

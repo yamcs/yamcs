@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -18,8 +17,7 @@ public class CreateTableStatement implements StreamSqlStatement {
     ArrayList<String> primaryKey;
     ArrayList<String> histoColumns;
     PartitioningSpec partitioningSpec;
-    PartitionStorage partitionStorage;
-    String dataDir;
+    String tablespace;
     String engine;
 
     private boolean compressed = false;
@@ -32,8 +30,8 @@ public class CreateTableStatement implements StreamSqlStatement {
         this.primaryKey = primaryKey;
     }
 
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
+    public void setTablespace(String tablespace) {
+        this.tablespace = tablespace;
 
     }
 
@@ -59,13 +57,6 @@ public class CreateTableStatement implements StreamSqlStatement {
             TableDefinition tableDefinition = new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
 
-            if (dataDir != null) {
-                tableDefinition.setDataDir(dataDir);
-                tableDefinition.setCustomDataDir(true);
-            } else {
-                tableDefinition.setDataDir(ydb.getRoot());
-                tableDefinition.setCustomDataDir(false);
-            }
             if (engine != null) {
                 tableDefinition.setStorageEngineName(engine);
             } else {
@@ -82,10 +73,6 @@ public class CreateTableStatement implements StreamSqlStatement {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
 
-            if (partitionStorage != null) {
-                tableDefinition.setPartitionStorage(partitionStorage);
-            }
-
             try {
                 if (!ifNotExists || ydb.getTable(tableName) == null) {
                     ydb.createTable(tableDefinition);
@@ -99,9 +86,5 @@ public class CreateTableStatement implements StreamSqlStatement {
 
     public void setEngine(String engine) {
         this.engine = engine;
-    }
-
-    public void setPartitionStorage(PartitionStorage pstorage) {
-        this.partitionStorage = pstorage;
     }
 }

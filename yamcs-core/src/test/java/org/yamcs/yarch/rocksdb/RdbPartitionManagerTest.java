@@ -21,7 +21,6 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.io.Files;
 
@@ -80,7 +79,7 @@ public class RdbPartitionManagerTest {
 
         TableDefinition tblDef = getTableDefTimeAndValue();
 
-        RdbPartitionManager pm = new RdbPartitionManager(tablespace, YarchDatabase.getInstance("test"), tblDef);
+        RdbPartitionManager pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
         assertEquals("2011/001", part.dir);
 
@@ -116,7 +115,7 @@ public class RdbPartitionManagerTest {
 
         tablespace.loadDb(true);
 
-        pm = new RdbPartitionManager(tablespace, YarchDatabase.getInstance("test"), tblDef);
+        pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
         pm.readPartitions();
         List<Partition> plist = pm.getPartitions();
         assertEquals(5, plist.size());
@@ -136,7 +135,7 @@ public class RdbPartitionManagerTest {
 
         TableDefinition tblDef = getTableDefTimeAndValue();
 
-        RdbPartitionManager pm = new RdbPartitionManager(tablespace, YarchDatabase.getInstance("test"), tblDef);
+        RdbPartitionManager pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("0001-01-01T00:00:00"), 1);
         assertEquals("0001/001", part.dir);
     }

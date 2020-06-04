@@ -23,7 +23,6 @@ import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * 
@@ -40,26 +39,26 @@ public class RdbHistogramIterator implements HistogramIterator {
     private final TimeInterval interval;
     private final Tablespace tablespace;
 
-    YarchDatabaseInstance ydb;
-    TableDefinition tblDef;
     YRDB rdb;
 
     Log log;
     String colName;
     boolean stopReached = false;
-
-    public RdbHistogramIterator(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tblDef,
+    RdbPartitionManager partMgr;
+    
+    public RdbHistogramIterator(String yamcsInstance, Tablespace tablespace, TableDefinition tblDef,
             String colName, TimeInterval interval) throws RocksDBException, IOException {
         this.interval = interval;
-        this.ydb = ydb;
-        this.tblDef = tblDef;
         this.colName = colName;
         this.tablespace = tablespace;
 
-        PartitionManager partMgr = RdbStorageEngine.getInstance().getPartitionManager(tblDef);
+        partMgr = tablespace.getPartitionManager(tblDef);
+        if(partMgr == null) {
+            throw new IllegalArgumentException("Unknown table definition for '"+tblDef.getName()+"'");
+        }
         partitionIterator = partMgr.intervalIterator(interval);
-        log = new Log(getClass(), ydb.getName());
-        log.setContext(tblDef.getName());
+        log = new Log(getClass(), yamcsInstance);
+        log.setContext(partMgr.getTableName());
         readNextPartition();
     }
 
@@ -190,7 +189,6 @@ public class RdbHistogramIterator implements HistogramIterator {
             records.clear();
             long sstart = segmentStart(time);
             interval.setStart(HistogramSegment.GROUPING_FACTOR * sstart);
-            PartitionManager partMgr = RdbStorageEngine.getInstance().getPartitionManager(tblDef);
             partitionIterator = partMgr.intervalIterator(interval);
             if (!partitionIterator.hasNext()) {
                 stopReached = true;

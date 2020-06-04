@@ -31,7 +31,6 @@ import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.*;
 import org.yamcs.yarch.streamsql.funct.*;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.TableDefinition.PartitionStorage;
 
 
 public class StreamSqlParser {
@@ -113,7 +112,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_CREATE:"CREATE">
 |   <K_CURRENT:"CURRENT">
 |   <K_DATABASES:"DATABASES">
-|   <K_DATADIR:"DATADIR">
 |   <K_DATE:"DATE">
 |   <K_DECIMAL:"DECIMAL">
 |   <K_DELETE:"DELETE">
@@ -160,7 +158,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUT:"OUT">
 |   <K_OUTPUT:"OUTPUT">
 |   <K_PARTITION:"PARTITION">
-|   <K_PARTITION_STORAGE: "PARTITION_STORAGE"> 
 |   <K_PORT:"PORT">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PROTOBUF:"PROTOBUF">
@@ -185,6 +182,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLE:"TABLE">
 |   <K_TABLE_FORMAT:"TABLE_FORMAT">
 |   <K_TABLES:"TABLES">
+|   <K_TABLESPACE:"TABLESPACE">
 |   <K_TIME:"TIME">
 |   <K_TIME_AND_VALUE:"TIME_AND_VALUE">
 |   <K_TUPLES:"TUPLES">
@@ -318,7 +316,6 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     
     
     DataType columnType;
-    String dataDir=null;
     CreateTableStatement cts;
 } {
     <K_CREATE> <K_TABLE> [<K_IF> <K_NOT> <K_EXISTS> {ifNotExists=true;}] tableName=ObjectName()
@@ -334,9 +331,8 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
 }
 
 void TableOption(CreateTableStatement cts) throws StreamSqlException: {
-   String columnName, datadir, engine;
+   String columnName, tablespace, engine;
    PartitioningSpec pspec;
-   PartitionStorage pstorage;
 } {
    <K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"
    |
@@ -344,18 +340,10 @@ void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    |
    <K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} 
    |
-   <K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}
+   <K_TABLESPACE> tablespace=ObjectName() {cts.setTablespace(tablespace);}
    |
    <K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}
-   |
-   <K_PARTITION_STORAGE> "=" pstorage=PartitionStorage() {cts.setPartitionStorage(pstorage);}
-}
 
-PartitionStorage PartitionStorage() throws StreamSqlException: {
-} {
-   <K_IN_KEY> {return PartitionStorage.IN_KEY;}
-   |
-   <K_COLUMN_FAMILY> {return PartitionStorage.COLUMN_FAMILY;}
 }
 
 PartitioningSpec PartitioningSpec() throws StreamSqlException: {

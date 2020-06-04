@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.rocksdb.ColumnFamilyHandle;
@@ -18,14 +20,25 @@ import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
+import org.yamcs.yarch.Partition;
+import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.RdbTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.TextFormat;
+
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 /**
- * 
+ * Tablespaces are used to store data by the {@link RdbStorageEngine}. Each tablespace can store data from one or more
+ * Yamcs instances.
+ * <p>
  * Tablespaces are rocksdb databases normally stored in the yamcs data directory (/storage/yamcs-data). Each corresponds
  * to a directory &lt;tablespace-name&gt;.rdb and has a definition file tablespace-name.tbs.
  * <p>
@@ -45,10 +58,19 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * <p>
  * The metadata contains two types of records, identified by the first byte of the key:
  * <ul>
- * <li>key: 0x1 value: 1 byte version number (0x1), 4 bytes max tbsIndex used to store the max tbsIndex and also stores
+ * <li>key: 0x1
+ * <p>
+ * value: 1 byte version number (0x1), 4 bytes max tbsIndex
+ * <p>
+ * used to store the max tbsIndex and also stores
  * a version number in case the format will change in the future
- * <li>key: 0x2, 1 byte record type, 4 bytes tbsIndex value: protobuf encoded TablespaceRecord used to store what
- * information corresponds to each tbsIndex the record type corresponds to the Type enumerations from tablespace.proto
+ * <li>key: 0x2, 1 byte record type, 4 bytes tbsIndex
+ * <p>
+ * value: protobuf encoded TablespaceRecord
+ * <p>
+ * Used to store the information corresponding to the given tbsIndex. The record type corresponds to the Type
+ * enumerations from tablespace.proto
+ * </li>
  * </ul>
  */
 public class Tablespace {
@@ -59,7 +81,8 @@ public class Tablespace {
 
     private String customDataDir;
     private static final String CF_METADATA = "_metadata_";
-    private static final byte METADATA_VERSION = 1;
+    private static final byte PREV_METADATA_VERSION = 1;
+    private static final byte METADATA_VERSION = 2;
 
     private static final byte[] METADATA_KEY_MAX_TBS_VERSION = new byte[] { 1 };
     private static final byte METADATA_TR = 2; // first byte of metadata records
@@ -71,6 +94,8 @@ public class Tablespace {
     long maxTbsIndex;
 
     RDBFactory rdbFactory;
+
+    Map<TableDefinition, RdbPartitionManager> partitionManagers = new ConcurrentHashMap<>();
 
     public Tablespace(String name) {
         this.name = name;
@@ -95,7 +120,9 @@ public class Tablespace {
                     throw new DatabaseCorruptionException(
                             "No (version, maxTbsIndex) record found in the metadata");
                 }
-                if (value[0] != METADATA_VERSION) {
+                if (value[0] == PREV_METADATA_VERSION) {
+                    updateMetadataVersion();
+                } else if (value[0] != METADATA_VERSION) {
                     throw new DatabaseCorruptionException(
                             "Wrong metadata version " + value[0] + " expected " + METADATA_VERSION);
                 }
@@ -115,6 +142,13 @@ public class Tablespace {
         } catch (RocksDBException e) {
             throw new IOException(e);
         }
+    }
+
+    // metadata version 1-> 2. the only change is that we moved the table definitions into the rocksdb.
+    // we update the version in order for older servers to throw an error if encountering a new database (otherwise they
+    // will create again the tables shadowing the old data)
+    private void updateMetadataVersion() throws RocksDBException {
+        writeRootMetadata();
     }
 
     public String getName() {
@@ -199,7 +233,28 @@ public class Tablespace {
         return tr;
     }
 
-    TablespaceRecord updateRecord(String yamcsInstance, WriteBatch writeBatch, TablespaceRecord.Builder trb) throws IOException {
+    private TablespaceRecord updateRecord(String yamcsInstance, TablespaceRecord.Builder trb) throws RocksDBException {
+        if (!trb.hasType()) {
+            throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
+        }
+
+        if (!trb.hasTbsIndex()) {
+            throw new IllegalArgumentException("The tbsIndex is mandatory for update");
+        }
+
+        if (!name.equals(yamcsInstance)) {
+            trb.setInstanceName(yamcsInstance);
+        }
+
+        TablespaceRecord tr = trb.build();
+        log.debug("Updating metadata record {}", TextFormat.shortDebugString(tr));
+        db.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+
+        return tr;
+    }
+
+    TablespaceRecord writeToBatch(String yamcsInstance, WriteBatch writeBatch, TablespaceRecord.Builder trb)
+            throws IOException {
         if (!trb.hasType()) {
             throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
         }
@@ -211,11 +266,11 @@ public class Tablespace {
         }
 
         TablespaceRecord tr = trb.build();
-        log.debug("Adding new metadata record {}", tr);
+        log.debug("Updating metadata record {}", tr);
         try {
             writeBatch.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
         } catch (RocksDBException e) {
-           throw new IOException(e);
+            throw new IOException(e);
         }
         return tr;
     }
@@ -231,11 +286,15 @@ public class Tablespace {
 
     private synchronized int getNextTbsIndex() throws RocksDBException {
         maxTbsIndex++;
+        writeRootMetadata();
+        return (int) maxTbsIndex;
+    }
+
+    private void writeRootMetadata() throws RocksDBException {
         byte[] v = new byte[5];
         v[0] = METADATA_VERSION;
         encodeInt((int) maxTbsIndex, v, 1);
         db.put(cfMetadata, METADATA_KEY_MAX_TBS_VERSION, v);
-        return (int) maxTbsIndex;
     }
 
     /**
@@ -296,7 +355,7 @@ public class Tablespace {
     public void removeTbsIndex(Type type, int tbsIndex) throws RocksDBException {
         log.debug("Removing tbsIndex {}", tbsIndex);
         try (WriteBatch wb = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
-            wb.remove(cfMetadata, getMetadataKey(type, tbsIndex));
+            wb.delete(cfMetadata, getMetadataKey(type, tbsIndex));
             byte[] beginKey = new byte[TBS_INDEX_SIZE];
             byte[] endKey = new byte[TBS_INDEX_SIZE];
             ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
@@ -319,7 +378,7 @@ public class Tablespace {
         try (WriteBatch wb = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (int i = 0; i < tbsIndexArray.size(); i++) {
                 int tbsIndex = tbsIndexArray.get(i);
-                wb.remove(cfMetadata, getMetadataKey(type, tbsIndexArray.get(i)));
+                wb.delete(cfMetadata, getMetadataKey(type, tbsIndexArray.get(i)));
                 byte[] beginKey = new byte[TBS_INDEX_SIZE];
                 byte[] endKey = new byte[TBS_INDEX_SIZE];
                 ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
@@ -378,5 +437,105 @@ public class Tablespace {
         if (key.length < TBS_INDEX_SIZE) {
             throw new IllegalArgumentException("The key has to contain at least the tbsIndex");
         }
+    }
+
+    public void createTable(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+        synchronized (partitionManagers) {
+            RdbTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
+            trb.setType(Type.TABLE_DEFINITION);
+            trb.setTableDefinition(rtd);
+            trb.setTableName(tblDef.getName());
+
+            TablespaceRecord tr = createMetadataRecord(yamcsInstance, trb);
+
+            RdbPartitionManager pm = new RdbPartitionManager(this, yamcsInstance, tblDef, tr.getTbsIndex());
+            partitionManagers.put(tblDef, pm);
+
+        }
+    }
+
+    void saveTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+        RdbPartitionManager pm = partitionManagers.get(tblDef);
+        if (pm == null) {
+            throw new IllegalArgumentException("This is not a table definition I know");
+        }
+
+        RdbTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+        TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
+        trb.setType(Type.TABLE_DEFINITION);
+        trb.setTableDefinition(rtd);
+        trb.setTableName(tblDef.getName());
+
+        trb.setTbsIndex(pm.tblTbsIndex);
+        updateRecord(yamcsInstance, trb);
+    }
+
+    /**
+     * 
+     */
+    void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+        createTable(yamcsInstance, tblDef);
+    }
+
+    void dropTable(TableDefinition tbl) throws RocksDBException, IOException {
+        RdbPartitionManager pm = partitionManagers.remove(tbl);
+        if (pm == null) {
+            log.error("No partition manager for {}", tbl);
+            return;
+        }
+
+        for (Partition p : pm.getPartitions()) {
+            RdbPartition rdbp = (RdbPartition) p;
+
+            int tbsIndex = rdbp.tbsIndex;
+            log.debug("Removing tbsIndex {}", tbsIndex);
+            YRDB db = getRdb(rdbp.dir, false);
+            db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
+            removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
+        }
+
+    }
+
+    /**
+     * returns the partition manager associated to the table or null if this table is not known.
+     * 
+     * @param tblDef
+     * @return
+     */
+    public RdbPartitionManager getPartitionManager(TableDefinition tblDef) {
+        return partitionManagers.get(tblDef);
+    }
+
+    List<TableDefinition> loadTables(String yamcsInstance) throws RocksDBException, IOException {
+        List<TableDefinition> list = new ArrayList<>();
+
+        for (TablespaceRecord tr : filter(Type.TABLE_DEFINITION, yamcsInstance, tr -> true)) {
+            if (!tr.hasTableName()) {
+                throw new DatabaseCorruptionException(
+                        "Found table definition metadata record without a table name :" + tr);
+            }
+
+            TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
+            tblDef.setName(tr.getTableName());
+
+            RdbPartitionManager pm = new RdbPartitionManager(this, yamcsInstance, tblDef, tr.getTbsIndex());
+            partitionManagers.put(tblDef, pm);
+            pm.readPartitions();
+
+            list.add(tblDef);
+            log.debug("Loaded table {}", tblDef);
+        }
+        log.info("Tablespace {}: loaded {} tables for instance {}", name, list.size(), yamcsInstance);
+        return list;
+    }
+
+    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            boolean ascending, boolean follow) {
+        PartitionManager pmgr = partitionManagers.get(tblDef);
+        if(pmgr==null) {
+            throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
+        }
+        return new RdbTableReaderStream(this, ydb, pmgr, ascending, follow);
     }
 }

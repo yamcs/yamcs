@@ -43,7 +43,7 @@ public class PartitioningTest extends YarchTestCase {
         Tablespace tablespace = storageEngine.getTablespace(instance);
 
         assertTrue(tdef.hasPartitioning());
-        RdbPartitionManager pmgr = storageEngine.getPartitionManager(tdef);
+        RdbPartitionManager pmgr = storageEngine.getPartitionManager(ydb, tdef);
         List<Partition> partitions = pmgr.getPartitions();
         assertEquals(1, partitions.size());
         RdbPartition p1 = (RdbPartition) partitions.iterator().next();
@@ -196,7 +196,7 @@ public class PartitioningTest extends YarchTestCase {
         RdbStorageEngine storageEngine = (RdbStorageEngine) ydb.getStorageEngine(tdef);
 
         assertTrue(tdef.hasPartitioning());
-        RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        RdbPartitionManager pmgr= storageEngine.getPartitionManager(ydb, tdef);
 
         List<Partition> partitions=pmgr.getPartitions();
         Iterator<Partition>it= partitions.iterator();
@@ -286,7 +286,7 @@ public class PartitioningTest extends YarchTestCase {
         assertTrue(tdef.hasPartitioning());
         RdbStorageEngine storageEngine = (RdbStorageEngine) ydb.getStorageEngine(tdef);
 
-        RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        RdbPartitionManager pmgr= storageEngine.getPartitionManager(ydb, tdef);
 
         Collection<Partition> partitions=pmgr.getPartitions();
         Iterator<Partition>it = partitions.iterator();

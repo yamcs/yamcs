@@ -43,10 +43,10 @@ public class RdbTableWriter extends TableWriter {
     volatile boolean closed = false;
 
     public RdbTableWriter(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
-            InsertMode mode, RdbPartitionManager pm) {
+            InsertMode mode) {
         super(ydb, tableDefinition, mode);
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
-        this.partitionManager = pm;
+        this.partitionManager = tablespace.getPartitionManager(tableDefinition);
         this.tablespace = tablespace;
     }
 

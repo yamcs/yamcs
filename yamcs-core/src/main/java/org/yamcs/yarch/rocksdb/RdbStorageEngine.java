@@ -17,7 +17,6 @@ import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
-import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.Stream;
@@ -26,14 +25,15 @@ import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 /**
- * Storage Engine based on RocksDB. Data is stored in multiple {@link Tablespace}
+ * Storage Engine based on RocksDB. Data is stored in multiple {@link Tablespace}.
+ * <p>
+ * Each table has associated a tablespace, if not set at creation of the table, it is the tablespace associated to the
+ * instance.
  * 
  */
 public class RdbStorageEngine implements StorageEngine {
-    Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
     Map<String, Tablespace> tablespaces = new HashMap<>();
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
@@ -55,7 +55,7 @@ public class RdbStorageEngine implements StorageEngine {
     RdbStorageEngine() {
     }
 
-    public void loadTablespaces(boolean readOnly) throws YarchException {
+    void loadTablespaces(boolean readOnly) throws YarchException {
         File dir = new File(YarchDatabase.getDataDir());
         log.debug("Loading tablespaces from {}", dir);
         if (dir.exists()) {
@@ -80,22 +80,9 @@ public class RdbStorageEngine implements StorageEngine {
         }
     }
 
-    @Override
-    public void loadTable(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
-        Tablespace tablespace = getTablespace(ydb, tblDef);
-        RdbPartitionManager pm = new RdbPartitionManager(tablespace, ydb, tblDef);
-        partitionManagers.put(tblDef, pm);
-        try {
-            pm.readPartitions();
-        } catch (RocksDBException | IOException e) {
-            log.error("Got exception when loading table partitions for {}.{}: ", ydb.getName(), tblDef.getName(), e);
-            throw new YarchException("Got exception when reading table partitions", e);
-        }
-    }
 
     @Override
     public void dropTable(YarchDatabaseInstance ydb, TableDefinition tbl) throws YarchException {
-        RdbPartitionManager pm = partitionManagers.remove(tbl);
         Tablespace tablespace = getTablespace(ydb, tbl);
 
         List<RdbTableWriter> l = null;
@@ -110,31 +97,20 @@ public class RdbStorageEngine implements StorageEngine {
         }
 
         log.info("Dropping table {}.{}", ydb.getName(), tbl.getName());
-        for (Partition p : pm.getPartitions()) {
-            RdbPartition rdbp = (RdbPartition) p;
-
-            int tbsIndex = rdbp.tbsIndex;
-            log.debug("Removing tbsIndex {}", tbsIndex);
-            try {
-                YRDB db = tablespace.getRdb(rdbp.dir, false);
-                db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
-                tablespace.removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
-            } catch (IOException | RocksDBException e) {
-                log.error("Error when removing tbsIndex", e);
-                throw new YarchException(e);
-            }
+        try {
+            tablespace.dropTable(tbl);
+        } catch (RocksDBException | IOException e) {
+            throw new YarchException(e);
         }
     }
 
     @Override
     public RdbTableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
-        if (!partitionManagers.containsKey(tblDef)) {
-            throw new IllegalStateException("Do not have a partition manager for this table");
-        }
-        checkFormatVersion(ydb, tblDef);
 
-        RdbTableWriter writer = new RdbTableWriter(getTablespace(ydb, tblDef), ydb, tblDef, insertMode,
-                partitionManagers.get(tblDef));
+        checkFormatVersion(ydb, tblDef);
+        Tablespace tablespace = getTablespace(ydb, tblDef);
+
+        RdbTableWriter writer = new RdbTableWriter(tablespace, ydb, tblDef, insertMode);
         synchronized (tableWriters) {
             List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
             l.add(writer);
@@ -153,28 +129,31 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
-            boolean follow) {
-        if (!partitionManagers.containsKey(tbl)) {
-            throw new IllegalStateException("Do not have a partition manager for this table");
-        }
+    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl
+            , boolean ascending, boolean follow) {
+        Tablespace tblsp = getTablespace(ydb, tbl);
 
-        return new RdbTableReaderStream(getTablespace(ydb, tbl), ydb, tbl, partitionManagers.get(tbl), ascending,
-                follow);
+        return tblsp.newTableReaderStream(ydb, tbl, ascending, follow);
     }
 
     @Override
-    public void createTable(YarchDatabaseInstance ydb, TableDefinition def) {
-        RdbPartitionManager pm = new RdbPartitionManager(getTablespace(ydb, def), ydb, def);
-        partitionManagers.put(def, pm);
+    public void createTable(YarchDatabaseInstance ydb, TableDefinition def) throws YarchException {
+        Tablespace tblsp = getTablespace(ydb, def);
+        try {
+            tblsp.createTable(ydb.getYamcsInstance(), def);
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
+
     }
 
     public static synchronized RdbStorageEngine getInstance() {
         return instance;
     }
 
-    public RdbPartitionManager getPartitionManager(TableDefinition tdef) {
-        return partitionManagers.get(tdef);
+    public RdbPartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef) {
+        Tablespace tblsp = getTablespace(ydb, tblDef);
+        return tblsp.getPartitionManager(tblDef);
     }
 
     @Override
@@ -208,16 +187,17 @@ public class RdbStorageEngine implements StorageEngine {
 
     }
 
+    /**
+     * Gets the tablespace storing the table data.
+     * <p>
+     * Creates the tablespace if it does not exist.
+     * 
+     * @param ydb
+     * @param tbl
+     * @return
+     */
     private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb, TableDefinition tbl) {
-        String tablespaceName = tbl.getTablespaceName();
-        if (tablespaceName == null) {
-            return getTablespace(ydb);
-        } else {
-            if (!tablespaces.containsKey(tablespaceName)) {
-                createTablespace(tablespaceName);
-            }
-            return tablespaces.get(tablespaceName);
-        }
+        return getTablespace(ydb);
     }
 
     public Map<String, Tablespace> getTablespaces() {
@@ -267,7 +247,8 @@ public class RdbStorageEngine implements StorageEngine {
 
         checkFormatVersion(ydb, tblDef);
         try {
-            return new RdbHistogramIterator(getTablespace(ydb, tblDef), ydb, tblDef, columnName, interval);
+            Tablespace tblsp = getTablespace(ydb);
+            return new RdbHistogramIterator(ydb.getYamcsInstance(), tblsp, tblDef, columnName, interval);
         } catch (RocksDBException | IOException e) {
             throw new YarchException(e);
         }
@@ -332,7 +313,35 @@ public class RdbStorageEngine implements StorageEngine {
             t.close();
         }
         tablespaces.clear();
-        partitionManagers.clear();
         bucketDbs.clear();
+    }
+
+    @Override
+    public  List<TableDefinition> loadTables(YarchDatabaseInstance ydb) throws YarchException {
+        Tablespace tablespace = getTablespace(ydb);
+        try {
+            return tablespace.loadTables(ydb.getYamcsInstance());
+        } catch (RocksDBException | IOException e) {
+           throw new YarchException(e);
+        }
+    }
+
+    public void migrateTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
+        Tablespace tablespace = getTablespace(ydb);
+        try {
+            tablespace.migrateTableDefinition(ydb.getYamcsInstance(), tblDef);
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    @Override
+    public void saveTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
+        Tablespace tablespace = getTablespace(ydb);
+        try {
+            tablespace.saveTableDefinition(ydb.getYamcsInstance(), tblDef);
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
     }
 }
