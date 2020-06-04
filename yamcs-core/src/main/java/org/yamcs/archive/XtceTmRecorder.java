@@ -88,7 +88,6 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
                         + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) table_format=compressed";
-                System.out.println("query: " + query);
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
