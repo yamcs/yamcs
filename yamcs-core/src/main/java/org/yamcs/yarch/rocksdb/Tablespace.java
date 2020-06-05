@@ -16,14 +16,19 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.yamcs.alarms.ParameterAlarmStreamer;
+import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
+import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.RdbTableDefinition;
@@ -475,7 +480,22 @@ public class Tablespace {
      * 
      */
     void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+        //TODO remove at some point
+        if("alarms".equals(tblDef.getName())) {
+            TupleDefinition tdef = tblDef.getValueDefinition();
+            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_TRIGGER);
+            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_CLEAR);
+            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+        }
         createTable(yamcsInstance, tblDef);
+    }
+    
+    private void changePvColumnType(TupleDefinition tdef, String cname) {
+        int idx =tdef.getColumnIndex(cname);
+        if(idx > 0) {
+            ColumnDefinition cd = new ColumnDefinition(cname, DataType.PARAMETER_VALUE);
+            tdef.getColumnDefinitions().set(idx, cd);
+        }
     }
 
     void dropTable(TableDefinition tbl) throws RocksDBException, IOException {

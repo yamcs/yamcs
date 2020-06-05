@@ -349,7 +349,7 @@ public abstract class AbstractIntegrationTest {
             org.yamcs.protobuf.Pvalue.ParameterValue pv3 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                     .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                     .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
-                    .setGenerationTime(generationTime)
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime))
                     .setEngValue(ValueUtility.getDoubleGbpValue(x))
                     .build();
             ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv3));
@@ -358,7 +358,7 @@ public abstract class AbstractIntegrationTest {
             org.yamcs.protobuf.Pvalue.ParameterValue pv4 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                     .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                     .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
-                    .setGenerationTime(generationTime + 20)
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime + 20))
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
             ppListener.updateParams(generationTime + 20, "IntegrationTest2", seqNum, Arrays.asList(pv4));

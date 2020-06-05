@@ -5,129 +5,125 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
-
+import "google/protobuf/timestamp.proto";
 
 //this can also be called validity status
 enum AcquisitionStatus {
-  // OK!
-  ACQUIRED = 0;
+    // OK!
+    ACQUIRED = 0;
   
-  // No value received so far
-  NOT_RECEIVED = 1;
+    // No value received so far
+    NOT_RECEIVED = 1;
   
-  // Some value has been received but is invalid
-  INVALID = 2;
+    // Some value has been received but is invalid
+    INVALID = 2;
   
-  // The parameter is coming from a packet which has not since updated although it should have been
-  EXPIRED = 3;
+    // The parameter is coming from a packet which has not since updated although it should have been
+   EXPIRED = 3;
 }
 
 enum MonitoringResult {
-  DISABLED = 0;
-  IN_LIMITS = 1;
-  WATCH = 7;
-  WARNING = 10;
-  DISTRESS = 13;
-  CRITICAL = 16;
-  SEVERE = 19;
+    DISABLED = 0;
+    IN_LIMITS = 1;
+    WATCH = 7;
+    WARNING = 10;
+    DISTRESS = 13;
+    CRITICAL = 16;
+    SEVERE = 19;
 }
 
 enum RangeCondition {
-  LOW = 0;
-  HIGH = 1;
+    LOW = 0;
+    HIGH = 1;
 }
 
-// The difference between this and org.yamcs.parameter.ParameterValue is that
-// this one contains a a parameter id (assigned at subscription time) instead
-// of a Parameter (MDB definition of a parameter)
 message ParameterValue {
-  optional NamedObjectId id = 1;
-  optional Value rawValue = 2;
-  optional Value engValue = 3;
-  optional int64 acquisitionTime = 4;
-  optional int64 generationTime = 5;
-  optional AcquisitionStatus acquisitionStatus = 6;
-  optional bool processingStatus = 7;
-  optional MonitoringResult monitoringResult = 8;
-  optional RangeCondition rangeCondition = 9;
+    optional NamedObjectId id = 1;
+    optional Value rawValue = 2;
+    optional Value engValue = 3;
+    optional google.protobuf.Timestamp acquisitionTime = 4;
+    optional google.protobuf.Timestamp generationTime = 5;
+    optional AcquisitionStatus acquisitionStatus = 6;
+    optional bool processingStatus = 7;
+    optional MonitoringResult monitoringResult = 8;
+    optional RangeCondition rangeCondition = 9;
 
-  // Used as alternative to the ones above for clients that do not
-  // understand internal yamcs time encoding
-  optional string acquisitionTimeUTC = 11;
-  optional string generationTimeUTC = 12;
+    // same as the Timestamps above 
+    optional string acquisitionTimeUTC = 11 [deprecated = true];
+    optional string generationTimeUTC = 12 [deprecated = true];
 
-  // Context-dependent ranges
-  repeated mdb.AlarmRange alarmRange = 25;
+    // Context-dependent ranges
+    repeated mdb.AlarmRange alarmRange = 25;
 
-  // How long (in milliseconds) this parameter value is valid
-  // Note that there is an option when subscribing to parameters to get
-  // updated when the parameter values expire. 
-  optional int64 expireMillis = 26;
+    // How long (in milliseconds) this parameter value is valid
+    // Note that there is an option when subscribing to parameters to get
+    // updated when the parameter values expire. 
+    optional int64 expireMillis = 26;
 
-  // When transferring parameters over WebSocket, this value might be used
-  // instead of the id above in order to reduce the bandwidth.
-  // Note that the id <-> numericId assignment is only valid in the context
-  // of a single WebSocket connection.
-  optional uint32 numericId = 27;
+    // When transferring parameters over WebSocket, this value might be used
+    // instead of the id above in order to reduce the bandwidth.
+    // Note that the id <-> numericId assignment is only valid in the context
+    // of a single WebSocket connection.
+    optional uint32 numericId = 27;
 }
 
 
 // used in the ParameterArchive to store the status flags associated to one parameter value
 message ParameterStatus {
-  optional AcquisitionStatus acquisitionStatus = 1;
-  optional MonitoringResult monitoringResult = 2;
-  optional RangeCondition rangeCondition = 3;
-  // context-dependent ranges
-  repeated mdb.AlarmRange alarmRange = 4;
+    optional AcquisitionStatus acquisitionStatus = 1;
+    optional MonitoringResult monitoringResult = 2;
+    optional RangeCondition rangeCondition = 3;
+    // context-dependent ranges
+    repeated mdb.AlarmRange alarmRange = 4;
 
-  //when the value expires
-  optional int64 expireMillis = 5;
+    //when the value expires
+    optional int64 expireMillis = 5;
 }
 
 message ParameterData {
-  repeated ParameterValue parameter = 1;
+    repeated ParameterValue parameter = 1;
 
-  // The next three fields are used by the recorder as unique key to store
-  // parameters in "rows" and also by components that provide parameters
-  // from external sources. The time should roughly correspond to the parameter 
-  // time but can be rounded for better efficiency.
-  optional string group = 2;
-  optional int64  generationTime = 3;
-  optional int32 seqNum = 4;
+    // The next three fields are used by the recorder as unique key to store
+    // parameters in "rows" and also by components that provide parameters
+    // from external sources. The time should roughly correspond to the parameter 
+    // time but can be rounded for better efficiency.
+    optional string group = 2;
+    optional int64  generationTime = 3;
+    optional int32 seqNum = 4;
 
-  // Used when parameter data is delivered as result of subscriptions
-  optional int32 subscriptionId = 5;
+    // Used when parameter data is delivered as result of subscriptions
+    optional int32 subscriptionId = 5;
 }
 
 message TimeSeries {
-  message Sample {
-    optional string time = 1;
-    optional double avg = 2;
-    optional double min = 3;
-    optional double max = 4;
-    optional int32 n = 5;
-  }
+    message Sample {
+        optional string time = 1;
+        optional double avg = 2;
+        optional double min = 3;
+        optional double max = 4;
+        optional int32 n = 5;
+    }
 
-  repeated Sample sample = 1;
+    repeated Sample sample = 1;
 }
 
 message Ranges {
-  message Range {
-    // Generation time of a parameter value.
-    optional string timeStart = 1;
+    message Range {
+        // Generation time of a parameter value.
+        optional string timeStart = 1;
+            
+        // If the value changes, ``timeStop`` is the generation time of the new value.
+        // If the parameter expires or the ``maxGap`` has been set, ``timeStop`` is
+        // the generation time of the last value plus the expiration time or the
+        // ``maxGap``.
+        optional string timeStop = 2;
     
-    // If the value changes, ``timeStop`` is the generation time of the new value.
-    // If the parameter expires or the ``maxGap`` has been set, ``timeStop`` is
-    // the generation time of the last value plus the expiration time or the
-    // ``maxGap``.
-    optional string timeStop = 2;
-    
-    // the engineering value of the parameter in the interval ``[timeStart, timeStop)``
-    // Time intervals have to be considered as closed at start and open at stop.
-    optional Value engValue = 3;
+        // the engineering value of the parameter in the interval ``[timeStart, timeStop)``
+        // Time intervals have to be considered as closed at start and open at stop.
+        optional Value engValue = 3;
 
-    // Number of parameter values received in the interval.
-    optional int32 count = 4;
-  }
-  repeated Range range = 1;
+        // Number of parameter values received in the interval.
+        optional int32 count = 4;
+    }
+    repeated Range range = 1;
 }

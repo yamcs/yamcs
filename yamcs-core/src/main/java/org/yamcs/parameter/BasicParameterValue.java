@@ -301,7 +301,7 @@ public class BasicParameterValue {
         }
 
         if (gpv.hasAcquisitionTime()) {
-            pv.setAcquisitionTime(gpv.getAcquisitionTime());
+            pv.setAcquisitionTime(TimeEncoding.fromProtobufTimestamp(gpv.getAcquisitionTime()));
         }
 
         if (gpv.hasExpireMillis()) {
@@ -309,7 +309,7 @@ public class BasicParameterValue {
         }
 
         if (gpv.hasGenerationTime()) {
-            pv.setGenerationTime(gpv.getGenerationTime());
+            pv.setGenerationTime(TimeEncoding.fromProtobufTimestamp(gpv.getGenerationTime()));
         }
         if (gpv.hasMonitoringResult()) {
             pv.setMonitoringResult(gpv.getMonitoringResult());

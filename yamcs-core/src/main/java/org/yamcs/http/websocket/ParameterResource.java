@@ -30,6 +30,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Provides realtime parameter subscription via web.
@@ -274,7 +275,7 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
                 long now = processor.getCurrentTime();
                 for (NamedObjectId id : invalid) {
                     pd.addParameter(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(id)
-                            .setAcquisitionTime(now)
+                            .setAcquisitionTime(TimeEncoding.toProtobufTimestamp(now))
                             .setAcquisitionStatus(AcquisitionStatus.INVALID).build());
                 }
                 client.sendData(ProtoDataType.PARAMETER, pd.build());

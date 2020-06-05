@@ -18,6 +18,8 @@ import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 
+import com.google.protobuf.util.Timestamps;
+
 import io.netty.handler.codec.http.HttpMethod;
 
 public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
@@ -96,7 +98,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, pdata.getParameterCount());
         pv = pdata.getParameter(0);
 
-        assertEquals("2015-01-02T11:00:00.000Z", TimeEncoding.toString(pv.getGenerationTime()));
+        assertEquals("2015-01-02T11:00:00Z", Timestamps.toString(pv.getGenerationTime()));
         assertEquals(0.167291805148, pv.getEngValue().getFloatValue(), 1e-5);
         AcquisitionStatus acqs = pdata.getParameter(0).getAcquisitionStatus();
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
@@ -112,7 +114,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         long t = TimeEncoding.parse("2015-01-02T12:00:09.000");
         for (int i = 0; i < pdata.getParameterCount(); i++) {
             pv = pdata.getParameter(i);
-            assertEquals(TimeEncoding.toString(t), TimeEncoding.toString(pv.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
             t -= 1000;
         }
 
@@ -124,7 +126,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         t = TimeEncoding.parse("2015-01-02T12:00:09.000");
         for (int i = 0; i < pdata.getParameterCount(); i++) {
             pv = pdata.getParameter(i);
-            assertEquals(TimeEncoding.toString(t), TimeEncoding.toString(pv.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
             t -= 1000;
         }
 
@@ -145,7 +147,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         t = TimeEncoding.parse("2015-01-02T11:59:50");
         for (int i = 0; i < pdata.getParameterCount(); i++) {
             pv = pdata.getParameter(i);
-            assertEquals(TimeEncoding.toString(t), TimeEncoding.toString(pv.getGenerationTime()));
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
             t += 1000;
         }
     }

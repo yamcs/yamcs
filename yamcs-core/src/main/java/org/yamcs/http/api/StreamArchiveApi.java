@@ -371,10 +371,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         @Override
         protected void onParameterData(List<ParameterValueWithId> params) {
-            List<ParameterValue> pvals = new ArrayList<>();
-            for (ParameterValueWithId pvalid : params) {
-                pvals.add(pvalid.toGbpParameterValue());
-            }
 
             ByteString.Output data = ByteString.newOutput();
             try (Writer writer = new OutputStreamWriter(data, StandardCharsets.UTF_8);
@@ -382,7 +378,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 formatter.setWriteHeader(recordCount == 0);
                 formatter.setPrintRaw(addRaw);
                 formatter.setPrintMonitoring(addMonitoring);
-                formatter.writeParameters(pvals);
+                formatter.writeParameters(params);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

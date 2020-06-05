@@ -197,7 +197,7 @@ public class TcTmServer extends AbstractService {
             String qname = command.getParameterMappingMap().get(name);
             qname = replaceArguments(qname, command);
             pdata.addParameter(ParameterValue.newBuilder()
-                    .setGenerationTime(now)
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(now))
                     .setId(NamedObjectId.newBuilder().setName(qname))
                     .setRawValue(Value.newBuilder().setType(Type.STRING).setStringValue(value)));
         }

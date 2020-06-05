@@ -39,7 +39,6 @@ import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.DeletePartitionsRequest;
 import org.yamcs.protobuf.GetArchivedParameterInfoRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
-import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
@@ -260,7 +259,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             streamArchiveApi.listParameterHistory(ctx, request, observer);
             return;
         }
-
+        
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
@@ -280,7 +279,15 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
 
         boolean ascending = request.getOrder().equals("asc");
-
+        if(request.hasNext()) {
+            TimeSortedPageToken token = TimeSortedPageToken.decode(request.getNext());
+            if(ascending) {
+                start = token.time;
+            } else {
+                stop = token.time;
+            }
+        }
+        
         ParameterArchive parchive = getParameterArchive(ysi);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
@@ -329,14 +336,12 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         final int fLimit = limit + 1; // one extra to detect continuation token
 
         ParameterReplayListener replayListener = new ParameterReplayListener(0, fLimit) {
-
             @Override
             public void onParameterData(ParameterValueWithId pvwid) {
                 if (resultb.getParameterCount() < fLimit - 1) {
                     resultb.addParameter(pvwid.toGbpParameterValue());
                 } else {
-                    Pvalue.ParameterValue last = resultb.getParameter(resultb.getParameterCount() - 1);
-                    TimeSortedPageToken token = new TimeSortedPageToken(last.getGenerationTime());
+                    TimeSortedPageToken token = new TimeSortedPageToken(pvwid.getParameterValue().getGenerationTime());
                     resultb.setContinuationToken(token.encodeAsString());
                 }
             }

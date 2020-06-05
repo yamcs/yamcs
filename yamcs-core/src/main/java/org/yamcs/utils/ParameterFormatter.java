@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
 
 import com.csvreader.CsvWriter;
 
@@ -127,11 +128,11 @@ public class ParameterFormatter implements Closeable {
     /**
      * adds new parameters - if they are written to the output buffer or not depends on the settings
      * 
-     * @param parameterList
+     * @param params
      * @throws IOException
      */
-    public void writeParameters(List<ParameterValue> parameterList) throws IOException {
-        long t = parameterList.get(0).getGenerationTime();
+    public void writeParameters(List<ParameterValueWithId> params) throws IOException {
+        long t = params.get(0).getParameterValue().getGenerationTime();
         if ((timewindow == -1) || (t - lastLineInstant > timewindow)) {
             writeParameters();
             lastLineInstant = t;
@@ -143,9 +144,9 @@ public class ParameterFormatter implements Closeable {
             }
         }
 
-        for (int i = 0; i < parameterList.size(); i++) {
-            ParameterValue pv = parameterList.get(i);
-            subscribedParameters.put(pv.getId(), pv);
+        for (int i = 0; i < params.size(); i++) {
+            ParameterValue pv = params.get(i).getParameterValue();
+            subscribedParameters.put(params.get(i).getId(), pv);
         }
         linesReceived++;
         ++unsavedLineCount;
@@ -169,8 +170,8 @@ public class ParameterFormatter implements Closeable {
             if (pv != null) {
                 Value ev = pv.getEngValue();
                 if (ev != null) {
-                    sb.append(StringConverter.toString(ev));
-                    l.add(StringConverter.toString(ev));
+                    sb.append(ev.toString());
+                    l.add(ev.toString());
                 } else {
                     System.err.println("got parameter without an engineering value for " + entry.getKey());
                     // skip=true;
@@ -178,14 +179,14 @@ public class ParameterFormatter implements Closeable {
                 if (printRaw) {
                     Value rv = pv.getRawValue();
                     if (rv != null) {
-                        sb.append(StringConverter.toString(rv));
-                        l.add(StringConverter.toString(rv));
+                        sb.append(rv.toString());
+                        l.add(rv.toString());
                     } else {
                         l.add("");
                     }
                 }
                 if (printMonitoring) {
-                    Pvalue.MonitoringResult mr = pv.getMonitoringResult();
+                    MonitoringResult mr = pv.getMonitoringResult();
                     if (mr != null) {
                         sb.append(mr.name());
                         l.add(mr.name());

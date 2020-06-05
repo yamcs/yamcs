@@ -109,6 +109,8 @@ message ListParameterHistoryRequest {
   //
   // Default: ``ParameterArchive``.
   optional string source = 11;
+
+  optional string next = 12;
 }
 
 message ListParameterHistoryResponse {

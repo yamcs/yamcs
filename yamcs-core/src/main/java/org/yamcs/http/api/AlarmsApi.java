@@ -612,15 +612,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         setClearInfo(alarmb, tuple);
 
         if (tuple.hasColumn("parameter")) {
+            String paraFqn = (String) tuple.getColumn("parameter");
+
             alarmb.setType(AlarmType.PARAMETER);
-            org.yamcs.protobuf.Pvalue.ParameterValue pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
-                    .getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
-            alarmb.setId(pval.getId());
+            ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
+            alarmb.setId(NamedObjectId.newBuilder().setName(paraFqn).build());
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
 
             if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
-                pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
-                        .getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+                pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
 

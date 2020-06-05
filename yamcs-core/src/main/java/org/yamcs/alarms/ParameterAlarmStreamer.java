@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 
@@ -37,8 +36,7 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
 
     @Override
     protected Object getYarchValue(ParameterValue pv) {
-        NamedObjectId id = NamedObjectId.newBuilder().setName(pv.getParameter().getQualifiedName()).build();
-        return pv.toGpb(id);
+        return pv;
     }
     
     @Override

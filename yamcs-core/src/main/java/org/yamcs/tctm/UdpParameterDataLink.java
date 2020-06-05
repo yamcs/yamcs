@@ -15,10 +15,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -119,21 +120,26 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             // Regroup by gentime, just in case multiple parameters are submitted with different times.
             Map<Long, List<ParameterValue>> valuesByTime = new LinkedHashMap<>();
 
-            for (ParameterValue pval : pdata.getParameterList()) {
-                long gentime = now;
-                if (pval.hasGenerationTimeUTC()) {
-                    gentime = TimeEncoding.parse(pval.getGenerationTimeUTC());
-                    pval = ParameterValue.newBuilder(pval).clearGenerationTimeUTC().setGenerationTime(gentime).build();
-                } else if (!pval.hasGenerationTime()) {
-                    pval = ParameterValue.newBuilder(pval).setGenerationTime(now).build();
+            for (Pvalue.ParameterValue gpv : pdata.getParameterList()) {
+                NamedObjectId id = gpv.getId();
+                if(id==null) {
+                    log.warn("parameter without id, skipping");
+                    continue;
                 }
+                String fqn = id.getName();
+                if (id.hasNamespace()) {
+                    log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
+                }
+                ParameterValue pv  = ParameterValue.fromGpb(fqn, gpv);
+                long gentime = gpv.hasGenerationTime()?pv.getGenerationTime():now;
+                pv.setGenerationTime(gentime);
 
                 List<ParameterValue> pvals = valuesByTime.computeIfAbsent(gentime, x -> new ArrayList<>());
-                pvals.add(pval);
+                pvals.add(pv);
             }
 
             for (Entry<Long, List<ParameterValue>> group : valuesByTime.entrySet()) {
-                parameterSink.updateParams(group.getKey(), recgroup, sequenceNumber, group.getValue());
+                parameterSink.updateParameters((long)group.getKey(), recgroup, sequenceNumber, group.getValue());
             }
         }
     }

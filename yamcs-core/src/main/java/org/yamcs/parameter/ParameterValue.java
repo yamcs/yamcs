@@ -90,7 +90,7 @@ public class ParameterValue extends BasicParameterValue {
 
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())
-                .setGenerationTime(getGenerationTime())
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime))
                 .setProcessingStatus(getProcessingStatus());
         if (id.isPresent()) {
             gpvb.setId(id.get());
@@ -100,7 +100,7 @@ public class ParameterValue extends BasicParameterValue {
         }
         
         if (acquisitionTime != TimeEncoding.INVALID_INSTANT) {
-            gpvb.setAcquisitionTime(acquisitionTime);
+            gpvb.setAcquisitionTime(TimeEncoding.toProtobufTimestamp(acquisitionTime));
             if (withUtc) {
                 gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
             }
