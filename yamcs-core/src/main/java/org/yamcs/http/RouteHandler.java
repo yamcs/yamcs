@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.yamcs.logging.Log;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 
@@ -74,6 +75,7 @@ public class RouteHandler extends Handler {
             } catch (HttpTranscodeException e) {
                 throw new BadRequestException(e.getMessage());
             }
+            assertSafe(requestMessage);
 
             MethodDescriptor method = ctx.getMethod();
             if (ctx.isServerStreaming()) {
@@ -97,6 +99,17 @@ public class RouteHandler extends Handler {
                     log.warn("{}: Executing for more than {} seconds. uri: {}", ctx, numSec, ctx.getURI());
                 }
             }, numSec, TimeUnit.SECONDS);
+        }
+    }
+
+    // Protect paged calls against excessive memory allocation
+    private static void assertSafe(Message message) {
+        FieldDescriptor limitField = message.getDescriptorForType().findFieldByName("limit");
+        if (limitField != null && message.hasField(limitField)) {
+            Number limit = (Number) message.getField(limitField);
+            if (limit.intValue() >= 1000) {
+                throw new BadRequestException("Limit parameter is too large");
+            }
         }
     }
 
