@@ -19,8 +19,6 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.Observer;
-import org.yamcs.client.CertUtil;
-import org.yamcs.client.DataObserver;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
 import org.yamcs.protobuf.Reply;

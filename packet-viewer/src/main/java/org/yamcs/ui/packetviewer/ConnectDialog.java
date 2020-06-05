@@ -42,7 +42,6 @@ import javax.swing.SwingConstants;
 import org.yamcs.YConfiguration;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsInstance;
 
 /**
@@ -465,12 +464,15 @@ public class ConnectDialog extends JDialog implements ActionListener {
         return client;
     }
 
-    public YamcsConnectionProperties getConnectData() {
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties(host, port);
+    public ConnectData getConnectData() {
+        ConnectData data = new ConnectData();
+        data.host = host;
+        data.port = port;
         if (username != null) {
-            yprops.setCredentials(username, password.toCharArray());
+            data.username = username;
+            data.password = password.toCharArray();
         }
-        return yprops;
+        return data;
     }
 
     public String getInstance() {

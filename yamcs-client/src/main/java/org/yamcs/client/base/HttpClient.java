@@ -1,7 +1,6 @@
 package org.yamcs.client.base;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
@@ -21,14 +20,10 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.ExceptionMessage;
-import org.yamcs.client.CertUtil;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Credentials;
 import org.yamcs.client.UnauthorizedException;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -72,18 +67,18 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
 
-    public static final String MT_JSON = "application/json";
     public static final String MT_PROTOBUF = "application/protobuf";
 
-    String sendMediaType = MT_PROTOBUF;
-    String acceptMediaType = MT_PROTOBUF;
-    EventLoopGroup group;
+    private String sendMediaType = MT_PROTOBUF;
+    private String acceptMediaType = MT_PROTOBUF;
+    private EventLoopGroup group;
     private List<Cookie> cookies;
     private SslContext sslCtx;
+
     // if set, do not verify server certificate
     private boolean insecureTls;
 
-    KeyStore caKeyStore;
+    private KeyStore caKeyStore;
     private int maxResponseLength = 1024 * 1024;// max length of the expected response
 
     private String tokenUrl;
@@ -197,10 +192,7 @@ public class HttpClient {
             channelFuture.channel().writeAndFlush(request);
         });
 
-        return responseFuture.thenApply(data -> {
-            Map<String, Object> map = jsonToMap(new String(data));
-            return new Credentials(map);
-        });
+        return responseFuture.thenApply(data -> Credentials.fromJsonTokenResponse(new String(data)));
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body)
@@ -283,13 +275,7 @@ public class HttpClient {
         byte[] data = getByteArray(fullResp.content());
         String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (contentType != null && MT_JSON.equals(contentType)) {
-            Map<String, Object> obj = jsonToMap(new String(data));
-            String type = (String) obj.get("type");
-            String message = (String) obj.get("msg");
-            ExceptionData excData = new ExceptionData(type, message, null);
-            return new ClientException(excData);
-        } else if (contentType != null && MT_PROTOBUF.equals(contentType)) {
+        if (contentType != null && MT_PROTOBUF.equals(contentType)) {
             ExceptionMessage msg = ExceptionMessage.parseFrom(data);
             ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg(), msg.getDetail());
             return new ClientException(excData);
@@ -298,13 +284,7 @@ public class HttpClient {
         }
     }
 
-    private static Map<String, Object> jsonToMap(String json) {
-        Type gsonType = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        return new Gson().fromJson(json, gsonType);
-    }
-
-    static private ClientException getInvalidHttpResponseException(String resp) {
+    private static ClientException getInvalidHttpResponseException(String resp) {
         return new ClientException("Received http response: " + resp);
     }
 

@@ -1,4 +1,4 @@
-package org.yamcs.api.rest;
+package org.yamcs.client.base;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

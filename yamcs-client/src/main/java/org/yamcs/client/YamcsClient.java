@@ -92,12 +92,7 @@ public class YamcsClient {
         this.connectionAttempts = connectionAttempts;
         this.retryDelay = retryDelay;
 
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties();
-        yprops.setHost(host);
-        yprops.setPort(port);
-        yprops.setTls(tls);
-        yprops.setContext(context);
-        baseClient = new RestClient(yprops);
+        baseClient = new RestClient(host, port, tls, context);
         baseClient.setAutoclose(false);
 
         websocketClient = new WebSocketClient(host, port, tls, context, new WebSocketClientCallback() {

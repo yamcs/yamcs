@@ -85,7 +85,6 @@ import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
@@ -804,19 +803,18 @@ public class PacketViewer extends JFrame implements ActionListener,
         hexText.setCaretPosition(hexScrollPos);
     }
 
-    void connectYamcs(YamcsConnectionProperties ycd) {
+    void connectYamcs(ConnectData connectData) {
         disconnect();
-        client = YamcsClient.newBuilder(ycd.getHost(), ycd.getPort())
-                .withTls(ycd.isTls())
+        client = YamcsClient.newBuilder(connectData.host, connectData.port)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
                 .build();
         client.addConnectionListener(this);
         try {
-            if (ycd.getUsername() == null) {
+            if (connectData.username == null) {
                 client.connectAnonymously();
             } else {
-                client.connect(ycd.getUsername(), ycd.getPassword());
+                client.connect(connectData.username, connectData.password);
             }
         } catch (ClientException e) {
             log.error("Error while connecting", e);

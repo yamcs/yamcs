@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.yamcs.api.Observer;
-import org.yamcs.client.DataObserver;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.Subscription;
 
