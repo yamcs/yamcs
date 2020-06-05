@@ -196,6 +196,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             contentExpected = true;
             return;
         case WEBSOCKET_PATH:
+            log.warn("DEPRECATION NOTICE: A '/_websocket' request was received. This is a deprecated"
+                    + " endpoint and server support will be removed in a future release. If you are"
+                    + " using an official client, download a later copy. Thirdparty clients should"
+                    + " follow the online specification of the new '/api/websocket' endpoint:"
+                    + " https://yamcs.org/docs/yamcs-http-api/websocket/");
             user = authorizeUser(ctx, req);
             if (path.length == 2) { // No instance specified
                 prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);
