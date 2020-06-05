@@ -7,8 +7,6 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-import org.yamcs.utils.DecodingException;
-
 /**
  * Serializes column values to byte arrays (used as part of tables) and back
  * 

@@ -81,32 +81,7 @@ public class TupleDefinition implements Serializable {
         columnNameIndex.put(newName, idx);
     }
 
-    /**
-     * Reads a tuple from an IO inputStream(socket).
-     * 
-     * @param inputStream
-     * @return
-     * @throws IOException
-     * 
-     *             public Tuple read(java.io.DataInput inputStream) throws IOException {
-     *             Object[] columns=new Object[getColumnDefinitions().size()];
-     *             int i=0;
-     *             for(ColumnDefinition cd:getColumnDefinitions()) {
-     *             columns[i]=cd.deserialize(inputStream);
-     *             if(columns[i]==null) {
-     *             return null;
-     *             }
-     *             i++;
-     *             }
-     *             return new Tuple(this,columns);
-     *             }
-     * 
-     *             public void write(java.io.DataOutputStream outputStream, Tuple t) throws IOException {
-     *             for(ColumnDefinition cd:columnDefinitions) {
-     *             cd.serialize(outputStream,t.getColumn(cd.getName()));
-     *             }
-     *             }
-     */
+  
 
     /**
      * Returns a string "(col1 type, col2 type2, ....)"
