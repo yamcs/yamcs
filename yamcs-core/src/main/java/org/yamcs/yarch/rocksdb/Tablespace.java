@@ -16,6 +16,7 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.logging.Log;
@@ -31,6 +32,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.RdbTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
@@ -486,7 +488,16 @@ public class Tablespace {
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_TRIGGER);
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_CLEAR);
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+        } else if("events".equals(tblDef.getName())) {
+            TupleDefinition tdef = tblDef.getValueDefinition();
+            changeEventColumnType(tdef, "body");
+        } else if("event_alarms".equals(tblDef.getName())) {
+            TupleDefinition tdef = tblDef.getValueDefinition();
+            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_TRIGGER);
+            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_CLEAR);
+            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
         }
+        
         createTable(yamcsInstance, tblDef);
     }
     
@@ -498,6 +509,13 @@ public class Tablespace {
         }
     }
 
+    private void changeEventColumnType(TupleDefinition tdef, String cname) {
+        int idx =tdef.getColumnIndex(cname);
+        if(idx > 0) {
+            ColumnDefinition cd = new ColumnDefinition(cname, DataType.protobuf(Db.Event.class.getName()));
+            tdef.getColumnDefinitions().set(idx, cd);
+        }
+    }
     void dropTable(TableDefinition tbl) throws RocksDBException, IOException {
         RdbPartitionManager pm = partitionManagers.remove(tbl);
         if (pm == null) {

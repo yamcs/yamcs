@@ -11,7 +11,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSubscriptionRequest;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.Parameter;
 

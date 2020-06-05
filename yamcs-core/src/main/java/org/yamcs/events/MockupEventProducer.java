@@ -2,7 +2,7 @@ package org.yamcs.events;
 
 import java.util.Queue;
 
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.utils.TimeEncoding;
 
 /**

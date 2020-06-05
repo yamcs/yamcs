@@ -6,7 +6,7 @@ import java.util.Queue;
 
 import org.junit.Test;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.utils.TimeEncoding;
 
 public class EventCrashHandlerTest {

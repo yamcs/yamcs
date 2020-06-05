@@ -44,13 +44,13 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db;
 
 import com.csvreader.CsvWriter;
 import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 public class EventsApi extends AbstractEventsApi<Context> {
 
@@ -137,19 +137,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 if (++count <= limit) {
-                    Event incoming = (Event) tuple.getColumn("body");
-                    Event event;
-                    try {
-                        event = Event.parseFrom(incoming.toByteArray(),
-                                getProtobufRegistry().getExtensionRegistry());
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new UnsupportedOperationException(e);
-                    }
-
-                    Event.Builder eventb = Event.newBuilder(event);
-                    eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-                    eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-                    responseb.addEvent(eventb.build());
+                    Db.Event incoming = (Db.Event) tuple.getColumn("body");
+                    Event event = fromDbEvent(incoming);
+                    responseb.addEvent(event);
                     last = event;
                 }
             }
@@ -176,7 +166,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             throw new BadRequestException("Message is required");
         }
 
-        Event.Builder eventb = Event.newBuilder();
+        Db.Event.Builder eventb = Db.Event.newBuilder();
         eventb.setCreatedBy(ctx.user.getName());
         eventb.setMessage(request.getMessage());
 
@@ -221,15 +211,12 @@ public class EventsApi extends AbstractEventsApi<Context> {
         });
 
         // Distribute event (without augmented fields, or they'll get stored)
-        Event event = eventb.build();
+        Db.Event event = eventb.build();
         log.debug("Adding event: {}", event.toString());
         eventProducer.sendEvent(event);
 
-        // Send back the (augmented) event in response
-        eventb = Event.newBuilder(event);
-        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-        observer.complete(eventb.build());
+        // Send back the event in response
+        observer.complete(fromDbEvent(event));
     }
 
     @Override
@@ -268,12 +255,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
         StreamSubscriber listener = new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                Event event = (Event) tuple.getColumn("body");
-                event = Event.newBuilder(event)
-                        .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
-                        .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
-                        .build();
-                observer.next(event);
+                Db.Event event = (Db.Event) tuple.getColumn("body");
+                observer.next(fromDbEvent(event));
             }
 
             @Override
@@ -333,19 +316,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                Event incoming = (Event) tuple.getColumn("body");
-                Event event;
-                try {
-                    event = Event.parseFrom(incoming.toByteArray(),
-                            getProtobufRegistry().getExtensionRegistry());
-                } catch (InvalidProtocolBufferException e) {
-                    throw new UnsupportedOperationException(e);
-                }
-
-                Event.Builder eventb = Event.newBuilder(event);
-                eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-                eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-                observer.next(eventb.build());
+                Db.Event incoming = (Db.Event) tuple.getColumn("body");
+                Event event = fromDbEvent(incoming);
+                observer.next(event);
             }
 
             @Override
@@ -433,20 +406,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
         return protobufRegistry;
     }
 
-    private static Event tupleToEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
-        Event incoming = (Event) tuple.getColumn("body");
-        Event event;
-        try {
-            event = Event.parseFrom(incoming.toByteArray(), protobufRegistry.getExtensionRegistry());
-        } catch (InvalidProtocolBufferException e) {
-            throw new UnsupportedOperationException(e);
-        }
-
-        Event.Builder eventb = Event.newBuilder(event);
-        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-        return eventb.build();
-    }
 
     /**
      * Stateless continuation token for paged requests on the event table
@@ -514,7 +473,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 return;
             }
 
-            Event event = tupleToEvent(tuple, protobufRegistry);
+            Db.Event incoming = (Db.Event) tuple.getColumn("body");
+            Event event = fromDbEvent(incoming);
 
             List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
 
@@ -553,5 +513,36 @@ public class EventsApi extends AbstractEventsApi<Context> {
         public void streamClosed(Stream stream) {
             observer.complete();
         }
+    }
+
+    static Event fromDbEvent(Db.Event other) {
+        Event.Builder evb = Event.newBuilder();
+        if (other.hasSource()) {
+            evb.setSource(other.getSource());
+        }
+        if (other.hasGenerationTime()) {
+            evb.setGenerationTime(other.getGenerationTime());
+            evb.setGenerationTimeUTC(TimeEncoding.toString(other.getGenerationTime()));
+        }
+        if (other.hasReceptionTime()) {
+            evb.setReceptionTime(other.getReceptionTime());
+            evb.setReceptionTimeUTC(TimeEncoding.toString(other.getReceptionTime()));
+        }
+        if (other.hasSeqNumber()) {
+            evb.setSeqNumber(other.getSeqNumber());
+        }
+        if (other.hasType()) {
+            evb.setType(other.getType());
+        }
+        if (other.hasMessage()) {
+            evb.setMessage(other.getMessage());
+        }
+        if (other.hasSeverity()) {
+            evb.setSeverity(other.getSeverity());
+        }
+        if (other.hasCreatedBy()) {
+            evb.setCreatedBy(other.getCreatedBy());
+        }
+        return evb.build();
     }
 }

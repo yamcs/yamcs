@@ -3,7 +3,7 @@ package org.yamcs.alarms;
 import java.util.ArrayList;
 
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 

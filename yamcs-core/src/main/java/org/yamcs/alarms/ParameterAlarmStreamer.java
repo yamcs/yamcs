@@ -8,15 +8,13 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 
 public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
-    static public final DataType PARAMETER_DATA_TYPE = DataType
-            .protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
 
     static public final String CNAME_TRIGGER = "triggerPV";
     static public final String CNAME_CLEAR = "clearPV";
     static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedPV";
     
     public ParameterAlarmStreamer(Stream s) {
-        super(s, PARAMETER_DATA_TYPE, StandardTupleDefinitions.PARAMETER_ALARM);
+        super(s, DataType.PARAMETER_VALUE, StandardTupleDefinitions.PARAMETER_ALARM);
     }
 
     protected ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm, AlarmNotificationType e) {

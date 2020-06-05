@@ -1,6 +1,6 @@
 package org.yamcs.events;
 
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public interface EventProducer {
 

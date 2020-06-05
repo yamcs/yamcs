@@ -2,6 +2,7 @@ package org.yamcs;
 
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class StandardTupleDefinitions {
 
@@ -71,7 +72,7 @@ public class StandardTupleDefinitions {
         EVENT.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
         EVENT.addColumn("source", DataType.ENUM);
         EVENT.addColumn("seqNum", DataType.INT);
-        EVENT.addColumn("body", DataType.protobuf("org.yamcs.protobuf.Yamcs$Event"));
+        EVENT.addColumn("body", DataType.protobuf(Event.class.getName()));
     }
 
     public static final TupleDefinition PARAMETER_ALARM = new TupleDefinition();

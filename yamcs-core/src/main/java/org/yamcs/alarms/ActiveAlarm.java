@@ -3,7 +3,7 @@ package org.yamcs.alarms;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.utils.TimeEncoding;
 
 /**

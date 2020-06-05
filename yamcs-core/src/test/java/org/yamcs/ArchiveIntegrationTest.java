@@ -39,7 +39,6 @@ import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -53,6 +52,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -552,13 +552,13 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testRetrieveAlarmHistory() throws Exception {
         StreamEventProducer sep = new StreamEventProducer(yamcsInstance);
-        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
+        Db.Event e1 = Db.Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
                 .setSeverity(EventSeverity.WARNING).setSeqNumber(1)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
                 .setMessage("event1").build();
         sep.sendEvent(e1);
 
-        Event e2 = e1.toBuilder().setSeverity(EventSeverity.CRITICAL).setSeqNumber(2)
+        Db.Event e2 = e1.toBuilder().setSeverity(EventSeverity.CRITICAL).setSeqNumber(2)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
                 .setMessage("event2").build();
         sep.sendEvent(e2);

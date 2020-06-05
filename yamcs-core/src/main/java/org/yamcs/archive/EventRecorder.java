@@ -10,6 +10,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
@@ -32,7 +33,7 @@ public class EventRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 ydb.execute("create table " + TABLE_NAME
-                        + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source)"
+                        + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('"+Event.class.getName()+"'), primary key(gentime, source, seqNum)) histogram(source)"
                         + " table_format=compressed");
             }
 

@@ -31,3 +31,19 @@ message ParameterValue {
     // updated when the parameter values expire. 
     optional int64 expireMillis = 26;
 }
+
+message Event {
+    optional string source = 1;
+    optional int64 generationTime = 2;
+    optional int64 receptionTime = 3;
+    optional int32 seqNumber = 4;
+    optional string type = 5;
+    required string message = 6;
+    optional yamcs.protobuf.Event.EventSeverity severity = 7[default=INFO];
+
+    optional string generationTimeUTC = 8;
+    optional string receptionTimeUTC = 9;
+  
+    // Set by API when event was posted by a user
+    optional string createdBy = 10;
+}

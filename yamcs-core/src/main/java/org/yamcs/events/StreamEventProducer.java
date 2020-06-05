@@ -3,7 +3,7 @@ package org.yamcs.events;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.EventRecorder;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;

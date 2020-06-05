@@ -45,7 +45,7 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.ShelveInfo;
-import org.yamcs.protobuf.Yamcs.Event;
+//import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
@@ -67,6 +67,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
@@ -208,7 +209,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         }
         EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
         if (eventAlarmServer != null) {
-            for (ActiveAlarm<Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
+            for (ActiveAlarm<Db.Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
                 responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
             }
         }
@@ -251,7 +252,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         try {
             if (activeAlarm.triggerValue instanceof ParameterValue) {
                 alarmServer = verifyParameterAlarmServer(processor);
-            } else if (activeAlarm.triggerValue instanceof Event) {
+            } else if (activeAlarm.triggerValue instanceof Db.Event) {
                 alarmServer = verifyEventAlarmServer(processor);
             } else {
                 throw new InternalServerErrorException("Can't find alarm server for alarm instance");
@@ -408,7 +409,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             if (eventAlarmServer != null) {
                 try {
                     EventId eventId = new EventId(alarmName);
-                    ActiveAlarm<Event> activeAlarm = eventAlarmServer.getActiveAlarm(eventId, id);
+                    ActiveAlarm<Db.Event> activeAlarm = eventAlarmServer.getActiveAlarm(eventId, id);
                     if (activeAlarm != null) {
                         return activeAlarm;
                     }
@@ -462,11 +463,11 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         return alarmb.build();
     }
 
-    private static final EventAlarmData toEventAlarmData(ActiveAlarm<Event> activeAlarm) {
+    private static final EventAlarmData toEventAlarmData(ActiveAlarm<Db.Event> activeAlarm) {
         EventAlarmData.Builder alarmb = EventAlarmData.newBuilder();
-        alarmb.setTriggerEvent(activeAlarm.triggerValue);
-        alarmb.setMostSevereEvent(activeAlarm.mostSevereValue);
-        alarmb.setCurrentEvent(activeAlarm.currentValue);
+        alarmb.setTriggerEvent(EventsApi.fromDbEvent(activeAlarm.triggerValue));
+        alarmb.setMostSevereEvent(EventsApi.fromDbEvent(activeAlarm.mostSevereValue));
+        alarmb.setCurrentEvent(EventsApi.fromDbEvent(activeAlarm.currentValue));
 
         return alarmb.build();
     }
@@ -499,9 +500,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                         (ActiveAlarm<ParameterValue>) activeAlarm);
                 alarmb.setParameterDetail(parameterDetail);
             }
-        } else if (activeAlarm.mostSevereValue instanceof Event) {
+        } else if (activeAlarm.mostSevereValue instanceof Db.Event) {
             alarmb.setType(AlarmType.EVENT);
-            Event ev = (Event) activeAlarm.mostSevereValue;
+            Db.Event ev = (Db.Event) activeAlarm.mostSevereValue;
             alarmb.setId(getAlarmId(ev));
             alarmb.setSeverity(getEventAlarmSeverity(ev.getSeverity()));
             Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(ev.getGenerationTime());
@@ -509,7 +510,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             if (detail) {
                 @SuppressWarnings("unchecked")
                 EventAlarmData eventDetail = toEventAlarmData(
-                        (ActiveAlarm<Event>) activeAlarm);
+                        (ActiveAlarm<Db.Event>) activeAlarm);
                 alarmb.setEventDetail(eventDetail);
             }
         }
@@ -574,7 +575,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                 .setName(pv.getParameter().getName()).build();
     }
 
-    public static NamedObjectId getAlarmId(Event ev) {
+    public static NamedObjectId getAlarmId(Db.Event ev) {
         String source = ev.getSource();
         if (source.startsWith("/")) {
             return NamedObjectId.newBuilder()
@@ -630,12 +631,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
         } else {
             alarmb.setType(AlarmType.EVENT);
-            Event ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
+            Db.Event ev = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
             alarmb.setId(AlarmsApi.getAlarmId(ev));
 
             if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
-                ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
+                ev = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(AlarmsApi.getEventAlarmSeverity(ev.getSeverity()));
 
