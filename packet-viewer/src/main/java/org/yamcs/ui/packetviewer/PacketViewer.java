@@ -947,9 +947,9 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connected(String url) {
+    public void connected() {
         try {
-            log("connected to " + url);
+            log("connected to " + client.getHost() + ":" + client.getPort());
             if (connectDialog.getUseServerMdb()) {
                 if (!loadRemoteMissionDatabase(connectDialog.getInstance())) {
                     return;
@@ -988,14 +988,14 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connecting(String url) {
-        log("connecting to " + url);
+    public void connecting() {
+        log("connecting to " + client.getHost() + ":" + client.getPort());
 
     }
 
     @Override
-    public void connectionFailed(String url, ClientException exception) {
-        log("connection to " + url + " failed: " + exception);
+    public void connectionFailed(ClientException exception) {
+        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + exception);
     }
 
     @Override

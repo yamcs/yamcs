@@ -144,25 +144,21 @@ public abstract class AbstractIntegrationTest {
         Semaphore onDisconnect = new Semaphore(0);
 
         @Override
-        public void connecting(String url) {
+        public void connecting() {
         }
 
         @Override
-        public void connected(String url) {
+        public void connected() {
             onConnect.release();
         }
 
         @Override
-        public void connectionFailed(String url, ClientException exception) {
+        public void connectionFailed(ClientException exception) {
         }
 
         @Override
         public void disconnected() {
             onDisconnect.release();
-        }
-
-        @Override
-        public void log(String message) {
         }
     }
 

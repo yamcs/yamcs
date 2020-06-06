@@ -24,25 +24,33 @@ import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.base.WebSocketClientCallback;
 import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.client.processor.ProcessorClient;
+import org.yamcs.client.storage.StorageClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.GetInstanceRequest;
+import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
+import org.yamcs.protobuf.ListProcessorsRequest;
+import org.yamcs.protobuf.ListProcessorsResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.ManagementApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.RestartInstanceRequest;
+import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.TimeApiClient;
+import org.yamcs.protobuf.UserInfo;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
@@ -85,6 +93,7 @@ public class YamcsClient {
     private ManagementApiClient managementService;
     private EventsApiClient eventService;
     private ProcessingApiClient processingService;
+    private IamApiClient iamService;
 
     private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
         this.host = host;
@@ -111,10 +120,11 @@ public class YamcsClient {
         });
         websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
 
-        methodHandler = new HttpMethodHandler(this);
+        methodHandler = new HttpMethodHandler(this, baseClient);
 
         alarmService = new AlarmsApiClient(methodHandler);
         eventService = new EventsApiClient(methodHandler);
+        iamService = new IamApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
         processingService = new ProcessingApiClient(methodHandler);
@@ -185,7 +195,7 @@ public class YamcsClient {
                 if (cause instanceof UnauthorizedException) {
                     for (ConnectionListener cl : connectionListeners) {
                         cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
-                        cl.connectionFailed(host + ":" + port, (UnauthorizedException) cause);
+                        cl.connectionFailed((UnauthorizedException) cause);
                     }
                     log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
                     throw (UnauthorizedException) cause; // Jump out
@@ -203,7 +213,7 @@ public class YamcsClient {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 for (ConnectionListener cl : connectionListeners) {
-                    cl.connectionFailed(host + ":" + port, new ClientException("Thread interrupted", e));
+                    cl.connectionFailed(new ClientException("Thread interrupted", e));
                 }
             }
 
@@ -220,7 +230,7 @@ public class YamcsClient {
             ClientException e = new ClientException(connectionAttempts + " connection attempts failed, giving up.");
             for (ConnectionListener cl : connectionListeners) {
                 cl.log(connectionAttempts + " connection attempts failed, giving up.");
-                cl.connectionFailed(host + ":" + port, e);
+                cl.connectionFailed(e);
             }
             log.log(Level.WARNING, connectionAttempts + " connection attempts failed, giving up.");
             throw e;
@@ -238,14 +248,14 @@ public class YamcsClient {
         }
 
         for (ConnectionListener cl : connectionListeners) {
-            cl.connecting(host + ":" + port);
+            cl.connecting();
         }
 
         try {
             websocketClient.connect(accessToken).get(5000, TimeUnit.MILLISECONDS);
 
             for (ConnectionListener cl : connectionListeners) {
-                cl.connected(host + ":" + port);
+                cl.connected();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -321,13 +331,37 @@ public class YamcsClient {
         return f;
     }
 
-    public CompletableFuture<ListServicesResponse> listServices(String instance) {
+    public CompletableFuture<YamcsInstance> restartInstance(String instance) {
+        RestartInstanceRequest request = RestartInstanceRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.restartInstance(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<List<ProcessorInfo>> listProcessors(String instance) {
+        ListProcessorsRequest request = ListProcessorsRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<ListProcessorsResponse> f = new CompletableFuture<>();
+        processingService.listProcessors(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getProcessorsList());
+    }
+
+    public CompletableFuture<UserInfo> getOwnUserInfo() {
+        CompletableFuture<UserInfo> f = new CompletableFuture<>();
+        iamService.getOwnUser(null, Empty.getDefaultInstance(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<List<ServiceInfo>> listServices(String instance) {
         ListServicesRequest request = ListServicesRequest.newBuilder()
                 .setInstance(instance)
                 .build();
         CompletableFuture<ListServicesResponse> f = new CompletableFuture<>();
         managementService.listServices(null, request, new ResponseObserver<>(f));
-        return f;
+        return f.thenApply(response -> response.getServicesList());
     }
 
     public CompletableFuture<Void> startService(String instance, String service) {
@@ -415,6 +449,10 @@ public class YamcsClient {
         return f.thenApply(response -> null);
     }
 
+    public StorageClient createStorageClient() {
+        return new StorageClient(methodHandler);
+    }
+
     public ArchiveClient createArchiveClient(String instance) {
         return new ArchiveClient(methodHandler, instance);
     }
@@ -447,10 +485,6 @@ public class YamcsClient {
         this.connectionListeners.add(connectionListener);
     }
 
-    public RestClient getRestClient() {
-        return baseClient;
-    }
-
     public WebSocketClient getWebSocketClient() {
         return websocketClient;
     }
@@ -469,6 +503,10 @@ public class YamcsClient {
 
     public TimeSubscription createTimeSubscription() {
         return new TimeSubscription(websocketClient);
+    }
+
+    public ClearanceSubscription createClearanceSubscription() {
+        return new ClearanceSubscription(websocketClient);
     }
 
     public EventSubscription createEventSubscription() {
@@ -491,8 +529,20 @@ public class YamcsClient {
         return new CommandSubscription(websocketClient);
     }
 
+    public QueueEventSubscription createQueueEventSubscription() {
+        return new QueueEventSubscription(websocketClient);
+    }
+
+    public QueueStatisticsSubscription createQueueStatisticsSubscription() {
+        return new QueueStatisticsSubscription(websocketClient);
+    }
+
     public ParameterSubscription createParameterSubscription() {
         return new ParameterSubscription(websocketClient);
+    }
+
+    public LinkSubscription createLinkSubscription() {
+        return new LinkSubscription(websocketClient);
     }
 
     public void close() {

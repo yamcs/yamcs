@@ -27,6 +27,7 @@ import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
+import org.yamcs.protobuf.CreateTagRequest;
 import org.yamcs.protobuf.DeleteTagRequest;
 import org.yamcs.protobuf.EditTagRequest;
 import org.yamcs.protobuf.EventsApiClient;
@@ -52,6 +53,7 @@ import org.yamcs.protobuf.Pvalue.Ranges.Range;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
+import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
 import org.yamcs.protobuf.StreamEventsRequest;
@@ -410,6 +412,37 @@ public class ArchiveClient {
         return new CommandPage(requestb.build()).future();
     }
 
+    public CompletableFuture<Void> streamCommands(StreamReceiver<CommandHistoryEntry> consumer, Instant start,
+            Instant stop) {
+        StreamCommandsRequest.Builder requestb = StreamCommandsRequest.newBuilder()
+                .setInstance(instance);
+        if (start != null) {
+            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
+        }
+        if (stop != null) {
+            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        commandService.streamCommands(null, requestb.build(), new Observer<CommandHistoryEntry>() {
+
+            @Override
+            public void next(CommandHistoryEntry message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
+    }
+
     public CompletableFuture<Page<Event>> listEvents() {
         return listEvents(null, null);
     }
@@ -453,6 +486,14 @@ public class ArchiveClient {
                 f.complete(null);
             }
         });
+        return f;
+    }
+
+    public CompletableFuture<ArchiveTag> createTag(CreateTagRequest request) {
+        CreateTagRequest.Builder requestb = request.toBuilder()
+                .setInstance(instance);
+        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
+        tagService.createTag(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 

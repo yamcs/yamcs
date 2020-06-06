@@ -23,6 +23,7 @@ import org.yamcs.protobuf.EditProcessorRequest;
 import org.yamcs.protobuf.EditQueueEntryRequest;
 import org.yamcs.protobuf.EditQueueRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
+import org.yamcs.protobuf.GetProcessorRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.IssueCommandResponse;
@@ -37,6 +38,7 @@ import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
 import org.yamcs.protobuf.Mdb.UpdateParameterRequest.ActionType;
 import org.yamcs.protobuf.MdbApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
+import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.QueueApiClient;
 import org.yamcs.protobuf.SetParameterValueRequest;
@@ -72,6 +74,15 @@ public class ProcessorClient {
 
     public String getProcessor() {
         return processor;
+    }
+
+    public CompletableFuture<ProcessorInfo> getInfo() {
+        GetProcessorRequest.Builder requestb = GetProcessorRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor);
+        CompletableFuture<ProcessorInfo> f = new CompletableFuture<>();
+        processingService.getProcessor(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
     }
 
     public CompletableFuture<ParameterValue> getValue(String parameter, GetOption... options) {
@@ -188,6 +199,17 @@ public class ProcessorClient {
                 .setInstance(instance)
                 .setProcessor(processor)
                 .setSeek(Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()))
+                .build();
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        processingService.editProcessor(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<Void> changeSpeed(String speed) {
+        EditProcessorRequest request = EditProcessorRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setSpeed(speed)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
         processingService.editProcessor(null, request, new ResponseObserver<>(f));
@@ -445,6 +467,11 @@ public class ProcessorClient {
 
         public CommandBuilder withOrigin(String origin) {
             requestb.setOrigin(origin);
+            return this;
+        }
+
+        public CommandBuilder withComment(String comment) {
+            requestb.setComment(comment);
             return this;
         }
 

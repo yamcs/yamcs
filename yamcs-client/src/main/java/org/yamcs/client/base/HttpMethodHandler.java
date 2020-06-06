@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.yamcs.api.AnnotationsProto;
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
@@ -31,8 +32,8 @@ public class HttpMethodHandler implements MethodHandler {
 
     private RestClient baseClient;
 
-    public HttpMethodHandler(YamcsClient client) {
-        this.baseClient = client.getRestClient();
+    public HttpMethodHandler(YamcsClient client, RestClient baseClient) {
+        this.baseClient = baseClient;
     }
 
     @Override
@@ -83,6 +84,9 @@ public class HttpMethodHandler implements MethodHandler {
             CompletableFuture<Void> future;
             if (body == null) {
                 future = baseClient.doBulkRequest(httpMethod, uri.toString(), receiver);
+            } else if (body instanceof HttpBody) {
+                byte[] data = ((HttpBody) body).getData().toByteArray();
+                future = baseClient.doBulkRequest(httpMethod, uri.toString(), data, receiver);
             } else {
                 future = baseClient.doBulkRequest(httpMethod, uri.toString(), body.toByteArray(), receiver);
             }
@@ -98,10 +102,12 @@ public class HttpMethodHandler implements MethodHandler {
             if (body == null) {
                 appendQueryString(uri, partial.build(), method.getInputType());
                 requestFuture = baseClient.doRequest(uri.toString(), httpMethod);
+            } else if (body instanceof HttpBody) {
+                byte[] data = ((HttpBody) body).getData().toByteArray();
+                requestFuture = baseClient.doRequest(uri.toString(), httpMethod, data);
             } else {
                 requestFuture = baseClient.doRequest(uri.toString(), httpMethod, body);
             }
-
             requestFuture.whenComplete((data, err) -> {
                 if (err == null) {
                     try {

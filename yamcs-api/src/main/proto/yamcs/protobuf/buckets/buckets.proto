@@ -134,6 +134,7 @@ service BucketsApi {
   rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
+      body: "data"
       max_body_size: 5242880
     };
   }
@@ -203,6 +204,8 @@ message UploadObjectRequest {
   
   // Object name.
   optional string objectName = 3;
+  
+  optional yamcs.api.HttpBody data = 4;
 }
 
 message BucketInfo {

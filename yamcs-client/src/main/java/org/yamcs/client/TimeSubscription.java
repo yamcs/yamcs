@@ -1,5 +1,7 @@
 package org.yamcs.client;
 
+import java.time.Instant;
+
 import org.yamcs.client.base.AbstractSubscription;
 import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.SubscribeTimeRequest;
@@ -11,7 +13,7 @@ import com.google.protobuf.Timestamp;
  */
 public class TimeSubscription extends AbstractSubscription<SubscribeTimeRequest, Timestamp> {
 
-    private volatile Timestamp latest;
+    private volatile Instant latest;
 
     protected TimeSubscription(WebSocketClient client) {
         super(client, "time", Timestamp.class);
@@ -19,13 +21,13 @@ public class TimeSubscription extends AbstractSubscription<SubscribeTimeRequest,
     }
 
     protected void processMessage(Timestamp timestamp) {
-        latest = timestamp;
+        latest = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     /**
      * Returns the value of the latest received timestamp.
      */
-    public Timestamp getCurrent() {
+    public Instant getCurrent() {
         return latest;
     }
 }

@@ -7,12 +7,17 @@ import java.util.concurrent.CompletableFuture;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
+import org.yamcs.client.Page;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
-import org.yamcs.client.Page;
+import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.LimitOption;
+import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.ListOption;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
+import org.yamcs.protobuf.Mdb.GetCommandRequest;
+import org.yamcs.protobuf.Mdb.GetContainerRequest;
+import org.yamcs.protobuf.Mdb.GetParameterRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.protobuf.Mdb.ListContainersRequest;
@@ -37,12 +42,27 @@ public class MissionDatabaseClient {
         return instance;
     }
 
-    public CompletableFuture<Page<ParameterInfo>> listParameters() {
-        ListParametersRequest request = ListParametersRequest.newBuilder()
+    public CompletableFuture<ParameterInfo> getParameter(String name) {
+        GetParameterRequest.Builder requestb = GetParameterRequest.newBuilder()
                 .setInstance(instance)
-                .setDetails(true)
-                .build();
-        return new ParameterPage(request).future();
+                .setName(name);
+        CompletableFuture<ParameterInfo> f = new CompletableFuture<>();
+        mdbService.getParameter(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Page<ParameterInfo>> listParameters(ListOption... options) {
+        ListParametersRequest.Builder requestb = ListParametersRequest.newBuilder()
+                .setInstance(instance)
+                .setDetails(true);
+        for (ListOption option : options) {
+            if (option instanceof LimitOption) {
+                requestb.setLimit(((LimitOption) option).limit);
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
+        }
+        return new ParameterPage(requestb.build()).future();
     }
 
     @SuppressWarnings("unchecked")
@@ -52,6 +72,15 @@ public class MissionDatabaseClient {
                 .setDetails(true)
                 .build();
         return (CompletableFuture<SystemPage<ParameterInfo>>) (Object) new ParameterPage(request).future();
+    }
+
+    public CompletableFuture<ContainerInfo> getContainer(String name) {
+        GetContainerRequest.Builder requestb = GetContainerRequest.newBuilder()
+                .setInstance(instance)
+                .setName(name);
+        CompletableFuture<ContainerInfo> f = new CompletableFuture<>();
+        mdbService.getContainer(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
     }
 
     public CompletableFuture<Page<ContainerInfo>> listContainers() {
@@ -69,11 +98,27 @@ public class MissionDatabaseClient {
         return (CompletableFuture<SystemPage<ContainerInfo>>) (Object) new ContainerPage(request).future();
     }
 
-    public CompletableFuture<Page<CommandInfo>> listCommands() {
-        ListCommandsRequest request = ListCommandsRequest.newBuilder()
+    public CompletableFuture<CommandInfo> getCommand(String name) {
+        GetCommandRequest.Builder requestb = GetCommandRequest.newBuilder()
                 .setInstance(instance)
-                .build();
-        return new CommandPage(request).future();
+                .setName(name);
+        CompletableFuture<CommandInfo> f = new CompletableFuture<>();
+        mdbService.getCommand(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Page<CommandInfo>> listCommands(ListOption... options) {
+        ListCommandsRequest.Builder requestb = ListCommandsRequest.newBuilder()
+                .setInstance(instance)
+                .setDetails(true);
+        for (ListOption option : options) {
+            if (option instanceof LimitOption) {
+                requestb.setLimit(((LimitOption) option).limit);
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
+        }
+        return new CommandPage(requestb.build()).future();
     }
 
     @SuppressWarnings("unchecked")
@@ -144,6 +189,24 @@ public class MissionDatabaseClient {
         @Override
         public List<String> getSubsystems() {
             return new ArrayList<>(getResponse().getSpaceSystemsList());
+        }
+    }
+
+    public static final class ListOptions {
+
+        public static interface ListOption {
+        }
+
+        public static ListOption limit(int limit) {
+            return new LimitOption(limit);
+        }
+
+        static final class LimitOption implements ListOption {
+            final int limit;
+
+            public LimitOption(int limit) {
+                this.limit = limit;
+            }
         }
     }
 }

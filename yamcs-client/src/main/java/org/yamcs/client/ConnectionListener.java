@@ -8,38 +8,25 @@ import java.util.EventListener;
 public interface ConnectionListener extends EventListener {
 
     /**
-     * Called right before the initial connection to yamcs is being made.
-     * 
-     * @param url
-     *            the url of the yamcs server
+     * Called right before the initial connection to Yamcs is being made.
      */
-    public void connecting(String url);
+    public void connecting();
 
     /**
-     * Called after a successful connection to the yamcs server has been established.
-     * <p>
-     * <b>Note:</b> when using a re-connecting YamcsConnector, this method is also called after a successful
-     * re-connection attempt.
-     * </p>
-     * 
-     * @param url
-     *            the url of the yamcs server
+     * Called after a successful connection to Yamcs has been established.
      */
-    public void connected(String url);
+    public void connected();
 
     /**
-     * Called when the initial connection to the yamcs server has failed, e.g. the maximum number of retry attempts has
-     * exceeded.
+     * Called when the initial connection to Yamcs has failed, e.g. the maximum number of retry attempts has exceeded.
      * 
-     * @param url
-     *            the url of the yamcs server
      * @param exception
      *            Optional cause of the connection failure, may be null.
      */
-    public void connectionFailed(String url, ClientException exception);
+    public void connectionFailed(ClientException exception);
 
     /**
-     * Called when the connection to the yamcs server is closed.
+     * Called when the connection to Yamcs is closed.
      */
     public void disconnected();
 
@@ -49,6 +36,6 @@ public interface ConnectionListener extends EventListener {
      * @param message
      *            the messages to be logged
      */
-    public void log(String message);
-
+    default void log(String message) {
+    }
 }
