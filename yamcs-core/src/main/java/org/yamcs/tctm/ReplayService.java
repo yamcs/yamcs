@@ -33,7 +33,6 @@ import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -53,6 +52,7 @@ import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.util.JsonFormat;

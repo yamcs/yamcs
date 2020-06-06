@@ -131,16 +131,15 @@ public class EventsApi extends AbstractEventsApi<Context> {
         ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
-            Event last;
+            Db.Event last;
             int count;
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 if (++count <= limit) {
                     Db.Event incoming = (Db.Event) tuple.getColumn("body");
-                    Event event = fromDbEvent(incoming);
-                    responseb.addEvent(event);
-                    last = event;
+                    responseb.addEvent(fromDbEvent(incoming));
+                    last = incoming;
                 }
             }
 
@@ -515,17 +514,17 @@ public class EventsApi extends AbstractEventsApi<Context> {
         }
     }
 
-    static Event fromDbEvent(Db.Event other) {
+    public static Event fromDbEvent(Db.Event other) {
         Event.Builder evb = Event.newBuilder();
         if (other.hasSource()) {
             evb.setSource(other.getSource());
         }
         if (other.hasGenerationTime()) {
-            evb.setGenerationTime(other.getGenerationTime());
+            evb.setGenerationTime(TimeEncoding.toProtobufTimestamp(other.getGenerationTime()));
             evb.setGenerationTimeUTC(TimeEncoding.toString(other.getGenerationTime()));
         }
         if (other.hasReceptionTime()) {
-            evb.setReceptionTime(other.getReceptionTime());
+            evb.setReceptionTime(TimeEncoding.toProtobufTimestamp(other.getReceptionTime()));
             evb.setReceptionTimeUTC(TimeEncoding.toString(other.getReceptionTime()));
         }
         if (other.hasSeqNumber()) {

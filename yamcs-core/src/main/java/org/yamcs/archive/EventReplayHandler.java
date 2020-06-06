@@ -1,9 +1,9 @@
 package org.yamcs.archive;
 
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.protobuf.MessageLite;
 

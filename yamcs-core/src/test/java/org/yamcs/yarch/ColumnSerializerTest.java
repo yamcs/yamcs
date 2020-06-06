@@ -8,9 +8,9 @@ import java.nio.ByteBuffer;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class ColumnSerializerTest {
     @BeforeClass

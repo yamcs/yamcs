@@ -5,14 +5,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
-import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.http.api.EventsApi;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db;
 
 /**
  * Provides realtime event subscription via web.
@@ -80,12 +80,8 @@ public class EventResource implements WebSocketResource {
         streamSubscriber = new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                Event event = (Event) tuple.getColumn("body");
-                event = Event.newBuilder(event)
-                        .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
-                        .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
-                        .build();
-                client.sendData(ProtoDataType.EVENT, event);
+                Db.Event event = (Db.Event) tuple.getColumn("body");
+                client.sendData(ProtoDataType.EVENT, EventsApi.fromDbEvent(event));
             }
 
             @Override
