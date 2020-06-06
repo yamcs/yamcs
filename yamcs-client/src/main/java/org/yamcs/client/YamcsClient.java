@@ -27,9 +27,11 @@ import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.LeapSecondsTable;
+import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.ListServicesRequest;
@@ -336,6 +338,28 @@ public class YamcsClient {
         CompletableFuture<Empty> f = new CompletableFuture<>();
         managementService.startService(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<LinkInfo> enableLink(String instance, String link) {
+        EditLinkRequest request = EditLinkRequest.newBuilder()
+                .setInstance(instance)
+                .setName(link)
+                .setState("enabled")
+                .build();
+        CompletableFuture<LinkInfo> f = new CompletableFuture<>();
+        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<LinkInfo> disableLink(String instance, String link) {
+        EditLinkRequest request = EditLinkRequest.newBuilder()
+                .setInstance(instance)
+                .setName(link)
+                .setState("disabled")
+                .build();
+        CompletableFuture<LinkInfo> f = new CompletableFuture<>();
+        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        return f;
     }
 
     public CompletableFuture<Void> stopService(String instance, String service) {

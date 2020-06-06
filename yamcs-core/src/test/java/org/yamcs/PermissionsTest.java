@@ -127,7 +127,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         yamcsClient.connect("testuser", "password".toCharArray());
         try {
-            processorClient.updateCommandHistory("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
+            processorClient.updateCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
                     "testKey1",
                     Value.newBuilder().setType(Type.STRING).setStringValue("testValue1").build())
                     .get();
@@ -138,7 +138,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         }
 
         yamcsClient.connect("operator", "password".toCharArray());
-        processorClient.updateCommandHistory("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
+        processorClient.updateCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
                 "testKey1",
                 Value.newBuilder().setType(Type.STRING).setStringValue("testValue1").build())
                 .get();

@@ -398,7 +398,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
                 .setType(Type.STRING)
                 .setStringValue("testValue2")
                 .build());
-        processorClient.updateCommandHistory(response.getCommandName(), response.getId(), attributes);
+        processorClient.updateCommand(response.getCommandName(), response.getId(), attributes);
 
         // Query command history and check that we can retreive the inserted values
         CommandHistoryEntry command = archiveClient.listCommands().get().iterator().next();

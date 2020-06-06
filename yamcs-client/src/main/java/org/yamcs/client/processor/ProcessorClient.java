@@ -16,9 +16,12 @@ import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.CommandsApiClient;
 import org.yamcs.protobuf.EditProcessorRequest;
+import org.yamcs.protobuf.EditQueueEntryRequest;
+import org.yamcs.protobuf.EditQueueRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
@@ -35,6 +38,7 @@ import org.yamcs.protobuf.Mdb.UpdateParameterRequest.ActionType;
 import org.yamcs.protobuf.MdbApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.QueueApiClient;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -51,6 +55,7 @@ public class ProcessorClient {
     private ProcessingApiClient processingService;
     private CommandsApiClient commandService;
     private MdbApiClient mdbService;
+    private QueueApiClient queueService;
 
     public ProcessorClient(MethodHandler handler, String instance, String processor) {
         this.instance = instance;
@@ -58,6 +63,7 @@ public class ProcessorClient {
         processingService = new ProcessingApiClient(handler);
         commandService = new CommandsApiClient(handler);
         mdbService = new MdbApiClient(handler);
+        queueService = new QueueApiClient(handler);
     }
 
     public String getInstance() {
@@ -188,13 +194,11 @@ public class ProcessorClient {
         return f.thenApply(response -> null);
     }
 
-    public CompletableFuture<Void> updateCommandHistory(String command, String commandId, String attribute,
-            Value value) {
-        return updateCommandHistory(command, commandId, Collections.singletonMap(attribute, value));
+    public CompletableFuture<Void> updateCommand(String command, String commandId, String attribute, Value value) {
+        return updateCommand(command, commandId, Collections.singletonMap(attribute, value));
     }
 
-    public CompletableFuture<Void> updateCommandHistory(String command, String commandId,
-            Map<String, Value> attributes) {
+    public CompletableFuture<Void> updateCommand(String command, String commandId, Map<String, Value> attributes) {
         UpdateCommandHistoryRequest.Builder request = UpdateCommandHistoryRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
@@ -323,6 +327,63 @@ public class ProcessorClient {
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
         mdbService.updateAlgorithm(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<CommandQueueInfo> enableQueue(String queue) {
+        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setName(queue)
+                .setState("enabled");
+        CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
+        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<CommandQueueInfo> disableQueue(String queue) {
+        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setName(queue)
+                .setState("disabled");
+        CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
+        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<CommandQueueInfo> blockQueue(String queue) {
+        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setName(queue)
+                .setState("blocked");
+        CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
+        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Void> rejectQueueEntry(String queue, String uuid) {
+        EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setName(queue)
+                .setUuid(uuid)
+                .setState("rejected");
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        queueService.updateQueueEntry(null, request.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<Void> releaseQueueEntry(String queue, String uuid) {
+        EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
+                .setInstance(instance)
+                .setProcessor(processor)
+                .setName(queue)
+                .setUuid(uuid)
+                .setState("released");
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        queueService.updateQueueEntry(null, request.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
