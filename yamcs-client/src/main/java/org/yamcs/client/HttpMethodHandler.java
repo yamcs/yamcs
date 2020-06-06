@@ -104,7 +104,6 @@ public class HttpMethodHandler implements MethodHandler {
 
         String uri = buf.toString().replace("/api", "");
         QueryStringEncoder encoder = new QueryStringEncoder(uri);
-        System.out.println("Resolved " + encoder.toString());
         return encoder;
     }
 
