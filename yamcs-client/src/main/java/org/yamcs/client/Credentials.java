@@ -1,11 +1,10 @@
 package org.yamcs.client;
 
-import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
@@ -14,6 +13,13 @@ import io.netty.handler.codec.http.HttpRequest;
  * Contains the authorization state for an identified user or service account.
  */
 public class Credentials {
+
+    // Matches patterns of the form:
+    // "key": "value",
+    // "key": "value"}
+    // "key": value,
+    // "key": value}
+    private static final Pattern KEY_VALUE = Pattern.compile("\"(\\w+)\"\\s*\\:\\s*\"?(\\w*)\"?\\s*[,\\}]");
 
     private String accessToken;
     private String refreshToken;
@@ -41,15 +47,24 @@ public class Credentials {
     }
 
     public static Credentials fromJsonTokenResponse(String json) {
-        Type gsonType = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        Map<String, Object> map = new Gson().fromJson(json, gsonType);
-        String accessToken = (String) map.get("access_token");
-        String refreshToken = (String) map.get("refresh_token");
+        Map<String, String> map = toMap(json);
+        String accessToken = map.get("access_token");
+        String refreshToken = map.get("refresh_token");
         Credentials credentials = new Credentials(accessToken, refreshToken);
 
-        int ttl = ((Number) map.get("expires_in")).intValue();
+        int ttl = Integer.valueOf(map.get("expires_in"));
         credentials.expiry = new Date(new Date().getTime() + (ttl * 1000));
         return credentials;
+    }
+
+    private static Map<String, String> toMap(String json) {
+        // Use just a simple regex because we prefer not to force a full-blown JSON library
+        // as a dependency of yamcs-client.
+        Map<String, String> map = new HashMap<>();
+        Matcher matcher = KEY_VALUE.matcher(json);
+        while (matcher.find()) {
+            map.put(matcher.group(1), matcher.group(2));
+        }
+        return map;
     }
 }
