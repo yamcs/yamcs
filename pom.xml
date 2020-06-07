@@ -52,7 +52,6 @@
       
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <artemisVersion>1.5.4</artemisVersion>
     <nettyVersion>4.1.45.Final</nettyVersion>
     <protobufVersion>3.7.1</protobufVersion>
     <rocksdbVersion>5.18.4</rocksdbVersion>
@@ -67,7 +66,6 @@
     <module>examples</module>
     <module>packet-viewer</module>
     <module>yamcs-api</module>
-    <module>yamcs-artemis</module>
     <module>yamcs-client</module>
     <module>yamcs-core</module>
     <module>yamcs-tse</module>
@@ -148,17 +146,6 @@
           <exclusion> <!-- Prefer SLF4J replacement -->
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>artemis-server</artifactId>
-        <version>${artemisVersion}</version>
-        <exclusions>
-          <exclusion> <!-- Later version provided by yamcs-core via different artifactId(s) -->
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

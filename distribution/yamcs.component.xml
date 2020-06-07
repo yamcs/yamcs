@@ -16,7 +16,6 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <includes>
         <include>org.yamcs:yamcs-api</include>
-        <include>org.yamcs:yamcs-artemis</include>
         <include>org.yamcs:yamcs-core</include>
         <include>org.yamcs:yamcs-tse</include>
         <include>org.yamcs:yamcs-web</include>
