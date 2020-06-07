@@ -12,7 +12,7 @@ Instance Services
     artemis-tm-publisher
     command-history-recorder
     event-recorder
-    index-server
+    ccsds-tm-index
     parameter-archive-service
     parameter-recorder
     processor-creator-service

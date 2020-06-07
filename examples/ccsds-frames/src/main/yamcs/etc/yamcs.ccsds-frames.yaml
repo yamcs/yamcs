@@ -4,7 +4,7 @@ services:
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
-  - class: org.yamcs.archive.IndexServer
+  - class: org.yamcs.archive.CcsdsTmIndex
     args:
       streams:
         - tm_realtime

@@ -104,8 +104,6 @@ message IndexRequest {
 //contains histogram data
 message ArchiveRecord {
   optional NamedObjectId id = 1;
-  optional int64 yamcsFirst = 2 [deprecated=true];
-  optional int64 yamcsLast = 3 [deprecated=true];
   optional int32 num = 4;
   optional string info = 5;
   optional int64 seqFirst = 6;

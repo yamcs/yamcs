@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.yamcs.yarch.StreamSubscriber;
-
+import org.yamcs.YamcsService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 /**
@@ -14,7 +14,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author nm
  *
  */
-public interface TmIndex extends StreamSubscriber {
+public interface TmIndexService extends StreamSubscriber, YamcsService {
 
     public abstract void close() throws IOException;
 

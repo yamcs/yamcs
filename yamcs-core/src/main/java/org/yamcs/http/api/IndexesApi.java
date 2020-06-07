@@ -8,14 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.archive.IndexRequestListener;
+import org.yamcs.archive.IndexRequestProcessor;
 import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
-import org.yamcs.archive.IndexServer;
-import org.yamcs.archive.TmIndex;
+import org.yamcs.archive.TmIndexService;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
@@ -53,7 +52,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,
             Observer<IndexResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService tmIndex = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
@@ -80,13 +79,13 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.setSendAllCmd(true);
         }
 
-        handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
+        handleOneIndexResult(tmIndex, requestb.build(), observer, limit, next);
     }
 
     @Override
     public void listEventIndex(Context ctx, ListEventIndexRequest request, Observer<IndexResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
@@ -119,7 +118,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void listPacketIndex(Context ctx, ListPacketIndexRequest request, Observer<IndexResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
@@ -153,7 +152,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     public void listParameterIndex(Context ctx, ListParameterIndexRequest request,
             Observer<IndexResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 20000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
@@ -187,7 +186,11 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     public void listCompletenessIndex(Context ctx, ListCompletenessIndexRequest request,
             Observer<IndexResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexServer = getIndexService(instance);
+        if (indexServer == null) {
+            throw new BadRequestException("CCSDS Tm Index not enabled for instance '" + instance + "'");
+        }
+        
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -210,7 +213,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void streamIndex(Context ctx, StreamIndexRequest request, Observer<IndexResult> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexService = getIndexService(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -236,22 +239,26 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.setSendAllPp(true);
             requestb.setSendAllCmd(true);
             requestb.setSendAllEvent(true);
-            requestb.setSendCompletenessIndex(true);
+            if (indexService != null) {
+                requestb.setSendCompletenessIndex(true);
+            }
         } else {
             requestb.setSendAllTm(filter.contains("tm") && requestb.getTmPacketCount() == 0);
             requestb.setSendAllPp(filter.contains("pp"));
             requestb.setSendAllCmd(filter.contains("commands"));
             requestb.setSendAllEvent(filter.contains("events"));
+            if (filter.contains("completeness") && indexService == null) {
+                throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
+            }
             requestb.setSendCompletenessIndex(filter.contains("completeness"));
         }
 
-        streamIndexResults(indexServer, requestb.build(), observer);
+        streamIndexResults(indexService, requestb.build(), observer);
     }
 
     @Override
     public void streamPacketIndex(Context ctx, StreamPacketIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -267,14 +274,13 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
         }
         requestb.setSendAllTm(request.getNamesCount() == 0);
-        streamArchiveRecords(indexServer, requestb.build(), observer);
+        streamArchiveRecords(null, requestb.build(), observer);
     }
 
     @Override
     public void streamParameterIndex(Context ctx, StreamParameterIndexRequest request,
             Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -287,13 +293,12 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(indexServer, requestb.build(), observer);
+        streamArchiveRecords(null, requestb.build(), observer);
     }
 
     @Override
     public void streamCommandIndex(Context ctx, StreamCommandIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -306,13 +311,12 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(indexServer, requestb.build(), observer);
+        streamArchiveRecords(null, requestb.build(), observer);
     }
 
     @Override
     public void streamEventIndex(Context ctx, StreamEventIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -325,14 +329,17 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(indexServer, requestb.build(), observer);
+        streamArchiveRecords(null, requestb.build(), observer);
     }
 
     @Override
     public void streamCompletenessIndex(Context ctx, StreamCompletenessIndexRequest request,
             Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexServer = getIndexService(instance);
+        if (indexServer == null) {
+            throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
+        }
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -353,9 +360,8 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
+        TmIndexService indexer = getIndexService(instance);
 
-        TmIndex indexer = indexServer.getTmIndexer();
         if (indexer instanceof CcsdsTmIndex) {
             CcsdsTmIndex ccsdsTmIndex = (CcsdsTmIndex) indexer;
             TimeInterval interval = new TimeInterval();
@@ -382,12 +388,12 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         }
     }
 
-    private IndexServer verifyIndexServer(String instance) throws HttpException {
+    private TmIndexService getIndexService(String instance) throws HttpException {
         ManagementApi.verifyInstance(instance);
         YamcsServer yamcs = YamcsServer.getServer();
-        List<IndexServer> services = yamcs.getServices(instance, IndexServer.class);
+        List<TmIndexService> services = yamcs.getServices(instance, TmIndexService.class);
         if (services.isEmpty()) {
-            throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
+            return null;
         } else {
             return services.get(0);
         }
@@ -399,136 +405,132 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
      * 
      * The batch size is determined by the IndexServer and is set to 500 (shared between all requested groups).
      */
-    private void handleOneIndexResult(IndexServer indexServer, IndexRequest request, Observer<IndexResponse> observer,
+    private void handleOneIndexResult(TmIndexService tmIndex, IndexRequest request, Observer<IndexResponse> observer,
             int limit, String token) throws HttpException {
         try {
             IndexResponse.Builder responseb = IndexResponse.newBuilder();
             Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
-            indexServer.submitIndexRequest(request, limit, token, new IndexRequestListener() {
+            IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, limit, token,
+                    new IndexRequestListener() {
 
-                long last;
+                        long last;
 
-                @Override
-                public void processData(ArchiveRecord rec) {
-                    IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
-                    if (groupb == null) {
-                        groupb = IndexGroup.newBuilder().setId(rec.getId());
-                        groupBuilders.put(rec.getId(), groupb);
-                    }
-                    long first = TimeEncoding.fromProtobufTimestamp(rec.getFirst());
-                    long last1 = TimeEncoding.fromProtobufTimestamp(rec.getLast());
+                        @Override
+                        public void processData(ArchiveRecord rec) {
+                            IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
+                            if (groupb == null) {
+                                groupb = IndexGroup.newBuilder().setId(rec.getId());
+                                groupBuilders.put(rec.getId(), groupb);
+                            }
+                            long first = TimeEncoding.fromProtobufTimestamp(rec.getFirst());
+                            long last1 = TimeEncoding.fromProtobufTimestamp(rec.getLast());
 
-                    IndexEntry.Builder ieb = IndexEntry.newBuilder()
-                            .setStart(TimeEncoding.toString(first))
-                            .setStop(TimeEncoding.toString(last1))
-                            .setCount(rec.getNum());
-                    if (rec.hasSeqFirst()) {
-                        ieb.setSeqStart(rec.getSeqFirst());
-                    }
-                    if (rec.hasSeqLast()) {
-                        ieb.setSeqStop(rec.getSeqLast());
-                    }
-                    groupb.addEntry(ieb);
-                    last = Math.max(last, last1);
-                }
-
-                @Override
-                public void finished(String token, boolean success) {
-                    if (success) {
-                        if (token != null) {
-                            responseb.setContinuationToken(token);
+                            IndexEntry.Builder ieb = IndexEntry.newBuilder()
+                                    .setStart(TimeEncoding.toString(first))
+                                    .setStop(TimeEncoding.toString(last1))
+                                    .setCount(rec.getNum());
+                            if (rec.hasSeqFirst()) {
+                                ieb.setSeqStart(rec.getSeqFirst());
+                            }
+                            if (rec.hasSeqLast()) {
+                                ieb.setSeqStop(rec.getSeqLast());
+                            }
+                            groupb.addEntry(ieb);
+                            last = Math.max(last, last1);
                         }
-                        List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
-                        Collections.sort(sortedGroups, (g1, g2) -> {
-                            return g1.getId().getName().compareTo(g2.getId().getName());
-                        });
-                        sortedGroups.forEach(groupb -> responseb.addGroup(groupb));
-                        observer.complete(responseb.build());
-                    } else {
-                        observer.completeExceptionally(
-                                new InternalServerErrorException("Failure while streaming index"));
-                    }
-                }
-            });
+
+                        @Override
+                        public void finished(String token, boolean success) {
+                            if (success) {
+                                if (token != null) {
+                                    responseb.setContinuationToken(token);
+                                }
+                                List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
+                                Collections.sort(sortedGroups, (g1, g2) -> {
+                                    return g1.getId().getName().compareTo(g2.getId().getName());
+                                });
+                                sortedGroups.forEach(groupb -> responseb.addGroup(groupb));
+                                observer.complete(responseb.build());
+                            } else {
+                                observer.completeExceptionally(
+                                        new InternalServerErrorException("Failure while streaming index"));
+                            }
+                        }
+                    });
+            p.run();
         } catch (InvalidTokenException e) {
             observer.completeExceptionally(new BadRequestException("Invalid token specified"));
-        } catch (YamcsException e) {
-            observer.completeExceptionally(e);
         }
     }
 
-    private static void streamIndexResults(IndexServer indexServer, IndexRequest request,
+    private static void streamIndexResults(TmIndexService tmIndex, IndexRequest request,
             Observer<IndexResult> observer) {
-        try {
-            indexServer.submitIndexRequest(request, new IndexRequestListener() {
 
-                private IndexResult.Builder indexResult;
+        IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, -1, null,
+                new IndexRequestListener() {
 
-                @Override
-                public void begin(IndexType type, String tblName) {
-                    if (indexResult != null) {
-                        observer.next(indexResult.build());
-                    }
-                    indexResult = newBuilder(type.name(), tblName);
-                }
+                    private IndexResult.Builder indexResult;
 
-                @Override
-                public void processData(ArchiveRecord record) {
-                    indexResult.addRecords(record);
-                    if (indexResult.getRecordsCount() > 500) {
-                        observer.next(indexResult.build());
-                        indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
-                    }
-                }
-
-                @Override
-                public void finished(String token, boolean success) {
-                    if (success) {
-                        if (indexResult != null && indexResult.getRecordsCount() > 0) {
+                    @Override
+                    public void begin(IndexType type, String tblName) {
+                        if (indexResult != null) {
                             observer.next(indexResult.build());
                         }
-                        observer.complete();
-                    } else {
-                        observer.completeExceptionally(
-                                new InternalServerErrorException("Failure while streaming index"));
+                        indexResult = newBuilder(type.name(), tblName);
                     }
-                }
 
-                private IndexResult.Builder newBuilder(String type, String tblName) {
-                    IndexResult.Builder b = IndexResult.newBuilder().setType(type);
-                    if (tblName != null) {
-                        b.setTableName(tblName);
+                    @Override
+                    public void processData(ArchiveRecord record) {
+                        indexResult.addRecords(record);
+                        if (indexResult.getRecordsCount() > 500) {
+                            observer.next(indexResult.build());
+                            indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
+                        }
                     }
-                    return b;
-                }
-            });
-        } catch (YamcsException e) {
-            observer.completeExceptionally(e);
-        }
+
+                    @Override
+                    public void finished(String token, boolean success) {
+                        if (success) {
+                            if (indexResult != null && indexResult.getRecordsCount() > 0) {
+                                observer.next(indexResult.build());
+                            }
+                            observer.complete();
+                        } else {
+                            observer.completeExceptionally(
+                                    new InternalServerErrorException("Failure while streaming index"));
+                        }
+                    }
+
+                    private IndexResult.Builder newBuilder(String type, String tblName) {
+                        IndexResult.Builder b = IndexResult.newBuilder().setType(type);
+                        if (tblName != null) {
+                            b.setTableName(tblName);
+                        }
+                        return b;
+                    }
+                });
+        p.run();
     }
 
-    private static void streamArchiveRecords(IndexServer indexServer, IndexRequest request,
+    private static void streamArchiveRecords(TmIndexService tmIndex, IndexRequest request,
             Observer<ArchiveRecord> observer) {
-        try {
-            indexServer.submitIndexRequest(request, new IndexRequestListener() {
-
-                @Override
-                public void processData(ArchiveRecord record) {
-                    observer.next(record);
-                }
-
-                @Override
-                public void finished(String token, boolean success) {
-                    if (success) {
-                        observer.complete();
-                    } else {
-                        observer.completeExceptionally(
-                                new InternalServerErrorException("Failure while streaming index"));
+        IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, -1, null,
+                new IndexRequestListener() {
+                    @Override
+                    public void processData(ArchiveRecord record) {
+                        observer.next(record);
                     }
-                }
-            });
-        } catch (YamcsException e) {
-            observer.completeExceptionally(e);
-        }
+
+                    @Override
+                    public void finished(String token, boolean success) {
+                        if (success) {
+                            observer.complete();
+                        } else {
+                            observer.completeExceptionally(
+                                    new InternalServerErrorException("Failure while streaming index"));
+                        }
+                    }
+                });
+        p.run();
     }
 }

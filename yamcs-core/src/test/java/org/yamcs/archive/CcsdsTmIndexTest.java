@@ -4,6 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,6 +17,11 @@ import org.yamcs.yarch.YarchTestCase;
 
 public class CcsdsTmIndexTest extends YarchTestCase {
 
+    static Map<String, Object> config = new HashMap<>();
+    static {
+        config.put("streams", new ArrayList<String>());
+    }
+    
     @BeforeClass
     public static void oneTimeSetup() throws Exception {
         YConfiguration.setupTest(null);
@@ -43,7 +52,8 @@ public class CcsdsTmIndexTest extends YarchTestCase {
 
     @Test
     public void testApidIndex() throws Exception {
-        CcsdsTmIndex tmindex = new CcsdsTmIndex(ydb.getName(), false);
+        CcsdsTmIndex tmindex = new CcsdsTmIndex();
+        tmindex.init(ydb.getName(), YConfiguration.wrap(config));
 
         CcsdsIndexIterator it1 = tmindex.new CcsdsIndexIterator((short) -1, -1L, -1L);
         assertNull(it1.getNextRecord());
@@ -91,7 +101,8 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     @Test
     @Ignore
     public void testApidIndexSameTimeAndWraparound() throws Exception {
-        CcsdsTmIndex tmindex = new CcsdsTmIndex(ydb.getName(), false);
+        CcsdsTmIndex tmindex = new CcsdsTmIndex();
+        tmindex.init(ydb.getName(), YConfiguration.emptyConfig());
 
         short apid = 2000;
 

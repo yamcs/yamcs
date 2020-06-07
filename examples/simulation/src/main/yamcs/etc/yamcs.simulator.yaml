@@ -4,11 +4,11 @@ services:
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
-  - class: org.yamcs.archive.IndexServer
-    args:
-      streams:
-        - tm_realtime
-        - tm_dump
+#  - class: org.yamcs.archive.CcsdsTmIndex
+#    args:
+#      streams:
+#        - tm_realtime
+#        - tm_dump
   - class: org.yamcs.parameter.SystemParametersCollector
     args:
       provideJvmVariables: true

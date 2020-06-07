@@ -7,13 +7,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.naming.ConfigurationException;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.StreamConfig;
 import org.yamcs.ThreadSafe;
-import org.yamcs.logging.Log;
+import org.yamcs.YConfiguration;
+import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.CcsdsPacket;
@@ -52,33 +59,63 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 @ThreadSafe
-public class CcsdsTmIndex implements TmIndex {
-
-    final protected Log log;
+public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService {
 
     // if time between two packets with the same apid is more than one hour,
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
     static long maxApidInterval = 3600 * 1000l;
-    String yamcsInstance;
     private static AtomicInteger streamCounter = new AtomicInteger();
-    final Tablespace tablespace;
+    Tablespace tablespace;
     int tbsIndex;
+    List<String> streamNames;
 
-    /**
-     * if readonly is specified, it is open only for reading
-     * 
-     * @throws IOException
-     */
-    public CcsdsTmIndex(String instance, boolean readonly) throws IOException {
-        log = new Log(this.getClass(), instance);
-        this.yamcsInstance = instance;
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+    @Override
+    public void init(String yamcsInstance, YConfiguration args) throws InitException {
+        super.init(yamcsInstance, args);
+        if (config.containsKey("streams")) {
+            streamNames = config.getList("streams");
+        } else {
+            streamNames = StreamConfig.getInstance(yamcsInstance)
+                    .getEntries(StandardStreamType.tm)
+                    .stream()
+                    .map(sce -> sce.getName())
+                    .collect(Collectors.toList());
+        }
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
         try {
             openDb();
         } catch (RocksDBException e) {
-            throw new IOException("Failed to open rocksdb", e);
+            throw new InitException("Failed to open rocksdb", e);
         }
+    }
+
+    @Override
+    protected void doStart() {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+
+        for (String s : streamNames) {
+            Stream stream = ydb.getStream(s);
+            if (stream == null) {
+                notifyFailed(new ConfigurationException("Stream " + s + " does not exist"));
+                return;
+            }
+            stream.addSubscriber(this);
+        }
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+
+        for (String s : streamNames) {
+            Stream stream = ydb.getStream(s);
+            if (stream != null) {
+                stream.removeSubscriber(this);
+            }
+        }
+        notifyStopped();
     }
 
     private void openDb() throws RocksDBException {
@@ -117,7 +154,7 @@ public class CcsdsTmIndex implements TmIndex {
         }
     }
 
-    public synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {
+    synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {
         YRDB db = tablespace.getRdb();
         RocksIterator it = tablespace.getRdb().newIterator();
         try {
@@ -339,8 +376,6 @@ public class CcsdsTmIndex implements TmIndex {
                     ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
                             .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime()))
                             .setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
-                            .setYamcsFirst(r.firstTime()).setYamcsLast(r.lastTime())
-
                             .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
                     // WARN: this string is parsed in the CompletenessGUI
                     // TODO: remove it

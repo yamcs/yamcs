@@ -44,7 +44,7 @@ public class IndexRequestProcessor implements Runnable {
     final static AtomicInteger counter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
     final IndexRequest req;
-    TmIndex tmIndexer;
+    TmIndexService tmIndexer;
     IndexRequestListener indexRequestListener;
 
     private static Cache<String, TokenData> tokenCache = CacheBuilder.newBuilder()
@@ -67,7 +67,7 @@ public class IndexRequestProcessor implements Runnable {
     MergingResult mergingResult;
     static Random random = new Random();
 
-    IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
+    public IndexRequestProcessor(TmIndexService tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
         log.debug("new index request: {}", req);
         this.yamcsInstance = req.getInstance();
         this.req = req;
@@ -144,6 +144,9 @@ public class IndexRequestProcessor implements Runnable {
         }
 
         if (req.getSendCompletenessIndex()) {
+            if(tmIndexer==null) {
+                throw new IllegalArgumentException("TmIndexer cannot be null if completeness is requested");
+            }
             int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : -1);
             hreq[4] = new HistoRequest(null, null, mergeTime, null);
         }
@@ -273,7 +276,6 @@ public class IndexRequestProcessor implements Runnable {
                 ArchiveRecord ar = ArchiveRecord.newBuilder().setId(id)
                         .setFirst(TimeEncoding.toProtobufTimestamp(hr.getStart()))
                         .setLast(TimeEncoding.toProtobufTimestamp(hr.getStop()))
-                        .setYamcsFirst(hr.getStart()).setYamcsLast(hr.getStop())
                         .setNum(hr.getNumTuples()).build();
                 sendData(ar);
                 if (limit > 0 && count >= limit) {
