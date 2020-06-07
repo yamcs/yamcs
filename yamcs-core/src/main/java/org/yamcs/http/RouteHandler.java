@@ -107,7 +107,7 @@ public class RouteHandler extends Handler {
         FieldDescriptor limitField = message.getDescriptorForType().findFieldByName("limit");
         if (limitField != null && message.hasField(limitField)) {
             Number limit = (Number) message.getField(limitField);
-            if (limit.intValue() >= 1000) {
+            if (limit.intValue() > 1000) {
                 throw new BadRequestException("Limit parameter is too large");
             }
         }

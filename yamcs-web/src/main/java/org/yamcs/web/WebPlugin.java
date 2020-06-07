@@ -36,6 +36,7 @@ public class WebPlugin implements Plugin {
         spec.addOption("staticRoot", OptionType.STRING);
         spec.addOption("twoStageCommanding", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("commandClearances", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("completeness", OptionType.BOOLEAN).withDefault(false);
 
         Spec featuresSpec = new Spec();
         featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
