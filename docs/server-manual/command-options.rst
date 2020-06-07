@@ -1,7 +1,7 @@
 Command Options
 ===============
 
-.. versionadded:: 4.11.0
+.. versionadded:: 5.0.0
 
 Yamcs supports a programmatic API for activating custom command options. When commands are issued with custom options, these can be interpreted by you own code, typically a TC data link.
 

@@ -53,7 +53,7 @@ incomingDir (string)
     A directory used by the :javadoc:`~org.yamcs.tctm.FilePollingTmDataLink` to load incoming telemetry files. This is a relic from when Yamcs was used only for that; the option should be specified in the link configuration instead (it is left here because some users are quite accustomed to it).
 
 secretKey (string)
-    A key that is used to sign the authentication tokens given to the users. It should be changed immediately after installation. As of version 4.11.0 Yamcs does not support persisted authentication tokens but this feature will be available in a future version. 
+    A key that is used to sign the authentication tokens given to the users. It should be changed immediately after installation. As of version 5.0.0, Yamcs does not support persisted authentication tokens but this feature will be available in a future version. 
 
 yamcs-web (map)
     Configuration of the yamcs web application. The different options are documented in :doc:`../web-interface/index`

@@ -7,7 +7,7 @@ WebSocket allows to upgrade a regular HTTP connection to a bi-directional commun
 
 .. note::
 
-    Users that have been using Yamcs versions prior to 4.11.x may be familiar with our previous WebSocket conventions on the old endpoint ``/_websocket``. This documentation describes the new conventions applied on the endpoint ``/api/websocket``. These build on lessons learned over the years. In particular:
+    Users that have been using Yamcs versions prior to 5.x.x may be familiar with our previous WebSocket conventions on the old endpoint ``/_websocket``. This documentation describes the new conventions applied on the endpoint ``/api/websocket``. These build on lessons learned over the years. In particular:
     
     * Subscription and unsubscription of multiple topics is now easier to manage on one and the same connection.
     * Topics that previously could be subscribed to only once (for example listening to a specific stream), can now be subscribed any number of times.
