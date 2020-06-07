@@ -19,6 +19,7 @@ import org.rocksdb.WriteOptions;
 import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.archive.AlarmRecorder;
+import org.yamcs.archive.EventRecorder;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -482,40 +483,43 @@ public class Tablespace {
      * 
      */
     void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
-        //TODO remove at some point
-        if("alarms".equals(tblDef.getName())) {
+        if ("alarms".equals(tblDef.getName())) {
             TupleDefinition tdef = tblDef.getValueDefinition();
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_TRIGGER);
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_CLEAR);
             changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
-        } else if("events".equals(tblDef.getName())) {
+        } else if (EventRecorder.TABLE_NAME.equals(tblDef.getName())) {
             TupleDefinition tdef = tblDef.getValueDefinition();
             changeEventColumnType(tdef, "body");
-        } else if("event_alarms".equals(tblDef.getName())) {
+        } else if ("event_alarms".equals(tblDef.getName())) {
             TupleDefinition tdef = tblDef.getValueDefinition();
             changeEventColumnType(tdef, EventAlarmStreamer.CNAME_TRIGGER);
             changeEventColumnType(tdef, EventAlarmStreamer.CNAME_CLEAR);
             changeEventColumnType(tdef, EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
         }
-        
         createTable(yamcsInstance, tblDef);
     }
-    
+
     private void changePvColumnType(TupleDefinition tdef, String cname) {
-        int idx =tdef.getColumnIndex(cname);
-        if(idx > 0) {
+        
+        int idx = tdef.getColumnIndex(cname);
+        
+        if (idx > 0) {
+            log.info("Chaning data type of column {} to {}", cname,  DataType.PARAMETER_VALUE);
             ColumnDefinition cd = new ColumnDefinition(cname, DataType.PARAMETER_VALUE);
             tdef.getColumnDefinitions().set(idx, cd);
         }
     }
 
     private void changeEventColumnType(TupleDefinition tdef, String cname) {
-        int idx =tdef.getColumnIndex(cname);
-        if(idx > 0) {
+        int idx = tdef.getColumnIndex(cname);
+        if (idx >= 0) {
+            log.info("Chaning data type of column {} to {}", cname,  Db.Event.class.getName());
             ColumnDefinition cd = new ColumnDefinition(cname, DataType.protobuf(Db.Event.class.getName()));
             tdef.getColumnDefinitions().set(idx, cd);
         }
     }
+
     void dropTable(TableDefinition tbl) throws RocksDBException, IOException {
         RdbPartitionManager pm = partitionManagers.remove(tbl);
         if (pm == null) {
@@ -571,7 +575,7 @@ public class Tablespace {
     public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef,
             boolean ascending, boolean follow) {
         PartitionManager pmgr = partitionManagers.get(tblDef);
-        if(pmgr==null) {
+        if (pmgr == null) {
             throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
         }
         return new RdbTableReaderStream(this, ydb, pmgr, ascending, follow);
