@@ -12,14 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.tse.api.TseCommand;
 import org.yamcs.utils.YObjectLoader;
 
 public abstract class InstrumentDriver {
-
-    private static final Logger log = LoggerFactory.getLogger(InstrumentDriver.class);
 
     private static final int DEFAULT_POLLING_INTERVAL = 20;
 
@@ -83,12 +80,13 @@ public abstract class InstrumentDriver {
         return responseTimeout;
     }
 
-    public List<String> command(String command, boolean expectResponse) throws IOException, TimeoutException {
+    public List<String> command(String command, TseCommand metadata, boolean expectResponse)
+            throws IOException, TimeoutException {
         try {
             connect();
             byte[] bytes = command.getBytes();
             for (Interceptor interceptor : interceptors) {
-                bytes = interceptor.interceptCommand(instrument, bytes, encoding);
+                bytes = interceptor.interceptCommand(metadata, bytes, encoding);
             }
             write(bytes);
             if (expectResponse) {
@@ -97,7 +95,7 @@ public abstract class InstrumentDriver {
                     byte[] response = readSingleResponse(responseBuffer);
                     if (response != null) {
                         for (Interceptor interceptor : interceptors) {
-                            response = interceptor.interceptResponse(instrument, response, encoding);
+                            response = interceptor.interceptResponse(metadata, response, encoding);
                         }
                         return Arrays.asList(new String(response, encoding));
                     }
@@ -109,7 +107,7 @@ public abstract class InstrumentDriver {
                             byte[] response = readSingleResponse(responseBuffer);
                             if (response != null) {
                                 for (Interceptor interceptor : interceptors) {
-                                    response = interceptor.interceptResponse(instrument, response, encoding);
+                                    response = interceptor.interceptResponse(metadata, response, encoding);
                                 }
                                 responses.add(new String(response, encoding));
                             }
