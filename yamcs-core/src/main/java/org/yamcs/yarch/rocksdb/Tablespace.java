@@ -18,7 +18,6 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
-import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
