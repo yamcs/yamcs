@@ -55,8 +55,6 @@ Other options are link-specific and documented in their respective sections.
     
     packet-preprocessor
     command-post-processor
-    artemis-parameter-data-link
-    artemis-tm-data-link
     file-polling-tm-data-link
     tcp-tc-data-link
     tcp-tm-data-link

@@ -6,10 +6,6 @@ Instance Services
     :caption: Table of Contents
 
     alarm-recorder
-    artemis-command-history-publisher
-    artemis-event-publisher
-    artemis-parameter-publisher
-    artemis-tm-publisher
     command-history-recorder
     event-recorder
     ccsds-tm-index
