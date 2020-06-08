@@ -50,7 +50,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             if (commandQueue.offer(preparedCommand)) {
                 dataAvailableSemaphore.release();
             } else {
-                ackCommand(preparedCommand.getCommandId());
+                failedCommand(preparedCommand.getCommandId(), "queue full");
             }
         }
     }
