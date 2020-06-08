@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
@@ -25,7 +24,7 @@ public class ParameterReplayHandler implements ReplayHandler {
     Set<String> includeGroups = new HashSet<>();
     Set<String> excludeGroups = new HashSet<>();
     final XtceDb xtceDb;
-    ReplayRequest request;
+    ReplayOptions request;
     static final Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
     boolean emptyReplay;
 
@@ -34,7 +33,7 @@ public class ParameterReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public void setRequest(ReplayRequest newRequest) {
+    public void setRequest(ReplayOptions newRequest) {
         this.request = newRequest;
         includeGroups.clear();
         excludeGroups.clear();
@@ -99,7 +98,7 @@ public class ParameterReplayHandler implements ReplayHandler {
             XtceTmReplayHandler.appendTimeClause(sb, request, true);
         }
 
-        if (request.hasReverse() && request.getReverse()) {
+        if (request.isReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();

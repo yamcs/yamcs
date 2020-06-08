@@ -10,7 +10,6 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
@@ -25,14 +24,14 @@ public class XtceTmReplayHandler implements ReplayHandler {
     Set<String> partitions;
     final XtceDb xtcedb;
     static Logger log = LoggerFactory.getLogger(XtceTmReplayHandler.class);
-    ReplayRequest request;
+    ReplayOptions request;
 
     public XtceTmReplayHandler(XtceDb xtcedb) {
         this.xtcedb = xtcedb;
     }
 
     @Override
-    public void setRequest(ReplayRequest newRequest) throws YamcsException {
+    public void setRequest(ReplayOptions newRequest) throws YamcsException {
         this.request = newRequest;
         if (newRequest.getPacketRequest().getNameFilterList().isEmpty()) {
             partitions = null; // retrieve all
@@ -91,7 +90,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
                 appendTimeClause(sb, request, true);
             }
         }
-        if (request.hasReverse() && request.getReverse()) {
+        if (request.isReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();
@@ -107,7 +106,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
         return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
     }
 
-    static void appendTimeClause(StringBuilder sb, ReplayRequest request, boolean firstRestriction) {
+    static void appendTimeClause(StringBuilder sb, ReplayOptions request, boolean firstRestriction) {
         if (request.hasStart() || (request.hasStop())) {
             if (!firstRestriction) {
                 sb.append(" and ");

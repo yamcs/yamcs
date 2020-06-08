@@ -43,10 +43,10 @@ export class StartReplayDialog {
 
   start() {
     const replayConfig: { [key: string]: any; } = {
-      utcStart: utils.toISOString(this.form.value.start),
+      start: utils.toISOString(this.form.value.start),
     };
     if (this.form.value.stop) {
-      replayConfig.utcStop = utils.toISOString(this.form.value.stop);
+      replayConfig.stop = utils.toISOString(this.form.value.stop);
     }
 
     this.dialogRef.close({

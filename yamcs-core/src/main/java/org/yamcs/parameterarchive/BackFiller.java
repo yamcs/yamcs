@@ -16,15 +16,10 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.archive.ReplayOptions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.PpReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
@@ -157,15 +152,10 @@ public class BackFiller implements StreamSubscriber {
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
             log.info("Starting parameter archive fillup for interval {}", timePeriod);
 
-            ReplayRequest.Builder rrb = ReplayRequest.newBuilder()
-                    .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-            rrb.setEndAction(EndAction.QUIT);
-            rrb.setStart(start - warmupTime).setStop(stop);
-            rrb.setPacketRequest(PacketReplayRequest.newBuilder().build());
-            rrb.setPpRequest(PpReplayRequest.newBuilder().build());
+            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop);
             Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
-                    rrb.build());
+                    rrb);
             aft.setProcessor(proc);
             proc.getParameterRequestManager().subscribeAll(aft);
 

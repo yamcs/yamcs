@@ -1,13 +1,11 @@
 package org.yamcs.archive;
 
-import org.yamcs.YamcsException;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Tuple;
@@ -21,14 +19,14 @@ import com.google.protobuf.MessageLite;
  *
  */
 public class CommandHistoryReplayHandler implements ReplayHandler {
-    private ReplayRequest request;
+    private ReplayOptions repl;
 
     public CommandHistoryReplayHandler(String instance) {
     }
 
     @Override
-    public void setRequest(ReplayRequest newRequest) {
-        this.request = newRequest;
+    public void setRequest(ReplayOptions newRequest) {
+        this.repl = newRequest;
     }
 
     @Override
@@ -36,11 +34,11 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber())
                 .append(",* from " + CommandHistoryRecorder.TABLE_NAME);
-        appendTimeClause(sb, request);
+        appendTimeClause(sb, repl);
 
-        CommandHistoryReplayRequest cmdHistReq = request.getCommandHistoryRequest();
+        CommandHistoryReplayRequest cmdHistReq = repl.getCommandHistoryRequest();
         if (cmdHistReq.getNameFilterCount() > 0) {
-            if (request.hasStart() || (request.hasStop())) {
+            if (repl.hasStart() || (repl.hasStop())) {
                 sb.append(" AND ");
             } else {
                 sb.append(" WHERE ");
@@ -61,7 +59,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
             sb.append(")");
         }
 
-        if (request.hasReverse() && request.getReverse()) {
+        if (repl.isReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();
@@ -98,7 +96,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         // TODO Auto-generated method stub
     }
 
-    static void appendTimeClause(StringBuilder sb, ReplayRequest request) {
+    static void appendTimeClause(StringBuilder sb, ReplayOptions request) {
         if (request.hasStart() || (request.hasStop())) {
             sb.append(" where ");
             if (request.hasStart()) {

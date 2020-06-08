@@ -3,20 +3,11 @@ package org.yamcs;
 /**
  * This interface has to be implemented by all services that run as part of a processor.
  * 
- * The implementing classes need to have a constructor with one or two arguments: MyProcessorService (String
- * yamcsInstance) or MyProcessorService (String yamcsInstance, Map&lt;String, Object&gt; config)
+ * <p>
+ * The implementing classes need to have one {@link #init(String, YConfiguration)} method called with the configuration passed as "args" in the service 
+ * definition in processor.yaml and an extra {@link #init(Processor, Object)} called with the configuration passed by the user when creating the service.
+ *   
  * 
- * The second one will be called if the service is declared in the processor.yaml with "args". For example:
- * 
- * <pre>
- * services:
- *   - class: a.b.c.MyProcessorService
- *     args:
- *       x: 3
- *       y: "my y config"
- * </pre>
- * 
- * Additional config may be passed by the user when the processor is created using the spec parameter in the init method
  */
 public interface ProcessorService extends YamcsService {
 

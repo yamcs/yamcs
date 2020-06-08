@@ -49,7 +49,7 @@ public class YarchReplay implements StreamSubscriber {
     static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
 
-    volatile ReplayRequest currentRequest;
+    volatile ReplayOptions currentRequest;
 
     Map<ProtoDataType, ReplayHandler> handlers;
 
@@ -58,7 +58,7 @@ public class YarchReplay implements StreamSubscriber {
     volatile boolean ignoreClose;
     ReplayListener listener;
 
-    public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener, XtceDb xtceDb)
+    public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, XtceDb xtceDb)
             throws YamcsException {
         this.listener = listener;
         this.replayServer = replayServer;
@@ -67,33 +67,23 @@ public class YarchReplay implements StreamSubscriber {
         setRequest(rr);
     }
 
-    private void setRequest(ReplayRequest newRequest) throws YamcsException {
+    private void setRequest(ReplayOptions req) throws YamcsException {
         if (state != ReplayState.INITIALIZATION && state != ReplayState.STOPPED) {
             throw new YamcsException("changing the request only supported in the INITIALIZATION and STOPPED states");
         }
 
-        // get the start/stop from utcStart/utcStop
-        ReplayRequest.Builder b = ReplayRequest.newBuilder(newRequest);
-
-        if (!newRequest.hasStart() && newRequest.hasUtcStart()) {
-            b.setStart(TimeEncoding.parse(newRequest.getUtcStart()));
-        }
-        if (!newRequest.hasStop() && newRequest.hasUtcStop()) {
-            b.setStop(TimeEncoding.parse(newRequest.getUtcStop()));
-        }
-        newRequest = b.build();
         if (log.isDebugEnabled()) {
             log.debug("Replay request for time: [{}, {}]",
-                    (newRequest.hasStart() ? TimeEncoding.toString(newRequest.getStart()) : "-"),
-                    (newRequest.hasStop() ? TimeEncoding.toString(newRequest.getStop()) : "-"));
+                    (req.hasStart() ? TimeEncoding.toString(req.getStart()) : "-"),
+                    (req.hasStop() ? TimeEncoding.toString(req.getStop()) : "-"));
         }
 
-        if (newRequest.hasStart() && newRequest.hasStop() && newRequest.getStart() > newRequest.getStop()) {
+        if (req.hasStart() && req.hasStop() && req.getStart() > req.getStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
             throw new YamcsException("stop has to be greater than start");
         }
 
-        currentRequest = newRequest;
+        currentRequest = req;
         handlers = new HashMap<>();
 
         if (currentRequest.hasParameterRequest()) {
@@ -115,7 +105,7 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         for (ReplayHandler rh : handlers.values()) {
-            rh.setRequest(newRequest);
+            rh.setRequest(req);
         }
     }
 
@@ -189,16 +179,13 @@ public class YarchReplay implements StreamSubscriber {
             sb.append(" USING gentime");
         }
 
-        if (handlers.size() > 1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
+        if (handlers.size() > 1 && currentRequest.isReverse()) {
             sb.append(" ORDER DESC");
         }
 
-        ReplaySpeed rs;
-        if (currentRequest.hasSpeed()) {
-            rs = currentRequest.getSpeed();
-        } else {
-            rs = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
-        }
+        ReplaySpeed rs= currentRequest.getSpeed();
+
+        
         switch (rs.getType()) {
         case AFAP:
         case STEP_BY_STEP: // Step advancing is controlled from within this class
@@ -250,7 +237,7 @@ public class YarchReplay implements StreamSubscriber {
                 signalStateChange();
             }
         }
-        currentRequest = ReplayRequest.newBuilder(currentRequest).setStart(newReplayTime).build();
+        currentRequest.setStart(newReplayTime);
         for (ReplayHandler rh : handlers.values()) {
             rh.setRequest(currentRequest);
         }
@@ -267,9 +254,7 @@ public class YarchReplay implements StreamSubscriber {
         } else {
             ((SpeedLimitStream) s).setSpeedSpec(toSpeedSpec(newSpeed));
         }
-        ReplayRequest.Builder b = ReplayRequest.newBuilder(currentRequest);
-        b.setSpeed(newSpeed);
-        currentRequest = b.build();
+        currentRequest.setSpeed(newSpeed);
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
@@ -333,8 +318,7 @@ public class YarchReplay implements StreamSubscriber {
                 listener.newData(type, data);
             }
 
-            if (currentRequest.hasSpeed()
-                    && currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
+            if (currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
                 // Force user to trigger next step.
                 state = ReplayState.PAUSED;
                 signalStateChange();
@@ -395,6 +379,7 @@ public class YarchReplay implements StreamSubscriber {
     }
 
     public ReplayRequest getCurrentReplayRequest() {
-        return currentRequest;
+        return currentRequest.toProtobuf();
     }
+
 }

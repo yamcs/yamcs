@@ -1,17 +1,16 @@
 package org.yamcs.archive;
 
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.protobuf.MessageLite;
 
 public class EventReplayHandler implements ReplayHandler {
-    ReplayRequest request;
+    ReplayOptions request;
 
     @Override
-    public void setRequest(ReplayRequest newRequest) {
+    public void setRequest(ReplayOptions newRequest) {
         this.request = newRequest;
     }
 
@@ -20,13 +19,13 @@ public class EventReplayHandler implements ReplayHandler {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ").append(ProtoDataType.EVENT.getNumber()).append(",* from events");
         appendWhereClause(sb, request);
-        if (request.hasReverse() && request.getReverse()) {
+        if (request.isReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();
     }
 
-    static void appendWhereClause(StringBuilder sb, ReplayRequest request) {
+    static void appendWhereClause(StringBuilder sb, ReplayOptions request) {
         if (request.hasStart() || (request.hasStop())) {
             sb.append(" where ");
             if (request.hasStart()) {

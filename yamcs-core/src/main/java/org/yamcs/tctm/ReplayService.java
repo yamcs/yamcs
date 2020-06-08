@@ -19,6 +19,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayListener;
+import org.yamcs.archive.ReplayOptions;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
 import org.yamcs.archive.YarchReplay;
@@ -70,7 +71,7 @@ public class ReplayService extends AbstractService
     EndAction endAction;
     static Logger log = LoggerFactory.getLogger(ReplayService.class.getName());
 
-    ReplayRequest originalReplayRequest;
+    ReplayOptions originalReplayRequest;
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
     private ParameterRequestManager parameterRequestManager;
     TmProcessor tmProcessor;
@@ -84,7 +85,7 @@ public class ReplayService extends AbstractService
     // the originalReplayRequest contains possibly only parameters.
     // the modified one sent to the ReplayServer contains the raw data required for extracting/processing those
     // parameters
-    ReplayRequest.Builder rawDataRequest;
+    ReplayOptions rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
     private SecurityStore securityStore;
@@ -127,8 +128,8 @@ public class ReplayService extends AbstractService
         proc.setPacketProvider(this);
         parameterRequestManager.addParameterProvider(this);
 
-        if (spec instanceof ReplayRequest) {
-            this.originalReplayRequest = (ReplayRequest) spec;
+        if (spec instanceof ReplayOptions) {
+            this.originalReplayRequest = (ReplayOptions) spec;
         } else if (spec instanceof String) {
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
             try {
@@ -139,7 +140,9 @@ public class ReplayService extends AbstractService
             if (!rrb.hasSpeed()) {
                 rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
             }
-            this.originalReplayRequest = rrb.build();
+            this.originalReplayRequest = new ReplayOptions(rrb.build());
+        } else {
+            throw new IllegalArgumentException("Unknown spec of type "+spec.getClass());
         }
     }
 
@@ -225,22 +228,18 @@ public class ReplayService extends AbstractService
     // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which
     // containers are needed and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
-        // As described in yamcs.proto, by default everything is replayed unless
-        // at least one filter is specified.
-        boolean replayAll = !originalReplayRequest.hasPacketRequest()
-                && !originalReplayRequest.hasParameterRequest()
-                && !originalReplayRequest.hasEventRequest()
-                && !originalReplayRequest.hasPpRequest()
-                && !originalReplayRequest.hasCommandHistoryRequest();
-
+        
+        boolean replayAll = originalReplayRequest.isReplayAll();
+        
         if (replayAll) {
-            rawDataRequest = ReplayRequest.newBuilder(originalReplayRequest)
-                    .setPacketRequest(PacketReplayRequest.newBuilder())
-                    .setEventRequest(EventReplayRequest.newBuilder())
-                    .setPpRequest(PpReplayRequest.newBuilder())
-                    .setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder());
+            rawDataRequest = new ReplayOptions(originalReplayRequest);
+            rawDataRequest.setPacketRequest(PacketReplayRequest.newBuilder().build());
+            rawDataRequest.setEventRequest(EventReplayRequest.newBuilder().build());
+            rawDataRequest.setPpRequest(PpReplayRequest.newBuilder().build());
+            rawDataRequest.setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder().build());
         } else {
-            rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
+            rawDataRequest = new ReplayOptions(originalReplayRequest);
+            rawDataRequest.clearParameterRequest();
         }
 
         if (!replayAll) {
@@ -309,7 +308,7 @@ public class ReplayService extends AbstractService
             }
             log.debug("after TM subscription, the request contains the following packets: "
                     + rawPacketRequest.getNameFilterList());
-            rawDataRequest.setPacketRequest(rawPacketRequest);
+            rawDataRequest.setPacketRequest(rawPacketRequest.build());
         }
         pidrm.removeRequest(subscriptionId);
     }
@@ -321,7 +320,7 @@ public class ReplayService extends AbstractService
         }
         try {
             ReplayServer replayServer = services.get(0);
-            yarchReplay = replayServer.createReplay(rawDataRequest.build(), this);
+            yarchReplay = replayServer.createReplay(rawDataRequest, this);
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
             throw new ProcessorException("Exception creating the replay: " + e.getMessage(), e);
@@ -427,7 +426,7 @@ public class ReplayService extends AbstractService
 
     @Override
     public ReplayRequest getReplayRequest() {
-        return originalReplayRequest;
+        return originalReplayRequest.toProtobuf();
     }
 
     @Override
@@ -450,7 +449,7 @@ public class ReplayService extends AbstractService
     public void changeSpeed(ReplaySpeed speed) {
         yarchReplay.changeSpeed(speed);
         // need to change the replay request to get the proper value when getReplayRequest() is called
-        originalReplayRequest = originalReplayRequest.toBuilder().setSpeed(speed).build();
+        originalReplayRequest.setSpeed(speed);
     }
 
     @Override

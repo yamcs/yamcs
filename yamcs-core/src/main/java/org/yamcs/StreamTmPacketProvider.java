@@ -34,6 +34,7 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
     String yamcsInstance;
     YConfiguration config;
 
+    @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         this.yamcsInstance = yamcsInstance;

@@ -86,7 +86,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setName("testReplay")
                 .setPersistent(true) // TODO temp
                 .setType("Archive")
-                .setConfig("{\"utcStart\": \"2015-01-01T10:01:00\", \"utcStop\": \"2015-01-01T10:05:00\"}")
+                .setConfig("{\"start\": \"2015-01-01T10:01:00Z\", \"stop\": \"2015-01-01T10:05:00Z\"}")
                 .build();
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
         Thread.sleep(2000);
@@ -176,7 +176,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setName("testReplayWithTm2")
                 .setPersistent(true) // TODO temp
                 .setType("Archive")
-                .setConfig("{\"utcStart\": \"2019-01-01T10:01:00\", \"utcStop\": \"2019-01-01T10:05:00\"}")
+                .setConfig("{\"start\": \"2019-01-01T10:01:00Z\", \"stop\": \"2019-01-01T10:05:00Z\"}")
                 .build();
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
         Thread.sleep(2000);
@@ -247,7 +247,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setName("testReplayWithPpExclusion")
                 .setType("ArchiveWithPpExclusion")
                 .setPersistent(true) // TODO temp
-                .setConfig("{\"utcStart\": \"2015-02-01T10:01:00\", \"utcStop\": \"2015-02-01T10:05:00\"}")
+                .setConfig("{\"start\": \"2015-02-01T10:01:00Z\", \"stop\": \"2015-02-01T10:05:00Z\"}")
                 .build();
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
         Thread.sleep(2000);

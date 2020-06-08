@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -28,7 +27,7 @@ public class ReplayServer extends AbstractYamcsService {
      * 
      * @return a replay object
      */
-    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener)
+    public YarchReplay createReplay(ReplayOptions replayRequest, ReplayListener replayListener)
             throws YamcsException {
         if (replayCount.get() >= MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");

@@ -62,8 +62,8 @@ export interface Processor {
 }
 
 export interface ReplayRequest {
-  utcStart: string;
-  utcStop: string;
+  start: string;
+  stop: string;
   speed: ReplaySpeed;
 }
 

@@ -1,12 +1,11 @@
 package org.yamcs.archive;
 
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.yarch.Tuple;
 
 public interface ReplayHandler {
 
-    void setRequest(ReplayRequest newRequest) throws YamcsException;
+    void setRequest(ReplayOptions req) throws YamcsException;
 
     String getSelectCmd();
 

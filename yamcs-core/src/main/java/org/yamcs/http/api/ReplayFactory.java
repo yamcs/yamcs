@@ -5,12 +5,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
+import org.yamcs.archive.ReplayOptions;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.ServiceUnavailableException;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.User;
 
 import com.google.common.util.concurrent.MoreExecutors;
@@ -29,7 +29,7 @@ public class ReplayFactory {
     /**
      * launches a replay will only return when the replay is done (either through success or through error)
      */
-    public static ReplayWrapper replay(String instance, User user, ReplayRequest replayRequest,
+    public static ReplayWrapper replay(String instance, User user, ReplayOptions replayRequest,
             ParameterReplayListener l) {
         int n = concurrentCount.incrementAndGet();
 

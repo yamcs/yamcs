@@ -190,17 +190,12 @@ enum ProtoDataType {
 
 //used to replay (concurrently) TM packets, parameters and events
 message ReplayRequest {
-  optional int64 start = 1;
-  optional int64 stop = 2;
+  // **Required.** The time at which the replay should start. 
+  optional google.protobuf.Timestamp start = 13;
   
-  // **Required.** The time at which the replay should start. Must be a date
-  // string in ISO 8601 format.
-  optional string utcStart = 13;
-  
-  // The time at which the replay should stop. Must be a date string in
-  // ISO 8601 format. If unspecified, the replay will keep going as long
-  // as there is remaining data.
-  optional string utcStop = 14;
+  // The time at which the replay should stop. 
+  // If unspecified, the replay will keep going as long  as there is remaining data.
+  optional google.protobuf.Timestamp stop = 14;
 
   //what should happen at the end of the replay
   optional EndAction endAction = 3[default=QUIT];

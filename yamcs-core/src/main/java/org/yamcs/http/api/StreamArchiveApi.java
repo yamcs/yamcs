@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.ParameterRecorder;
+import org.yamcs.archive.ReplayOptions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
@@ -30,12 +31,8 @@ import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
-import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
@@ -99,7 +96,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
 
-        ReplayRequest rr = toParameterReplayRequest(p.getId(), start, stop, descending);
+        ReplayOptions rr = toParameterReplayRequest(p.getId(), start, stop, descending);
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
         ParameterReplayListener replayListener = new ParameterReplayListener(pos, limit) {
@@ -138,11 +135,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             throw new BadRequestException(
                     "Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString());
         }
-
-        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
+        
 
         long stop = TimeEncoding.getWallclockTime();
         long start = stop - (1000 * 60 * 60); // 1 hour
@@ -153,10 +146,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-
-        rr.setStart(start);
-        rr.setStop(stop);
-
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
+        
         int sampleCount = request.hasCount() ? request.getCount() : 500;
 
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
@@ -184,7 +177,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         };
 
-        ReplayFactory.replay(instance, ctx.user, rr.build(), replayListener);
+        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
     }
 
     @Override
@@ -192,18 +185,17 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ParameterData> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-
+        ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         if (request.hasStart()) {
-            rr.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            rr.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
+        
         for (NamedObjectId id : request.getIdsList()) {
             Parameter p = mdb.getParameter(id);
             if (p == null) {
@@ -220,7 +212,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 }
             }
         }
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
+        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
 
@@ -246,25 +238,24 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         };
         observer.setCancelHandler(replayListener::requestReplayAbortion);
 
-        ReplayFactory.replay(instance, ctx.user, rr.build(), replayListener);
+        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
     }
 
     @Override
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+        ReplayOptions repl = ReplayOptions.getAfapReplay();
 
         List<NamedObjectId> ids = new ArrayList<>();
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         String namespace = null;
 
         if (request.hasStart()) {
-            rr.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            rr.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         for (String id : request.getParametersList()) {
             Parameter p = mdb.getParameter(id);
@@ -294,7 +285,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 }
             }
         }
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
+        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
         String filename = "parameter-data";
 
@@ -312,24 +303,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ParameterReplayListener l = new CsvParameterStreamer(
                 observer, filename, ids, addRaw, addMonitoring);
         observer.setCancelHandler(l::requestReplayAbortion);
-        ReplayFactory.replay(instance, ctx.user, rr.build(), l);
+        ReplayFactory.replay(instance, ctx.user, repl, l);
     }
 
-    private static ReplayRequest toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
+    private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
             boolean descend) {
-        ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
-        rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
 
-        if (start != TimeEncoding.INVALID_INSTANT) {
-            rrb.setStart(start);
-        }
-        if (stop != TimeEncoding.INVALID_INSTANT) {
-            rrb.setStop(stop);
-        }
-        rrb.setEndAction(EndAction.QUIT);
-        rrb.setReverse(descend);
-        rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId));
-        return rrb.build();
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
+        repl.setReverse(descend);
+        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId).build());
+        return repl;
     }
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
