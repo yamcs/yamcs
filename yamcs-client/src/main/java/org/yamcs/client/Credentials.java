@@ -19,8 +19,9 @@ public class Credentials {
     // "key": "value"}
     // "key": value,
     // "key": value}
-    private static final Pattern KEY_VALUE = Pattern.compile("\"(\\w+)\"\\s*\\:\\s*\"?(\\w*)\"?\\s*[,\\}]");
+    private static final Pattern KEY_VALUE = Pattern.compile("\"(\\w+)\"\\s*\\:\\s*\"?([^\",]*)\"?\\s*[,\\}]");
 
+    private String tokenResponse;
     private String accessToken;
     private String refreshToken;
     private Date expiry;
@@ -28,6 +29,13 @@ public class Credentials {
     public Credentials(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+    }
+
+    /**
+     * Returns a JSON string with the full unmodified token response.
+     */
+    public String getTokenResponse() {
+        return tokenResponse;
     }
 
     public String getAccessToken() {
@@ -54,6 +62,7 @@ public class Credentials {
 
         int ttl = Integer.valueOf(map.get("expires_in"));
         credentials.expiry = new Date(new Date().getTime() + (ttl * 1000));
+        credentials.tokenResponse = json;
         return credentials;
     }
 

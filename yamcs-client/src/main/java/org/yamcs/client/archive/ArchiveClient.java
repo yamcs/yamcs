@@ -1,11 +1,14 @@
 package org.yamcs.client.archive;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
+import org.yamcs.client.Helpers;
 import org.yamcs.client.Page;
 import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.StreamSender;
@@ -25,6 +28,7 @@ import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
+import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
 import org.yamcs.protobuf.CreateTagRequest;
@@ -47,11 +51,13 @@ import org.yamcs.protobuf.ListParameterIndexRequest;
 import org.yamcs.protobuf.ListTagsRequest;
 import org.yamcs.protobuf.ListTagsResponse;
 import org.yamcs.protobuf.ParameterArchiveApiClient;
+import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.Ranges.Range;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
+import org.yamcs.protobuf.StreamArchiveApiClient;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
@@ -85,6 +91,7 @@ public class ArchiveClient {
     private IndexesApiClient indexService;
     private CommandsApiClient commandService;
     private ParameterArchiveApiClient parameterArchiveService;
+    private StreamArchiveApiClient streamArchiveService;
     private AlarmsApiClient alarmService;
     private TableApiClient tableService;
     private EventsApiClient eventService;
@@ -95,6 +102,7 @@ public class ArchiveClient {
         indexService = new IndexesApiClient(handler);
         commandService = new CommandsApiClient(handler);
         parameterArchiveService = new ParameterArchiveApiClient(handler);
+        streamArchiveService = new StreamArchiveApiClient(handler);
         alarmService = new AlarmsApiClient(handler);
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
@@ -474,6 +482,41 @@ public class ArchiveClient {
             @Override
             public void next(Event message) {
                 consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
+    }
+
+    public CompletableFuture<Void> streamValues(List<String> parameters,
+            StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
+        StreamParameterValuesRequest.Builder requestb = StreamParameterValuesRequest.newBuilder()
+                .setInstance(instance);
+        if (start != null) {
+            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
+        }
+        if (stop != null) {
+            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        streamArchiveService.streamParameterValues(null, requestb.build(), new Observer<ParameterData>() {
+
+            @Override
+            public void next(ParameterData message) {
+                Map<String, ParameterValue> map = new LinkedHashMap<>();
+                for (ParameterValue pvalue : message.getParameterList()) {
+                    map.put(Helpers.toName(pvalue.getId()), pvalue);
+                }
+                consumer.accept(map);
             }
 
             @Override

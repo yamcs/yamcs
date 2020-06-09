@@ -392,7 +392,7 @@ public class ParameterTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
 
         ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara1").get();
-        assertEquals(5, value.getEngValue());
+        assertEquals(ValueHelper.newValue(5), value.getEngValue());
     }
 
     @Test

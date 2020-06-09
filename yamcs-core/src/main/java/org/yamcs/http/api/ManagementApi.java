@@ -182,7 +182,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsServerInstance instance : YamcsServer.getInstances()) {
             if (filter.test(instance)) {
-                YamcsInstance enriched = enrichYamcsInstance(instance.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(instance.getInstanceInfo(), false);
                 instancesb.addInstances(enriched);
             }
         }
@@ -207,7 +207,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         String instanceName = verifyInstance(request.getInstance());
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
-        YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
+        YamcsInstance enriched = enrichYamcsInstance(instanceInfo, true);
         observer.complete(enriched);
     }
 
@@ -250,7 +250,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         cf.whenComplete((v, error) -> {
             if (error == null) {
                 YamcsInstance instanceInfo = v.getInstanceInfo();
-                YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
+                YamcsInstance enriched = enrichYamcsInstance(instanceInfo, true);
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -275,7 +275,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo(), true);
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -303,7 +303,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo(), true);
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -328,7 +328,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo(), true);
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -693,7 +693,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         return linkInfo;
     }
 
-    private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
+    private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance, boolean processorDetail) {
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
 
@@ -711,7 +711,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         List<Processor> processors = new ArrayList<>(ysi.getProcessors());
         Collections.sort(processors, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
         for (Processor processor : processors) {
-            instanceb.addProcessors(ProcessingApi.toProcessorInfo(processor, false));
+            instanceb.addProcessors(ProcessingApi.toProcessorInfo(processor, processorDetail));
         }
 
         TimeService timeService = ysi.getTimeService();

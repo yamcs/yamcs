@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MethodHandler;
+import org.yamcs.client.Helpers;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.FromCacheOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.GetOption;
@@ -43,7 +44,6 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.QueueApiClient;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 
 import com.google.protobuf.Empty;
@@ -119,7 +119,7 @@ public class ProcessorClient {
             }
         }
         for (String parameter : parameters) {
-            requestb.addId(toNamedObjectId(parameter));
+            requestb.addId(Helpers.toNamedObjectId(parameter));
         }
         CompletableFuture<BatchGetParameterValuesResponse> f = new CompletableFuture<>();
         processingService.batchGetParameterValues(null, requestb.build(), new ResponseObserver<>(f));
@@ -144,7 +144,7 @@ public class ProcessorClient {
                 .setProcessor(processor);
         for (Entry<String, Value> entry : values.entrySet()) {
             requestb.addRequest(BatchSetParameterValuesRequest.SetParameterValueRequest.newBuilder()
-                    .setId(toNamedObjectId(entry.getKey()))
+                    .setId(Helpers.toNamedObjectId(entry.getKey()))
                     .setValue(entry.getValue()).build());
         }
         CompletableFuture<Empty> f = new CompletableFuture<>();
@@ -409,23 +409,6 @@ public class ProcessorClient {
         return f.thenApply(response -> null);
     }
 
-    private static NamedObjectId toNamedObjectId(String name) {
-        // Some API calls still require NamedObjectId objects, which are bothersome.
-        // This method automatically generates them from a name which can either be the qualified name (preferred)
-        // or some alias in the form NAMESPACE/NAME
-        if (name.startsWith("/")) {
-            return NamedObjectId.newBuilder().setName(name).build();
-        } else {
-            String[] parts = name.split("\\/", 1);
-            if (parts.length < 2) {
-                throw new IllegalArgumentException(String.format("'%s' is not a valid name."
-                        + " Use fully-qualified names or, alternatively,"
-                        + " an alias in the format NAMESPACE/NAME", name));
-            }
-            return NamedObjectId.newBuilder().setNamespace(parts[0]).setName(parts[1]).build();
-        }
-    }
-
     public static class CommandBuilder {
 
         private CommandsApiClient commandService;
@@ -487,6 +470,11 @@ public class ProcessorClient {
 
         public CommandBuilder withVerifierConfig(String verifier, VerifierConfig config) {
             requestb.putVerifierConfig(verifier, config);
+            return this;
+        }
+
+        public CommandBuilder withDryRun(boolean dryRun) {
+            requestb.setDryRun(dryRun);
             return this;
         }
 

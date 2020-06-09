@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -454,14 +455,18 @@ public class YamcsClient {
     }
 
     public ArchiveClient createArchiveClient(String instance) {
+        instance = Objects.requireNonNull(instance);
         return new ArchiveClient(methodHandler, instance);
     }
 
     public MissionDatabaseClient createMissionDatabaseClient(String instance) {
+        instance = Objects.requireNonNull(instance);
         return new MissionDatabaseClient(methodHandler, instance);
     }
 
     public ProcessorClient createProcessorClient(String instance, String processor) {
+        instance = Objects.requireNonNull(instance);
+        processor = Objects.requireNonNull(processor);
         return new ProcessorClient(methodHandler, instance, processor);
     }
 
