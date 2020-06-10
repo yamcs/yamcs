@@ -3,17 +3,18 @@ package org.yamcs.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.HttpBody;
 import org.yamcs.logging.Log;
-import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -117,8 +118,11 @@ public class HttpTranscoder {
             return field.getEnumType().findValueByName(parameter);
         case MESSAGE:
             if (Timestamp.getDescriptor().equals(field.getMessageType())) {
-                long instant = TimeEncoding.parse(parameter);
-                return TimeEncoding.toProtobufTimestamp(instant);
+                try {
+                    return Timestamps.parse(parameter);
+                } catch (ParseException e) {
+                    throw new HttpTranscodeException("Provided date string does not conform to RFC 3339", e);
+                }
             }
             throw new UnsupportedOperationException(
                     "No query parameter conversion for message type " + field.getMessageType().getFullName());
