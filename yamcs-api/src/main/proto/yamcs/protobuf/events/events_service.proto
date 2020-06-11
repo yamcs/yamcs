@@ -119,9 +119,9 @@ message CreateEventRequest {
   // ``distress``, ``critical`` or ``severe``. Default is ``info``
   optional string severity = 4;
 
-  // Time associated with the event. Must be a date string in ISO 8601 format.
+  // Time associated with the event.
   // If unspecified, this will default to the current mission time.
-  optional string time = 5;
+  optional google.protobuf.Timestamp time = 5;
 
   // Source of the event. Useful for grouping events in the archive. Default is
   // ``User``.

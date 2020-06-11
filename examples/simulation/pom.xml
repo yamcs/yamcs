@@ -15,6 +15,11 @@
     All-in-one configuration example using an embedded simulator
   </description>
 
+  <properties>
+    <!-- Install is required to run other depending example modules -->
+    <maven.install.skip>false</maven.install.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>

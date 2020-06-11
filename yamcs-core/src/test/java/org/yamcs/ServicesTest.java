@@ -2,48 +2,41 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
-import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.ServiceState;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 public class ServicesTest extends AbstractIntegrationTest {
 
     @Test
     public void testServicesStopStart() throws Exception {
-        String serviceClass = "org.yamcs.archive.CommandHistoryRecorder";
+        String serviceClass = CommandHistoryRecorder.class.getName();
 
-        byte[] resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET).get();
-        ListServicesResponse r = ListServicesResponse.parseFrom(resp);
-        assertEquals(9, r.getServicesList().size());
+        List<ServiceInfo> services = yamcsClient.listServices(yamcsInstance).get();
+        assertEquals(9, services.size());
 
-        ServiceInfo servInfo = r.getServicesList().stream()
+        ServiceInfo servInfo = services.stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
-        resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":stop", HttpMethod.POST)
-                .get();
+        yamcsClient.stopService(yamcsInstance, servInfo.getName()).get();
 
-        resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET).get();
-        r = ListServicesResponse.parseFrom(resp);
-        servInfo = r.getServicesList().stream()
+        services = yamcsClient.listServices(yamcsInstance).get();
+        servInfo = services.stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
-        resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":start", HttpMethod.POST)
-                .get();
+        yamcsClient.startService(yamcsInstance, servInfo.getName()).get();
 
-        resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET).get();
-        r = ListServicesResponse.parseFrom(resp);
-        servInfo = r.getServicesList().stream()
+        services = yamcsClient.listServices(yamcsInstance).get();
+        servInfo = services.stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);

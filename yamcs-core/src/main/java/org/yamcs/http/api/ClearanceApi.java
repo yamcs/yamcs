@@ -15,6 +15,7 @@ import org.yamcs.protobuf.DeleteClearanceRequest;
 import org.yamcs.protobuf.ListClearancesResponse;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.UpdateClearanceRequest;
+import org.yamcs.security.ClearanceListener;
 import org.yamcs.security.Directory;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
@@ -80,6 +81,14 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
             throw new InternalServerErrorException(e);
         }
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void subscribeClearance(Context ctx, Empty request, Observer<ClearanceInfo> observer) {
+        ClearanceListener listener = clearance -> observer.next(toClearanceInfo(ctx.user));
+        ctx.user.addClearanceListener(listener);
+        observer.setCancelHandler(() -> ctx.user.removeClearanceListener(listener));
+        observer.next(toClearanceInfo(ctx.user));
     }
 
     private ClearanceInfo toClearanceInfo(User user) {

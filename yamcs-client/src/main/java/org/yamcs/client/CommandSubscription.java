@@ -1,6 +1,8 @@
 package org.yamcs.client;
 
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.client.base.AbstractSubscription;
+import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.SubscribeCommandsRequest;
 
 /**

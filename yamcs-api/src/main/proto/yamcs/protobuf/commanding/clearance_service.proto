@@ -35,6 +35,13 @@ service ClearanceApi {
       delete: "/api/clearances/{username}"
     };
   }
+  
+  // Receive updates on own clearance
+  rpc SubscribeClearance(google.protobuf.Empty) returns (stream ClearanceInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "clearance"
+    };
+  }
 }
 
 message ListClearancesResponse {

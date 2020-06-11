@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.tse.api.TseCommand;
 import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -106,8 +107,11 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     private void handleInstrumentCommand(ChannelHandlerContext ctx, String cmd) throws InterruptedException {
         // TODO should probably make this configurable
         boolean expectResponse = cmd.contains("?") || cmd.contains("!");
-
-        ListenableFuture<List<String>> f = instrumentController.queueCommand(currentInstrument, cmd, expectResponse);
+        TseCommand metadata = TseCommand.newBuilder()
+                .setInstrument(currentInstrument.instrument)
+                .build();
+        ListenableFuture<List<String>> f = instrumentController.queueCommand(currentInstrument, metadata, cmd,
+                expectResponse);
         f.addListener(() -> {
             try {
                 List<String> responses = f.get();

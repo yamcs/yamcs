@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -16,17 +17,41 @@ import javax.net.ssl.SSLException;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.client.SpnegoUtils.SpnegoException;
+import org.yamcs.client.archive.ArchiveClient;
+import org.yamcs.client.base.HttpMethodHandler;
+import org.yamcs.client.base.ResponseObserver;
+import org.yamcs.client.base.RestClient;
+import org.yamcs.client.base.WebSocketClient;
+import org.yamcs.client.base.WebSocketClientCallback;
 import org.yamcs.client.mdb.MissionDatabaseClient;
+import org.yamcs.client.processor.ProcessorClient;
+import org.yamcs.client.storage.StorageClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
+import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.GetInstanceRequest;
+import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
+import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
+import org.yamcs.protobuf.ListProcessorsRequest;
+import org.yamcs.protobuf.ListProcessorsResponse;
+import org.yamcs.protobuf.ListServicesRequest;
+import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.ManagementApiClient;
+import org.yamcs.protobuf.ProcessingApiClient;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.RestartInstanceRequest;
+import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.StartInstanceRequest;
+import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
+import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.TimeApiClient;
+import org.yamcs.protobuf.UserInfo;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
@@ -37,7 +62,6 @@ import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
 
 import com.google.protobuf.Empty;
-import com.google.protobuf.MessageLite;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
@@ -55,7 +79,7 @@ public class YamcsClient {
     private int connectionAttempts;
     private long retryDelay;
 
-    private final RestClient restClient;
+    private final RestClient baseClient;
     private final WebSocketClient websocketClient;
 
     private volatile boolean connected;
@@ -69,6 +93,8 @@ public class YamcsClient {
     private TimeApiClient timeService;
     private ManagementApiClient managementService;
     private EventsApiClient eventService;
+    private ProcessingApiClient processingService;
+    private IamApiClient iamService;
 
     private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
         this.host = host;
@@ -78,13 +104,8 @@ public class YamcsClient {
         this.connectionAttempts = connectionAttempts;
         this.retryDelay = retryDelay;
 
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties();
-        yprops.setHost(host);
-        yprops.setPort(port);
-        yprops.setTls(tls);
-        yprops.setContext(context);
-        restClient = new RestClient(yprops);
-        restClient.setAutoclose(false);
+        baseClient = new RestClient(host, port, tls, context);
+        baseClient.setAutoclose(false);
 
         websocketClient = new WebSocketClient(host, port, tls, context, new WebSocketClientCallback() {
             @Override
@@ -100,12 +121,14 @@ public class YamcsClient {
         });
         websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
 
-        methodHandler = new HttpMethodHandler(this);
+        methodHandler = new HttpMethodHandler(this, baseClient);
 
         alarmService = new AlarmsApiClient(methodHandler);
         eventService = new EventsApiClient(methodHandler);
+        iamService = new IamApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
+        processingService = new ProcessingApiClient(methodHandler);
     }
 
     public static Builder newBuilder(String host, int port) {
@@ -123,7 +146,7 @@ public class YamcsClient {
         pollServer();
         try {
             String authorizationCode = SpnegoUtils.fetchAuthenticationCode(host, port, tls);
-            restClient.loginWithAuthorizationCode(authorizationCode);
+            baseClient.loginWithAuthorizationCode(authorizationCode);
         } catch (SpnegoException e) {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
@@ -137,7 +160,7 @@ public class YamcsClient {
             log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw e;
         }
-        String accessToken = restClient.httpClient.getCredentials().getAccessToken();
+        String accessToken = baseClient.getCredentials().getAccessToken();
         connect(accessToken, true);
     }
 
@@ -147,7 +170,7 @@ public class YamcsClient {
     public synchronized void connect(String username, char[] password) throws ClientException {
         pollServer();
         try {
-            restClient.login(username, password);
+            baseClient.login(username, password);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
@@ -155,7 +178,7 @@ public class YamcsClient {
             log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw e;
         }
-        String accessToken = restClient.httpClient.getCredentials().getAccessToken();
+        String accessToken = baseClient.getCredentials().getAccessToken();
         connect(accessToken, true);
     }
 
@@ -166,14 +189,14 @@ public class YamcsClient {
         for (int i = 0; i < connectionAttempts; i++) {
             try {
                 // Use an endpoint that does not require auth
-                restClient.doBaseRequest("/auth", HttpMethod.GET, null).get(5, TimeUnit.SECONDS);
+                baseClient.doBaseRequest("/auth", HttpMethod.GET, null).get(5, TimeUnit.SECONDS);
                 return; // Server up!
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof UnauthorizedException) {
                     for (ConnectionListener cl : connectionListeners) {
                         cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
-                        cl.connectionFailed(host + ":" + port, (UnauthorizedException) cause);
+                        cl.connectionFailed((UnauthorizedException) cause);
                     }
                     log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
                     throw (UnauthorizedException) cause; // Jump out
@@ -191,7 +214,7 @@ public class YamcsClient {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 for (ConnectionListener cl : connectionListeners) {
-                    cl.connectionFailed(host + ":" + port, new ClientException("Thread interrupted", e));
+                    cl.connectionFailed(new ClientException("Thread interrupted", e));
                 }
             }
 
@@ -208,7 +231,7 @@ public class YamcsClient {
             ClientException e = new ClientException(connectionAttempts + " connection attempts failed, giving up.");
             for (ConnectionListener cl : connectionListeners) {
                 cl.log(connectionAttempts + " connection attempts failed, giving up.");
-                cl.connectionFailed(host + ":" + port, e);
+                cl.connectionFailed(e);
             }
             log.log(Level.WARNING, connectionAttempts + " connection attempts failed, giving up.");
             throw e;
@@ -226,14 +249,14 @@ public class YamcsClient {
         }
 
         for (ConnectionListener cl : connectionListeners) {
-            cl.connecting(host + ":" + port);
+            cl.connecting();
         }
 
         try {
             websocketClient.connect(accessToken).get(5000, TimeUnit.MILLISECONDS);
 
             for (ConnectionListener cl : connectionListeners) {
-                cl.connected(host + ":" + port);
+                cl.connected();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -262,13 +285,22 @@ public class YamcsClient {
 
     public CompletableFuture<YamcsInstance> createInstance(CreateInstanceRequest request) {
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.createInstance(null, request, new FutureObserver<>(f));
+        managementService.createInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<ListInstancesResponse> listInstances() {
+    public CompletableFuture<List<YamcsInstance>> listInstances() {
         CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
-        managementService.listInstances(null, ListInstancesRequest.getDefaultInstance(), new FutureObserver<>(f));
+        managementService.listInstances(null, ListInstancesRequest.getDefaultInstance(), new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getInstancesList());
+    }
+
+    public CompletableFuture<YamcsInstance> getInstance(String instance) {
+        GetInstanceRequest request = GetInstanceRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.getInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -278,7 +310,7 @@ public class YamcsClient {
             requestb.addFilter(expression);
         }
         CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
-        managementService.listInstances(null, requestb.build(), new FutureObserver<>(f));
+        managementService.listInstances(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -287,7 +319,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.startInstance(null, request, new FutureObserver<>(f));
+        managementService.startInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -296,19 +328,100 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.stopInstance(null, request, new FutureObserver<>(f));
+        managementService.stopInstance(null, request, new ResponseObserver<>(f));
         return f;
+    }
+
+    public CompletableFuture<YamcsInstance> restartInstance(String instance) {
+        RestartInstanceRequest request = RestartInstanceRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.restartInstance(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<List<ProcessorInfo>> listProcessors(String instance) {
+        ListProcessorsRequest request = ListProcessorsRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<ListProcessorsResponse> f = new CompletableFuture<>();
+        processingService.listProcessors(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getProcessorsList());
+    }
+
+    public CompletableFuture<UserInfo> getOwnUserInfo() {
+        CompletableFuture<UserInfo> f = new CompletableFuture<>();
+        iamService.getOwnUser(null, Empty.getDefaultInstance(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<List<ServiceInfo>> listServices(String instance) {
+        ListServicesRequest request = ListServicesRequest.newBuilder()
+                .setInstance(instance)
+                .build();
+        CompletableFuture<ListServicesResponse> f = new CompletableFuture<>();
+        managementService.listServices(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> response.getServicesList());
+    }
+
+    public CompletableFuture<Void> startService(String instance, String service) {
+        StartServiceRequest request = StartServiceRequest.newBuilder()
+                .setInstance(instance)
+                .setName(service)
+                .build();
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        managementService.startService(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<LinkInfo> enableLink(String instance, String link) {
+        EditLinkRequest request = EditLinkRequest.newBuilder()
+                .setInstance(instance)
+                .setName(link)
+                .setState("enabled")
+                .build();
+        CompletableFuture<LinkInfo> f = new CompletableFuture<>();
+        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<LinkInfo> disableLink(String instance, String link) {
+        EditLinkRequest request = EditLinkRequest.newBuilder()
+                .setInstance(instance)
+                .setName(link)
+                .setState("disabled")
+                .build();
+        CompletableFuture<LinkInfo> f = new CompletableFuture<>();
+        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<Void> stopService(String instance, String service) {
+        StopServiceRequest request = StopServiceRequest.newBuilder()
+                .setInstance(instance)
+                .setName(service)
+                .build();
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        managementService.stopService(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
     }
 
     public CompletableFuture<LeapSecondsTable> getLeapSeconds() {
         CompletableFuture<LeapSecondsTable> f = new CompletableFuture<>();
-        timeService.getLeapSeconds(null, Empty.getDefaultInstance(), new FutureObserver<>(f));
+        timeService.getLeapSeconds(null, Empty.getDefaultInstance(), new ResponseObserver<>(f));
         return f;
+    }
+
+    public CompletableFuture<ProcessorClient> createProcessor(CreateProcessorRequest request) {
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        processingService.createProcessor(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> new ProcessorClient(methodHandler, request.getInstance(), request.getName()));
     }
 
     public CompletableFuture<Event> createEvent(CreateEventRequest request) {
         CompletableFuture<Event> f = new CompletableFuture<>();
-        eventService.createEvent(null, request, new FutureObserver<>(f));
+        eventService.createEvent(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -317,7 +430,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
-        alarmService.listAlarms(null, request, new FutureObserver<>(f));
+        alarmService.listAlarms(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -327,18 +440,34 @@ public class YamcsClient {
                 .setProcessor(processor)
                 .build();
         CompletableFuture<ListProcessorAlarmsResponse> f = new CompletableFuture<>();
-        alarmService.listProcessorAlarms(null, request, new FutureObserver<>(f));
+        alarmService.listProcessorAlarms(null, request, new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<Empty> editAlarm(EditAlarmRequest request) {
+    public CompletableFuture<Void> editAlarm(EditAlarmRequest request) {
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        alarmService.editAlarm(null, request, new FutureObserver<>(f));
-        return f;
+        alarmService.editAlarm(null, request, new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
     }
 
-    public MissionDatabaseClient getMissionDatabase(String instance) {
+    public StorageClient createStorageClient() {
+        return new StorageClient(methodHandler);
+    }
+
+    public ArchiveClient createArchiveClient(String instance) {
+        instance = Objects.requireNonNull(instance);
+        return new ArchiveClient(methodHandler, instance);
+    }
+
+    public MissionDatabaseClient createMissionDatabaseClient(String instance) {
+        instance = Objects.requireNonNull(instance);
         return new MissionDatabaseClient(methodHandler, instance);
+    }
+
+    public ProcessorClient createProcessorClient(String instance, String processor) {
+        instance = Objects.requireNonNull(instance);
+        processor = Objects.requireNonNull(processor);
+        return new ProcessorClient(methodHandler, instance, processor);
     }
 
     public String getHost() {
@@ -361,12 +490,12 @@ public class YamcsClient {
         this.connectionListeners.add(connectionListener);
     }
 
-    public RestClient getRestClient() {
-        return restClient;
-    }
-
     public WebSocketClient getWebSocketClient() {
         return websocketClient;
+    }
+
+    public MethodHandler getMethodHandler() {
+        return methodHandler;
     }
 
     public String getUrl() {
@@ -379,6 +508,10 @@ public class YamcsClient {
 
     public TimeSubscription createTimeSubscription() {
         return new TimeSubscription(websocketClient);
+    }
+
+    public ClearanceSubscription createClearanceSubscription() {
+        return new ClearanceSubscription(websocketClient);
     }
 
     public EventSubscription createEventSubscription() {
@@ -401,58 +534,20 @@ public class YamcsClient {
         return new CommandSubscription(websocketClient);
     }
 
+    public QueueEventSubscription createQueueEventSubscription() {
+        return new QueueEventSubscription(websocketClient);
+    }
+
+    public QueueStatisticsSubscription createQueueStatisticsSubscription() {
+        return new QueueStatisticsSubscription(websocketClient);
+    }
+
     public ParameterSubscription createParameterSubscription() {
         return new ParameterSubscription(websocketClient);
     }
 
-    public CompletableFuture<byte[]> get(String uri) {
-        return requestAsync(HttpMethod.GET, uri, null);
-    }
-
-    public CompletableFuture<byte[]> get(String uri, MessageLite msg) {
-        return requestAsync(HttpMethod.GET, uri, msg);
-    }
-
-    public CompletableFuture<Void> streamGet(String uri, MessageLite msg, BulkRestDataReceiver receiver) {
-        return doRequestWithDelimitedResponse(HttpMethod.GET, uri, msg, receiver);
-    }
-
-    public CompletableFuture<Void> streamPost(String uri, MessageLite msg, BulkRestDataReceiver receiver) {
-        return doRequestWithDelimitedResponse(HttpMethod.POST, uri, msg, receiver);
-    }
-
-    public CompletableFuture<byte[]> post(String uri, MessageLite msg) {
-        return requestAsync(HttpMethod.POST, uri, msg);
-    }
-
-    public CompletableFuture<byte[]> patch(String uri, MessageLite msg) {
-        return requestAsync(HttpMethod.PATCH, uri, msg);
-    }
-
-    public CompletableFuture<byte[]> put(String uri, MessageLite msg) {
-        return requestAsync(HttpMethod.PUT, uri, msg);
-    }
-
-    public CompletableFuture<byte[]> delete(String uri, MessageLite msg) {
-        return requestAsync(HttpMethod.DELETE, uri, msg);
-    }
-
-    private <S extends MessageLite> CompletableFuture<byte[]> requestAsync(HttpMethod method, String uri,
-            MessageLite requestBody) {
-        if (requestBody != null) {
-            return restClient.doRequest(uri, method, requestBody.toByteArray());
-        } else {
-            return restClient.doRequest(uri, method);
-        }
-    }
-
-    private <S extends MessageLite> CompletableFuture<Void> doRequestWithDelimitedResponse(HttpMethod method,
-            String uri, MessageLite requestBody, BulkRestDataReceiver receiver) {
-        if (requestBody != null) {
-            return restClient.doBulkRequest(method, uri, requestBody.toByteArray(), receiver);
-        } else {
-            return restClient.doBulkRequest(method, uri, receiver);
-        }
+    public LinkSubscription createLinkSubscription() {
+        return new LinkSubscription(websocketClient);
     }
 
     public void close() {
@@ -463,7 +558,7 @@ public class YamcsClient {
         if (connected) {
             websocketClient.disconnect();
         }
-        restClient.close();
+        baseClient.close();
         websocketClient.shutdown();
     }
 
@@ -522,11 +617,11 @@ public class YamcsClient {
 
         public YamcsClient build() {
             YamcsClient client = new YamcsClient(host, port, tls, context, connectionAttempts, retryDelay);
-            client.restClient.setInsecureTls(!verifyTls);
+            client.baseClient.setInsecureTls(!verifyTls);
             client.websocketClient.setInsecureTls(!verifyTls);
             if (caCertFile != null) {
                 try {
-                    client.restClient.setCaCertFile(caCertFile.toString());
+                    client.baseClient.setCaCertFile(caCertFile.toString());
                     client.websocketClient.setCaCertFile(caCertFile.toString());
                 } catch (IOException | GeneralSecurityException e) {
                     throw new RuntimeException("Cannot set CA Cert file", e);

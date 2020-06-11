@@ -1,7 +1,8 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -9,14 +10,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.yamcs.api.AnnotationsProto;
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
+import org.yamcs.client.YamcsClient;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringEncoder;
@@ -25,15 +30,22 @@ public class HttpMethodHandler implements MethodHandler {
 
     private static final Pattern PATTERN_TEMPLATE_VAR = Pattern.compile("\\{([^\\*\\}]+)[\\*]?\\}");
 
-    private RestClient httpClient;
+    private RestClient baseClient;
 
-    public HttpMethodHandler(YamcsClient client) {
-        this.httpClient = client.getRestClient();
+    public HttpMethodHandler(YamcsClient client, RestClient baseClient) {
+        this.baseClient = baseClient;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void callMethod(MethodDescriptor method, Message request, Message responsePrototype,
+    public Observer<? extends Message> streamingCall(MethodDescriptor method, Message requestPrototype,
+            Message responsePrototype, Observer<? extends Message> responseObserver) {
+        return new ClientStreamingObserver(method, baseClient, responsePrototype, (Observer<Message>) responseObserver);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void call(MethodDescriptor method, Message request, Message responsePrototype,
             Observer<? extends Message> observer) {
         HttpRoute route = method.getOptions().getExtension(AnnotationsProto.route);
 
@@ -59,29 +71,59 @@ public class HttpMethodHandler implements MethodHandler {
         }
 
         HttpMethod httpMethod = getMethod(route);
-        CompletableFuture<byte[]> requestFuture;
-        if (body == null) {
-            appendQueryString(uri, partial.build(), method.getInputType());
-            requestFuture = httpClient.doRequest(uri.toString(), httpMethod);
-        } else {
-            requestFuture = httpClient.doRequest(uri.toString(), httpMethod, body);
-        }
 
-        requestFuture.whenComplete((data, err) -> {
-            if (err == null) {
+        if (method.toProto().getServerStreaming()) {
+            BulkRestDataReceiver receiver = data -> {
                 try {
                     Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
-                    ((Observer<Message>) observer).complete(serverMessage);
-                } catch (Exception e) {
-                    observer.completeExceptionally(e);
+                    ((Observer<Message>) observer).next(serverMessage);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new IllegalArgumentException(e);
                 }
+            };
+            CompletableFuture<Void> future;
+            if (body == null) {
+                future = baseClient.doBulkRequest(httpMethod, uri.toString(), receiver);
+            } else if (body instanceof HttpBody) {
+                byte[] data = ((HttpBody) body).getData().toByteArray();
+                future = baseClient.doBulkRequest(httpMethod, uri.toString(), data, receiver);
             } else {
-                observer.completeExceptionally(err);
+                future = baseClient.doBulkRequest(httpMethod, uri.toString(), body.toByteArray(), receiver);
             }
-        });
+            future.whenComplete((v, err) -> {
+                if (err == null) {
+                    observer.complete();
+                } else {
+                    observer.completeExceptionally(err);
+                }
+            });
+        } else {
+            CompletableFuture<byte[]> requestFuture;
+            if (body == null) {
+                appendQueryString(uri, partial.build(), method.getInputType());
+                requestFuture = baseClient.doRequest(uri.toString(), httpMethod);
+            } else if (body instanceof HttpBody) {
+                byte[] data = ((HttpBody) body).getData().toByteArray();
+                requestFuture = baseClient.doRequest(uri.toString(), httpMethod, data);
+            } else {
+                requestFuture = baseClient.doRequest(uri.toString(), httpMethod, body);
+            }
+            requestFuture.whenComplete((data, err) -> {
+                if (err == null) {
+                    try {
+                        Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
+                        ((Observer<Message>) observer).complete(serverMessage);
+                    } catch (Exception e) {
+                        observer.completeExceptionally(e);
+                    }
+                } else {
+                    observer.completeExceptionally(err);
+                }
+            });
+        }
     }
 
-    private QueryStringEncoder resolveUri(String template, Message input, Descriptor inputType,
+    static QueryStringEncoder resolveUri(String template, Message input, Descriptor inputType,
             Message.Builder partial) {
         StringBuffer buf = new StringBuffer();
         Matcher matcher = PATTERN_TEMPLATE_VAR.matcher(template);
@@ -113,32 +155,25 @@ public class HttpMethodHandler implements MethodHandler {
             if (descriptor.isRepeated()) {
                 List<?> params = (List<?>) entry.getValue();
                 for (Object param : params) {
-                    encoder.addParam(descriptor.getJsonName(), String.valueOf(param));
+                    encoder.addParam(descriptor.getJsonName(), formatQueryParam(param));
                 }
             } else {
-                encoder.addParam(descriptor.getJsonName(), String.valueOf(entry.getValue()));
+                encoder.addParam(descriptor.getJsonName(), formatQueryParam(entry.getValue()));
             }
         }
     }
 
-    private String getPattern(HttpRoute route) {
-        switch (route.getPatternCase()) {
-        case GET:
-            return route.getGet();
-        case POST:
-            return route.getPost();
-        case PATCH:
-            return route.getPatch();
-        case PUT:
-            return route.getPut();
-        case DELETE:
-            return route.getDelete();
-        default:
-            throw new IllegalStateException();
+    private static String formatQueryParam(Object value) {
+        if (value instanceof Timestamp) {
+            Timestamp proto = (Timestamp) value;
+            Instant instant = Instant.ofEpochSecond(proto.getSeconds(), proto.getNanos());
+            return instant.toString();
+        } else {
+            return String.valueOf(value);
         }
     }
 
-    private HttpMethod getMethod(HttpRoute route) {
+    static HttpMethod getMethod(HttpRoute route) {
         switch (route.getPatternCase()) {
         case GET:
             return HttpMethod.GET;
@@ -150,6 +185,23 @@ public class HttpMethodHandler implements MethodHandler {
             return HttpMethod.PUT;
         case DELETE:
             return HttpMethod.DELETE;
+        default:
+            throw new IllegalStateException();
+        }
+    }
+
+    static String getPattern(HttpRoute route) {
+        switch (route.getPatternCase()) {
+        case GET:
+            return route.getGet();
+        case POST:
+            return route.getPost();
+        case PATCH:
+            return route.getPatch();
+        case PUT:
+            return route.getPut();
+        case DELETE:
+            return route.getDelete();
         default:
             throw new IllegalStateException();
         }

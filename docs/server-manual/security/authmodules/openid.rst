@@ -1,7 +1,7 @@
 OpenID Connect AuthModule
 =========================
 
-.. versionadded:: 4.11.0
+.. versionadded:: 5.0.0
 
 This AuthModule supports federated identity by redirecting web application users to the authorization (or consent) page of an OpenID Connect server. This allows for remote management of users and could be used to perform cross-domain Single Sign On with multiple other browser applications.
 

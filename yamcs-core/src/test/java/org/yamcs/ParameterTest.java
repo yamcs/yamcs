@@ -7,17 +7,16 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ParameterSubscription;
-import org.yamcs.protobuf.BatchGetParameterValuesRequest;
-import org.yamcs.protobuf.BatchGetParameterValuesResponse;
-import org.yamcs.protobuf.BatchSetParameterValuesRequest;
-import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
+import org.yamcs.client.processor.ProcessorClient;
+import org.yamcs.client.processor.ProcessorClient.GetOptions;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SubscribeParametersRequest;
@@ -27,9 +26,14 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 public class ParameterTest extends AbstractIntegrationTest {
+
+    private ProcessorClient processorClient;
+
+    @Before
+    public void prepare() {
+        processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
+    }
 
     @Ignore
     @Test
@@ -234,14 +238,12 @@ public class ParameterTest extends AbstractIntegrationTest {
         /*
          *  Include one invalid parameter
          */
-        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/InvalidParaName"))
-                .build();
         try {
-            restClient
-                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
+            processorClient.getValues(Arrays.asList(
+                    "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                    "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                    "/REFMDB/SUBSYS1/InvalidParaName"),
+                    GetOptions.fromCache(true))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
@@ -256,48 +258,44 @@ public class ParameterTest extends AbstractIntegrationTest {
         /*
          * From cache, with all valid identifiers
          */
-        req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
-                .build();
-
-        byte[] response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
+        List<ParameterValue> values = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7"),
+                GetOptions.fromCache(true))
                 .get();
-        BatchGetParameterValuesResponse bulkPvals = BatchGetParameterValuesResponse.parseFrom(response);
-        checkPvals(bulkPvals.getValueList(), packetGenerator);
+        checkPvals(values, packetGenerator);
 
         /*
          * Waiting for an update. first test the timeout in case no update is coming
          */
         long t0 = System.currentTimeMillis();
-        req = BatchGetParameterValuesRequest.newBuilder()
-                .setFromCache(false)
-                .setTimeout(2000)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7"))
-                .build();
+        values = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7"),
+                GetOptions.fromCache(false),
+                GetOptions.timeout(2000))
+                .get();
 
-        Future<byte[]> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.POST, req);
-
-        bulkPvals = BatchGetParameterValuesResponse.parseFrom(responseFuture.get());
         long t1 = System.currentTimeMillis();
         assertEquals(2000, t1 - t0, 200);
-        assertEquals(0, bulkPvals.getValueCount());
+        assertEquals(0, values.size());
 
-        //////// gets parameters from via REST - waiting for update - now with some parameters updated
         packetGenerator.pIntegerPara1_1_6 = 10;
         packetGenerator.pIntegerPara1_1_7 = 5;
-        responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.POST, req);
+
+        /*
+         * Test the timeout functionality
+         */
+        CompletableFuture<List<ParameterValue>> bulkPvalsFuture = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7"),
+                GetOptions.fromCache(false),
+                GetOptions.timeout(2000));
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
         packetGenerator.generate_PKT1_1();
-
-        bulkPvals = BatchGetParameterValuesResponse.parseFrom(responseFuture.get());
-
-        checkPvals(bulkPvals.getValueList(), packetGenerator);
+        values = bulkPvalsFuture.get();
+        checkPvals(values, packetGenerator);
     }
 
     @Test
@@ -305,56 +303,43 @@ public class ParameterTest extends AbstractIntegrationTest {
         packetGenerator.generate_PKT7();
         packetGenerator.generate_PKT8();
 
-        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder()
-                .setFromCache(true)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.member1"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.member3"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/array_para1[105].member2"))
-                .build();
-
-        byte[] response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
+        List<ParameterValue> values = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/aggregate_para1.member1",
+                "/REFMDB/SUBSYS1/aggregate_para1.member3",
+                "/REFMDB/SUBSYS1/array_para1[105].member2"),
+                GetOptions.fromCache(true))
                 .get();
 
-        BatchGetParameterValuesResponse bulkPvals = BatchGetParameterValuesResponse.parseFrom(response);
-
-        assertEquals(3, bulkPvals.getValueCount());
-        ParameterValue pv = bulkPvals.getValue(0);
+        assertEquals(3, values.size());
+        ParameterValue pv = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member1", pv.getId().getName());
         assertEquals(2, pv.getEngValue().getUint32Value());
 
-        pv = bulkPvals.getValue(2);
+        pv = values.get(2);
         assertEquals("/REFMDB/SUBSYS1/array_para1[105].member2", pv.getId().getName());
         assertEquals(210, pv.getRawValue().getUint32Value());
 
-        /////// gets parameters from via REST - waiting for update
-        req = BatchGetParameterValuesRequest.newBuilder()
-                .setFromCache(false)
-                .setTimeout(2000)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.member1"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.member3"))
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/array_para1[105].member2"))
-                .build();
-
-        Future<byte[]> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.POST, req);
+        // Retrieve with a timeout
+        CompletableFuture<List<ParameterValue>> valuesFuture = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/aggregate_para1.member1",
+                "/REFMDB/SUBSYS1/aggregate_para1.member3",
+                "/REFMDB/SUBSYS1/array_para1[105].member2"),
+                GetOptions.fromCache(false),
+                GetOptions.timeout(2000));
 
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
         packetGenerator.generate_PKT7();
         packetGenerator.generate_PKT8();
 
-        bulkPvals = BatchGetParameterValuesResponse.parseFrom(responseFuture.get());
-        assertEquals(3, bulkPvals.getValueCount());
-        pv = bulkPvals.getValue(1);
+        values = valuesFuture.get();
+        assertEquals(3, values.size());
+        pv = values.get(1);
         assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member3", pv.getId().getName());
         assertEquals(2.72, pv.getEngValue().getFloatValue(), 1e-5);
 
-        ///// get the value with the single get, we have to URL encode [ and ]
-        byte[] resp = restClient.doRequest(
-                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/array_para1%5B149%5D.member2",
-                HttpMethod.GET).get();
-        pv = ParameterValue.parseFrom(resp);
+        // Get the value with the single get
+        pv = processorClient.getValue("/REFMDB/SUBSYS1/array_para1[149].member2").get();
         assertEquals("/REFMDB/SUBSYS1", pv.getId().getNamespace());
         assertEquals("array_para1[149].member2", pv.getId().getName());
         assertEquals(298, pv.getEngValue().getUint32Value());
@@ -364,16 +349,13 @@ public class ParameterTest extends AbstractIntegrationTest {
     public void testBatchGetArraysAndAggregates() throws Exception {
         packetGenerator.generate_PKT8();
 
-        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder()
-                .setFromCache(true)
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/array_para1"))
-                .build();
+        List<ParameterValue> values = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/array_para1"),
+                GetOptions.fromCache(true))
+                .get();
 
-        byte[] response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.POST, req).get();
-        BatchGetParameterValuesResponse pvals = BatchGetParameterValuesResponse.parseFrom(response);
-        assertEquals(1, pvals.getValueCount());
-        ParameterValue pv = pvals.getValue(0);
+        assertEquals(1, values.size());
+        ParameterValue pv = values.get(0);
         Value v = pv.getEngValue();
         assertEquals(Value.Type.ARRAY, v.getType());
 
@@ -384,215 +366,115 @@ public class ParameterTest extends AbstractIntegrationTest {
         assertEquals(5.0, av.getValue(2).getFloatValue(), 1e-5);
     }
 
-    @Test
+    @Test(expected = ClientException.class)
     public void testSetInvalidParameterValue() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"));
-        requestb.setValue(ValueHelper.newValue(3.14));
-        bulkb.addRequest(requestb);
-
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                    bulkb.build()).get();
-            fail("should have thrown an exception");
+            processorClient.setValue("/REFMDB/SUBSYS1/IntegerPara1_1_6", ValueHelper.newValue(3.14)).get();
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof ClientException);
+            throw (ClientException) e.getCause();
         }
     }
 
-    @Test
+    @Test(expected = ClientException.class)
     public void testSetParameterWithInvalidType() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"));
-        requestb.setValue(ValueHelper.newValue("blablab"));
-        bulkb.addRequest(requestb);
-
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                    bulkb.build()).get();
-            fail("Should have thrown an exception");
+            processorClient.setValue("/REFMDB/SUBSYS1/LocalPara1", ValueHelper.newValue("blablab")).get();
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof ClientException);
+            throw (ClientException) e.getCause();
         }
     }
 
     @Test
     public void testSetParameter() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"));
-        requestb.setValue(ValueHelper.newValue(5));
-        bulkb.addRequest(requestb);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalPara1", ValueHelper.newValue(5)).get();
 
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                bulkb.build()).get();
-        assertNotNull(resp);
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
 
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalPara1",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-        assertEquals(requestb.getValue(), pv.getEngValue());
+        ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara1").get();
+        assertEquals(ValueHelper.newValue(5), value.getEngValue());
     }
 
     @Test
     public void testSetParameter2() throws Exception {
-        // test simple set just for the value
-        Value v = ValueHelper.newValue(3.14);
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalPara2",
-                HttpMethod.POST, v).get();
-        assertNotNull(resp);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalPara2", ValueHelper.newValue(3.14)).get();
 
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalPara2",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-        assertEquals(v, pv.getEngValue());
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
+
+        ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara2").get();
+        assertEquals(ValueHelper.newValue(3.14), value.getEngValue());
     }
 
     @Test
     public void testSetAggregateParameter_Invalid() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
-
         Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
                 "member2", ValueHelper.newValue(1300));
-        requestb.setValue(ValueHelper.newArrayValue(v0));
-        bulkb.addRequest(requestb);
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                    bulkb.build()).get();
+            processorClient.setValue("/REFMDB/SUBSYS1/LocalArray1",
+                    ValueHelper.newArrayValue(v0)).get();
         } catch (ExecutionException e) {
             ClientException e1 = (ClientException) e.getCause();
             assertTrue(e1.getMessage().contains("members don't match"));
             return;
         }
 
-        fail("should have got an exception");
+        fail("should have thrown an exception");
     }
 
     @Test
     public void testSetArrayParameter() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
-
         Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
                 "member2", ValueHelper.newValue(1300),
                 "member3", ValueHelper.newValue(3.14));
+        v0 = ValueHelper.newArrayValue(v0, v0);
 
-        requestb.setValue(ValueHelper.newArrayValue(v0, v0));
-        bulkb.addRequest(requestb);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalArray1", v0).get();
 
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                bulkb.build()).get();
-        assertNotNull(resp);
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
 
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalArray1",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-        assertEquals(requestb.getValue(), pv.getEngValue());
+        ParameterValue pv = processorClient.getValue("/REFMDB/SUBSYS1/LocalArray1").get();
+        assertEquals(v0, pv.getEngValue());
     }
 
     @Test
     public void testSetParameter_Aggregate() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalAggregate1"));
-
         Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
                 "member2", ValueHelper.newValue(1300),
                 "member3", ValueHelper.newValue(3.14));
 
-        requestb.setValue(v0);
-        bulkb.addRequest(requestb);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalAggregate1", v0).get();
 
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                bulkb.build()).get();
-        assertNotNull(resp);
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
 
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalAggregate1",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-        assertEquals(requestb.getValue(), pv.getEngValue());
+        ParameterValue pv = processorClient.getValue("/REFMDB/SUBSYS1/LocalAggregate1").get();
+        assertEquals(v0, pv.getEngValue());
     }
 
     @Test
     public void testSetParameter_AggregateElement() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1"));
-
         Value v0 = ValueHelper.newValue(55);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1", v0).get();
 
-        requestb.setValue(v0);
-        bulkb.addRequest(requestb);
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
 
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                bulkb.build()).get();
-        assertNotNull(resp);
-
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest(
-                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-
-        assertEquals(requestb.getValue(), pv.getEngValue());
+        ParameterValue pv = processorClient.getValue("/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1").get();
+        assertEquals(v0, pv.getEngValue());
     }
 
     @Test
     public void testSetParameter_ArrayElement() throws Exception {
-        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
-        SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
-        requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue8[2]"));
-
         Value v0 = ValueHelper.newValue((float) 55.2);
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalParaWithInitialValue8[2]", v0).get();
 
-        requestb.setValue(v0);
-        bulkb.addRequest(requestb);
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
 
-        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                bulkb.build()).get();
-        assertNotNull(resp);
-
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest(
-                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-
-        assertEquals(requestb.getValue(), pv.getEngValue());
-    }
-
-    @Test
-    public void testSetParameter_ArrayElement2() throws Exception {
-        // test simple set just for the value
-        Value v = ValueHelper.newValue((float) 89.3);
-        byte[] resp = restClient.doRequest(
-                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
-                HttpMethod.POST, v).get();
-        assertNotNull(resp);
-
-        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-        // immediately avaialble
-        resp = restClient.doRequest(
-                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
-                HttpMethod.GET).get();
-        ParameterValue pv = ParameterValue.parseFrom(resp);
-
-        assertEquals(v, pv.getEngValue());
+        ParameterValue pv = processorClient.getValue("/REFMDB/SUBSYS1/LocalParaWithInitialValue8[2]").get();
+        assertEquals(v0, pv.getEngValue());
     }
 
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {

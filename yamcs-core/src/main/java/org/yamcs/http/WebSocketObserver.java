@@ -18,7 +18,7 @@ public class WebSocketObserver implements Observer<Message> {
     private Log log;
 
     private TopicContext ctx;
-    private NewWebSocketFrameHandler frameHandler;
+    private WebSocketFrameHandler frameHandler;
 
     private int messageCount = 0;
     private boolean cancelled;
@@ -28,7 +28,7 @@ public class WebSocketObserver implements Observer<Message> {
     private boolean replied;
     private List<Message> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
 
-    public WebSocketObserver(TopicContext ctx, NewWebSocketFrameHandler frameHandler) {
+    public WebSocketObserver(TopicContext ctx, WebSocketFrameHandler frameHandler) {
         this.ctx = ctx;
         this.frameHandler = frameHandler;
         log = new Log(WebSocketObserver.class);

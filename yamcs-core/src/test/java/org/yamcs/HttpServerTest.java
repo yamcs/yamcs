@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.HttpClient;
+import org.yamcs.client.base.HttpClient;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.StaticFileHandler;
 

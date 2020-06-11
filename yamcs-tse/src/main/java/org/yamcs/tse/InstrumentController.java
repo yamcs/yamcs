@@ -11,6 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.yamcs.tse.api.TseCommand;
+
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -37,10 +39,10 @@ public class InstrumentController extends AbstractService {
         notifyStarted();
     }
 
-    public ListenableFuture<List<String>> queueCommand(InstrumentDriver instrument, String command,
+    public ListenableFuture<List<String>> queueCommand(InstrumentDriver instrument, TseCommand metadata, String command,
             boolean expectResponse) {
         ListeningExecutorService exec = executorsByName.get(instrument.getName());
-        return exec.submit(() -> instrument.command(command, expectResponse));
+        return exec.submit(() -> instrument.command(command, metadata, expectResponse));
     }
 
     public InstrumentDriver getInstrument(String name) {

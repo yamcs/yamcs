@@ -3,170 +3,171 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.yamcs.client.Page;
+import org.yamcs.client.archive.ArchiveClient;
+import org.yamcs.client.archive.ArchiveClient.ListOptions;
+import org.yamcs.client.archive.ArchiveClient.RangeOptions;
 import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Pvalue.Ranges;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges.Range;
-import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.util.Timestamps;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
+
+    private ArchiveClient archiveClient;
 
     @Before
     public void cleanParameterCache() {
         Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
         p.getParameterCache().clear();
+        archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
     }
 
     @Test
-    public void testRestRetrieval() throws Exception {
+    public void testRetrieval() throws Exception {
         generatePkt13AndPps("2015-01-02T10:00:00", 2 * 3600);
 
         Value engValue;
-        ListParameterHistoryResponse pdata;
         org.yamcs.protobuf.Pvalue.ParameterValue pv;
-        TimeSeries vals;
         Sample s0;
 
         // first two requests before the consolidation, should return data from cache
-        byte[] resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
+        Instant start = Instant.parse("2015-01-02T10:00:00Z");
+        Instant stop = Instant.parse("2015-01-02T11:00:00Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
-        assertEquals(100, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(100, values.size());
+        pv = values.get(0);
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T11:40:00&stop=2015-01-02T12:00:00",
-                HttpMethod.GET).get();
-        vals = TimeSeries.parseFrom(resp);
-        assertEquals(500, vals.getSampleCount());
-        s0 = vals.getSample(0);
+        start = Instant.parse("2015-01-02T11:40:00Z");
+        stop = Instant.parse("2015-01-02T12:00:00Z");
+        List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+
+        assertEquals(500, samples.size());
+        s0 = samples.get(0);
         assertEquals(0.167291805148, s0.getMin(), 1e-5);
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
 
         buildParameterArchive("2015-01-02T10:00:00", "2016-01-02T11:00:00");
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
-                HttpMethod.GET).get();
-        vals = TimeSeries.parseFrom(resp);
-        assertEquals(500, vals.getSampleCount());
-        s0 = vals.getSample(0);
+        start = Instant.parse("2015-01-02T10:00:00Z");
+        stop = Instant.parse("2015-01-02T11:00:00Z");
+
+        samples = archiveClient.getSamples("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+        assertEquals(500, samples.size());
+        s0 = samples.get(0);
         assertEquals(0.167291805148, s0.getMin(), 1e-5);
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(100, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(100, values.size());
+        pv = values.get(0);
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00&limit=10",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(10, pdata.getParameterCount());
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                ListOptions.limit(10)).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(10, values.size());
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00&norepeat",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-
-        assertEquals(1, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                ListOptions.noRepeat(true)).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(1, values.size());
+        pv = values.get(0);
 
         assertEquals("2015-01-02T11:00:00Z", Timestamps.toString(pv.getGenerationTime()));
         assertEquals(0.167291805148, pv.getEngValue().getFloatValue(), 1e-5);
-        AcquisitionStatus acqs = pdata.getParameter(0).getAcquisitionStatus();
+        AcquisitionStatus acqs = values.get(0).getAcquisitionStatus();
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
 
         // add some realtime data
         generatePkt13AndPps("2015-01-02T12:00:00", 10);
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?stop=2015-01-03T11:59:00&limit=20",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(20, pdata.getParameterCount());
+        stop = Instant.parse("2015-01-03T11:59:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", null, stop,
+                ListOptions.limit(20)).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(20, values.size());
         long t = TimeEncoding.parse("2015-01-02T12:00:09.000");
-        for (int i = 0; i < pdata.getParameterCount(); i++) {
-            pv = pdata.getParameter(i);
-            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
+        for (ParameterValue value : values) {
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t -= 1000;
         }
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T12:00:00&stop=2015-01-03T11:59:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(9, pdata.getParameterCount());
+        start = Instant.parse("2015-01-02T12:00:00Z");
+        stop = Instant.parse("2015-01-03T11:59:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(9, values.size());
         t = TimeEncoding.parse("2015-01-02T12:00:09.000");
-        for (int i = 0; i < pdata.getParameterCount(); i++) {
-            pv = pdata.getParameter(i);
-            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
+        for (ParameterValue value : values) {
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t -= 1000;
         }
 
         // request excluding realtime cache
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T12:00:00&stop=2015-01-03T11:59:00&norealtime",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(0, pdata.getParameterCount());
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                ListOptions.noRealtime(true)).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(0, values.size());
 
         // ascending request combining archive with cache
-
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T11:59:50&stop=2015-01-03T11:59:00&order=asc",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
-        assertEquals(20, pdata.getParameterCount());
+        start = Instant.parse("2015-01-02T11:59:50Z");
+        stop = Instant.parse("2015-01-03T11:59:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                ListOptions.ascending(true)).get();
+        values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(20, values.size());
         t = TimeEncoding.parse("2015-01-02T11:59:50");
-        for (int i = 0; i < pdata.getParameterCount(); i++) {
-            pv = pdata.getParameter(i);
-            assertEquals(t, TimeEncoding.fromProtobufTimestamp(pv.getGenerationTime()));
+        for (ParameterValue value : values) {
+            assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t += 1000;
         }
     }
 
     @Test
-    public void testRestRanges() throws Exception {
+    public void testRanges() throws Exception {
         generatePkt13AndPps("2018-01-01T10:00:00", 2 * 3600);
 
-        Ranges vals;
-        Range r0;
-
         // first request before the consolidation, should return data from cache
+        Instant start = Instant.parse("2018-01-01T11:40:00Z");
+        Instant stop = Instant.parse("2018-01-02T12:00:00Z");
 
-        byte[] resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T11:40:00&stop=2018-01-02T12:00:00",
-                HttpMethod.GET).get();
-        vals = Ranges.parseFrom(resp);
-        assertEquals(1, vals.getRangeCount());
-        r0 = vals.getRange(0);
+        List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+
+        assertEquals(1, ranges.size());
+        Range r0 = ranges.get(0);
         assertEquals(1199, r0.getCount());
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
         assertEquals("2018-01-01T11:40:01.000Z", r0.getTimeStart());
@@ -174,125 +175,121 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         buildParameterArchive("2018-01-01T10:00:00", "2018-01-02T11:00:00");
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00",
-                HttpMethod.GET).get();
-        vals = Ranges.parseFrom(resp);
-        assertEquals(1, vals.getRangeCount());
-        r0 = vals.getRange(0);
+        start = Instant.parse("2018-01-01T10:00:00Z");
+        stop = Instant.parse("2018-01-02T11:00:00Z");
+        ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
+        assertEquals(1, ranges.size());
+        r0 = ranges.get(0);
         assertEquals(7200, r0.getCount());
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
 
         generatePkt13AndPps("2018-01-01T13:00:00", 3600);
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00",
-                HttpMethod.GET).get();
+        ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
-        vals = Ranges.parseFrom(resp);
-        assertEquals(2, vals.getRangeCount());
-        r0 = vals.getRange(0);
+        assertEquals(2, ranges.size());
+        r0 = ranges.get(0);
         assertEquals(7200, r0.getCount());
 
         assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
         assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); // last parameter time plus expiration
 
-        Range r1 = vals.getRange(1);
+        Range r1 = ranges.get(1);
         assertEquals(3600, r1.getCount());
         assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
         assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00&minGap=3601001",
-                HttpMethod.GET).get();
+        start = Instant.parse("2018-01-01T10:00:00Z");
+        stop = Instant.parse("2018-01-02T11:00:00Z");
+        ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                RangeOptions.minimumGap(3601001)).get();
 
-        vals = Ranges.parseFrom(resp);
-        assertEquals(1, vals.getRangeCount());
-        r0 = vals.getRange(0);
+        assertEquals(1, ranges.size());
+        r0 = ranges.get(0);
         assertEquals(7200 + 3600, r0.getCount());
     }
 
     @Test
-    public void testRestRetrievalWithAgregateMembers() throws Exception {
+    public void testWithAggregateMembers() throws Exception {
         generatePkt7("2019-04-06T00:00:00", 2 * 3600);
 
-        Value engValue;
-        ListParameterHistoryResponse pdata;
-        org.yamcs.protobuf.Pvalue.ParameterValue pv;
-
         // first two requests before the consolidation, should return data from cache
-        byte[] resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member2?start=2019-04-06T01:59:00&stop=2019-04-06T03:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
+        Instant start = Instant.parse("2019-04-06T01:59:00Z");
+        Instant stop = Instant.parse("2019-04-06T03:00:00Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/aggregate_para1.member2", start, stop)
+                .get();
 
-        assertEquals(59, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
-        engValue = pv.getEngValue();
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(59, values.size());
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        Value engValue = pv.getEngValue();
         assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
         assertFalse(pv.hasExpireMillis());
 
         // build the parameter archive
         buildParameterArchive("2019-04-06T00:00:00", "2019-04-06T03:00:00");
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member2?start=2019-04-06T00:00:00&stop=2019-04-06T03:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
+        start = Instant.parse("2019-04-06T00:00:00Z");
+        stop = Instant.parse("2019-04-06T03:00:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/aggregate_para1.member2", start, stop).get();
 
-        assertEquals(100, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(100, values.size());
+        pv = values.get(0);
         engValue = pv.getEngValue();
         assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member3/samples?start=2019-04-06T00:00:00&stop=2019-04-06T02:00:00",
-                HttpMethod.GET).get();
-        TimeSeries vals = TimeSeries.parseFrom(resp);
-        assertEquals(500, vals.getSampleCount());
-        Sample s0 = vals.getSample(0);
+        start = Instant.parse("2019-04-06T00:00:00Z");
+        stop = Instant.parse("2019-04-06T02:00:00Z");
+        List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/aggregate_para1.member3", start, stop).get();
+        assertEquals(500, samples.size());
+        Sample s0 = samples.get(0);
         assertEquals(2.72, s0.getAvg(), 1e-5);
     }
 
     @Test
-    public void testRestRetrievalWithArrayElements() throws Exception {
+    public void testWithArrayElements() throws Exception {
         generatePkt8("2019-04-06T20:00:00", 2 * 3600);
 
-        Value engValue;
-        ListParameterHistoryResponse pdata;
-        org.yamcs.protobuf.Pvalue.ParameterValue pv;
-
         // first two requests before the consolidation, should return data from cache
-        byte[] resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B5%5D.member2?start=2019-04-06T21:59:00&stop=2019-04-06T23:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
+        Instant start = Instant.parse("2019-04-06T21:59:00Z");
+        Instant stop = Instant.parse("2019-04-06T23:00:00Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1[5].member2", start, stop)
+                .get();
 
-        assertEquals(59, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
-        engValue = pv.getEngValue();
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(59, values.size());
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        Value engValue = pv.getEngValue();
         assertEquals(10, engValue.getUint32Value());
         assertFalse(pv.hasExpireMillis());
 
         // build the parameter archive
         buildParameterArchive("2019-04-06T20:00:00", "2019-04-06T23:00:00");
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B1%5D.member3?start=2019-04-06T20:00:00&stop=2019-04-06T23:00:00",
-                HttpMethod.GET).get();
-        pdata = ListParameterHistoryResponse.parseFrom(resp);
+        start = Instant.parse("2019-04-06T20:00:00Z");
+        stop = Instant.parse("2019-04-06T23:00:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1[1].member3", start, stop).get();
 
-        assertEquals(100, pdata.getParameterCount());
-        pv = pdata.getParameter(0);
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(100, values.size());
+        pv = values.get(0);
         engValue = pv.getEngValue();
         assertEquals(0.5, engValue.getFloatValue(), 1e-5);
 
-        resp = restClient.doRequest(
-                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B23%5D.member1/samples?start=2019-04-06T20:00:00&stop=2019-04-06T22:00:00",
-                HttpMethod.GET).get();
-        TimeSeries vals = TimeSeries.parseFrom(resp);
-        assertEquals(500, vals.getSampleCount());
-        Sample s0 = vals.getSample(0);
+        start = Instant.parse("2019-04-06T20:00:00Z");
+        stop = Instant.parse("2019-04-06T22:00:00Z");
+        List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/array_para1[23].member1", start, stop).get();
+        assertEquals(500, samples.size());
+        Sample s0 = samples.get(0);
         assertEquals(23, s0.getAvg(), 1e-5);
     }
 

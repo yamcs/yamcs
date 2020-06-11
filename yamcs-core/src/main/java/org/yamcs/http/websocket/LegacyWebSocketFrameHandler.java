@@ -33,11 +33,11 @@ import io.netty.util.AttributeKey;
 /**
  * Class for text/binary websocket handling
  */
-public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+public class LegacyWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     public static final AttributeKey<HttpRequestInfo> CTX_HTTP_REQUEST_INFO = AttributeKey.valueOf("httpRequestInfo");
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketFrameHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(LegacyWebSocketFrameHandler.class);
 
     private ChannelHandlerContext ctx;
 
@@ -62,7 +62,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     private WriteBufferWaterMark writeBufferWaterMark;
 
-    public WebSocketFrameHandler(HttpRequestInfo originalRequestInfo, int connectionCloseNumDroppedMsg,
+    public LegacyWebSocketFrameHandler(HttpRequestInfo originalRequestInfo, int connectionCloseNumDroppedMsg,
             WriteBufferWaterMark writeBufferWaterMark) {
         this.originalRequestInfo = originalRequestInfo;
         this.connectionCloseNumDroppedMsg = connectionCloseNumDroppedMsg;

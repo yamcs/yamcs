@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.client.InstanceFilter;
@@ -17,25 +18,25 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testStopStart() throws Exception {
-        ListInstancesResponse lir = yamcsClient.listInstances().get();
-        assertEquals(1, lir.getInstancesCount());
-        YamcsInstance yi = lir.getInstances(0);
+        List<YamcsInstance> instances = yamcsClient.listInstances().get();
+        assertEquals(1, instances.size());
+        YamcsInstance yi = instances.get(0);
         assertEquals(yamcsInstance, yi.getName());
         assertEquals(InstanceState.RUNNING, yi.getState());
 
         yamcsClient.stopInstance(yamcsInstance).get();
 
-        lir = yamcsClient.listInstances().get();
-        assertEquals(1, lir.getInstancesCount());
-        yi = lir.getInstances(0);
+        instances = yamcsClient.listInstances().get();
+        assertEquals(1, instances.size());
+        yi = instances.get(0);
         assertEquals(yamcsInstance, yi.getName());
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
         yamcsClient.startInstance(yamcsInstance).get();
 
-        lir = yamcsClient.listInstances().get();
-        assertEquals(1, lir.getInstancesCount());
-        yi = lir.getInstances(0);
+        instances = yamcsClient.listInstances().get();
+        assertEquals(1, instances.size());
+        yi = instances.get(0);
         assertEquals(yamcsInstance, yi.getName());
         assertEquals(InstanceState.RUNNING, yi.getState());
     }

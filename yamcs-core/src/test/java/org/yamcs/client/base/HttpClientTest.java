@@ -1,4 +1,4 @@
-package org.yamcs.api.rest;
+package org.yamcs.client.base;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.yamcs.AbstractIntegrationTest;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.HttpClient;
+import org.yamcs.client.base.HttpClient;
 
 import io.netty.handler.codec.http.HttpMethod;
 
