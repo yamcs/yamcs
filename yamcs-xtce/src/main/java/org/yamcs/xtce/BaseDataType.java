@@ -20,6 +20,13 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         super(name);
     }
 
+    BaseDataType(Builder<?> builder) {
+        super(builder);
+        this.unitSet = builder.unitSet;
+        this.encoding = builder.encoding;
+        //we don't do the initialValue here because it is being converted in sub classes
+    }
+
     /**
      * creates a shallow copy of t
      * 
@@ -36,20 +43,8 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         return encoding;
     }
 
-    public void setEncoding(DataEncoding encoding) {
-        this.encoding = encoding;
-    }
-
     public List<UnitType> getUnitSet() {
         return unitSet;
-    }
-
-    public void addUnit(UnitType unit) {
-        unitSet.add(unit);
-    }
-
-    public void addAllUnits(Collection<UnitType> units) {
-        unitSet.addAll(units);
     }
 
     /**
@@ -59,16 +54,56 @@ public abstract class BaseDataType extends NameDescription implements DataType {
      * @return
      */
     public abstract Object parseString(String stringValue);
-
-    /**
-     * Sets the initial value. This function will parse the string into a data type specific Object representation.
-     */
-    @Override
-    public void setInitialValue(String stringValue) {
-        initialValue = parseString(stringValue);
+    
+    public String toString(Object o) {
+        return o.toString();
     }
 
     public Object parseStringForRawValue(String stringValue) {
         return encoding.parseString(stringValue);
+    }
+
+    public abstract static class Builder<T extends Builder<T>> extends NameDescription.Builder<T>
+            implements DataType.Builder<T> {
+        List<UnitType> unitSet = new ArrayList<>();
+        private DataEncoding encoding;
+        protected String initialValue;
+
+        public Builder() {
+        }
+        
+        public Builder(BaseDataType baseType) {
+            super(baseType);
+            this.unitSet = baseType.unitSet;
+            this.encoding = baseType.encoding;
+            if(baseType.initialValue != null) {
+                this.initialValue = baseType.initialValue.toString();
+            }
+        }
+        
+        
+        public void setInitialValue(String initialValue) {
+            this.initialValue = initialValue;
+        }
+
+        public void setEncoding(DataEncoding dataEncoding) {
+            this.encoding = dataEncoding;
+        }
+
+        public void addAllUnits(Collection<UnitType> units) {
+            unitSet.addAll(units);
+        }
+
+        public void addUnit(UnitType unit) {
+            unitSet.add(unit);
+        }
+
+        public DataEncoding getEncoding() {
+            return encoding;
+        }
+        
+        public boolean isResolved() {
+            return true;
+        }
     }
 }

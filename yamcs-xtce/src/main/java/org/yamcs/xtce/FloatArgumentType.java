@@ -9,9 +9,6 @@ package org.yamcs.xtce;
 public class FloatArgumentType extends FloatDataType implements ArgumentType {
     private static final long serialVersionUID=1L;
 
-    public FloatArgumentType(String name){
-        super(name);
-    }
     /**
      * Creates a shallow copy.
      */
@@ -19,6 +16,10 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
         super(t);
     }
 
+    public FloatArgumentType(Builder builder) {
+       super(builder);
+    }
+    
     public String getTypeAsString() {
         return "float";
     }
@@ -31,5 +32,14 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
     @Override
     public FloatArgumentType copy() {
         return new FloatArgumentType(this);
+    }
+    
+    public static class Builder extends FloatDataType.Builder<Builder> {
+
+        @Override
+        public FloatArgumentType build() {
+            return new FloatArgumentType(this);
+        }
+        
     }
 }

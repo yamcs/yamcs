@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,56 +261,53 @@ public class ProcessorData {
     }
 
     public void clearParameterCalibratorOverrides(Parameter p) {
-        ParameterType ptype = typeOverrides.get(p);
-        if (ptype == null) {
-            return;
-        }
-        ptype.setEncoding(p.getParameterType().getEncoding());
+        modifyNumericTypeOverride(p, b -> {
+            b.setEncoding(p.getParameterType().getEncoding());
+        });
     }
 
     public void setDefaultCalibrator(Parameter p, Calibrator defaultCalibrator) {
-        NumericParameterType ptype = getNumericTypeOverride(p);
-        DataEncoding enc = ptype.getEncoding().copy();
-        ptype.setEncoding(enc);
-
-        ((NumericDataEncoding) enc).setDefaultCalibrator(defaultCalibrator);
+        modifyNumericTypeOverride(p, b -> {
+            DataEncoding enc =b.getEncoding().copy();
+            ((NumericDataEncoding) enc).setDefaultCalibrator(defaultCalibrator);
+            b.setEncoding(enc);
+        });
     }
 
     public void setContextCalibratorList(Parameter p, List<ContextCalibrator> contextCalibrator) {
-        NumericParameterType ptype = getNumericTypeOverride(p);
-        DataEncoding enc = ptype.getEncoding().copy();
-        ptype.setEncoding(enc);
-
-        ((NumericDataEncoding) enc).setContextCalibratorList(contextCalibrator);
-
+        modifyNumericTypeOverride(p, b -> {
+            DataEncoding enc =b.getEncoding().copy();
+            ((NumericDataEncoding) enc).setContextCalibratorList(contextCalibrator);
+            b.setEncoding(enc);
+        });
     }
 
-    private NumericParameterType getNumericTypeOverride(Parameter p) {
-        ParameterType ptype = typeOverrides.get(p);
+    private void modifyNumericTypeOverride(Parameter p, Consumer<NumericParameterType.Builder<?>> c) {
+        NumericParameterType ptype = (NumericParameterType) typeOverrides.get(p);
+        
         if (ptype == null) {
-            ptype = p.getParameterType();
-            if (!(ptype instanceof NumericParameterType)) {
-                throw new IllegalArgumentException("'" + ptype.getName() + "' is a non numeric type");
+            if (!(p.getParameterType() instanceof NumericParameterType)) {
+                throw new IllegalArgumentException("'" + p.getParameterType().getName() + "' is a non numeric type");
             }
-            ptype = ptype.copy();
-            typeOverrides.put(p, ptype);
+            ptype = (NumericParameterType) p.getParameterType();
         }
-
-        return (NumericParameterType) ptype;
+        NumericParameterType.Builder<?> builder = ptype.toBuilder();
+        c.accept(builder);
+        typeOverrides.put(p, builder.build());
     }
 
-    private EnumeratedParameterType getEnumeratedTypeOverride(Parameter p) {
-        ParameterType ptype = typeOverrides.get(p);
+    private void modifyEnumeratedTypeOverride(Parameter p, Consumer<EnumeratedParameterType.Builder> c) {
+        EnumeratedParameterType ptype = (EnumeratedParameterType) typeOverrides.get(p);
+        
         if (ptype == null) {
-            ptype = p.getParameterType();
-            if (!(ptype instanceof EnumeratedParameterType)) {
-                throw new IllegalArgumentException("'" + ptype.getName() + "' is a non enumerated type");
+            if (!(p.getParameterType() instanceof EnumeratedParameterType)) {
+                throw new IllegalArgumentException("'" + p.getParameterType().getName() + "' is a non enumerated type");
             }
-            ptype = ptype.copy();
-            typeOverrides.put(p, ptype);
+            ptype = (EnumeratedParameterType) p.getParameterType();
         }
-
-        return (EnumeratedParameterType) ptype;
+        EnumeratedParameterType.Builder builder = ptype.toBuilder();
+        c.accept(builder);
+        typeOverrides.put(p, builder.build());
     }
 
     public void clearParameterAlarmOverrides(Parameter p) {
@@ -317,12 +315,19 @@ public class ProcessorData {
         if (ptype == null) {
             return;
         }
+        
         if (ptype instanceof NumericParameterType) {
-            NumericParameterType optype = (NumericParameterType) p.getParameterType();
-            ((NumericParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
+            NumericParameterType mdbType = (NumericParameterType) p.getParameterType();
+            NumericParameterType.Builder<?> builder = ((NumericParameterType)ptype).toBuilder();
+            
+            builder.setDefaultAlarm(mdbType.getDefaultAlarm());
+            typeOverrides.put(p, builder.build());
+            
         } else if (ptype instanceof EnumeratedParameterType) {
-            EnumeratedParameterType optype = (EnumeratedParameterType) p.getParameterType();
-            ((EnumeratedParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
+            EnumeratedParameterType mdbType = (EnumeratedParameterType) p.getParameterType();
+            EnumeratedParameterType.Builder builder = ((EnumeratedParameterType) ptype).toBuilder();
+            builder.setDefaultAlarm(mdbType.getDefaultAlarm());
+            typeOverrides.put(p, builder.build());
         } else {
             throw new IllegalArgumentException("Can only have alarms on numeric and enumerated parameters");
         }
@@ -333,28 +338,25 @@ public class ProcessorData {
     }
 
     public void removeDefaultAlarm(Parameter p) {
-        NumericParameterType ptype = getNumericTypeOverride(p);
-        ptype.setDefaultAlarm(null);
+        modifyNumericTypeOverride(p, b -> b.setDefaultAlarm(null));
     }
 
     public void setDefaultNumericAlarm(Parameter p, NumericAlarm alarm) {
-        NumericParameterType ptype = getNumericTypeOverride(p);
-        ptype.setDefaultAlarm(alarm);
+        modifyNumericTypeOverride(p, b -> b.setDefaultAlarm(alarm));
     }
 
-    public void setDefaultEnumerationAlarm(Parameter p, EnumerationAlarm alarm) {
-        EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
-        ptype.setDefaultAlarm(alarm);
-    }
-
+  
     public void setNumericContextAlarm(Parameter p, List<NumericContextAlarm> contextAlarmList) {
-        NumericParameterType ptype = getNumericTypeOverride(p);
-        ptype.setContextAlarmList(contextAlarmList);
+        modifyNumericTypeOverride(p, b -> b.setContextAlarmList(contextAlarmList));
+    }
+    
+    
+    public void setDefaultEnumerationAlarm(Parameter p, EnumerationAlarm alarm) {
+        modifyEnumeratedTypeOverride(p, b -> b.setDefaultAlarm(alarm));
     }
 
     public void setEnumerationContextAlarm(Parameter p, List<EnumerationContextAlarm> contextAlarmList) {
-        EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
-        ptype.setContextAlarmList(contextAlarmList);
+        modifyEnumeratedTypeOverride(p, b -> b.setContextAlarmList(contextAlarmList));
     }
 
     public String getYamcsInstance() {

@@ -3,8 +3,8 @@ package org.yamcs.xtce;
 public class EnumeratedArgumentType extends EnumeratedDataType implements ArgumentType {
     private static final long serialVersionUID = 1;
 
-    public EnumeratedArgumentType(String name) {
-        super(name);
+    public EnumeratedArgumentType(Builder builder) {
+        super(builder);
     }
 
     /**
@@ -41,5 +41,14 @@ public class EnumeratedArgumentType extends EnumeratedDataType implements Argume
     @Override
     public EnumeratedArgumentType copy() {
         return new EnumeratedArgumentType(this);
+    }
+    
+    public static class Builder extends EnumeratedDataType.Builder<Builder> {
+
+        @Override
+        public EnumeratedArgumentType build() {
+            return new EnumeratedArgumentType(this);
+        }
+        
     }
 }

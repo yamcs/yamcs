@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ReferenceFinder;
+import org.yamcs.xtce.util.UnresolvedParameterReference;
+import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**
@@ -25,7 +30,7 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  */
 public class XtceLoader implements SpaceSystemLoader {
 
-    private transient XtceStaxReader    xtceReader  = null;
+    private transient XtceStaxReader xtceReader = null;
     private transient String xtceFileName;
     /**
      * Logger
@@ -38,18 +43,19 @@ public class XtceLoader implements SpaceSystemLoader {
      * Constructor
      */
     public XtceLoader(String xtceFileName) {
-        this.xtceFileName=xtceFileName;
+        this.xtceFileName = xtceFileName;
         initialize();
     }
 
     public XtceLoader(YConfiguration config) {
-        if(!config.containsKey("file")) {
-            throw new ConfigurationException("the configuration has to contain the keyword 'file' pointing to the XTCE file to be loaded");
+        if (!config.containsKey("file")) {
+            throw new ConfigurationException(
+                    "the configuration has to contain the keyword 'file' pointing to the XTCE file to be loaded");
         }
         this.xtceFileName = (String) config.get("file");
-        if(config.containsKey("excludeTmContainers")) {
+        if (config.containsKey("excludeTmContainers")) {
             List<String> ec = config.getList("excludeTmContainers");
-            excludedContainers = new HashSet<String>(ec);    
+            excludedContainers = new HashSet<String>(ec);
         }
     }
 
@@ -106,19 +112,24 @@ public class XtceLoader implements SpaceSystemLoader {
     @Override
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         try {
-            xtceReader = new XtceStaxReader();
-            if(excludedContainers!=null) {
-                xtceReader.setExcludedContainers(excludedContainers);
-            }
-            return xtceReader.readXmlDocument(xtceFileName);
+            return doLoad();
         } catch (FileNotFoundException e) {
             throw new ConfigurationException("XTCE file not found: " + xtceFileName);
         } catch (XMLStreamException e) {
-            throw new DatabaseLoadException("Cannot parse file: '"+xtceFileName+": "+e.toString(), e);
+            throw new DatabaseLoadException("Cannot parse file: '" + xtceFileName + ": " + e.toString(), e);
         } catch (Exception e) {
             throw new DatabaseLoadException(e);
         }
     }
+
+    private SpaceSystem doLoad() throws Exception {
+        xtceReader = new XtceStaxReader();
+        if (excludedContainers != null) {
+            xtceReader.setExcludedContainers(excludedContainers);
+        }
+        return xtceReader.readXmlDocument(xtceFileName);
+    }
+
 
     @Override
     public String getConfigName() throws ConfigurationException {

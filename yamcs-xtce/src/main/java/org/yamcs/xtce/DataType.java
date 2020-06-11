@@ -24,15 +24,6 @@ public interface DataType {
      */
     String getName();
 
-    /**
-     * Sets the initial value converting from string to the specific type value.
-     * 
-     * @param initialValue
-     * @throws IllegalArgumentException
-     *             if the string cannot be converted
-     */
-    void setInitialValue(String initialValue);
-
 
     /**
      * Parse a value represented as string
@@ -42,6 +33,13 @@ public interface DataType {
      */
     Object parseString(String v);
 
+    /**
+     * Converts a value to a string. This should be the reverse of {@link #parseString(String)}.
+     * 
+     * @param v
+     * @return
+     */
+    String toString(Object v);
     
     /**
      * Get the initial value if any
@@ -57,11 +55,18 @@ public interface DataType {
      */
     Value.Type getValueType();
 
-    public void setShortDescription(String shortDescription);
-
+   
     public String getShortDescription();
 
-    public void setLongDescription(String longDescription);
 
     public String getLongDescription();
+    
+    public interface Builder<T extends Builder<T>> {
+        public T setName(String name);
+        void setInitialValue(String initialValue);
+        public void setShortDescription(String shortDescription);
+        public void setLongDescription(String longDescription);
+        public DataType build();
+        public boolean isResolved();
+    }
 }

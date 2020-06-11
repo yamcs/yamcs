@@ -19,7 +19,7 @@ public class TestCloning {
         for(Parameter p: xtceDb.getParameters()) {
             ParameterType t1 = p.getParameterType();
             if(t1==null) continue;
-            ParameterType t2 = t1.copy();
+            ParameterType t2 = t1.toBuilder().build();
             assertNotEquals(t1, t2);
             try {
                 verifyEquals(t1, t2);

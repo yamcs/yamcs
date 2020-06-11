@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,25 +27,22 @@ import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandContainer;
-import org.yamcs.xtce.Container;
-import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DatabaseLoadException;
-import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ReferenceFinder;
+import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
 
@@ -146,11 +142,11 @@ public class XtceDbFactory {
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
             rootSs.addSpaceSystem(yamcsSs);
-
+            ReferenceFinder refFinder = new ReferenceFinder(s -> log.warn(s));
             int n;
-            while ((n = resolveReferences(rootSs, rootSs)) > 0) {
+            while ((n = resolveReferences(rootSs, rootSs, refFinder)) > 0) {
             }
-
+            
             StringBuilder sb = new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
             if (n == 0) {
@@ -203,29 +199,29 @@ public class XtceDbFactory {
      * @param sysDb
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
-    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws DatabaseLoadException {
+    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, ReferenceFinder refFinder) throws DatabaseLoadException {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
-        // This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
-        if (refs == null) {
+        if (refs == null) { //this can happen if the spacesystem has been unserialized since the reference name is transient
+            //do not return here, we need to check the subsystems below
             refs = Collections.emptyList();
         }
-
-        int n = (refs.size() == 0) ? -1 : 0;
+        
+        int n = refs.isEmpty()?-1:0;
 
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
 
-            ResolvedReference rr = findReference(rootSs, nr, ss);
+            FoundReference rr = refFinder.findReference(rootSs, nr, ss);
             if (rr == null && nr.getType() == Type.PARAMETER
                     && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
                 // Special case for system parameters: they are created on the fly
                 SystemParameter sp = createSystemParameter(rootSs, nr);
-                rr = new ResolvedReference(sp);
+                rr = new FoundReference(sp);
             }
             if (rr == null) { // look for aliases up the hierarchy
-                rr = findAliasReference(rootSs, nr, ss);
+                rr = refFinder.findAliasReference(rootSs, nr, ss);
             }
             if (rr == null) {
                 throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
@@ -233,9 +229,9 @@ public class XtceDbFactory {
             boolean resolved;
 
             if (nr instanceof UnresolvedParameterReference) {
-                resolved = ((UnresolvedParameterReference) nr).resolved(rr.nd, rr.aggregateMemberPath);
+                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(), rr.getAggregateMemberPath());
             } else {
-                resolved = nr.resolved(rr.nd);
+                resolved = nr.tryResolve(rr.getNameDescription());
             }
             if (resolved) {
                 n++;
@@ -243,7 +239,7 @@ public class XtceDbFactory {
             }
         }
         for (SpaceSystem ss1 : ss.getSubSystems()) {
-            int m = resolveReferences(rootSs, ss1);
+            int m = resolveReferences(rootSs, ss1, refFinder);
             if (n == -1) {
                 n = m;
             } else if (m > 0) {
@@ -276,213 +272,6 @@ public class XtceDbFactory {
         return sp;
     }
 
-    /**
-     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in
-     * the parent hierarchy if relative reference
-     *
-     * @param rootSs
-     * @param nr
-     * @param ss
-     * @return
-     */
-    static ResolvedReference findReference(SpaceSystem rootSs, NameReference nr, SpaceSystem ss) {
-        String ref = nr.getReference();
-        boolean absolute = false;
-        SpaceSystem startSs = null;
-
-        if (ref.startsWith("/")) {
-            absolute = true;
-            startSs = rootSs;
-        } else if (ref.startsWith("./") || ref.startsWith("..")) {
-            absolute = true;
-            startSs = ss;
-        }
-
-        if (absolute) {
-            return findReference(startSs, nr);
-        } else {
-            // go up until the root
-            ResolvedReference rr = null;
-            startSs = ss;
-            while (true) {
-                rr = findReference(startSs, nr);
-                if ((rr != null) || (startSs == rootSs)) {
-                    break;
-                }
-                startSs = startSs.getParent();
-            }
-            return rr;
-        }
-    }
-
-    /**
-     * searches for aliases in the parent hierarchy
-     * 
-     * @param rootSs
-     * @param nr
-     * @param ss
-     * @return
-     */
-    static ResolvedReference findAliasReference(SpaceSystem rootSs, NameReference nr, SpaceSystem startSs) {
-        // go up until the root
-        ResolvedReference nd = null;
-        SpaceSystem ss = startSs;
-        while (true) {
-            nd = findAliasReference(ss, nr);
-            if ((nd != null) || (ss == rootSs)) {
-                break;
-            }
-            ss = ss.getParent();
-        }
-        return nd;
-    }
-
-    /**
-     * find reference starting at startSs and looking through the SpaceSystem path
-     * 
-     * @param startSs
-     * @param nr
-     * @return
-     */
-    private static ResolvedReference findReference(SpaceSystem startSs, NameReference nr) {
-        String[] path = nr.getReference().split("/");
-        SpaceSystem ss = startSs;
-        for (int i = 0; i < path.length - 1; i++) {
-            if (".".equals(path[i]) || "".equals(path[i])) {
-                continue;
-            } else if ("..".equals(path[i])) {
-                ss = ss.getParent();
-                if (ss == null) {
-                    break; // this can only happen if the root has no parent (normally it's its own parent)
-                }
-                continue;
-            }
-
-            if (i == path.length - 1) {
-                break;
-            }
-
-            SpaceSystem ss1 = ss.getSubsystem(path[i]);
-
-            if ((ss1 == null) && nr.getType() == Type.PARAMETER) {
-                // check if it's an aggregate
-                Parameter p = ss.getParameter(path[i]);
-                if (p != null && p.getParameterType() instanceof AggregateParameterType) {
-
-                    PathElement[] aggregateMemberPath = getAggregateMemberPath(
-                            Arrays.copyOfRange(path, i + 1, path.length));
-                    if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
-                        return new ResolvedReference(p, aggregateMemberPath);
-                    }
-                }
-                break;
-            }
-
-            if (ss1 == null) {
-                break;
-            }
-            ss = ss1;
-        }
-        if (ss == null) {
-            return null;
-        }
-
-        String name = path[path.length - 1];
-        switch (nr.getType()) {
-        case PARAMETER:
-            return getSimpleReference(ss.getParameter(name));
-        case PARAMETER_TYPE:
-            return getSimpleReference((NameDescription) ss.getParameterType(name));
-        case SEQUENCE_CONTAINER:
-            return getSimpleReference(ss.getSequenceContainer(name));
-        case COMMAND_CONTAINER:
-            Container c = ss.getCommandContainer(name);
-            if (c == null) {
-                c = ss.getSequenceContainer(name);
-            }
-            return getSimpleReference(c);
-        case META_COMMAND:
-            return getSimpleReference(ss.getMetaCommand(name));
-        case ALGORITHM:
-            return getSimpleReference(ss.getAlgorithm(name));
-        case ARGUMENT_TYPE:
-            return getSimpleReference((NameDescription) ss.getArgumentType(name));
-        }
-        // shouldn't arrive here
-        return null;
-    }
-
-    private static ResolvedReference getSimpleReference(NameDescription nd) {
-        if (nd == null) {
-            return null;
-        } else {
-            return new ResolvedReference(nd);
-        }
-    }
-
-    private static PathElement[] getAggregateMemberPath(String[] path) {
-        PathElement[] pea = new PathElement[path.length];
-        for (int i = 0; i < path.length; i++) {
-            pea[i] = PathElement.fromString(path[i]);
-        }
-        return pea;
-    }
-
-    private static boolean checkReferenceToAggregateMember(Parameter p, PathElement[] path) {
-        AggregateParameterType apt = (AggregateParameterType) p.getParameterType();
-        for (int i = 0; i < path.length; i++) {
-            Member m = apt.getMember(path[i].getName());
-            if (m == null) {
-                return false;
-            }
-            if (i == path.length - 1) {
-                return true;
-            }
-            DataType ptype = m.getType();
-            if (ptype instanceof AggregateParameterType) {
-                apt = (AggregateParameterType) apt;
-            } else {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * looks in the SpaceSystem ss for a namedObject with the given alias. Prints a warning in case multiple references
-     * are found and returns the first one.
-     * 
-     * If none is found, returns null.
-     * 
-     * @param ss
-     * @param nr
-     * @return
-     */
-    private static ResolvedReference findAliasReference(SpaceSystem ss, NameReference nr) {
-
-        String alias = nr.getReference();
-        List<? extends NameDescription> l;
-        switch (nr.getType()) {
-        case PARAMETER:
-            l = ss.getParameterByAlias(alias);
-            break;
-        case SEQUENCE_CONTAINER:
-            l = ss.getSequenceContainerByAlias(alias);
-            break;
-        case META_COMMAND:
-            l = ss.getMetaCommandByAlias(alias);
-            break;
-        default:
-            return null;
-        }
-
-        if (l == null || l.isEmpty()) {
-            return null;
-        } else if (l.size() > 1) {
-            log.warn("When looking for aliases '{}' found multiple matches: ", nr, l);
-        }
-        return new ResolvedReference(l.get(0));
-    }
 
     private static LoaderTree getLoaderTree(YConfiguration c)
             throws ConfigurationException, DatabaseLoadException {
@@ -781,25 +570,4 @@ public class XtceDbFactory {
         }
     }
 
-    static class ResolvedReference {
-        final NameDescription nd;
-        final PathElement[] aggregateMemberPath;
-
-        public ResolvedReference(NameDescription nd, PathElement[] aggregateMemberPath) {
-            if (nd == null) {
-                throw new NullPointerException("nd cannot be null");
-            }
-            this.nd = nd;
-            this.aggregateMemberPath = aggregateMemberPath;
-        }
-
-        public ResolvedReference(NameDescription nd) {
-            if (nd == null) {
-                throw new NullPointerException("nd cannot be null");
-            }
-            this.nd = nd;
-            this.aggregateMemberPath = null;
-        }
-
-    }
 }

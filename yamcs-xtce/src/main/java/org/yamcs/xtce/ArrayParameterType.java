@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.List;
-
 /**
  * Describe an array parameter type. The size and number of dimensions are described here. See
  * {@link ArrayParameterEntry}, NameReferenceType and ArrayDataType.
@@ -19,22 +17,24 @@ import java.util.List;
  */
 public class ArrayParameterType extends ArrayDataType implements ParameterType {
     private static final long serialVersionUID = 1L;
-    List<IntegerValue> dim;
 
+    public ArrayParameterType(Builder builder) {
+        super(builder);
+    }
+    
     public ArrayParameterType(String name) {
         super(name, -1);
     }
 
     public ArrayParameterType(String name, int numberOfDimensions) {
         super(name, numberOfDimensions);
-        if(numberOfDimensions<0) {
+        if (numberOfDimensions < 0) {
             throw new IllegalArgumentException("numberOfDimensions should be positive");
         }
     }
 
     public ArrayParameterType(ArrayParameterType t) {
         super(t);
-        this.dim = t.dim;
     }
 
     @Override
@@ -54,40 +54,42 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     }
 
     @Override
-    public void setEncoding(DataEncoding dataEncoding) {
-        throw new UnsupportedOperationException("aggregate parameters do not support encodings");
-    }
-
-    @Override
-    public ArrayParameterType copy() {
-        return new ArrayParameterType(this);
+    public Builder toBuilder() {
+        return new Builder(this);
     }
 
     @Override
     public DataEncoding getEncoding() {
-        throw new UnsupportedOperationException("aggregate parameters do not support encodings");
+        throw new UnsupportedOperationException("array parameters do not support encodings");
     }
 
-    public void setSize(List<IntegerValue> list) {
-        if (list.isEmpty()) {
-            throw new IllegalArgumentException("Dimension sizes cannot be empty");
-        }
-        this.dim = list;
-        setNumberOfDimensions(dim.size());
-    }
+   
 
-    /**
-     * Return the dimension list (defined as from XTCE 1.2). The list here is not really used except for populating the
-     * {@link ArrayParameterEntry#dim} at the MDB load.
-     * 
-     * @return
-     */
-    public List<IntegerValue> getSize() {
-        return dim;
-    }
-    
+
     @Override
     public String toString() {
-        return "ArrayParameterType name:"+name+" numberOfDimensions:"+getNumberOfDimensions();
+        return "ArrayParameterType name:" + name + " numberOfDimensions:" + getNumberOfDimensions();
+    }
+    
+    public static class Builder extends ArrayDataType.Builder<Builder> implements ParameterType.Builder<Builder> {
+
+        public Builder() {
+            
+        }
+        
+        public Builder(ArrayParameterType arrayParameterType) {
+           super(arrayParameterType);
+        }
+
+        @Override
+        public ArrayParameterType build() {
+            return new ArrayParameterType(this);
+        }
+
+        @Override
+        public void setEncoding(DataEncoding dataEncoding) {
+            throw new UnsupportedOperationException("array parameters do not support encodings");
+        }
+        
     }
 }

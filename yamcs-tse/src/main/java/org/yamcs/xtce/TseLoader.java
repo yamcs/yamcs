@@ -70,12 +70,12 @@ public class TseLoader implements SpaceSystemLoader {
         command.setAbstract(true);
 
         Argument typeArgument = new Argument("type");
-        IntegerArgumentType typeArgumentType = new IntegerArgumentType("type");
+        IntegerArgumentType.Builder typeArgumentTypeBuilder = new IntegerArgumentType.Builder().setName("type");
         IntegerDataEncoding typeArgumentEncoding = new IntegerDataEncoding(8);
-        typeArgumentType.setEncoding(typeArgumentEncoding);
-        typeArgumentType.setSizeInBits(8);
-        typeArgumentType.setSigned(false);
-        typeArgument.setArgumentType(typeArgumentType);
+        typeArgumentTypeBuilder.setEncoding(typeArgumentEncoding);
+        typeArgumentTypeBuilder.setSizeInBits(8);
+        typeArgumentTypeBuilder.setSigned(false);
+        typeArgument.setArgumentType(typeArgumentTypeBuilder.build());
         command.addArgument(typeArgument);
 
         ArgumentEntry typeArgumentEntry = new ArgumentEntry(0, ReferenceLocationType.containerStart,
@@ -83,11 +83,11 @@ public class TseLoader implements SpaceSystemLoader {
         container.addEntry(typeArgumentEntry);
 
         Argument commandArgument = new Argument("command");
-        StringArgumentType commandArgumentType = new StringArgumentType("command");
+        StringArgumentType.Builder commandArgumentType = new StringArgumentType.Builder().setName("command");
         StringDataEncoding commandArgumentEncoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
         commandArgumentEncoding.setTerminationChar((byte) 0x00);
         commandArgumentType.setEncoding(commandArgumentEncoding);
-        commandArgument.setArgumentType(commandArgumentType);
+        commandArgument.setArgumentType(commandArgumentType.build());
         command.addArgument(commandArgument);
 
         ArgumentEntry commandArgumentEntry = new ArgumentEntry(8, ReferenceLocationType.containerStart,
@@ -119,11 +119,11 @@ public class TseLoader implements SpaceSystemLoader {
         command.addArgumentAssignment(assignment);
 
         Argument responseArgument = new Argument("response");
-        StringArgumentType responseArgumentType = new StringArgumentType("response");
+        StringArgumentType.Builder responseArgumentType = new StringArgumentType.Builder().setName("response");
         StringDataEncoding responseArgumentEncoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
         responseArgumentEncoding.setTerminationChar((byte) 0x00);
         responseArgumentType.setEncoding(responseArgumentEncoding);
-        responseArgument.setArgumentType(responseArgumentType);
+        responseArgument.setArgumentType(responseArgumentType.build());
         command.addArgument(responseArgument);
 
         ArgumentEntry responseArgumentEntry = new ArgumentEntry(responseArgument);

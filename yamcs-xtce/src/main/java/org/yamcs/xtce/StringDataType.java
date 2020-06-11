@@ -12,9 +12,13 @@ public class StringDataType extends BaseDataType {
      * whatever that is -- before injection on the command link.
      */
     IntegerRange sizeRangeInCharacters; 
-
-    protected StringDataType(String name) {
-        super(name);
+    
+    protected StringDataType(Builder<?> builder) {
+        super(builder);
+        this.sizeRangeInCharacters = builder.sizeRangeInCharacters;
+        if (builder.initialValue != null) {
+            this.initialValue = builder.initialValue;
+        }
     }
     
     protected StringDataType(StringDataType t) {
@@ -27,21 +31,10 @@ public class StringDataType extends BaseDataType {
         return (String)initialValue;
     }
 
-    public void setInitialValue(String initialValue) {
-        this.initialValue = initialValue;
-    }
-
-
 
     public IntegerRange getSizeRangeInCharacters() {
         return sizeRangeInCharacters;
     }
-
-
-    public void setSizeRangeInCharacters(IntegerRange sizeRangeInCharacters) {
-        this.sizeRangeInCharacters = sizeRangeInCharacters;
-    }
-
 
     @Override
     public Object parseString(String stringValue) {       
@@ -58,5 +51,16 @@ public class StringDataType extends BaseDataType {
     public String getTypeAsString() {
         return "string";
     }
-
+    
+    
+    public static abstract class Builder<T extends Builder<T>> extends BaseDataType.Builder<T> {
+        IntegerRange sizeRangeInCharacters; 
+        public Builder() {
+        }
+        
+        public Builder(StringDataType stringType) {
+            super(stringType);
+            this.sizeRangeInCharacters = stringType.sizeRangeInCharacters;
+        }
+    }
 }

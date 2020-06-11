@@ -8,7 +8,7 @@ import java.util.Set;
 
 /**
  * For common encodings of floating point data.
- * 
+ * <p>
  * Unlike XTCE we support encoding floats as strings  - this is done by providing a separate {@link StringDataEncoding} 
  * @author nm
  *

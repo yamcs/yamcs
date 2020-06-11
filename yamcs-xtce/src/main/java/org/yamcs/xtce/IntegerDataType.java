@@ -25,8 +25,21 @@ public abstract class IntegerDataType extends NumericDataType {
      */
     IntegerValidRange validRange;
 
-    protected IntegerDataType(String name) {
-        super(name);
+    protected IntegerDataType(Builder<?> builder) {
+        super(builder);
+
+        if (builder.sizeInBits != null) {
+            this.sizeInBits = builder.sizeInBits;
+        }
+        if (builder.signed != null) {
+            signed = builder.signed;
+        }
+        if (builder.validRange != null) {
+            validRange = builder.validRange;
+        }
+        if (builder.initialValue != null) {
+            this.initialValue = parseString(builder.initialValue);
+        }
     }
 
     protected IntegerDataType(IntegerDataType t) {
@@ -34,10 +47,6 @@ public abstract class IntegerDataType extends NumericDataType {
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
         this.validRange = t.validRange;
-    }
-
-    public void setSigned(boolean signed) {
-        this.signed = signed;
     }
 
     public boolean isSigned() {
@@ -48,13 +57,6 @@ public abstract class IntegerDataType extends NumericDataType {
         return sizeInBits;
     }
 
-    public void setSizeInBits(int sizeInBits) {
-        if (sizeInBits > 64) {
-            throw new IllegalArgumentException("Maximum supported size in bits is 64");
-        }
-        this.sizeInBits = sizeInBits;
-    }
-
     /**
      * returns the range for the values of this type to be valid or null if there is no range set (meaning that all
      * values are valid)
@@ -63,10 +65,6 @@ public abstract class IntegerDataType extends NumericDataType {
      */
     public IntegerValidRange getValidRange() {
         return validRange;
-    }
-
-    public void setValidRange(IntegerValidRange range) {
-        this.validRange = range;
     }
 
     public void setInitialValue(Long initialValue) {
@@ -133,7 +131,8 @@ public abstract class IntegerDataType extends NumericDataType {
             bs--;
         }
         if (bn.bitLength() > bs) {
-            throw new NumberFormatException("Number "+stringValue+" does not fit the bit size ("+sizeInBits+(signed?"/signed":"unsigned")+")");
+            throw new NumberFormatException("Number " + stringValue + " does not fit the bit size (" + sizeInBits
+                    + (signed ? "/signed" : "unsigned") + ")");
         }
         long x = bn.longValue();
         if (negative) {
@@ -153,4 +152,36 @@ public abstract class IntegerDataType extends NumericDataType {
         return "integer";
     }
 
+    public abstract static class Builder<T extends Builder<T>>  extends BaseDataType.Builder<T> {
+
+        Integer sizeInBits;
+        Boolean signed;
+        IntegerValidRange validRange;
+
+        public Builder() {
+        }
+        
+        public Builder(IntegerDataType dataType) {
+            super(dataType);
+            this.sizeInBits = dataType.sizeInBits;
+            this.signed = dataType.signed;
+            this.validRange = dataType.validRange;
+        }
+        
+        public void setSizeInBits(int sizeInBits) {
+            this.sizeInBits = sizeInBits;
+        }
+
+        public void setSigned(boolean signed) {
+            this.signed = signed;
+        }
+
+        public boolean isSigned() {
+            return signed == null ? true : signed;
+        }
+
+        public void setValidRange(IntegerValidRange range) {
+            this.validRange = range;
+        }
+    }
 }

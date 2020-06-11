@@ -3,9 +3,10 @@ package org.yamcs.xtce;
 public class StringArgumentType extends StringDataType implements ArgumentType {
     private static final long serialVersionUID = 2L;
 
-    public StringArgumentType(String name) {
-        super(name);
+    public StringArgumentType(Builder builder) {
+        super(builder);
     }
+    
     /**
      * Creates a shallow copy of the parameter type, giving it a new name. 
      */
@@ -34,5 +35,13 @@ public class StringArgumentType extends StringDataType implements ArgumentType {
     @Override
     public StringArgumentType copy() {
         return new StringArgumentType(this);
+    }
+    
+    public static class Builder extends StringDataType.Builder<Builder> {
+
+        @Override
+        public StringArgumentType build() {
+            return new StringArgumentType(this);
+        }
     }
 }

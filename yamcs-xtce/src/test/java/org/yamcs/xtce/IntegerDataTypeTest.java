@@ -57,21 +57,21 @@ public class IntegerDataTypeTest {
     }
 
     @Test
-    public void testInitialValue() {
+    public void testParse() {
         IntegerDataType idt = getidt(64, false);
         assertNull(idt.getInitialValue());
         
         idt = getidt(64, true);
         assertNull(idt.getInitialValue());
         
-        idt.setInitialValue("-0x7FFFFFFF_00000000");
-        assertEquals("-9223372032559808512", idt.getInitialValue().toString());
+        Long x = idt.parseString("-0x7FFFFFFF_00000000");
+        assertEquals("-9223372032559808512", x.toString());
         
     }
     private IntegerDataType getidt(int sizeInBits, boolean signed) {
-        IntegerDataType idt = new IntegerParameterType("test");
+        IntegerParameterType.Builder idt = new IntegerParameterType.Builder().setName("test");
         idt.setSigned(signed);
         idt.setSizeInBits(sizeInBits);
-        return idt;
+        return idt.build();
     }
 }

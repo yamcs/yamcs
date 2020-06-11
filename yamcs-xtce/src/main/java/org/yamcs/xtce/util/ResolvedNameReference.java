@@ -1,5 +1,7 @@
 package org.yamcs.xtce.util;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.yamcs.xtce.NameDescription;
 
 /**
@@ -16,7 +18,7 @@ public class ResolvedNameReference extends NameReference {
         this.nd = nd;
     }
     @Override
-    public boolean resolved(NameDescription nd) {
+    public boolean tryResolve(NameDescription nd) {
         return true;
     }
     
@@ -24,5 +26,14 @@ public class ResolvedNameReference extends NameReference {
     public NameReference addResolvedAction(ResolvedAction action) {
         action.resolved(nd);
         return this;
+    }
+    @Override
+    public boolean isResolved() {
+        return true;
+    }
+    
+    @Override
+    public CompletableFuture<NameDescription> getResolvedFuture() {
+        return CompletableFuture.completedFuture(nd);
     }
 }

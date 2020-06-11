@@ -2,7 +2,6 @@ package org.yamcs.xtce;
 
 import java.util.Collections;
 import java.util.Set;
-
 /**
  * Interface implemented by all the parameters types.
  * @author nm
@@ -36,16 +35,6 @@ public interface ParameterType extends DataType {
      * @return
      */
     Object parseStringForRawValue(String stringValue);
-    
-    /**
-     * Set the data encoding for the parameter type
-     * <br>
-     * For arrays and aggregates types that do not have encoding;
-     * this operation will throw an {@link UnsupportedOperationException}
-     * 
-     * @param dataEncoding
-     */
-    void setEncoding(DataEncoding dataEncoding);
 
     /**
      * Get the data encoding for the parameter type.
@@ -56,11 +45,15 @@ public interface ParameterType extends DataType {
      */
     DataEncoding getEncoding();
     /**
-     * Create a shallow copy of the parameter type
-     *  - the object itself (and the primitive fields) are new 
-     *    but the other fields reference to the same object like the original 
+     * Create a builder that can be used to make shallow copy of the parameter type
+     * <p>all the fields reference to the same object like the original 
      *  
      * @return
      */
-    ParameterType copy();
+    <T extends ParameterType> Builder<?> toBuilder();
+        
+     interface Builder<T extends Builder<T>> extends DataType.Builder<T> {
+         void setEncoding(DataEncoding dataEncoding);
+         public ParameterType build();
+     }
 }

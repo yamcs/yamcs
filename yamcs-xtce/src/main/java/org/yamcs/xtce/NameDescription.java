@@ -14,14 +14,14 @@ public class NameDescription implements Serializable {
     private static final long serialVersionUID = 200706050619L;
 
     /**
-     * Name of the object
-     */
-    protected String name = null;
-
-    /**
      * path separator used in the fully qualified names
      */
     public static char PATH_SEPARATOR = '/';
+
+    /**
+     * Name of the object
+     */
+    protected String name = null;
 
     /**
      * fully qualified name (i.e. space system name+"/"+name
@@ -41,13 +41,21 @@ public class NameDescription implements Serializable {
     String shortDescription;
     String longDescription;
 
+    public NameDescription(Builder<?> builder) {
+        this.name = builder.name;
+        this.longDescription = builder.longDescription;
+        this.shortDescription = builder.shortDescription;
+        this.ancillaryDataSet = builder.ancillaryDataSet;
+        this.xtceAliasSet = builder.xtceAliasSet;
+    }
+
     NameDescription(String name) {
         this.name = name;
     }
 
     /*
      * creates a shallow copy
-     * */
+     */
     protected NameDescription(NameDescription t) {
         this.ancillaryDataSet = t.ancillaryDataSet;
         this.longDescription = t.longDescription;
@@ -82,8 +90,8 @@ public class NameDescription implements Serializable {
             throw new IllegalArgumentException("qualified name '" + qname + "' +must end with '" + name + "'");
         }
         this.qualifiedName = qname;
-     //   String ssName = getSubsystemName(qname);
-      //  addAlias(ssName, name);
+        // String ssName = getSubsystemName(qname);
+        // addAlias(ssName, name);
     }
 
     public AncillaryData getAncillaryData(String name) {
@@ -224,4 +232,53 @@ public class NameDescription implements Serializable {
         return fqname.substring(0, index);
     }
 
+    static public abstract class Builder<T extends Builder<T>>  {
+        private String name;
+        private XtceAliasSet xtceAliasSet = XtceAliasSet.NO_ALIAS;
+        private Map<String, AncillaryData> ancillaryDataSet = null;
+        private String shortDescription;
+        private String longDescription;
+
+        public Builder() {
+        }
+        
+        public Builder(NameDescription nd) {
+            this.name = nd.name;
+            this.xtceAliasSet = nd.xtceAliasSet;
+            this.ancillaryDataSet = nd.ancillaryDataSet;
+            this.shortDescription = nd.shortDescription;
+            this.longDescription = nd.longDescription;
+        }
+        
+
+        public T setName(String name) {
+            this.name = name;
+            return self();
+        }
+
+        public void setLongDescription(String longDescription) {
+            this.longDescription = longDescription;
+        }
+
+        public void setShortDescription(String shortDescription) {
+            this.shortDescription = shortDescription;
+        }
+
+        public void setAliasSet(XtceAliasSet aliasSet) {
+            this.xtceAliasSet = aliasSet;
+        }
+
+        public void AncillaryData(Map<String, AncillaryData> ancillaryDataSet) {
+            this.ancillaryDataSet = ancillaryDataSet;
+        }
+        
+        @SuppressWarnings("unchecked")
+        protected T self() {
+            return (T) this;
+        }
+        
+        public String getName() {
+            return name;
+        }
+    }
 }

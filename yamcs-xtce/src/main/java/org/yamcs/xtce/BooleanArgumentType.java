@@ -1,13 +1,11 @@
 package org.yamcs.xtce;
 
-
 public class BooleanArgumentType extends BooleanDataType implements ArgumentType {
-    private static final long serialVersionUID=3L;
-   
-    public BooleanArgumentType(String name){
-        super(name);
+    private static final long serialVersionUID = 3L;
+
+    public BooleanArgumentType(Builder builder) {
+        super(builder);
     }
-    
     /**
      * Creates a shallow copy of the parameter type
      * 
@@ -15,7 +13,6 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
     public BooleanArgumentType(BooleanArgumentType t) {
         super(t);
     }
-    
 
     @Override
     public String getTypeAsString() {
@@ -27,14 +24,23 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
         StringBuilder sb = new StringBuilder();
         sb.append("BooleanArgumentType name:").append(name);
 
-        if(initialValue!=null) sb.append(", defaultValue: ").append(initialValue);
+        if (initialValue != null)
+            sb.append(", defaultValue: ").append(initialValue);
         sb.append(", encoding: ").append(encoding);
 
         return sb.toString();
     }
-    
+
     @Override
     public BooleanArgumentType copy() {
         return new BooleanArgumentType(this);
+    }
+
+    public static class Builder extends BooleanDataType.Builder<Builder> {
+
+        @Override
+        public DataType build() {
+            return new BooleanArgumentType(this);
+        }
     }
 }

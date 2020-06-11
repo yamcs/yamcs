@@ -9,6 +9,11 @@ package org.yamcs.xtce;
  *
  */
 public class AggregateParameterType extends AggregateDataType implements ParameterType {
+
+    public AggregateParameterType(Builder builder) {
+        super(builder);
+    }
+
     public AggregateParameterType(String name) {
         super(name);
     }
@@ -32,13 +37,8 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
     }
 
     @Override
-    public void setEncoding(DataEncoding dataEncoding) {
-        throw new UnsupportedOperationException("aggregate parameters do not support encodings");
-    }
-
-    @Override
-    public AggregateParameterType copy() {
-        return new AggregateParameterType(this);
+    public Builder toBuilder() {
+        return new Builder(this);
     }
 
     @Override
@@ -46,5 +46,25 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
         throw new UnsupportedOperationException("aggregate parameters do not support encodings");
     }
 
-    
+    public static class Builder extends AggregateDataType.Builder<Builder> implements ParameterType.Builder<Builder> {
+
+        public Builder() {
+        }
+ 
+        public Builder(AggregateParameterType aggregateParameterType) {
+            super(aggregateParameterType);
+        }
+
+        @Override
+        public AggregateParameterType build() {
+            return new AggregateParameterType(this);
+        }
+
+        @Override
+        public void setEncoding(DataEncoding dataEncoding) {
+            throw new UnsupportedOperationException("aggregate parameters do not support encodings");
+            
+        }
+        
+    }
 }

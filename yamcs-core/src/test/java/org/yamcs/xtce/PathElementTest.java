@@ -11,21 +11,21 @@ public class PathElementTest {
         assertEquals("a", pe.getName());
         assertArrayEquals(new int[] {3, 4}, pe.index);
     }
-    
+
     @Test
     public void test2() {
         PathElement pe = PathElement.fromString("[3]");
         assertEquals(null, pe.getName());
         assertArrayEquals(new int[] {3}, pe.index);
     }
-    
+
     @Test
     public void test3() {
         PathElement pe = PathElement.fromString("xyz");
         assertEquals("xyz", pe.getName());
         assertArrayEquals(null, pe.index);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void test4() {
         PathElement pe = PathElement.fromString("xyz[");

@@ -1,13 +1,14 @@
 package org.yamcs.xtce;
 
+
 public class BooleanParameterType extends BooleanDataType implements ParameterType {
 
     private static final long serialVersionUID = 1L;
 
-    public BooleanParameterType(String name) {
-        super(name);
+    public BooleanParameterType(Builder builder) {
+        super(builder);
     }
-
+    
     /**
      * Creates a shallow copy of the parameter type
      * 
@@ -22,7 +23,21 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     }
 
     @Override
-    public ParameterType copy() {
-        return new BooleanParameterType(this);
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
+    
+    public static class Builder extends BooleanDataType.Builder<Builder> implements ParameterType.Builder<Builder>{
+        public Builder() {
+            
+        }
+        public Builder(BooleanParameterType booleanParameterType) {
+            super(booleanParameterType);
+        }
+
+        @Override
+        public BooleanParameterType build() {
+            return new BooleanParameterType(this);
+        }
     }
 }

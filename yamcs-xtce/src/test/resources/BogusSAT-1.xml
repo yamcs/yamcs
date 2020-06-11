@@ -112,6 +112,14 @@ limitations under the License.
                      </xtce:Size>
 	              </xtce:DimensionList>
             </xtce:ArrayParameterType>
+             <xtce:ArrayParameterType name="Array_with_type_defined_later" arrayTypeRef="SC001/BusElectronics/type_defined_later">
+           		<xtce:LongDescription>Array with number of dimensions without dimension list</xtce:LongDescription>
+           	     <xtce:DimensionList>
+		             <xtce:Size>
+        				 <xtce:FixedValue>9</xtce:FixedValue>
+                     </xtce:Size>
+	              </xtce:DimensionList>
+            </xtce:ArrayParameterType>
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
 			<xtce:Parameter parameterTypeRef="TM_CHECKSUMType" name="TM_CHECKSUM">
@@ -454,6 +462,9 @@ limitations under the License.
 							</xtce:DefaultCalibrator>
 						</xtce:FloatDataEncoding>
 						<xtce:ValidRange minInclusive="-10.00" maxInclusive="100.00" rangeAppliesToCalibrated="false"/>
+					</xtce:FloatParameterType>
+					<xtce:FloatParameterType name="type_defined_later" sizeInBits="32">
+						<xtce:UnitSet/>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_Order3_PolyTerms_Type" sizeInBits="32" shortDescription="This is a float parameter with an order 3 polynomial calibrator">
 						<xtce:UnitSet/>

@@ -162,7 +162,7 @@ public class SpaceSystem extends NameDescription {
             break;
         }
         if (nd != null) {
-            resolved = nr.resolved(nd);
+            resolved = nr.tryResolve(nd);
         }
         if (!resolved) {
             unresolvedReferences.add(nr);

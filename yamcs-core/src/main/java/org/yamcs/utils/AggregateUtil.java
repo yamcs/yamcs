@@ -265,11 +265,12 @@ public class AggregateUtil {
     }
 
     public static AggregateParameterType createParameterType(String name, AggregateValue v) {
-        AggregateParameterType apt = new AggregateParameterType(name);
+        AggregateParameterType.Builder apt = new AggregateParameterType.Builder();
+        apt.setName(name);
         AggregateMemberNames amn = v.getMemberNames();
         for(int i=0; i<amn.size(); i++) {
             apt.addMember(new Member(amn.get(i)));
         }
-        return apt;
+        return apt.build();
     }
 }

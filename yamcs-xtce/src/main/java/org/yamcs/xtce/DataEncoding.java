@@ -11,6 +11,7 @@ import java.util.Set;
 /**
  * Describes how a particular piece of data is sent or received from some non-native, off-platform device. (e.g. a
  * spacecraft)
+ * <p>
  * 
  * DIFFERS_FROM_XTCE: XTCE defines known encodings for the usual types (e.g. twosComplement for signed integers) and
  * allows

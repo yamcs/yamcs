@@ -6,16 +6,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.xtce.BinaryParameterType.Builder;
+
 public class EnumeratedParameterType extends EnumeratedDataType implements ParameterType {
-    private static final long serialVersionUID = 200805301432L;
+    private static final long serialVersionUID = 5L;
 
     private EnumerationAlarm defaultAlarm = null;
     private List<EnumerationContextAlarm> contextAlarmList = null;
 
-    public EnumeratedParameterType(String name) {
-        super(name);
+    public EnumeratedParameterType(Builder builder) {
+        super(builder);
+        this.defaultAlarm = builder.defaultAlarm;
+        this.contextAlarmList  = builder.contextAlarmList;
     }
-
+    
     /**
      * Copy constructor
      * 
@@ -30,7 +34,15 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     public boolean hasAlarm() {
         return defaultAlarm != null || (contextAlarmList != null && !contextAlarmList.isEmpty());
     }
-
+    
+    /**
+     * Override the default alarm from MDB
+     * @param enumerationAlarm
+     */
+    public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
+        this.defaultAlarm = enumerationAlarm;
+    }
+    
     @Override
     public Set<Parameter> getDependentParameters() {
         if (contextAlarmList == null) {
@@ -46,16 +58,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return defaultAlarm;
     }
 
-    public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
-        this.defaultAlarm = enumerationAlarm;
-    }
-
-    public void addContextAlarm(EnumerationContextAlarm nca) {
-        if (contextAlarmList == null) {
-            contextAlarmList = new ArrayList<>();
-        }
-        contextAlarmList.add(nca);
-    }
+  
 
     public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
         if (contextAlarmList == null) {
@@ -69,32 +72,8 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return null;
     }
 
-    /**
-     * Adds a new contextual alarm for the specified value
-     * 
-     * @param contextMatch
-     *            use <tt>null</tt> for the default context
-     */
-    public void addAlarm(MatchCriteria contextMatch, String enumLabel, AlarmLevels level) {
-        createOrGetAlarm(contextMatch).addAlarm(enumLabel, level);
-    }
-
-    public EnumerationAlarm createOrGetAlarm(MatchCriteria contextMatch) {
-        if (contextMatch == null) {
-            if (defaultAlarm == null) {
-                defaultAlarm = new EnumerationAlarm();
-            }
-            return defaultAlarm;
-        } else {
-            EnumerationContextAlarm eca = getContextAlarm(contextMatch);
-            if (eca == null) {
-                eca = new EnumerationContextAlarm();
-                eca.setContextMatch(contextMatch);
-                addContextAlarm(eca);
-            }
-            return eca;
-        }
-    }
+    
+  
 
     public List<EnumerationContextAlarm> getContextAlarmList() {
         return contextAlarmList;
@@ -120,18 +99,100 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return "EnumeratedParameterType: " + enumeration;
     }
 
-    @Override
-    public String toString() {
-        return "EnumeratedParameterType: " + enumerationList + " encoding:" + encoding
-                + ((defaultAlarm != null) ? defaultAlarm : "") + ((contextAlarmList != null) ? contextAlarmList : "");
-    }
 
     public void setContextAlarmList(List<EnumerationContextAlarm> contextAlarmList) {
         this.contextAlarmList = contextAlarmList;
     }
 
+
     @Override
-    public ParameterType copy() {
-        return new EnumeratedParameterType(this);
+    public Builder toBuilder() {
+        return new Builder(this);
     }
+
+
+    @Override
+    public String toString() {
+        return "EnumeratedParameterType: " + enumerationList + " encoding:" + encoding
+                + ((defaultAlarm != null) ? defaultAlarm : "") + ((contextAlarmList != null) ? contextAlarmList : "");
+    }
+    
+    public static class Builder extends EnumeratedDataType.Builder<Builder> implements ParameterType.Builder<Builder> {
+        private EnumerationAlarm defaultAlarm = null;
+        private List<EnumerationContextAlarm> contextAlarmList = null;
+
+        public Builder() {
+            
+        }
+        
+        public Builder(EnumeratedParameterType enumeratedParameterType) {
+            super(enumeratedParameterType);
+            this.defaultAlarm = enumeratedParameterType.defaultAlarm;
+            this.contextAlarmList = enumeratedParameterType.contextAlarmList;
+        }
+
+        public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
+            this.defaultAlarm = enumerationAlarm;
+        }
+        
+        public void addContextAlarm(EnumerationContextAlarm nca) {
+            if (contextAlarmList == null) {
+                contextAlarmList = new ArrayList<>();
+            }
+            contextAlarmList.add(nca);
+        }
+        
+        /**
+         * Adds a new contextual alarm for the specified value
+         * 
+         * @param contextMatch
+         *            use <tt>null</tt> for the default context
+         */
+        public void addAlarm(MatchCriteria contextMatch, String enumLabel, AlarmLevels level) {
+            createOrGetAlarm(contextMatch).addAlarm(enumLabel, level);
+        }
+
+        public EnumerationAlarm createOrGetAlarm(MatchCriteria contextMatch) {
+            if (contextMatch == null) {
+                if (defaultAlarm == null) {
+                    defaultAlarm = new EnumerationAlarm();
+                }
+                return defaultAlarm;
+            } else {
+                EnumerationContextAlarm eca = getContextAlarm(contextMatch);
+                if (eca == null) {
+                    eca = new EnumerationContextAlarm();
+                    eca.setContextMatch(contextMatch);
+                    addContextAlarm(eca);
+                }
+                return eca;
+            }
+        }
+        
+        public EnumerationAlarm getDefaultAlarm() {
+            return defaultAlarm;
+        }
+
+        public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
+            if (contextAlarmList == null) {
+                return null;
+            }
+            for (EnumerationContextAlarm eca : contextAlarmList) {
+                if (eca.getContextMatch().equals(contextMatch)) {
+                    return eca;
+                }
+            }
+            return null;
+        }
+        
+        public void setContextAlarmList(List<EnumerationContextAlarm> contextAlarmList) {
+            this.contextAlarmList = contextAlarmList;
+        }
+
+        @Override
+        public EnumeratedParameterType build() {
+            return new EnumeratedParameterType(this);
+        }
+    }
+
 }

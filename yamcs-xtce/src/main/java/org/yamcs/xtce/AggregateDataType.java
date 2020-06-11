@@ -10,6 +10,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -21,6 +22,12 @@ public class AggregateDataType extends NameDescription implements DataType {
     List<Member> memberList = new ArrayList<>();
     transient AggregateMemberNames memberNames;
 
+    public AggregateDataType(Builder<?> builder) {
+        super(builder);
+
+        this.memberList = builder.memberList;
+    }
+
     public AggregateDataType(String name) {
         super(name);
     }
@@ -29,14 +36,6 @@ public class AggregateDataType extends NameDescription implements DataType {
         super(t);
         this.memberList = t.memberList;
         this.memberNames = t.memberNames;
-    }
-
-    public void addMember(Member memberType) {
-        memberList.add(memberType);
-    }
-
-    public void addMembers(List<Member> memberList) {
-        this.memberList.addAll(memberList);
     }
 
     @Override
@@ -125,12 +124,6 @@ public class AggregateDataType extends NameDescription implements DataType {
         return memberList.get(idx);
     }
 
-    @Override
-    public void setInitialValue(String initialValue) {
-        throw new UnsupportedOperationException(
-                "Cannot set initial value; please send individual initial values for the members");
-    }
-
     /**
      * Parse the initial value as a JSON string.
      * <p>
@@ -202,6 +195,63 @@ public class AggregateDataType extends NameDescription implements DataType {
             r.put(memb.getName(), v);
         }
         return r;
+    }
+
+    @Override
+    public String toString(Object v) {
+        if (v instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> m1 = (Map<String, Object>) v;
+            Map<String, Object> m2 = new HashMap<>();
+
+            for (Member memb : memberList) {
+                Object v2 = m1.get(memb.getName());
+                if (v != null) {
+                    DataType dt = memb.getType();
+                    m2.put(memb.getName(), dt.toString(v2));
+                }
+            }
+            Gson gson = new Gson();
+            return gson.toJson(m2);
+        } else {
+            throw new IllegalArgumentException("Can only convert maps");
+        }
+    }
+
+    public abstract static class Builder<T extends Builder<T>> extends NameDescription.Builder<T>
+            implements DataType.Builder<T> {
+        List<Member> memberList = new ArrayList<>();
+
+        public Builder() {
+        }
+
+        public Builder(AggregateParameterType dataType) {
+            super(dataType);
+            this.memberList = dataType.memberList;
+        }
+
+        @Override
+        public void setInitialValue(String initialValue) {
+            throw new UnsupportedOperationException(
+                    "Cannot set initial value; please send individual initial values for the members");
+
+        }
+
+        public void addMember(Member memberType) {
+            memberList.add(memberType);
+        }
+
+        public void addMembers(List<Member> memberList) {
+            this.memberList.addAll(memberList);
+        }
+
+        public List<Member> getMemberList() {
+            return memberList;
+        }
+
+        public boolean isResolved() {
+            return true;
+        }
     }
 
 }

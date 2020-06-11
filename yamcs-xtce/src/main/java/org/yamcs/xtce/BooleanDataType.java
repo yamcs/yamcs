@@ -8,6 +8,21 @@ public class BooleanDataType extends BaseDataType {
     String oneStringValue = "True";
     String zeroStringValue = "False";
    
+    protected BooleanDataType(Builder<?> builder) {
+        super(builder);
+        
+        if(builder.oneStringValue != null) {
+            this.oneStringValue = builder.oneStringValue;
+        }
+        if(builder.zeroStringValue != null) {
+            this.zeroStringValue = builder.zeroStringValue;
+        }
+        
+        if (builder.initialValue != null) {
+            this.initialValue = parseString(builder.initialValue);
+        }
+    }
+    
     protected BooleanDataType(BooleanDataType t) {
         super(t);
     }
@@ -16,15 +31,6 @@ public class BooleanDataType extends BaseDataType {
         return (Boolean)initialValue;
     }
 
-    public void setInitialValue(Boolean initialValue) {
-        this.initialValue = initialValue;
-    }
-
-    BooleanDataType(String name) {
-        super(name);
-    }
-
-   
     /**
      * Returns {@link Boolean#parseBoolean(String)}
     */
@@ -43,16 +49,8 @@ public class BooleanDataType extends BaseDataType {
         return oneStringValue;
     }
 
-    public void setOneStringValue(String oneStringValue) {
-        this.oneStringValue = oneStringValue;
-    }
-
     public String getZeroStringValue() {
         return zeroStringValue;
-    }
-
-    public void setZeroStringValue(String zeroStringValue) {
-        this.zeroStringValue = zeroStringValue;
     }
 
     @Override
@@ -70,4 +68,27 @@ public class BooleanDataType extends BaseDataType {
         return "BooleanData encoding: " + encoding;
     }
 
+    public static abstract class Builder <T extends Builder<T>> extends BaseDataType.Builder<T> {
+        String oneStringValue;
+        String zeroStringValue;
+        
+        public Builder() {
+        }
+        
+        public Builder(BooleanDataType dataType) {
+            super(dataType);
+            this.oneStringValue = dataType.oneStringValue;
+            this.zeroStringValue = dataType.zeroStringValue;
+        }
+        
+        public void setOneStringValue(String oneStringValue) {
+            this.oneStringValue = oneStringValue;
+        }
+
+        public void setZeroStringValue(String zeroStringValue) {
+            this.zeroStringValue = zeroStringValue;
+        }
+    }
+
+  
 }

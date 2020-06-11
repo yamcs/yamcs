@@ -7,6 +7,10 @@ import java.util.Set;
 public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements ParameterType {
     private static final long serialVersionUID = 1L;
 
+    public AbsoluteTimeParameterType(Builder builder) {
+        super(builder);
+    }
+    
     public AbsoluteTimeParameterType(String name) {
         super(name);
     }
@@ -39,13 +43,31 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
     }
 
     @Override
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
+    
+    @Override
     public String toString() {
         return "AbsoluteTimeParameterType name:" + name
                 + ((getReferenceTime() != null) ? ", referenceTime:" + getReferenceTime() : "");
-
     }
-    @Override
-    public ParameterType copy() {
-        return new AbsoluteTimeParameterType(this);
+   
+    
+    public static class Builder extends AbsoluteTimeDataType.Builder<Builder> implements ParameterType.Builder<Builder>{
+
+        public Builder() {
+        }
+
+        public Builder(AbsoluteTimeParameterType absoluteTimeParameterType) {
+            super(absoluteTimeParameterType);
+        }
+
+        @Override
+        public AbsoluteTimeParameterType build() {
+            return new AbsoluteTimeParameterType(this);
+        }
+
+        
     }
 }

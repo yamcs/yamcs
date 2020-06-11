@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -51,6 +52,7 @@ import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -131,7 +133,8 @@ public class V6Loader extends V6LoaderBase {
     protected HashMap<String, Parameter> parameters = new HashMap<>();
     protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
     BasicPrefFactory prefFactory = new BasicPrefFactory();
-
+    Map<Parameter, DataType.Builder<?>> parameterDataTypesBuilders = new HashMap<>();
+    
     final ConditionParser conditionParser = new ConditionParser(prefFactory);
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
@@ -467,24 +470,24 @@ public class V6Loader extends V6LoaderBase {
                 engtype = PARAM_ENGTYPE_INT32;
             }
 
-            ParameterType ptype = null;
+            BaseDataType.Builder ptype = null;
             if (PARAM_ENGTYPE_UINT32.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType(name);
-                ((IntegerParameterType) ptype).setSigned(false);
+                ptype = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptype).setSigned(false);
             } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType(name);
-                ((IntegerParameterType) ptype).setSigned(false);
-                ((IntegerParameterType) ptype).setSizeInBits(64);
+                ptype = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptype).setSigned(false);
+                ((IntegerParameterType.Builder) ptype).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_INT32.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType(name);
+                ptype = new IntegerParameterType.Builder();
             } else if (PARAM_ENGTYPE_INT64.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType(name);
-                ((IntegerParameterType) ptype).setSizeInBits(64);
+                ptype = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptype).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_FLOAT.equalsIgnoreCase(engtype)) {
-                ptype = new FloatParameterType(name);
+                ptype = new FloatParameterType.Builder();
             } else if (PARAM_ENGTYPE_DOUBLE.equalsIgnoreCase(engtype)) {
-                ptype = new FloatParameterType(name);
-                ((FloatParameterType) ptype).setSizeInBits(64);
+                ptype = new FloatParameterType.Builder();
+                ((FloatParameterType.Builder) ptype).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) {
                 if (calib == null) {
                     throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
@@ -494,19 +497,19 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Parameter " + name
                             + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
                 }
-                ptype = new EnumeratedParameterType(calib);
+                ptype = new EnumeratedParameterType.Builder();
                 for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                    ((EnumeratedParameterType) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
+                    ((EnumeratedParameterType.Builder) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
                 }
             } else if (PARAM_ENGTYPE_STRING.equalsIgnoreCase(engtype)) {
-                ptype = new StringParameterType(name);
+                ptype = new StringParameterType.Builder();
             } else if (PARAM_ENGTYPE_BOOLEAN.equalsIgnoreCase(engtype)) {
-                ptype = new BooleanParameterType(name);
+                ptype = new BooleanParameterType.Builder();
             } else if (PARAM_ENGTYPE_BINARY.equalsIgnoreCase(engtype)) {
-                ptype = new BinaryParameterType(name);
+                ptype = new BinaryParameterType.Builder();
             } else if (PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ptype = new AbsoluteTimeParameterType(name);
-                populateTimeParameter(spaceSystem, (AbsoluteTimeParameterType) ptype, calib);
+                ptype = new AbsoluteTimeParameterType.Builder();
+                populateTimeParameter(spaceSystem, (AbsoluteTimeParameterType.Builder) ptype, calib);
             } else {
                 if (engtype.isEmpty()) {
                     throw new SpreadsheetLoadException(ctx, "No engineering type specified");
@@ -514,21 +517,22 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Unknown parameter type '" + engtype + "'");
                 }
             }
-
+            ptype.setName(name);
+            
             String units = null;
             if (hasColumn(cells, IDX_PARAM_ENGUNIT)) {
                 units = cells[IDX_PARAM_ENGUNIT].getContents();
             }
 
-            if (!"".equals(units) && units != null && ptype instanceof BaseDataType) {
+            if (!"".equals(units) && units != null && ptype instanceof BaseDataType.Builder) {
                 UnitType unitType = new UnitType(units);
-                ((BaseDataType) ptype).addUnit(unitType);
+                ((BaseDataType.Builder) ptype).addUnit(unitType);
             }
 
             DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Parameter " + param.getName(), rawtype, engtype,
                     encodings, calib);
 
-            if (ptype instanceof IntegerParameterType) {
+            if (ptype instanceof IntegerParameterType.Builder) {
                 // Integers can be encoded as strings
                 if (encoding instanceof StringDataEncoding) {
                     // Create a new int encoding which uses the configured string encoding
@@ -542,11 +546,11 @@ public class V6Loader extends V6LoaderBase {
                         }
                         intStringEncoding.setDefaultCalibrator(c);
                     }
-                    ((IntegerParameterType) ptype).setEncoding(intStringEncoding);
+                    ((IntegerParameterType.Builder) ptype).setEncoding(intStringEncoding);
                 } else {
-                    ((IntegerParameterType) ptype).setEncoding(encoding);
+                    ((IntegerParameterType.Builder) ptype).setEncoding(encoding);
                 }
-            } else if (ptype instanceof FloatParameterType) {
+            } else if (ptype instanceof FloatParameterType.Builder) {
                 // Floats can be encoded as strings
                 if (encoding instanceof StringDataEncoding) {
                     // Create a new float encoding which uses the configured string encoding
@@ -560,15 +564,15 @@ public class V6Loader extends V6LoaderBase {
                             floatStringEncoding.setDefaultCalibrator(c);
                         }
                     }
-                    ((FloatParameterType) ptype).setEncoding(floatStringEncoding);
+                    ((FloatParameterType.Builder) ptype).setEncoding(floatStringEncoding);
                 } else {
-                    ((FloatParameterType) ptype).setEncoding(encoding);
+                    ((FloatParameterType.Builder) ptype).setEncoding(encoding);
                 }
-            } else if (ptype instanceof EnumeratedParameterType) {
-                if (((EnumeratedParameterType) ptype).getEncoding() != null) {
+            } else if (ptype instanceof EnumeratedParameterType.Builder) {
+                if (((EnumeratedParameterType.Builder) ptype).getEncoding() != null) {
                     // Some other param has already led to setting the encoding of this shared ptype.
                     // Do some basic consistency checks
-                    if (((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                    if (((EnumeratedParameterType.Builder) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Multiple parameters are sharing calibrator '" + calib + "' with different bit sizes.");
                     }
@@ -588,13 +592,13 @@ public class V6Loader extends V6LoaderBase {
             } else {
                 ptype.setEncoding(encoding);
             }
-
-            param.setParameterType(ptype);
+            parameterDataTypesBuilders.put(param,  ptype);
+            param.setParameterType((ParameterType) ptype.build()); 
             param.setDataSource(dataSource);
         }
     }
 
-    private void populateTimeParameter(SpaceSystem spaceSystem, AbsoluteTimeParameterType ptype, String calib) {
+    private void populateTimeParameter(SpaceSystem spaceSystem, AbsoluteTimeParameterType.Builder ptype, String calib) {
         if (calib == null) {
             return;
         }
@@ -1625,24 +1629,24 @@ public class V6Loader extends V6LoaderBase {
             calib = name;
         }
 
-        ArgumentType atype = null;
+        BaseDataType.Builder atype = null;
         if ("uint".equalsIgnoreCase(engType)) {
-            atype = new IntegerArgumentType(name);
-            ((IntegerArgumentType) atype).setSigned(false);
+            atype = new IntegerArgumentType.Builder();
+            ((IntegerArgumentType.Builder) atype).setSigned(false);
         } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engType)) {
-            atype = new IntegerArgumentType(name);
-            ((IntegerArgumentType) atype).setSigned(false);
-            ((IntegerArgumentType) atype).setSizeInBits(64);
+            atype = new IntegerArgumentType.Builder();
+            ((IntegerArgumentType.Builder) atype).setSigned(false);
+            ((IntegerArgumentType.Builder) atype).setSizeInBits(64);
         } else if ("int".equalsIgnoreCase(engType)) {
-            atype = new IntegerArgumentType(name);
+            atype = new IntegerArgumentType.Builder();
         } else if (PARAM_ENGTYPE_INT64.equalsIgnoreCase(engType)) {
-            atype = new IntegerArgumentType(name);
-            ((IntegerArgumentType) atype).setSizeInBits(64);
+            atype = new IntegerArgumentType.Builder();
+            ((IntegerArgumentType.Builder) atype).setSizeInBits(64);
         } else if (PARAM_ENGTYPE_FLOAT.equalsIgnoreCase(engType)) {
-            atype = new FloatArgumentType(name);
+            atype = new FloatArgumentType.Builder();
         } else if (PARAM_ENGTYPE_DOUBLE.equalsIgnoreCase(engType)) {
-            atype = new FloatArgumentType(name);
-            ((FloatArgumentType) atype).setSizeInBits(64);
+            atype = new FloatArgumentType.Builder();
+            ((FloatArgumentType.Builder) atype).setSizeInBits(64);
         } else if ("enumerated".equalsIgnoreCase(engType)) {
             if (calib == null) {
                 throw new SpreadsheetLoadException(ctx, "Argument " + name + " has to have an enumeration");
@@ -1652,37 +1656,39 @@ public class V6Loader extends V6LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have an enumeration '"
                         + calib + "' but the enumeration does not exist");
             }
-            atype = new EnumeratedArgumentType(calib);
+            atype = new EnumeratedArgumentType.Builder();
             for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                ((EnumeratedArgumentType) atype).addEnumerationValue(entry.getKey(), entry.getValue());
+                ((EnumeratedArgumentType.Builder) atype).addEnumerationValue(entry.getKey(), entry.getValue());
             }
         } else if ("string".equalsIgnoreCase(engType)) {
-            atype = new StringArgumentType(name);
+            atype = new StringArgumentType.Builder();
         } else if ("binary".equalsIgnoreCase(engType)) {
-            atype = new BinaryArgumentType(name);
+            atype = new BinaryArgumentType.Builder();
         } else if ("boolean".equalsIgnoreCase(engType)) {
-            atype = new BooleanArgumentType(name);
+            atype = new BooleanArgumentType.Builder();
         } else {
             throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
         }
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
         }
+        
+        atype.setName(name);
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
 
         if (hasColumn(cells, IDX_CMD_DEFVALUE)) {
             String v = cells[IDX_CMD_DEFVALUE].getContents();
             try {
-                arg.setInitialValue(atype.parseString(v));
+                arg.setInitialValue(atype.build().parseString(v));
             } catch (Exception e) {
                 throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }
         }
 
         if (hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
-            if (atype instanceof IntegerArgumentType) {
-                if (((IntegerArgumentType) atype).isSigned()) {
+            if (atype instanceof IntegerArgumentType.Builder) {
+                if (((IntegerArgumentType.Builder) atype).isSigned()) {
                     long minInclusive = Long.MIN_VALUE;
                     long maxInclusive = Long.MAX_VALUE;
                     if (hasColumn(cells, IDX_CMD_RANGELOW)) {
@@ -1692,7 +1698,7 @@ public class V6Loader extends V6LoaderBase {
                         maxInclusive = Long.decode(cells[IDX_CMD_RANGEHIGH].getContents());
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-                    ((IntegerArgumentType) atype).setValidRange(range);
+                    ((IntegerArgumentType.Builder) atype).setValidRange(range);
                 } else {
                     long minInclusive = 0;
                     long maxInclusive = ~0;
@@ -1703,10 +1709,10 @@ public class V6Loader extends V6LoaderBase {
                         maxInclusive = UnsignedLongs.decode(cells[IDX_CMD_RANGEHIGH].getContents());
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-                    ((IntegerArgumentType) atype).setValidRange(range);
+                    ((IntegerArgumentType.Builder) atype).setValidRange(range);
 
                 }
-            } else if (atype instanceof FloatArgumentType) {
+            } else if (atype instanceof FloatArgumentType.Builder) {
                 double minInclusive = Double.NEGATIVE_INFINITY;
                 double maxInclusive = Double.POSITIVE_INFINITY;
                 if (hasColumn(cells, IDX_CMD_RANGELOW)) {
@@ -1716,7 +1722,7 @@ public class V6Loader extends V6LoaderBase {
                     maxInclusive = Double.parseDouble(cells[IDX_CMD_RANGEHIGH].getContents());
                 }
                 FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
-                ((FloatArgumentType) atype).setValidRange(range);
+                ((FloatArgumentType.Builder) atype).setValidRange(range);
             }
         }
 
@@ -1745,16 +1751,16 @@ public class V6Loader extends V6LoaderBase {
         String units = null;
         if (hasColumn(cells, IDX_CMD_ENGUNIT)) {
             units = cells[IDX_CMD_ENGUNIT].getContents();
-            if (!"".equals(units) && units != null && atype instanceof BaseDataType) {
+            if (!"".equals(units) && units != null && atype instanceof BaseDataType.Builder) {
                 UnitType unitType = new UnitType(units);
-                ((BaseDataType) atype).addUnit(unitType);
+                ((BaseDataType.Builder) atype).addUnit(unitType);
             }
         }
 
         DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Argument " + arg.getName(), rawType, engType,
                 encodings, calib);
 
-        if (atype instanceof IntegerArgumentType) {
+        if (atype instanceof IntegerArgumentType.Builder) {
             // Integers can be encoded as strings
             if (encoding instanceof StringDataEncoding) {
                 // Create a new int encoding which uses the configured string encoding
@@ -1767,13 +1773,13 @@ public class V6Loader extends V6LoaderBase {
                     }
                     intStringEncoding.setDefaultCalibrator(c);
                 }
-                ((IntegerArgumentType) atype).setEncoding(intStringEncoding);
+                ((IntegerArgumentType.Builder) atype).setEncoding(intStringEncoding);
             } else {
-                ((IntegerArgumentType) atype).setEncoding(encoding);
+                ((IntegerArgumentType.Builder) atype).setEncoding(encoding);
             }
-        } else if (atype instanceof BinaryArgumentType) {
-            ((BinaryArgumentType) atype).setEncoding(encoding);
-        } else if (atype instanceof FloatArgumentType) {
+        } else if (atype instanceof BinaryArgumentType.Builder) {
+            ((BinaryArgumentType.Builder) atype).setEncoding(encoding);
+        } else if (atype instanceof FloatArgumentType.Builder) {
             // Floats can be encoded as strings
             if (encoding instanceof StringDataEncoding) {
                 // Create a new float encoding which uses the configured string encoding
@@ -1788,15 +1794,15 @@ public class V6Loader extends V6LoaderBase {
                     }
                 }
                 floatStringEncoding.setByteOrder(byteOrder);
-                ((FloatArgumentType) atype).setEncoding(floatStringEncoding);
+                ((FloatArgumentType.Builder) atype).setEncoding(floatStringEncoding);
             } else {
-                ((FloatArgumentType) atype).setEncoding(encoding);
+                ((FloatArgumentType.Builder) atype).setEncoding(encoding);
             }
-        } else if (atype instanceof EnumeratedArgumentType) {
-            if (((EnumeratedArgumentType) atype).getEncoding() != null) {
+        } else if (atype instanceof EnumeratedArgumentType.Builder) {
+            if (((EnumeratedArgumentType.Builder) atype).getEncoding() != null) {
                 // Some other param has already led to setting the encoding of this shared ptype.
                 // Do some basic consistency checks
-                if (((EnumeratedArgumentType) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                if (((EnumeratedArgumentType.Builder) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
                     throw new SpreadsheetLoadException(ctx,
                             "Multiple parameters are sharing calibrator '" + calib + "' with different bit sizes.");
                 }
@@ -1806,19 +1812,19 @@ public class V6Loader extends V6LoaderBase {
             if (encoding instanceof StringDataEncoding) {
                 IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding) encoding));
                 // Don't set calibrator, already done when making ptype
-                ((EnumeratedArgumentType) atype).setEncoding(intStringEncoding);
+                ((EnumeratedArgumentType.Builder) atype).setEncoding(intStringEncoding);
                 intStringEncoding.setByteOrder(byteOrder);
             } else {
-                ((EnumeratedArgumentType) atype).setEncoding(encoding);
+                ((EnumeratedArgumentType.Builder) atype).setEncoding(encoding);
             }
-        } else if (atype instanceof StringArgumentType) {
-            ((StringArgumentType) atype).setEncoding(encoding);
-        } else if (atype instanceof BooleanArgumentType) {
-            ((BooleanArgumentType) atype).setEncoding(encoding);
+        } else if (atype instanceof StringArgumentType.Builder) {
+            ((StringArgumentType.Builder) atype).setEncoding(encoding);
+        } else if (atype instanceof BooleanArgumentType.Builder) {
+            ((BooleanArgumentType.Builder) atype).setEncoding(encoding);
         } else {
             throw new IllegalStateException("Don't know what to do with " + atype);
         }
-        arg.setArgumentType(atype);
+        arg.setArgumentType((ArgumentType) atype.build());
     }
 
     protected void loadChangelogSheet(boolean required) {
@@ -2156,9 +2162,11 @@ public class V6Loader extends V6LoaderBase {
         paraRef.addResolvedAction(nd -> {
 
             Parameter para = (Parameter) nd;
-            if (para.getParameterType() instanceof IntegerParameterType) {
+            DataType.Builder ptype = parameterDataTypesBuilders.get(para);
+            
+            if (ptype instanceof IntegerParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[idxValue]);
-                IntegerParameterType ipt = (IntegerParameterType) para.getParameterType();
+                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
                 if ("low".equals(trigger)) {
                     ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
                 } else if ("high".equals(trigger)) {
@@ -2167,9 +2175,9 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
-            } else if (para.getParameterType() instanceof FloatParameterType) {
+            } else if (ptype instanceof FloatParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[idxValue]);
-                FloatParameterType fpt = (FloatParameterType) para.getParameterType();
+                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptype;
                 if ("low".equals(trigger)) {
                     fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
                 } else if ("high".equals(trigger)) {
@@ -2178,8 +2186,8 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
-            } else if (para.getParameterType() instanceof EnumeratedParameterType) {
-                EnumeratedParameterType ept = (EnumeratedParameterType) para.getParameterType();
+            } else if (ptype instanceof EnumeratedParameterType) {
+                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptype;
                 if ("state".equals(trigger)) {
                     ValueEnumeration enumValue = ept.enumValue(triggerValue);
                     if (enumValue == null) {
@@ -2202,27 +2210,29 @@ public class V6Loader extends V6LoaderBase {
 
         paraRef.addResolvedAction(nd -> {
             Parameter para = (Parameter) nd;
-            ParameterType ptype = para.getParameterType();
+            DataType.Builder ptype = parameterDataTypesBuilders.get(para);
             if (ptype == null) { // the type has to be resolved somewhere else first
                 return false;
             }
 
             // Set minviolations and alarmreporttype
             AlarmType alarm = null;
-            if (para.getParameterType() instanceof IntegerParameterType) {
-                IntegerParameterType ipt = (IntegerParameterType) para.getParameterType();
+            
+            
+            if (ptype instanceof IntegerParameterType) {
+                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
                 alarm = (context == null) ? ipt.getDefaultAlarm() : ipt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (para.getParameterType() instanceof FloatParameterType) {
-                FloatParameterType fpt = (FloatParameterType) para.getParameterType();
+            } else if (ptype instanceof FloatParameterType.Builder) {
+                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptype;
                 alarm = (context == null) ? fpt.getDefaultAlarm() : fpt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (para.getParameterType() instanceof EnumeratedParameterType) {
-                EnumeratedParameterType ept = (EnumeratedParameterType) para.getParameterType();
+            } else if (ptype instanceof EnumeratedParameterType.Builder) {
+                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptype;
                 alarm = (context == null) ? ept.getDefaultAlarm() : ept.getContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ept.createOrGetAlarm(context).setAlarmReportType(reportType);

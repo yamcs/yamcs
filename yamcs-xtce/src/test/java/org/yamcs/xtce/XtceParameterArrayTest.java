@@ -26,5 +26,9 @@ public class XtceParameterArrayTest {
         SequenceContainer sq = ss.getSequenceContainer("test_array");
         ArrayParameterEntry ape = (ArrayParameterEntry) sq.getEntryList().get(0);
         assertEquals(pt2.getSize(), ape.getSize());
+        
+        
+        ArrayParameterType pt3 = (ArrayParameterType) ss.getParameterType("Array_with_type_defined_later");
+        assertNotNull(pt3);
     }
 }
