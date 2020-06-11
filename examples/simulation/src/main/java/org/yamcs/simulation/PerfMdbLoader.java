@@ -64,10 +64,11 @@ public class PerfMdbLoader implements SpaceSystemLoader {
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         SpaceSystem ss = new SpaceSystem("perf-data");
         
-        IntegerParameterType ptype = new IntegerParameterType("uint"+paramSizeInBits);
-        ptype.setSizeInBits(paramSizeInBits);
+        IntegerParameterType.Builder ptypeb = new IntegerParameterType.Builder().setName("uint"+paramSizeInBits);
+        ptypeb.setSizeInBits(paramSizeInBits);
         IntegerDataEncoding ide = new IntegerDataEncoding(paramSizeInBits);
-        ptype.setEncoding(ide);
+        ptypeb.setEncoding(ide);
+        IntegerParameterType ptype = ptypeb.build();
         ss.addParameterType(ptype);
         for (int j = 0; j < numPackets; j++) {
             int pktId = PerfPacketGenerator.PERF_TEST_PACKET_ID + j;
