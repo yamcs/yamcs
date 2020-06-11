@@ -2,13 +2,10 @@ package org.yamcs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -16,13 +13,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.yamcs.client.BulkRestDataReceiver;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
-import org.yamcs.client.RestClient;
-import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -36,18 +29,15 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.protobuf.Message;
-
-import io.netty.handler.codec.http.HttpMethod;
-
 public abstract class AbstractIntegrationTest {
+
+    protected final String yamcsHost = "localhost";
+    protected final int yamcsPort = 9190;
     protected final String yamcsInstance = "IntegrationTest";
+
     ParameterProvider parameterProvider;
     MyConnectionListener connectionListener;
-    YamcsClient yamcsClient;
-
-    WebSocketClient wsClient;
-    RestClient restClient;
+    protected YamcsClient yamcsClient;
 
     protected String adminUsername = "admin";
     protected char[] adminPassword = "rootpassword".toCharArray();
@@ -70,16 +60,13 @@ public abstract class AbstractIntegrationTest {
         assertNotNull(parameterProvider);
 
         connectionListener = new MyConnectionListener();
-        yamcsClient = YamcsClient.newBuilder("localhost", 9190)
+        yamcsClient = YamcsClient.newBuilder(yamcsHost, yamcsPort)
                 .withUserAgent("it-junit")
                 .build();
         yamcsClient.addConnectionListener(connectionListener);
         if (!yamcs.getSecurityStore().getGuestUser().isActive()) {
             yamcsClient.connect(adminUsername, adminPassword);
         }
-
-        restClient = yamcsClient.getRestClient();
-        wsClient = yamcsClient.getWebSocketClient();
 
         packetGenerator = PacketProvider.instance[0].mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
@@ -152,48 +139,26 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    protected <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
-        return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
-    }
-
-    protected RestClient getRestClient(String username, String password) throws ClientException {
-        RestClient restClient1 = null;
-        try {
-            YamcsConnectionProperties yprops = new YamcsConnectionProperties("localhost", 9190);
-            restClient1 = new RestClient(yprops);
-            restClient1.login(username, password.toCharArray());
-            restClient1.setAutoclose(false);
-            return restClient1;
-        } catch (ClientException e) {
-            restClient1.close();
-            throw e;
-        }
-    }
-
     static class MyConnectionListener implements ConnectionListener {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
         @Override
-        public void connecting(String url) {
+        public void connecting() {
         }
 
         @Override
-        public void connected(String url) {
+        public void connected() {
             onConnect.release();
         }
 
         @Override
-        public void connectionFailed(String url, ClientException exception) {
+        public void connectionFailed(ClientException exception) {
         }
 
         @Override
         public void disconnected() {
             onDisconnect.release();
-        }
-
-        @Override
-        public void log(String message) {
         }
     }
 
@@ -374,20 +339,6 @@ public abstract class AbstractIntegrationTest {
         @Override
         public String getName() {
             return name;
-        }
-    }
-
-    class MyBulkReceiver implements BulkRestDataReceiver {
-        List<byte[]> dist = new ArrayList<>();
-
-        @Override
-        public void receiveException(Throwable t) {
-            fail(t.getMessage());
-        }
-
-        @Override
-        public void receiveData(byte[] data) throws ClientException {
-            dist.add(data);
         }
     }
 }

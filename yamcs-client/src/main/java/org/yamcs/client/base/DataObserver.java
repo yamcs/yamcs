@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import org.yamcs.api.Observer;
 

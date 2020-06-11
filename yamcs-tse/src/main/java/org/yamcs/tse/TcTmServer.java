@@ -91,17 +91,18 @@ public class TcTmServer extends AbstractService {
         }
     }
 
-    public void processTseCommand(ChannelHandlerContext ctx, TseCommand command) {
-        InstrumentDriver instrument = instrumentController.getInstrument(command.getInstrument());
-        boolean expectResponse = command.hasResponse();
+    public void processTseCommand(ChannelHandlerContext ctx, TseCommand metadata) {
+        InstrumentDriver instrument = instrumentController.getInstrument(metadata.getInstrument());
+        boolean expectResponse = metadata.hasResponse();
 
         TseCommanderMessage.Builder msgb = TseCommanderMessage.newBuilder();
 
-        String commandString = replaceArguments(command.getCommand(), command);
-        ListenableFuture<List<String>> f = instrumentController.queueCommand(instrument, commandString, expectResponse);
+        String commandString = replaceArguments(metadata.getCommand(), metadata);
+        ListenableFuture<List<String>> f = instrumentController.queueCommand(instrument, metadata, commandString,
+                expectResponse);
         f.addListener(() -> {
             TseCommandResponse.Builder responseb = TseCommandResponse.newBuilder()
-                    .setId(command.getId());
+                    .setId(metadata.getId());
 
             try {
                 List<String> responses = f.get();
@@ -113,7 +114,7 @@ public class TcTmServer extends AbstractService {
                         } else { // Compound command where distinct responses were sent
                             fullResponse = String.join(";", responses);
                         }
-                        ParameterData pdata = parseResponse(command, fullResponse);
+                        ParameterData pdata = parseResponse(metadata, fullResponse);
                         msgb.setParameterData(pdata);
                         responseb.setSuccess(true);
                     } catch (MatchException e) {

@@ -1,17 +1,13 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import org.yamcs.protobuf.ListInstancesResponse;
-import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.Credentials;
 
 import com.google.protobuf.Message;
 
@@ -26,24 +22,26 @@ import io.netty.handler.codec.http.cookie.Cookie;
  */
 public class RestClient {
 
-    final YamcsConnectionProperties yprops;
-    long timeout = 5000; // timeout in milliseconds
-
-    final HttpClient httpClient;
+    private String baseURL;
+    private final HttpClient httpClient;
 
     /** maximum size of the responses - this is not applicable to bulk requests */
-    final static int MAX_RESPONSE_LENGTH = 10 * 1024 * 1024;
+    private final static int MAX_RESPONSE_LENGTH = 10 * 1024 * 1024;
 
     /** max message length of an individual ProtoBuf message part of a bulk retrieval */
-    final static int MAX_MESSAGE_LENGTH = 10 * 1024 * 1024;
+    private final static int MAX_MESSAGE_LENGTH = 10 * 1024 * 1024;
 
     private boolean autoclose = true;
 
     /**
      * Creates a rest client that communications using protobuf
      */
-    public RestClient(YamcsConnectionProperties yprops) {
-        this.yprops = yprops;
+    public RestClient(String host, int port, boolean tls, String context) {
+        if (context == null) {
+            baseURL = (tls ? "https" : "http") + "://" + host + ":" + port;
+        } else {
+            baseURL = (tls ? "https" : "http") + "://" + host + ":" + port + "/" + context;
+        }
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
         httpClient.setAcceptMediaType(HttpClient.MT_PROTOBUF);
@@ -51,47 +49,13 @@ public class RestClient {
     }
 
     public synchronized void login(String username, char[] password) throws ClientException {
-        String tokenUrl = yprops.getBaseURL() + "/auth/token";
+        String tokenUrl = baseURL + "/auth/token";
         httpClient.login(tokenUrl, username, password);
     }
 
     public synchronized void loginWithAuthorizationCode(String authorizationCode) throws ClientException {
-        String tokenUrl = yprops.getBaseURL() + "/auth/token";
+        String tokenUrl = baseURL + "/auth/token";
         httpClient.loginWithAuthorizationCode(tokenUrl, authorizationCode);
-    }
-
-    /**
-     * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
-     * 
-     * @return the list of yamcs instances configured on the server
-     * @throws ClientException
-     */
-    public List<YamcsInstance> blockingGetYamcsInstances() throws ClientException {
-        try {
-            return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof ClientException) {
-                throw (ClientException) e.getCause();
-            } else {
-                throw new ClientException(e.getCause());
-            }
-        } catch (TimeoutException e) {
-            throw new ClientException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        }
-    }
-
-    public CompletableFuture<List<YamcsInstance>> getYamcsInstances() {
-        CompletableFuture<byte[]> future = doRequest("/instances", HttpMethod.GET);
-        return future.thenApply(b -> {
-            try {
-                return ListInstancesResponse.parseFrom(b).getInstancesList();
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        });
     }
 
     /**
@@ -127,7 +91,7 @@ public class RestClient {
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(yprops.getRestApiUrl() + resource, method, body.getBytes());
+            cf = httpClient.doAsyncRequest(baseURL + "/api" + resource, method, body.getBytes());
         } catch (ClientException | IOException | GeneralSecurityException e) {
             // throw a RuntimeException instead since if the code is not buggy it's
             // unlikely to have this exception thrown
@@ -190,7 +154,7 @@ public class RestClient {
     public CompletableFuture<byte[]> doBaseRequest(String resource, HttpMethod method, byte[] body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(yprops.getBaseURL() + resource, method, body);
+            cf = httpClient.doAsyncRequest(baseURL + resource, method, body);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
@@ -225,7 +189,7 @@ public class RestClient {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(yprops.getRestApiUrl() + resource, method,
+            cf = httpClient.doBulkReceiveRequest(baseURL + "/api" + resource, method,
                     body, splitter);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
@@ -238,7 +202,7 @@ public class RestClient {
         return cf;
     }
 
-    static class MessageSplitter implements BulkRestDataReceiver {
+    private static class MessageSplitter implements BulkRestDataReceiver {
         BulkRestDataReceiver finalReceiver;
         byte[] buffer = new byte[2 * MAX_MESSAGE_LENGTH];
         int readOffset = 0;
@@ -291,7 +255,6 @@ public class RestClient {
         public void receiveException(Throwable t) {
             finalReceiver.receiveException(t);
         }
-
     }
 
     public static int readVarInt32(ByteBuffer bb) throws ClientException {
@@ -332,6 +295,10 @@ public class RestClient {
         return autoclose;
     }
 
+    public Credentials getCredentials() {
+        return httpClient.getCredentials();
+    }
+
     /**
      * if autoclose is set, the httpClient will be automatically closed at the end of the request, so the netty
      * eventgroup is shutdown. Otherwise it has to be done manually - but then the same object can be used to perform
@@ -353,7 +320,7 @@ public class RestClient {
 
     public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String resource, HttpMethod method) {
         try {
-            return httpClient.doBulkSendRequest(yprops.getRestApiUrl() + resource, method);
+            return httpClient.doBulkSendRequest(baseURL + "/api" + resource, method);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }

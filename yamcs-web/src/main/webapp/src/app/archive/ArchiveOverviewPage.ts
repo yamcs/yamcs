@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { IndexGroup } from '../client';
+import { ConfigService } from '../core/services/ConfigService';
 import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
@@ -37,7 +38,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   // eventsFg = '#1c4b8b';
 
   legendOptions = [
-    { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
     { id: 'packets', name: 'Packets', bg: this.packetsBg, fg: this.packetsFg, checked: true },
     { id: 'parameters', name: 'Parameters', bg: this.parametersBg, fg: this.parametersFg, checked: true },
     { id: 'commands', name: 'Commands', bg: this.commandsBg, fg: this.commandsFg, checked: false },
@@ -71,6 +71,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private dateTimePipe: DateTimePipe,
     private snackBar: MatSnackBar,
+    configService: ConfigService,
   ) {
     title.setTitle('Archive Overview');
 
@@ -83,6 +84,13 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         }
       }
     });
+
+    if (configService.getConfig().completeness) {
+      this.legendOptions = [
+        { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
+        ... this.legendOptions,
+      ];
+    }
 
     this.filterForm = new FormGroup({});
     const queryParams = this.route.snapshot.queryParamMap;

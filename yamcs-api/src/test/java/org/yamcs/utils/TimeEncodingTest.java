@@ -60,7 +60,7 @@ public class TimeEncodingTest {
         long instant = TimeEncoding.fromGpsCcsdsTime(0, (byte) 128);
         assertEquals("1980-01-06T00:00:00.500Z", TimeEncoding.toString(instant));
     }
-    
+
     @Test
     public void testFromGpsYearSecMillis() {
         long instant = TimeEncoding.fromGpsYearSecMillis(2010, 15, 200);
@@ -147,6 +147,15 @@ public class TimeEncodingTest {
     }
 
     @Test
+    public void testParseNanos() {
+        // We don't consider nanos, but we shouldn't crash on them either
+        assertEquals(1580605360001L, TimeEncoding.parse("2020-02-02T01:02:03.001Z"));
+        assertEquals(1580605360001L, TimeEncoding.parse("2020-02-02T01:02:03.0010Z"));
+        assertEquals(1580605360001L, TimeEncoding.parse("2020-02-02T01:02:03.00123Z"));
+        assertEquals(1580605360001L, TimeEncoding.parse("2020-02-02T01:02:03.001234Z"));
+    }
+
+    @Test
     public void testToString() {
         assertEquals("2008-12-31T23:59:59.000Z", TimeEncoding.toString(1230768032000L));
         assertEquals("2008-12-31T23:59:60.000Z", TimeEncoding.toString(1230768033000L));
@@ -177,13 +186,13 @@ public class TimeEncodingTest {
         assertEquals(977876415, time.coarseTime);
         assertEquals(1, time.fineTime);
     }
-    
+
     @Test
     public void testTaiOffset() {
         long instant = TimeEncoding.fromTaiMillisec(0);
         assertEquals(TimeEncoding.parse("1958-01-01T00:00:00"), instant);
     }
-    
+
     @Test
     public void testJ2000Offset() {
         long instant = TimeEncoding.fromJ2000Millisec(0);

@@ -36,12 +36,12 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     private static final Logger log = LoggerFactory.getLogger(ConnectedWebSocketClient.class);
 
     private List<WebSocketResource> resources = new CopyOnWriteArrayList<>();
-    private WebSocketFrameHandler wsHandler;
+    private LegacyWebSocketFrameHandler wsHandler;
 
     private ClearanceListener clearanceListener = clearance -> this.sendConnectionInfo();
 
     public ConnectedWebSocketClient(User user, String applicationName, String address, Processor processor,
-            WebSocketFrameHandler wsHandler) {
+            LegacyWebSocketFrameHandler wsHandler) {
         super(user, applicationName, address, processor);
         this.wsHandler = wsHandler;
 

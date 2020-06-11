@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
-import org.yamcs.http.websocket.WebSocketFrameHandler;
+import org.yamcs.http.websocket.LegacyWebSocketFrameHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
@@ -196,6 +196,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             contentExpected = true;
             return;
         case WEBSOCKET_PATH:
+            log.warn("DEPRECATION NOTICE: A '/_websocket' request was received. This is a deprecated"
+                    + " endpoint and server support will be removed in a future release. If you are"
+                    + " using an official client, download a later copy. Thirdparty clients should"
+                    + " follow the online specification of the new '/api/websocket' endpoint:"
+                    + " https://yamcs.org/docs/yamcs-http-api/websocket/");
             user = authorizeUser(ctx, req);
             if (path.length == 2) { // No instance specified
                 prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);
@@ -367,7 +372,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String subprotocols = "json, protobuf";
         pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
 
-        pipeline.addLast(new NewWebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
+        pipeline.addLast(new WebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         nettyContext.fireChannelRead(req);
@@ -399,7 +404,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setProcessor(processor);
         originalRequestInfo.setUser(user);
-        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
+        ctx.pipeline().addLast(new LegacyWebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);

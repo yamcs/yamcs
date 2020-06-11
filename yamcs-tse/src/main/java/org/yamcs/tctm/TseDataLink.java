@@ -1,5 +1,6 @@
 package org.yamcs.tctm;
 
+import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,6 +19,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommand;
 import org.yamcs.tse.api.TseCommanderMessage;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.SpaceSystem;
@@ -64,8 +66,9 @@ public class TseDataLink extends AbstractLink {
     private Channel channel;
 
     private CommandHistoryPublisher cmdhistPublisher;
+    private TsePostprocessor postprocessor;
 
-
+    @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {
         super.init(yamcsInstance, name, config);
 
@@ -99,6 +102,37 @@ public class TseDataLink extends AbstractLink {
         ppStream = ydb.getStream(ppStreamName);
         if (ppStream == null) {
             throw new ConfigurationException("Cannot find stream '" + ppStreamName + "'");
+        }
+
+        initPostprocessor(yamcsInstance, config);
+    }
+
+    private void initPostprocessor(String instance, YConfiguration config) {
+        String commandPostprocessorClassName = null;
+        YConfiguration commandPostprocessorArgs = null;
+        if (config != null && config.containsKey("commandPostprocessorClassName")) {
+            commandPostprocessorClassName = config.getString("commandPostprocessorClassName");
+            if (config.containsKey("commandPostprocessorArgs")) {
+                commandPostprocessorArgs = config.getConfig("commandPostprocessorArgs");
+            }
+        }
+
+        if (commandPostprocessorClassName != null) {
+            try {
+                if (commandPostprocessorArgs != null) {
+                    postprocessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
+                            commandPostprocessorArgs);
+                } else {
+                    postprocessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
+                }
+                postprocessor.setCommandHistoryPublisher(cmdhistPublisher);
+            } catch (ConfigurationException e) {
+                log.error("Cannot instantiate the command postprocessor", e);
+                throw e;
+            } catch (IOException e) {
+                log.error("Cannot instantiate the command postprocessor", e);
+                throw new ConfigurationException(e);
+            }
         }
     }
 
@@ -142,7 +176,12 @@ public class TseDataLink extends AbstractLink {
             }
         }
 
-        TseCommand command = msgb.build();
+        TseCommand command;
+        if (postprocessor == null) {
+            command = msgb.build();
+        } else {
+            command = postprocessor.process(msgb);
+        }
         channel.writeAndFlush(command).addListener(f -> {
             long missionTime = timeService.getMissionTime();
             if (f.isSuccess()) {
@@ -270,7 +309,7 @@ public class TseDataLink extends AbstractLink {
 
     @Override
     protected void doEnable() throws Exception {
-       createBootstrap();
+        createBootstrap();
     }
 
     @Override

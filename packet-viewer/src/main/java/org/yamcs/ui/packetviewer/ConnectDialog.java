@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 
+import javax.naming.ConfigurationException;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -38,14 +39,10 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.RestClient;
-import org.yamcs.client.YamcsConnectionProperties;
+import org.yamcs.client.YamcsClient;
 import org.yamcs.protobuf.YamcsInstance;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 /**
  * Dialog for entering yamcs connection parameters.
@@ -392,13 +389,18 @@ public class ConnectDialog extends JDialog implements ActionListener {
             }
 
             // Verify the instance
+            YamcsClient client = null;
             try {
-                RestClient restClient = createClientForUseInDialogOnly();
-                restClient.doRequest("/instances/" + instance, HttpMethod.GET).get();
+                client = createClientForUseInDialogOnly();
+                client.getInstance(instance).get();
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(this, "Cannot verify instance: " + e1.getMessage(),
                         e1.getMessage(), JOptionPane.WARNING_MESSAGE);
                 return;
+            } finally {
+                if (client != null) {
+                    client.close();
+                }
             }
 
             saveConnectionPreferences();
@@ -417,12 +419,19 @@ public class ConnectDialog extends JDialog implements ActionListener {
             setVisible(false);
         } else if ("getInstances".equals(cmd)) {
             try {
-                RestClient restClient = createClientForUseInDialogOnly();
-                List<YamcsInstance> list = restClient.blockingGetYamcsInstances();
-                instanceCombo.removeAllItems();
-                for (YamcsInstance ai : list) {
-                    if (getInstance) {
-                        instanceCombo.addItem(ai.getName());
+                YamcsClient client = null;
+                try {
+                    client = createClientForUseInDialogOnly();
+                    List<YamcsInstance> list = client.listInstances().get();
+                    instanceCombo.removeAllItems();
+                    for (YamcsInstance instance : list) {
+                        if (getInstance) {
+                            instanceCombo.addItem(instance.getName());
+                        }
+                    }
+                } finally {
+                    if (client != null) {
+                        client.close();
                     }
                 }
             } catch (NumberFormatException x) {
@@ -441,24 +450,29 @@ public class ConnectDialog extends JDialog implements ActionListener {
         }
     }
 
-    private RestClient createClientForUseInDialogOnly() throws ClientException {
+    private YamcsClient createClientForUseInDialogOnly() throws ClientException {
         String host = hostTextField.getText();
         int port = Integer.parseInt(portTextField.getText());
-        YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
-        RestClient restClient = new RestClient(ycp);
-        if (!usernameTextField.getText().isEmpty()) {
-            restClient.login(usernameTextField.getText(), passwordTextField.getPassword());
+        YamcsClient client = YamcsClient.newBuilder(host, port).build();
+
+        if (usernameTextField.getText().isEmpty()) {
+            client.connectAnonymously();
+        } else {
+            client.connect(usernameTextField.getText(), passwordTextField.getPassword());
         }
 
-        return new RestClient(ycp);
+        return client;
     }
 
-    public YamcsConnectionProperties getConnectData() {
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties(host, port);
+    public ConnectData getConnectData() {
+        ConnectData data = new ConnectData();
+        data.host = host;
+        data.port = port;
         if (username != null) {
-            yprops.setCredentials(username, password.toCharArray());
+            data.username = username;
+            data.password = password.toCharArray();
         }
-        return yprops;
+        return data;
     }
 
     public String getInstance() {

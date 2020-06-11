@@ -2,6 +2,7 @@ package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +38,9 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
 
-public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
-    private Log log = new Log(NewWebSocketFrameHandler.class);
+    private static final Log log = new Log(WebSocketFrameHandler.class);
 
     private HttpServer httpServer;
 
@@ -50,12 +51,13 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
     // after how many consecutive dropped writes will the connection be closed
     private int connectionCloseNumDroppedMsg;
 
+    private SocketAddress remoteAddress;
     private WriteBufferWaterMark writeBufferWaterMark;
 
     private List<TopicContext> contexts = new ArrayList<>();
     private Map<Integer, Observer<Message>> clientObserversByCall = new HashMap<>();
 
-    public NewWebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int connectionCloseNumDroppedMsg,
+    public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int connectionCloseNumDroppedMsg,
             WriteBufferWaterMark writeBufferWaterMark) {
         this.httpServer = httpServer;
         this.nettyRequest = req;
@@ -67,6 +69,9 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
     @Override
     public void handlerAdded(ChannelHandlerContext nettyContext) throws Exception {
         nettyContext.channel().config().setWriteBufferWaterMark(writeBufferWaterMark);
+
+        // Store this information, because it will be null when the channel is disconnected
+        remoteAddress = nettyContext.channel().remoteAddress();
     }
 
     @Override
@@ -269,7 +274,7 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
 
     @Override
     public void channelInactive(ChannelHandlerContext nettyContext) throws Exception {
-        log.info("Channel {} closed", nettyContext.channel().remoteAddress());
+        log.info("Channel {} closed", remoteAddress);
         contexts.forEach(TopicContext::close);
         contexts.clear();
     }

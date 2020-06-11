@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.yamcs.api.Observer;
+import org.yamcs.client.MessageListener;
+import org.yamcs.client.Subscription;
 
 import com.google.protobuf.Message;
 

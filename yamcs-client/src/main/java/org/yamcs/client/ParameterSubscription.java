@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.client.base.AbstractSubscription;
+import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeParametersRequest.Action;

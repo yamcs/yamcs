@@ -11,6 +11,7 @@ export interface WebsiteConfig {
   commandClearances: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
+  completeness: boolean;
 }
 
 export interface FeaturesConfig {

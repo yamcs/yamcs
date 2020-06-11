@@ -85,7 +85,6 @@ import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
@@ -109,8 +108,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.io.CountingInputStream;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 public class PacketViewer extends JFrame implements ActionListener,
         TreeSelectionListener, ParameterListener, ConnectionListener {
@@ -632,19 +629,18 @@ public class PacketViewer extends JFrame implements ActionListener,
         return true;
     }
 
-    private boolean loadRemoteXtcedb(String configName) {
+    private boolean loadRemoteMissionDatabase(String configName) {
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
         String instance = connectDialog.getInstance();
-        log("Loading remote XTCE db for yamcs instance " + instance);
+        log("Loading remote mission database for Uamcs instance " + instance);
         try {
-            byte[] serializedMdb = client.getRestClient()
-                    .doRequest("/mdb/" + instance + ":exportJava", HttpMethod.GET).get();
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
-            Object o = ois.readObject();
-            xtcedb = (XtceDb) o;
-            ois.close();
+            byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb))) {
+                Object o = ois.readObject();
+                xtcedb = (XtceDb) o;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             showError(e.getMessage());
@@ -807,19 +803,18 @@ public class PacketViewer extends JFrame implements ActionListener,
         hexText.setCaretPosition(hexScrollPos);
     }
 
-    void connectYamcs(YamcsConnectionProperties ycd) {
+    void connectYamcs(ConnectData connectData) {
         disconnect();
-        client = YamcsClient.newBuilder(ycd.getHost(), ycd.getPort())
-                .withTls(ycd.isTls())
+        client = YamcsClient.newBuilder(connectData.host, connectData.port)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
                 .build();
         client.addConnectionListener(this);
         try {
-            if (ycd.getUsername() == null) {
+            if (connectData.username == null) {
                 client.connectAnonymously();
             } else {
-                client.connect(ycd.getUsername(), ycd.getPassword());
+                client.connect(connectData.username, connectData.password);
             }
         } catch (ClientException e) {
             log.error("Error while connecting", e);
@@ -952,11 +947,11 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connected(String url) {
+    public void connected() {
         try {
-            log("connected to " + url);
+            log("connected to " + client.getHost() + ":" + client.getPort());
             if (connectDialog.getUseServerMdb()) {
-                if (!loadRemoteXtcedb(connectDialog.getInstance())) {
+                if (!loadRemoteMissionDatabase(connectDialog.getInstance())) {
                     return;
                 }
             } else {
@@ -993,14 +988,14 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connecting(String url) {
-        log("connecting to " + url);
+    public void connecting() {
+        log("connecting to " + client.getHost() + ":" + client.getPort());
 
     }
 
     @Override
-    public void connectionFailed(String url, ClientException exception) {
-        log("connection to " + url + " failed: " + exception);
+    public void connectionFailed(ClientException exception) {
+        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + exception);
     }
 
     @Override

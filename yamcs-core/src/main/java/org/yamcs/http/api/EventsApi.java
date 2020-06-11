@@ -187,7 +187,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         long missionTime = YamcsServer.getTimeService(instance).getMissionTime();
         if (request.hasTime()) {
-            long eventTime = TimeEncoding.parse(request.getTime());
+            long eventTime = TimeEncoding.fromProtobufTimestamp(request.getTime());
             eventb.setGenerationTime(eventTime);
             eventb.setReceptionTime(missionTime);
         } else {
@@ -404,7 +404,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
         }
         return protobufRegistry;
     }
-
 
     /**
      * Stateless continuation token for paged requests on the event table

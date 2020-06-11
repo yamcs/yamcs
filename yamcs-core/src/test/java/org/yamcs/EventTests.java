@@ -25,13 +25,13 @@ public class EventTests extends AbstractIntegrationTest {
         long now = TimeEncoding.getWallclockTime();
         CreateEventRequest createRequest = CreateEventRequest.newBuilder()
                 .setInstance(yamcsInstance)
-                .setTime(TimeEncoding.toString(now))
+                .setTime(TimeEncoding.toProtobufTimestamp(now))
                 .setMessage("event1")
                 .build();
         yamcsClient.createEvent(createRequest).get();
 
         Event receivedEvent = captor.expectTimely();
-        assertEquals(now, TimeEncoding.parse(receivedEvent.getGenerationTimeUTC()));
+        assertEquals(now, TimeEncoding.fromProtobufTimestamp(receivedEvent.getGenerationTime()));
         assertEquals("event1", receivedEvent.getMessage());
     }
 }
