@@ -9,15 +9,6 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
 
     public AbsoluteTimeParameterType(Builder builder) {
         super(builder);
-        if (builder.initialValue != null) {
-            if(builder.initialValue instanceof Long) {
-                this.initialValue = builder.initialValue;
-            } else if (builder.initialValue instanceof String) {
-                this.initialValue = parseString((String)builder.initialValue);
-            } else {
-                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
-            }
-        }
     }
     
     public AbsoluteTimeParameterType(String name) {

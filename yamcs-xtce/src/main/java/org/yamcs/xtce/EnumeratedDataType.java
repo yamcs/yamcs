@@ -10,7 +10,8 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class EnumeratedDataType extends BaseDataType {
     private static final long serialVersionUID = 2L;
-
+    String initialValue;
+    
     protected HashMap<Long, ValueEnumeration> enumeration = new HashMap<>();
 
     protected List<ValueEnumeration> enumerationList = new ArrayList<>();
@@ -21,16 +22,22 @@ public class EnumeratedDataType extends BaseDataType {
         this.enumerationList = builder.enumerationList;
         this.ranges = builder.ranges;
 
+       
+        if (builder.baseType != null && builder.baseType instanceof EnumeratedDataType) {
+            EnumeratedDataType baseType = (EnumeratedDataType) builder.baseType;
+            if(builder.enumerationList.isEmpty()) {
+                enumerationList.addAll(baseType.enumerationList);
+            }
+            if(builder.ranges.isEmpty()) {
+                ranges.addAll(baseType.ranges);
+            }
+        }
+        
+        
         for (ValueEnumeration ve : enumerationList) {
             enumeration.put(ve.value, ve);
         }
-        if (builder.initialValue != null) {
-            if(builder.initialValue instanceof String) {
-                this.initialValue = (String)builder.initialValue;
-            } else {
-                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
-            }
-        }
+        setInitialValue(builder);
     }
 
     /**
@@ -43,10 +50,19 @@ public class EnumeratedDataType extends BaseDataType {
         this.enumeration = t.enumeration;
         this.enumerationList = t.enumerationList;
         this.ranges = t.ranges;
+        this.initialValue = t.initialValue;
     }
 
+    protected void setInitialValue(Object initialValue) {
+        if(initialValue instanceof String) {
+            this.initialValue = (String)initialValue;
+        } else {
+            throw new IllegalArgumentException("Unsupported type for initial value "+initialValue.getClass());
+        }
+    }
+    
     public String getInitialValue() {
-        return (String) initialValue;
+        return initialValue;
     }
 
     public ValueEnumeration enumValue(Long key) {
@@ -100,7 +116,7 @@ public class EnumeratedDataType extends BaseDataType {
      * returns stringValue
      */
     @Override
-    public Object parseString(String stringValue) {
+    public String parseString(String stringValue) {
         return stringValue;
     }
 

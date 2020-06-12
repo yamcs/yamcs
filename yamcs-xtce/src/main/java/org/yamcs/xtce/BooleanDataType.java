@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class BooleanDataType extends BaseDataType {
     private static final long serialVersionUID = 1L;
+    Boolean initialValue;
    
     String oneStringValue = "True";
     String zeroStringValue = "False";
@@ -17,24 +18,35 @@ public class BooleanDataType extends BaseDataType {
         if(builder.zeroStringValue != null) {
             this.zeroStringValue = builder.zeroStringValue;
         }
-        
-        if (builder.initialValue != null) {
-            if(builder.initialValue instanceof Boolean) {
-                this.initialValue = builder.initialValue;
-            } else if (builder.initialValue instanceof String) {
-                this.initialValue = parseString((String)builder.initialValue);
-            } else {
-                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+        if (builder.baseType != null && builder.baseType instanceof BooleanDataType) {
+            BooleanDataType baseType = (BooleanDataType) builder.baseType;
+            if(builder.oneStringValue == null && baseType.oneStringValue != null ) {
+                this.oneStringValue = baseType.oneStringValue;
+            }
+            if(builder.zeroStringValue == null && baseType.zeroStringValue != null ) {
+                this.zeroStringValue = baseType.zeroStringValue;
             }
         }
+        
+        setInitialValue(builder);
     }
     
     protected BooleanDataType(BooleanDataType t) {
         super(t);
     }
 
+    protected void setInitialValue(Object initialValue) {
+        if(initialValue instanceof Boolean) {
+            this.initialValue = (Boolean) initialValue;
+        } else if (initialValue instanceof String) {
+            this.initialValue = parseString((String)initialValue);
+        } else {
+            throw new IllegalArgumentException("Unsupported type for initial value "+initialValue.getClass());
+        }
+    }
+    
     public Boolean getInitialValue() {
-        return (Boolean)initialValue;
+        return initialValue;
     }
 
     /**

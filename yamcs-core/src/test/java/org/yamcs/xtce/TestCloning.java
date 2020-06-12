@@ -38,6 +38,7 @@ public class TestCloning {
             Field[] fa = c1.getDeclaredFields();
             for(Field f:fa) {
                 f.setAccessible(true);
+            //    System.out.println("comparing "+f.getName()+"\n  "+f.get(p1)+"\n  "+f.get(p2));
                 assertEquals(f.get(p1), f.get(p2));
             }
             c1 = c1.getSuperclass();

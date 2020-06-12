@@ -19,6 +19,16 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
         super(builder);
         this.contextAlarmList = builder.contextAlarmList;
         this.defaultAlarm = builder.defaultAlarm;
+        
+        if (builder.baseType != null && builder.baseType instanceof IntegerParameterType) {
+            IntegerParameterType baseType = (IntegerParameterType) builder.baseType;
+            if(builder.defaultAlarm == null && baseType.defaultAlarm!=null) {
+                this.defaultAlarm = baseType.defaultAlarm;
+            }
+            if(builder.contextAlarmList == null && baseType.contextAlarmList!=null) {
+                this.contextAlarmList = baseType.contextAlarmList;
+            }
+        }
     }
     
     

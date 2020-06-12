@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-import org.yamcs.xtce.EnumeratedArgumentType.Builder;
 
 public class StringArgumentType extends StringDataType implements ArgumentType {
     private static final long serialVersionUID = 2L;

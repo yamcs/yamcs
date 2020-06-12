@@ -26,6 +26,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         super(builder);
 
         this.memberList = builder.memberList;
+        
     }
 
     public AggregateDataType(String name) {

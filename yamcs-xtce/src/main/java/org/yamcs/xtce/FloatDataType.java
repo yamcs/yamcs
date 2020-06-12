@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public abstract class FloatDataType extends NumericDataType {
     private static final long serialVersionUID = 1L;
+    Double initialValue;
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. For Telemetry the valid
      * range is always
@@ -16,20 +17,24 @@ public abstract class FloatDataType extends NumericDataType {
 
     protected FloatDataType(Builder<?> builder) {
         super(builder);
-        
+
         this.validRange = builder.validRange;
         if (builder.sizeInBits != null) {
             this.sizeInBits = builder.sizeInBits;
         }
-        if (builder.initialValue != null) {
-            if(builder.initialValue instanceof String) {
-                this.initialValue = parseString((String)builder.initialValue);
-            } else if (builder.initialValue instanceof Number) {
-                this.initialValue = builder.initialValue;
-            } else {
-                throw new IllegalArgumentException("Invalid initialValue");
+
+        if (builder.baseType != null && builder.baseType instanceof FloatDataType) {
+            FloatDataType baseType = (FloatDataType) builder.baseType;
+            if (builder.sizeInBits == null) {
+                this.sizeInBits = baseType.sizeInBits;
+            }
+
+            if(builder.validRange == null && baseType.validRange != null) {
+                this.validRange = baseType.validRange;
             }
         }
+
+        setInitialValue(builder);
     }
 
     protected FloatDataType(FloatDataType t) {
@@ -39,11 +44,17 @@ public abstract class FloatDataType extends NumericDataType {
     }
 
     public Double getInitialValue() {
-        return (Double) initialValue;
+        return initialValue;
     }
 
-    public void setInitialValue(double initialValue) {
-        this.initialValue = initialValue;
+    protected void setInitialValue(Object initialValue) {
+        if (initialValue instanceof String) {
+            this.initialValue = parseString((String) initialValue);
+        } else if (initialValue instanceof Number) {
+            this.initialValue = ((Number) initialValue).doubleValue();
+        } else {
+            throw new IllegalArgumentException("Invalid initialValue");
+        }
     }
 
     public int getSizeInBits() {
@@ -73,29 +84,32 @@ public abstract class FloatDataType extends NumericDataType {
         return "float";
     }
 
-    public abstract static class Builder<T extends Builder<T>>  extends BaseDataType.Builder<T> {
+    public abstract static class Builder<T extends Builder<T>> extends BaseDataType.Builder<T> {
         private FloatValidRange validRange;
         Integer sizeInBits;
 
         public Builder() {
         }
-        
+
         public Builder(FloatDataType dataType) {
             super(dataType);
             this.validRange = dataType.validRange;
             this.sizeInBits = dataType.sizeInBits;
         }
 
-        public void setSizeInBits(int sizeInBits) {
+        public T setSizeInBits(int sizeInBits) {
             this.sizeInBits = sizeInBits;
+            return self();
         }
 
-        public void setValidRange(FloatValidRange validRange) {
+        public T setValidRange(FloatValidRange validRange) {
             this.validRange = validRange;
+            return self();
         }
 
-        public void setInitialValue(double initialValue) {
+        public T setInitialValue(double initialValue) {
             this.initialValue = Double.toString(initialValue);
+            return self();
         }
     }
 }

@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.time.Instant;
+
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
@@ -24,7 +26,8 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     private static final long serialVersionUID = 1;
 
     ReferenceTime referenceTime;
-
+    Instant initialValue;
+    
     protected AbsoluteTimeDataType(Builder<?> builder) {
         super(builder);
         this.referenceTime = builder.referenceTime;
@@ -47,12 +50,19 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     /**
      * sets the initial value in UTC ISO 8860 string
      */
-    public void setInitialValue(String initialValue) {
-        this.initialValue = TimeEncoding.parse(initialValue);
+    protected void setInitialValue(Object initialValue) {
+        if(initialValue instanceof String) {
+            this.initialValue = Instant.parse((String) initialValue);    
+        } else if(initialValue instanceof Instant) {
+            this.initialValue = (Instant) initialValue;
+        } else {
+            throw new IllegalArgumentException("Invalid type for initial value"+initialValue.getClass());
+        }
+        
     }
 
-    public Long getInitialValue() {
-        return (Long) initialValue;
+    public Instant getInitialValue() {
+        return initialValue;
     }
 
     @Override

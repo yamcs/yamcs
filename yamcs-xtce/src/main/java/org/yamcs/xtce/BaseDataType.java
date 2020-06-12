@@ -14,7 +14,6 @@ public abstract class BaseDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 3L;
     List<UnitType> unitSet = new ArrayList<>();
     protected DataEncoding encoding;
-    protected Object initialValue;
 
     BaseDataType(String name) {
         super(name);
@@ -24,7 +23,17 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         super(builder);
         this.unitSet = builder.unitSet;
         this.encoding = builder.encoding;
-        //we don't do the initialValue here because it is being converted in sub classes
+
+        if (builder.baseType != null) {
+            BaseDataType baseType = builder.baseType;
+
+            if (this.encoding == null && baseType.encoding != null) {
+                this.encoding = baseType.encoding;
+            }
+            if (this.unitSet == null && baseType.unitSet != null) {
+                this.unitSet = baseType.unitSet;
+            }
+        }
     }
 
     /**
@@ -36,7 +45,6 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         super(t);
         this.unitSet = t.unitSet;
         this.encoding = t.encoding;
-        this.initialValue = t.initialValue;
     }
 
     public DataEncoding getEncoding() {
@@ -47,6 +55,16 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         return unitSet;
     }
 
+    protected void setInitialValue(Builder<?> builder) {
+        if (builder.initialValue != null) {
+            setInitialValue(builder.initialValue);
+        } else if (builder.baseType != null && builder.baseType.getInitialValue() != null) {
+            setInitialValue(builder.baseType.getInitialValue());
+        }
+    }
+
+    protected abstract void setInitialValue(Object initialValue);
+
     /**
      * Used to parse string such as an initial value
      * 
@@ -54,7 +72,7 @@ public abstract class BaseDataType extends NameDescription implements DataType {
      * @return
      */
     public abstract Object parseString(String stringValue);
-    
+
     public String toString(Object o) {
         return o.toString();
     }
@@ -68,25 +86,23 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         List<UnitType> unitSet = new ArrayList<>();
         private DataEncoding encoding;
         protected Object initialValue;
+        protected BaseDataType baseType;
 
         public Builder() {
         }
-        
+
         public Builder(BaseDataType baseType) {
             super(baseType);
             this.unitSet = baseType.unitSet;
             this.encoding = baseType.encoding;
-            if(baseType.initialValue != null) {
-                this.initialValue = baseType.initialValue.toString();
-            }
+            this.initialValue = baseType.getInitialValue();
         }
 
         public T setInitialValue(byte[] initialValue) {
             this.initialValue = initialValue;
             return self();
         }
-        
-        
+
         public T setInitialValue(String initialValue) {
             this.initialValue = initialValue;
             return self();
@@ -109,6 +125,10 @@ public abstract class BaseDataType extends NameDescription implements DataType {
 
         public DataEncoding getEncoding() {
             return encoding;
+        }
+
+        public void setBaseType(BaseDataType type) {
+            this.baseType = type;
         }
     }
 }

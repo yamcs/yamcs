@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-import org.yamcs.xtce.EnumeratedArgumentType.Builder;
 
 public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
     private static final long serialVersionUID = 1L;

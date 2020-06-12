@@ -5,7 +5,6 @@ public abstract class NumericDataType extends BaseDataType {
     
     protected NumericDataType(BaseDataType.Builder<?> builder) {
         super(builder);
-        
     }
     
     NumericDataType(String name) {

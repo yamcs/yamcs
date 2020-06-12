@@ -31,6 +31,9 @@ public class IncompleteType {
         this.typeBuilder = typeBuilder;
     }
 
+    public DataType.Builder<?> getTypeBuilder() {
+        return typeBuilder;
+    }
     /**
      * Schedule the addition of the type to the SpaceSystem after all references are resolved
      * <p>

@@ -6,7 +6,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
  * Contains an integral value.
- * 
  *
  * @author nm
  *
@@ -15,7 +14,8 @@ public abstract class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 1L;
     int sizeInBits = 32;
     protected boolean signed = true;
-
+    Long initialValue;
+    
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have.
      * For Telemetry the valid range is always applied before calibration, regardless of the value of
@@ -37,15 +37,21 @@ public abstract class IntegerDataType extends NumericDataType {
         if (builder.validRange != null) {
             validRange = builder.validRange;
         }
-        if (builder.initialValue != null) {
-            if(builder.initialValue instanceof Long) {
-                this.initialValue = builder.initialValue;
-            } else if (builder.initialValue instanceof String) {
-                this.initialValue = parseString((String)builder.initialValue);
-            } else {
-                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+        
+        if (builder.baseType != null && builder.baseType instanceof IntegerDataType) {
+            IntegerDataType baseType = (IntegerDataType) builder.baseType;
+            if (builder.sizeInBits == null) {
+                this.sizeInBits = baseType.sizeInBits;
+            }
+            if(builder.signed==null) {
+                this.signed = baseType.signed;
+            }
+            
+            if(builder.validRange == null && baseType.validRange != null) {
+                this.validRange = baseType.validRange;
             }
         }
+        setInitialValue(builder);
     }
 
     protected IntegerDataType(IntegerDataType t) {
@@ -63,6 +69,15 @@ public abstract class IntegerDataType extends NumericDataType {
         return sizeInBits;
     }
 
+    protected void setInitialValue(Object initialValue) {
+        if(initialValue instanceof Long) {
+            this.initialValue = (Long) initialValue;
+        } else if (initialValue instanceof String) {
+            this.initialValue = parseString((String)initialValue);
+        } else {
+            throw new IllegalArgumentException("Unsupported type for initial value "+initialValue.getClass());
+        }
+    }
     /**
      * returns the range for the values of this type to be valid or null if there is no range set (meaning that all
      * values are valid)

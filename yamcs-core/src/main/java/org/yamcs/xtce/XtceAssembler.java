@@ -435,7 +435,7 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("AbsoluteTimeParameterType");
         if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", TimeEncoding.toString(ptype.getInitialValue()));
+            doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
         writeUnitSet(doc, ptype.getUnitSet());

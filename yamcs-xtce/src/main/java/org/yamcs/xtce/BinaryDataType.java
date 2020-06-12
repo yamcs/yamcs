@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class BinaryDataType extends BaseDataType {
     private static final long serialVersionUID = 1L;
+    byte[] initialValue;
 
     /**
      * DIFFERS_FROM_XTCE XTCE does not define a size range
@@ -13,14 +14,24 @@ public class BinaryDataType extends BaseDataType {
     protected BinaryDataType(Builder<?> builder) {
         super(builder);
         this.sizeRangeInBytes = builder.sizeRangeInBytes;
-        if (builder.initialValue != null) {
-            if (builder.initialValue instanceof String) {
-                this.initialValue = parseString((String) builder.initialValue);
-            } else if (builder.initialValue instanceof byte[]) {
-                this.initialValue = (byte[]) builder.initialValue;
-            } else {
-                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+
+        if (builder.baseType != null && builder.baseType instanceof BinaryDataType) {
+            BinaryDataType baseType = (BinaryDataType) builder.baseType;
+            if (builder.sizeRangeInBytes == null && baseType.sizeRangeInBytes != null) {
+                this.sizeRangeInBytes = baseType.sizeRangeInBytes;
             }
+        }
+        setInitialValue(builder);
+    }
+
+    @Override
+    protected void setInitialValue(Object initialValue) {
+        if (initialValue instanceof String) {
+            this.initialValue = parseString((String) initialValue);
+        } else if (initialValue instanceof byte[]) {
+            this.initialValue = (byte[]) initialValue;
+        } else {
+            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
         }
     }
 
@@ -30,7 +41,7 @@ public class BinaryDataType extends BaseDataType {
     }
 
     public byte[] getInitialValue() {
-        return (byte[]) initialValue;
+        return initialValue;
     }
 
     public IntegerRange getSizeRangeInBytes() {
@@ -56,7 +67,7 @@ public class BinaryDataType extends BaseDataType {
 
     @Override
     public String toString(Object v) {
-        if(v instanceof byte[]) {
+        if (v instanceof byte[]) {
             return arrayToHexString((byte[]) v);
         } else {
             throw new IllegalArgumentException("Can only convert byte arrays");

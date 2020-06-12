@@ -652,7 +652,7 @@ public class XtceToGpbAssembler {
                 AbsoluteTimeParameterType apt = (AbsoluteTimeParameterType) parameterType;
                 AbsoluteTimeInfo.Builder timeb = AbsoluteTimeInfo.newBuilder();
                 if (apt.getInitialValue() != null) {
-                    timeb.setInitialValue(TimeEncoding.toString(apt.getInitialValue()));
+                    timeb.setInitialValue(apt.getInitialValue().toString());
                 }
                 if (apt.needsScaling()) {
                     timeb.setScale(apt.getScale());
