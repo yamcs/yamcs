@@ -41,7 +41,7 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
         return new IntegerArgumentType(this);
     }
 
-    public static class Builder extends IntegerDataType.Builder<Builder> {
+    public static class Builder extends IntegerDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
         @Override
         public IntegerArgumentType build() {
             return new IntegerArgumentType(this);

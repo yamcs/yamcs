@@ -12,9 +12,7 @@ public abstract class BaseTimeDataType extends BaseDataType {
         this.needsScaling = builder.needsScaling;
         this.scale = builder.scale;
         this.offset = builder.offset;
-        if (builder.initialValue != null) {
-            this.initialValue = parseString(builder.initialValue);
-        }
+        
     }
 
     BaseTimeDataType(String name) {

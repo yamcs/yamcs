@@ -19,7 +19,13 @@ public class BooleanDataType extends BaseDataType {
         }
         
         if (builder.initialValue != null) {
-            this.initialValue = parseString(builder.initialValue);
+            if(builder.initialValue instanceof Boolean) {
+                this.initialValue = builder.initialValue;
+            } else if (builder.initialValue instanceof String) {
+                this.initialValue = parseString((String)builder.initialValue);
+            } else {
+                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+            }
         }
     }
     
@@ -89,6 +95,4 @@ public class BooleanDataType extends BaseDataType {
             this.zeroStringValue = zeroStringValue;
         }
     }
-
-  
 }

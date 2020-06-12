@@ -22,7 +22,13 @@ public abstract class FloatDataType extends NumericDataType {
             this.sizeInBits = builder.sizeInBits;
         }
         if (builder.initialValue != null) {
-            this.initialValue = parseString(builder.initialValue);
+            if(builder.initialValue instanceof String) {
+                this.initialValue = parseString((String)builder.initialValue);
+            } else if (builder.initialValue instanceof Number) {
+                this.initialValue = builder.initialValue;
+            } else {
+                throw new IllegalArgumentException("Invalid initialValue");
+            }
         }
     }
 
@@ -74,7 +80,7 @@ public abstract class FloatDataType extends NumericDataType {
         public Builder() {
         }
         
-        public Builder(FloatParameterType dataType) {
+        public Builder(FloatDataType dataType) {
             super(dataType);
             this.validRange = dataType.validRange;
             this.sizeInBits = dataType.sizeInBits;

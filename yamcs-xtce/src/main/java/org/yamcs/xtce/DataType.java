@@ -63,10 +63,9 @@ public interface DataType {
     
     public interface Builder<T extends Builder<T>> {
         public T setName(String name);
-        void setInitialValue(String initialValue);
-        public void setShortDescription(String shortDescription);
-        public void setLongDescription(String longDescription);
+        public T setInitialValue(String initialValue);
+        public T setShortDescription(String shortDescription);
+        public T setLongDescription(String longDescription);
         public DataType build();
-        public boolean isResolved();
     }
 }

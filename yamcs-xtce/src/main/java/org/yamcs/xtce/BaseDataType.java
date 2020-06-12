@@ -67,7 +67,7 @@ public abstract class BaseDataType extends NameDescription implements DataType {
             implements DataType.Builder<T> {
         List<UnitType> unitSet = new ArrayList<>();
         private DataEncoding encoding;
-        protected String initialValue;
+        protected Object initialValue;
 
         public Builder() {
         }
@@ -80,30 +80,35 @@ public abstract class BaseDataType extends NameDescription implements DataType {
                 this.initialValue = baseType.initialValue.toString();
             }
         }
-        
-        
-        public void setInitialValue(String initialValue) {
+
+        public T setInitialValue(byte[] initialValue) {
             this.initialValue = initialValue;
+            return self();
+        }
+        
+        
+        public T setInitialValue(String initialValue) {
+            this.initialValue = initialValue;
+            return self();
         }
 
-        public void setEncoding(DataEncoding dataEncoding) {
+        public T setEncoding(DataEncoding dataEncoding) {
             this.encoding = dataEncoding;
+            return self();
         }
 
-        public void addAllUnits(Collection<UnitType> units) {
+        public T addAllUnits(Collection<UnitType> units) {
             unitSet.addAll(units);
+            return self();
         }
 
-        public void addUnit(UnitType unit) {
+        public T addUnit(UnitType unit) {
             unitSet.add(unit);
+            return self();
         }
 
         public DataEncoding getEncoding() {
             return encoding;
-        }
-        
-        public boolean isResolved() {
-            return true;
         }
     }
 }

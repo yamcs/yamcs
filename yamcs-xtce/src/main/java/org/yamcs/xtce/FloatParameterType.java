@@ -32,10 +32,6 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         return defaultAlarm;
     }
     
-    public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList) {
-        this.contextAlarmList = contextAlarmList;
-    }
-    
     @Override
     public boolean hasAlarm() {
         return defaultAlarm != null || (contextAlarmList != null && !contextAlarmList.isEmpty());

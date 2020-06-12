@@ -24,7 +24,7 @@ public interface NumericParameterType extends ParameterType {
 
         public DataEncoding getEncoding();
 
-        public void setEncoding(DataEncoding enc);
+        public T setEncoding(DataEncoding enc);
 
         public NumericParameterType build();
     }

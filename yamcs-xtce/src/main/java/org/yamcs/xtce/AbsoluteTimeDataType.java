@@ -56,7 +56,7 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     }
 
     @Override
-    public Object parseString(String stringValue) {
+    public Long parseString(String stringValue) {
         return TimeEncoding.parse(stringValue);
     }
 

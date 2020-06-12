@@ -178,8 +178,9 @@ public class ArrayDataType extends NameDescription implements DataType {
             return self();
         }
 
-        public void setInitialValue(String initialValue) {
+        public T setInitialValue(String initialValue) {
             this.initialValue = initialValue;
+            return self();
         }
 
         public boolean isResolved() {

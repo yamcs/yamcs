@@ -256,16 +256,19 @@ public class NameDescription implements Serializable {
             return self();
         }
 
-        public void setLongDescription(String longDescription) {
+        public T setLongDescription(String longDescription) {
             this.longDescription = longDescription;
+            return self();
         }
 
-        public void setShortDescription(String shortDescription) {
+        public T setShortDescription(String shortDescription) {
             this.shortDescription = shortDescription;
+            return self();
         }
 
-        public void setAliasSet(XtceAliasSet aliasSet) {
+        public T setAliasSet(XtceAliasSet aliasSet) {
             this.xtceAliasSet = aliasSet;
+            return self();
         }
 
         public void AncillaryData(Map<String, AncillaryData> ancillaryDataSet) {

@@ -62,5 +62,9 @@ public class StringDataType extends BaseDataType {
             super(stringType);
             this.sizeRangeInCharacters = stringType.sizeRangeInCharacters;
         }
+        
+        public void setSizeRangeInCharacters(IntegerRange sizeRangeInCharacters) {
+            this.sizeRangeInCharacters = sizeRangeInCharacters;
+        }
     }
 }

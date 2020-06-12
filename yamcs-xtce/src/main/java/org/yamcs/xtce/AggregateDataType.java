@@ -231,7 +231,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         }
 
         @Override
-        public void setInitialValue(String initialValue) {
+        public T setInitialValue(String initialValue) {
             throw new UnsupportedOperationException(
                     "Cannot set initial value; please send individual initial values for the members");
 

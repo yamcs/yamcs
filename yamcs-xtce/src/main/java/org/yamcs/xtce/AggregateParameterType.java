@@ -61,7 +61,7 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
         }
 
         @Override
-        public void setEncoding(DataEncoding dataEncoding) {
+        public Builder setEncoding(DataEncoding dataEncoding) {
             throw new UnsupportedOperationException("aggregate parameters do not support encodings");
             
         }

@@ -87,7 +87,7 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
         }
 
         @Override
-        public void setEncoding(DataEncoding dataEncoding) {
+        public Builder setEncoding(DataEncoding dataEncoding) {
             throw new UnsupportedOperationException("array parameters do not support encodings");
         }
         

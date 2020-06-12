@@ -25,7 +25,11 @@ public class EnumeratedDataType extends BaseDataType {
             enumeration.put(ve.value, ve);
         }
         if (builder.initialValue != null) {
-            this.initialValue = parseString(builder.initialValue);
+            if(builder.initialValue instanceof String) {
+                this.initialValue = (String)builder.initialValue;
+            } else {
+                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+            }
         }
     }
 
@@ -123,17 +127,20 @@ public class EnumeratedDataType extends BaseDataType {
             this.ranges = dataType.ranges;
         }
         
-        public void addEnumerationValue(long value, String label) {
+        public T addEnumerationValue(long value, String label) {
             ValueEnumeration valEnum = new ValueEnumeration(value, label);
             enumerationList.add(valEnum);
+            return self();
         }
 
-        public void addEnumerationValue(ValueEnumeration ve) {
+        public T addEnumerationValue(ValueEnumeration ve) {
             enumerationList.add(ve);
+            return self();
         }
 
-        public void addEnumerationRange(ValueEnumerationRange range) {
+        public T addEnumerationRange(ValueEnumerationRange range) {
             ranges.add(range);
+            return self();
         }
 
         public boolean hasLabel(String label) {

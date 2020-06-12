@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.xtce.EnumeratedArgumentType.Builder;
+
 /**
  * Represent aspects of an float, probably using IntegerDataEncoding with a calibrator or FloatDataEncoding.
  * 
@@ -23,7 +25,10 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
     public String getTypeAsString() {
         return "float";
     }
-
+    public FloatArgumentType.Builder toBuilder() {
+        return new FloatArgumentType.Builder(this);
+    }
+    
     @Override
     public String toString() {
         return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
@@ -34,12 +39,18 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
         return new FloatArgumentType(this);
     }
     
-    public static class Builder extends FloatDataType.Builder<Builder> {
+    public static class Builder extends FloatDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
+
+        public Builder(FloatArgumentType floatArgumentType) {
+           super(floatArgumentType);
+        }
+
+        public Builder() {
+        }
 
         @Override
         public FloatArgumentType build() {
             return new FloatArgumentType(this);
         }
-        
     }
 }

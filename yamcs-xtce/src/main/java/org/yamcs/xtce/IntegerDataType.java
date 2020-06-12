@@ -38,7 +38,13 @@ public abstract class IntegerDataType extends NumericDataType {
             validRange = builder.validRange;
         }
         if (builder.initialValue != null) {
-            this.initialValue = parseString(builder.initialValue);
+            if(builder.initialValue instanceof Long) {
+                this.initialValue = builder.initialValue;
+            } else if (builder.initialValue instanceof String) {
+                this.initialValue = parseString((String)builder.initialValue);
+            } else {
+                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
+            }
         }
     }
 
@@ -168,20 +174,23 @@ public abstract class IntegerDataType extends NumericDataType {
             this.validRange = dataType.validRange;
         }
         
-        public void setSizeInBits(int sizeInBits) {
+        public T setSizeInBits(int sizeInBits) {
             this.sizeInBits = sizeInBits;
+            return self();
         }
 
-        public void setSigned(boolean signed) {
+        public T setSigned(boolean signed) {
             this.signed = signed;
+            return self();
         }
 
         public boolean isSigned() {
             return signed == null ? true : signed;
         }
 
-        public void setValidRange(IntegerValidRange range) {
+        public T setValidRange(IntegerValidRange range) {
             this.validRange = range;
+            return self();
         }
     }
 }

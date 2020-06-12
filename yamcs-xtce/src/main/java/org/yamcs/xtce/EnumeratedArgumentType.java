@@ -42,8 +42,17 @@ public class EnumeratedArgumentType extends EnumeratedDataType implements Argume
     public EnumeratedArgumentType copy() {
         return new EnumeratedArgumentType(this);
     }
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
     
-    public static class Builder extends EnumeratedDataType.Builder<Builder> {
+    public static class Builder extends EnumeratedDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
+        public Builder() {
+        }
+        
+        public Builder(EnumeratedArgumentType enumeratedArgumentType) {
+            super(enumeratedArgumentType);
+        }
 
         @Override
         public EnumeratedArgumentType build() {
@@ -51,4 +60,6 @@ public class EnumeratedArgumentType extends EnumeratedDataType implements Argume
         }
         
     }
+
+  
 }

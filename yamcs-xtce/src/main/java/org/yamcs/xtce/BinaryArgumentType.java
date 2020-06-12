@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import org.yamcs.xtce.EnumeratedArgumentType.Builder;
 
 public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
     private static final long serialVersionUID = 1L;
@@ -27,11 +28,22 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
         return new BinaryArgumentType(this);
     }
     
-    public static class Builder extends BinaryDataType.Builder<Builder> {
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
+    
+    public static class Builder extends BinaryDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
+        public Builder() {
+        }
+
+        public Builder(BinaryArgumentType binaryArgumentType) {
+            super(binaryArgumentType);
+        }
 
         @Override
         public BinaryArgumentType build() {
             return new BinaryArgumentType(this);
         }
     }
+   
 }

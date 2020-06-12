@@ -14,8 +14,12 @@ public class BinaryDataType extends BaseDataType {
         super(builder);
         this.sizeRangeInBytes = builder.sizeRangeInBytes;
         if (builder.initialValue != null) {
-            if (builder.initialValue != null) {
-                this.initialValue = parseString(builder.initialValue);
+            if (builder.initialValue instanceof String) {
+                this.initialValue = parseString((String) builder.initialValue);
+            } else if (builder.initialValue instanceof byte[]) {
+                this.initialValue = (byte[]) builder.initialValue;
+            } else {
+                throw new IllegalArgumentException("Unsupported type for initial value "+builder.initialValue.getClass());
             }
         }
     }
