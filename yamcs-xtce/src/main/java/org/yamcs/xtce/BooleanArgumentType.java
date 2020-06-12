@@ -36,10 +36,10 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
         return new BooleanArgumentType(this);
     }
 
-    public static class Builder extends BooleanDataType.Builder<Builder> {
+    public static class Builder extends BooleanDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
 
         @Override
-        public DataType build() {
+        public ArgumentType build() {
             return new BooleanArgumentType(this);
         }
     }

@@ -28,11 +28,14 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
         return new AggregateArgumentType(this);
     }
 
-    public static class Builder extends AggregateDataType.Builder<Builder> {
+    public static class Builder extends AggregateDataType.Builder<Builder> implements ArgumentType.Builder<Builder>{
         @Override
         public AggregateArgumentType build() {
             return new AggregateArgumentType(this);
         }
-        
+        @Override
+        public Builder setEncoding(DataEncoding dataEncoding) {
+            throw new UnsupportedOperationException("aggregate arguments do not support encodings");
+        }
     }
 }

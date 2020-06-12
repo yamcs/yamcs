@@ -44,10 +44,15 @@ public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
         return new ArrayArgumentType(this);
     }
     
-    public static class Builder extends ArrayDataType.Builder<Builder> {
+    public static class Builder extends ArrayDataType.Builder<Builder> implements ArgumentType.Builder<Builder>{
         @Override
         public ArrayArgumentType build() {
             return new ArrayArgumentType(this);
+        }
+        
+        @Override
+        public Builder setEncoding(DataEncoding dataEncoding) {
+            throw new UnsupportedOperationException("array arguments do not support encodings");
         }
     }
 
