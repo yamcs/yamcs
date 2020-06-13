@@ -19,19 +19,18 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
         super(builder);
         this.contextAlarmList = builder.contextAlarmList;
         this.defaultAlarm = builder.defaultAlarm;
-        
+
         if (builder.baseType != null && builder.baseType instanceof IntegerParameterType) {
             IntegerParameterType baseType = (IntegerParameterType) builder.baseType;
-            if(builder.defaultAlarm == null && baseType.defaultAlarm!=null) {
+            if (builder.defaultAlarm == null && baseType.defaultAlarm != null) {
                 this.defaultAlarm = baseType.defaultAlarm;
             }
-            if(builder.contextAlarmList == null && baseType.contextAlarmList!=null) {
+            if (builder.contextAlarmList == null && baseType.contextAlarmList != null) {
                 this.contextAlarmList = baseType.contextAlarmList;
             }
         }
     }
-    
-    
+
     /**
      * Creates a shallow copy of the parameter type, giving it a new name.
      */
@@ -41,17 +40,14 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
         this.contextAlarmList = t.contextAlarmList;
     }
 
-
+    @Override
     public NumericAlarm getDefaultAlarm() {
         return defaultAlarm;
     }
 
-    
-
     public List<NumericContextAlarm> getContextAlarmList() {
         return contextAlarmList;
     }
-
 
     @Override
     public boolean hasAlarm() {
@@ -61,12 +57,13 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
     @Override
     public Set<Parameter> getDependentParameters() {
         if (getContextAlarmList() == null) {
-            return (encoding!=null)?encoding.getDependentParameters():Collections.emptySet();
+            return (encoding != null) ? encoding.getDependentParameters() : Collections.emptySet();
         }
-            
-        Set<Parameter> dependentParameters = new HashSet<Parameter>();
-        for (NumericContextAlarm nca : contextAlarmList)
+
+        Set<Parameter> dependentParameters = new HashSet<>();
+        for (NumericContextAlarm nca : contextAlarmList) {
             dependentParameters.addAll(nca.getContextMatch().getDependentParameters());
+        }
         return dependentParameters;
     }
 
@@ -74,7 +71,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
     public Builder toBuilder() {
         return new Builder(this);
     }
-    
+
     @Override
     public String toString() {
         return "IntegerDataType name:" + name + " sizeInBits:" + sizeInBits + " signed:" + signed + " encoding:"
@@ -83,9 +80,9 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
                 + ((contextAlarmList != null) ? ", contextAlarmList:" + contextAlarmList : "");
     }
 
+    public static class Builder extends IntegerDataType.Builder<Builder>
+            implements NumericParameterType.Builder<Builder> {
 
-    public static class Builder extends IntegerDataType.Builder<Builder> implements NumericParameterType.Builder<Builder> {
-        
         List<NumericContextAlarm> contextAlarmList = null;
 
         NumericAlarm defaultAlarm = null;
@@ -97,9 +94,10 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
             super(integerParameterType);
             this.contextAlarmList = integerParameterType.contextAlarmList;
             this.defaultAlarm = integerParameterType.defaultAlarm;
-            
+
         }
 
+        @Override
         public void setDefaultAlarm(NumericAlarm defaultAlarm) {
             this.defaultAlarm = defaultAlarm;
         }
@@ -107,7 +105,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
         public void setNumericContextAlarmList(List<NumericContextAlarm> numericContextAlarmList) {
             this.contextAlarmList = numericContextAlarmList;
         }
-        
+
         private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
             NumericAlarm alarm = createOrGetAlarm(contextMatch);
             return alarm.getStaticAlarmRanges();
@@ -206,7 +204,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
             }
             contextAlarmList.addAll(ncas);
         }
-        
+
         public NumericContextAlarm getNumericContextAlarm(MatchCriteria context) {
             if (contextAlarmList == null) {
                 return null;
@@ -218,7 +216,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
             }
             return null;
         }
-        
+
         public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
             if (contextMatch == null) {
                 if (defaultAlarm == null) {
@@ -235,7 +233,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
                 return nca;
             }
         }
-        
+
         public NumericAlarm getDefaultAlarm() {
             return defaultAlarm;
         }
@@ -245,10 +243,11 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
             return new IntegerParameterType(this);
         }
 
+        @Override
         public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList) {
             this.contextAlarmList = contextAlarmList;
         }
 
     }
-    
+
 }

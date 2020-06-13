@@ -119,8 +119,8 @@ import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.TriggeredMathOperation;
@@ -129,8 +129,8 @@ import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.IncompleteType;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
@@ -403,7 +403,7 @@ public class XtceStaxReader {
                 continue;
             }
             FoundReference rr = refFinder.findReference(topSs, nr, ss);
-            
+
             if (rr == null) { // look for aliases up the hierarchy
                 rr = refFinder.findAliasReference(topSs, nr, ss);
             }
@@ -774,7 +774,7 @@ public class XtceStaxReader {
 
     private IncompleteType readArrayParameterType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_ARRAY_PARAMETER_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
 
         String name = readMandatoryAttribute("name", element);
@@ -818,7 +818,8 @@ public class XtceStaxReader {
         }
     }
 
-    private void readParameterBaseTypeAttributes(SpaceSystem spaceSystem, StartElement element, IncompleteType incompleteType)
+    private void readParameterBaseTypeAttributes(SpaceSystem spaceSystem, StartElement element,
+            IncompleteType incompleteType)
             throws XMLStreamException {
         BaseDataType.Builder<?> typeBuilder = (BaseDataType.Builder<?>) incompleteType.getTypeBuilder();
 
@@ -830,8 +831,9 @@ public class XtceStaxReader {
         if (baseType != null) {
             NameReference nr = new UnresolvedNameReference(baseType, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
                 ParameterType ptype = (ParameterType) nd;
-                if(!(ptype instanceof BaseDataType)) {
-                    throw new IllegalArgumentException(element.getLocation()+": cannot use "+ptype.getName()+" as a baseType");
+                if (!(ptype instanceof BaseDataType)) {
+                    throw new IllegalArgumentException(
+                            element.getLocation() + ": cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
                 return true;
@@ -840,8 +842,9 @@ public class XtceStaxReader {
             spaceSystem.addUnresolvedReference(nr);
         }
     }
-    
-    private void readArgumentBaseTypeAttributes(SpaceSystem spaceSystem, StartElement element, IncompleteType incompleteType)
+
+    private void readArgumentBaseTypeAttributes(SpaceSystem spaceSystem, StartElement element,
+            IncompleteType incompleteType)
             throws XMLStreamException {
         BaseDataType.Builder<?> typeBuilder = (BaseDataType.Builder<?>) incompleteType.getTypeBuilder();
 
@@ -853,8 +856,9 @@ public class XtceStaxReader {
         if (baseType != null) {
             NameReference nr = new UnresolvedNameReference(baseType, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
                 ArgumentType ptype = (ArgumentType) nd;
-                if(!(ptype instanceof BaseDataType)) {
-                    throw new IllegalArgumentException(element.getLocation()+": cannot use "+ptype.getName()+" as a baseType");
+                if (!(ptype instanceof BaseDataType)) {
+                    throw new IllegalArgumentException(
+                            element.getLocation() + ": cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
                 return true;
@@ -986,7 +990,7 @@ public class XtceStaxReader {
 
     private IncompleteType readFloatParameterType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_FLOAT_PARAMETER_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
 
         // name attribute
@@ -1330,7 +1334,7 @@ public class XtceStaxReader {
         // name attribute
         StringParameterType.Builder typeBuilder = new StringParameterType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readParameterBaseTypeAttributes(spaceSystem, element, incompleteType);
 
         while (true) {
@@ -1418,7 +1422,7 @@ public class XtceStaxReader {
 
     private IncompleteType readIntegerParameterType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_INTEGER_PARAMETER_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
 
         IntegerParameterType.Builder typeBuilder = new IntegerParameterType.Builder();
@@ -2935,14 +2939,14 @@ public class XtceStaxReader {
 
     private IncompleteType readBooleanArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_BOOLEAN_ARGUMENT_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
-        
+
         BooleanArgumentType.Builder typeBuilder = new BooleanArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
-        
+
         typeBuilder.setOneStringValue(readAttribute("oneStringValue", element, "True"));
         typeBuilder.setZeroStringValue(readAttribute("zeroStringValue", element, "False"));
 
@@ -2964,11 +2968,11 @@ public class XtceStaxReader {
         log.trace(XTCE_FLOAT_ARGUMENT_TYPE);
         StartElement element = checkStartElementPreconditions();
 
-        FloatArgumentType.Builder  typeBuilder = new FloatArgumentType.Builder();
+        FloatArgumentType.Builder typeBuilder = new FloatArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
-        
+
         String value = readAttribute("sizeInBits", xmlEvent.asStartElement(), null);
 
         if (value != null) {
@@ -3007,9 +3011,9 @@ public class XtceStaxReader {
 
         EnumeratedArgumentType.Builder typeBuilder = new EnumeratedArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
-        
+
         String value = readAttribute("initialValue", xmlEvent.asStartElement(), null);
         if (value != null) {
             typeBuilder.setInitialValue(value);
@@ -3032,12 +3036,12 @@ public class XtceStaxReader {
 
     private IncompleteType readAggregateArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_AGGREGATE_ARGUMENT_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
-        
+
         AggregateArgumentType.Builder typeBuilder = new AggregateArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         String name = readMandatoryAttribute("name", element);
         typeBuilder.setName(name);
 
@@ -3059,9 +3063,9 @@ public class XtceStaxReader {
 
         IntegerArgumentType.Builder typeBuilder = new IntegerArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
-        
+
         int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 32);
         typeBuilder.setSizeInBits(sizeInBits);
 
@@ -3094,10 +3098,10 @@ public class XtceStaxReader {
         log.trace(XTCE_BINARY_ARGUMENT_TYPE);
 
         StartElement element = checkStartElementPreconditions();
-        
+
         BinaryArgumentType.Builder typeBuilder = new BinaryArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
 
         while (true) {
@@ -3118,12 +3122,12 @@ public class XtceStaxReader {
 
     private IncompleteType readStringArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_STRING_ARGUMENT_TYPE);
-        
+
         StartElement element = checkStartElementPreconditions();
-        
+
         StringArgumentType.Builder typeBuilder = new StringArgumentType.Builder();
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
-        
+
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
 
         while (true) {

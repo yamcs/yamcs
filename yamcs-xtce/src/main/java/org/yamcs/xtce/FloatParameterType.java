@@ -18,18 +18,18 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         super(builder);
         this.defaultAlarm = builder.defaultAlarm;
         this.contextAlarmList = builder.contextAlarmList;
-        
-        
+
         if (builder.baseType != null && builder.baseType instanceof FloatParameterType) {
             FloatParameterType baseType = (FloatParameterType) builder.baseType;
-            if(builder.defaultAlarm == null && baseType.defaultAlarm!=null) {
+            if (builder.defaultAlarm == null && baseType.defaultAlarm != null) {
                 this.defaultAlarm = baseType.defaultAlarm;
             }
-            if(builder.contextAlarmList == null && baseType.contextAlarmList!=null) {
+            if (builder.contextAlarmList == null && baseType.contextAlarmList != null) {
                 this.contextAlarmList = baseType.contextAlarmList;
             }
         }
     }
+
     /**
      * Creates a shallow copy.
      */
@@ -39,10 +39,11 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         this.contextAlarmList = t.contextAlarmList;
     }
 
+    @Override
     public NumericAlarm getDefaultAlarm() {
         return defaultAlarm;
     }
-    
+
     @Override
     public boolean hasAlarm() {
         return defaultAlarm != null || (contextAlarmList != null && !contextAlarmList.isEmpty());
@@ -62,9 +63,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         }
         return dependentParameters;
     }
-    
 
-    
     public List<NumericContextAlarm> getContextAlarmList() {
         return contextAlarmList;
     }
@@ -72,26 +71,24 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
     public void setDefaultAlarm(NumericAlarm defaultAlarm) {
         this.defaultAlarm = defaultAlarm;
     }
-    
-    
+
     @Override
     public Builder toBuilder() {
         return new Builder(this);
     }
-    
+
     @Override
     public String toString() {
         return "FloatParameterType name:" + name + " sizeInBits:" + sizeInBits + " encoding:" + encoding
                 + ((getDefaultAlarm() != null) ? ", defaultAlarm:" + getDefaultAlarm() : "")
                 + ((contextAlarmList != null) ? ", contextAlarmList:" + contextAlarmList : "");
     }
-    
-    
-    
-    public static class Builder extends FloatDataType.Builder<Builder> implements NumericParameterType.Builder<Builder> {
+
+    public static class Builder extends FloatDataType.Builder<Builder>
+            implements NumericParameterType.Builder<Builder> {
         private NumericAlarm defaultAlarm = null;
         private List<NumericContextAlarm> contextAlarmList = null;
-        
+
         public Builder() {
         }
 
@@ -101,6 +98,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
             this.contextAlarmList = floatParameterType.contextAlarmList;
         }
 
+        @Override
         public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList) {
             this.contextAlarmList = contextAlarmList;
         }
@@ -111,12 +109,14 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
             }
             contextAlarmList.add(nca);
         }
+
         public void addContextAlarms(Collection<NumericContextAlarm> ncas) {
             if (contextAlarmList == null) {
                 contextAlarmList = new ArrayList<>();
             }
             contextAlarmList.addAll(ncas);
         }
+
         public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
             if (contextMatch == null) {
                 if (defaultAlarm == null) {
@@ -133,7 +133,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
                 return nca;
             }
         }
-        
+
         public NumericContextAlarm getNumericContextAlarm(MatchCriteria context) {
             if (contextAlarmList == null) {
                 return null;
@@ -145,7 +145,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
             }
             return null;
         }
-        
+
         /**
          * Adds a new, or unions with an existing range for the specified context and level
          * 
@@ -231,6 +231,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         public void setDefaultSevereAlarmRange(DoubleRange severeRange) {
             getAlarmRanges(null).severeRange = severeRange;
         }
+
         public NumericAlarm getDefaultAlarm() {
             return defaultAlarm;
         }
@@ -240,12 +241,11 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
             return new FloatParameterType(this);
         }
 
+        @Override
         public void setDefaultAlarm(NumericAlarm defaultAlarm) {
             this.defaultAlarm = defaultAlarm;
         }
 
     }
-
-   
 
 }
