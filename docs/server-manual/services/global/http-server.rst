@@ -38,8 +38,11 @@ This is a global service defined in ``etc/yamcs.yaml``. Example:
 Configuration Options
 ---------------------
 
+address (string)
+    The local address to which Yamcs will bind waiting for HTTP clients. If unset, Yamcs binds to a wildcard address.
+
 port (integer)
-    The port at which Yamcs may be reached. Default: ``8090``
+    The port to which Yamcs will bind waiting for HTTP clients. Default: ``8090``
 
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
