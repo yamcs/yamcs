@@ -34,9 +34,6 @@ public class StringArgumentType extends StringDataType implements ArgumentType {
     }
 
     @Override
-    public StringArgumentType copy() {
-        return new StringArgumentType(this);
-    }
     public Builder toBuilder() {
         return new Builder(this);
     }

@@ -47,6 +47,7 @@ public class NameDescription implements Serializable {
         this.shortDescription = builder.shortDescription;
         this.ancillaryDataSet = builder.ancillaryDataSet;
         this.xtceAliasSet = builder.xtceAliasSet;
+        this.qualifiedName = builder.qualifiedName;
     }
 
     NameDescription(String name) {
@@ -238,6 +239,7 @@ public class NameDescription implements Serializable {
         private Map<String, AncillaryData> ancillaryDataSet = null;
         private String shortDescription;
         private String longDescription;
+        private String qualifiedName;
 
         public Builder() {
         }
@@ -248,6 +250,7 @@ public class NameDescription implements Serializable {
             this.ancillaryDataSet = nd.ancillaryDataSet;
             this.shortDescription = nd.shortDescription;
             this.longDescription = nd.longDescription;
+            this.qualifiedName = nd.qualifiedName;
         }
         
 

@@ -77,6 +77,11 @@ public class SpaceSystem extends NameDescription {
         parameterTypes.put(ptn, parameterType);
 
     }
+    
+
+    public boolean removeParameterType(ParameterType ptype) {
+        return parameterTypes.remove(ptype.getName(), ptype);
+    }
 
     public void addArgumentType(ArgumentType argumentType) {
         String atn = ((NameDescription) argumentType).getName();
@@ -371,5 +376,6 @@ public class SpaceSystem extends NameDescription {
         }
         return l;
     }
+
 
 }

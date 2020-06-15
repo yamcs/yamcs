@@ -3,6 +3,7 @@ package org.yamcs.xtce;
 import java.util.List;
 
 
+
 /**
  * Interface to be implemented by all the argument types
  * @author nm
@@ -27,6 +28,7 @@ public interface ArgumentType extends DataType {
      * @return the name of the type
      */
     String getName();
+    
     /**
      * Create a shallow copy of the data type
      *  - the object itself (and the primitive fields) are new 
@@ -34,7 +36,7 @@ public interface ArgumentType extends DataType {
      *  
      * @return
      */
-    ArgumentType copy();
+    <T extends ArgumentType> Builder<?> toBuilder();
     
     interface Builder<T extends Builder<T>> extends DataType.Builder<T> {
         T setEncoding(DataEncoding dataEncoding);

@@ -226,7 +226,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         public Builder() {
         }
 
-        public Builder(AggregateParameterType dataType) {
+        public Builder(AggregateDataType dataType) {
             super(dataType);
             this.memberList = dataType.memberList;
         }

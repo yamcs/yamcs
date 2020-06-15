@@ -139,6 +139,17 @@ import jxl.read.biff.BiffException;
 
 /**
  * This class loads database from excel spreadsheets.
+ * <p>
+ * Note about handling of data types: before Yamcs 5, the parameter and argument types were created anonymous. They were
+ * not stored into the {@link XtceDb} structures. An attempt to do so has failed because in XTCE the data types include
+ * the alarms and command argument validity whereas in the XTCE they are not defined in the DataType sheets. In addition
+ * in the spreadhseet we have one definition which can be shared between TC and TM.
+ * <p>
+ * Starting with Yamcs 5, we do register the types in the XtceDb and we duplicate them for each parameter/command that
+ * defines alarms or validity ranges.
+ * <p>
+ * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters
+ * and &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt_&lt;argument_name&gt for command arguments.
  *
  * @author nm, ddw
  *
@@ -151,16 +162,9 @@ public class V7Loader extends V7LoaderBase {
     protected Map<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
 
     protected Map<String, DataTypeRecord> dataTypesDefs = new HashMap<>();
-    Map<Parameter, DataType.Builder<?>> parameterDataTypesBuilders = new HashMap<>();
-    /*
-     * SHARED_DATA_TYPES_TODO: the way the spreadsheet is structured, the data types do not contain Alarms or command
-     * argument validity ranges as in XTCE
-     * 
-     * that's why attempting to share the types has failed
-     * 
-     * protected Map<DataTypeRecord, ParameterType> parameterDataTypes = new HashMap<>();
-     * protected Map<DataTypeRecord, ArgumentType> argumentDataTypes = new HashMap<>();
-     */
+    protected Map<DataTypeRecord, ParameterType> parameterDataTypes = new HashMap<>();
+    protected Map<DataTypeRecord, ArgumentType> argumentDataTypes = new HashMap<>();
+
     protected Map<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected Map<String, Parameter> parameters = new HashMap<>();
     protected Set<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
@@ -228,10 +232,6 @@ public class V7Loader extends V7LoaderBase {
             throw e;
         } catch (Exception e) {
             throw new SpreadsheetLoadException(ctx, e);
-        }
-
-        for (Map.Entry<Parameter, DataType.Builder<?>> me : parameterDataTypesBuilders.entrySet()) {
-            me.getKey().setParameterType((ParameterType) me.getValue().build());
         }
 
         return rootSpaceSystem;
@@ -500,17 +500,13 @@ public class V7Loader extends V7LoaderBase {
         }
     }
 
-    protected DataType.Builder<?> createDataType(SpaceSystem spaceSystem, DataTypeRecord dtr, boolean param) {
-        /*
-         * see SHARED_DATA_TYPES_TODO
-         * DataType dtype = param ? parameterDataTypes.get(dtr) : argumentDataTypes.get(dtr);
-         * 
-         * if (dtype != null) {
-         * return dtype;
-         * }
-         */
+    protected DataType getOrCreateDataType(SpaceSystem spaceSystem, DataTypeRecord dtr, boolean param) {
+        DataType dtype = param ? parameterDataTypes.get(dtr) : argumentDataTypes.get(dtr);
+        if (dtype != null) {
+            return dtype;
+        }
 
-        DataType.Builder<?> dtype;
+        DataType.Builder<?> dtypeb;
         String name = dtr.name;
         String engtype = dtr.engType;
         String rawtype = dtr.rawType;
@@ -518,17 +514,17 @@ public class V7Loader extends V7LoaderBase {
         String calib = dtr.calibration;
         String units = dtr.engUnit;
 
-        dtype = createParamOrArgType(spaceSystem, name, engtype, param);
+        dtypeb = createParamOrArgType(spaceSystem, name, engtype, param);
 
-        if (units != null && dtype instanceof BaseDataType.Builder) {
+        if (units != null && dtypeb instanceof BaseDataType.Builder) {
             UnitType unitType = new UnitType(units);
-            ((BaseDataType.Builder<?>) dtype).addUnit(unitType);
+            ((BaseDataType.Builder<?>) dtypeb).addUnit(unitType);
         }
 
         DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Data type " + name, rawtype,
                 engtype, encodings, calib);
 
-        if (dtype instanceof IntegerDataType.Builder) {
+        if (dtypeb instanceof IntegerDataType.Builder) {
             // Integers can be encoded as strings
             if (encoding instanceof StringDataEncoding) {
                 // Create a new int encoding which uses the configured string encoding
@@ -542,11 +538,11 @@ public class V7Loader extends V7LoaderBase {
                     }
                     intStringEncoding.setDefaultCalibrator(c);
                 }
-                ((IntegerDataType.Builder<?>) dtype).setEncoding(intStringEncoding);
+                ((IntegerDataType.Builder<?>) dtypeb).setEncoding(intStringEncoding);
             } else {
-                ((IntegerDataType.Builder<?>) dtype).setEncoding(encoding);
+                ((IntegerDataType.Builder<?>) dtypeb).setEncoding(encoding);
             }
-        } else if (dtype instanceof FloatDataType.Builder<?>) {
+        } else if (dtypeb instanceof FloatDataType.Builder<?>) {
             // Floats can be encoded as strings
             if (encoding instanceof StringDataEncoding) {
                 // Create a new float encoding which uses the configured string encoding
@@ -560,20 +556,20 @@ public class V7Loader extends V7LoaderBase {
                         floatStringEncoding.setDefaultCalibrator(c);
                     }
                 }
-                ((FloatDataType.Builder<?>) dtype).setEncoding(floatStringEncoding);
+                ((FloatDataType.Builder<?>) dtypeb).setEncoding(floatStringEncoding);
             } else {
-                ((FloatDataType.Builder<?>) dtype).setEncoding(encoding);
+                ((FloatDataType.Builder<?>) dtypeb).setEncoding(encoding);
             }
-        } else if (dtype instanceof EnumeratedDataType.Builder) {
-            EnumeratedDataType.Builder<?> edtype = (EnumeratedDataType.Builder<?>) dtype;
+        } else if (dtypeb instanceof EnumeratedDataType.Builder) {
+            EnumeratedDataType.Builder<?> edtype = (EnumeratedDataType.Builder<?>) dtypeb;
             // Enumerations encoded as string integers
             if (encoding instanceof StringDataEncoding) {
                 IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name,
                         ((StringDataEncoding) encoding));
                 // Don't set calibrator, already done when making ptype
-                ((BaseDataType.Builder<?>) dtype).setEncoding(intStringEncoding);
+                ((BaseDataType.Builder<?>) dtypeb).setEncoding(intStringEncoding);
             } else {
-                ((BaseDataType.Builder<?>) dtype).setEncoding(encoding);
+                ((BaseDataType.Builder<?>) dtypeb).setEncoding(encoding);
             }
             if (calib == null) {
                 throw new SpreadsheetLoadException(ctx, "Data type " + name
@@ -587,37 +583,35 @@ public class V7Loader extends V7LoaderBase {
             for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
                 edtype.addEnumerationValue(entry.getKey(), entry.getValue());
             }
-        } else if (dtype instanceof AbsoluteTimeDataType.Builder<?>) {
-            ((AbsoluteTimeDataType.Builder<?>) dtype).setEncoding(encoding);
-            populateTimeParameter(spaceSystem, (AbsoluteTimeDataType.Builder<?>) dtype, calib);
-        } else if (dtype instanceof AggregateDataType.Builder<?>) {
+        } else if (dtypeb instanceof AbsoluteTimeDataType.Builder<?>) {
+            ((AbsoluteTimeDataType.Builder<?>) dtypeb).setEncoding(encoding);
+            populateTimeParameter(spaceSystem, (AbsoluteTimeDataType.Builder<?>) dtypeb, calib);
+        } else if (dtypeb instanceof AggregateDataType.Builder<?>) {
             if (encodings != null || rawtype != null) {
                 throw new SpreadsheetLoadException(ctx,
                         name + ": encoding or raw type cannot be specified for aggregate data types");
             }
-        } else if (dtype instanceof ArrayDataType.Builder) {
+        } else if (dtypeb instanceof ArrayDataType.Builder) {
             if (encodings != null || rawtype != null) {
                 throw new SpreadsheetLoadException(ctx,
                         name + ": encoding or raw type cannot be specified for array data types");
             }
         } else if (encoding != null) {
-            ((BaseDataType.Builder<?>) dtype).setEncoding(encoding);
+            ((BaseDataType.Builder<?>) dtypeb).setEncoding(encoding);
         }
         if (dtr.initialValue != null) {
-            setInitialValue(dtype, dtr.initialValue);
+            setInitialValue(dtypeb, dtr.initialValue);
         }
-        dtype.setShortDescription(dtr.description);
+        dtypeb.setShortDescription(dtr.description);
 
-        /*
-         * see SHARED_DATA_TYPES_TODO above
-         * if(param) {
-         * dtr.spaceSystem.addParameterType((ParameterType) dtype);
-         * parameterDataTypes.put(dtr, (ParameterType) dtype);
-         * } else {
-         * dtr.spaceSystem.addArgumentType((ArgumentType) dtype);
-         * argumentDataTypes.put(dtr, (ArgumentType) dtype);
-         * }
-         */
+        dtype = dtypeb.build();
+        if (param) {
+            dtr.spaceSystem.addParameterType((ParameterType) dtype);
+            parameterDataTypes.put(dtr, (ParameterType) dtype);
+        } else {
+            dtr.spaceSystem.addArgumentType((ArgumentType) dtype);
+            argumentDataTypes.put(dtr, (ArgumentType) dtype);
+        }
         return dtype;
     }
 
@@ -721,7 +715,7 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx,
                         "Aggregate " + name + " makes reference to unknown type '" + m.dataType);
             }
-            DataType dtype = createDataType(spaceSystem, dtr, param).build();
+            DataType dtype = getOrCreateDataType(spaceSystem, dtr, param);
             Member member = new Member(m.name);
             member.setDataType(dtype);
             atype.addMember(member);
@@ -751,7 +745,7 @@ public class V7Loader extends V7LoaderBase {
         }
         ArrayDataType.Builder<?> atype = param ? new ArrayParameterType.Builder() : new ArrayArgumentType.Builder();
         atype.setName(name).setNumberOfDimensions(c);
-        atype.setElementType(createDataType(spaceSystem, dtr, param).build());
+        atype.setElementType(getOrCreateDataType(spaceSystem, dtr, param));
         return atype;
     }
 
@@ -776,16 +770,15 @@ public class V7Loader extends V7LoaderBase {
             if (dtr == null) {
                 throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
             }
-            DataType.Builder<?> ptype = createDataType(spaceSystem, dtr, true);
+            ParameterType ptype = (ParameterType) getOrCreateDataType(spaceSystem, dtr, true);
             final Parameter param = new Parameter(name);
-            param.setParameterType((ParameterType) ptype.build());
+            param.setParameterType(ptype);
             parameters.put(name, param);
-            
-            parameterDataTypesBuilders.put(param, ptype);
+
             param.setDataSource(dataSource);
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
-                param.setInitialValue(ptype.build().parseString(initValue));
+                param.setInitialValue(ptype.parseString(initValue));
             }
 
             XtceAliasSet xas = getAliases(firstRow, cells);
@@ -1308,7 +1301,7 @@ public class V7Loader extends V7LoaderBase {
             size = -1;
         } else if (parameters.containsKey(paraname)) {
             Parameter param = parameters.get(paraname);
-            ParameterType ptype = (ParameterType) parameterDataTypesBuilders.get(param).build();
+            ParameterType ptype = param.getParameterType();
             checkThatParameterSizeCanBeComputed(param.getName(), ptype);
             se = new ParameterEntry(pos, location, param);
             size = getParameterSize(param.getName(), ptype);
@@ -1346,9 +1339,8 @@ public class V7Loader extends V7LoaderBase {
             throw new SpreadsheetLoadException(ctx, "The array parameter '" + arrayparam
                     + "' was not found in the parameters or containers map");
         }
-        ParameterType ptype = (ParameterType) parameterDataTypesBuilders.get(param).build(); 
-        param.setParameterType(ptype);
-        
+        ParameterType ptype = param.getParameterType();
+
         if (!(ptype instanceof ArrayParameterType)) {
             throw new SpreadsheetLoadException(ctx, "The parameter '" + arrayparam
                     + "' is not an array parameter but " + param.getParameterType().getClass().getTypeName());
@@ -1578,8 +1570,7 @@ public class V7Loader extends V7LoaderBase {
         if (dtr == null) {
             throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
         }
-        // see SHARED_DATA_TYPES_TODO above
-        ArgumentType.Builder<?> atype = (ArgumentType.Builder<?>) createDataType(spaceSystem, dtr, false);
+        ArgumentType atype = (ArgumentType) getOrCreateDataType(spaceSystem, dtr, false);
 
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
@@ -1587,15 +1578,17 @@ public class V7Loader extends V7LoaderBase {
 
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
-       
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
-            arg.setInitialValue(atype.build().parseString(v));
+            arg.setInitialValue(atype.parseString(v));
         }
+        
         if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {
-            if (atype instanceof IntegerArgumentType.Builder) {
-                if (((IntegerArgumentType.Builder) atype).isSigned()) {
+            ArgumentType.Builder<?> atypeb = atype.toBuilder();
+            atypeb.setName(atype.getName()+"_"+cmd.getName()+"_"+arg.getName());
+            if (atypeb instanceof IntegerArgumentType.Builder) {
+                if (((IntegerArgumentType.Builder) atypeb).isSigned()) {
                     long minInclusive = Long.MIN_VALUE;
                     long maxInclusive = Long.MAX_VALUE;
                     if (hasColumn(cells, CN_CMD_RANGELOW)) {
@@ -1604,9 +1597,9 @@ public class V7Loader extends V7LoaderBase {
                     if (hasColumn(cells, CN_CMD_RANGEHIGH)) {
                         maxInclusive = Long.decode(getContent(cells, CN_CMD_RANGEHIGH));
                     }
-                   
+
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-                    ((IntegerArgumentType.Builder) atype).setValidRange(range);
+                    ((IntegerArgumentType.Builder) atypeb).setValidRange(range);
                 } else {
                     long minInclusive = 0;
                     long maxInclusive = ~0;
@@ -1617,9 +1610,9 @@ public class V7Loader extends V7LoaderBase {
                         maxInclusive = UnsignedLongs.decode(getContent(cells, CN_CMD_RANGEHIGH));
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-                    ((IntegerArgumentType.Builder) atype).setValidRange(range);
+                    ((IntegerArgumentType.Builder) atypeb).setValidRange(range);
                 }
-            } else if (atype instanceof FloatArgumentType.Builder) {
+            } else if (atypeb instanceof FloatArgumentType.Builder) {
                 double minInclusive = Double.NEGATIVE_INFINITY;
                 double maxInclusive = Double.POSITIVE_INFINITY;
                 if (hasColumn(cells, CN_CMD_RANGELOW)) {
@@ -1629,11 +1622,14 @@ public class V7Loader extends V7LoaderBase {
                     maxInclusive = Double.parseDouble(getContent(cells, CN_CMD_RANGEHIGH));
                 }
                 FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
-                ((FloatArgumentType.Builder) atype).setValidRange(range);
+                ((FloatArgumentType.Builder) atypeb).setValidRange(range);
             }
+            
+            atype = atypeb.build();
+            spaceSystem.addArgumentType(atype);
         }
-        
-        arg.setArgumentType((ArgumentType) atype.build());
+
+        arg.setArgumentType(atype);
         arg.setShortDescription(getContent(cells, CN_CMD_DESCRIPTION, null));
 
         ArgumentEntry ae;
@@ -2144,7 +2140,7 @@ public class V7Loader extends V7LoaderBase {
             Cell[] cells = jumpToRow(sheet, start);
             String paramName = getContent(cells, CN_ALARM_PARAM_NAME);
             NameReference paraRef = getParameterReference(spaceSystem, paramName, true);
-
+            boolean renameType = true;
             // now we search for the matching last row of the alarms for this parameter
             int paramEnd = start + 1;
             while (paramEnd < sheet.getRows()) {
@@ -2183,18 +2179,19 @@ public class V7Loader extends V7LoaderBase {
                     }
                 }
 
-                checkAndAddAlarm(cells, AlarmLevels.watch, paraRef, context, CN_ALARM_WATCH_TRIGGER,
-                        CN_ALARM_WATCH_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.warning, paraRef, context,
+                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.watch, paraRef, context,
+                        CN_ALARM_WATCH_TRIGGER, CN_ALARM_WATCH_VALUE);
+                renameType = false;
+                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.warning, paraRef, context,
                         CN_ALARM_WARNING_TRIGGER, CN_ALARM_WARNING_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.distress, paraRef, context,
+                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.distress, paraRef, context,
                         CN_ALARM_DISTRESS_TRIGGER, CN_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.critical, paraRef, context,
+                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.critical, paraRef, context,
                         CN_ALARM_CRITICAL_TRIGGER, CN_ALARM_CRITICAL_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.severe, paraRef, context,
+                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.severe, paraRef, context,
                         CN_ALARM_SEVERE_TRIGGER, CN_ALARM_SEVERE_VALUE);
 
-                addAlarmDetails(paraRef, context, reportType, minViolations);
+                addAlarmDetails(spaceSystem, paraRef, context, reportType, minViolations);
 
                 previousContext = context;
             }
@@ -2203,7 +2200,8 @@ public class V7Loader extends V7LoaderBase {
         }
     }
 
-    private void checkAndAddAlarm(Cell[] cells, AlarmLevels level, NameReference paraRef, MatchCriteria context,
+    private void checkAndAddAlarm(SpaceSystem spaceSystem, boolean renameType, Cell[] cells, AlarmLevels level,
+            NameReference paraRef, MatchCriteria context,
             String cnTrigger, String cnValue) {
         if (!hasColumn(cells, cnTrigger) || !hasColumn(cells, cnValue)) {
             return;
@@ -2215,10 +2213,17 @@ public class V7Loader extends V7LoaderBase {
         paraRef.addResolvedAction(nd -> {
 
             Parameter para = (Parameter) nd;
-            DataType.Builder<?> ptype = parameterDataTypesBuilders.get(para);
-            if (ptype instanceof IntegerParameterType.Builder) {
+            // duplicate the type to be able to add alarms
+            ParameterType oldPtype = para.getParameterType();
+
+            ParameterType.Builder<?> ptypeb = oldPtype.toBuilder();
+            if (renameType) {
+                ptypeb.setName(oldPtype.getName() + "_" + para.getName());
+            }
+
+            if (ptypeb instanceof IntegerParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[h.get(cnValue)]);
-                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
+                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptypeb;
                 if ("low".equals(trigger)) {
                     ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
                 } else if ("high".equals(trigger)) {
@@ -2227,9 +2232,9 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
-            } else if (ptype instanceof FloatParameterType.Builder) {
+            } else if (ptypeb instanceof FloatParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[h.get(cnValue)]);
-                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptype;
+                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 if ("low".equals(trigger)) {
                     fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
                 } else if ("high".equals(trigger)) {
@@ -2238,8 +2243,8 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
-            } else if (ptype instanceof EnumeratedParameterType.Builder) {
-                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptype;
+            } else if (ptypeb instanceof EnumeratedParameterType.Builder) {
+                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptypeb;
                 if ("state".equals(trigger)) {
                     ValueEnumeration enumValue = ept.enumValue(triggerValue);
                     if (enumValue == null) {
@@ -2253,36 +2258,45 @@ public class V7Loader extends V7LoaderBase {
                             + "' for alarm of enumerated parameter " + para.getName());
                 }
             }
+            if(!renameType) {
+                spaceSystem.removeParameterType(oldPtype);
+            }
+            ParameterType newPtype = ptypeb.build();
+
+            para.setParameterType(newPtype);
+            spaceSystem.addParameterType(newPtype);
             return true;
         });
     }
 
-    private void addAlarmDetails(NameReference paraRef, MatchCriteria context, AlarmReportType reportType,
+    private void addAlarmDetails(SpaceSystem spaceSystem, NameReference paraRef, MatchCriteria context,
+            AlarmReportType reportType,
             int minViolations) {
 
         paraRef.addResolvedAction(nd -> {
-            Parameter para = (Parameter) nd;
-            DataType.Builder<?> ptype = parameterDataTypesBuilders.get(para);
-            if (ptype == null) { // the type has to be resolved somewhere else first
+            Parameter param = (Parameter) nd;
+            ParameterType oldPtype = param.getParameterType();
+            if (oldPtype == null) { // the type has to be resolved somewhere else first
                 return false;
             }
+            ParameterType.Builder<?> ptypeb = oldPtype.toBuilder();
 
             // Set minviolations and alarmreporttype
             AlarmType alarm = null;
-            if (para.getParameterType() instanceof IntegerParameterType) {
-                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
+            if (ptypeb instanceof IntegerParameterType.Builder) {
+                IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptypeb;
                 alarm = (context == null) ? ipt.getDefaultAlarm() : ipt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (para.getParameterType() instanceof FloatParameterType) {
-                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptype;
+            } else if (ptypeb instanceof FloatParameterType) {
+                FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 alarm = (context == null) ? fpt.getDefaultAlarm() : fpt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (para.getParameterType() instanceof EnumeratedParameterType) {
-                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptype;
+            } else if (ptypeb instanceof EnumeratedParameterType) {
+                EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptypeb;
                 alarm = (context == null) ? ept.getDefaultAlarm() : ept.getContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ept.createOrGetAlarm(context).setAlarmReportType(reportType);
@@ -2292,6 +2306,11 @@ public class V7Loader extends V7LoaderBase {
                 alarm.setMinViolations((minViolations == -1) ? 1 : minViolations);
                 alarm.setAlarmReportType(reportType);
             }
+            ParameterType newPtype = ptypeb.build();
+            param.setParameterType(newPtype);
+            spaceSystem.removeParameterType(oldPtype);
+            spaceSystem.addParameterType(newPtype);
+
             return true;
         });
     }

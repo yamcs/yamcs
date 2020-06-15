@@ -2,6 +2,8 @@ package org.yamcs.xtce;
 
 import java.util.List;
 
+import org.yamcs.xtce.BooleanArgumentType.Builder;
+
 /**
  * Describe an array parameter type. 
  * The size and number of dimensions are described here. See ArrayParameterRefEntryType, NameReferenceType and ArrayDataType.
@@ -40,11 +42,18 @@ public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
     
     
     @Override
-    public ArrayArgumentType copy() {
-        return new ArrayArgumentType(this);
+    public ArrayArgumentType.Builder toBuilder() {
+        return new Builder(this);
     }
     
     public static class Builder extends ArrayDataType.Builder<Builder> implements ArgumentType.Builder<Builder>{
+        public Builder() {
+        }
+        
+        public Builder(ArrayArgumentType arrayArgumentType) {
+            super(arrayArgumentType);
+        }
+
         @Override
         public ArrayArgumentType build() {
             return new ArrayArgumentType(this);

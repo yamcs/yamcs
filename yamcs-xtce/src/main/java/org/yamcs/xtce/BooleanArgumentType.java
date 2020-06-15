@@ -32,11 +32,18 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
     }
 
     @Override
-    public BooleanArgumentType copy() {
-        return new BooleanArgumentType(this);
+    public BooleanArgumentType.Builder toBuilder() {
+        return new Builder(this);
     }
-
+    
+    
     public static class Builder extends BooleanDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
+        public Builder() {
+        }
+        
+        public Builder(BooleanArgumentType booleanArgumentType) {
+           super(booleanArgumentType);
+        }
 
         @Override
         public ArgumentType build() {

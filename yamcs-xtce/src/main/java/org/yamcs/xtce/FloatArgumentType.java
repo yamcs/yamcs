@@ -34,11 +34,6 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
         return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
     }
     
-    @Override
-    public FloatArgumentType copy() {
-        return new FloatArgumentType(this);
-    }
-    
     public static class Builder extends FloatDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
 
         public Builder(FloatArgumentType floatArgumentType) {

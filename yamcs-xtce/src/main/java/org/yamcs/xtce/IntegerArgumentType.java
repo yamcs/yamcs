@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.xtce.EnumeratedArgumentType.Builder;
+
 public class IntegerArgumentType extends IntegerDataType implements ArgumentType {
     private static final long serialVersionUID = 3L;
 
@@ -37,11 +39,17 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
     }
 
     @Override
-    public IntegerArgumentType copy() {
-        return new IntegerArgumentType(this);
+    public Builder toBuilder() {
+        return new Builder(this);
     }
 
     public static class Builder extends IntegerDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
+        public Builder(IntegerArgumentType integerArgumentType) {
+            super(integerArgumentType);
+        }
+        public Builder() {
+        }
+        
         @Override
         public IntegerArgumentType build() {
             return new IntegerArgumentType(this);

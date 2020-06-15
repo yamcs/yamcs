@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-
 public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
     private static final long serialVersionUID = 1L;
 
@@ -22,12 +21,8 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
         return "BinaryArgumentType name:" + name + " encoding:" + encoding;
     }
 
-    @Override
-    public BinaryArgumentType copy() {
-        return new BinaryArgumentType(this);
-    }
     
-    public Builder toBuilder() {
+    public BinaryArgumentType.Builder toBuilder() {
         return new Builder(this);
     }
     

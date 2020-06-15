@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.xtce.BooleanArgumentType.Builder;
+
 public class EnumeratedArgumentType extends EnumeratedDataType implements ArgumentType {
     private static final long serialVersionUID = 1;
 
@@ -39,12 +41,10 @@ public class EnumeratedArgumentType extends EnumeratedDataType implements Argume
     }
 
     @Override
-    public EnumeratedArgumentType copy() {
-        return new EnumeratedArgumentType(this);
-    }
     public Builder toBuilder() {
         return new Builder(this);
     }
+    
     
     public static class Builder extends EnumeratedDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
         public Builder() {

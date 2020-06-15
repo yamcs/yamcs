@@ -2,6 +2,8 @@ package org.yamcs.xtce;
 
 import java.util.List;
 
+import org.yamcs.xtce.BooleanArgumentType.Builder;
+
 public class AggregateArgumentType extends AggregateDataType implements ArgumentType {
     private static final long serialVersionUID = 2L;
     
@@ -24,11 +26,17 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
     }
 
     @Override
-    public AggregateArgumentType copy() {
-        return new AggregateArgumentType(this);
+    public AggregateArgumentType.Builder toBuilder() {
+        return new Builder(this);
     }
-
+    
     public static class Builder extends AggregateDataType.Builder<Builder> implements ArgumentType.Builder<Builder>{
+        public Builder() {
+        }
+        
+        public Builder(AggregateArgumentType aggregateArgumentType) {
+            super(aggregateArgumentType);
+        }
         @Override
         public AggregateArgumentType build() {
             return new AggregateArgumentType(this);
