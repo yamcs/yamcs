@@ -8,7 +8,6 @@ option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
 
-import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
@@ -68,7 +67,7 @@ enum AlarmSeverity {
 // and the latest value at the time of your request.
 message AlarmData {
   optional AlarmType type = 1;
-  optional google.protobuf.Timestamp triggerTime = 2 ;
+  optional google.protobuf.Timestamp triggerTime = 2;
 
   // For parameter alarms, this is the id of the parameters
   // For event alarms

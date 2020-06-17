@@ -39,7 +39,7 @@ public final class ManagementGpbHelper {
                 .setHasAlarms(processor.hasAlarmServer())
                 .setState(processor.getState())
                 .setPersistent(processor.isPersistent())
-                .setTime(TimeEncoding.toString(processor.getCurrentTime()))
+                .setTime(TimeEncoding.toProtobufTimestamp(processor.getCurrentTime()))
                 .setReplay(processor.isReplay())
                 .setCheckCommandClearance(processor.getConfig().checkCommandClearance());
 

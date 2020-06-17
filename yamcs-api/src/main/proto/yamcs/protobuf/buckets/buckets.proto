@@ -7,6 +7,7 @@ option java_outer_classname = "BucketsProto";
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
@@ -223,8 +224,8 @@ message ObjectInfo {
   // Object name
   optional string name = 1;
 
-  // Time in UTC format
-  optional string created = 2;
+  // Creation time
+  optional google.protobuf.Timestamp created = 2;
   
   // Size in bytes
   optional uint64 size = 3;

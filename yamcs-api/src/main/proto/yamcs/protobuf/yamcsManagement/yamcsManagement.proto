@@ -192,7 +192,7 @@ message YamcsInstance {
   //in case the state=FAILED, this field will indicate the cause of the failure
   // the missionDatabase and other fields may not be filled when this happens
   optional string failureCause = 9;
-  optional string missionTime = 10;
+  optional google.protobuf.Timestamp missionTime = 10;
   map<string, string> labels = 12;
 }
 
@@ -224,7 +224,7 @@ message ProcessorInfo {
   optional ReplayStatus.ReplayState replayState = 10; //in case of replay
   repeated ServiceInfo services = 16;
   optional bool persistent = 17;
-  optional string time = 18;
+  optional google.protobuf.Timestamp time = 18;
   optional bool replay = 19;
   optional bool checkCommandClearance = 20;
 }
