@@ -47,11 +47,6 @@ public class Parameter extends NameDescription {
     public void setRecordingGroup(String g) {
         this.recordingGroup = g;
     }
-    
-    @Override
-    public String toString() {
-        return "ParaName: " + this.getName() + " paraType:" + parameterType + ((xtceAliasSet==null)?"":" aliases: "+xtceAliasSet.toString());
-    }
 
     /**
      * 
@@ -67,5 +62,10 @@ public class Parameter extends NameDescription {
      */
     public void setInitialValue(Object initialValue) {
         this.initialValue = initialValue;
+    }
+    
+    @Override
+    public String toString() {
+        return "ParaName: " + this.getName() + " paraType:" + parameterType + ((xtceAliasSet==null)?"":" aliases: "+xtceAliasSet.toString());
     }
 }
