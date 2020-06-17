@@ -184,7 +184,7 @@ public class XtceDbFactory {
         List<NameReference> refs = ss.getUnresolvedReferences();
         if (refs != null) {
             for (NameReference nr : ss.getUnresolvedReferences()) {
-                sb.append("system").append(ss.getName()).append(" ").append(nr.toString()).append("\n");
+                sb.append("system: ").append(ss.getName()).append(" ").append(nr.toString()).append("\n");
             }
         }
         for (SpaceSystem ss1 : ss.getSubSystems()) {
@@ -227,11 +227,10 @@ public class XtceDbFactory {
                 throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
             boolean resolved;
-
-            if (nr instanceof UnresolvedParameterReference) {
-                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(), rr.getAggregateMemberPath());
-            } else {
+            if(rr.getAggregateMemberPath() == null) {
                 resolved = nr.tryResolve(rr.getNameDescription());
+            } else {
+                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(), rr.getAggregateMemberPath());
             }
             if (resolved) {
                 n++;
