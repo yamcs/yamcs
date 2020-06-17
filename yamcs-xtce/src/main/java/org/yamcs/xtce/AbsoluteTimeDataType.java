@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Used to contain an absolute time.
@@ -66,8 +65,8 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     }
 
     @Override
-    public Long parseString(String stringValue) {
-        return TimeEncoding.parse(stringValue);
+    public Instant parseString(String stringValue) {
+        return Instant.parse(stringValue);
     }
 
     @Override
