@@ -50,7 +50,7 @@ public class XtceAssemblerTest {
                 continue;
             }
             SpaceSystem ss2 = db2.getSpaceSystem(ss1.getQualifiedName());
-            assertNotNull("Cannot find " + ss1.getQualifiedName() + " in db2", ss1);
+            assertNotNull("Cannot find " + ss1.getQualifiedName() + " in db2", ss2);
             compareSpaceSystems(ss1, ss2);
         }
     }
@@ -79,7 +79,8 @@ public class XtceAssemblerTest {
     }
 
     private void compareContainer(Container sc1, Container sc2) throws Exception {
-        assertEquals(name+": "+sc1.getQualifiedName() + " has a different number of entries", sc1.getEntryList().size(),
+        assertEquals(name + ": " + sc1.getQualifiedName() + " has a different number of entries",
+                sc1.getEntryList().size(),
                 sc2.getEntryList().size());
         for (int i = 0; i < sc1.getEntryList().size(); i++) {
             SequenceEntry se1 = sc1.getEntryList().get(i);
@@ -95,15 +96,14 @@ public class XtceAssemblerTest {
             }
         }
     }
-    
+
     private void compareLists(List<?> l1, List<?> l2) throws Exception {
         assertEquals(name, l1.size(), l2.size());
         for (int i = 0; i < l1.size(); i++) {
             compareObjects(l1.get(i), l2.get(i));
         }
     }
-    
-    
+
     private void compareObjects(Object o1, Object o2) throws Exception {
         Class c1 = o1.getClass();
         Class c2 = o2.getClass();
@@ -121,7 +121,7 @@ public class XtceAssemblerTest {
                     fail(name + " " + o2 + " field: " + f.getName() + " is null, expected " + o1c);
                 } else if (o1c instanceof List<?>) {
                     assertTrue(o2c instanceof List);
-                    name = name+": "+f.getName();
+                    name = name + ": " + f.getName();
                     compareLists((List<?>) o1c, (List<?>) o2c);
                 } else if (o1c instanceof Comparable<?>) {
                     assertEquals(name + " " + o1 + " field: " + f.getName(), o1c, o2c);
