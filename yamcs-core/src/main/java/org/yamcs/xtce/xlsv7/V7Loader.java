@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -175,7 +176,7 @@ public class V7Loader extends V7LoaderBase {
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION = "7.0";
+    final static String FORMAT_VERSION = "7.1";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.0" };
     String fileFormatVersion;
@@ -331,7 +332,9 @@ public class V7Loader extends V7LoaderBase {
         try {
             File wbf = new File(path);
             Date d = new Date(wbf.lastModified());
-            String date = (new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(d);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String date = sdf.format(d);
             header.setDate(date);
         } catch (Exception e) {
             // Ignore
@@ -1548,7 +1551,7 @@ public class V7Loader extends V7LoaderBase {
                     cmd.setArgumentAssignmentList(toArgumentAssignmentList(argAssignment));
                 }
             }
-
+            spaceSystem.addCommandContainer(container);
             spaceSystem.addMetaCommand(cmd);
         }
     }
