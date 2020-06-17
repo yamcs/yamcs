@@ -1586,10 +1586,10 @@ public class V7Loader extends V7LoaderBase {
             String v = getContent(cells, CN_CMD_DEFVALUE);
             arg.setInitialValue(atype.parseString(v));
         }
-        
+
         if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {
             ArgumentType.Builder<?> atypeb = atype.toBuilder();
-            atypeb.setName(atype.getName()+"_"+cmd.getName()+"_"+arg.getName());
+            atypeb.setName(atype.getName() + "_" + cmd.getName() + "_" + arg.getName());
             if (atypeb instanceof IntegerArgumentType.Builder) {
                 if (((IntegerArgumentType.Builder) atypeb).isSigned()) {
                     long minInclusive = Long.MIN_VALUE;
@@ -1627,7 +1627,7 @@ public class V7Loader extends V7LoaderBase {
                 FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
                 ((FloatArgumentType.Builder) atypeb).setValidRange(range);
             }
-            
+
             atype = atypeb.build();
             spaceSystem.addArgumentType(atype);
         }
@@ -2182,16 +2182,27 @@ public class V7Loader extends V7LoaderBase {
                     }
                 }
 
-                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.watch, paraRef, context,
+                // duplicate the type to be able to add alarms
+                paraRef.addResolvedAction(nd -> {
+                    Parameter param = (Parameter) nd;
+                    ParameterType oldPtype = param.getParameterType();
+                    ParameterType.Builder<?> ptypeb = oldPtype.toBuilder()
+                            .setName(oldPtype.getName() + "_" + param.getName());
+                    ParameterType newPtype = ptypeb.build();
+                    param.setParameterType(newPtype);
+                    spaceSystem.addParameterType(newPtype);
+                    return true;
+                });
+
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.watch, paraRef, context,
                         CN_ALARM_WATCH_TRIGGER, CN_ALARM_WATCH_VALUE);
-                renameType = false;
-                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.warning, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.warning, paraRef, context,
                         CN_ALARM_WARNING_TRIGGER, CN_ALARM_WARNING_VALUE);
-                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.distress, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.distress, paraRef, context,
                         CN_ALARM_DISTRESS_TRIGGER, CN_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.critical, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.critical, paraRef, context,
                         CN_ALARM_CRITICAL_TRIGGER, CN_ALARM_CRITICAL_VALUE);
-                checkAndAddAlarm(spaceSystem, renameType, cells, AlarmLevels.severe, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.severe, paraRef, context,
                         CN_ALARM_SEVERE_TRIGGER, CN_ALARM_SEVERE_VALUE);
 
                 addAlarmDetails(spaceSystem, paraRef, context, reportType, minViolations);
@@ -2203,7 +2214,7 @@ public class V7Loader extends V7LoaderBase {
         }
     }
 
-    private void checkAndAddAlarm(SpaceSystem spaceSystem, boolean renameType, Cell[] cells, AlarmLevels level,
+    private void checkAndAddAlarm(SpaceSystem spaceSystem, Cell[] cells, AlarmLevels level,
             NameReference paraRef, MatchCriteria context,
             String cnTrigger, String cnValue) {
         if (!hasColumn(cells, cnTrigger) || !hasColumn(cells, cnValue)) {
@@ -2220,9 +2231,6 @@ public class V7Loader extends V7LoaderBase {
             ParameterType oldPtype = para.getParameterType();
 
             ParameterType.Builder<?> ptypeb = oldPtype.toBuilder();
-            if (renameType) {
-                ptypeb.setName(oldPtype.getName() + "_" + para.getName());
-            }
 
             if (ptypeb instanceof IntegerParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[h.get(cnValue)]);
@@ -2261,9 +2269,8 @@ public class V7Loader extends V7LoaderBase {
                             + "' for alarm of enumerated parameter " + para.getName());
                 }
             }
-            if(!renameType) {
-                spaceSystem.removeParameterType(oldPtype);
-            }
+            
+            spaceSystem.removeParameterType(oldPtype);
             ParameterType newPtype = ptypeb.build();
 
             para.setParameterType(newPtype);
