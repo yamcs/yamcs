@@ -27,10 +27,6 @@
 
   <fileSets>
     <fileSet>
-      <directory>../yamcs-core/wrappers</directory>
-      <outputDirectory>bin</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>etc</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>

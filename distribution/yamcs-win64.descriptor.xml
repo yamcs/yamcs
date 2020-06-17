@@ -1,8 +1,8 @@
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>linux64</id>
+  <id>win64</id>
 
   <formats>
-    <format>tar.gz</format>
+    <format>zip</format>
   </formats>
 
   <componentDescriptors>
@@ -14,8 +14,8 @@
       <directory>../yamcs-core/wrappers</directory>
       <outputDirectory>bin</outputDirectory>
       <includes>
-        <include>yamcsadmin</include>
-        <include>yamcsd</include>
+        <include>yamcsadmin.cmd</include>
+        <include>yamcsd.cmd</include>
       </includes>
     </fileSet>
   </fileSets>
@@ -27,7 +27,7 @@
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <includes>
-        <include>org.rocksdb:rocksdbjni:jar:linux64</include>
+        <include>org.rocksdb:rocksdbjni:jar:win64</include>
       </includes>
     </dependencySet>
   </dependencySets>
