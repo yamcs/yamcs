@@ -113,13 +113,15 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .build();
         subscription.sendMessage(request);
 
-        // Give Yamcs some time to establish the subscription.
-        Thread.sleep(2000);
-
         /*
          * Pause the replay.
          */
         replay.pause().get();
+
+        // Give Yamcs some time to establish the subscription and empty the websocket of any message that might have
+        // been pending
+        Thread.sleep(2000);
+        
         captor.clear();
         captor.assertSilence();
 
@@ -265,13 +267,15 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .build();
         subscription.sendMessage(request);
 
-        // Give Yamcs some time to establish the subscription.
-        Thread.sleep(2000);
-
         /*
          * Pause the replay.
          */
         replay.pause().get();
+
+        // Give Yamcs some time to establish the subscription and empty the websocket of any message that might have
+        // been pending
+        Thread.sleep(2000);
+        
         captor.clear();
         captor.assertSilence();
 
