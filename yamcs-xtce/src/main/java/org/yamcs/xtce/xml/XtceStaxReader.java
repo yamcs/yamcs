@@ -3324,17 +3324,23 @@ public class XtceStaxReader {
         arg = new Argument(name);
 
         String initialValue = readAttribute("initialValue", element, null);
-        arg.setInitialValue(initialValue);
 
         String argumentTypeRef = readMandatoryAttribute("argumentTypeRef", element);
-        ArgumentType ptype = spaceSystem.getArgumentType(argumentTypeRef);
-        if (ptype != null) {
-            arg.setArgumentType(ptype);
+        ArgumentType atype = spaceSystem.getArgumentType(argumentTypeRef);
+        if (atype != null) {
+            arg.setArgumentType(atype);
+            if(initialValue!=null) {
+                arg.setInitialValue(atype.parseString(initialValue));
+            }
         } else {
-            final Argument a = arg;
+            final Argument arg1 = arg;
             NameReference nr = new UnresolvedNameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
                     .addResolvedAction(nd -> {
-                        a.setArgumentType((ArgumentType) nd);
+                        ArgumentType atype1 = (ArgumentType) nd;
+                        if(initialValue!=null) {
+                            arg1.setInitialValue(atype1.parseString(initialValue));
+                        }
+                        arg1.setArgumentType(atype1);
                         return true;
                     });
             spaceSystem.addUnresolvedReference(nr);
