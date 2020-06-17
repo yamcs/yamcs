@@ -34,7 +34,6 @@ import javax.xml.stream.events.XMLEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.DoubleRange;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
@@ -127,6 +126,7 @@ import org.yamcs.xtce.TriggeredMathOperation;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.util.DataTypeUtil;
+import org.yamcs.xtce.util.HexUtils;
 import org.yamcs.xtce.util.IncompleteType;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -1413,7 +1413,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (xmlEvent.isCharacters()) {
-                b = StringConverter.hexStringToArray(xmlEvent.asCharacters().getData());
+                b = HexUtils.unhex(xmlEvent.asCharacters().getData());
             } else if (isEndElementWithName(tag)) {
                 return b;
             }
@@ -3333,7 +3333,7 @@ public class XtceStaxReader {
         ArgumentType atype = spaceSystem.getArgumentType(argumentTypeRef);
         if (atype != null) {
             arg.setArgumentType(atype);
-            if(initialValue!=null) {
+            if (initialValue != null) {
                 arg.setInitialValue(atype.parseString(initialValue));
             }
         } else {
@@ -3341,7 +3341,7 @@ public class XtceStaxReader {
             NameReference nr = new UnresolvedNameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
                     .addResolvedAction(nd -> {
                         ArgumentType atype1 = (ArgumentType) nd;
-                        if(initialValue!=null) {
+                        if (initialValue != null) {
                             arg1.setInitialValue(atype1.parseString(initialValue));
                         }
                         arg1.setArgumentType(atype1);
@@ -3584,7 +3584,7 @@ public class XtceStaxReader {
         String name = readAttribute("name", startElement, null);
 
         String value = readMandatoryAttribute("binaryValue", startElement);
-        byte[] binaryValue = StringConverter.hexStringToArray(value);
+        byte[] binaryValue = HexUtils.unhex(value);
 
         int sizeInBits = readIntAttribute("sizeInBits", startElement, binaryValue.length * 8);
 

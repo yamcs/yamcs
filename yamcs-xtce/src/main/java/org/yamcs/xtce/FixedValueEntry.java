@@ -1,6 +1,6 @@
 package org.yamcs.xtce;
 
-import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.util.HexUtils;
 
 /**
  * 
@@ -64,6 +64,6 @@ public class FixedValueEntry extends SequenceEntry {
         return "FixedValueEntry position:" + getIndex() + ", container:" + container.getName() +
                 " locationInContainer:" + getLocationInContainerInBits() + " from:" + getReferenceLocation() +
                 ", sizeInBits: " + sizeInBits +
-                ", binaryValue: " + StringConverter.arrayToHexString(binaryValue);
+                ", binaryValue: " + HexUtils.hex(binaryValue);
     }
 }
