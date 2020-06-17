@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -21,7 +22,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.DataEncoding;
@@ -66,6 +66,28 @@ public class XtceAssembler {
     XtceDb xtceDb;
 
     public final String toXtce(XtceDb xtceDb) {
+        return toXtce(xtceDb, "/", fqn -> true);
+    }
+
+    /**
+     * Convert the mission database to XTCE starting at the specified top container and saving only filtered containers.
+     * <p>
+     * The filter will be called with the Fully Qualified Name of each container under the top and if it returns true,
+     * the specified container will be saved.
+     * <p>
+     * Note that in the resulting file (if the top is not the root) the containers will have their qualified name
+     * stripped by the top name. In addition there might be references to objects from SpaceSystems that are not part of
+     * the export.
+     * 
+     * 
+     * @param xtceDb
+     * @param topSpaceSystem
+     *            the fully qualified name of the space system where the export should start from. If the space system
+     *            does not exist, a {@link IllegalArgumentException} will be thrown.
+     * @param filter
+     * @return
+     */
+    public final String toXtce(XtceDb xtceDb, String topSpaceSystem, Predicate<String> filter) {
         this.xtceDb = xtceDb;
         try {
             String unindentedXML;
@@ -73,8 +95,11 @@ public class XtceAssembler {
                 XMLOutputFactory factory = XMLOutputFactory.newInstance();
                 XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer);
                 xmlWriter.writeStartDocument();
-
-                writeSpaceSystem(xmlWriter, xtceDb.getRootSpaceSystem(), true);
+                SpaceSystem top = xtceDb.getSpaceSystem(topSpaceSystem);
+                if (top == null) {
+                    throw new IllegalArgumentException("Unknown space system '" + topSpaceSystem + "'");
+                }
+                writeSpaceSystem(xmlWriter, top, true, filter);
                 xmlWriter.writeEndDocument();
                 xmlWriter.close();
                 unindentedXML = writer.toString();
@@ -96,8 +121,15 @@ public class XtceAssembler {
         }
     }
 
-    private void writeSpaceSystem(XMLStreamWriter doc, SpaceSystem spaceSystem, boolean emitNamespace)
+    private void writeSpaceSystem(XMLStreamWriter doc, SpaceSystem spaceSystem, boolean emitNamespace,
+            Predicate<String> filter)
             throws XMLStreamException {
+        
+        
+        if (!filter.test(spaceSystem.getQualifiedName())) {
+            log.debug("Skipping {}", spaceSystem.getQualifiedName());
+            return;
+        }
         this.currentSpaceSystem = spaceSystem;
 
         doc.writeStartElement("SpaceSystem");
@@ -159,7 +191,7 @@ public class XtceAssembler {
             if (!emitYamcsNamespace && XtceDb.YAMCS_SPACESYSTEM_NAME.equals(sub.getQualifiedName())) {
                 continue;
             }
-            writeSpaceSystem(doc, sub, false);
+            writeSpaceSystem(doc, sub, false, filter);
         }
 
         doc.writeEndElement();
@@ -304,8 +336,8 @@ public class XtceAssembler {
             doc.writeStartElement("ValidRange");
             doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
             doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
-            if(!range.isValidRangeAppliesToCalibrated()) {
-                doc.writeAttribute("validRangeAppliesToCalibrated","false");    
+            if (!range.isValidRangeAppliesToCalibrated()) {
+                doc.writeAttribute("validRangeAppliesToCalibrated", "false");
             }
             doc.writeEndElement();
         }
@@ -426,7 +458,9 @@ public class XtceAssembler {
         writeUnitSet(doc, ptype.getUnitSet());
 
         DataEncoding encoding = ptype.getEncoding();
-        writeDataEncoding(doc, encoding);
+        if (encoding != null) {
+            writeDataEncoding(doc, encoding);
+        }
 
         doc.writeEndElement();
     }
@@ -508,6 +542,8 @@ public class XtceAssembler {
             writeEnumeratedArgumentType(doc, (EnumeratedArgumentType) atype);
         } else if (atype instanceof AggregateArgumentType) {
             writeAggregateArgumentType(doc, (AggregateArgumentType) atype);
+        } else if (atype instanceof BinaryArgumentType) {
+            writeBinaryArgumentType(doc, (BinaryArgumentType) atype);
         } else {
             log.warn("Unexpected argument type " + atype.getClass());
         }
@@ -570,10 +606,10 @@ public class XtceAssembler {
             doc.writeStartElement("ValidRange");
             doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
             doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
-            doc.writeEndElement();
-            if(!range.isValidRangeAppliesToCalibrated()) {
+            if (!range.isValidRangeAppliesToCalibrated()) {
                 doc.writeAttribute("validRangeAppliesToCalibrated", "false");
             }
+            doc.writeEndElement();
         }
         writeUnitSet(doc, atype.getUnitSet());
 
@@ -604,9 +640,9 @@ public class XtceAssembler {
             } else {
                 doc.writeAttribute("maxExclusive", String.valueOf(range.getMax()));
             }
-            doc.writeEndElement();
 
             doc.writeAttribute("validRangeAppliesToCalibrated", "true");
+            doc.writeEndElement();
         }
         writeUnitSet(doc, atype.getUnitSet());
 
@@ -628,6 +664,21 @@ public class XtceAssembler {
         }
         doc.writeAttribute("oneStringValue", ptype.getOneStringValue());
         doc.writeAttribute("zeroStringValue", ptype.getZeroStringValue());
+        writeNameDescription(doc, ptype);
+        writeUnitSet(doc, ptype.getUnitSet());
+
+        DataEncoding encoding = ptype.getEncoding();
+        writeDataEncoding(doc, encoding);
+
+        doc.writeEndElement();
+    }
+
+    private void writeBinaryArgumentType(XMLStreamWriter doc, BinaryArgumentType ptype)
+            throws XMLStreamException {
+        doc.writeStartElement("BinaryArgumentType");
+        if (ptype.getInitialValue() != null) {
+            doc.writeAttribute("initialValue", StringConverter.arrayToHexString(ptype.getInitialValue()));
+        }
         writeNameDescription(doc, ptype);
         writeUnitSet(doc, ptype.getUnitSet());
 
@@ -947,6 +998,9 @@ public class XtceAssembler {
         doc.writeStartElement("Argument");
         writeNameReferenceAttribute(doc, "argumentTypeRef", (NameDescription) argument.getArgumentType());
         writeNameDescription(doc, argument);
+        if (argument.getInitialValue() != null) {
+            doc.writeAttribute("initialValue", argument.getArgumentType().toString(argument.getInitialValue()));
+        }
         doc.writeEndElement();
     }
 
