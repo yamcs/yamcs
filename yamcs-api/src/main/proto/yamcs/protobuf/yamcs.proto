@@ -154,8 +154,6 @@ message ReplaySpeed {
   optional float param = 2;
 }
 
-//Integers from this enum are sent as values of the $Protocol.DATA_TYPE_HEADER_NAME to the artemis messages containing subscription data
-// the same ids are also part of for websocket subscriptions
 enum ProtoDataType {
   //error in replay
   DT_ERROR = 1;

@@ -26,7 +26,7 @@ Data Links are components that connect to the target system (instruments, ground
  * Telecommands. These are usually the reverse of the telemetry packets.
  * Parameters. These are historically (ISS ground segment) called also processed parameters to indicate they are processed (e.g. calibrated, checked against limits) by another center. 
 
-Connecting via a protocol to a target system means implementing a specific data link for that protocol. In Yamcs there are some built-in Data Links for UDP, TCP and Artemis. SLE (Space Link Extension) data links are also implemented in a plugin. 
+Connecting via a protocol to a target system means implementing a specific data link for that protocol. In Yamcs there are some built-in Data Links for UDP and TCP. SLE (Space Link Extension) data links are also implemented in a plugin.
 
 The pre-processors run inside the TM data links and are responsible for doing basic packet processing (e.g. verifying a CRC or checksum) which is not described in the Mission Database.
   
