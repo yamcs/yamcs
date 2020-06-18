@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -124,8 +125,7 @@ public class XtceAssembler {
     private void writeSpaceSystem(XMLStreamWriter doc, SpaceSystem spaceSystem, boolean emitNamespace,
             Predicate<String> filter)
             throws XMLStreamException {
-        
-        
+
         if (!filter.test(spaceSystem.getQualifiedName())) {
             log.debug("Skipping {}", spaceSystem.getQualifiedName());
             return;
@@ -325,8 +325,12 @@ public class XtceAssembler {
     private void writeIntegerParameterType(XMLStreamWriter doc, IntegerParameterType ptype)
             throws XMLStreamException {
         doc.writeStartElement("IntegerParameterType");
-        doc.writeAttribute("sizeInBits", Integer.toString(ptype.getSizeInBits()));
-        doc.writeAttribute("signed", ptype.isSigned() ? "true" : "false");
+        if (ptype.getSizeInBits() != 32) {
+            doc.writeAttribute("sizeInBits", Integer.toString(ptype.getSizeInBits()));
+        }
+        if (!ptype.isSigned()) {
+            doc.writeAttribute("signed", "false");
+        }
         if (ptype.getInitialValue() != null) {
             doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
         }
@@ -366,9 +370,13 @@ public class XtceAssembler {
         if (ptype.getEncoding() != null) {
             writeDataEncoding(doc, ptype.getEncoding());
         }
-        if (ptype.getDefaultAlarm() != null) {
+        NumericAlarm alarm = ptype.getDefaultAlarm();
+        if (alarm != null) {
             doc.writeStartElement("DefaultAlarm");
-            writeNumericAlarm(doc, ptype.getDefaultAlarm());
+            if (alarm.getMinViolations() != 1) {
+                doc.writeAttribute("minViolations", Integer.toString(alarm.getMinViolations()));
+            }
+            writeNumericAlarm(doc, alarm);
             doc.writeEndElement();
         }
 
@@ -495,7 +503,12 @@ public class XtceAssembler {
             writeParameterInstanceRef(doc, "OffsetFrom", referenceTime.getOffsetFrom());
         } else if (referenceTime.getEpoch() != null) {
             doc.writeStartElement("Epoch");
-            doc.writeCharacters(referenceTime.getEpoch().getDateTime());
+            TimeEpoch te = referenceTime.getEpoch();
+            if(te.getCommonEpoch()!=null) {
+                doc.writeCharacters(te.getCommonEpoch().name());
+            } else {
+                doc.writeCharacters(te.getDateTime());
+            }
             doc.writeEndElement();
         }
         doc.writeEndElement();
@@ -762,6 +775,11 @@ public class XtceAssembler {
     private void writeIntegerDataEncoding(XMLStreamWriter doc, IntegerDataEncoding encoding)
             throws XMLStreamException {
         doc.writeStartElement("IntegerDataEncoding");
+
+        if (encoding.getByteOrder() != ByteOrder.BIG_ENDIAN) {
+            doc.writeAttribute("byteOrder", "leastSignificantByteFirst");
+        }
+
         switch (encoding.getEncoding()) {
         case ONES_COMPLEMENT:
             doc.writeAttribute("encoding", "onesComplement");
@@ -778,6 +796,7 @@ public class XtceAssembler {
         default:
             log.warn("Unexpected encoding " + encoding);
         }
+
         doc.writeAttribute("sizeInBits", Integer.toString(encoding.getSizeInBits()));
         writeNumericDataEncodingCommonProps(doc, encoding);
 
@@ -850,6 +869,10 @@ public class XtceAssembler {
         doc.writeStartElement("FloatDataEncoding");
         doc.writeAttribute("encoding", encoding.getEncoding().name());
         doc.writeAttribute("sizeInBits", Integer.toString(encoding.getSizeInBits()));
+
+        if (encoding.getByteOrder() != ByteOrder.BIG_ENDIAN) {
+            doc.writeAttribute("byteOrder", "leastSignificantByteFirst");
+        }
 
         writeNumericDataEncodingCommonProps(doc, encoding);
         doc.writeEndElement();
