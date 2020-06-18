@@ -326,9 +326,6 @@ public class XtceDbFactory {
 
         ss.setQualifiedName(ssqname);
 
-        if (!"".equals(parentqname)) {
-            ss.addAlias(parentqname, ss.getName());
-        }
         for (Parameter p : ss.getParameters()) {
             p.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + p.getName());
         }
