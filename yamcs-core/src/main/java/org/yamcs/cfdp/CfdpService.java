@@ -150,8 +150,10 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, executor, request, cfdpOut, config,
                 eventProducer);
+        stateChanged(transfer);
+        
         transfer.setMonitor(this);
-
+        
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
@@ -209,6 +211,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut,
                     incomingBucket, eventProducer);
             transfer.setMonitor(this);
+            stateChanged(transfer);
             return transfer;
         } else {
             eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,

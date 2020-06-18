@@ -40,11 +40,11 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpIncomingTransfer.class);
 
-    private enum ReceiverTransferState {
+    private enum IncomingTransferState {
         START, METADATA_RECEIVED, FILEDATA_RECEIVED, EOF_RECEIVED, RESENDING, FINISHED_SENT, FINISHED_ACK_RECEIVED
     }
 
-    private ReceiverTransferState currentState;
+    private IncomingTransferState incomingTransferState;
     private Bucket incomingBucket = null;
     private String objectName;
     private long expectedFileSize;
@@ -62,7 +62,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         // create a new empty data file
         incomingDataFile = new DataFile(packet.getPacketLength());
         this.acknowledged = packet.getHeader().isAcknowledged();
-        this.currentState = ReceiverTransferState.START;
+        this.incomingTransferState = IncomingTransferState.START;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
         objectName = "received_" + dateFormat.format(new Date(startTime));
         expectedFileSize = packet.getPacketLength();
@@ -110,10 +110,10 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                     // check completeness
                     if (missingSegments.isEmpty()) {
                         sendFinishedPacket(packet);
-                        this.currentState = ReceiverTransferState.FINISHED_SENT;
+                        this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
                     } else {
                         sendNakPacket(packet, missingSegments);
-                        this.currentState = ReceiverTransferState.RESENDING;
+                        this.incomingTransferState = IncomingTransferState.RESENDING;
                     }
                 } else {
                     scheduledFuture.cancel(false);
@@ -129,7 +129,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
             case ACK:
                 AckPacket ack = (AckPacket) packet;
                 if (ack.getDirectiveCode() == FileDirectiveCode.Finished) {
-                    this.currentState = ReceiverTransferState.FINISHED_ACK_RECEIVED;
+                    this.incomingTransferState = IncomingTransferState.FINISHED_ACK_RECEIVED;
                     changeState(TransferState.COMPLETED);
                     scheduledFuture.cancel(false);
                     saveFileInBucket(Collections.emptyList());
@@ -146,11 +146,12 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         } else {
             FileDataPacket fdp = (FileDataPacket) packet;
             incomingDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
-            if (this.currentState == ReceiverTransferState.RESENDING) {
+            monitor.stateChanged(this);
+            if (this.incomingTransferState == IncomingTransferState.RESENDING) {
                 if (this.acknowledged) {
                     if (incomingDataFile.isComplete()) {
                         sendFinishedPacket(packet);
-                        this.currentState = ReceiverTransferState.FINISHED_SENT;
+                        this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
                     }
                 }
             }

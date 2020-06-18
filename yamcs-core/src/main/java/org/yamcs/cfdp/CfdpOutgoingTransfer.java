@@ -40,7 +40,7 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpOutgoingTransfer extends CfdpTransfer {
 
-    private enum SenderTransferState {
+    private enum OutgoingTransferState {
         START,
         METADATA_SENT,
         SENDING_DATA,
@@ -72,7 +72,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     private final int maxEofResendAttempts;
     private int EOFSendAttempts = 0;
 
-    private SenderTransferState currentState;
+    private OutgoingTransferState outgoingTransferState;
     private long transferred;
 
     private long offset = 0;
@@ -101,7 +101,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
         acknowledged = request.isAcknowledged();
 
-        currentState = SenderTransferState.START;
+        outgoingTransferState = OutgoingTransferState.START;
         changeState(TransferState.RUNNING);
 
     }
@@ -133,11 +133,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     }
 
     private void step() {
-        switch (currentState) {
+        switch (outgoingTransferState) {
         case START:
             this.startTime = System.currentTimeMillis();
             sendPacket(getMetadataPacket());
-            this.currentState = SenderTransferState.METADATA_SENT;
+            this.outgoingTransferState = OutgoingTransferState.METADATA_SENT;
             break;
         case METADATA_SENT:
             offset = 0; // first file data packet starts at the start of the data
@@ -147,11 +147,12 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             sendPacket(nextPacket);
             transferred = end;
             offset = end;
-            this.currentState = SenderTransferState.SENDING_DATA;
+            this.outgoingTransferState = OutgoingTransferState.SENDING_DATA;
+            monitor.stateChanged(this);
             break;
         case SENDING_DATA:
             if (offset == request.getPacketLength()) {
-                this.currentState = SenderTransferState.SENDING_FINISHED;
+                this.outgoingTransferState = OutgoingTransferState.SENDING_FINISHED;
             } else {
                 end = Math.min(offset + maxDataSize, request.getPacketLength());
                 nextPacket = getNextFileDataPacket();
@@ -160,6 +161,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 transferred += (end - offset);
                 offset = end;
             }
+            monitor.stateChanged(this);
             break;
         case RESENDING:
             if (!toResend.isEmpty()) {
@@ -170,7 +172,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         case SENDING_FINISHED:
             eofPacket = getEofPacket(ConditionCode.NoError);
             sendPacket(eofPacket);
-            this.currentState = SenderTransferState.EOF_SENT;
+            this.outgoingTransferState = OutgoingTransferState.EOF_SENT;
             EOFAckTimer = System.currentTimeMillis();
             EOFSendAttempts = 1;
             break;
@@ -203,7 +205,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
         case CANCELING:
             sendPacket(getEofPacket(ConditionCode.CancelRequestReceived));
-            this.currentState = SenderTransferState.CANCELED;
+            this.outgoingTransferState = OutgoingTransferState.CANCELED;
             break;
         case CANCELED:
             changeState(TransferState.FAILED);
@@ -299,8 +301,8 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 header);
     }
 
-    public SenderTransferState getCfdpState() {
-        return this.currentState;
+    public OutgoingTransferState getCfdpState() {
+        return this.outgoingTransferState;
     }
 
     @Override
@@ -322,20 +324,23 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     @Override
     public CfdpOutgoingTransfer pause() {
+        changeState(TransferState.PAUSED);
         sleeping = true;
         return this;
     }
 
     @Override
     public CfdpOutgoingTransfer resumeTransfer() {
+        changeState(TransferState.RUNNING);
         sleeping = false;
+        monitor.stateChanged(this);
         return this;
     }
 
     @Override
     public CfdpOutgoingTransfer cancelTransfer() {
         sleeping = false; // wake up if sleeping
-        currentState = SenderTransferState.CANCELING;
+        outgoingTransferState = OutgoingTransferState.CANCELING;
         return this;
     }
 
@@ -364,11 +369,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case ACK:
-                if (currentState == SenderTransferState.EOF_SENT && ((AckPacket) packet)
+                if (outgoingTransferState == OutgoingTransferState.EOF_SENT && ((AckPacket) packet)
                         .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FinishedByWaypointOrOther) {
-                    currentState = SenderTransferState.EOF_ACK_RECEIVED;
+                    outgoingTransferState = OutgoingTransferState.EOF_ACK_RECEIVED;
                 } else {
-                    log.warn("Received ACK packet while in {} state", currentState);
+                    log.warn("Received ACK packet while in {} state", outgoingTransferState);
                 }
                 break;
             case Finished:
@@ -379,19 +384,19 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                     sendPacket(getAckPacket());
 
                     changeState(TransferState.FAILED);
-                    currentState = SenderTransferState.FINISHED;
+                    outgoingTransferState = OutgoingTransferState.FINISHED;
                     long duration = (System.currentTimeMillis() - startTime) / 1000;
                     eventProducer.sendWarning(ETYPE_TRANSFER_FINISHED,
                             "CFDP upload finished with error in " + duration + " seconds: " + request.getObjectName()
                                     + " -> "
                                     + request.getTargetPath() + " error: " + finishedPacket.getConditionCode());
                 } else {
-                    if (currentState == SenderTransferState.EOF_ACK_RECEIVED
-                            || currentState == SenderTransferState.RESENDING) {
+                    if (outgoingTransferState == OutgoingTransferState.EOF_ACK_RECEIVED
+                            || outgoingTransferState == OutgoingTransferState.RESENDING) {
 
                         sendPacket(getAckPacket());
                         changeState(TransferState.COMPLETED);
-                        currentState = SenderTransferState.FINISHED;
+                        outgoingTransferState = OutgoingTransferState.FINISHED;
 
                         long duration = (System.currentTimeMillis() - startTime) / 1000;
                         eventProducer.sendInfo(ETYPE_TRANSFER_FINISHED,
@@ -400,7 +405,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                                         + request.getTargetPath());
                     } else {
                         log.warn("Transaction {} received bogus finish packet in state {}: {}", cfdpTransactionId,
-                                currentState,
+                                outgoingTransferState,
                                 finishedPacket);
                     }
                 }
@@ -413,7 +418,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                             .collect(Collectors.toList()));
                 }
                 if (!toResend.isEmpty()) {
-                    currentState = SenderTransferState.RESENDING;
+                    outgoingTransferState = OutgoingTransferState.RESENDING;
                 }
                 break;
             default:
