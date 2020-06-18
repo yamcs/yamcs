@@ -139,6 +139,7 @@ public abstract class Expression {
         String className = "Expression" + counter.incrementAndGet();
         StringBuilder source = new StringBuilder();
         source.append("package org.yamcs.yarch;\n")
+                .append("import org.yamcs.parameter.ParameterValue;\n")
                 .append("public class " + className + " implements CompiledExpression {\n")
                 .append("\tColumnDefinition cdef;\n");
         fillCode_Declarations(source);
@@ -163,7 +164,7 @@ public abstract class Expression {
                 .append("\t\treturn cdef;\n")
                 .append("\t}\n")
                 .append("}\n");
-
+        
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));
