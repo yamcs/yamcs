@@ -21,6 +21,7 @@ public class StandardTupleDefinitions {
     public static final String PARAMETER_COL_GENTIME = "gentime";
     
     public static final String TC_ORIGIN_COLUMN = "origin";
+    public static final String PARAMETER_COLUMN = "parameter";
     
     public static final TupleDefinition TM = new TupleDefinition();
     public static final TupleDefinition INVALID_TM = new TupleDefinition();
@@ -79,8 +80,8 @@ public class StandardTupleDefinitions {
     // user time, parameter name sequence number and event
     static {
         PARAMETER_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
-        PARAMETER_ALARM.addColumn("parameter", DataType.STRING);
-        PARAMETER_ALARM.addColumn("seqNum", DataType.INT);
+        PARAMETER_ALARM.addColumn(PARAMETER_COLUMN, DataType.STRING);
+        PARAMETER_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         PARAMETER_ALARM.addColumn("event", DataType.STRING);
     }
     
@@ -89,7 +90,7 @@ public class StandardTupleDefinitions {
     static {
         EVENT_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
         EVENT_ALARM.addColumn("eventSource", DataType.STRING);
-        EVENT_ALARM.addColumn("seqNum", DataType.INT);
+        EVENT_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         EVENT_ALARM.addColumn("alarmEvent", DataType.STRING);
     }
     

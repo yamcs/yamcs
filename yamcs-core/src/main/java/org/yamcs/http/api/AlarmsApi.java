@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.yamcs.Processor;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmSequenceException;
@@ -593,14 +594,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     private static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
         ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
 
-        org.yamcs.protobuf.Pvalue.ParameterValue pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
-                .getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
-        alarmb.setTriggerValue(pval);
+        ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
+        String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
+
+        NamedObjectId id = NamedObjectId.newBuilder().setName(paraFqn).build();
+        alarmb.setTriggerValue(pval.toGpb(id));
 
         if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
-            pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
-                    .getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
-            alarmb.setMostSevereValue(pval);
+            pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            alarmb.setMostSevereValue(pval.toGpb(id));
         }
 
         return alarmb.build();
@@ -612,8 +614,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         setAckInfo(alarmb, tuple);
         setClearInfo(alarmb, tuple);
 
-        if (tuple.hasColumn("parameter")) {
-            String paraFqn = (String) tuple.getColumn("parameter");
+        if (tuple.hasColumn(StandardTupleDefinitions.PARAMETER_COLUMN)) {
+            String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
 
             alarmb.setType(AlarmType.PARAMETER);
             ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
