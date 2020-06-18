@@ -19,4 +19,7 @@ message HttpBody {
   
   // The body as raw binary
   optional bytes data = 3;
+  
+  // Any other metadata (used in multipart/form)
+  map<string, string> metadata = 4;
 }

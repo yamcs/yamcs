@@ -3,9 +3,7 @@ package org.yamcs.http.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.yamcs.api.HttpBody;
@@ -16,8 +14,6 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.RouteContext;
-import org.yamcs.http.ServiceUnavailableException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractBucketsApi;
 import org.yamcs.protobuf.BucketInfo;
@@ -44,21 +40,12 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.FileUpload;
-import io.netty.handler.codec.http.multipart.HttpPostMultipartRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-
 public class BucketsApi extends AbstractBucketsApi<Context> {
 
     private static final Log log = new Log(BucketsApi.class);
 
     // max body size used for upload object (this includes both data and metadata).
     static final int MAX_BODY_SIZE = 5 * 1024 * 1024;
-    static final int MAX_METADATA_SIZE = 16 * 1024;
 
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
@@ -145,8 +132,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
             observer.complete(body);
         } catch (IOException e) {
-            log.error("Error when retrieving object {} from bucket {} ", objName, bucket.getName(), e);
-            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
+            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage(), e);
         }
     }
 
@@ -154,20 +140,29 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     public void uploadObject(Context ctx, UploadObjectRequest request, Observer<Empty> observer) {
         String instance = request.getInstance();
         String bucketName = request.getBucketName();
-        String objectName = request.getObjectName();
 
         checkManageBucketPrivilege(bucketName, ctx.user);
         Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
+        HttpBody body = request.getData();
 
-        String contentType = ((RouteContext) ctx).nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
-        if (contentType.startsWith("multipart/form-data")) {
-            uploadObjectMultipartFormData(ctx, bucket);
-        } else if (contentType.startsWith("multipart/related")) {
-            uploadObjectMultipartRelated(ctx, bucket);
+        String objectName;
+        if (request.hasObjectName()) {
+            objectName = request.getObjectName();
+        } else if (body.hasFilename()) {
+            objectName = body.getFilename();
         } else {
-            ByteBuf buf = ((RouteContext) ctx).getBody();
-            saveObject(bucket, objectName, contentType, buf, null);
+            throw new BadRequestException("Unknown target object name");
         }
+        verifyObjectName(objectName);
+
+        String contentType = body.hasContentType() ? body.getContentType() : null;
+        byte[] objectData = body.getData().toByteArray();
+        try {
+            bucket.putObject(objectName, contentType, body.getMetadataMap(), objectData);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error when uploading object to bucket: " + e.getMessage(), e);
+        }
+
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -241,66 +236,6 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         } catch (IOException e) {
             log.error("Error when retrieving object {} from bucket {} ", objName, bucket.getName(), e);
             throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
-        }
-    }
-
-    private void uploadObjectMultipartFormData(Context ctx, Bucket bucket) throws HttpException {
-        HttpRequest nettyRequest = ((RouteContext) ctx).fullNettyRequest;
-        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(nettyRequest);
-
-        FileUpload fup = null;
-        Map<String, String> metadata = new HashMap<>();
-        int metadataSize = 0;
-        for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
-            if (data instanceof FileUpload) {
-                if (fup != null) {
-                    throw new BadRequestException("Only one file upload is allowed in the multipart/form");
-                }
-                fup = (FileUpload) data;
-            } else if (data instanceof Attribute) {
-                Attribute att = (Attribute) data;
-                try {
-                    String name = att.getName();
-                    String value = att.getValue();
-                    metadataSize += (name.length() + value.length());
-                    metadata.put(att.getName(), att.getValue());
-                } catch (IOException e) { // shouldn't happen for MemoryAttribute
-                    log.warn("got error when reading form/data attribute value", e);
-                    throw new InternalServerErrorException("error reading attribute value");
-                }
-            }
-        }
-        if (metadataSize > MAX_METADATA_SIZE) {
-            throw new BadRequestException("Metadata size " + metadataSize
-                    + " bytes exceeds maximum allowed " + MAX_METADATA_SIZE);
-        }
-        if (fup == null) {
-            throw new BadRequestException("No file upload was found in the multipart/form");
-        }
-        saveObject(bucket, fup.getFilename(), fup.getContentType(), fup.content(), metadata);
-    }
-
-    private void uploadObjectMultipartRelated(Context ctx, Bucket bucket) throws HttpException {
-        throw new ServiceUnavailableException("multipart/related uploads not yet implemented");
-        /*
-         * HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(req.getHttpRequest());
-         * for(InterfaceHttpData data: decoder.getBodyHttpDatas()) {
-         * System.out.println("data: "+data);
-         * }
-         */
-    }
-
-    private void saveObject(Bucket bucket, String objName, String contentType, ByteBuf buf,
-            Map<String, String> metadata) throws HttpException {
-        verifyObjectName(objName);
-        byte[] objectData = new byte[buf.readableBytes()];
-        buf.readBytes(objectData);
-
-        try {
-            bucket.putObject(objName, contentType, metadata, objectData);
-        } catch (IOException e) {
-            log.error("Error when uploading object {} to bucket {} ", objName, bucket.getName(), e);
-            throw new InternalServerErrorException("Error when uploading object to bucket: " + e.getMessage());
         }
     }
 
