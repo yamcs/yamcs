@@ -209,7 +209,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
             for (ObjectProperties props : objects) {
                 ObjectInfo oinfo = ObjectInfo.newBuilder()
-                        .setCreated(TimeEncoding.toString(props.getCreated()))
+                        .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
                         .setName(props.getName())
                         .setSize(props.getSize())
                         .putAllMetadata(props.getMetadataMap())

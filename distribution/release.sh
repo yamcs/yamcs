@@ -75,11 +75,6 @@ cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@
 
 rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
 
-# Simulation Example RPM
-cp -r $clonedir "$rpmtopdir/BUILD/yamcs-simulation-$version-$release"
-cat distribution/rpm/yamcs-simulation.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs-simulation.spec
-rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs-simulation.spec"
-
 # Packet Viewer RPM
 cp distribution/target/packet-viewer-$pomversion.tar.gz $yamcshome/distribution/target
 rpmbuilddir="$rpmtopdir/BUILD/packet-viewer-$version-$release"

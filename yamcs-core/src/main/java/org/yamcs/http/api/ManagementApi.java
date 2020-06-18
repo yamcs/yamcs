@@ -716,7 +716,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
         TimeService timeService = ysi.getTimeService();
         if (timeService != null) {
-            instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+            instanceb.setMissionTime(TimeEncoding.toProtobufTimestamp(timeService.getMissionTime()));
         }
         return instanceb.build();
     }

@@ -1,5 +1,4 @@
-<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
   <id>osx</id>
 
   <formats>
@@ -9,6 +8,17 @@
   <componentDescriptors>
     <componentDescriptor>yamcs.component.xml</componentDescriptor>
   </componentDescriptors>
+
+  <fileSets>
+    <fileSet>
+      <directory>../yamcs-core/wrappers</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>yamcsadmin</include>
+        <include>yamcsd</include>
+      </includes>
+    </fileSet>
+  </fileSets>
 
   <dependencySets>
     <dependencySet>

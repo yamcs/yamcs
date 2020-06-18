@@ -92,7 +92,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
- * Server wide HTTP server based on Netty that provides a number of Yamcs web services:
+ * Server-wide HTTP server based on Netty that provides a number of Yamcs web services:
  *
  * <ul>
  * <li>REST API
@@ -104,7 +104,7 @@ public class HttpServer extends AbstractYamcsService {
 
     public static final HttpRoute WEBSOCKET_ROUTE = HttpRoute.newBuilder().setGet("/api/websocket").build();
 
-    // Protobuf weirdness. When unspecified it default to "type.googleapis.com" ...
+    // Protobuf weirdness. When unspecified it defaults to "type.googleapis.com" ...
     public static final String TYPE_URL_PREFIX = "";
 
     private EventLoopGroup bossGroup;
@@ -117,6 +117,7 @@ public class HttpServer extends AbstractYamcsService {
 
     private MetricRegistry metricRegistry = new MetricRegistry();
 
+    private InetAddress address;
     private int port;
     private int tlsPort;
     private String contextPath;
@@ -163,6 +164,7 @@ public class HttpServer extends AbstractYamcsService {
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65535);
 
         Spec spec = new Spec();
+        spec.addOption("address", OptionType.STRING);
         spec.addOption("port", OptionType.INTEGER);
         spec.addOption("tlsPort", OptionType.INTEGER);
         spec.addOption("tlsCert", OptionType.STRING);
@@ -183,6 +185,14 @@ public class HttpServer extends AbstractYamcsService {
         super.init(yamcsInstance, config);
 
         clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+        if (config.containsKey("address")) {
+            try {
+                address = InetAddress.getByName(config.getString("address"));
+            } catch (UnknownHostException e) {
+                throw new InitException("Cannot determine IP address for '" + address + "'", e);
+            }
+        }
 
         port = config.getInt("port", -1);
         tlsPort = config.getInt("tlsPort", -1);
@@ -351,7 +361,11 @@ public class HttpServer extends AbstractYamcsService {
                 .childHandler(new HttpServerChannelInitializer(this, sslCtx));
 
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port)).sync();
+        if (address == null) {
+            bootstrap.bind(new InetSocketAddress(port)).sync();
+        } else {
+            bootstrap.bind(new InetSocketAddress(address, port)).sync();
+        }
     }
 
     public boolean isHttpEnabled() {
@@ -368,7 +382,8 @@ public class HttpServer extends AbstractYamcsService {
 
         StringBuilder b = new StringBuilder("http://");
         try {
-            b.append(InetAddress.getLocalHost().getHostName());
+            InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
+            b.append(inetAddress.getHostName());
         } catch (UnknownHostException e) {
             b.append("localhost");
         }
@@ -393,7 +408,8 @@ public class HttpServer extends AbstractYamcsService {
 
         StringBuilder b = new StringBuilder("https://");
         try {
-            b.append(InetAddress.getLocalHost().getHostName());
+            InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
+            b.append(inetAddress.getHostName());
         } catch (UnknownHostException e) {
             b.append("localhost");
         }
