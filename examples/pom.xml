@@ -18,7 +18,7 @@
   </description>
 
   <properties>
-    <maven.install.skip>true</maven.install.skip>
+    <maven.install.skip>false</maven.install.skip>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <javaModuleName>org.yamcs.examples</javaModuleName>

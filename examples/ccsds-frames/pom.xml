@@ -15,6 +15,10 @@
   <description>
     Example demonstrating the use of CCSDS Frames - AOS for telemetry and CLTU for telecommand. 
   </description>
+  <properties>
+    <maven.install.skip>true</maven.install.skip>
+  </properties>
+
 
   <dependencies>
     <dependency>
