@@ -43,6 +43,7 @@ public final class GPBHelper {
 
         long gentime = che.getCommandId().getGenerationTime();
         che.setGenerationTimeUTC(TimeEncoding.toString(gentime));
+        che.setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime));
 
         for (int i = 1; i < tuple.size(); i++) { // first column is constant ProtoDataType.CMD_HISTORY.getNumber()
             ColumnDefinition cd = tuple.getColumnDefinition(i);

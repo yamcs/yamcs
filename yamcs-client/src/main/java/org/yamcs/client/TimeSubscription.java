@@ -1,6 +1,8 @@
 package org.yamcs.client;
 
 import java.time.Instant;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.yamcs.client.base.AbstractSubscription;
 import org.yamcs.client.base.WebSocketClient;
@@ -14,14 +16,30 @@ import com.google.protobuf.Timestamp;
 public class TimeSubscription extends AbstractSubscription<SubscribeTimeRequest, Timestamp> {
 
     private volatile Instant latest;
+    private Set<TimeListener> timeListeners = new CopyOnWriteArraySet<>();
 
     protected TimeSubscription(WebSocketClient client) {
         super(client, "time", Timestamp.class);
-        addMessageListener(this::processMessage);
+        addMessageListener(new MessageListener<Timestamp>() {
+            @Override
+            public void onMessage(Timestamp timestamp) {
+                latest = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+                timeListeners.forEach(l -> l.onUpdate(latest));
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                timeListeners.forEach(l -> l.onError(t));
+            }
+        });
     }
 
-    protected void processMessage(Timestamp timestamp) {
-        latest = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    public void addListener(TimeListener listener) {
+        timeListeners.add(listener);
+    }
+
+    public void removeListener(TimeListener listener) {
+        timeListeners.remove(listener);
     }
 
     /**

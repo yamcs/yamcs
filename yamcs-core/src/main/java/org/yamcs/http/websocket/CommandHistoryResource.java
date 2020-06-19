@@ -83,6 +83,7 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
                             entry = CommandHistoryEntry.newBuilder(entry)
                                     .setGenerationTimeUTC(TimeEncoding.toString(commandId.getGenerationTime()))
+                                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(commandId.getGenerationTime()))
                                     .build();
                             client.sendData(ProtoDataType.CMD_HISTORY, entry);
 
@@ -152,6 +153,7 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
                 ObjectPrivilegeType.CommandHistory, pc.getCommandId().getCommandName())) {
             CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
                     .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
                     .addAllAttr(pc.getAttributes())
                     .build();
             client.sendData(ProtoDataType.CMD_HISTORY, entry);
@@ -168,6 +170,7 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
                     .build();
             CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
                     .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
                     .setCommandId(cmdId)
                     .addAttr(cha)
                     .build();

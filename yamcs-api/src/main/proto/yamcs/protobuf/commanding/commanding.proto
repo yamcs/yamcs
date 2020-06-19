@@ -102,6 +102,7 @@ message CommandAssignment {
 message CommandHistoryEntry {
   required CommandId commandId = 1;
   repeated CommandHistoryAttribute attr = 3;
-  optional string generationTimeUTC = 4;
+  optional string generationTimeUTC = 4 [deprecated=true];
+  optional google.protobuf.Timestamp generationTime = 6;
   repeated CommandAssignment assignment = 5;
 }

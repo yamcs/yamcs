@@ -409,6 +409,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             public void addedCommand(PreparedCommand pc) {
                 CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
                         .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
                         .addAllAttr(pc.getAttributes())
                         .build();
                 observer.next(entry);
@@ -422,6 +423,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .build();
                 CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
                         .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
                         .setCommandId(cmdId)
                         .addAttr(cha)
                         .build();
