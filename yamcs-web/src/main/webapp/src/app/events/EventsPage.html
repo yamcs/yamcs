@@ -126,14 +126,14 @@
       <ng-container cdkColumnDef="gentime">
         <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation Time</th>
         <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
-          {{ (row.generationTimeUTC | datetime) || '-' }}
+          {{ (row.generationTime | datetime) || '-' }}
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="rectime">
         <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception Time</th>
         <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
-          {{ (row.receptionTimeUTC | datetime) || '-' }}
+          {{ (row.receptionTime | datetime) || '-' }}
         </td>
       </ng-container>
 

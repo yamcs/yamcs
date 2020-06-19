@@ -196,7 +196,7 @@ export class DyDataSource {
     }
 
     const t = new Date();
-    t.setTime(Date.parse(pvals[0].generationTimeUTC));
+    t.setTime(Date.parse(pvals[0].generationTime));
 
     const dyValues: CustomBarsValue[] = this.parameters$.value.map(parameter => {
       return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
@@ -250,7 +250,7 @@ export class DyDataSource {
     const dyAnnotations: DyAnnotation[] = [];
     /*for (const alarm of alarms) {
       const t = new Date();
-      t.setTime(Date.parse(alarm.triggerValue.generationTimeUTC));
+      t.setTime(Date.parse(alarm.triggerValue.generationTime));
       const value = convertValueToNumber(alarm.triggerValue.engValue);
       if (value !== null) {
         const sample: DySample = [t, [value, value, value]];
@@ -260,7 +260,7 @@ export class DyDataSource {
           series: this.parameters$.value[0].qualifiedName,
           x: t.getTime(),
           shortText: 'A',
-          text: 'Alarm triggered at ' + alarm.triggerValue.generationTimeUTC,
+          text: 'Alarm triggered at ' + alarm.triggerValue.generationTime,
           tickHeight: 1,
           cssClass: 'annotation',
           tickColor: 'red',

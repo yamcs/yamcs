@@ -67,7 +67,7 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
     }
     this.loadPage({
       ...options,
-      stop: this.offscreenRecord.generationTimeUTC,
+      stop: this.offscreenRecord.generationTime,
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(pvals => {
       const combinedPvals = this.pvals$.getValue().concat(pvals);

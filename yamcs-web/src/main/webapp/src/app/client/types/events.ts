@@ -11,8 +11,8 @@ export type EventSeverity =
 
 export interface Event {
   source: string;
-  generationTimeUTC: string;
-  receptionTimeUTC: string;
+  generationTime: string;
+  receptionTime: string;
   seqNumber: number;
   type: string;
   message: string;

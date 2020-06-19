@@ -14,8 +14,8 @@ export class ParameterValuesTable {
 
   displayedColumns = [
     'severity',
-    'generationTimeUTC',
-    // 'receptionTimeUTC', // Only works for pcache, not parchive.
+    'generationTime',
+    // 'receptionTime', // Only works for pcache, not parchive.
     'rawValue',
     'engValue',
     'rangeCondition',

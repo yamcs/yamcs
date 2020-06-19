@@ -51,9 +51,8 @@ export interface ParameterValue {
   id: NamedObjectId;
   rawValue: Value;
   engValue: Value;
-  acquisitionTimeUTC: string;
-  generationTimeUTC: string;
-  expirationTimeUTC: string;
+  acquisitionTime: string;
+  generationTime: string;
 
   acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
   processingStatus: boolean;
@@ -120,7 +119,7 @@ export interface CommandAssignment {
 
 export interface CommandHistoryEntry {
   commandId: CommandId;
-  generationTimeUTC: string;
+  generationTime: string;
   attr: CommandHistoryAttribute[];
   assignment: CommandAssignment[];
 }

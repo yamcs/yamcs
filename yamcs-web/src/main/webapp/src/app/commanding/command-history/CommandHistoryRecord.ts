@@ -41,7 +41,7 @@ export class CommandHistoryRecord {
   constructor(entry: CommandHistoryEntry) {
     this.entry = entry;
     this.commandId = entry.commandId;
-    this.generationTime = entry.generationTimeUTC;
+    this.generationTime = entry.generationTime;
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
     this.commandName = entry.commandId.commandName;

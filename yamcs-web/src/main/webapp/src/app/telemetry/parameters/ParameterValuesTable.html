@@ -11,14 +11,14 @@
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="generationTimeUTC">
+  <ng-container matColumnDef="generationTime">
     <th mat-header-cell *matHeaderCellDef style="width: 200px">Generation Time</th>
-    <td mat-cell *matCellDef="let pval">{{ (pval.generationTimeUTC | datetime) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval">{{ (pval.generationTime | datetime) || '-' }}</td>
   </ng-container>
 
-  <ng-container matColumnDef="receptionTimeUTC">
+  <ng-container matColumnDef="receptionTime">
     <th mat-header-cell *matHeaderCellDef style="width: 200px">Reception Time</th>
-    <td mat-cell *matCellDef="let pval">{{ (pval.acquisitionTimeUTC | datetime) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval">{{ (pval.acquisitionTime | datetime) || '-' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="rawValue">
