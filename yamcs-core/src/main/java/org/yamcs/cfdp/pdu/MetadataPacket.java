@@ -4,8 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.utils.CfdpUtils;
 
 public class MetadataPacket extends CfdpPacket implements FileDirective {
 
@@ -67,7 +67,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         }
     }
 
-    public long getPacketLength() {
+    public long getFileLength() {
         // TODO, add support for "unbounded data files"
         return this.fileSize;
     }

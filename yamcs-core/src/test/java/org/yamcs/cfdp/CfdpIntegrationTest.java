@@ -139,7 +139,7 @@ public class CfdpIntegrationTest {
         assertEquals(reliable, tinf.getReliable());
         TransferInfo tinfo1 = null;
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             Thread.sleep(1000);
             tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
             if (isFinished(tinfo1.getState()) && isFinished(rec.trsf.getTransferState())) {
@@ -175,7 +175,7 @@ public class CfdpIntegrationTest {
     }
 
     // this should retrieve the file
-    class MyFileReceiver {
+    class MyFileReceiver implements TransferMonitor {
         byte[] data;
         CfdpIncomingTransfer trsf;
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -206,13 +206,16 @@ public class CfdpIntegrationTest {
                     if (trsf == null) {
                         MetadataPacket mdp = (MetadataPacket) packet;
                         trsf = new CfdpIncomingTransfer("test", executor, getConfig(), (MetadataPacket) mdp, cfdpIn,
-                                incomingBucket,
-                                null);
+                                incomingBucket, EventProducerFactory.getEventProducer(), MyFileReceiver.this);
                     } else {
                         trsf.processPacket(packet);
                     }
                 }
             });
+        }
+
+        @Override
+        public void stateChanged(CfdpTransfer cfdpTransfer) {
         }
     }
 }

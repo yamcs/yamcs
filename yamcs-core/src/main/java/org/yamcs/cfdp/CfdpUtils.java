@@ -1,4 +1,4 @@
-package org.yamcs.utils;
+package org.yamcs.cfdp;
 
 import java.nio.ByteBuffer;
 
@@ -25,7 +25,7 @@ public class CfdpUtils {
     /*
      * write the given short as an unsigned byte to the given buffer at its current position
      */
-    public static void writeUnsignedByte(ByteBuffer buffer, short input) {
+    public static void writeUnsignedByte(ByteBuffer buffer, int input) {
         buffer.put((byte) (input & 0xff));
     }
 
@@ -42,7 +42,7 @@ public class CfdpUtils {
      * while we want 0 to 2ˆ32-1, the mask and int cast takes care of this
      */
     public static long getUnsignedInt(ByteBuffer buffer) {
-        return buffer.getInt() & 0xffffffff;
+        return buffer.getInt() & 0xffffffffl;
     }
 
     /**

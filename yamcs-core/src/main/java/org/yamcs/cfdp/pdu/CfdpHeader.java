@@ -3,7 +3,7 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 
 import org.yamcs.cfdp.CfdpTransactionId;
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class CfdpHeader {
 
@@ -29,7 +29,7 @@ public class CfdpHeader {
     private boolean fileDirective, towardsSender, acknowledged, withCrc;
     private int dataLength = -1;
     private int entityIdLength, sequenceNumberLength;
-    private Long sourceId, destinationId, sequenceNr;
+    private long sourceId, destinationId, sequenceNr;
 
     public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
             int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {

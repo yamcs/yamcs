@@ -41,20 +41,9 @@ import org.yamcs.yarch.Stream;
 public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     private enum OutgoingTransferState {
-        START,
-        METADATA_SENT,
-        SENDING_DATA,
-        RESENDING,
-        SENDING_FINISHED,
-        EOF_SENT,
-        EOF_ACK_RECEIVED,
-        FINISHED,
-        CANCELING,
-        CANCELED
+        START, METADATA_SENT, SENDING_DATA, RESENDING, SENDING_FINISHED, EOF_SENT, EOF_ACK_RECEIVED, FINISHED, CANCELING, CANCELED
     }
 
-    @SuppressWarnings("unused")
-    private final boolean unbounded = false; // only known file length transfers
     private final boolean withCrc = false; // no CRCs are used
 
     private final boolean withSegmentation = false; // segmentation not supported
@@ -88,8 +77,8 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     FinishedPacket finishedPacket;
 
     public CfdpOutgoingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, PutRequest request,
-            Stream cfdpOut, YConfiguration config, EventProducer eventProducer) {
-        super(yamcsInstance, executor, request.getSourceId(), cfdpOut, eventProducer);
+            Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor) {
+        super(yamcsInstance, executor, config, request.getSourceId(), cfdpOut, eventProducer, monitor);
         this.request = request;
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
@@ -103,6 +92,10 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
         outgoingTransferState = OutgoingTransferState.START;
         changeState(TransferState.RUNNING);
+        
+        if(acknowledged) {
+            rescheduleInactivityTimer();
+        }
 
     }
 
@@ -131,6 +124,12 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             step();
         }
     }
+    
+    @Override
+    protected void onInactivityTimerExpiration() {
+        log.warn("Inactivity timeout while in {} state; transaction failed", outgoingTransferState); 
+        failTransfer("inactivity timeout while in "+outgoingTransferState +" state");
+    }
 
     private void step() {
         switch (outgoingTransferState) {
@@ -141,7 +140,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             break;
         case METADATA_SENT:
             offset = 0; // first file data packet starts at the start of the data
-            end = Math.min(maxDataSize, request.getPacketLength());
+            end = Math.min(maxDataSize, request.getFileLength());
             FileDataPacket nextPacket = getNextFileDataPacket();
             sentFileDataPackets.add(nextPacket);
             sendPacket(nextPacket);
@@ -151,10 +150,10 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             monitor.stateChanged(this);
             break;
         case SENDING_DATA:
-            if (offset == request.getPacketLength()) {
+            if (offset == request.getFileLength()) {
                 this.outgoingTransferState = OutgoingTransferState.SENDING_FINISHED;
             } else {
-                end = Math.min(offset + maxDataSize, request.getPacketLength());
+                end = Math.min(offset + maxDataSize, request.getFileLength());
                 nextPacket = getNextFileDataPacket();
                 sentFileDataPackets.add(nextPacket);
                 sendPacket(nextPacket);
@@ -189,7 +188,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                         eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED,
                                 "Resend attempts (" + maxEofResendAttempts + ") of EOF reached");
                         // resend attempts exceeded the limit
-                        changeState(TransferState.FAILED);
+                        failTransfer("Resend attempts (" + maxEofResendAttempts + ") of EOF reached");
                         scheduledFuture.cancel(true);
                     }
                 } // else, we wait some more
@@ -208,7 +207,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             this.outgoingTransferState = OutgoingTransferState.CANCELED;
             break;
         case CANCELED:
-            changeState(TransferState.FAILED);
+            failTransfer("Canceled by the user");
             scheduledFuture.cancel(true);
             break;
         default:
@@ -225,13 +224,13 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 withCrc, // no CRC
                 entityIdLength,
                 seqNrSize,
-                getTransactionId().getInitiatorEntity(), // my Entity Id
+                cfdpTransactionId.getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
-                this.cfdpTransactionId.getSequenceNumber());
+                cfdpTransactionId.getSequenceNumber());
 
         return new MetadataPacket(
                 withSegmentation,
-                request.getPacketLength(),
+                request.getFileLength(),
                 "", // no source file name, the data will come from a bucket
                 request.getTargetPath(),
                 new ArrayList<FileStoreRequest>(),
@@ -254,7 +253,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 this.cfdpTransactionId.getSequenceNumber());
 
         FileDataPacket filedata = new FileDataPacket(
-                Arrays.copyOfRange(request.getPacketData(), (int) offset, (int) end),
+                Arrays.copyOfRange(request.getFileData(), (int) offset, (int) end),
                 offset,
                 header);
         return filedata;
@@ -272,13 +271,24 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 request.getDestinationId(),
                 this.cfdpTransactionId.getSequenceNumber());
 
-        return new EofPacket(
-                code,
-                request.getChecksum(),
-                request.getPacketLength(), // known length, in case unbounded transfers become supported, this needs to
-                                           // be updated
-                getFaultLocation(code), // TODO, only if ConditionCode.NoError is sent
-                header);
+        long checksum;
+        long filesize;
+        TLV tlv;
+
+        if (code == ConditionCode.NoError) {
+            checksum = request.getChecksum();
+            filesize = request.getFileLength();
+            tlv = null;
+        } else if (code == ConditionCode.CancelRequestReceived) {
+            filesize = getTransferredSize();
+            checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
+            tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
+        } else {
+            throw new java.lang.UnsupportedOperationException(
+                    "CFDP ConditionCode " + code + " not supported for EOF packets");
+        }
+
+        return new EofPacket(code, checksum, filesize, tlv, header);
     }
 
     private AckPacket getAckPacket() {
@@ -312,14 +322,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     @Override
     public long getTotalSize() {
-        return this.request.getPacketLength();
-    }
-
-    private TLV getFaultLocation(ConditionCode code) {
-        if (code == ConditionCode.NoError) {
-            return null;
-        }
-        throw new java.lang.UnsupportedOperationException("CFDP ConditionCode " + code + " not yet supported");
+        return this.request.getFileLength();
     }
 
     @Override
@@ -339,6 +342,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     @Override
     public CfdpOutgoingTransfer cancelTransfer() {
+        log.info("Canceling CFDP transaction {}", cfdpTransactionId);
         sleeping = false; // wake up if sleeping
         outgoingTransferState = OutgoingTransferState.CANCELING;
         return this;
@@ -348,16 +352,13 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         scheduledFuture = executor.scheduleAtFixedRate(() -> run(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
     }
 
-    public long getTransferredBytes() {
-        return transferred;
-    }
-
     @Override
     public void processPacket(CfdpPacket packet) {
         executor.submit(() -> doProcessPacket(packet));
     }
 
     private void doProcessPacket(CfdpPacket packet) {
+        rescheduleInactivityTimer();
         if (log.isDebugEnabled()) {
             log.debug("CFDP transaction {}, received PDU: {}", cfdpTransactionId, packet);
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
@@ -373,7 +374,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                         .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FinishedByWaypointOrOther) {
                     outgoingTransferState = OutgoingTransferState.EOF_ACK_RECEIVED;
                 } else {
-                    log.warn("Received ACK packet while in {} state", outgoingTransferState);
+                    log.info("Received ACK packet while in {} state", outgoingTransferState);
                 }
                 break;
             case Finished:
@@ -437,14 +438,5 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     @Override
     public boolean pausable() {
         return true;
-    }
-
-    @Override
-    public String getFailuredReason() {
-        if (state == TransferState.FAILED && finishedPacket != null) {
-            return finishedPacket.getConditionCode().toString();
-        } else {
-            return null;
-        }
     }
 }

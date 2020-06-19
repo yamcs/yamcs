@@ -37,7 +37,7 @@
     <td mat-cell *matCellDef="let transfer">
       <mat-progress-bar *ngIf="transfer.state === 'RUNNING'"
                         mode="buffer"
-                        value="(transfer.sizeTransferred / transfer.totalSize) * 100">
+                        [value]="(transfer.sizeTransferred / transfer.totalSize) * 100">
       </mat-progress-bar>
       <ng-container *ngIf="transfer.state !== 'RUNNING'">
         {{ (transfer.state | titlecase) || '-' }}

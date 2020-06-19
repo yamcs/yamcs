@@ -3,7 +3,7 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class KeepAlivePacket extends CfdpPacket implements FileDirective {
 

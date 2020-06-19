@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class NakPacket extends CfdpPacket implements FileDirective {
 

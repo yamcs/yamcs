@@ -149,7 +149,4 @@ public abstract class CfdpPacket {
     private void calculateAndAddCrc(ByteBuffer buffer) {
         throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
     }
-
- 
-
 }

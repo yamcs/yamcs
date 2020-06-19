@@ -1,7 +1,9 @@
 package org.yamcs.simulation;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,10 +15,8 @@ import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FileStoreResponse;
 import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
@@ -47,154 +47,175 @@ public class CfdpReceiver {
     protected void processCfdp(ByteBuffer buffer) {
         CfdpPacket packet = CfdpPacket.getCFDPPacket(buffer);
         if (packet.getHeader().isFileDirective()) {
-            switch (((FileDirective) packet).getFileDirectiveCode()) {
-            case EOF:
-                // 1 in 2 chance that we did not receive the EOF packet
-                if (Math.random() > 0.5) {
-                    break;
-                }
+            processFileDirective(packet);
+        } else {
+            processFileData((FileDataPacket) packet);
+        }
+    }
 
-                log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
-                EofPacket p = (EofPacket) packet;
+    private void processFileDirective(CfdpPacket packet) {
+        switch (((FileDirective) packet).getFileDirectiveCode()) {
+        case EOF:
+            // 1 in 2 chance that we did not receive the EOF packet
+            if (Math.random() > 0.5) {
+                log.warn("EOF CFDP packet received and dropped (data loss simulation)");
+                break;
+            }
 
-                CfdpHeader header = new CfdpHeader(
-                        true,
-                        true,
-                        false,
-                        false,
+            log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
+
+            CfdpHeader header = new CfdpHeader(
+                    true,
+                    true,
+                    false,
+                    false,
+                    packet.getHeader().getEntityIdLength(),
+                    packet.getHeader().getSequenceNumberLength(),
+                    packet.getHeader().getSourceId(),
+                    packet.getHeader().getDestinationId(),
+                    packet.getHeader().getSequenceNumber());
+            AckPacket EofAck = new AckPacket(
+                    FileDirectiveCode.EOF,
+                    FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
+                    ConditionCode.NoError,
+                    TransactionStatus.Active,
+                    header);
+            transmitCfdp(EofAck);
+
+            log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // checking the file completeness;
+            missingSegments = cfdpDataFile.getMissingChunks();
+            if (missingSegments.isEmpty()) {
+                saveFile();
+                
+                log.info("Sending back finished PDU");
+                header = new CfdpHeader(
+                        true, // file directive
+                        true, // towards sender
+                        false, // not acknowledged
+                        false, // no CRC
                         packet.getHeader().getEntityIdLength(),
                         packet.getHeader().getSequenceNumberLength(),
                         packet.getHeader().getSourceId(),
                         packet.getHeader().getDestinationId(),
                         packet.getHeader().getSequenceNumber());
-                AckPacket EofAck = new AckPacket(
-                        FileDirectiveCode.EOF,
-                        FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
-                        ConditionCode.NoError,
-                        TransactionStatus.Active,
+
+                FinishedPacket finished = new FinishedPacket(ConditionCode.NoError,
+                        true, // data complete
+                        FileStatus.SuccessfulRetention,
+                        null,
                         header);
-                transmitCfdp(EofAck);
 
-                log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                transmitCfdp(finished);
+            } else {
+                header = new CfdpHeader(
+                        true, // file directive
+                        true, // towards sender
+                        false, // not acknowledged
+                        false, // no CRC
+                        packet.getHeader().getEntityIdLength(),
+                        packet.getHeader().getSequenceNumberLength(),
+                        packet.getHeader().getSourceId(),
+                        packet.getHeader().getDestinationId(),
+                        packet.getHeader().getSequenceNumber());
 
-                // checking the file completeness;
-                missingSegments = cfdpDataFile.getMissingChunks();
-                if (missingSegments.isEmpty()) {
-                    log.info("File complete, sending back FinishedPacket");
-                    header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
+                NakPacket nak = new NakPacket(
+                        missingSegments.get(0).getSegmentStart(),
+                        missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
+                        missingSegments,
+                        header);
 
-                    FinishedPacket finished = new FinishedPacket(
-                            ConditionCode.NoError,
-                            true, // generated by end system
-                            false, // data complete
-                            FileStatus.SuccessfulRetention,
-                            new ArrayList<FileStoreResponse>(),
-                            null,
-                            header);
+                log.info("File not complete ({} segments missing), sending NAK", missingSegments.size());
+                transmitCfdp(nak);
+            }
+            break;
+        case Finished:
+            log.info("Finished CFDP packet received");
+            break;
+        case ACK:
+            log.info("ACK CFDP packet received");
+            break;
+        case Metadata:
+            log.info("Metadata CFDP packet received");
+            MetadataPacket metadata = (MetadataPacket) packet;
+            long packetLength = metadata.getFileLength();
+            cfdpDataFile = new DataFile(packetLength);
+            missingSegments = null;
+            break;
+        case NAK:
+            log.info("NAK CFDP packet received");
+            break;
+        case Prompt:
+            log.info("Prompt CFDP packet received");
+            break;
+        case KeepAlive:
+            log.info("KeepAlive CFDP packet received");
+            break;
+        default:
+            log.error("CFDP packet of unknown type received");
+            break;
+        }
 
-                    transmitCfdp(finished);
-                } else {
-                    header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
+    }
 
-                    NakPacket nak = new NakPacket(
-                            missingSegments.get(0).getSegmentStart(),
-                            missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
-                            missingSegments,
-                            header);
-                    transmitCfdp(nak);
-                    log.info("File not complete (" + missingSegments.size() + "segments missing), NAK sent back");
+    private void saveFile() {
+        try {
+            File f = File.createTempFile("cfdp", "");
+            FileOutputStream fw = new FileOutputStream(f);
+            fw.write(cfdpDataFile.getData());
+            fw.close();
+            System.out.println("CFDP file received and saved into "+f);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-                }
-                break;
-            case Finished:
-                log.info("Finished CFDP packet received");
-                break;
-            case ACK:
-                log.info("ACK CFDP packet received");
-                break;
-            case Metadata:
-                log.info("Metadata CFDP packet received");
-                MetadataPacket metadata = (MetadataPacket) packet;
-                long packetLength = metadata.getPacketLength();
-                cfdpDataFile = new DataFile(packetLength);
-                break;
-            case NAK:
-                log.info("NAK CFDP packet received");
-                break;
-            case Prompt:
-                log.info("Prompt CFDP packet received");
-                break;
-            case KeepAlive:
-                log.info("KeepAlive CFDP packet received");
-                break;
-            default:
-                log.error("CFDP packet of unknown type received");
-                break;
+    private void processFileData(FileDataPacket packet) {
+        if (missingSegments == null || missingSegments.isEmpty()) {
+            // we're not in "resending mode"
+            // 1 in 5 chance to 'lose' the packet
+            if (Math.random() > 0.8) {
+                log.warn("Received and dropped (data loss simulation) {}", packet);
+            } else {
+                log.info("Received {}", packet);
+                cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
             }
         } else {
-            FileDataPacket fdp = (FileDataPacket) packet;
-            if (missingSegments == null || missingSegments.isEmpty()) {
-                // we're not in "resending mode"
-                // 1 in 5 chance to 'loose' the packet
-                if (Math.random() > 0.8) {
-                    log.info("'loosing' a FileDataPacket");
-                } else {
-                    cfdpDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
-                    log.info("file data received: " + new String(fdp.getData()).toString());
-                }
-            } else {
-                // we're resending
-                cfdpDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
-                missingSegments.remove(new SegmentRequest(fdp.getOffset(), fdp.getOffset() + fdp.getData().length));
-                log.info("RESENT file data received: " + new String(fdp.getData()).toString());
-                if (missingSegments.isEmpty()) {
-                    CfdpHeader header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
+            // we're in resending mode, no more data loss
+            cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
+            missingSegments = cfdpDataFile.getMissingChunks();
+            log.info("Received missing data: {} still missing: {}", packet, missingSegments.size());
+            if (missingSegments.isEmpty()) {
+                saveFile();
+                
+                CfdpHeader header = new CfdpHeader(
+                        true, // file directive
+                        true, // towards sender
+                        false, // not acknowledged
+                        false, // no CRC
+                        packet.getHeader().getEntityIdLength(),
+                        packet.getHeader().getSequenceNumberLength(),
+                        packet.getHeader().getSourceId(),
+                        packet.getHeader().getDestinationId(),
+                        packet.getHeader().getSequenceNumber());
 
-                    FinishedPacket finished = new FinishedPacket(
-                            ConditionCode.NoError,
-                            true, // generated by end system
-                            false, // data complete
-                            FileStatus.SuccessfulRetention,
-                            new ArrayList<FileStoreResponse>(),
-                            null,
-                            header);
+                FinishedPacket finished = new FinishedPacket(
+                        ConditionCode.NoError,
+                        false, // data complete
+                        FileStatus.SuccessfulRetention,                        
+                        null,
+                        header);
 
-                    transmitCfdp(finished);
-                }
+                transmitCfdp(finished);
             }
         }
+
     }
 
     protected void transmitCfdp(CfdpPacket packet) {
@@ -206,7 +227,7 @@ public class CfdpReceiver {
         buffer.putShort(4, (short) (length - 7));
         buffer.position(16);
         packet.writeToBuffer(buffer.slice());
-        
+
         simulator.transmitRealtimeTM(new CCSDSPacket(buffer));
     }
 }

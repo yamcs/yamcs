@@ -2,15 +2,12 @@ package org.yamcs.cfdp;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +18,9 @@ import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FileStoreResponse;
 import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 import org.yamcs.cfdp.pdu.MetadataPacket;
@@ -48,42 +45,31 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     private Bucket incomingBucket = null;
     private String objectName;
     private long expectedFileSize;
+    private long expectedChecksum;
 
     private DataFile incomingDataFile;
     MetadataPacket metadataPacket;
-    long inactivityTimeout;
-    private ScheduledFuture<?> scheduledFuture;
-    String failureReason;
 
     public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, YConfiguration config,
-            MetadataPacket packet, Stream cfdpOut,
-            Bucket target, EventProducer eventProducer) {
-        this(yamcsInstance, executor, config, packet.getHeader().getTransactionId(), cfdpOut, target, eventProducer);
+            MetadataPacket packet, Stream cfdpOut, Bucket target, EventProducer eventProducer,
+            TransferMonitor monitor) {
+        this(yamcsInstance, executor, config, packet.getHeader().getTransactionId(), cfdpOut, target, eventProducer,
+                monitor);
         // create a new empty data file
-        incomingDataFile = new DataFile(packet.getPacketLength());
+        incomingDataFile = new DataFile(packet.getFileLength());
         this.acknowledged = packet.getHeader().isAcknowledged();
         this.incomingTransferState = IncomingTransferState.START;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
         objectName = "received_" + dateFormat.format(new Date(startTime));
-        expectedFileSize = packet.getPacketLength();
+        expectedFileSize = packet.getFileLength();
         this.metadataPacket = packet;
     }
 
     public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, YConfiguration config,
-            CfdpTransactionId id, Stream cfdpOut,
-            Bucket target, EventProducer eventProducer) {
-        super(yamcsInstance, executor, id, cfdpOut, eventProducer);
+            CfdpTransactionId id, Stream cfdpOut, Bucket target, EventProducer eventProducer, TransferMonitor monitor) {
+        super(yamcsInstance, executor, config, id, cfdpOut, eventProducer, monitor);
         incomingBucket = target;
-        this.inactivityTimeout = config.getLong("inactivityTimeout", 5000);
         rescheduleInactivityTimer();
-    }
-
-    private void rescheduleInactivityTimer() {
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(false);
-        }
-        scheduledFuture = executor.schedule(() -> onInactivityTimerExpiration(), inactivityTimeout,
-                TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -103,27 +89,27 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                 // do nothing, already processed this (constructor)
                 break;
             case EOF:
+                EofPacket  eofPacket = (EofPacket) packet;
+                expectedChecksum = eofPacket.getFileChecksum();
+                
                 List<SegmentRequest> missingSegments = incomingDataFile.getMissingChunks();
                 log.debug("EOF received, having {} missing segments", missingSegments.size());
                 if (this.acknowledged) {
                     sendAckEofPacket(packet);
                     // check completeness
                     if (missingSegments.isEmpty()) {
-                        sendFinishedPacket(packet);
-                        this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
+                        onFileCompleted(packet);
                     } else {
                         sendNakPacket(packet, missingSegments);
                         this.incomingTransferState = IncomingTransferState.RESENDING;
                     }
                 } else {
-                    scheduledFuture.cancel(false);
                     if (missingSegments.isEmpty()) {
-                        changeState(TransferState.COMPLETED);
+                        onFileCompleted(packet);
                     } else {
-                        failureReason = "EOF received but missing " + missingSegments.size() + " segments";
-                        changeState(TransferState.FAILED);
+                        failTransfer("EOF received but missing " + missingSegments.size() + " segments");
+                        saveFileInBucket(false, missingSegments);
                     }
-                    saveFileInBucket(missingSegments);
                 }
                 break;
             case ACK:
@@ -131,8 +117,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                 if (ack.getDirectiveCode() == FileDirectiveCode.Finished) {
                     this.incomingTransferState = IncomingTransferState.FINISHED_ACK_RECEIVED;
                     changeState(TransferState.COMPLETED);
-                    scheduledFuture.cancel(false);
-                    saveFileInBucket(Collections.emptyList());
+                  
                 } else {
                     // we're not expecting any other ACK, so log and ignore
                     log.info("received unexpected ACK, with directive code ", ack.getDirectiveCode().name());
@@ -147,28 +132,52 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
             FileDataPacket fdp = (FileDataPacket) packet;
             incomingDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
             monitor.stateChanged(this);
+
             if (this.incomingTransferState == IncomingTransferState.RESENDING) {
-                if (this.acknowledged) {
                     if (incomingDataFile.isComplete()) {
-                        sendFinishedPacket(packet);
+                        onFileCompleted(packet);
                         this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
                     }
                 }
             }
         }
+
+    private void onFileCompleted(CfdpPacket packet) {
+        // verify checksum
+        if (expectedChecksum == incomingDataFile.getChecksum()) {
+            if(acknowledged) {
+                sendFinishedPacket(packet, ConditionCode.NoError);
+                this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
+            } else {
+                changeState(TransferState.COMPLETED);
+            }
+            saveFileInBucket(false, Collections.emptyList());
+        } else {
+            log.warn("File checksum failure; EOF packet indicates {} while data received has {}", expectedChecksum, incomingDataFile.getChecksum());
+            if (acknowledged) {
+                sendFinishedPacket(packet, ConditionCode.FileChecksumFailure);
+            }
+            saveFileInBucket(true, Collections.emptyList());
+            changeState(TransferState.FAILED);
+        } 
     }
 
-    private void onInactivityTimerExpiration() {
-        failureReason = "inactivity timeout";
-        changeState(TransferState.FAILED);
+    protected void onInactivityTimerExpiration() {
+        failTransfer("inactivity timeout while in " + incomingTransferState + " state");
     }
 
-    private void saveFileInBucket(List<SegmentRequest> missingSegments) {
+    private void saveFileInBucket(boolean checksumError, List<SegmentRequest> missingSegments) {
         try {
             Map<String, String> metadata = null;
             if (!missingSegments.isEmpty()) {
                 metadata = new HashMap<>();
                 metadata.put("missingSegments", missingSegments.toString());
+            }
+            if(checksumError) {
+                if(metadata==null) {
+                    metadata = new HashMap<>();
+                }
+                metadata.put("checksumError", "true");
             }
             incomingBucket.putObject(getObjectName(), null, metadata, incomingDataFile.getData());
         } catch (IOException e) {
@@ -193,15 +202,26 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                 getHeader(packet)));
     }
 
-    private void sendFinishedPacket(CfdpPacket packet) {
-        sendPacket(new FinishedPacket(
-                ConditionCode.NoError,
-                true, // generated by end system
-                false, // data complete
-                FileStatus.SuccessfulRetention,
-                new ArrayList<FileStoreResponse>(),
-                null,
-                getHeader(packet)));
+    private void sendFinishedPacket(CfdpPacket packet, ConditionCode code) {
+
+        FinishedPacket fpck;
+
+        if (code == ConditionCode.NoError) {
+            fpck = new FinishedPacket(
+                    ConditionCode.NoError,
+                    true, // data complete
+                    FileStatus.SuccessfulRetention,
+                    null,
+                    getHeader(packet));
+        } else {
+            fpck = new FinishedPacket(
+                    code,
+                    false, // data complete
+                    FileStatus.DeliberatelyDiscarded,
+                    null,
+                    getHeader(packet));
+        }
+        sendPacket(fpck);
     }
 
     private CfdpHeader getHeader(CfdpPacket packet) {
@@ -256,10 +276,4 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     public boolean pausable() {
         return false;
     }
-
-    @Override
-    public String getFailuredReason() {
-        return failureReason;
-    }
-
 }

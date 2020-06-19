@@ -3,7 +3,7 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class SegmentRequest {
     private long segmentStart;

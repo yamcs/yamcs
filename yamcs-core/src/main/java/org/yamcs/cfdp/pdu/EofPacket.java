@@ -3,7 +3,7 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class EofPacket extends CfdpPacket implements FileDirective {
 
@@ -54,6 +54,10 @@ public class EofPacket extends CfdpPacket implements FileDirective {
                 + ((faultLocation != null) ? 2 + faultLocation.getValue().length : 0);
     }
 
+    public long getFileChecksum() {
+        return this.fileChecksum;
+    }
+    
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
         return FileDirectiveCode.EOF;

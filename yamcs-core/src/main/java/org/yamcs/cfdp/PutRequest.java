@@ -1,7 +1,5 @@
 package org.yamcs.cfdp;
 
-import java.util.Arrays;
-
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -16,7 +14,7 @@ public class PutRequest extends CfdpRequest {
     private long sourceId;
     private long destinationId;
     private String targetPath;
-    private byte[] packetData;
+    private byte[] fileData;
     private String objectName;
     private Bucket bucket;
     private boolean overwrite;
@@ -34,9 +32,9 @@ public class PutRequest extends CfdpRequest {
         this.overwrite = overwrite;
         this.createpath = createpath;
         this.bucket = b;
-        this.packetData = data;
+        this.fileData = data;
         this.acknowledged = acknowledged;
-        this.checksum = calculateChecksum(data);
+        this.checksum = ChecksumCalculator.calculateChecksum(data);
     }
 
     public long getSourceId() {
@@ -55,16 +53,16 @@ public class PutRequest extends CfdpRequest {
         return targetPath;
     }
 
-    public int getPacketLength() {
-        return packetData.length;
+    public int getFileLength() {
+        return fileData.length;
     }
 
     public long getChecksum() {
         return this.checksum;
     }
 
-    public byte[] getPacketData() {
-        return packetData;
+    public byte[] getFileData() {
+        return fileData;
     }
 
     public Bucket getBucket() {
@@ -83,20 +81,5 @@ public class PutRequest extends CfdpRequest {
         return createpath;
     }
 
-    private long calculateChecksum(byte[] data) {
-        long toReturn = 0;
-        for (int i = 0; i < data.length; i += 4) {
-            toReturn = addPartToChecksum(toReturn, Arrays.copyOfRange(data, i, i + 4));
-        }
-        return toReturn;
-    }
-
-    private long addPartToChecksum(long checksum, byte[] partOfData) {
-        checksum += ((partOfData[0] & 0xFF) << 24) & 0xFF000000L
-                | ((partOfData[1] & 0xFF) << 16) & 0xFF0000L
-                | ((partOfData[2] & 0xFF) << 8) & 0xFF00L
-                | (partOfData[3] & 0xFF);
-        return checksum & 0x00000000FFFFFFFFL;
-    }
-
+  
 }

@@ -2,8 +2,6 @@ package org.yamcs.cfdp.pdu;
 
 public class FaultHandlerOverride {
 
-    public static byte TYPE = 0x04;
-
     private ConditionCode conditionCode;
     private HandlerCode handlerCode;
 
@@ -26,7 +24,7 @@ public class FaultHandlerOverride {
     }
 
     public TLV toTLV() {
-        return new TLV(FaultHandlerOverride.TYPE,
+        return new TLV(TLV.TYPE_FaultHandlerOverride,
                 new byte[] { (byte) (getConditionCode().getCode() << 4
                         | getHandlerCode().getCode()) });
     }

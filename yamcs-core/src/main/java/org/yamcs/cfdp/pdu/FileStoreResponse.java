@@ -3,9 +3,6 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 
 public class FileStoreResponse {
-
-    public static byte TYPE = 0x01;
-
     private ActionCode actionCode;
     private StatusCode statusCode;
     private LV firstFileName;
@@ -60,7 +57,7 @@ public class FileStoreResponse {
     }
 
     public TLV toTLV() {
-        return new TLV(FileStoreResponse.TYPE,
+        return new TLV(TLV.TYPE_FileStoreResponse,
                 ByteBuffer
                         .allocate(1
                                 + firstFileName.getValue().length

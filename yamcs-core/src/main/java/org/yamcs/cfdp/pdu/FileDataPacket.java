@@ -1,9 +1,8 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 public class FileDataPacket extends CfdpPacket {
 

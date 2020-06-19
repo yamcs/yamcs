@@ -3,11 +3,12 @@ package org.yamcs.cfdp.pdu;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.utils.CfdpUtils;
+import org.yamcs.cfdp.CfdpUtils;
 
 import com.google.common.collect.Maps;
 
@@ -47,14 +48,13 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         }
     }
 
-    public FinishedPacket(ConditionCode code, boolean generatedByEndSystem, boolean deliveryCode, FileStatus status,
-            List<FileStoreResponse> responses, TLV faultLocation, CfdpHeader header) {
+    public FinishedPacket(ConditionCode code, boolean deliveryCode, FileStatus status, TLV faultLocation, CfdpHeader header) {
         super(header);
         this.conditionCode = code;
-        this.generatedByEndSystem = generatedByEndSystem;
+        this.generatedByEndSystem = true;
         this.dataInComplete = deliveryCode;
         this.fileStatus = status;
-        this.filestoreResponses = responses;
+        this.filestoreResponses = Collections.emptyList();
         this.faultLocation = faultLocation;
         finishConstruction();
     }

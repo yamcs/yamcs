@@ -89,4 +89,12 @@ public class DataFile {
         }
         return true;
     }
+
+    public long getChecksum() {
+        long checksum = 0;
+        for (DataFileSegment segment : this.dataFileSegments.values()) {
+            checksum+= ChecksumCalculator.calculateChecksum(segment);
+        }
+        return checksum&0xFFFFFFFFl;
+    }
 }

@@ -32,8 +32,9 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
- * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
- * 
+ * Implements CCSDS File Delivery Protocol  (CFDP) in Yamcs.
+ * <p>
+ * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b4.pdf"> CCSDS 727.0-B-4 </a>
  * 
  * @author nm
  *
@@ -149,10 +150,9 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
 
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, executor, request, cfdpOut, config,
-                eventProducer);
+                eventProducer, this);
         stateChanged(transfer);
         
-        transfer.setMonitor(this);
         
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
@@ -209,8 +209,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
                     "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
                             + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
             CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut,
-                    incomingBucket, eventProducer);
-            transfer.setMonitor(this);
+                    incomingBucket, eventProducer, this);
             stateChanged(transfer);
             return transfer;
         } else {

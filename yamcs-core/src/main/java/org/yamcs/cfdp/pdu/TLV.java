@@ -2,9 +2,24 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 
-import org.yamcs.utils.CfdpUtils;
-
+import org.yamcs.cfdp.CfdpUtils;
+import org.yamcs.utils.StringConverter;
+/**
+ * Type, Length, Value 
+ *
+ */
 public class TLV {
+   
+
+
+    static final byte TYPE_FileStoreRequest= 0x00;
+    static final byte TYPE_FileStoreResponse = 0x01;
+    static final byte TYPE_MessageToUser = 0x02;
+    static final byte TYPE_FaultHandlerOverride = 0x04;
+    static final byte TYPE_FlowLabel = 0x05;
+    static final byte TYPE_EntityId= 0x06;
+    
+    
     private byte type;
     private byte[] value;
 
@@ -29,8 +44,19 @@ public class TLV {
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
-        buffer.put(this.getType());
-        CfdpUtils.writeUnsignedByte(buffer, (short) this.getValue().length);
-        buffer.put(this.getValue());
+        buffer.put(type);
+        CfdpUtils.writeUnsignedByte(buffer, value.length);
+        buffer.put(value);
     }
+    
+
+    public static TLV getEntityIdTLV(long entityId, int entityIdLength) {
+        return new TLV(TYPE_EntityId, CfdpUtils.longToBytes(entityId, entityIdLength));
+    }
+    
+    @Override
+    public String toString() {
+        return "TLV [type=" + type + ", value=" + StringConverter.arrayToHexString(value) + "]";
+    }
+    
 }
