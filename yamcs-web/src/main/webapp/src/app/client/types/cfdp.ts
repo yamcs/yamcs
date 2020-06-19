@@ -2,7 +2,6 @@ import { WebSocketCall } from '../WebSocketCall';
 
 export interface Transfer {
   id: number;
-  transactionId: number;
   startTime: string;
   state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED';
   bucket: string;
@@ -11,6 +10,7 @@ export interface Transfer {
   direction: 'UPLOAD' | 'DOWNLOAD';
   totalSize: number;
   sizeTransferred: number;
+  failureReason?: string;
 }
 
 export interface UploadOptions {
