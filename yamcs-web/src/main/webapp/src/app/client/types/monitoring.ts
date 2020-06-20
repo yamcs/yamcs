@@ -77,13 +77,6 @@ export interface Range {
   count: number;
 }
 
-export interface CommandId {
-  generationTime: number;
-  origin: string;
-  sequenceNumber: number;
-  commandName: string;
-}
-
 export interface IssueCommandOptions {
   origin?: string;
   sequenceNumber?: number;
@@ -118,7 +111,10 @@ export interface CommandAssignment {
 }
 
 export interface CommandHistoryEntry {
-  commandId: CommandId;
+  id: string;
+  commandName: string;
+  origin: string;
+  sequenceNumber: number;
   generationTime: string;
   attr: CommandHistoryAttribute[];
   assignment: CommandAssignment[];

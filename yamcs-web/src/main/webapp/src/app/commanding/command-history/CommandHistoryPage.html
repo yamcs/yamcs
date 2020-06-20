@@ -36,7 +36,7 @@
           <br>
           <button class="ya-button"
                   [routerLink]="['/commanding/send', selectedRecord?.commandName]"
-                  [queryParams]="{c: yamcs.context, template: (selectedRecord?.commandId | commandId)}">
+                  [queryParams]="{c: yamcs.context, template: selectedRecord?.id}">
             Resend
           </button>
         </ng-container>
@@ -112,7 +112,7 @@
         <ng-container matColumnDef="commandId">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">ID</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.commandId | commandId }}
+            {{ item.id }}
           </td>
         </ng-container>
 

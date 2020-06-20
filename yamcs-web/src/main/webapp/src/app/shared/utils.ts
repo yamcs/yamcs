@@ -1,4 +1,4 @@
-import { CommandId, Value } from '../client';
+import { Value } from '../client';
 const PREVIEW_LENGTH = 5;
 
 export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
@@ -219,14 +219,6 @@ export function printHexPreview(binaryValue: string) {
   } else {
     return '';
   }
-}
-
-export function printCommandId(commandId: CommandId): string {
-  let id = String(commandId.generationTime);
-  if (commandId.origin) {
-    id += '-' + commandId.origin;
-  }
-  return id + '-' + commandId.sequenceNumber;
 }
 
 export function printDateTime(date: Date | string, addTimezone = true): string {

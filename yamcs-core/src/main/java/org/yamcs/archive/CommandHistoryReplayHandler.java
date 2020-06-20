@@ -1,13 +1,8 @@
 package org.yamcs.archive;
 
-import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.utils.ValueUtility;
-import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.MessageLite;
@@ -71,24 +66,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
 
     @Override
     public MessageLite transform(Tuple t) {
-        CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder();
-        che.setCommandId(PreparedCommand.getCommandId(t));
-
-        for (int i = 1; i < t.size(); i++) { // first column is constant
-                                             // ProtoDataType.CMD_HISTORY.getNumber()
-            ColumnDefinition cd = t.getColumnDefinition(i);
-            String name = cd.getName();
-            if (PreparedCommand.CNAME_GENTIME.equals(name)
-                    || PreparedCommand.CNAME_ORIGIN.equals(name)
-                    || PreparedCommand.CNAME_SEQNUM.equals(name)
-                    || PreparedCommand.CNAME_CMDNAME.equals(name))
-                continue;
-            che.addAttr(CommandHistoryAttribute.newBuilder()
-                    .setName(name)
-                    .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, t.getColumn(i))))
-                    .build());
-        }
-        return che.build();
+        return GPBHelper.tupleToCommandHistoryEntry(t);
     }
 
     @Override
@@ -101,8 +79,9 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
             sb.append(" where ");
             if (request.hasStart()) {
                 sb.append(" gentime>=" + request.getStart());
-                if (request.hasStop())
+                if (request.hasStop()) {
                     sb.append(" and gentime<" + request.getStop());
+                }
             } else {
                 sb.append(" gentime<" + request.getStop());
             }

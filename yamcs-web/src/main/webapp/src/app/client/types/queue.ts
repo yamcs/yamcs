@@ -1,5 +1,4 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { CommandId } from './monitoring';
 
 export interface SubscribeQueueStatisticsRequest {
   instance: string;
@@ -15,7 +14,10 @@ export interface CommandQueueEntry {
   instance: string;
   processorName: string;
   queueName: string;
-  cmdId: CommandId;
+  id: string;
+  commandName: string;
+  origin: string;
+  sequenceNumber: number;
   source: string;
   binary: string;
   username: string;

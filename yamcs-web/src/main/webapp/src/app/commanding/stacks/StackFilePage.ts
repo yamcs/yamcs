@@ -7,7 +7,6 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CommandSubscription, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { printCommandId } from '../../shared/utils';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { AddCommandDialog, CommandResult } from './AddCommandDialog';
 import { CommandArgument, StackEntry } from './StackEntry';
@@ -63,7 +62,7 @@ export class StackFilePage implements OnDestroy {
       processor: yamcs.processor!,
       ignorePastCommands: true,
     }, entry => {
-      const id = printCommandId(entry.commandId);
+      const id = entry.id;
       let rec = this.commandHistoryRecords.get(id);
       if (rec) {
         rec = rec.mergeEntry(entry);

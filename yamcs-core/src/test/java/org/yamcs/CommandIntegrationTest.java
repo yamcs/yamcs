@@ -24,7 +24,6 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Commanding.VerifierConfig.CheckWindow;
 import org.yamcs.protobuf.IndexGroup;
@@ -68,10 +67,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertTrue(response.hasBinary());
 
         CommandHistoryEntry entry = captor.expectTimely();
-        CommandId cmdid = entry.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", cmdid.getCommandName());
-        assertEquals(5, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", entry.getCommandName());
+        assertEquals(5, entry.getSequenceNumber());
+        assertEquals("IntegrationTest", entry.getOrigin());
     }
 
     @Test
@@ -85,10 +83,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdhist.getCommandName());
+        assertEquals(6, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
@@ -116,10 +113,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdhist.getCommandName());
+        assertEquals(6, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
@@ -139,10 +135,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertTrue(response.hasBinary());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC2", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC2", cmdhist.getCommandName());
+        assertEquals(6, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
@@ -171,10 +166,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", cmdid.getCommandName());
-        assertEquals(7, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", cmdhist.getCommandName());
+        assertEquals(7, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -216,10 +210,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
 
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdid.getCommandName());
-        assertEquals(4, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
+        assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdhist.getCommandName());
+        assertEquals(4, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
@@ -256,7 +249,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        assertEquals(8, cmdhist.getCommandId().getSequenceNumber());
+        assertEquals(8, cmdhist.getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -284,7 +277,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        assertEquals(9, cmdhist.getCommandId().getSequenceNumber());
+        assertEquals(9, cmdhist.getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -315,7 +308,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
-        assertEquals(10, cmdhist.getCommandId().getSequenceNumber());
+        assertEquals(10, cmdhist.getSequenceNumber());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 

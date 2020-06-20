@@ -38,10 +38,13 @@ message CommandQueueInfo {
 
 /*One entry (command) in the command queue*/
 message CommandQueueEntry {
-  required string instance = 1;
-  required string processorName = 2;
-  required string queueName = 3;
-  required CommandId cmdId = 4;
+  optional string instance = 1;
+  optional string processorName = 2;
+  optional string queueName = 3;
+  optional string id = 14;
+  optional string origin = 15;
+  optional int32 sequenceNumber = 16;
+  optional string commandName = 17;
   optional string source = 5;
   optional bytes binary = 6;
   optional string username = 7;
@@ -100,7 +103,11 @@ message CommandAssignment {
 }
 
 message CommandHistoryEntry {
-  required CommandId commandId = 1;
+  optional string id = 7;
+  optional string commandName = 8;
+  optional string origin = 9;
+  optional int32 sequenceNumber = 10;
+  optional CommandId commandId = 1;
   repeated CommandHistoryAttribute attr = 3;
   optional string generationTimeUTC = 4 [deprecated=true];
   optional google.protobuf.Timestamp generationTime = 6;

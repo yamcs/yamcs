@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { CommandHistoryEntry, CommandSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { printCommandId } from '../../shared/utils';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 
 @Component({
@@ -29,7 +28,7 @@ export class CommandReportPage implements OnDestroy {
         processor: yamcs.processor!,
         ignorePastCommands: false,
       }, wsEntry => {
-        if (printCommandId(wsEntry.commandId) === id) {
+        if (wsEntry.id === id) {
           this.mergeEntry(wsEntry);
         }
       });

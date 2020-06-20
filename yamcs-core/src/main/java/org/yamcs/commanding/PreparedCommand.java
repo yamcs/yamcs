@@ -143,6 +143,22 @@ public class PreparedCommand {
         return null;
     }
 
+    public String getId() {
+        return id.getGenerationTime() + "-" + id.getOrigin() + "-" + id.getSequenceNumber();
+    }
+
+    public String getOrigin() {
+        return id.getOrigin();
+    }
+
+    public int getSequenceNumber() {
+        return id.getSequenceNumber();
+    }
+
+    public String getCommandName() {
+        return id.getCommandName();
+    }
+
     public CommandId getCommandId() {
         return id;
     }
@@ -258,12 +274,6 @@ public class PreparedCommand {
         pc.attributes = che.getAttrList();
 
         return pc;
-    }
-
-    public CommandHistoryEntry toCommandHistoryEntry() {
-        CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(id);
-        cheb.addAllAttr(attributes);
-        return cheb.build();
     }
 
     public void setStringAttribute(String name, String value) {

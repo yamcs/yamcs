@@ -38,12 +38,19 @@ public final class GPBHelper {
     }
 
     public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple) {
-        CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder();
-        che.setCommandId(PreparedCommand.getCommandId(tuple));
+        long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
+        String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
+        int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);
+        String id = gentime + "-" + origin + "-" + sequenceNumber;
 
-        long gentime = che.getCommandId().getGenerationTime();
-        che.setGenerationTimeUTC(TimeEncoding.toString(gentime));
-        che.setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime));
+        CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder()
+                .setId(id)
+                .setOrigin(origin)
+                .setSequenceNumber(sequenceNumber)
+                .setCommandName((String) tuple.getColumn(PreparedCommand.CNAME_CMDNAME))
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime))
+                .setGenerationTimeUTC(TimeEncoding.toString(gentime))
+                .setCommandId(PreparedCommand.getCommandId(tuple));
 
         for (int i = 1; i < tuple.size(); i++) { // first column is constant ProtoDataType.CMD_HISTORY.getNumber()
             ColumnDefinition cd = tuple.getColumnDefinition(i);

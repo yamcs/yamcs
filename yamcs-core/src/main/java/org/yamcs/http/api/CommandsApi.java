@@ -321,7 +321,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             public void onTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory,
-                        entry.getCommandId().getCommandName())) {
+                        entry.getCommandName())) {
                     count++;
                     if (count <= limit) {
                         responseb.addEntry(entry);
@@ -335,8 +335,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 if (count > limit) {
                     CommandId cmdId = last.getCommandId();
                     CommandPageToken token = new CommandPageToken(
-                            cmdId.getGenerationTime(), cmdId.getOrigin(),
-                            cmdId.getSequenceNumber());
+                            cmdId.getGenerationTime(), last.getOrigin(),
+                            last.getSequenceNumber());
                     responseb.setContinuationToken(token.encodeAsString());
                 }
                 observer.complete(responseb.build());
@@ -379,8 +379,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                     observer.completeExceptionally(new InternalServerErrorException("Too many results"));
                 } else {
                     CommandHistoryEntry entry = commands.get(0);
-                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory,
-                            entry.getCommandId().getCommandName());
+                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, entry.getCommandName());
                     observer.complete(commands.get(0));
                 }
             }
@@ -407,7 +406,12 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void addedCommand(PreparedCommand pc) {
-                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
+                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                        .setId(pc.getId())
+                        .setOrigin(pc.getOrigin())
+                        .setCommandName(pc.getCommandName())
+                        .setSequenceNumber(pc.getSequenceNumber())
+                        .setCommandId(pc.getCommandId())
                         .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
                         .addAllAttr(pc.getAttributes())
@@ -422,6 +426,9 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .setValue(ValueUtility.toGbp(value))
                         .build();
                 CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                        .setId(cmdId.getGenerationTime() + "-" + cmdId.getOrigin() + "-" + cmdId.getSequenceNumber())
+                        .setOrigin(cmdId.getOrigin())
+                        .setCommandName(cmdId.getCommandName())
                         .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
                         .setCommandId(cmdId)
@@ -458,8 +465,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
-                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory,
-                        entry.getCommandId().getCommandName())) {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, entry.getCommandName())) {
                     observer.next(entry);
                 }
             }

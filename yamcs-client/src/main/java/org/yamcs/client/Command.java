@@ -7,9 +7,6 @@ import java.util.Map.Entry;
 
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandId;
-
-import com.google.protobuf.Timestamp;
 
 public class Command implements Comparable<Command> {
 
@@ -20,12 +17,13 @@ public class Command implements Comparable<Command> {
     private final Instant generationTime;
     private Map<String, Object> attributes = new LinkedHashMap<>();
 
-    Command(CommandId protoId, Timestamp generationTime) {
-        id = protoId.getGenerationTime() + "-" + protoId.getOrigin() + "-" + protoId.getSequenceNumber();
-        name = protoId.getCommandName();
-        origin = protoId.hasOrigin() ? protoId.getOrigin() : null;
-        sequenceNumber = protoId.getSequenceNumber();
-        this.generationTime = Instant.ofEpochSecond(generationTime.getSeconds(), generationTime.getNanos());
+    Command(CommandHistoryEntry entry) {
+        this.id = entry.getId();
+        this.name = entry.getCommandName();
+        this.origin = entry.getOrigin();
+        this.sequenceNumber = entry.getSequenceNumber();
+        this.generationTime = Instant.ofEpochSecond(entry.getGenerationTime().getSeconds(),
+                entry.getGenerationTime().getNanos());
     }
 
     public String getId() {
