@@ -121,7 +121,7 @@ public class YamcsClient {
         });
         websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
 
-        methodHandler = new HttpMethodHandler(this, baseClient);
+        methodHandler = new HttpMethodHandler(this, baseClient, websocketClient);
 
         alarmService = new AlarmsApiClient(methodHandler);
         eventService = new EventsApiClient(methodHandler);
@@ -507,47 +507,47 @@ public class YamcsClient {
     }
 
     public TimeSubscription createTimeSubscription() {
-        return new TimeSubscription(websocketClient);
+        return new TimeSubscription(methodHandler);
     }
 
     public ClearanceSubscription createClearanceSubscription() {
-        return new ClearanceSubscription(websocketClient);
+        return new ClearanceSubscription(methodHandler);
     }
 
     public EventSubscription createEventSubscription() {
-        return new EventSubscription(websocketClient);
+        return new EventSubscription(methodHandler);
     }
 
     public AlarmSubscription createAlarmSubscription() {
-        return new AlarmSubscription(websocketClient);
+        return new AlarmSubscription(methodHandler);
     }
 
     public PacketSubscription createPacketSubscription() {
-        return new PacketSubscription(websocketClient);
+        return new PacketSubscription(methodHandler);
     }
 
     public ProcessorSubscription createProcessorSubscription() {
-        return new ProcessorSubscription(websocketClient);
+        return new ProcessorSubscription(methodHandler);
     }
 
     public CommandSubscription createCommandSubscription() {
-        return new CommandSubscription(websocketClient);
+        return new CommandSubscription(methodHandler);
     }
 
     public QueueEventSubscription createQueueEventSubscription() {
-        return new QueueEventSubscription(websocketClient);
+        return new QueueEventSubscription(methodHandler);
     }
 
     public QueueStatisticsSubscription createQueueStatisticsSubscription() {
-        return new QueueStatisticsSubscription(websocketClient);
+        return new QueueStatisticsSubscription(methodHandler);
     }
 
     public ParameterSubscription createParameterSubscription() {
-        return new ParameterSubscription(websocketClient);
+        return new ParameterSubscription(methodHandler);
     }
 
     public LinkSubscription createLinkSubscription() {
-        return new LinkSubscription(websocketClient);
+        return new LinkSubscription(methodHandler);
     }
 
     public void close() {

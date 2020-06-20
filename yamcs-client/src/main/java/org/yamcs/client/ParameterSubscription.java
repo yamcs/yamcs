@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeParametersRequest.Action;
@@ -24,8 +24,8 @@ public class ParameterSubscription extends AbstractSubscription<SubscribeParamet
     // Maps server-assigned numeric ids against the request identifiers
     protected Map<Integer, NamedObjectId> mapping = new ConcurrentHashMap<>();
 
-    protected ParameterSubscription(WebSocketClient client) {
-        super(client, "parameters", SubscribeParametersData.class);
+    protected ParameterSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "parameters", SubscribeParametersData.class);
         addMessageListener(this::processMessage);
     }
 

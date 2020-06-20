@@ -1,12 +1,13 @@
 package org.yamcs.client;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.SubscribeCommandsRequest;
 
@@ -20,14 +21,17 @@ public class CommandSubscription extends AbstractSubscription<SubscribeCommandsR
     private Map<String, Command> commands = new ConcurrentHashMap<>();
     private Set<CommandListener> commandListeners = new CopyOnWriteArraySet<>();
 
-    protected CommandSubscription(WebSocketClient client) {
-        super(client, "commands", CommandHistoryEntry.class);
+    public CommandSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "commands", CommandHistoryEntry.class);
         addMessageListener(new MessageListener<CommandHistoryEntry>() {
 
             @Override
             public void onMessage(CommandHistoryEntry entry) {
-                Command command = commands.computeIfAbsent(entry.getId(), id -> new Command(entry));
+                Instant generationTime = Helpers.toInstant(entry.getGenerationTime());
+                Command command = commands.computeIfAbsent(entry.getId(), id -> new Command(entry.getId(),
+                        entry.getCommandName(), entry.getOrigin(), entry.getSequenceNumber(), generationTime));
                 command.merge(entry);
+                commandListeners.forEach(l -> l.onUpdate(command));
             }
 
             @Override

@@ -50,7 +50,6 @@ public abstract class AbstractPage<RequestT extends Message, ResponseT extends M
         });
     }
 
-    @SuppressWarnings("unchecked")
     private void readResponse(ResponseT response) {
         this.response = response;
         Descriptor responseDescriptor = response.getDescriptorForType();
@@ -65,7 +64,13 @@ public abstract class AbstractPage<RequestT extends Message, ResponseT extends M
         }
 
         FieldDescriptor repeatableDescriptor = responseDescriptor.findFieldByName(repeatableField);
-        items = new ArrayList<>((List<ItemT>) response.getField(repeatableDescriptor));
+        items = mapRepeatableField(response.getField(repeatableDescriptor));
+    }
+
+    // Can be overriden to expose a page of non-protobuf messages
+    @SuppressWarnings("unchecked")
+    protected List<ItemT> mapRepeatableField(Object field) {
+        return new ArrayList<>((List<ItemT>) field);
     }
 
     public ResponseT getResponse() {

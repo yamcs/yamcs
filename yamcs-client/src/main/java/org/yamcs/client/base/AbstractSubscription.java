@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.Subscription;
@@ -28,7 +29,8 @@ public abstract class AbstractSubscription<C extends Message, S extends Message>
 
     private Set<MessageListener<S>> messageListeners = new CopyOnWriteArraySet<>();
 
-    protected AbstractSubscription(WebSocketClient client, String topic, Class<S> responseClass) {
+    protected AbstractSubscription(MethodHandler methodHandler, String topic, Class<S> responseClass) {
+        WebSocketClient client = ((HttpMethodHandler) methodHandler).getWebSocketClient();
         clientObserver = client.call(topic, new DataObserver<S>() {
 
             @Override

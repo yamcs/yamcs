@@ -4,6 +4,10 @@ import java.time.Instant;
 
 public class Acknowledgment {
 
+    public static final String QUEUED = "Acknowledge_Queued";
+    public static final String RELEASED = "Acknowledge_Released";
+    public static final String SENT = "Acknowledge_Sent";
+
     private String name;
     private Instant time;
     private String status;
@@ -18,6 +22,10 @@ public class Acknowledgment {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isLocal() {
+        return QUEUED.equals(name) || RELEASED.equals(name) || SENT.equals(name);
     }
 
     /**

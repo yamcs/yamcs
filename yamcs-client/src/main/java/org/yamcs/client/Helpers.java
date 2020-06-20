@@ -9,7 +9,13 @@ import java.util.Map;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 
+import com.google.protobuf.Timestamp;
+
 public class Helpers {
+
+    public static Instant toInstant(Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    }
 
     public static NamedObjectId toNamedObjectId(String name) {
         // Some API calls still require NamedObjectId objects, which are bothersome.

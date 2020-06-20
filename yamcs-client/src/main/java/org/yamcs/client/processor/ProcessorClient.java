@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MethodHandler;
+import org.yamcs.client.Command;
 import org.yamcs.client.Helpers;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.FromCacheOption;
@@ -59,13 +60,13 @@ public class ProcessorClient {
     private MdbApiClient mdbService;
     private QueueApiClient queueService;
 
-    public ProcessorClient(MethodHandler handler, String instance, String processor) {
+    public ProcessorClient(MethodHandler methodHandler, String instance, String processor) {
         this.instance = instance;
         this.processor = processor;
-        processingService = new ProcessingApiClient(handler);
-        commandService = new CommandsApiClient(handler);
-        mdbService = new MdbApiClient(handler);
-        queueService = new QueueApiClient(handler);
+        processingService = new ProcessingApiClient(methodHandler);
+        commandService = new CommandsApiClient(methodHandler);
+        mdbService = new MdbApiClient(methodHandler);
+        queueService = new QueueApiClient(methodHandler);
     }
 
     public String getInstance() {
@@ -152,7 +153,7 @@ public class ProcessorClient {
         return f.thenApply(response -> null);
     }
 
-    public CompletableFuture<IssueCommandResponse> issueCommand(String command, Map<String, ?> arguments) {
+    public CompletableFuture<Command> issueCommand(String command, Map<String, ?> arguments) {
         IssueCommandRequest.Builder requestb = IssueCommandRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
@@ -165,7 +166,7 @@ public class ProcessorClient {
         }
         CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
         commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
+        return f.thenApply(Command::new);
     }
 
     public CommandBuilder prepareCommand(String command) {
@@ -414,6 +415,10 @@ public class ProcessorClient {
         private CommandsApiClient commandService;
         private IssueCommandRequest.Builder requestb;
 
+        CommandBuilder(ProcessorClient client, String command) {
+            this(client.commandService, client.instance, client.processor, command);
+        }
+
         private CommandBuilder(CommandsApiClient commandService, String instance, String processor, String command) {
             this.commandService = commandService;
             requestb = IssueCommandRequest.newBuilder()
@@ -483,10 +488,10 @@ public class ProcessorClient {
             return this;
         }
 
-        public CompletableFuture<IssueCommandResponse> issue() {
+        public CompletableFuture<Command> issue() {
             CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
             commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
-            return f;
+            return f.thenApply(Command::new);
         }
     }
 

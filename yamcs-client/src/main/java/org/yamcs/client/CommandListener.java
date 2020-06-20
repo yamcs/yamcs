@@ -1,11 +1,9 @@
 package org.yamcs.client;
 
-import java.time.Instant;
-
 @FunctionalInterface
 public interface CommandListener {
 
-    void onUpdate(Instant time);
+    void onUpdate(Command command);
 
     /**
      * Called when an exception claused the call to abort.

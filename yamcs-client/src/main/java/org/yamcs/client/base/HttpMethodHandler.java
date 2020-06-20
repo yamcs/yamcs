@@ -31,9 +31,11 @@ public class HttpMethodHandler implements MethodHandler {
     private static final Pattern PATTERN_TEMPLATE_VAR = Pattern.compile("\\{([^\\*\\}]+)[\\*]?\\}");
 
     private RestClient baseClient;
+    private WebSocketClient webSocketClient;
 
-    public HttpMethodHandler(YamcsClient client, RestClient baseClient) {
+    public HttpMethodHandler(YamcsClient client, RestClient baseClient, WebSocketClient webSocketClient) {
         this.baseClient = baseClient;
+        this.webSocketClient = webSocketClient;
     }
 
     @Override
@@ -219,5 +221,11 @@ public class HttpMethodHandler implements MethodHandler {
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }
+    }
+
+    // TODO It may be better to handle subscriptions in here, rather than in
+    // AbstractSubscription
+    public WebSocketClient getWebSocketClient() {
+        return webSocketClient;
     }
 }

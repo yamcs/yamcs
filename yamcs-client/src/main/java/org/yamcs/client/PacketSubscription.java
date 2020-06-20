@@ -1,7 +1,7 @@
 package org.yamcs.client;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.SubscribePacketsRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 
@@ -10,7 +10,7 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
  */
 public class PacketSubscription extends AbstractSubscription<SubscribePacketsRequest, TmPacketData> {
 
-    protected PacketSubscription(WebSocketClient client) {
-        super(client, "packets", TmPacketData.class);
+    protected PacketSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "packets", TmPacketData.class);
     }
 }

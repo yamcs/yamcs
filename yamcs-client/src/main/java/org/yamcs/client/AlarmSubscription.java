@@ -1,7 +1,7 @@
 package org.yamcs.client;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
 
@@ -10,7 +10,7 @@ import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
  */
 public class AlarmSubscription extends AbstractSubscription<SubscribeAlarmsRequest, AlarmData> {
 
-    protected AlarmSubscription(WebSocketClient client) {
-        super(client, "alarms", AlarmData.class);
+    protected AlarmSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "alarms", AlarmData.class);
     }
 }
