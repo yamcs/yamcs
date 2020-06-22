@@ -54,6 +54,7 @@ public class Simulator extends AbstractService {
     static final int CFDP_APID = 2045;
     static final int MAIN_APID = 1;
     static final int PERF_TEST_APID = 2;
+    static final int TC_ACK_APID = 101;
     
     CfdpReceiver cfdpReceiver;
 
@@ -188,18 +189,15 @@ public class Simulator extends AbstractService {
     }
 
     protected CCSDSPacket ackPacket(CCSDSPacket commandPacket, int stage, int result) {
-        CCSDSPacket ackPacket = new CCSDSPacket(0, commandPacket.getPacketType(), 2000, false);
-        ackPacket.setApid(101);
+        CCSDSPacket ackPacket = new CCSDSPacket(TC_ACK_APID, 10, commandPacket.getPacketType(), 2000, false);
         int batNum = commandPacket.getPacketId();
 
-        ByteBuffer bb = ByteBuffer.allocate(10);
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
 
         bb.putInt(0, batNum);
         bb.putInt(4, commandPacket.getSeq());
         bb.put(8, (byte) stage);
         bb.put(9, (byte) result);
-
-        ackPacket.appendUserDataBuffer(bb.array());
 
         return ackPacket;
     }
