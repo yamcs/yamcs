@@ -54,6 +54,10 @@ public class EofPacket extends CfdpPacket implements FileDirective {
                 + ((faultLocation != null) ? 2 + faultLocation.getValue().length : 0);
     }
 
+    public ConditionCode getConditionCode() {
+        return conditionCode;
+    }
+    
     public long getFileChecksum() {
         return this.fileChecksum;
     }

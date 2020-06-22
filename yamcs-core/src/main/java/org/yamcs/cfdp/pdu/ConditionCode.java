@@ -46,7 +46,7 @@ public enum ConditionCode {
     }
 
     public static ConditionCode readConditionCode(byte b) {
-        return ConditionCode.fromCode((byte) (b >> 4));
+        return ConditionCode.fromCode((byte) ((b >> 4)&0x0F));
     }
 
     public void writeAsByteToBuffer(ByteBuffer buffer) {
