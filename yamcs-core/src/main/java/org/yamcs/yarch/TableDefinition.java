@@ -108,17 +108,18 @@ public class TableDefinition {
             keyDef.addColumn(c);
             keySerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
         }
-        for (ColumnDefinition c : tdef.getColumnDefinitions()) {
-            if (keyDef.getColumn(c.getName()) == null) {
-                valueDef.addColumn(c);
-                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
+        for (ColumnDefinition cd : tdef.getColumnDefinitions()) {
+            if (keyDef.getColumn(cd.getName()) == null) {
+                valueDef.addColumn(cd);
+                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
             }
         }
+        this.serializedValueDef = valueDef;
         computeTupleDef();
     }
 
     /**
-     * Used when creating the table from the def file on disk
+     * Used when creating the table from the serialized data on disk
      * 
      * @param keyDef
      * @param valueDef
@@ -433,7 +434,7 @@ public class TableDefinition {
             // deserialize the key
             for (int i = 0; i < keyDef.size(); i++) {
                 ColumnDefinition cd = keyDef.getColumn(i);
-                ColumnSerializer cs = keySerializers.get(i);
+                ColumnSerializer<?> cs = keySerializers.get(i);
                 Object o = cs.deserialize(dis, cd);
                 cols.add(o);
             }
@@ -451,7 +452,7 @@ public class TableDefinition {
                 }
 
                 ColumnDefinition cd = valueDef.getColumn(cidx);
-                ColumnSerializer cs = valueSerializers.get(cidx);
+                ColumnSerializer<?> cs = valueSerializers.get(cidx);
 
                 Object o = cs.deserialize(dis, cd);
                 tdef.addColumn(cd);
@@ -563,6 +564,32 @@ public class TableDefinition {
     void setFormatVersion(int formatVersion) {
         this.formatVersion = formatVersion;
     }
+    
+    /**
+     * Returns the value definition to be serialized on disk.
+     * <p>
+     * This should only be used from the storage engine.
+     * <p>
+     * TODO: refactor to hide this method.
+     */
+    public TupleDefinition getSerializedValueDefinition() {
+        return serializedValueDef;
+    }
+    
+    /**
+     * Returns the enumerations to be serialized on disk.
+     * <p>
+     * This should only be used from the storage engine.
+     * <p>
+     * TODO: refactor to hide this method. 
+     */
+    public BiMap<String, Short> getSerializedEnumValues(String columnName) {
+        if(serializedEmumValues == null) {
+            return null;
+        }
+        return serializedEmumValues.get(name);
+    }
+
     
     @Override
     public String toString() {

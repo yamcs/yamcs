@@ -90,7 +90,7 @@ message TablespaceRecord {
   	optional BucketProperties bucketProperties = 11;
   
   	//used for TABLE_DEFINITION
-  	optional RdbTableDefinition tableDefinition = 12;
+  	optional ProtoTableDefinition tableDefinition = 12;
 }
 
 //associated to each bucket
@@ -141,7 +141,7 @@ message PartitioningInfo {
   	optional string valueColumnType = 5;
 }
 
-message RdbTableDefinition {
+message ProtoTableDefinition {
   	repeated TableColumnInfo keyColumn = 2;
   	repeated TableColumnInfo valueColumn = 3;
   	repeated string histogramColumn = 5;

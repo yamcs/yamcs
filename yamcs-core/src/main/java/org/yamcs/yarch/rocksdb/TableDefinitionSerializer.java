@@ -15,7 +15,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo.PartitioningType;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.RdbTableDefinition;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TableColumnInfo;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TableColumnInfo.EnumValue;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -30,8 +30,8 @@ import com.google.common.collect.HashBiMap;
  */
 class TableDefinitionSerializer {
 
-    static RdbTableDefinition toProtobuf(TableDefinition def) {
-        RdbTableDefinition.Builder infob = RdbTableDefinition.newBuilder();
+    static ProtoTableDefinition toProtobuf(TableDefinition def) {
+        ProtoTableDefinition.Builder infob = ProtoTableDefinition.newBuilder();
 
         infob.setCompressed(def.isCompressed());
         infob.setFormatVersion(def.getFormatVersion());
@@ -46,7 +46,7 @@ class TableDefinitionSerializer {
         for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
             infob.addKeyColumn(toProtobuf(cdef, def));
         }
-        for (ColumnDefinition cdef : def.getValueDefinition().getColumnDefinitions()) {
+        for (ColumnDefinition cdef : def.getSerializedValueDefinition().getColumnDefinitions()) {
             infob.addValueColumn(toProtobuf(cdef, def));
         }
         return infob.build();
@@ -91,7 +91,7 @@ class TableDefinitionSerializer {
         infob.setName(cdef.getName());
         infob.setType(cdef.getType().name());
         if (tableDefinition != null && cdef.getType() == DataType.ENUM) {
-            BiMap<String, Short> enumValues = tableDefinition.getEnumValues(cdef.getName());
+            BiMap<String, Short> enumValues = tableDefinition.getSerializedEnumValues(cdef.getName());
             if (enumValues != null) {
                 List<EnumValue> enumValueList = new ArrayList<>();
                 for (Entry<String, Short> entry : enumValues.entrySet()) {
@@ -119,7 +119,7 @@ class TableDefinitionSerializer {
         return new ColumnDefinition(name, type);
     }
 
-    public static TableDefinition fromProtobuf(RdbTableDefinition protodef) {
+    public static TableDefinition fromProtobuf(ProtoTableDefinition protodef) {
         TupleDefinition keyDef = new TupleDefinition();
         TupleDefinition valueDef = new TupleDefinition();
 

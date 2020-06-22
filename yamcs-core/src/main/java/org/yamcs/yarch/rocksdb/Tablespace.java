@@ -33,7 +33,7 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.protobuf.Db;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.RdbTableDefinition;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
@@ -448,7 +448,7 @@ public class Tablespace {
 
     public void createTable(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
         synchronized (partitionManagers) {
-            RdbTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+            ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
             trb.setType(Type.TABLE_DEFINITION);
             trb.setTableDefinition(rtd);
@@ -468,7 +468,7 @@ public class Tablespace {
             throw new IllegalArgumentException("This is not a table definition I know");
         }
 
-        RdbTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+        ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
         trb.setType(Type.TABLE_DEFINITION);
         trb.setTableDefinition(rtd);
