@@ -35,5 +35,38 @@ BogusSAT2:
 ranges-test:
     - type: xtce
       args:
-          file: "../yamcs-xtce/src/test/resources/ranges-test.xml"          
-
+          file: "../yamcs-xtce/src/test/resources/ranges-test.xml"
+          
+ispace:
+    - type: sheet
+      spec: "/tmp/i/opsim-mdb.xls"
+      subLoaders:
+        - type: sheet
+          spec: "/tmp/i/opsim-cdh-mdb.xls"
+        - type: sheet
+          spec: "/tmp/i/opsim-if-mdb.xls"
+        - type: sheet
+          spec: "/tmp/i/opsim-main-mdb.xls"
+          subLoaders: 
+           - type: sheet
+             spec: "/tmp/i/opsim-main-ognc-mdb.xls"
+           - type: sheet
+             spec: "/tmp/i/opsim-main-dgnc-mdb.xls"
+         
+ispace-xtce:
+    - type: xtce
+      spec: "/tmp/o/opsim-mdb.xtce"
+      subLoaders:
+        - type: xtce
+          spec: "/tmp/o/opsim-mdb.xtce"  
+        - type: xtce
+          spec: "/tmp/o/opsim-cdh-mdb.xtce"
+        - type: xtce
+          spec: "/tmp/o/opsim-if-mdb.xtce"
+        - type: xtce
+          spec: "/tmp/o/opsim-main-mdb.xtce"
+          subLoaders: 
+            - type: xtce
+              spec: "/tmp/o/opsim-main-dgnc-mdb.xtce"
+            - type: xtce
+              spec: "/tmp/o/opsim-main-ognc-mdb.xtce"

@@ -7,14 +7,18 @@ package org.yamcs.xtce;
 public class BooleanDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 200805131551L;
 
-    public BooleanDataEncoding() {
-        super(1);
-    }
-
     BooleanDataEncoding(BooleanDataEncoding bde) {
         super(bde);
     }
 
+    public BooleanDataEncoding(Builder builder) {
+        super(builder, 1);
+    }
+    
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
+    
     @Override
     public String toString() {
         return "BooleanDataEncoding(sizeInBits:" + sizeInBits + ")";
@@ -26,7 +30,21 @@ public class BooleanDataEncoding extends DataEncoding {
     }
 
     @Override
-    public DataEncoding copy() {
+    public BooleanDataEncoding copy() {
         return new BooleanDataEncoding(this);
+    }
+
+    public static class Builder extends DataEncoding.Builder<Builder> {
+        public Builder(BooleanDataEncoding encoding) {
+            super(encoding);
+        }
+
+        public Builder() {
+            super();
+         }
+        
+        public BooleanDataEncoding build() {
+            return new BooleanDataEncoding(this);
+        }
     }
 }

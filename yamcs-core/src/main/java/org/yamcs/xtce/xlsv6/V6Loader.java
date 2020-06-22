@@ -108,6 +108,7 @@ import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
+import com.google.common.base.Objects;
 import com.google.common.primitives.UnsignedLongs;
 
 import jxl.Cell;
@@ -134,7 +135,7 @@ public class V6Loader extends V6LoaderBase {
     protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
     BasicPrefFactory prefFactory = new BasicPrefFactory();
     Map<Parameter, DataType.Builder<?>> parameterDataTypesBuilders = new HashMap<>();
-    
+
     final ConditionParser conditionParser = new ConditionParser(prefFactory);
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
@@ -154,7 +155,7 @@ public class V6Loader extends V6LoaderBase {
     }
 
     public V6Loader(YConfiguration config) {
-        this(config.getString( "file"));
+        this(config.getString("file"));
         enableAliasReferences = config.getBoolean("enableAliasReferences", false);
         enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
@@ -518,7 +519,7 @@ public class V6Loader extends V6LoaderBase {
                 }
             }
             ptype.setName(name);
-            
+
             String units = null;
             if (hasColumn(cells, IDX_PARAM_ENGUNIT)) {
                 units = cells[IDX_PARAM_ENGUNIT].getContents();
@@ -526,18 +527,20 @@ public class V6Loader extends V6LoaderBase {
 
             if (!"".equals(units) && units != null && ptype instanceof BaseDataType.Builder) {
                 UnitType unitType = new UnitType(units);
-                ((BaseDataType.Builder) ptype).addUnit(unitType);
+                ((BaseDataType.Builder<?>) ptype).addUnit(unitType);
             }
 
-            DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Parameter " + param.getName(), rawtype, engtype,
+            DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Parameter " + param.getName(),
+                    rawtype, engtype,
                     encodings, calib);
 
             if (ptype instanceof IntegerParameterType.Builder) {
                 // Integers can be encoded as strings
-                if (encoding instanceof StringDataEncoding) {
+                if (encoding instanceof StringDataEncoding.Builder) {
+                    StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                     // Create a new int encoding which uses the configured string encoding
-                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name,
-                            ((StringDataEncoding) encoding));
+                    IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                            .setStringEncoding(sde);
                     if (calib != null) {
                         Calibrator c = calibrators.get(calib);
                         if (c == null) {
@@ -552,9 +555,11 @@ public class V6Loader extends V6LoaderBase {
                 }
             } else if (ptype instanceof FloatParameterType.Builder) {
                 // Floats can be encoded as strings
-                if (encoding instanceof StringDataEncoding) {
+                if (encoding instanceof StringDataEncoding.Builder) {
+                    StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                     // Create a new float encoding which uses the configured string encoding
-                    FloatDataEncoding floatStringEncoding = new FloatDataEncoding(((StringDataEncoding) encoding));
+                    FloatDataEncoding.Builder floatStringEncoding = new FloatDataEncoding.Builder()
+                            .setStringEncoding(sde);
                     if (calib != null) {
                         Calibrator c = calibrators.get(calib);
                         if (c == null) {
@@ -572,16 +577,19 @@ public class V6Loader extends V6LoaderBase {
                 if (((EnumeratedParameterType.Builder) ptype).getEncoding() != null) {
                     // Some other param has already led to setting the encoding of this shared ptype.
                     // Do some basic consistency checks
-                    if (((EnumeratedParameterType.Builder) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                    Integer sib1 = ((EnumeratedParameterType.Builder) ptype).getEncoding().getSizeInBits();
+                    Integer sib2 = encoding.getSizeInBits();
+                    if (!Objects.equal(sib1, sib2)) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Multiple parameters are sharing calibrator '" + calib + "' with different bit sizes.");
                     }
                 }
 
                 // Enumerations encoded as string integers
-                if (encoding instanceof StringDataEncoding) {
-                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name,
-                            ((StringDataEncoding) encoding));
+                if (encoding instanceof StringDataEncoding.Builder) {
+                    StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
+                    IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                            .setStringEncoding(sde);
                     // Don't set calibrator, already done when making ptype
                     ptype.setEncoding(intStringEncoding);
                     ;
@@ -592,8 +600,8 @@ public class V6Loader extends V6LoaderBase {
             } else {
                 ptype.setEncoding(encoding);
             }
-            parameterDataTypesBuilders.put(param,  ptype);
-            param.setParameterType((ParameterType) ptype.build()); 
+            parameterDataTypesBuilders.put(param, ptype);
+            param.setParameterType((ParameterType) ptype.build());
             param.setDataSource(dataSource);
         }
     }
@@ -651,7 +659,7 @@ public class V6Loader extends V6LoaderBase {
 
     }
 
-    DataEncoding getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, String paraArgDescr,
+    DataEncoding.Builder<?> getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, String paraArgDescr,
             String rawtype, String engtype, String encodings, String calib) {
 
         if ((rawtype == null) || rawtype.isEmpty()) {
@@ -710,10 +718,10 @@ public class V6Loader extends V6LoaderBase {
                 return true;
             });
         }
-        DataEncoding encoding = null;
+        DataEncoding.Builder<?> encoding = null;
         if (PARAM_RAWTYPE_INT.equalsIgnoreCase(rawtype) || PARAM_RAWTYPE_UINT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                IntegerDataEncoding e = new IntegerDataEncoding(customBitLength);
+                IntegerDataEncoding.Builder e = new IntegerDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
                     return true;
@@ -724,21 +732,21 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Size in bits mandatory for int encoding.");
                 }
                 int bitlength = parseInt(ctx, encodingArgs[0]);
-                encoding = new IntegerDataEncoding(bitlength);
-                ((IntegerDataEncoding) encoding).setEncoding(getIntegerEncoding(ctx, encodingType));
+                encoding = new IntegerDataEncoding.Builder().setSizeInBits(bitlength);
+                ((IntegerDataEncoding.Builder) encoding).setEncoding(getIntegerEncoding(ctx, encodingType));
                 if (encodingArgs.length > 1) {
-                    ((IntegerDataEncoding) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
+                    ((IntegerDataEncoding.Builder) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
             }
 
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((IntegerDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
-                ((IntegerDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
+                ((IntegerDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
+                ((IntegerDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                FloatDataEncoding e = new FloatDataEncoding(customBitLength);
+                FloatDataEncoding.Builder e = new FloatDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
                     return true;
@@ -753,16 +761,19 @@ public class V6Loader extends V6LoaderBase {
                 if (encodingArgs.length > 1) {
                     byteOrder = getByteOrder(ctx, encodingArgs[1]);
                 }
-                encoding = new FloatDataEncoding(bitlength, byteOrder, getFloatEncoding(ctx, encodingType));
+                encoding = new FloatDataEncoding.Builder()
+                        .setSizeInBits(bitlength)
+                        .setByteOrder(byteOrder)
+                        .setFloatEncoding(getFloatEncoding(ctx, encodingType));
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((FloatDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
-                ((FloatDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
+                ((FloatDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
+                ((FloatDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                BooleanDataEncoding e = new BooleanDataEncoding();
+                BooleanDataEncoding.Builder e = new BooleanDataEncoding.Builder();
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -774,7 +785,7 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encoding is not allowed for boolean parameters. Use any other raw type if you want to specify the bitlength");
                 }
-                encoding = new BooleanDataEncoding();
+                encoding = new BooleanDataEncoding.Builder();
             }
         } else if (PARAM_RAWTYPE_STRING.equalsIgnoreCase(rawtype)) {
             String charset = "UTF-8";
@@ -789,7 +800,7 @@ public class V6Loader extends V6LoaderBase {
                 }
             }
             if (customFromBinaryTransform != null) {
-                StringDataEncoding e = new StringDataEncoding(SizeType.CUSTOM);
+                StringDataEncoding.Builder e = new StringDataEncoding.Builder().setSizeType(SizeType.CUSTOM);
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -800,7 +811,7 @@ public class V6Loader extends V6LoaderBase {
                 if (encodingArgs.length == 0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for fixed strings need to specify size in bits");
                 }
-                encoding = new StringDataEncoding(SizeType.FIXED);
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.FIXED);
                 int bitlength = parseInt(ctx, encodingArgs[0]);
                 encoding.setSizeInBits(bitlength);
             } else if ("terminated".equalsIgnoreCase(encodingType)) {
@@ -808,8 +819,8 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for terminated strings need to specify termination char");
                 }
-                encoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
-                ((StringDataEncoding) encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
+                ((StringDataEncoding.Builder) encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(ctx, encodingArgs[2]));
                 }
@@ -818,8 +829,8 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for PrependedSize strings need to specify the size in bits of the size tag.");
                 }
-                encoding = new StringDataEncoding(SizeType.LEADING_SIZE);
-                ((StringDataEncoding) encoding).setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.LEADING_SIZE);
+                ((StringDataEncoding.Builder) encoding).setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(ctx, encodingArgs[2]));
                 }
@@ -827,10 +838,10 @@ public class V6Loader extends V6LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type " + encodingType
                         + " Use one of 'fixed', 'terminated', 'PrependedSize' or 'custom'");
             }
-            ((StringDataEncoding) encoding).setEncoding(charset);
+            ((StringDataEncoding.Builder) encoding).setEncoding(charset);
         } else if (PARAM_RAWTYPE_BINARY.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                BinaryDataEncoding e = new BinaryDataEncoding(BinaryDataEncoding.Type.CUSTOM);
+                BinaryDataEncoding.Builder e = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.CUSTOM);
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -841,7 +852,7 @@ public class V6Loader extends V6LoaderBase {
                 if (encodingArgs.length == 0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for fixed strings need to specify size in bits");
                 }
-                encoding = new BinaryDataEncoding(BinaryDataEncoding.Type.FIXED_SIZE);
+                encoding = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.FIXED_SIZE);
                 int bitlength = parseInt(ctx, encodingArgs[0]);
                 encoding.setSizeInBits(bitlength);
             } else if ("PrependedSize".equalsIgnoreCase(encodingType)) {
@@ -849,8 +860,9 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for PrependedSize strings need to specify the size in bits of the size tag.");
                 }
-                encoding = new BinaryDataEncoding(BinaryDataEncoding.Type.LEADING_SIZE);
-                ((BinaryDataEncoding) encoding).setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
+                encoding = new BinaryDataEncoding.Builder()
+                        .setType(BinaryDataEncoding.Type.LEADING_SIZE)
+                        .setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
             } else {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type " + encodingType
                         + " Use one of 'fixed', 'PrependedSize' or 'custom'");
@@ -1672,7 +1684,7 @@ public class V6Loader extends V6LoaderBase {
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
         }
-        
+
         atype.setName(name);
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
@@ -1757,14 +1769,15 @@ public class V6Loader extends V6LoaderBase {
             }
         }
 
-        DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Argument " + arg.getName(), rawType, engType,
+        DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Argument " + arg.getName(), rawType, engType,
                 encodings, calib);
 
         if (atype instanceof IntegerArgumentType.Builder) {
             // Integers can be encoded as strings
-            if (encoding instanceof StringDataEncoding) {
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new int encoding which uses the configured string encoding
-                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding) encoding));
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -1781,9 +1794,10 @@ public class V6Loader extends V6LoaderBase {
             ((BinaryArgumentType.Builder) atype).setEncoding(encoding);
         } else if (atype instanceof FloatArgumentType.Builder) {
             // Floats can be encoded as strings
-            if (encoding instanceof StringDataEncoding) {
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new float encoding which uses the configured string encoding
-                FloatDataEncoding floatStringEncoding = new FloatDataEncoding(((StringDataEncoding) encoding));
+                FloatDataEncoding.Builder floatStringEncoding = new FloatDataEncoding.Builder().setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -1802,15 +1816,17 @@ public class V6Loader extends V6LoaderBase {
             if (((EnumeratedArgumentType.Builder) atype).getEncoding() != null) {
                 // Some other param has already led to setting the encoding of this shared ptype.
                 // Do some basic consistency checks
-                if (((EnumeratedArgumentType.Builder) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                if (((EnumeratedArgumentType.Builder) atype).getEncoding().getSizeInBits() != encoding
+                        .getSizeInBits()) {
                     throw new SpreadsheetLoadException(ctx,
                             "Multiple parameters are sharing calibrator '" + calib + "' with different bit sizes.");
                 }
             }
 
             // Enumerations encoded as string integers
-            if (encoding instanceof StringDataEncoding) {
-                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding) encoding));
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
                 // Don't set calibrator, already done when making ptype
                 ((EnumeratedArgumentType.Builder) atype).setEncoding(intStringEncoding);
                 intStringEncoding.setByteOrder(byteOrder);
@@ -2163,7 +2179,7 @@ public class V6Loader extends V6LoaderBase {
 
             Parameter para = (Parameter) nd;
             DataType.Builder ptype = parameterDataTypesBuilders.get(para);
-            
+
             if (ptype instanceof IntegerParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[idxValue]);
                 IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
@@ -2217,8 +2233,7 @@ public class V6Loader extends V6LoaderBase {
 
             // Set minviolations and alarmreporttype
             AlarmType alarm = null;
-            
-            
+
             if (ptype instanceof IntegerParameterType) {
                 IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptype;
                 alarm = (context == null) ? ipt.getDefaultAlarm() : ipt.getNumericContextAlarm(context);

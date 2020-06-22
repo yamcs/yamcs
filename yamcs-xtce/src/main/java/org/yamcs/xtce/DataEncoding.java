@@ -47,12 +47,40 @@ public abstract class DataEncoding implements Serializable {
 
     /**
      * copy constructor
+     * 
      * @param ide
      */
     DataEncoding(DataEncoding de) {
         this.sizeInBits = de.sizeInBits;
         this.byteOrder = de.byteOrder;
         this.fromBinaryTransformAlgorithm = de.fromBinaryTransformAlgorithm;
+    }
+
+    DataEncoding(Builder<?> builder, int defaultSizeInBits) {
+        this.sizeInBits = defaultSizeInBits;
+        
+        if (builder.sizeInBits != null) {
+            this.sizeInBits = builder.sizeInBits;
+        }
+        if (builder.byteOrder != null) {
+            this.byteOrder = builder.byteOrder;
+        }
+
+        this.fromBinaryTransformAlgorithm = builder.fromBinaryTransformAlgorithm;
+
+        if (builder.baseEncoding != null) {
+            DataEncoding baseEncoding = builder.baseEncoding;
+
+            if (builder.sizeInBits == null) {
+                this.sizeInBits = baseEncoding.sizeInBits;
+            }
+            if (builder.byteOrder == null) {
+                this.byteOrder = baseEncoding.byteOrder;
+            }
+            if (builder.fromBinaryTransformAlgorithm == null) {
+                this.fromBinaryTransformAlgorithm = baseEncoding.fromBinaryTransformAlgorithm;
+            }
+        }
     }
 
     /**
@@ -113,9 +141,56 @@ public abstract class DataEncoding implements Serializable {
     public Set<Parameter> getDependentParameters() {
         return Collections.emptySet();
     }
+
     /**
      * Create a shallow copy of the data encoding
+     * 
      * @return
      */
     public abstract DataEncoding copy();
+
+    public abstract static class Builder<T extends Builder<T>> {
+        protected Integer sizeInBits;
+        transient ByteOrder byteOrder = null;
+        private Algorithm fromBinaryTransformAlgorithm;
+        DataEncoding baseEncoding;
+
+        public Builder(DataEncoding encoding) {
+            this.sizeInBits = encoding.sizeInBits;
+            this.byteOrder = encoding.byteOrder;
+            this.fromBinaryTransformAlgorithm = encoding.fromBinaryTransformAlgorithm;
+        }
+
+        public Builder() {
+        }
+
+        public T setSizeInBits(Integer sizeInBits) {
+            this.sizeInBits = sizeInBits;
+            return self();
+        }
+
+        public T setFromBinaryTransformAlgorithm(Algorithm alg) {
+            this.fromBinaryTransformAlgorithm = alg;
+            return self();
+        }
+        
+        public T setByteOrder(ByteOrder byteOrder) {
+            this.byteOrder = byteOrder;
+            return self();
+        }
+
+        @SuppressWarnings("unchecked")
+        protected T self() {
+            return (T) this;
+        }
+
+        protected abstract DataEncoding build();
+
+        public Integer getSizeInBits() {
+            return sizeInBits;
+        }
+
+    }
+
+    public abstract Builder<?> toBuilder();
 }

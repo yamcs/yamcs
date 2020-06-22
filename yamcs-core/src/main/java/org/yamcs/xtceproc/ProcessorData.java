@@ -262,29 +262,27 @@ public class ProcessorData {
 
     public void clearParameterCalibratorOverrides(Parameter p) {
         modifyNumericTypeOverride(p, b -> {
-            b.setEncoding(p.getParameterType().getEncoding());
+            b.setEncoding(p.getParameterType().getEncoding().toBuilder());
         });
     }
 
     public void setDefaultCalibrator(Parameter p, Calibrator defaultCalibrator) {
         modifyNumericTypeOverride(p, b -> {
-            DataEncoding enc =b.getEncoding().copy();
-            ((NumericDataEncoding) enc).setDefaultCalibrator(defaultCalibrator);
-            b.setEncoding(enc);
+            DataEncoding.Builder<?> enc = b.getEncoding();
+            ((NumericDataEncoding.Builder<?>) enc).setDefaultCalibrator(defaultCalibrator);
         });
     }
 
     public void setContextCalibratorList(Parameter p, List<ContextCalibrator> contextCalibrator) {
         modifyNumericTypeOverride(p, b -> {
-            DataEncoding enc =b.getEncoding().copy();
-            ((NumericDataEncoding) enc).setContextCalibratorList(contextCalibrator);
-            b.setEncoding(enc);
+            DataEncoding.Builder<?> enc = b.getEncoding();
+            ((NumericDataEncoding.Builder<?>) enc).setContextCalibratorList(contextCalibrator);
         });
     }
 
     private void modifyNumericTypeOverride(Parameter p, Consumer<NumericParameterType.Builder<?>> c) {
         NumericParameterType ptype = (NumericParameterType) typeOverrides.get(p);
-        
+
         if (ptype == null) {
             if (!(p.getParameterType() instanceof NumericParameterType)) {
                 throw new IllegalArgumentException("'" + p.getParameterType().getName() + "' is a non numeric type");
@@ -298,7 +296,7 @@ public class ProcessorData {
 
     private void modifyEnumeratedTypeOverride(Parameter p, Consumer<EnumeratedParameterType.Builder> c) {
         EnumeratedParameterType ptype = (EnumeratedParameterType) typeOverrides.get(p);
-        
+
         if (ptype == null) {
             if (!(p.getParameterType() instanceof EnumeratedParameterType)) {
                 throw new IllegalArgumentException("'" + p.getParameterType().getName() + "' is a non enumerated type");
@@ -315,14 +313,14 @@ public class ProcessorData {
         if (ptype == null) {
             return;
         }
-        
+
         if (ptype instanceof NumericParameterType) {
             NumericParameterType mdbType = (NumericParameterType) p.getParameterType();
-            NumericParameterType.Builder<?> builder = ((NumericParameterType)ptype).toBuilder();
-            
+            NumericParameterType.Builder<?> builder = ((NumericParameterType) ptype).toBuilder();
+
             builder.setDefaultAlarm(mdbType.getDefaultAlarm());
             typeOverrides.put(p, builder.build());
-            
+
         } else if (ptype instanceof EnumeratedParameterType) {
             EnumeratedParameterType mdbType = (EnumeratedParameterType) p.getParameterType();
             EnumeratedParameterType.Builder builder = ((EnumeratedParameterType) ptype).toBuilder();
@@ -345,12 +343,10 @@ public class ProcessorData {
         modifyNumericTypeOverride(p, b -> b.setDefaultAlarm(alarm));
     }
 
-  
     public void setNumericContextAlarm(Parameter p, List<NumericContextAlarm> contextAlarmList) {
         modifyNumericTypeOverride(p, b -> b.setContextAlarmList(contextAlarmList));
     }
-    
-    
+
     public void setDefaultEnumerationAlarm(Parameter p, EnumerationAlarm alarm) {
         modifyEnumeratedTypeOverride(p, b -> b.setDefaultAlarm(alarm));
     }

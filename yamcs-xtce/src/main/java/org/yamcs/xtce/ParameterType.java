@@ -53,7 +53,7 @@ public interface ParameterType extends DataType {
     <T extends ParameterType> Builder<?> toBuilder();
         
      interface Builder<T extends Builder<T>> extends DataType.Builder<T> {
-         T setEncoding(DataEncoding dataEncoding);
+         T setEncoding(DataEncoding.Builder<?> dataEncoding);
          public ParameterType build();
      }
 }

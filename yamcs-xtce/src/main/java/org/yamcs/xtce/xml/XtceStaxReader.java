@@ -972,7 +972,7 @@ public class XtceStaxReader {
             ptype.setScaling(offset, scale);
         }
 
-        DataEncoding dataEncoding = null;
+        DataEncoding.Builder<?> dataEncoding = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
@@ -1017,8 +1017,8 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_UNIT_SET)) {
-                typeBuilder.addAllUnits(readUnitSet());
+            if (readBaseTypeProperties(typeBuilder)) {
+                continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
@@ -1037,18 +1037,20 @@ public class XtceStaxReader {
         }
     }
 
-    private FloatDataEncoding readFloatDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
+    private FloatDataEncoding.Builder readFloatDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_FLOAT_DATA_ENCODING);
-        checkStartElementPreconditions();
+        StartElement element = checkStartElementPreconditions();
 
-        FloatDataEncoding floatDataEncoding = null;
+        FloatDataEncoding.Builder floatDataEncoding = null;
 
-        // sizeInBits attribute
-        int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 32);
+        Integer sizeInBits = null;
+        if (hasAttribute("sizeInBits", element)) {
+            sizeInBits = readIntAttribute("sizeInBits", element);
+        }
         ByteOrder byteOrder = readByteOrder();
         // encoding attribute
-        String value = readAttribute("encoding", xmlEvent.asStartElement(), null);
-        Encoding enc = Encoding.IEEE754_1985;
+        String value = readAttribute("encoding", element, null);
+        Encoding enc = null;
         if (value != null) {
             if ("IEEE754_1985".equalsIgnoreCase(value)) {
                 // ok, this encoding is the default
@@ -1058,7 +1060,10 @@ public class XtceStaxReader {
                 throwException("Unknown encoding '" + value + "'");
             }
         }
-        floatDataEncoding = new FloatDataEncoding(sizeInBits, byteOrder, enc);
+        floatDataEncoding = new FloatDataEncoding.Builder()
+                .setSizeInBits(sizeInBits)
+                .setByteOrder(byteOrder)
+                .setFloatEncoding(enc);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1266,12 +1271,12 @@ public class XtceStaxReader {
         }
     }
 
-    private BinaryDataEncoding readBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
+    private BinaryDataEncoding.Builder readBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_BINARY_DATA_ENCODING);
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
 
-        BinaryDataEncoding binaryDataEncoding = null;
+        BinaryDataEncoding.Builder binaryDataEncoding = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1279,7 +1284,8 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 IntegerValue v = readIntegerValue(spaceSystem);
                 if (v instanceof FixedIntegerValue) {
-                    binaryDataEncoding = new BinaryDataEncoding((int) ((FixedIntegerValue) v).getValue());
+                    binaryDataEncoding = new BinaryDataEncoding.Builder()
+                            .setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -1352,10 +1358,10 @@ public class XtceStaxReader {
         }
     }
 
-    private StringDataEncoding readStringDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
+    private StringDataEncoding.Builder readStringDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
         checkStartElementPreconditions();
 
-        StringDataEncoding stringDataEncoding = new StringDataEncoding();
+        StringDataEncoding.Builder stringDataEncoding = new StringDataEncoding.Builder();
         String encoding = readAttribute("encoding", xmlEvent.asStartElement(), null);
         if (encoding != null) {
             stringDataEncoding.setEncoding(encoding);
@@ -1375,9 +1381,10 @@ public class XtceStaxReader {
         }
     }
 
-    private void readStringSizeInBits(SpaceSystem spaceSystem, StringDataEncoding stringDataEncoding)
+    private void readStringSizeInBits(SpaceSystem spaceSystem, StringDataEncoding.Builder stringDataEncoding)
             throws XMLStreamException {
         checkStartElementPreconditions();
+        
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_FIXED)) {
@@ -1463,26 +1470,30 @@ public class XtceStaxReader {
         }
     }
 
-    private IntegerDataEncoding readIntegerDataEncoding(SpaceSystem spaceSystem) throws IllegalStateException,
+    private IntegerDataEncoding.Builder readIntegerDataEncoding(SpaceSystem spaceSystem) throws IllegalStateException,
             XMLStreamException {
         log.trace(XTCE_INTEGER_DATA_ENCODING);
-        checkStartElementPreconditions();
+        StartElement element = checkStartElementPreconditions();
 
-        IntegerDataEncoding integerDataEncoding = null;
+        IntegerDataEncoding.Builder integerDataEncoding = null;
 
-        // sizeInBits attribute
-        int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 8);
-        if (sizeInBits < 0 || sizeInBits > 64) {
-            throw new XMLStreamException(
-                    "Invalid sizeInBits " + sizeInBits
-                            + " specified for integer data encoding. Supported are between 0 and 64.",
-                    xmlEvent.getLocation());
+        Integer sizeInBits = null;
+        if (hasAttribute("sizeInBits", element)) {
+            sizeInBits = readIntAttribute("sizeInBits", element);
+            if (sizeInBits < 0 || sizeInBits > 64) {
+                throw new XMLStreamException(
+                        "Invalid sizeInBits " + sizeInBits
+                                + " specified for integer data encoding. Supported are between 0 and 64.",
+                        xmlEvent.getLocation());
+            }
         }
         ByteOrder byteOrder = readByteOrder();
-        integerDataEncoding = new IntegerDataEncoding(sizeInBits, byteOrder);
+        integerDataEncoding = new IntegerDataEncoding.Builder()
+                .setSizeInBits(sizeInBits)
+                .setByteOrder(byteOrder);
 
         // encoding attribute
-        String value = readAttribute("encoding", xmlEvent.asStartElement(), null);
+        String value = readAttribute("encoding", element, null);
         if (value != null) {
             if ("unsigned".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.UNSIGNED);
@@ -1498,9 +1509,6 @@ public class XtceStaxReader {
             } else {
                 throwException("Unsupported encoding '" + value + "'");
             }
-        } else {
-            // default is unsigned
-            integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.UNSIGNED);
         }
 
         while (true) {
@@ -1519,7 +1527,11 @@ public class XtceStaxReader {
     }
 
     private ByteOrder readByteOrder() throws XMLStreamException {
-        String byteOrderStr = readAttribute("byteOrder", xmlEvent.asStartElement(), "mostSignificantByteFirst");
+        String byteOrderStr = readAttribute("byteOrder", xmlEvent.asStartElement(), null);
+        if (byteOrderStr == null) {
+            return null;
+        }
+
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
         if ("mostSignificantByteFirst".equals(byteOrderStr)) {
             byteOrder = ByteOrder.BIG_ENDIAN;
@@ -2359,7 +2371,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 seqContainer.setRateInStream(readRateInStream(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
-                BinaryDataEncoding bde = readBinaryDataEncoding(spaceSystem);
+                BinaryDataEncoding.Builder bde = readBinaryDataEncoding(spaceSystem);
                 seqContainer.setSizeInBits(bde.getSizeInBits());
             } else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 return seqContainer;
@@ -3496,7 +3508,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 cmdContainer.setRateInStream(readRateInStream(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
-                BinaryDataEncoding bde = readBinaryDataEncoding(spaceSystem);
+                BinaryDataEncoding.Builder bde = readBinaryDataEncoding(spaceSystem);
                 cmdContainer.setSizeInBits(bde.getSizeInBits());
             } else if (isEndElementWithName(XTCE_COMMAND_CONTAINER)) {
                 return cmdContainer;

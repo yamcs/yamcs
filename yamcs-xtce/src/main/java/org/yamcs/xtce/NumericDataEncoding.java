@@ -12,4 +12,10 @@ public interface NumericDataEncoding {
     public Calibrator getDefaultCalibrator();
     public void setDefaultCalibrator(Calibrator calibrator);
     public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList);
+    
+    public static interface Builder<T extends Builder<T>> {
+        T setDefaultCalibrator(Calibrator defaultCalibrator);
+        T setContextCalibratorList(List<ContextCalibrator> contextCalibrator);
+        
+    }
 }

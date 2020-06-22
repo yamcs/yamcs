@@ -60,7 +60,7 @@ public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
         }
         
         @Override
-        public Builder setEncoding(DataEncoding dataEncoding) {
+        public Builder setEncoding(DataEncoding.Builder<?> dataEncoding) {
             throw new UnsupportedOperationException("array arguments do not support encodings");
         }
     }

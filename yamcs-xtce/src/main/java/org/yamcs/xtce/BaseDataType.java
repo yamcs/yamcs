@@ -22,7 +22,9 @@ public abstract class BaseDataType extends NameDescription implements DataType {
     BaseDataType(Builder<?> builder) {
         super(builder);
         this.unitSet = builder.unitSet;
-        this.encoding = builder.encoding;
+        if (builder.encoding != null) {
+            this.encoding = builder.encoding.build();
+        }
 
         if (builder.baseType != null) {
             BaseDataType baseType = builder.baseType;
@@ -84,7 +86,7 @@ public abstract class BaseDataType extends NameDescription implements DataType {
     public abstract static class Builder<T extends Builder<T>> extends NameDescription.Builder<T>
             implements DataType.Builder<T> {
         List<UnitType> unitSet = new ArrayList<>();
-        private DataEncoding encoding;
+        private DataEncoding.Builder<?> encoding;
         protected Object initialValue;
         protected BaseDataType baseType;
 
@@ -94,7 +96,7 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         public Builder(BaseDataType baseType) {
             super(baseType);
             this.unitSet = baseType.unitSet;
-            this.encoding = baseType.encoding;
+            this.encoding = baseType.encoding.toBuilder();
             this.initialValue = baseType.getInitialValue();
         }
 
@@ -108,8 +110,11 @@ public abstract class BaseDataType extends NameDescription implements DataType {
             return self();
         }
 
-        public T setEncoding(DataEncoding dataEncoding) {
+        public T setEncoding(DataEncoding.Builder<?> dataEncoding) {
             this.encoding = dataEncoding;
+            if (baseType != null) {
+                encoding.baseEncoding = baseType.encoding;
+            }
             return self();
         }
 
@@ -123,12 +128,15 @@ public abstract class BaseDataType extends NameDescription implements DataType {
             return self();
         }
 
-        public DataEncoding getEncoding() {
+        public DataEncoding.Builder<?> getEncoding() {
             return encoding;
         }
 
         public void setBaseType(BaseDataType type) {
             this.baseType = type;
+            if (encoding != null) {
+                encoding.baseEncoding = type.encoding;
+            }
         }
     }
 }

@@ -245,7 +245,6 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         public void setDefaultAlarm(NumericAlarm defaultAlarm) {
             this.defaultAlarm = defaultAlarm;
         }
-
     }
 
 }

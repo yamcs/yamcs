@@ -524,15 +524,15 @@ public class V7Loader extends V7LoaderBase {
             ((BaseDataType.Builder<?>) dtypeb).addUnit(unitType);
         }
 
-        DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Data type " + name, rawtype,
+        DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Data type " + name, rawtype,
                 engtype, encodings, calib);
 
         if (dtypeb instanceof IntegerDataType.Builder) {
             // Integers can be encoded as strings
-            if (encoding instanceof StringDataEncoding) {
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new int encoding which uses the configured string encoding
-                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name,
-                        ((StringDataEncoding) encoding));
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -547,9 +547,10 @@ public class V7Loader extends V7LoaderBase {
             }
         } else if (dtypeb instanceof FloatDataType.Builder<?>) {
             // Floats can be encoded as strings
-            if (encoding instanceof StringDataEncoding) {
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new float encoding which uses the configured string encoding
-                FloatDataEncoding floatStringEncoding = new FloatDataEncoding(((StringDataEncoding) encoding));
+                FloatDataEncoding.Builder floatStringEncoding = new FloatDataEncoding.Builder().setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -566,9 +567,9 @@ public class V7Loader extends V7LoaderBase {
         } else if (dtypeb instanceof EnumeratedDataType.Builder) {
             EnumeratedDataType.Builder<?> edtype = (EnumeratedDataType.Builder<?>) dtypeb;
             // Enumerations encoded as string integers
-            if (encoding instanceof StringDataEncoding) {
-                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name,
-                        ((StringDataEncoding) encoding));
+            if (encoding instanceof StringDataEncoding.Builder) {
+                StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
                 // Don't set calibrator, already done when making ptype
                 ((BaseDataType.Builder<?>) dtypeb).setEncoding(intStringEncoding);
             } else {
@@ -845,7 +846,7 @@ public class V7Loader extends V7LoaderBase {
 
     }
 
-    DataEncoding getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, String paraArgDescr,
+    DataEncoding.Builder<?> getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, String paraArgDescr,
             String rawtype, String engtype, String encodings, String calib) {
 
         if ((rawtype == null) || rawtype.isEmpty()) {
@@ -904,10 +905,10 @@ public class V7Loader extends V7LoaderBase {
                 return true;
             });
         }
-        DataEncoding encoding = null;
+        DataEncoding.Builder<?> encoding = null;
         if (PARAM_RAWTYPE_INT.equalsIgnoreCase(rawtype) || PARAM_RAWTYPE_UINT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                IntegerDataEncoding e = new IntegerDataEncoding(customBitLength);
+                IntegerDataEncoding.Builder e = new IntegerDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
                     return true;
@@ -918,21 +919,21 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Size in bits mandatory for int encoding.");
                 }
                 int bitlength = parseInt(encodingArgs[0]);
-                encoding = new IntegerDataEncoding(bitlength);
-                ((IntegerDataEncoding) encoding).setEncoding(getIntegerEncoding(ctx, encodingType));
+                encoding = new IntegerDataEncoding.Builder().setSizeInBits(bitlength);
+                ((IntegerDataEncoding.Builder) encoding).setEncoding(getIntegerEncoding(ctx, encodingType));
                 if (encodingArgs.length > 1) {
-                    ((IntegerDataEncoding) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
+                    ((IntegerDataEncoding.Builder) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
             }
 
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((IntegerDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
-                ((IntegerDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
+                ((IntegerDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
+                ((IntegerDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                FloatDataEncoding e = new FloatDataEncoding(customBitLength);
+                FloatDataEncoding.Builder e = new FloatDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
                     return true;
@@ -947,16 +948,18 @@ public class V7Loader extends V7LoaderBase {
                 if (encodingArgs.length > 1) {
                     byteOrder = getByteOrder(ctx, encodingArgs[1]);
                 }
-                encoding = new FloatDataEncoding(bitlength, byteOrder, getFloatEncoding(ctx, encodingType));
+                encoding = new FloatDataEncoding.Builder().setSizeInBits(bitlength)
+                        .setByteOrder(byteOrder)
+                        .setFloatEncoding(getFloatEncoding(ctx, encodingType));
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((FloatDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
-                ((FloatDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
+                ((FloatDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
+                ((FloatDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                BooleanDataEncoding e = new BooleanDataEncoding();
+                BooleanDataEncoding.Builder e = new BooleanDataEncoding.Builder();
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -968,7 +971,7 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encoding is not allowed for boolean parameters. Use any other raw type if you want to specify the bitlength");
                 }
-                encoding = new BooleanDataEncoding();
+                encoding = new BooleanDataEncoding.Builder();
             }
         } else if (PARAM_RAWTYPE_STRING.equalsIgnoreCase(rawtype)) {
             String charset = "UTF-8";
@@ -983,7 +986,7 @@ public class V7Loader extends V7LoaderBase {
                 }
             }
             if (customFromBinaryTransform != null) {
-                StringDataEncoding e = new StringDataEncoding(SizeType.CUSTOM);
+                StringDataEncoding.Builder e = new StringDataEncoding.Builder().setSizeType(SizeType.CUSTOM);
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -994,7 +997,7 @@ public class V7Loader extends V7LoaderBase {
                 if (encodingArgs.length == 0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for fixed strings need to specify size in bits");
                 }
-                encoding = new StringDataEncoding(SizeType.FIXED);
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.FIXED);
                 int bitlength = parseInt(encodingArgs[0]);
                 encoding.setSizeInBits(bitlength);
             } else if ("terminated".equalsIgnoreCase(encodingType)) {
@@ -1002,8 +1005,8 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for terminated strings need to specify termination char");
                 }
-                encoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
-                ((StringDataEncoding) encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
+                ((StringDataEncoding.Builder) encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(encodingArgs[2]));
                 }
@@ -1012,8 +1015,8 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for PrependedSize strings need to specify the size in bits of the size tag.");
                 }
-                encoding = new StringDataEncoding(SizeType.LEADING_SIZE);
-                ((StringDataEncoding) encoding).setSizeInBitsOfSizeTag(parseInt(encodingArgs[0]));
+                encoding = new StringDataEncoding.Builder().setSizeType(SizeType.LEADING_SIZE);
+                ((StringDataEncoding.Builder) encoding).setSizeInBitsOfSizeTag(parseInt(encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(encodingArgs[2]));
                 }
@@ -1021,10 +1024,10 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type " + encodingType
                         + " Use one of 'fixed', 'terminated', 'PrependedSize' or 'custom'");
             }
-            ((StringDataEncoding) encoding).setEncoding(charset);
+            ((StringDataEncoding.Builder) encoding).setEncoding(charset);
         } else if (PARAM_RAWTYPE_BINARY.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
-                BinaryDataEncoding e = new BinaryDataEncoding(BinaryDataEncoding.Type.CUSTOM);
+                BinaryDataEncoding.Builder e = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.CUSTOM);
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
@@ -1035,7 +1038,7 @@ public class V7Loader extends V7LoaderBase {
                 if (encodingArgs.length == 0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for fixed strings need to specify size in bits");
                 }
-                encoding = new BinaryDataEncoding(BinaryDataEncoding.Type.FIXED_SIZE);
+                encoding = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.FIXED_SIZE);
                 int bitlength = parseInt(encodingArgs[0]);
                 encoding.setSizeInBits(bitlength);
             } else if ("PrependedSize".equalsIgnoreCase(encodingType)) {
@@ -1043,8 +1046,8 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx,
                             "Encodings for PrependedSize strings need to specify the size in bits of the size tag.");
                 }
-                encoding = new BinaryDataEncoding(BinaryDataEncoding.Type.LEADING_SIZE);
-                ((BinaryDataEncoding) encoding).setSizeInBitsOfSizeTag(parseInt(encodingArgs[0]));
+                encoding = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.LEADING_SIZE);
+                ((BinaryDataEncoding.Builder) encoding).setSizeInBitsOfSizeTag(parseInt(encodingArgs[0]));
             } else {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type " + encodingType
                         + " Use one of 'fixed', 'PrependedSize' or 'custom'");

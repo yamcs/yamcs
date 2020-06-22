@@ -71,7 +71,7 @@ public class TseLoader implements SpaceSystemLoader {
 
         Argument typeArgument = new Argument("type");
         IntegerArgumentType.Builder typeArgumentTypeBuilder = new IntegerArgumentType.Builder().setName("type");
-        IntegerDataEncoding typeArgumentEncoding = new IntegerDataEncoding(8);
+        IntegerDataEncoding.Builder typeArgumentEncoding = new IntegerDataEncoding.Builder().setSizeInBits(8);
         typeArgumentTypeBuilder.setEncoding(typeArgumentEncoding);
         typeArgumentTypeBuilder.setSizeInBits(8);
         typeArgumentTypeBuilder.setSigned(false);
@@ -84,7 +84,7 @@ public class TseLoader implements SpaceSystemLoader {
 
         Argument commandArgument = new Argument("command");
         StringArgumentType.Builder commandArgumentType = new StringArgumentType.Builder().setName("command");
-        StringDataEncoding commandArgumentEncoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
+        StringDataEncoding.Builder commandArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
         commandArgumentEncoding.setTerminationChar((byte) 0x00);
         commandArgumentType.setEncoding(commandArgumentEncoding);
         commandArgument.setArgumentType(commandArgumentType.build());
@@ -120,7 +120,7 @@ public class TseLoader implements SpaceSystemLoader {
 
         Argument responseArgument = new Argument("response");
         StringArgumentType.Builder responseArgumentType = new StringArgumentType.Builder().setName("response");
-        StringDataEncoding responseArgumentEncoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
+        StringDataEncoding.Builder responseArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
         responseArgumentEncoding.setTerminationChar((byte) 0x00);
         responseArgumentType.setEncoding(responseArgumentEncoding);
         responseArgument.setArgumentType(responseArgumentType.build());

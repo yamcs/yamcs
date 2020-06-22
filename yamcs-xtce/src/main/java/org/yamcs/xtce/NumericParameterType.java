@@ -22,9 +22,9 @@ public interface NumericParameterType extends ParameterType {
          */
         public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList);
 
-        public DataEncoding getEncoding();
+        public DataEncoding.Builder<?> getEncoding();
 
-        public T setEncoding(DataEncoding enc);
+        public T setEncoding(DataEncoding.Builder<?> enc);
 
         public NumericParameterType build();
     }

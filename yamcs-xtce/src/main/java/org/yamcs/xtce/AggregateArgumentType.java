@@ -42,7 +42,7 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
             return new AggregateArgumentType(this);
         }
         @Override
-        public Builder setEncoding(DataEncoding dataEncoding) {
+        public Builder setEncoding(DataEncoding.Builder<?> dataEncoding) {
             throw new UnsupportedOperationException("aggregate arguments do not support encodings");
         }
     }

@@ -29,40 +29,49 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
     Encoding encoding = Encoding.UNSIGNED;
     StringDataEncoding stringEncoding = null;
 
-    /**
-     * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#UNSIGNED}
-     * 
-     * @param sizeInBits
-     * @param byteOrder
-     */
-    public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
-        super(sizeInBits, byteOrder);
-        if (sizeInBits < -1 || sizeInBits > 64) {
-            throw new IllegalArgumentException("Invalid size in bits " + sizeInBits + "; should be between -1 and 64 (-1 can be used for custom encoders)");
+    
+    public IntegerDataEncoding(Builder builder) {
+        super(builder, 8);
+        
+        if(builder.encoding != null) {
+            this.encoding = builder.encoding;
         }
-    }
-
-    public IntegerDataEncoding(int sizeInBits) {
-        this(sizeInBits, ByteOrder.BIG_ENDIAN);
-    }
-
-    /**
-     * Integer data encoded as a string.
-     * 
-     * @param name
-     * @param sde
-     *            describes how the string is encoded.
-     */
-    public IntegerDataEncoding(String name, StringDataEncoding sde) {
-        this(sde.getSizeInBits());
-        encoding = Encoding.STRING;
-        stringEncoding = sde;
+        
+        
+        this.defaultCalibrator = builder.defaultCalibrator;
+        this.contextCalibratorList = builder.contextCalibratorList;
+        
+        
+        this.stringEncoding = builder.stringEncoding;
+        
+        if(builder.baseEncoding != null && builder.baseEncoding instanceof IntegerDataEncoding) {
+            IntegerDataEncoding baseEncoding = (IntegerDataEncoding )builder.baseEncoding;
+            if(builder.defaultCalibrator == null) {
+                this.defaultCalibrator = baseEncoding.defaultCalibrator;
+            }
+            
+            if(builder.contextCalibratorList == null) {
+                this.contextCalibratorList = baseEncoding.contextCalibratorList;
+            }  
+            
+            if(builder.encoding == null) {
+                this.encoding = baseEncoding.encoding;
+            }
+            
+            if(builder.stringEncoding == null) {
+                this.stringEncoding = baseEncoding.stringEncoding;
+            }
+        }
     }
 
     public IntegerDataEncoding(IntegerDataEncoding ide) {
         super(ide);
     }
 
+    public Builder toBuilder() {
+        return new Builder(this);
+    }
+    
     public Encoding getEncoding() {
         return encoding;
     }
@@ -142,4 +151,47 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         return new IntegerDataEncoding(this);
     }
 
+    
+    public static class Builder extends DataEncoding.Builder<Builder> implements NumericDataEncoding.Builder<Builder> {
+        Calibrator defaultCalibrator = null;
+        private List<ContextCalibrator> contextCalibratorList = null;
+        Encoding encoding = null;
+        StringDataEncoding stringEncoding = null;
+        
+        public Builder(IntegerDataEncoding encoding) {
+            super(encoding);
+            this.defaultCalibrator = encoding.defaultCalibrator;
+            this.contextCalibratorList = encoding.contextCalibratorList;
+            this.encoding = encoding.encoding;
+            this.stringEncoding = encoding.stringEncoding;
+        }
+        public Builder() {
+            super();
+        }
+        
+        public IntegerDataEncoding build() {
+            return new IntegerDataEncoding(this);
+        }
+        public Builder setStringEncoding(StringDataEncoding stringEncoding) {
+            this.stringEncoding = stringEncoding;
+            return self();
+        }
+        public Builder setDefaultCalibrator(Calibrator defaultCalibrator) {
+            this.defaultCalibrator = defaultCalibrator;
+            return self();
+        }
+        public Builder setEncoding(Encoding enc) {
+            this.encoding = enc;
+            return self();
+        }
+        
+        public Builder setByteOrder(ByteOrder byteOrder) {
+            this.byteOrder = byteOrder;
+            return self();
+        }
+        public Builder setContextCalibratorList(List<ContextCalibrator> list) {
+            this.contextCalibratorList = list;
+            return self(); 
+        }
+    }
 }
