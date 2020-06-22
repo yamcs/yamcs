@@ -78,7 +78,7 @@ public class FileSystemBucketDatabase implements BucketDatabase {
      */
     public FileSystemBucket registerBucket(String bucketName, Path location) throws IOException {
         if (!location.toFile().exists()) {
-            throw new FileNotFoundException("Directory '" + location + "' not found");
+            throw new FileNotFoundException("Directory '" + location + "'("+location.toAbsolutePath()+") not found");
         } else if (!location.toFile().isDirectory()) {
             throw new IOException("Not a directory '" + location + "'");
         }
