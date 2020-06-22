@@ -4,11 +4,11 @@ services:
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
-#  - class: org.yamcs.archive.CcsdsTmIndex
-#    args:
-#      streams:
-#        - tm_realtime
-#        - tm_dump
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+        - tm_dump
   - class: org.yamcs.parameter.SystemParametersCollector
     args:
       provideJvmVariables: true
@@ -41,15 +41,6 @@ services:
         numPackets: 0 
         packetSize: 1476 #length of the performance testing packets
         interval: 10
-  - class: org.yamcs.cfdp.CfdpService
-    args:
-     sourceId: 5
-     destinationId: 24
-     sequenceNrLength: 4
-     maxPduSize: 512
-     incomingBucket: "cfdpDown"
-     eofAckTimeout: 3000
-     maxEofResendAttempts: 5 
 
 dataLinks:
   - name: tm_realtime
@@ -101,7 +92,7 @@ dataLinks:
     initialDelay: 2000
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
-    stream: tc_sim2
+    stream: tc_sim
     host: localhost
     port: 10025
     # Give the embedded simulator smoe time to boot up
@@ -152,5 +143,5 @@ streamConfig:
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime", "tc_sim2"]
+  tc: ["tc_realtime"]
   sqlFile: "etc/extra_streams.sql"

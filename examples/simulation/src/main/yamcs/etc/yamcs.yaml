@@ -25,8 +25,6 @@ yamcs-web:
   tag: DEMO
   displayPath: displays
   stackPath: stacks
-  features:
-    cfdp: true
 
   # Hook the webapp sources directly to the output of npm. This
   # allows running npm in watch mode without restarting Yamcs.
