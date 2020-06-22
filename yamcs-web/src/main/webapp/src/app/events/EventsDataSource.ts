@@ -96,7 +96,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     }
     this.loadPage({
       ...options,
-      stop: this.offscreenRecord.generationTimeUTC,
+      stop: this.offscreenRecord.generationTime,
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(events => {
       this.eventBuffer.addArchiveData(events);

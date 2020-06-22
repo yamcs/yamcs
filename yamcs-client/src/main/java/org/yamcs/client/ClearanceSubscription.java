@@ -1,7 +1,7 @@
 package org.yamcs.client;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.ClearanceInfo;
 
 import com.google.protobuf.Empty;
@@ -13,8 +13,8 @@ public class ClearanceSubscription extends AbstractSubscription<Empty, Clearance
 
     private volatile ClearanceInfo latest;
 
-    protected ClearanceSubscription(WebSocketClient client) {
-        super(client, "clearance", ClearanceInfo.class);
+    protected ClearanceSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "clearance", ClearanceInfo.class);
         addMessageListener(this::processMessage);
     }
 

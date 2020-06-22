@@ -16,8 +16,13 @@ import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import io.netty.handler.codec.http.multipart.HttpPostMultipartRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 
 /**
  * Converts HTTP requests to Protobuf messages used in API definitions.
@@ -29,6 +34,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 public class HttpTranscoder {
 
     private static final Log log = new Log(HttpTranscoder.class);
+    private static final int MAX_METADATA_SIZE = 16 * 1024;
 
     public static Message transcode(RouteContext ctx) throws HttpTranscodeException {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.getURI());
@@ -71,20 +77,75 @@ public class HttpTranscoder {
         return requestb.build();
     }
 
-    private static HttpBody toHttpBody(RouteContext ctx) {
-        String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
+    private static HttpBody toHttpBody(RouteContext ctx) throws HttpTranscodeException {
+        String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+
+        if (contentType.startsWith("multipart/form-data")) {
+            return readMultipartFormData(ctx);
+        } else if (contentType.startsWith("multipart/related")) {
+            throw new HttpTranscodeException("Uploads of type multipart/related are not yet supported");
+        } else {
+            HttpBody.Builder bodyb = HttpBody.newBuilder();
+            if (contentType != null) {
+                bodyb.setContentType(contentType);
+            }
+            if (ctx.hasBody()) {
+                try (InputStream bufOut = ctx.getBodyAsInputStream()) {
+                    ByteString data = ByteString.readFrom(bufOut);
+                    bodyb.setData(data);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            return bodyb.build();
+        }
+    }
+
+    private static HttpBody readMultipartFormData(RouteContext ctx) throws HttpTranscodeException {
+        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(ctx.fullNettyRequest);
 
         HttpBody.Builder bodyb = HttpBody.newBuilder();
-        if (contentType != null) {
-            bodyb.setContentType(contentType);
-        }
-        if (ctx.hasBody()) {
-            try (InputStream bufOut = ctx.getBodyAsInputStream()) {
-                ByteString data = ByteString.readFrom(bufOut);
-                bodyb.setData(data);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        FileUpload fup = null;
+
+        int metadataSize = 0;
+        for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
+            if (data instanceof FileUpload) {
+                if (fup != null) {
+                    throw new HttpTranscodeException("Only one file upload is allowed in multipart/form data");
+                }
+                fup = (FileUpload) data;
+            } else if (data instanceof Attribute) {
+                Attribute att = (Attribute) data;
+                try {
+                    String name = att.getName();
+                    String value = att.getValue();
+                    metadataSize += (name.length() + value.length());
+                    bodyb.putMetadata(name, value);
+                } catch (IOException e) { // shouldn't happen for MemoryAttribute
+                    log.warn("Error while reading form/data attribute value", e);
+                    throw new HttpTranscodeException("error reading attribute value");
+                }
             }
+        }
+        if (metadataSize > MAX_METADATA_SIZE) {
+            throw new BadRequestException("Metadata size " + metadataSize
+                    + " bytes exceeds maximum allowed " + MAX_METADATA_SIZE);
+        }
+        if (fup == null) {
+            throw new HttpTranscodeException("No file upload was found in multipart/form data");
+        }
+
+        try (InputStream bufOut = new ByteBufInputStream(fup.content())) {
+            ByteString data = ByteString.readFrom(bufOut);
+            bodyb.setData(data);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        if (fup.getContentType() != null) {
+            bodyb.setContentType(fup.getContentType());
+        }
+        if (fup.getFilename() != null) {
+            bodyb.setFilename(fup.getFilename());
         }
         return bodyb.build();
     }

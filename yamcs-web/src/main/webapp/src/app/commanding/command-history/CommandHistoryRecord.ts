@@ -1,4 +1,4 @@
-import { CommandAssignment, CommandHistoryEntry, CommandId } from '../../client';
+import { CommandAssignment, CommandHistoryEntry } from '../../client';
 import * as utils from '../../shared/utils';
 import { Acknowledgment } from './Acknowledgment';
 
@@ -6,7 +6,7 @@ export class CommandHistoryRecord {
 
   private entry: CommandHistoryEntry;
 
-  commandId: CommandId;
+  id: string;
 
   generationTime: string;
   origin: string;
@@ -40,11 +40,11 @@ export class CommandHistoryRecord {
 
   constructor(entry: CommandHistoryEntry) {
     this.entry = entry;
-    this.commandId = entry.commandId;
-    this.generationTime = entry.generationTimeUTC;
-    this.origin = entry.commandId.origin;
-    this.sequenceNumber = entry.commandId.sequenceNumber;
-    this.commandName = entry.commandId.commandName;
+    this.id = entry.id;
+    this.generationTime = entry.generationTime;
+    this.origin = entry.origin;
+    this.sequenceNumber = entry.sequenceNumber;
+    this.commandName = entry.commandName;
 
     for (const assignment of (entry.assignment || [])) {
       this.assignments.push(assignment);
@@ -93,10 +93,6 @@ export class CommandHistoryRecord {
         this.extraAcks.push(ack);
       }
     }
-  }
-
-  getId() {
-    return utils.printCommandId(this.commandId);
   }
 
   mergeEntry(entry: CommandHistoryEntry): CommandHistoryRecord {

@@ -48,7 +48,7 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
   private defaultColumns = [
     'severity',
     'name',
-    'generationTimeUTC',
+    'generationTime',
     'rawValue',
     'engValue',
     'acquisitionStatus',

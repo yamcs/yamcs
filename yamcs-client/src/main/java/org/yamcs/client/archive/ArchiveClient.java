@@ -5,9 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
+import org.yamcs.client.Command;
 import org.yamcs.client.Helpers;
 import org.yamcs.client.Page;
 import org.yamcs.client.StreamReceiver;
@@ -404,11 +406,11 @@ public class ArchiveClient {
         return f;
     }
 
-    public CompletableFuture<Page<CommandHistoryEntry>> listCommands() {
+    public CompletableFuture<Page<Command>> listCommands() {
         return listCommands(null, null);
     }
 
-    public CompletableFuture<Page<CommandHistoryEntry>> listCommands(Instant start, Instant stop) {
+    public CompletableFuture<Page<Command>> listCommands(Instant start, Instant stop) {
         ListCommandsRequest.Builder requestb = ListCommandsRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -420,7 +422,7 @@ public class ArchiveClient {
         return new CommandPage(requestb.build()).future();
     }
 
-    public CompletableFuture<Void> streamCommands(StreamReceiver<CommandHistoryEntry> consumer, Instant start,
+    public CompletableFuture<Void> streamCommands(StreamReceiver<Command> consumer, Instant start,
             Instant stop) {
         StreamCommandsRequest.Builder requestb = StreamCommandsRequest.newBuilder()
                 .setInstance(instance);
@@ -435,7 +437,10 @@ public class ArchiveClient {
 
             @Override
             public void next(CommandHistoryEntry message) {
-                consumer.accept(message);
+                Command command = new Command(message.getId(), message.getCommandName(), message.getOrigin(),
+                        message.getSequenceNumber(), Helpers.toInstant(message.getGenerationTime()));
+                command.merge(message);
+                consumer.accept(command);
             }
 
             @Override
@@ -712,7 +717,7 @@ public class ArchiveClient {
         }
     }
 
-    private class CommandPage extends AbstractPage<ListCommandsRequest, ListCommandsResponse, CommandHistoryEntry> {
+    private class CommandPage extends AbstractPage<ListCommandsRequest, ListCommandsResponse, Command> {
 
         public CommandPage(ListCommandsRequest request) {
             super(request, "entry");
@@ -721,6 +726,17 @@ public class ArchiveClient {
         @Override
         protected void fetch(ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
             commandService.listCommands(null, request, observer);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        protected List<Command> mapRepeatableField(Object field) {
+            return ((List<CommandHistoryEntry>) field).stream().map(entry -> {
+                Command command = new Command(entry.getId(), entry.getCommandName(), entry.getOrigin(),
+                        entry.getSequenceNumber(), Helpers.toInstant(entry.getGenerationTime()));
+                command.merge(entry);
+                return command;
+            }).collect(Collectors.toList());
         }
     }
 

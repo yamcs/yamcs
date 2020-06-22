@@ -51,9 +51,8 @@ export interface ParameterValue {
   id: NamedObjectId;
   rawValue: Value;
   engValue: Value;
-  acquisitionTimeUTC: string;
-  generationTimeUTC: string;
-  expirationTimeUTC: string;
+  acquisitionTime: string;
+  generationTime: string;
 
   acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
   processingStatus: boolean;
@@ -76,13 +75,6 @@ export interface Range {
   timeStop: string;
   engValue: Value;
   count: number;
-}
-
-export interface CommandId {
-  generationTime: number;
-  origin: string;
-  sequenceNumber: number;
-  commandName: string;
 }
 
 export interface IssueCommandOptions {
@@ -119,8 +111,11 @@ export interface CommandAssignment {
 }
 
 export interface CommandHistoryEntry {
-  commandId: CommandId;
-  generationTimeUTC: string;
+  id: string;
+  commandName: string;
+  origin: string;
+  sequenceNumber: number;
+  generationTime: string;
   attr: CommandHistoryAttribute[];
   assignment: CommandAssignment[];
 }

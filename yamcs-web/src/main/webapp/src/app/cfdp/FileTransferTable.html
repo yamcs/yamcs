@@ -39,6 +39,9 @@
                         mode="buffer"
                         [value]="(transfer.sizeTransferred / transfer.totalSize) * 100">
       </mat-progress-bar>
+      <mat-icon *ngIf="transfer.failureReason"
+                [matTooltip]="transfer.failureReason"
+                style="vertical-align: middle">warning</mat-icon>
       <ng-container *ngIf="transfer.state !== 'RUNNING'">
         {{ (transfer.state | titlecase) || '-' }}
       </ng-container>

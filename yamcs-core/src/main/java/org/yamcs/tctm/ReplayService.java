@@ -93,8 +93,6 @@ public class ReplayService extends AbstractService
     // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
     List<String> excludeParameterGroups = null;
 
-    
-
     /**
      *
      * @param instance
@@ -102,6 +100,7 @@ public class ReplayService extends AbstractService
      *            - the argument passed in the processor.yaml
      * @throws ConfigurationException
      */
+    @Override
     public void init(String instance, YConfiguration args) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
@@ -142,7 +141,7 @@ public class ReplayService extends AbstractService
             }
             this.originalReplayRequest = new ReplayOptions(rrb.build());
         } else {
-            throw new IllegalArgumentException("Unknown spec of type "+spec.getClass());
+            throw new IllegalArgumentException("Unknown spec of type " + spec.getClass());
         }
     }
 
@@ -228,9 +227,9 @@ public class ReplayService extends AbstractService
     // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which
     // containers are needed and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
-        
+
         boolean replayAll = originalReplayRequest.isReplayAll();
-        
+
         if (replayAll) {
             rawDataRequest = new ReplayOptions(originalReplayRequest);
             rawDataRequest.setPacketRequest(PacketReplayRequest.newBuilder().build());

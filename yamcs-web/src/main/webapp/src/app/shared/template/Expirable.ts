@@ -19,8 +19,8 @@ export class Expirable {
   getExpiredTooltip() {
     if (this.pval) {
       let msg = 'EXPIRED VALUE.\n';
-      msg += `Generated: ${this.pval.generationTimeUTC}\n`;
-      msg += `Received: ${this.pval.acquisitionTimeUTC}`;
+      msg += `Generated: ${this.pval.generationTime}\n`;
+      msg += `Received: ${this.pval.acquisitionTime}`;
       return msg;
     } else {
       return 'EXPIRED VALUE';

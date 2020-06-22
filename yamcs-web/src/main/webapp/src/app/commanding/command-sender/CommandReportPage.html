@@ -20,7 +20,7 @@
       &nbsp;&nbsp;
       <button class="ya-button"
               [routerLink]="['/commanding/send', command.commandName]"
-              [queryParams]="{c: yamcs.context, template: (command.commandId | commandId)}">
+              [queryParams]="{c: yamcs.context, template: command.id}">
         Resend this command
       </button>
     </ng-container>

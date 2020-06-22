@@ -52,15 +52,15 @@
     </td>
   </ng-container>
 
-  <ng-container cdkColumnDef="receptionTimeUTC">
+  <ng-container cdkColumnDef="receptionTime">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception time</th>
     <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
-      {{ (row.pval?.acquisitionTimeUTC | datetime) || '-' }}</td>
+      {{ (row.pval?.acquisitionTime | datetime) || '-' }}</td>
   </ng-container>
 
-  <ng-container cdkColumnDef="generationTimeUTC">
+  <ng-container cdkColumnDef="generationTime">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTimeUTC | datetime) || '-' }}
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTime | datetime) || '-' }}
     </td>
   </ng-container>
 

@@ -52,7 +52,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
   private syncSubscription: Subscription;
 
   displayedColumns = [
-    'generationTimeUTC',
+    'generationTime',
   ];
 
   constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
@@ -85,7 +85,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
       const anyValue = this.findAnyMatchingParameterValue(sample);
       if (anyValue) {
         recs.push({
-          generationTimeUTC: anyValue.generationTimeUTC,
+          generationTime: anyValue.generationTime,
           pvals: sample,
         });
       }
@@ -107,7 +107,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges() {
     this.displayedColumns = [
-      'generationTimeUTC',
+      'generationTime',
       ...this.model.parameters,
     ];
   }
@@ -123,6 +123,6 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 }
 
 export interface ScrollRecord {
-  generationTimeUTC: string;
+  generationTime: string;
   pvals: { [key: string]: ParameterValue; };
 }

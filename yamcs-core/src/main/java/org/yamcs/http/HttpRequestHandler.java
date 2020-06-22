@@ -415,7 +415,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof NotSslRecordException) {
             log.info("Expected a TLS/SSL packet. Closing channel");
         } else {
-            log.error("Closing channel: {}", cause.getMessage());
+            log.error("Closing channel: {}", cause.getMessage(), cause);
         }
         ctx.close();
     }

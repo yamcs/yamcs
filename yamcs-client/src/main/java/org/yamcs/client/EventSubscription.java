@@ -1,7 +1,7 @@
 package org.yamcs.client;
 
+import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.SubscribeEventsRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 
@@ -10,7 +10,7 @@ import org.yamcs.protobuf.Yamcs.Event;
  */
 public class EventSubscription extends AbstractSubscription<SubscribeEventsRequest, Event> {
 
-    protected EventSubscription(WebSocketClient client) {
-        super(client, "events", Event.class);
+    protected EventSubscription(MethodHandler methodHandler) {
+        super(methodHandler, "events", Event.class);
     }
 }
