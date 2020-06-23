@@ -66,7 +66,7 @@ public class PerfMdbLoader implements SpaceSystemLoader {
         
         IntegerParameterType.Builder ptypeb = new IntegerParameterType.Builder().setName("uint"+paramSizeInBits);
         ptypeb.setSizeInBits(paramSizeInBits);
-        IntegerDataEncoding ide = new IntegerDataEncoding(paramSizeInBits);
+        IntegerDataEncoding.Builder ide = new IntegerDataEncoding.Builder().setSizeInBits(paramSizeInBits);
         ptypeb.setEncoding(ide);
         IntegerParameterType ptype = ptypeb.build();
         ss.addParameterType(ptype);
