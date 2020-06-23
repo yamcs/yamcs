@@ -3951,7 +3951,7 @@ public class XtceStaxReader {
         if (attribute != null) {
             return attribute.getValue();
         } else {
-            throw new XMLStreamException("Mandatory attribute '" + attName + "' not defined");
+            throw new XMLStreamException("Mandatory attribute '" + attName + "' not defined", element.getLocation());
         }
     }
 
