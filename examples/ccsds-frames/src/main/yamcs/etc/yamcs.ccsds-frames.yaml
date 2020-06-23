@@ -47,15 +47,6 @@ services:
         type: AOS # AOS, TM or USLP
         tmFrameLength: 1115
         tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
-  - class: org.yamcs.cfdp.CfdpService
-    args:
-     sourceId: 5
-     destinationId: 24
-     sequenceNrLength: 4
-     maxPduSize: 512
-     incomingBucket: "cfdpDown"
-     eofAckTimeout: 3000
-     maxEofResendAttempts: 5 
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -73,7 +64,7 @@ dataLinks:
               errorDetection:
                   type: 16-SUM
               enforceEvenNumberOfBytes: true
-           stream: "tc_sim" #which yamcs stream to get the data from
+           stream: "tc_realtime" #which yamcs stream to get the data from
            useCop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
            clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
            initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
@@ -156,5 +147,5 @@ streamConfig:
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime", "tc_sim2"]
+  tc: ["tc_realtime"]
   sqlFile: "etc/extra_streams.sql"
