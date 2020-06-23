@@ -96,8 +96,10 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         public Builder(BaseDataType baseType) {
             super(baseType);
             this.unitSet = baseType.unitSet;
-            this.encoding = baseType.encoding.toBuilder();
             this.initialValue = baseType.getInitialValue();
+            if (baseType.encoding != null) {
+                this.encoding = baseType.encoding.toBuilder();
+            }
         }
 
         public T setInitialValue(byte[] initialValue) {
