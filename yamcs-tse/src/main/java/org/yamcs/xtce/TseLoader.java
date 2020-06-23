@@ -22,7 +22,7 @@ public class TseLoader implements SpaceSystemLoader {
 
     private String name;
 
-    public TseLoader(String spec) {
+    public TseLoader() {
         this(Collections.emptyMap());
     }
 

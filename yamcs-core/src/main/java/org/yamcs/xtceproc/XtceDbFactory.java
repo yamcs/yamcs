@@ -293,7 +293,11 @@ public class XtceDbFactory {
             type = "org.yamcs.xtce.EmptyNodeLoader";
         }
         try {
-            l = YObjectLoader.loadObject(type, args);
+            if(args==null) {
+                l = YObjectLoader.loadObject(type);
+            } else {
+                l = YObjectLoader.loadObject(type, args);
+            }
         } catch (DatabaseLoadException | ConfigurationException e) {
             throw e;
         } catch (Exception e) {
