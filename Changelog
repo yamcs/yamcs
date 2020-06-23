@@ -1,6 +1,6 @@
 Version 5.0.0 released 
 - migrated the .def table definitions into the rocksdb. 
-  WARNING: the migration is automatically but once migrated the version 4 will not be able to read the data anymore! 
+  WARNING: the migration is automatic but once migrated the version 4 will not be able to read the data anymore! 
   (the data in the database is not changed, if absolutely necessary we can make a version 4.10.x that can read it)
 - split Event and ParameterValue protobuf messages into internal and external. 
   The internal messages use Yamcs timestamps whereas the external messages use protobuf timestamps.
@@ -16,10 +16,15 @@ Version 5.0.0 released
 - CfsEventDecoder: added an option to specify byte endianess with default to big endian (used to be hardcoded to little endian)
                    added also an option for the charset used to decode the text string, default to US-ASCII
 - removed yamcs-artemis (since it was used mainly for replication)
-- removed the IndexServer; The CCSDS completeness index functionality is provided now by the CcsdsTmIndex service. 
-  The histograms do not require definition of any extra service.
-- yamcs-xtce: all parameter and argument types need to be constructed through builders. 
-  This has been implemented in order to support the baseType XTCE property which allows a type to inherit properties from another type.
+- removed the IndexServer:
+    The CCSDS completeness index functionality is provided now by the CcsdsTmIndex service. 
+    The histograms do not require definition of any extra service.
+- yamcs-xtce: 
+    all parameter and argument types need to be constructed through builders. 
+    all data encodings need to be constructed through builders. 
+    support the baseType XTCE property which allows a type to inherit properties from another type.
+    AbsoluteTimeParameterType uses java Instant as initial value (rather than Yamcs times)
+- remove the yamcs-simulation rpm. Simulation is one of the examples along others.
 
 
 Version 4.10.9 released 24-Apr-2020
