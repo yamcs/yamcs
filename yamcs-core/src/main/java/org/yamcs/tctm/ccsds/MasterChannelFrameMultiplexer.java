@@ -8,6 +8,7 @@ import java.util.concurrent.Semaphore;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 import org.yamcs.utils.TimeEncoding;
 
@@ -33,11 +34,14 @@ public class MasterChannelFrameMultiplexer {
     int[] pollingVector;
     int pvIdx;
     int pvCnt;
+    Log log;
 
     public MasterChannelFrameMultiplexer(String yamcsInstance, String linkName, YConfiguration config) {
         tcManagedParameters = new TcManagedParameters(config);
         handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
-       
+        log = new Log(getClass(), yamcsInstance);
+        log.setContext(linkName);
+        
         for(VcUplinkHandler h: handlers) {
             h.setDataAvailableSemaphore(dataAvailableSemaphore);
         }
@@ -100,6 +104,7 @@ public class MasterChannelFrameMultiplexer {
             }
             TcTransferFrame tf = h.getFrame();
             if (tf != null) {
+                log.debug("PollingVectorPriority multiplexing: got frame {} from {}", tf, h);
                 return tf;
             }
         } while (pvIdx != pvIdx0);
@@ -118,7 +123,11 @@ public class MasterChannelFrameMultiplexer {
             }
         }
         if (hfirst != null) {
-            return hfirst.getFrame();
+            TcTransferFrame tf = hfirst.getFrame();
+            if (tf != null) {
+                log.debug("FifoPriority multiplexing: got frame {} from {}", tf, hfirst);
+                return tf;
+            }
         }
         return null;
     }
@@ -127,6 +136,7 @@ public class MasterChannelFrameMultiplexer {
         for (VcUplinkHandler h : handlers) {
             TcTransferFrame tf = h.getFrame();
             if (tf != null) {
+                log.debug("AbsolutePriority multiplexing: got frame {} from {}", tf, h);
                 return tf;
             }
         }

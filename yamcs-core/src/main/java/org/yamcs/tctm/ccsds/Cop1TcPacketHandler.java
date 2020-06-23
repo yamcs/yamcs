@@ -50,7 +50,9 @@ import org.yamcs.xtce.util.AggregateMemberNames;
  *
  */
 public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
-
+    static final String[] STATE_NAMES = new String[] { "Invalid", "Active", "Retransmit without wait",
+            "Retransmit with wait", "Initialising without BC Frame", "Initialising with BC Frame", "Initial" };
+    
     public static final CommandOption OPTION_BYPASS = new CommandOption("cop1Bypass", "COP-1 Bypass",
             CommandOptionType.BOOLEAN).withHelp("Use BD mode even if AD was initiated.");
 
@@ -189,20 +191,21 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     @Override
     public void sendTc(PreparedCommand pc) {
-        log.trace("state: {} new TC {}", externalState, pc);
+        boolean tcBypassFlag = isBypass(pc);
+        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}", strState(), pc.getId(), tcBypassFlag);
         if (!cop1Active) {
-            if (bypassAll) {
-                sendSingleTc(pc, true);
-            } else {
-                sendSingleTc(pc, isBypass(pc));
-            }
-        } else if ((vmp.bdAbsolutePriority || externalState >= 3) && isBypass(pc)) {
+            sendSingleTc(pc, bypassAll || tcBypassFlag);
+        } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
             sendSingleTc(pc, true);
         } else {
             executor.submit(() -> {
                 queueTC(pc);
             });
         }
+    }
+
+    private String strState() {
+        return STATE_NAMES[externalState];
     }
 
     @Override
@@ -272,6 +275,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         while ((pc = waitQueue.poll()) != null) {
             if (isBypass(pc)) {
                 sendSingleTc(pc, true);
+                continue;
             }
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
@@ -555,9 +559,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private void queueTC(PreparedCommand pc) {
+        log.debug("Adding command {} to the waitQueue", pc.getId());
         waitQueue.add(pc);
         monitors.forEach(m -> m.tcQueued());
-
         if (state <= 2) {
             lookForFDU();
         }
