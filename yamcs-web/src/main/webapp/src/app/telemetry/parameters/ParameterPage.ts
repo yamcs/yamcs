@@ -74,7 +74,7 @@ export class ParameterPage implements OnDestroy {
       updateOnExpiration: true,
       action: 'REPLACE',
     }, data => {
-      this.parameterValue$.next(data.values[0]);
+      this.parameterValue$.next(data.values ? data.values[0] : null);
       this.updateTitle();
     });
   }
