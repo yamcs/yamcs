@@ -587,7 +587,7 @@ public class TableDefinition {
         if(serializedEmumValues == null) {
             return null;
         }
-        return serializedEmumValues.get(name);
+        return serializedEmumValues.get(columnName);
     }
 
     
