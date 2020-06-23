@@ -171,6 +171,8 @@ public class V7Loader extends V7LoaderBase {
     protected Set<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
     Map<String, SequenceContainer> containers = new HashMap<>();
 
+    Map<DataEncoding.Builder<?>, NameReference> algoReferences = new HashMap<>();
+
     BasicPrefFactory prefFactory = new BasicPrefFactory();
     final ConditionParser conditionParser = new ConditionParser(prefFactory);
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
@@ -532,7 +534,8 @@ public class V7Loader extends V7LoaderBase {
             if (encoding instanceof StringDataEncoding.Builder) {
                 StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new int encoding which uses the configured string encoding
-                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                        .setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -569,7 +572,8 @@ public class V7Loader extends V7LoaderBase {
             // Enumerations encoded as string integers
             if (encoding instanceof StringDataEncoding.Builder) {
                 StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
-                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                        .setStringEncoding(sde);
                 // Don't set calibrator, already done when making ptype
                 ((BaseDataType.Builder<?>) dtypeb).setEncoding(intStringEncoding);
             } else {
@@ -609,6 +613,15 @@ public class V7Loader extends V7LoaderBase {
         dtypeb.setShortDescription(dtr.description);
 
         dtype = dtypeb.build();
+        NameReference nr = algoReferences.get(encoding);
+        if (nr != null) {
+            DataType dtype1 = dtype;
+            nr.addResolvedAction(nd -> {
+                ((BaseDataType) dtype1).getEncoding().setFromBinaryTransformAlgorithm((Algorithm) nd);
+                return true;
+            });
+        }
+
         if (param) {
             dtr.spaceSystem.addParameterType((ParameterType) dtype);
             parameterDataTypes.put(dtr, (ParameterType) dtype);
@@ -1009,6 +1022,8 @@ public class V7Loader extends V7LoaderBase {
                 ((StringDataEncoding.Builder) encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(encodingArgs[2]));
+                } else {
+                    encoding.setSizeInBits(-1);
                 }
             } else if ("PrependedSize".equalsIgnoreCase(encodingType)) {
                 if (encodingArgs.length == 0) {
@@ -1019,6 +1034,8 @@ public class V7Loader extends V7LoaderBase {
                 ((StringDataEncoding.Builder) encoding).setSizeInBitsOfSizeTag(parseInt(encodingArgs[0]));
                 if (encodingArgs.length >= 3) {
                     encoding.setSizeInBits(parseInt(encodingArgs[2]));
+                } else {
+                    encoding.setSizeInBits(-1);
                 }
             } else {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type " + encodingType
@@ -1054,6 +1071,10 @@ public class V7Loader extends V7LoaderBase {
             }
         } else {
             throw new SpreadsheetLoadException(ctx, "Invalid rawType '" + rawtype + "'");
+        }
+
+        if (customFromBinaryTransform != null) {
+            algoReferences.put(encoding, customFromBinaryTransform);
         }
         return encoding;
     }
@@ -2272,7 +2293,7 @@ public class V7Loader extends V7LoaderBase {
                             + "' for alarm of enumerated parameter " + para.getName());
                 }
             }
-            
+
             spaceSystem.removeParameterType(oldPtype);
             ParameterType newPtype = ptypeb.build();
 

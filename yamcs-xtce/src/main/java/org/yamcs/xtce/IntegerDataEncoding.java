@@ -174,6 +174,8 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         }
         public Builder setStringEncoding(StringDataEncoding stringEncoding) {
             this.stringEncoding = stringEncoding;
+            this.sizeInBits = stringEncoding.sizeInBits;
+            this.encoding = Encoding.STRING;
             return self();
         }
         public Builder setDefaultCalibrator(Calibrator defaultCalibrator) {

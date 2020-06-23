@@ -135,6 +135,7 @@ public class V6Loader extends V6LoaderBase {
     protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
     BasicPrefFactory prefFactory = new BasicPrefFactory();
     Map<Parameter, DataType.Builder<?>> parameterDataTypesBuilders = new HashMap<>();
+    Map<DataEncoding.Builder<?>, NameReference> algoReferences = new HashMap<>();
 
     final ConditionParser conditionParser = new ConditionParser(prefFactory);
 
@@ -471,24 +472,24 @@ public class V6Loader extends V6LoaderBase {
                 engtype = PARAM_ENGTYPE_INT32;
             }
 
-            BaseDataType.Builder ptype = null;
+            BaseDataType.Builder<?> ptypeb = null;
             if (PARAM_ENGTYPE_UINT32.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType.Builder();
-                ((IntegerParameterType.Builder) ptype).setSigned(false);
+                ptypeb = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptypeb).setSigned(false);
             } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType.Builder();
-                ((IntegerParameterType.Builder) ptype).setSigned(false);
-                ((IntegerParameterType.Builder) ptype).setSizeInBits(64);
+                ptypeb = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptypeb).setSigned(false);
+                ((IntegerParameterType.Builder) ptypeb).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_INT32.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType.Builder();
+                ptypeb = new IntegerParameterType.Builder();
             } else if (PARAM_ENGTYPE_INT64.equalsIgnoreCase(engtype)) {
-                ptype = new IntegerParameterType.Builder();
-                ((IntegerParameterType.Builder) ptype).setSizeInBits(64);
+                ptypeb = new IntegerParameterType.Builder();
+                ((IntegerParameterType.Builder) ptypeb).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_FLOAT.equalsIgnoreCase(engtype)) {
-                ptype = new FloatParameterType.Builder();
+                ptypeb = new FloatParameterType.Builder();
             } else if (PARAM_ENGTYPE_DOUBLE.equalsIgnoreCase(engtype)) {
-                ptype = new FloatParameterType.Builder();
-                ((FloatParameterType.Builder) ptype).setSizeInBits(64);
+                ptypeb = new FloatParameterType.Builder();
+                ((FloatParameterType.Builder) ptypeb).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) {
                 if (calib == null) {
                     throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
@@ -498,19 +499,19 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Parameter " + name
                             + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
                 }
-                ptype = new EnumeratedParameterType.Builder();
+                ptypeb = new EnumeratedParameterType.Builder();
                 for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                    ((EnumeratedParameterType.Builder) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
+                    ((EnumeratedParameterType.Builder) ptypeb).addEnumerationValue(entry.getKey(), entry.getValue());
                 }
             } else if (PARAM_ENGTYPE_STRING.equalsIgnoreCase(engtype)) {
-                ptype = new StringParameterType.Builder();
+                ptypeb = new StringParameterType.Builder();
             } else if (PARAM_ENGTYPE_BOOLEAN.equalsIgnoreCase(engtype)) {
-                ptype = new BooleanParameterType.Builder();
+                ptypeb = new BooleanParameterType.Builder();
             } else if (PARAM_ENGTYPE_BINARY.equalsIgnoreCase(engtype)) {
-                ptype = new BinaryParameterType.Builder();
+                ptypeb = new BinaryParameterType.Builder();
             } else if (PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ptype = new AbsoluteTimeParameterType.Builder();
-                populateTimeParameter(spaceSystem, (AbsoluteTimeParameterType.Builder) ptype, calib);
+                ptypeb = new AbsoluteTimeParameterType.Builder();
+                populateTimeParameter(spaceSystem, (AbsoluteTimeParameterType.Builder) ptypeb, calib);
             } else {
                 if (engtype.isEmpty()) {
                     throw new SpreadsheetLoadException(ctx, "No engineering type specified");
@@ -518,23 +519,23 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Unknown parameter type '" + engtype + "'");
                 }
             }
-            ptype.setName(name);
+            ptypeb.setName(name);
 
             String units = null;
             if (hasColumn(cells, IDX_PARAM_ENGUNIT)) {
                 units = cells[IDX_PARAM_ENGUNIT].getContents();
             }
 
-            if (!"".equals(units) && units != null && ptype instanceof BaseDataType.Builder) {
+            if (!"".equals(units) && units != null && ptypeb instanceof BaseDataType.Builder) {
                 UnitType unitType = new UnitType(units);
-                ((BaseDataType.Builder<?>) ptype).addUnit(unitType);
+                ((BaseDataType.Builder<?>) ptypeb).addUnit(unitType);
             }
 
             DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Parameter " + param.getName(),
                     rawtype, engtype,
                     encodings, calib);
 
-            if (ptype instanceof IntegerParameterType.Builder) {
+            if (ptypeb instanceof IntegerParameterType.Builder) {
                 // Integers can be encoded as strings
                 if (encoding instanceof StringDataEncoding.Builder) {
                     StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
@@ -549,11 +550,11 @@ public class V6Loader extends V6LoaderBase {
                         }
                         intStringEncoding.setDefaultCalibrator(c);
                     }
-                    ((IntegerParameterType.Builder) ptype).setEncoding(intStringEncoding);
+                    ((IntegerParameterType.Builder) ptypeb).setEncoding(intStringEncoding);
                 } else {
-                    ((IntegerParameterType.Builder) ptype).setEncoding(encoding);
+                    ((IntegerParameterType.Builder) ptypeb).setEncoding(encoding);
                 }
-            } else if (ptype instanceof FloatParameterType.Builder) {
+            } else if (ptypeb instanceof FloatParameterType.Builder) {
                 // Floats can be encoded as strings
                 if (encoding instanceof StringDataEncoding.Builder) {
                     StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
@@ -569,15 +570,15 @@ public class V6Loader extends V6LoaderBase {
                             floatStringEncoding.setDefaultCalibrator(c);
                         }
                     }
-                    ((FloatParameterType.Builder) ptype).setEncoding(floatStringEncoding);
+                    ((FloatParameterType.Builder) ptypeb).setEncoding(floatStringEncoding);
                 } else {
-                    ((FloatParameterType.Builder) ptype).setEncoding(encoding);
+                    ((FloatParameterType.Builder) ptypeb).setEncoding(encoding);
                 }
-            } else if (ptype instanceof EnumeratedParameterType.Builder) {
-                if (((EnumeratedParameterType.Builder) ptype).getEncoding() != null) {
+            } else if (ptypeb instanceof EnumeratedParameterType.Builder) {
+                if (((EnumeratedParameterType.Builder) ptypeb).getEncoding() != null) {
                     // Some other param has already led to setting the encoding of this shared ptype.
                     // Do some basic consistency checks
-                    Integer sib1 = ((EnumeratedParameterType.Builder) ptype).getEncoding().getSizeInBits();
+                    Integer sib1 = ((EnumeratedParameterType.Builder) ptypeb).getEncoding().getSizeInBits();
                     Integer sib2 = encoding.getSizeInBits();
                     if (!Objects.equal(sib1, sib2)) {
                         throw new SpreadsheetLoadException(ctx,
@@ -591,17 +592,27 @@ public class V6Loader extends V6LoaderBase {
                     IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
                             .setStringEncoding(sde);
                     // Don't set calibrator, already done when making ptype
-                    ptype.setEncoding(intStringEncoding);
+                    ptypeb.setEncoding(intStringEncoding);
                     ;
                 } else {
-                    ptype.setEncoding(encoding);
+                    ptypeb.setEncoding(encoding);
                 }
 
             } else {
-                ptype.setEncoding(encoding);
+                ptypeb.setEncoding(encoding);
             }
-            parameterDataTypesBuilders.put(param, ptype);
-            param.setParameterType((ParameterType) ptype.build());
+            parameterDataTypesBuilders.put(param, ptypeb);
+            ParameterType ptype = (ParameterType) ptypeb.build();
+            
+            NameReference nr = algoReferences.get(encoding);
+            if (nr != null) {
+                BaseDataType bdt = (BaseDataType) ptype;
+                nr.addResolvedAction(nd -> {
+                    bdt.getEncoding().setFromBinaryTransformAlgorithm((Algorithm) nd);
+                    return true;
+                });
+            }
+            param.setParameterType(ptype);
             param.setDataSource(dataSource);
         }
     }
@@ -869,6 +880,10 @@ public class V6Loader extends V6LoaderBase {
             }
         } else {
             throw new SpreadsheetLoadException(ctx, "Invalid rawType '" + rawtype + "'");
+        }
+        
+        if (customFromBinaryTransform != null) {
+            algoReferences.put(encoding, customFromBinaryTransform);
         }
         return encoding;
     }

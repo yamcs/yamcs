@@ -29,37 +29,37 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
 
     public FloatDataEncoding(Builder builder) {
         super(builder, 32);
-        if(builder.encoding!=null) {
+        if (builder.encoding != null) {
             this.encoding = builder.encoding;
         }
-        
+
         this.defaultCalibrator = builder.defaultCalibrator;
         this.contextCalibratorList = builder.contextCalibratorList;
-       
+
         this.stringEncoding = builder.stringEncoding;
-        
-        if(builder.baseEncoding != null && builder.baseEncoding instanceof FloatDataEncoding) {
-            FloatDataEncoding baseEncoding = (FloatDataEncoding )builder.baseEncoding;
-            if(builder.defaultCalibrator == null) {
+
+        if (builder.baseEncoding != null && builder.baseEncoding instanceof FloatDataEncoding) {
+            FloatDataEncoding baseEncoding = (FloatDataEncoding) builder.baseEncoding;
+            if (builder.defaultCalibrator == null) {
                 this.defaultCalibrator = baseEncoding.defaultCalibrator;
             }
-            
-            if(builder.contextCalibratorList == null) {
+
+            if (builder.contextCalibratorList == null) {
                 this.contextCalibratorList = baseEncoding.contextCalibratorList;
-            }  
-            
-            if(builder.encoding == null) {
+            }
+
+            if (builder.encoding == null) {
                 this.encoding = baseEncoding.encoding;
             }
-            
-            if(builder.stringEncoding == null) {
+
+            if (builder.stringEncoding == null) {
                 this.stringEncoding = baseEncoding.stringEncoding;
             }
         }
-        
+
         validateEncodingSizeInBits(encoding, sizeInBits);
     }
-    
+
     public Builder toBuilder() {
         return new Builder(this);
     }
@@ -75,7 +75,6 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
             }
         }
     }
-
 
     /**
      * copy constructor
@@ -115,7 +114,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
                     + (defaultCalibrator == null ? "" : (", defaultCalibrator:" + defaultCalibrator))
                     + ")";
         case STRING:
-            return "FloatDataEncoding(StringEncoding: " + stringEncoding
+            return "FloatDataEncoding(sizeInBits=" + sizeInBits + " StringEncoding: " + stringEncoding
                     + (defaultCalibrator == null ? "" : (", defaultCalibrator:" + defaultCalibrator))
                     + ")";
         default:
@@ -182,7 +181,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         }
 
         public Builder() {
-           super();
+            super();
         }
 
         public FloatDataEncoding build() {
@@ -203,11 +202,13 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
             this.contextCalibratorList = list;
             return self();
         }
-        
+
         public Builder setStringEncoding(StringDataEncoding stringEncoding) {
             this.stringEncoding = stringEncoding;
+            this.encoding = Encoding.STRING;
+            this.sizeInBits = stringEncoding.sizeInBits;
             return self();
         }
-        
+
     }
 }

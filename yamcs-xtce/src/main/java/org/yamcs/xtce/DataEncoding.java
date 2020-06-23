@@ -34,16 +34,7 @@ public abstract class DataEncoding implements Serializable {
     transient ByteOrder byteOrder = ByteOrder.BIG_ENDIAN; // DIFFERS_FROM_XTCE in xtce is very complicated
 
     // the algorithm will be used to convert from binary to raw value
-    private Algorithm fromBinaryTransformAlgorithm;
-
-    DataEncoding(int sizeInBits) {
-        this.sizeInBits = sizeInBits;
-    }
-
-    DataEncoding(int sizeInBits, ByteOrder byteOrder) {
-        this(sizeInBits);
-        this.byteOrder = byteOrder;
-    }
+    protected Algorithm fromBinaryTransformAlgorithm;
 
     /**
      * copy constructor
@@ -102,9 +93,6 @@ public abstract class DataEncoding implements Serializable {
         return byteOrder;
     }
 
-    public void setByteOrder(ByteOrder order) {
-        this.byteOrder = order;
-    }
 
     // these two methods are used for serialisation because ByteOrder is not serializable
     private void writeObject(ObjectOutputStream out) throws IOException {

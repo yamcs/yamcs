@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-
 /**
  * 
  * Although XTCE suggests that this class could be used to encode/decode integer/float/string data, In Yamcs this is
@@ -23,7 +22,7 @@ public class BinaryDataEncoding extends DataEncoding {
 
     int sizeInBitsOfSizeTag = 16; // this is used when type is LEADING_SIZE to encod the length of the value before the
                                   // value
-    private Type type =  Type.FIXED_SIZE;
+    private Type type = Type.FIXED_SIZE;
 
     /**
      * copy constructor
@@ -38,7 +37,8 @@ public class BinaryDataEncoding extends DataEncoding {
 
     public BinaryDataEncoding(Builder builder) {
         super(builder, -1);
-        if(builder.type!=null) {
+
+        if (builder.type != null) {
             this.type = builder.type;
         }
         if (builder.sizeInBitsOfSizeTag != null) {
@@ -51,7 +51,7 @@ public class BinaryDataEncoding extends DataEncoding {
             if (builder.type == null) {
                 this.type = baseEncoding.type;
             }
-            
+
             if (builder.sizeInBitsOfSizeTag == null) {
                 this.sizeInBitsOfSizeTag = baseEncoding.sizeInBitsOfSizeTag;
             }
@@ -61,7 +61,7 @@ public class BinaryDataEncoding extends DataEncoding {
     public Builder toBuilder() {
         return new Builder(this);
     }
-    
+
     public void setSizeType(Type sizeType) {
         this.type = sizeType;
     }
@@ -90,7 +90,7 @@ public class BinaryDataEncoding extends DataEncoding {
 
     @Override
     public String toString() {
-        return "BinaryDataEncoding(sizeInBits:" + sizeInBits + ")";
+        return "BinaryDataEncoding(sizeInBits:" + sizeInBits + ", type:"+ type+")";
     }
 
     public static class Builder extends DataEncoding.Builder<Builder> {
@@ -105,8 +105,8 @@ public class BinaryDataEncoding extends DataEncoding {
 
         public Builder() {
             super();
-         }
-        
+        }
+
         public BinaryDataEncoding build() {
             return new BinaryDataEncoding(this);
         }
