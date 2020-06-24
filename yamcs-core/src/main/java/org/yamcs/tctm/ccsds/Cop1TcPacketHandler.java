@@ -192,7 +192,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     @Override
     public void sendTc(PreparedCommand pc) {
         boolean tcBypassFlag = isBypass(pc);
-        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}", strState(), pc.getId(), tcBypassFlag);
+        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getId(), tcBypassFlag, bypassAll);
         if (!cop1Active) {
             sendSingleTc(pc, bypassAll || tcBypassFlag);
         } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
