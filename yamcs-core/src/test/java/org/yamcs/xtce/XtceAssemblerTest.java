@@ -52,7 +52,7 @@ public class XtceAssemblerTest {
         m2.put("spec", f.getAbsolutePath());
         List<YConfiguration> mdbConfigs2 = Arrays.asList(YConfiguration.wrap(m2));
         XtceDb db2 = XtceDbFactory.createInstance(mdbConfigs2, false, false);
-       // f.delete();
+        f.delete();
 
         compareDatabases(db1, db2);
     }
@@ -108,24 +108,39 @@ public class XtceAssemblerTest {
                 compareObjects(sc1.getRestrictionCriteria(), sc2.getRestrictionCriteria());
             }
         }
+        compareLists(sc1.getAncillaryData(), sc2.getAncillaryData());
     }
 
     private void compareLists(List<?> l1, List<?> l2) throws Exception {
+        if (l1 == null) {
+            assertNull(l2);
+            return;
+        } else {
+            assertNotNull(l2);
+        }
+        
         assertEquals(name, l1.size(), l2.size());
         for (int i = 0; i < l1.size(); i++) {
             compareObjects(l1.get(i), l2.get(i));
         }
     }
-    
-    private void compareMaps(Map<?,?> m1, Map<?,?> m2) throws Exception {
-        for(Map.Entry<?, ?> me: m1.entrySet()) {
+
+    private void compareMaps(Map<?, ?> m1, Map<?, ?> m2) throws Exception {
+        if (m1 == null) {
+            assertNull(m2);
+            return;
+        } else {
+            assertNotNull(m2);
+        }
+
+        for (Map.Entry<?, ?> me : m1.entrySet()) {
             Object v1 = me.getValue();
             Object v2 = m2.get(me.getKey());
-            if(v1==null && v2 !=null ) {
-                fail(name+" value for key "+me.getKey()+" should be null");
-            } 
-            if(v1!=null && v2==null) {
-                fail(name+" value for key "+me.getKey()+" should not be null");
+            if (v1 == null && v2 != null) {
+                fail(name + " value for key " + me.getKey() + " should be null");
+            }
+            if (v1 != null && v2 == null) {
+                fail(name + " value for key " + me.getKey() + " should not be null");
             }
             compareObjects(v1, v2);
         }
@@ -146,7 +161,7 @@ public class XtceAssemblerTest {
                 f.setAccessible(true);
                 Object o1c = f.get(o1);
                 Object o2c = f.get(o2);
-              //  System.out.println("comparring "+o1.getClass());
+                // System.out.println("comparring "+o1.getClass());
                 if (o1c == null) {
                     assertNull(name + " " + o1 + " field: " + f.getName(), o2c);
                 } else if (o2c == null) {
@@ -155,20 +170,20 @@ public class XtceAssemblerTest {
                     assertTrue(o2c instanceof List);
                     name = name + ": " + f.getName();
                     compareLists((List<?>) o1c, (List<?>) o2c);
-                } else if (o1c instanceof Map<?,?>) {
+                } else if (o1c instanceof Map<?, ?>) {
                     assertTrue(o2c instanceof Map);
                     name = name + ": " + f.getName();
-                    compareMaps((Map<?,?>) o1c, (Map<?,?>) o2c);
+                    compareMaps((Map<?, ?>) o1c, (Map<?, ?>) o2c);
                 } else if (o1c instanceof Comparable<?>) {
                     assertEquals(name + " " + o1 + " field: " + f.getName(), o1c, o2c);
                 } else if (o1c instanceof ByteOrder) {
                     assertEquals(name + " " + o1 + " field: " + f.getName(), o1c, o2c);
                 } else if (o1c instanceof XtceAliasSet) {
                     compareAliases((XtceAliasSet) o1c, (XtceAliasSet) o2c);
-                } else if (o1c instanceof MetaCommand || o1c instanceof Container|| o1c instanceof Parameter) {
-                    //these are already compared above
-                }  else if (o1c instanceof org.slf4j.impl.JDK14LoggerAdapter) {
-                    //ignore
+                } else if (o1c instanceof MetaCommand || o1c instanceof Container || o1c instanceof Parameter) {
+                    // these are already compared above
+                } else if (o1c instanceof org.slf4j.impl.JDK14LoggerAdapter) {
+                    // ignore
                 } else {
                     compareObjects(o1c, o2c);
                 }

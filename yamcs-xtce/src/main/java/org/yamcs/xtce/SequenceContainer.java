@@ -4,6 +4,9 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
+import static org.yamcs.xtce.AncillaryData.*;
 
 /**
  * A list of raw parameters, parameter segments, stream segments, containers, or container segments.
@@ -29,7 +32,31 @@ public class SequenceContainer extends Container {
      * match any inherited container with the property set
      * 
      */
-    private boolean useAsArchivePartition;
+    private boolean useAsArchivePartition = false;
+
+    @Override
+    public void addAncillaryData(AncillaryData data) {
+        super.addAncillaryData(data);
+        if (isArchivePartition(data)) {
+            this.useAsArchivePartition = true;
+        }
+
+    }
+
+    @Override
+    public void setAncillaryData(List<AncillaryData> ancillaryData) {
+        super.setAncillaryData(ancillaryData);
+
+        Optional<?> o = ancillaryData.stream().filter(ad -> isArchivePartition(ad)).findAny();
+        if (o.isPresent()) {
+            this.useAsArchivePartition = true;
+        }
+    }
+
+    private boolean isArchivePartition(AncillaryData ad) {
+        return YAMCS_KEY.equalsIgnoreCase(ad.getName())
+                && PROP_USE_AS_ARCHIVING_PARTITION.equalsIgnoreCase(ad.getValue());
+    }
 
     public SequenceContainer getBaseContainer() {
         return (SequenceContainer) baseContainer;
@@ -90,17 +117,19 @@ public class SequenceContainer extends Container {
         return Collections.unmodifiableList(entryList);
     }
 
-    @Override
-    public String toString() {
-        return "SequenceContainer(name=" + name + ")";
-    }
-
     public boolean useAsArchivePartition() {
         return useAsArchivePartition;
     }
 
     public void useAsArchivePartition(boolean useAsArchivePartition) {
         this.useAsArchivePartition = useAsArchivePartition;
+        if (ancillaryData != null) {
+            ancillaryData.removeIf(ad -> isArchivePartition(ad));
+        }
+        
+        if (useAsArchivePartition) {
+            addAncillaryData(new AncillaryData(YAMCS_KEY, PROP_USE_AS_ARCHIVING_PARTITION));
+        } 
     }
 
     public void print(PrintStream out) {
@@ -120,6 +149,11 @@ public class SequenceContainer extends Container {
         for (SequenceEntry se : getEntryList()) {
             out.println("\t\t" + se);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SequenceContainer(name=" + name + ")";
     }
 
 }

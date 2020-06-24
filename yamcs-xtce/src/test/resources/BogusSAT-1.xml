@@ -987,6 +987,9 @@ limitations under the License.
 							<xtce:ParameterRefEntry parameterRef="SunSensorLevel"/>
 							<xtce:ParameterRefEntry parameterRef="EarthSensorLevel"/>
 						</xtce:EntryList>
+						<xtce:AncillaryDataSet>
+                           <xtce:AncillaryData name="Yamcs">UseAsArchivingPartition</xtce:AncillaryData>
+                        </xtce:AncillaryDataSet>
 					</xtce:SequenceContainer>
 					<xtce:SequenceContainer name="SensorHistoryBuffer">
 						<xtce:EntryList>

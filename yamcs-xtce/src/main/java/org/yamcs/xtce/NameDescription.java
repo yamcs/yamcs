@@ -1,8 +1,8 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.yamcs.xtce.xml.XtceAliasSet;
@@ -36,7 +36,7 @@ public class NameDescription implements Serializable {
     /**
      * Escape hatch for storing any type of information
      */
-    private Map<String, AncillaryData> ancillaryDataSet = null;
+    protected List<AncillaryData> ancillaryData = null;
 
     String shortDescription;
     String longDescription;
@@ -45,7 +45,7 @@ public class NameDescription implements Serializable {
         this.name = builder.name;
         this.longDescription = builder.longDescription;
         this.shortDescription = builder.shortDescription;
-        this.ancillaryDataSet = builder.ancillaryDataSet;
+        this.ancillaryData = builder.ancillaryData;
         this.xtceAliasSet = builder.xtceAliasSet;
         this.qualifiedName = builder.qualifiedName;
     }
@@ -58,7 +58,7 @@ public class NameDescription implements Serializable {
      * creates a shallow copy
      */
     protected NameDescription(NameDescription t) {
-        this.ancillaryDataSet = t.ancillaryDataSet;
+        this.ancillaryData = t.ancillaryData;
         this.longDescription = t.longDescription;
         this.shortDescription = t.shortDescription;
         this.name = t.name;
@@ -95,26 +95,24 @@ public class NameDescription implements Serializable {
         // addAlias(ssName, name);
     }
 
-    public AncillaryData getAncillaryData(String name) {
-        if (ancillaryDataSet == null) {
-            return null;
-        }
-        return ancillaryDataSet.get(name);
-    }
 
     /**
      * Stores the given ancillary data. If an entry already existed for the applicable name, that entry will be
      * overriden.
      */
     public void addAncillaryData(AncillaryData data) {
-        if (ancillaryDataSet == null) {
-            ancillaryDataSet = new LinkedHashMap<>();
+        if (ancillaryData == null) {
+            ancillaryData = new ArrayList<>();
         }
-        ancillaryDataSet.put(data.getName(), data);
+        ancillaryData.add(data);
     }
 
-    public Collection<AncillaryData> getAncillaryDataSet() {
-        return ancillaryDataSet.values();
+    public void setAncillaryData(List<AncillaryData> ancillaryData) {
+        this.ancillaryData = ancillaryData;
+    }
+    
+    public List<AncillaryData> getAncillaryData() {
+        return ancillaryData;
     }
 
     /**
@@ -236,7 +234,7 @@ public class NameDescription implements Serializable {
     static public abstract class Builder<T extends Builder<T>>  {
         private String name;
         private XtceAliasSet xtceAliasSet = XtceAliasSet.NO_ALIAS;
-        private Map<String, AncillaryData> ancillaryDataSet = null;
+        private List<AncillaryData> ancillaryData = null;
         private String shortDescription;
         private String longDescription;
         private String qualifiedName;
@@ -247,7 +245,7 @@ public class NameDescription implements Serializable {
         public Builder(NameDescription nd) {
             this.name = nd.name;
             this.xtceAliasSet = nd.xtceAliasSet;
-            this.ancillaryDataSet = nd.ancillaryDataSet;
+            this.ancillaryData = nd.ancillaryData;
             this.shortDescription = nd.shortDescription;
             this.longDescription = nd.longDescription;
             this.qualifiedName = nd.qualifiedName;
@@ -274,8 +272,8 @@ public class NameDescription implements Serializable {
             return self();
         }
 
-        public void AncillaryData(Map<String, AncillaryData> ancillaryDataSet) {
-            this.ancillaryDataSet = ancillaryDataSet;
+        public void setAncillaryData(List<AncillaryData> ancillaryData) {
+            this.ancillaryData = ancillaryData;
         }
         
         @SuppressWarnings("unchecked")

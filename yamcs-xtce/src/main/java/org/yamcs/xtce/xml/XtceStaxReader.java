@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.ByteOrder;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
+import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
@@ -277,6 +280,7 @@ public class XtceStaxReader {
     private static final String XTCE_STARTING_INDEX = "StartingIndex";
     private static final String XTCE_ENDING_INDEX = "EndingIndex";
     private static final String XTCE_ANCILLARY_DATA_SET = "AncillaryDataSet";
+    private static final String XTCE_ANCILLARY_DATA = "AncillaryData";
     private static final String XTCE_VALID_RANGE = "ValidRange";
     private static final String XTCE_VALID_RANGE_SET = "ValidRangeSet";
     private static final String XTCE_BINARY_ENCODING = "BinaryEncoding";
@@ -546,6 +550,56 @@ public class XtceStaxReader {
         if (!isEndElementWithName(XTCE_ALIAS)) {
             throw new IllegalStateException(XTCE_ALIAS + " end element expected");
         }
+    }
+
+    private List<AncillaryData> readAncillaryDataSet() throws XMLStreamException {
+        log.trace(XTCE_ANCILLARY_DATA_SET);
+        checkStartElementPreconditions();
+
+        List<AncillaryData> ancillaryData = new ArrayList<>();
+
+        while (true) {
+
+            xmlEvent = xmlEventReader.nextEvent();
+
+            // <Alias> sections
+            if (isStartElementWithName(XTCE_ANCILLARY_DATA)) {
+                readAncillaryData(ancillaryData);
+            } else if (isEndElementWithName(XTCE_ANCILLARY_DATA_SET)) {
+                return ancillaryData;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
+    private void readAncillaryData(List<AncillaryData> ancillaryData) throws XMLStreamException {
+        log.trace(XTCE_ANCILLARY_DATA);
+        StartElement element = checkStartElementPreconditions();
+
+        String name = readMandatoryAttribute("name", element);
+        String mimeType = readAttribute("mimeType", element, null);
+        String href = readAttribute("href", element, null);
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (xmlEvent.isCharacters()) {
+                String value = xmlEvent.asCharacters().getData();
+                AncillaryData ad = new AncillaryData(name, value);
+                if (mimeType != null) {
+                    ad.setMimeType(mimeType);
+                }
+                if (href != null) {
+                    ad.setHref(URI.create(href));
+                }
+                ancillaryData.add(ad);
+                break;
+            } else if (isEndElementWithName(XTCE_ANCILLARY_DATA)) {
+                return;
+            }
+        }
+
     }
 
     /**
@@ -940,8 +994,12 @@ public class XtceStaxReader {
         try {
             return new TimeEpoch(TimeEpoch.CommonEpochs.valueOf(s));
         } catch (IllegalArgumentException e) {
-            // TODO validate the date
-            return new TimeEpoch(s);
+            try {
+                return new TimeEpoch(s);
+            } catch (DateTimeParseException e1) {
+                e1.printStackTrace();
+                throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
+            }
         }
     }
 
@@ -1384,7 +1442,7 @@ public class XtceStaxReader {
     private void readStringSizeInBits(SpaceSystem spaceSystem, StringDataEncoding.Builder stringDataEncoding)
             throws XMLStreamException {
         checkStartElementPreconditions();
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_FIXED)) {
@@ -2373,6 +2431,8 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
                 BinaryDataEncoding.Builder bde = readBinaryDataEncoding(spaceSystem);
                 seqContainer.setSizeInBits(bde.getSizeInBits());
+            } else if (isStartElementWithName(XTCE_ANCILLARY_DATA_SET)) {
+                seqContainer.setAncillaryData(readAncillaryDataSet());
             } else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 return seqContainer;
             } else {
@@ -2385,9 +2445,9 @@ public class XtceStaxReader {
     private void readBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)
             throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BASE_CONTAINER);
-        checkStartElementPreconditions();
+        StartElement element = checkStartElementPreconditions();
 
-        String refName = readMandatoryAttribute("containerRef", xmlEvent.asStartElement());
+        String refName = readMandatoryAttribute("containerRef", element);
         if (excludedContainers.contains(refName)) {
             log.debug("adding " + seqContainer.getName()
                     + " to the list of the excluded containers because its parent is excluded");

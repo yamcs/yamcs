@@ -504,7 +504,7 @@ public class XtceAssembler {
         } else if (referenceTime.getEpoch() != null) {
             doc.writeStartElement("Epoch");
             TimeEpoch te = referenceTime.getEpoch();
-            if(te.getCommonEpoch()!=null) {
+            if (te.getCommonEpoch() != null) {
                 doc.writeCharacters(te.getCommonEpoch().name());
             } else {
                 doc.writeCharacters(te.getDateTime());
@@ -1029,7 +1029,8 @@ public class XtceAssembler {
 
     private void writeSequenceContainer(XMLStreamWriter doc, SequenceContainer container) throws XMLStreamException {
         doc.writeStartElement("SequenceContainer");
-        doc.writeAttribute("name", container.getName());
+        writeNameDescription(doc, container);
+
         doc.writeStartElement("EntryList");
 
         for (SequenceEntry entry : container.getEntryList()) {
@@ -1049,7 +1050,26 @@ public class XtceAssembler {
             doc.writeEndElement();// BaseContainer
         }
 
+        List<AncillaryData> l = container.getAncillaryData();
+        if (l != null) {
+            writeAncillaryData(doc, l);
+        }
         doc.writeEndElement();// SequenceContainer
+    }
+
+    private void writeAncillaryData(XMLStreamWriter doc, List<AncillaryData> l) throws XMLStreamException {
+        doc.writeStartElement("AncillaryDataSet");
+        for (AncillaryData ad : l) {
+            doc.writeStartElement("AncillaryData");
+            writeAttributeIfNotNull(doc, "name", ad.getName());
+            writeAttributeIfNotNull(doc, "mimeType", ad.getMimeType());
+            if(ad.getHref()!=null) {
+                doc.writeAttribute("href", ad.getHref().toString());
+            }
+            writeCharactersIfNotNull(doc, ad.getValue());
+            doc.writeEndElement();
+        }
+        doc.writeEndElement();
     }
 
     private void writeSequenceEntry(XMLStreamWriter doc, SequenceEntry entry) throws XMLStreamException {
@@ -1210,6 +1230,17 @@ public class XtceAssembler {
             }
             sb.append(nd.getName());
             return sb.toString();
+        }
+    }
+
+    private void writeAttributeIfNotNull(XMLStreamWriter doc, String name, String value) throws XMLStreamException {
+        if (value != null) {
+            doc.writeAttribute(name, value);
+        }
+    }
+    private void writeCharactersIfNotNull(XMLStreamWriter doc, String text) throws XMLStreamException {
+        if (text != null) {
+            doc.writeCharacters(text);
         }
     }
 }
