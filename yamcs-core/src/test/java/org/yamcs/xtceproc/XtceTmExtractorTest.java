@@ -825,8 +825,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
-        Parameter p = xtcedb.getParameter("/REFMDB/SUBSYS1/terminatedString_with_max_size");
-        
+
         tmExtractor.provideAll();
         String s = "blabla";
         byte[] bb = tmGenerator.generate_PKT11(s, (byte) 55);

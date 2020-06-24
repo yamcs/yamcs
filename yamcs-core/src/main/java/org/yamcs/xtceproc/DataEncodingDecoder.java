@@ -16,7 +16,6 @@ import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
 
 /**
  * Decodes TM data according to the specification of the DataEncoding
