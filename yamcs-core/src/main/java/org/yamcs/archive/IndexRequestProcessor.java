@@ -113,7 +113,7 @@ public class IndexRequestProcessor implements Runnable {
                     tmpackets);
         }
 
-        if ((req.getEventSourceCount() > 0)) {
+        if (req.getSendAllEvent() || req.getEventSourceCount() > 0) {
             eventSources = new HashMap<>();
             for (NamedObjectId id : req.getEventSourceList()) {
                 eventSources.put(id.getName(), id);
@@ -257,7 +257,6 @@ public class IndexRequestProcessor implements Runnable {
             while (iter.hasNext()) {
                 HistogramRecord hr = iter.next();
                 String name = histoColumnSerializer.fromByteArray(hr.getColumnv(), histoColumnDefinition);
-
                 NamedObjectId id;
                 if (hreq.name2id != null && !hreq.name2id.isEmpty()) {
                     id = hreq.name2id.get(name);
