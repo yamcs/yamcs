@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
@@ -301,8 +302,11 @@ public class XtceTmExtractorTest {
     @Test
     public void testContainerSubscriptionPKT1_1() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
-
-        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        ProcessorConfig pconf =  new ProcessorConfig();
+        pconf.setSubscribeContainerArchivePartitions(false);
+        ProcessorData pdata = new ProcessorData(null, "XTCEPROC", xtcedb, pconf);
+        
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb, pdata);
         tmExtractor.startProviding(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
 
         byte[] bb = tmGenerator.generate_PKT1_1();

@@ -68,6 +68,7 @@ ParameterArchive:
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
   config:
+    subscribeContainerArchivePartitions: false
     parameterCache:
       enabled: false
   services: 

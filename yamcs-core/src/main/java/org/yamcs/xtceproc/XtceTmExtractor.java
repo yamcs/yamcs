@@ -39,10 +39,7 @@ public class XtceTmExtractor {
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
-        this.xtcedb = xtcedb;
-        this.subscription = new Subscription(xtcedb);
-        rootContainer = xtcedb.getRootSequenceContainer();
-        this.pdata = new ProcessorData(null, "XTCEPROC", xtcedb, new ProcessorConfig());
+        this(xtcedb, new ProcessorData(null, "XTCEPROC", xtcedb, new ProcessorConfig()));
     }
 
     /**
@@ -56,6 +53,13 @@ public class XtceTmExtractor {
         this.subscription = new Subscription(xtcedb);
         rootContainer = xtcedb.getRootSequenceContainer();
         this.pdata = pdata;
+        if(pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
+            for(SequenceContainer sc: xtcedb.getSequenceContainers()) {
+                if(sc.useAsArchivePartition()) {
+                    subscription.addSequenceContainer(sc);
+                }
+            }
+        }
     }
 
     /**

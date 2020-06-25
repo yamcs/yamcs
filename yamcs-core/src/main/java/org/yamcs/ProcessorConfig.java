@@ -24,6 +24,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_CONTAINERLESS_CMDS = "allowContainerlessCommands";
     private static final String CONFIG_KEY_CHECK_COMMAND_CLEARANCE = "checkCommandClearance";
     private static final String CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES = "checkParameterValidityRanges";
+    private static final String CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART = "subscribeContainerArchivePartitions";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -36,6 +37,12 @@ public class ProcessorConfig {
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
     boolean checkParameterValidityRanges = true;
+    
+    //if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
+    // used to have nice statistics showing the number of each packet received for the realtime and replay processors
+    boolean subscribeContainerArchivePartitions = true;
+    
+    
     /**
      * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
      * MetaCommand has no container associated.
@@ -79,6 +86,8 @@ public class ProcessorConfig {
                     checkCommandClearance = config.getBoolean(key);
                 } else if (CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES.equals(key)) {
                     checkParameterValidityRanges = config.getBoolean(key);
+                } else if (CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART.equals(key)) {
+                    subscribeContainerArchivePartitions = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -148,6 +157,15 @@ public class ProcessorConfig {
     public boolean checkParameterValidityRanges() {
         return checkParameterValidityRanges;
     }
+    
+    public boolean subscribeContainerArchivePartitions() {
+        return subscribeContainerArchivePartitions;
+    }
+    
+    public void setSubscribeContainerArchivePartitions(boolean b) {
+        this.subscribeContainerArchivePartitions = b;
+    }
+
     @Override
     public String toString() {
         return "ProcessorConfig [checkParameterAlarms=" + checkParameterAlarms + ", parameterAlarmServerEnabled="
@@ -157,6 +175,4 @@ public class ProcessorConfig {
                 + subscribeAll + ", generateEvents=" + generateEvents + ", containerProcOptions=" + containerProcOptions
                 + ", parameterCacheConfig=" + parameterCacheConfig + "]";
     }
-
-  
 }
