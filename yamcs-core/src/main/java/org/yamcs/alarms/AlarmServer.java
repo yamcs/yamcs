@@ -335,8 +335,8 @@ public class AlarmServer<S, T> extends AbstractService {
     static private boolean isOkNoAlarm(Object value) {
         if (value instanceof ParameterValue) {
             ParameterValue pv = (ParameterValue) value;
-            return (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
-                    || pv.getMonitoringResult() == null
+            return (pv.getMonitoringResult() == null
+                    || pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
                     || pv.getMonitoringResult() == MonitoringResult.DISABLED);
         } else if (value instanceof Event) {
             Event ev = (Event) value;
