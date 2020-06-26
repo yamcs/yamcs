@@ -63,6 +63,7 @@ import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
 import { DataRatePipe } from './pipes/DataRatePipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
+import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
@@ -218,6 +219,7 @@ const pipes = [
   BinarySizePipe,
   DataRatePipe,
   DateTimePipe,
+  DefaultProcessorPipe,
   DeltaWithPipe,
   DurationPipe,
   FilenamePipe,
