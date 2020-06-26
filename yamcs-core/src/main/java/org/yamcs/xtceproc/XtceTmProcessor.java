@@ -129,14 +129,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         return p;
     }
 
-    private long getCurrentTime() {
-        if (processor != null) {
-            return processor.getCurrentTime();
-        } else {
-            return TimeEncoding.getWallclockTime();
-        }
-    }
-
     /**
      * Process telemetry packets
      *
