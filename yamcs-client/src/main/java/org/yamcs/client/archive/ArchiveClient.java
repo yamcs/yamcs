@@ -16,6 +16,7 @@ import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.StreamSender;
 import org.yamcs.client.archive.ArchiveClient.IndexOptions.FilterOption;
 import org.yamcs.client.archive.ArchiveClient.IndexOptions.IndexOption;
+import org.yamcs.client.archive.ArchiveClient.IndexOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.AscendingOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.LimitOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.ListOption;
@@ -380,6 +381,10 @@ public class ArchiveClient {
             if (option instanceof FilterOption) {
                 for (String filter : ((FilterOption) option).filter) {
                     requestb.addFilters(filter);
+                }
+            } else if (option instanceof PacketOption) {
+                for (String packet : ((PacketOption) option).packets) {
+                    requestb.addPacketnames(packet);
                 }
             } else {
                 throw new IllegalArgumentException("Usupported option " + option.getClass());
@@ -929,11 +934,23 @@ public class ArchiveClient {
             return new FilterOption(filter);
         }
 
+        public static IndexOption packets(String... packets) {
+            return new PacketOption(packets);
+        }
+
         static final class FilterOption implements IndexOption {
             final String[] filter;
 
             public FilterOption(String... filter) {
                 this.filter = filter;
+            }
+        }
+
+        static final class PacketOption implements IndexOption {
+            final String[] packets;
+
+            public PacketOption(String... packets) {
+                this.packets = packets;
             }
         }
     }
