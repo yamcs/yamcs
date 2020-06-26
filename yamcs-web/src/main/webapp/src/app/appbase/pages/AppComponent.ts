@@ -4,12 +4,12 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AuthInfo, ConnectionInfo } from '../../client';
+import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
 import { User } from '../../shared/User';
-import { AuthService } from '../services/AuthService';
-import { ConfigService } from '../services/ConfigService';
-import { PreferenceStore } from '../services/PreferenceStore';
-import { YamcsService } from '../services/YamcsService';
 
 
 @Component({

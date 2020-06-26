@@ -16,10 +16,7 @@
     "experimentalDecorators": true,
     "strict": true,
     "strictFunctionTypes": false,
-    "strictPropertyInitialization": false,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "strictPropertyInitialization": false
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
