@@ -20,7 +20,7 @@ public class StreamSelectBinaryFunctionTest extends YarchTestCase {
         byte[] x = new byte[300];
         s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
-            public void start() {
+            public void doStart() {
                 for (int i = 0; i < n; i++) {
                     ByteArrayUtils.encodeInt(i, x, 0);
                     Tuple t = new Tuple(tpdef, new Object[] { x, 2 });

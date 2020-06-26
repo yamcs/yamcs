@@ -43,7 +43,7 @@ public class HistogramReaderStream extends Stream implements Runnable, DbReaderS
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         (new Thread(this, "HistogramReader[" + getName() + "]")).start();
     }
 

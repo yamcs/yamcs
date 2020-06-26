@@ -17,7 +17,7 @@ public class StarSelectTest extends YarchTestCase {
 
         Stream s = (new Stream(ydb, "tm_in", tpdef) {
             @Override
-            public void start() {
+            public void doStart() {
                 for (int i = 0; i < n; i++) {
                     Long time = (long) (i * 1000);
                     Tuple t = new Tuple(tpdef, new Object[] { time, i });

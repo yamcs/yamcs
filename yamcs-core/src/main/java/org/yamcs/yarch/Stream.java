@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.codehaus.janino.Java.DoStatement;
 import org.yamcs.logging.Log;
 
 /**
@@ -23,7 +24,7 @@ public abstract class Stream {
     protected TupleDefinition outputDefinition;
     final protected Collection<StreamSubscriber> subscribers = new ConcurrentLinkedQueue<>();
 
-    protected volatile int state = SETUP;
+    protected AtomicInteger state = new AtomicInteger(SETUP);
 
     protected Log log;
 
@@ -43,7 +44,7 @@ public abstract class Stream {
     /**
      * Start emitting tuples.
      */
-    public abstract void start();
+    public abstract void doStart();
 
     public TupleDefinition getDefinition() {
         return outputDefinition;
@@ -88,13 +89,27 @@ public abstract class Stream {
     }
 
     /**
-     * Closes the stream by: send the streamClosed signal to all subscribed clients
+     * Start the stream by changing the state and calling {@link #doStart()}
+     * <p>
+     * If the stream is already started, do nothing.
+     */
+    final public void start() {
+        if (state.compareAndSet(SETUP, RUNNING)) {
+            doStart();
+        }
+    }
+
+    /**
+     * Closes the stream by changing the state, calling {@link #doClose()} sand then sending the streamClosed signal to
+     * all subscribed clients.
+     * <p>
+     * if the stream is already closed, do nothing.
      */
     public final void close() {
-        if (state == QUITTING) {
+        int oldState = state.getAndSet(QUITTING);
+        if (oldState == QUITTING) {
             return;
         }
-        state = QUITTING;
 
         ydb.removeStream(name);
         log.debug("Closed stream {} num emitted tuples: {}", name, getDataCount());
@@ -107,7 +122,7 @@ public abstract class Stream {
     protected abstract void doClose();
 
     public int getState() {
-        return state;
+        return state.get();
     }
 
     public long getDataCount() {

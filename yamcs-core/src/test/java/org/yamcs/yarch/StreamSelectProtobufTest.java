@@ -25,7 +25,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
 
         s = (new Stream(dict, "stream_in", tpdef) {
             @Override
-            public void start() {
+            public void doStart() {
                 for (int i = 0; i < n; i++) {
                     Event event = Event.newBuilder().setSource("test" + i).setSeqNumber(i)
                             .setGenerationTime(TimeEncoding.getWallclockTime())

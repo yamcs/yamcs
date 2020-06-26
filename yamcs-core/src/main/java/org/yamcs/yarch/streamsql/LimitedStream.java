@@ -29,11 +29,10 @@ public class LimitedStream extends Stream implements StreamSubscriber {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         if (input.getState() == SETUP) {
             input.start();
         }
-        state = RUNNING;
     }
 
     // Called when the input stream received a tuple

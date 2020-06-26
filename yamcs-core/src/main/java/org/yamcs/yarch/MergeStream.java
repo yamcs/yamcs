@@ -65,7 +65,7 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
 
     @Override
     public void streamClosed(Stream s) {
-        if (state == QUITTING) {
+        if (getState() == QUITTING) {
             return;
         }
         log.debug("Got stream closed for {}", s);
@@ -79,7 +79,7 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         log.info("Starting merge stream");
         // first start all the substreams
         for (Stream s : streams) {
@@ -106,7 +106,7 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
             // now continue publishing the first element from the priority queue till it becomes empty
             while (orderedQueue.size() > 0) {
                 TupleQueuePair tq = orderedQueue.poll();
-                if (state == QUITTING) {
+                if (getState() == QUITTING) {
                     break;
                 }
                 emitTuple(tq.t);

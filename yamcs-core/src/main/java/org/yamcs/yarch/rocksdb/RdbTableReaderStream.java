@@ -19,7 +19,6 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
-import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
@@ -43,7 +42,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
 
 
     @Override 
-    public void start() {
+    public void doStart() {
         (new Thread(this, "RdbTableReaderStream["+getName()+"]")).start();
     }
 

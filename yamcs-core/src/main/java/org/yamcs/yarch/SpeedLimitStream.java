@@ -23,7 +23,7 @@ public class SpeedLimitStream extends Stream implements StreamSubscriber {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         input.start();
     }
 

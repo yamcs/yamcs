@@ -76,7 +76,7 @@ public class OutputStream extends Stream implements StreamSubscriber {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
         // does nothing.
     }
 

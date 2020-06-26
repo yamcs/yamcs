@@ -11,6 +11,6 @@ public class InternalStream extends Stream {
     }
 
     @Override
-    public void start() {
+    public void doStart() {
     }
 }

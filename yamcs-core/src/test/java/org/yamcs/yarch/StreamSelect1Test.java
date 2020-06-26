@@ -21,7 +21,7 @@ public class StreamSelect1Test extends YarchTestCase {
 
         s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
-            public void start() {
+            public void doStart() {
                 for (int i = 0; i < n; i++) {
                     Integer x = i;
                     String y = "s" + i;

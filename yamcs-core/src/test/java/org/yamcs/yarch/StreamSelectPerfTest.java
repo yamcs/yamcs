@@ -25,7 +25,7 @@ public class StreamSelectPerfTest extends YarchTestCase {
 
             s = (new Stream(ydb, "tm_in", tpdef) {
                 @Override
-                public void start() {
+                public void doStart() {
                     for (int i = 0; i < n; i++) {
                         Long time = (long) (i * 1000);
                         Integer id = i % 10;

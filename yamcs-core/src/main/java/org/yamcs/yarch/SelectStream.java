@@ -123,11 +123,8 @@ public class SelectStream extends Stream implements StreamSubscriber {
     }
 
     @Override
-    public void start() {
-        if (input.state == SETUP) {
-            input.start();
-        }
-        state = RUNNING;
+    public void doStart() {
+        input.start();
     }
 
     @Override

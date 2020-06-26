@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.yarch.protobuf.Db.Event;
 
 public class StreamSelectParameterValueTest extends YarchTestCase {
     
@@ -22,7 +21,7 @@ public class StreamSelectParameterValueTest extends YarchTestCase {
 
         s = (new Stream(dict, "stream_in", tpdef) {
             @Override
-            public void start() {
+            public void doStart() {
                 for (int count = 0; count < n; count++) {
                     ParameterValue pv = new ParameterValue("/test/StreamSelectParameterValueTest");
                     pv.setEngineeringValue(ValueUtility.getDoubleValue(3.14));
