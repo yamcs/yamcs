@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.yamcs.xtce.BinaryParameterType.Builder;
-
 public class EnumeratedParameterType extends EnumeratedDataType implements ParameterType {
     private static final long serialVersionUID = 5L;
 
