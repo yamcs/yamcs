@@ -123,6 +123,19 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static byte[] encodeLongLE(long x, byte[] a, int offset) {
+        a[offset] = (byte) (x);
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset + 2] = (byte) (x >> 16);
+        a[offset + 3] = (byte) (x >> 24);
+        a[offset + 4] = (byte) (x >> 32);
+        a[offset + 5] = (byte) (x >> 40);
+        a[offset + 6] = (byte) (x >> 48);
+        a[offset + 7] = (byte) (x >> 56);
+
+        return a;
+    }
+
     /**
      * write a long in to a byte array of 8 bytes
      * 
@@ -143,6 +156,18 @@ public class ByteArrayUtils {
                 ((a[offset + 5] & 0xFFl) << 16) +
                 ((a[offset + 6] & 0xFFl) << 8) +
                 ((a[offset + 7] & 0xFFl));
+    }
+    
+    
+    public static long decodeLongLE(byte[] a, int offset) {
+        return ((a[offset] & 0xFFl) +
+                ((a[offset + 1] & 0xFFl) << 8) +
+                ((a[offset + 2] & 0xFFl) << 16) +
+                ((a[offset + 3] & 0xFFl) << 24) +
+                ((a[offset + 4] & 0xFFl) << 32) +
+                ((a[offset + 5] & 0xFFl) << 40) +
+                ((a[offset + 6] & 0xFFl) << 48) +
+                ((a[offset + 7] & 0xFFl) << 56));
     }
     
     public static byte[] encode6Bytes(long x, byte[] a, int offset) {

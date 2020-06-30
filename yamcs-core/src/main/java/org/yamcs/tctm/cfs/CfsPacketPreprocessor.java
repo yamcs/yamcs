@@ -1,5 +1,6 @@
 package org.yamcs.tctm.cfs;
 
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +19,10 @@ import org.yamcs.utils.TimeEncoding;
  * <li>Time seconds (GPS -TBD) 4 bytes</li>
  * <li>Time milliseconds 2 bytes</li>
  * </ul>
+ * 
+ * Note: since Yamcs 5 there is an option byteOrder: LITTLE_ENDIAN which can be configured for this preprocessor. 
+ * <p>The option is used only for decoding the timestamp in the secondary header: the 4 bytes second and 2 bytes milliseconds are decoded in little endian.
+ * <p> The primary CCSDS header is always decoded as BIG_ENDIAN.
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
@@ -49,13 +54,11 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
         int oldseq = ai.getAndSet(seq);
 
-        
-
         if (checkForSequenceDiscontinuity && ((seq - oldseq) & 0x3FFF) != 1) {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
-        if(useLocalGenerationTime) {
+        if (useLocalGenerationTime) {
             pwt.setLocalGenTime();
             pwt.setGenerationTime(timeService.getMissionTime());
         } else {
@@ -63,16 +66,25 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         }
         pwt.setSequenceCount(apidseqcount);
         if (log.isTraceEnabled()) {
-            log.trace("processing packet apid: {}, seqCount:{}, length: {}, genTime: {}", apid, seq, packet.length, TimeEncoding.toString(pwt.getGenerationTime()));
+            log.trace("processing packet apid: {}, seqCount:{}, length: {}, genTime: {}", apid, seq, packet.length,
+                    TimeEncoding.toString(pwt.getGenerationTime()));
         }
         return pwt;
     }
 
-    static long getTimeFromPacket(byte[] packet) {
-        long sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
-        int subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
+    long getTimeFromPacket(byte[] packet) {
+        long sec;
+        int subsecs;
 
-        return TimeEncoding.fromGpsMillisec(1000 * sec + subsecs*1000/65536);
+        if (byteOrder == ByteOrder.BIG_ENDIAN) {
+            sec = ByteArrayUtils.decodeInt(packet, 6) & 0xFFFFFFFFL;
+            subsecs = ByteArrayUtils.decodeShort(packet, 10);
+        } else {
+            sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
+            subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
+        }
+
+        return TimeEncoding.fromGpsMillisec(1000 * sec + subsecs * 1000 / 65536);
     }
 
     public boolean checkForSequenceDiscontinuity() {

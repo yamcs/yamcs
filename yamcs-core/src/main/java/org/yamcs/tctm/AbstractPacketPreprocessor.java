@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.nio.ByteOrder;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -30,7 +32,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected TimeEpochs timeEpoch;
 
     protected TimeDecoder timeDecoder = null;
-
+    protected ByteOrder byteOrder;
     //
     /**
      * If true, do not extract time from packets but use the local generation time.
@@ -49,6 +51,16 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         timeService = YamcsServer.getTimeService(yamcsInstance);
 
         configureTimeDecoder(config);
+        
+        String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
+        if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else {
+            throw new ConfigurationException(
+                    "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
+        }
 
     }
 

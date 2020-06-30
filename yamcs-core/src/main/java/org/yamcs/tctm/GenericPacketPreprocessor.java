@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.nio.ByteOrder;
+
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.ByteArrayUtils;
@@ -26,8 +28,13 @@ import org.yamcs.utils.TimeEncoding;
  * </tr>
  * <tr>
  * <td>errorDetection</td>
- * <td>If present, specify which error detection to use. Example: errorDetection: <br>&nbsp;&nbsp;-type: "CRC-16-CCIIT"</td>
- * </tr> 
+ * <td>If present, specify which error detection to use. Example: errorDetection: <br>
+ * &nbsp;&nbsp;-type: "CRC-16-CCIIT"</td>
+ * </tr>
+ * <tr>
+ * <td>byteOrder</td>
+ * <td>Can be BIG_ENDIAN (default) or LITTLE_ENDIAN. Configures the byte order used for reading the timestamp, sequence count and crc</td>
+ * </tr>
  * 
  * </table>
  * 
@@ -51,14 +58,16 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     @Override
     public TmPacket process(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
-        
+
         boolean corrupted = false;
         if (errorDetectionCalculator != null) {
             int computedCheckword;
             try {
                 int n = packet.length;
                 computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
-                int packetCheckword = ByteArrayUtils.decodeShort(packet, n - 2);
+                int packetCheckword = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeShort(packet, n - 2)
+                        : ByteArrayUtils.decodeShort(packet, n - 2);
+
                 if (packetCheckword != computedCheckword) {
                     eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET,
                             "Corrupted packet received, computed checkword: " + computedCheckword
@@ -80,7 +89,10 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
                 gentime = -1;
                 corrupted = true;
             } else {
-                gentime = TimeEncoding.fromUnixMillisec(ByteArrayUtils.decodeLong(packet, timestampOffset));
+                long t = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeLong(packet, timestampOffset)
+                        : ByteArrayUtils.decodeLongLE(packet, timestampOffset);
+
+                gentime = TimeEncoding.fromUnixMillisec(t);
             }
         }
 
@@ -91,7 +103,8 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
                 seqCount = -1;
                 corrupted = true;
             } else {
-                seqCount = ByteArrayUtils.decodeInt(packet, seqCountOffset);
+                seqCount = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeInt(packet, seqCountOffset)
+                        : ByteArrayUtils.decodeIntLE(packet, seqCountOffset);
             }
         }
 
