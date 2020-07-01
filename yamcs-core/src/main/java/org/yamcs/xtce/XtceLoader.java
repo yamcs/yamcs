@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -16,27 +15,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.ReferenceFinder;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
-import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**
- * XTCE XML loader
+ * XTCE XML loader. Used when the MDB configuration contains the type "xtce". For example in yamcs.instance.yaml:
+ * 
+ * <pre>
+ * mdb:
+ * - type: xtce
+ *   args:
+ *     file: "mdb/BogusSAT-1.xml"
+ * </pre>
+ * 
+ * The loader is tolerant for XTCE versions 1.1 and 1.2.
+ * <p>
+ * For strict adherence to the standard, the file can be verified against the XSD with an external tool.
+ * <p>
+ * Options:
+ * <ul>
+ * <li>file: the XML file to be loaded. Can be an absolute path or relative to the server directory. Mandatory.
+ * </li>
+ * <li>autoTmPartitions: if true (default) all the <{@link SequenceContainer} will be automatically set as archive
+ * partitions unless they have they have a parent in the hierarchy that is manually configured for TM partitions. The
+ * manual configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the
+ * value UseAsArchivingPartition.
+ * See <{@link SequenceContainer#useAsArchivePartition(boolean))}
+ * </li>
+ * </ul>
  * 
  * @author mu
  * 
  */
 public class XtceLoader implements SpaceSystemLoader {
-
     private transient XtceStaxReader xtceReader = null;
     private transient String xtceFileName;
-    /**
-     * Logger
-     */
     transient static Logger log = LoggerFactory.getLogger(XtceLoader.class.getName());
-
+    boolean autoTmPartitions = true;
     Set<String> excludedContainers;
 
     /**
@@ -44,7 +58,6 @@ public class XtceLoader implements SpaceSystemLoader {
      */
     public XtceLoader(String xtceFileName) {
         this.xtceFileName = xtceFileName;
-        initialize();
     }
 
     public XtceLoader(YConfiguration config) {
@@ -57,13 +70,7 @@ public class XtceLoader implements SpaceSystemLoader {
             List<String> ec = config.getList("excludeTmContainers");
             excludedContainers = new HashSet<String>(ec);
         }
-    }
-
-    /**
-     * Common initialization routine for constructors
-     */
-    private void initialize() {
-
+        autoTmPartitions = config.getBoolean("autoTmPartitions", true);
     }
 
     @Override
@@ -127,9 +134,34 @@ public class XtceLoader implements SpaceSystemLoader {
         if (excludedContainers != null) {
             xtceReader.setExcludedContainers(excludedContainers);
         }
-        return xtceReader.readXmlDocument(xtceFileName);
+        SpaceSystem spaceSystem = xtceReader.readXmlDocument(xtceFileName);
+        if (autoTmPartitions) {
+            addTmPartitions(spaceSystem);
+        }
+
+        return spaceSystem;
     }
 
+    private void addTmPartitions(SpaceSystem spaceSystem) {
+        Set<SequenceContainer> scset = new HashSet<>();
+        for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
+            boolean part = true;
+            SequenceContainer sc1 = sc;
+            while (sc1 != null) {
+                if (sc1.useAsArchivePartition()) {
+                    part = false;
+                    break;
+                }
+                sc1 = sc1.getBaseContainer();
+            }
+            if (part) {
+                scset.add(sc);
+            }
+        }
+        for(SequenceContainer sc: scset) {
+            sc.useAsArchivePartition(true);
+        }
+    }
 
     @Override
     public String getConfigName() throws ConfigurationException {
