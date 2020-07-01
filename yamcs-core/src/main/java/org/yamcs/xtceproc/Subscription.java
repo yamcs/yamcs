@@ -101,7 +101,7 @@ public class Subscription {
                 addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
             } else { // continue with the basecontainer if we are at the first entry
                 sctmp = sctmp.getBaseContainer();
-                if(sctmp!=null) {
+                if (sctmp != null && sctmp.getEntryList().size()>0)  {
                     addSequenceEntry(sctmp.getEntryList().get(sctmp.getEntryList().size() - 1));
                 }
             }
@@ -127,11 +127,11 @@ public class Subscription {
                 addSequenceEntry(pe);
             }
         }
-        
+
         for (String ns : parameter.getAliasSet().getNamespaces()) {
             Collection<IndirectParameterRefEntry> c = xtcedb.getIndirectParameterRefEntries(ns);
             if (c != null) {
-                for(IndirectParameterRefEntry ipre: c) {
+                for (IndirectParameterRefEntry ipre : c) {
                     addParameter(ipre.getParameterRef().getParameter());
                     addSequenceEntry(ipre);
                 }
@@ -140,12 +140,13 @@ public class Subscription {
     }
 
     private void addContainer2Entry(SequenceContainer sc, SequenceEntry se) {
-        TreeSet<SequenceEntry> ts = container2EntryMap.computeIfAbsent(sc, k-> new TreeSet<SequenceEntry>());
+        TreeSet<SequenceEntry> ts = container2EntryMap.computeIfAbsent(sc, k -> new TreeSet<SequenceEntry>());
         ts.add(se);
     }
 
     private void addContainer2InheritingContainer(SequenceContainer container, SequenceContainer inheritedContainer) {
-        HashSet<SequenceContainer> hs = container2InheritingContainerMap.computeIfAbsent(container, k -> new HashSet<>());
+        HashSet<SequenceContainer> hs = container2InheritingContainerMap.computeIfAbsent(container,
+                k -> new HashSet<>());
         hs.add(inheritedContainer);
     }
 
@@ -176,7 +177,7 @@ public class Subscription {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Current list of parameter subscribed:\n");
-        for (Map.Entry<SequenceContainer,TreeSet<SequenceEntry>> me: container2EntryMap.entrySet()) {
+        for (Map.Entry<SequenceContainer, TreeSet<SequenceEntry>> me : container2EntryMap.entrySet()) {
             SequenceContainer sc = me.getKey();
             sb.append(sc);
             sb.append(" with entries:\n");
@@ -186,7 +187,8 @@ public class Subscription {
         }
         sb.append("-----------------------------------\n");
         sb.append("Container inheritance dependency\n");
-        for (Map.Entry<SequenceContainer, HashSet<SequenceContainer>> me: container2InheritingContainerMap.entrySet()) {
+        for (Map.Entry<SequenceContainer, HashSet<SequenceContainer>> me : container2InheritingContainerMap
+                .entrySet()) {
             SequenceContainer sc = me.getKey();
             sb.append(sc.getName());
             sb.append("-->");

@@ -31,6 +31,12 @@ BogusSAT2:
     - type: xtce
       args:
           file: "src/test/resources/xtce/BogusSAT-2.xml"
+          
+BogusSAT2-noautopart:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/BogusSAT-2.xml"
+          autoTmPartitions: false
 
 ranges-test:
     - type: xtce

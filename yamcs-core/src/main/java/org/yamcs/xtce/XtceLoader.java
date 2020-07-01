@@ -135,6 +135,7 @@ public class XtceLoader implements SpaceSystemLoader {
             xtceReader.setExcludedContainers(excludedContainers);
         }
         SpaceSystem spaceSystem = xtceReader.readXmlDocument(xtceFileName);
+       
         if (autoTmPartitions) {
             addTmPartitions(spaceSystem);
         }
@@ -144,6 +145,14 @@ public class XtceLoader implements SpaceSystemLoader {
 
     private void addTmPartitions(SpaceSystem spaceSystem) {
         Set<SequenceContainer> scset = new HashSet<>();
+        collectAutoSeqCont(spaceSystem, scset);
+
+        for(SequenceContainer sc: scset) {
+            sc.useAsArchivePartition(true);
+        }
+    }
+    
+    void collectAutoSeqCont(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
         for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
             boolean part = true;
             SequenceContainer sc1 = sc;
@@ -158,9 +167,11 @@ public class XtceLoader implements SpaceSystemLoader {
                 scset.add(sc);
             }
         }
-        for(SequenceContainer sc: scset) {
-            sc.useAsArchivePartition(true);
+        
+        for(SpaceSystem ss: spaceSystem.getSubSystems()) {
+            collectAutoSeqCont(ss, scset);
         }
+       
     }
 
     @Override

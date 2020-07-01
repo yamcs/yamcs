@@ -213,4 +213,19 @@ public class XmlLoaderTest {
         FloatParameterType ftype = (FloatParameterType) db.getParameterType("/BogusSAT/LittleEndianFloat1");
         assertEquals(ByteOrder.LITTLE_ENDIAN, ftype.getEncoding().getByteOrder());
     }
+    
+    @Test
+    public void testAutoPart() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        assertTrue(db.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
+        assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
+        assertFalse(db.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
+    }
+    
+    @Test
+    public void testNoAutoPart() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2-noautopart");
+        assertFalse(db.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
+        assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
+    }
 }

@@ -585,7 +585,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (xmlEvent.isCharacters()) {
-                String value = xmlEvent.asCharacters().getData();
+                String value = xmlEvent.asCharacters().getData().trim();
                 AncillaryData ad = new AncillaryData(name, value);
                 if (mimeType != null) {
                     ad.setMimeType(mimeType);
@@ -2442,11 +2442,9 @@ public class XtceStaxReader {
 
     }
 
-    private void readBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)
-            throws IllegalStateException, XMLStreamException {
+    private void readBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer) throws XMLStreamException {
         log.trace(XTCE_BASE_CONTAINER);
         StartElement element = checkStartElementPreconditions();
-
         String refName = readMandatoryAttribute("containerRef", element);
         if (excludedContainers.contains(refName)) {
             log.debug("adding " + seqContainer.getName()
