@@ -1,5 +1,5 @@
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>linux64</id>
+  <id>linux-aarch64</id>
 
   <formats>
     <format>tar.gz</format>
@@ -18,17 +18,12 @@
         <include>yamcsd</include>
       </includes>
     </fileSet>
-  </fileSets>
-
-  <dependencySets>
-    <dependencySet>
+    <fileSet>
+      <directory>target</directory>
       <outputDirectory>lib</outputDirectory>
-      <useProjectArtifact>false</useProjectArtifact>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <useTransitiveFiltering>true</useTransitiveFiltering>
       <includes>
-        <include>org.rocksdb:rocksdbjni:jar:linux64</include>
+        <include>rocksdbjni-linux-aarch64.jar</include>
       </includes>
-    </dependencySet>
-  </dependencySets>
+    </fileSet>
+  </fileSets>
 </assembly>
