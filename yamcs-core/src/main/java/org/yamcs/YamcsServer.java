@@ -253,6 +253,7 @@ public class YamcsServer {
     }
 
     public void shutDown() {
+        LOG.info("Shutting down Yamcs server");
         for (YamcsServerInstance ys : instances.values()) {
             ys.stopAsync();
         }
