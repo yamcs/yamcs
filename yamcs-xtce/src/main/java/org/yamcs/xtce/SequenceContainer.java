@@ -121,15 +121,28 @@ public class SequenceContainer extends Container {
         return useAsArchivePartition;
     }
 
+    /**
+     * If set to true, the XtceTmRecorder will set the qualified name of this container as the "pname" (packet
+     * name) column in the tm table. The packet will be then visible in the front page of Yamcs web as well as in the
+     * Archive overview.
+     * <p>
+     * If the container has a child that matches the packet, and the child also has this flag set, then the name of the
+     * child will be used instead (e.g. the name of the most specific packet will be used).
+     * <p>
+     * If no container having this flag matches a packet, the name of the root container will be used (even if it does
+     * not have the flag set).
+     * 
+     * @param useAsArchivePartition
+     */
     public void useAsArchivePartition(boolean useAsArchivePartition) {
         this.useAsArchivePartition = useAsArchivePartition;
         if (ancillaryData != null) {
             ancillaryData.removeIf(ad -> isArchivePartition(ad));
         }
-        
+
         if (useAsArchivePartition) {
             addAncillaryData(new AncillaryData(YAMCS_KEY, PROP_USE_AS_ARCHIVING_PARTITION));
-        } 
+        }
     }
 
     public void print(PrintStream out) {
