@@ -49,7 +49,7 @@ rm -rf $clonedir/.git
 cd $clonedir
 
 cd yamcs-web/src/main/webapp
-npm install
+npm ci
 npm run build
 rm -rf node_modules
 cd -
@@ -59,13 +59,13 @@ mvn package -P yamcs-release -DskipTests
 rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
 
-# Build Yamcs RPM
-cp distribution/target/yamcs-$pomversion-linux64.tar.gz $yamcshome/distribution/target
+cp distribution/target/yamcs-$pomversion-* $yamcshome/distribution/target
 
+# Build Yamcs RPM
 rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
 
 mkdir -p "$rpmbuilddir/opt/yamcs"
-tar -xzf distribution/target/yamcs-$pomversion-linux64.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
+tar -xzf distribution/target/yamcs-$pomversion-linux-x86_64.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
 
 mkdir -p "$rpmbuilddir/etc/init.d"
 cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
