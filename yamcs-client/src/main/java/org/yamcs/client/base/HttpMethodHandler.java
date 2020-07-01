@@ -19,6 +19,7 @@ import org.yamcs.client.YamcsClient;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
@@ -112,11 +113,16 @@ public class HttpMethodHandler implements MethodHandler {
             }
             requestFuture.whenComplete((data, err) -> {
                 if (err == null) {
-                    try {
-                        Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
+                    if (responsePrototype instanceof HttpBody) {
+                        Message serverMessage = HttpBody.newBuilder().setData(ByteString.copyFrom(data)).build();
                         ((Observer<Message>) observer).complete(serverMessage);
-                    } catch (Exception e) {
-                        observer.completeExceptionally(e);
+                    } else {
+                        try {
+                            Message serverMessage = responsePrototype.toBuilder().mergeFrom(data).build();
+                            ((Observer<Message>) observer).complete(serverMessage);
+                        } catch (Exception e) {
+                            observer.completeExceptionally(e);
+                        }
                     }
                 } else {
                     observer.completeExceptionally(err);
