@@ -40,7 +40,8 @@ public class RdbTableWriter extends TableWriter {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     static final byte[] zerobytes = new byte[0];
     Tablespace tablespace;
-
+    volatile boolean closed = false;
+    
     public RdbTableWriter(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             InsertMode mode, RdbPartitionManager pm) {
         super(ydb, tableDefinition, mode);
@@ -51,6 +52,9 @@ public class RdbTableWriter extends TableWriter {
 
     @Override
     public void onTuple(Stream stream, Tuple t) {
+        if(closed) {
+            return;
+        }
         try {
             RdbPartition partition = getDbPartition(t);
             YRDB rdb = tablespace.getRdb(partition.dir, false);
@@ -244,6 +248,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     public void close() {
+        closed = true;
     }
 
     @Override
