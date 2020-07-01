@@ -65,8 +65,67 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-rocksdbjni-linux64</id>
+            <phase>package</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.rocksdb</groupId>
+                  <artifactId>rocksdbjni</artifactId>
+                  <classifier>linux64</classifier>
+                  <outputDirectory>target/rocksdbjni-repack/linux-aarch64</outputDirectory>
+                  <excludes>librocksdbjni-linux64.so,librocksdbjni-linux-ppc64le.so</excludes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.rocksdb</groupId>
+                  <artifactId>rocksdbjni</artifactId>
+                  <classifier>linux64</classifier>
+                  <outputDirectory>target/rocksdbjni-repack/linux-x86_64</outputDirectory>
+                  <excludes>librocksdbjni-linux-aarch64.so,librocksdbjni-linux-ppc64le.so</excludes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
+          <execution>
+            <id>pack-rocksdbjni-linux-aarch64</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>rocksdbjni-linux-aarch64.descriptor.xml</descriptor>
+              </descriptors>
+              <finalName>rocksdbjni-linux-aarch64</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+          <execution>
+            <id>pack-rocksdbjni-linux-x86_64</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>rocksdbjni-linux-x86_64.descriptor.xml</descriptor>
+              </descriptors>
+              <finalName>rocksdbjni-linux-x86_64</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
           <execution>
             <id>yamcs-assembly</id>
             <phase>package</phase>
@@ -75,7 +134,8 @@
             </goals>
             <configuration>
               <descriptors>
-                <descriptor>yamcs-linux64.descriptor.xml</descriptor>
+                <descriptor>yamcs-linux-aarch64.descriptor.xml</descriptor>
+                <descriptor>yamcs-linux-x86_64.descriptor.xml</descriptor>
                 <descriptor>yamcs-osx.descriptor.xml</descriptor>
                 <descriptor>yamcs-win64.descriptor.xml</descriptor>
               </descriptors>
