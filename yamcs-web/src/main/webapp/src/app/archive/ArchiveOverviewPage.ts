@@ -34,14 +34,14 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   parametersFg = '#1c4b8b';
   commandsBg = '#ffcc00';
   commandsFg = '#1c4b8b';
-  // eventsBg = '#ffff66';
-  // eventsFg = '#1c4b8b';
+  eventsBg = '#ffff66';
+  eventsFg = '#1c4b8b';
 
   legendOptions = [
     { id: 'packets', name: 'Packets', bg: this.packetsBg, fg: this.packetsFg, checked: true },
     { id: 'parameters', name: 'Parameters', bg: this.parametersBg, fg: this.parametersFg, checked: true },
     { id: 'commands', name: 'Commands', bg: this.commandsBg, fg: this.commandsFg, checked: false },
-    // { id: 'events', name: 'Events', bg: this.eventsBg, fg: this.eventsFg, checked: false },
+    { id: 'events', name: 'Events', bg: this.eventsBg, fg: this.eventsFg, checked: false },
   ];
 
   @ViewChild('container', { static: true })
@@ -257,6 +257,15 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         });
       }
 
+      let eventPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+      if (this.filterForm.value['events']) {
+        eventPromise = this.yamcs.yamcsClient.getEventIndex(this.yamcs.instance!, {
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        });
+      }
+
       Promise.all([
         this.yamcs.yamcsClient.getTags(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
@@ -266,12 +275,14 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         tmPromise,
         parameterPromise,
         commandPromise,
+        eventPromise,
       ]).then(responses => {
         const tags = responses[0].tag || [];
         const completenessGroups = responses[1];
         const tmGroups = responses[2];
         const parameterGroups = responses[3];
         const commandGroups = responses[4];
+        const eventGroups = responses[5];
 
         const bands = [];
 
@@ -465,6 +476,45 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
               ...extraStyles,
               backgroundColor: this.commandsBg,
               textColor: this.commandsFg,
+              marginTop: 4,
+              marginBottom: 4,
+            },
+            events,
+          });
+        }
+
+        for (let i = 0; i < eventGroups.length; i++) {
+          const group = eventGroups[i];
+          const events: Event[] = [];
+          for (const entry of group.entry) {
+            const event: Event = {
+              start: entry.start,
+              stop: entry.stop,
+              data: {
+                count: entry.count,
+              }
+            };
+            if (entry.count > 1) {
+              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
+              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
+            }
+            events.push(event);
+          }
+          const extraStyles: { [key: string]: any; } = {};
+          if (i < eventGroups.length - 1) {
+            extraStyles['dividerColor'] = 'transparent';
+          }
+          bands.push({
+            id: group.id.name,
+            type: 'EventBand',
+            label: group.id.name,
+            interactive: true,
+            interactiveSidebar: false,
+            wrap: false,
+            style: {
+              ...extraStyles,
+              backgroundColor: this.eventsBg,
+              textColor: this.eventsFg,
               marginTop: 4,
               marginBottom: 4,
             },

@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
+import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 
 /**
  * Singleton service for facilitating working with a websocket connection
@@ -19,7 +20,11 @@ export class YamcsService {
   readonly time$ = new BehaviorSubject<string | null>(null);
   private timeSubscription: TimeSubscription;
 
-  constructor(@Inject(APP_BASE_HREF) baseHref: string, private router: Router) {
+  constructor(
+    @Inject(APP_BASE_HREF) baseHref: string,
+    private router: Router,
+    private defaultProcessorPipe: DefaultProcessorPipe,
+  ) {
     this.yamcsClient = new YamcsClient(baseHref);
   }
 
@@ -36,10 +41,10 @@ export class YamcsService {
     if (processor) {
       newContext += '__' + processor;
     } else {
-      // Try to find a 'default' processor for this instance (conventionally the first defined processor).
       const instanceDetail = await this.yamcsClient.getInstance(instance);
-      if (instanceDetail.processors && instanceDetail.processors.length) {
-        newContext += '__' + instanceDetail.processors[0].name;
+      const defaultProcessor = this.defaultProcessorPipe.transform(instanceDetail);
+      if (defaultProcessor) {
+        newContext += '__' + defaultProcessor;
       }
     }
 

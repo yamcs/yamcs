@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "./dist-lib/",
+  "lib": {
+    "entryFile": "src/lib.ts"
+  },
+  "whitelistedNonPeerDependencies": [
+    "."
+  ],
+  "assets": [
+    "src/assets",
+    "src/styles",
+    "src/index.html"
+  ]
+}

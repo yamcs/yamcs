@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ContextSwitchPage } from './appbase/pages/ContextSwitchPage';
+import { CreateInstancePage1 } from './appbase/pages/CreateInstancePage1';
+import { CreateInstancePage2 } from './appbase/pages/CreateInstancePage2';
+import { ForbiddenPage } from './appbase/pages/ForbiddenPage';
+import { HomePage } from './appbase/pages/HomePage';
+import { LoginPage } from './appbase/pages/LoginPage';
+import { NotFoundPage } from './appbase/pages/NotFoundPage';
+import { ProfilePage } from './appbase/pages/ProfilePage';
+import { ServerUnavailablePage } from './appbase/pages/ServerUnavailablePage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { ClearContextGuard } from './core/guards/ClearContextGuard';
 import { OpenIDCallbackGuard } from './core/guards/OpenIDCallbackGuard';
-import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
-import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
-import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
-import { ForbiddenPage } from './core/pages/ForbiddenPage';
-import { HomePage } from './core/pages/HomePage';
-import { LoginPage } from './core/pages/LoginPage';
-import { NotFoundPage } from './core/pages/NotFoundPage';
-import { ProfilePage } from './core/pages/ProfilePage';
-import { ServerUnavailablePage } from './core/pages/ServerUnavailablePage';
 import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
 
 /*

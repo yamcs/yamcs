@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { InstanceTemplate } from '../../client';
-import { YamcsService } from '../services/YamcsService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 
 @Component({

@@ -110,12 +110,12 @@ export function convertBase64ToHex(base64: string) {
 }
 
 const adjectives = [
-  'amused', 'acid', 'adaptable', 'alleged', 'agreeable', 'aspiring', 'berserk', 'bright',
+  'amused', 'acid', 'adaptable', 'alleged', 'agreeable', 'aspiring', 'awestruck', 'berserk', 'bright',
   'busy', 'calm', 'caring', 'chilly', 'cool', 'curious', 'dapper', 'dazzling', 'dizzy', 'eager',
   'elite', 'energetic', 'familiar', 'famous', 'fancy', 'fast', 'festive', 'flawless', 'fresh',
   'friendly', 'funny', 'furry', 'gifted', 'groovy', 'helpful', 'hungry', 'jolly', 'jumpy', 'lucky',
-  'polite', 'quick', 'quiet', 'rapid', 'rare', 'scary', 'surprised', 'swift', 'tall', 'tame', 'tidy',
-  'thirsty', 'tough', 'wacky', 'wild'];
+  'polite', 'quick', 'quiet', 'rapid', 'rare', 'scary', 'surprised', 'swift', 'tall', 'tame', 'thin',
+  'tidy', 'tiny', 'thirsty', 'tough', 'wacky', 'wild'];
 
 const animals = [
   'alligator', 'ant', 'anteater', 'antelope', 'armadillo', 'badger', 'bat', 'bear', 'bee',

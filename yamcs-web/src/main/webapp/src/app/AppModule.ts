@@ -2,42 +2,18 @@ import { APP_BASE_HREF } from '@angular/common';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AppBaseModule } from './appbase/AppBaseModule';
+import { AppComponent } from './appbase/pages/AppComponent';
 import { AppRoutingModule } from './AppRoutingModule';
-import { AppComponent } from './core/pages/AppComponent';
-import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
-import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
-import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
-import { CreateInstanceWizardStep } from './core/pages/CreateInstanceWizardStep';
-import { ForbiddenPage } from './core/pages/ForbiddenPage';
-import { HomePage } from './core/pages/HomePage';
-import { LoginPage } from './core/pages/LoginPage';
-import { NotFoundPage } from './core/pages/NotFoundPage';
-import { Oops } from './core/pages/Oops';
-import { ProfilePage } from './core/pages/ProfilePage';
-import { ServerUnavailablePage } from './core/pages/ServerUnavailablePage';
 import { ConfigService } from './core/services/ConfigService';
 import { SharedModule } from './shared/SharedModule';
-
-const appComponents = [
-  AppComponent,
-  ContextSwitchPage,
-  CreateInstancePage1,
-  CreateInstancePage2,
-  CreateInstanceWizardStep,
-  ForbiddenPage,
-  HomePage,
-  LoginPage,
-  NotFoundPage,
-  Oops,
-  ProfilePage,
-  ServerUnavailablePage,
-];
 
 @NgModule({
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
 
+    AppBaseModule,
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
   ],
@@ -62,9 +38,6 @@ const appComponents = [
       multi: true,
       deps: [ConfigService]
     }
-  ],
-  declarations: [
-    appComponents,
   ],
   exports: [
     BrowserModule,

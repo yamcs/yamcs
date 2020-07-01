@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "yamcs-web": {
+    "app": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -35,6 +35,9 @@
               "src/styles/styles.css",
               "node_modules/@yamcs/opi/dist/fonts/stylesheet.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+            ],
+            "allowedCommonJsDependencies": [
+              "brace/mode/javascript"
             ]
           },
           "configurations": {
@@ -65,5 +68,5 @@
       }
     }
   },
-  "defaultProject": "yamcs-web"
+  "defaultProject": "app"
 }

@@ -24,7 +24,7 @@
     </a>
   </app-instance-toolbar>
 
-  <nav mat-tab-nav-bar>
+  <nav #tabs mat-tab-nav-bar>
     <a mat-tab-link
        routerLink="summary"
        routerLinkActive #rla="routerLinkActive"
@@ -57,7 +57,7 @@
     </a>
   </nav>
 
-  <div class="tab-content-wrapper" [class.noscroll]="rlb?.isActive">
+  <div class="tab-content-wrapper" [class.noscroll]="tabs.selectedIndex === 1">
     <router-outlet></router-outlet>
   </div>
 </app-instance-page>
