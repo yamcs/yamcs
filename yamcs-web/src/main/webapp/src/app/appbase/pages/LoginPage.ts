@@ -3,7 +3,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../services/AuthService';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './LoginPage.html',

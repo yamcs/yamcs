@@ -7,9 +7,9 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance, InstancesSubscription } from '../../client';
-import { AuthService } from '../services/AuthService';
-import { MessageService } from '../services/MessageService';
-import { YamcsService } from '../services/YamcsService';
+import { AuthService } from '../../core/services/AuthService';
+import { MessageService } from '../../core/services/MessageService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 
 @Component({

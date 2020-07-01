@@ -123,7 +123,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         return;
       }
 
-      const dyOptions: { [key: string]: any } = {
+      const dyOptions: { [key: string]: any; } = {
         file: data.samples.length ? data.samples : 'X\n',
       };
       if (this.dataSource.visibleStart) { // May be undefined on subject initial []
@@ -182,7 +182,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
-    const seriesByLabel: { [key: string]: any } = {};
+    const seriesByLabel: { [key: string]: any; } = {};
 
     const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
     configs.forEach(config => {
@@ -199,7 +199,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     let lastClickedGraph: any = null;
 
-    const dyOptions: { [key: string]: any } = {
+    const dyOptions: { [key: string]: any; } = {
       legend: 'always',
       fillGraph: this.fillGraph,
       drawGrid: false,
@@ -233,25 +233,25 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         mousedown: (event: any, g: any, context: any) => {
           context.initializeMouseDown(event, g, context);
           if (event.altKey || event.shiftKey) {
-            Dygraph.startZoom(event, g, context);
+            (Dygraph as any).startZoom(event, g, context);
           } else {
-            Dygraph.startPan(event, g, context);
+            (Dygraph as any).startPan(event, g, context);
           }
         },
         mousemove: (event: any, g: any, context: any) => {
           if (context.isPanning) {
             this.disableDataReload = true;
-            Dygraph.movePan(event, g, context);
+            (Dygraph as any).movePan(event, g, context);
           } else if (context.isZooming) {
             this.disableDataReload = true;
-            Dygraph.moveZoom(event, g, context);
+            (Dygraph as any).moveZoom(event, g, context);
           }
         },
         mouseup: (event: any, g: any, context: any) => {
           if (context.isPanning) {
-            Dygraph.endPan(event, g, context);
+            (Dygraph as any).endPan(event, g, context);
           } else if (context.isZooming) {
-            Dygraph.endZoom(event, g, context);
+            (Dygraph as any).endZoom(event, g, context);
           }
 
           const xAxisRange = g.xAxisRange();
@@ -432,14 +432,14 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     }
 
     // Install customized GridPlugin in global Dygraph object.
-    Dygraph.Plugins['Grid'] = GridPlugin;
-    Dygraph.PLUGINS = [
-      Dygraph.Plugins['Legend'],
-      Dygraph.Plugins['Axes'],
-      Dygraph.Plugins['Annotations'],
-      Dygraph.Plugins['ChartLabels'],
-      Dygraph.Plugins['Grid'],
-      Dygraph.Plugins['RangeSelector'],
+    (Dygraph as any).Plugins['Grid'] = GridPlugin;
+    (Dygraph as any).PLUGINS = [
+      (Dygraph as any).Plugins['Legend'],
+      (Dygraph as any).Plugins['Axes'],
+      (Dygraph as any).Plugins['Annotations'],
+      (Dygraph as any).Plugins['ChartLabels'],
+      (Dygraph as any).Plugins['Grid'],
+      (Dygraph as any).Plugins['RangeSelector'],
     ];
 
     this.dygraph = new Dygraph(containingDiv, 'X\n', dyOptions);
@@ -488,7 +488,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   }
 
   private updateDygraphSeries() {
-    const seriesByLabel: { [key: string]: any } = {};
+    const seriesByLabel: { [key: string]: any; } = {};
 
     const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
     configs.forEach(config => {
@@ -498,7 +498,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       };
     });
 
-    const dyOptions: { [key: string]: any } = {
+    const dyOptions: { [key: string]: any; } = {
       labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
       series: seriesByLabel,
     };

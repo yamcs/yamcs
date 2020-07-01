@@ -101,7 +101,7 @@
       <td mat-cell *cdkCellDef="let row">
         <a *ngIf="row.state !== 'OFFLINE'"
            routerLink="/instance"
-           [queryParams]="{c: (row.processors ? (row.name + '__' + row.processors[0].name) : row.name)}"
+           [queryParams]="{c: (row.processors ? (row.name + '__' + (row | defaultProcessor)) : row.name)}"
            (click)="$event.stopPropagation()">
           {{ row.name }}
         </a>
@@ -112,8 +112,7 @@
     <ng-container cdkColumnDef="processor">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Default Processor</th>
       <td mat-cell *cdkCellDef="let row">
-        <ng-container *ngIf="row.processors">{{ row.processors[0].name }}</ng-container>
-        <ng-container *ngIf="!row.processors">-</ng-container>
+        {{ row | defaultProcessor | nvl:'-' }}
       </td>
     </ng-container>
 

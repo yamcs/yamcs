@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../core/services/AuthService';
 import { User } from '../../shared/User';
-import { AuthService } from '../services/AuthService';
 
 @Component({
   templateUrl: './ProfilePage.html',

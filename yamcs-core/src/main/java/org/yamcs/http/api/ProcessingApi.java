@@ -93,12 +93,12 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         if (request.hasInstance()) {
             YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
             for (Processor processor : ysi.getProcessors()) {
-                response.addProcessors(toProcessorInfo(processor, true));
+                response.addProcessors(toProcessorInfo(processor));
             }
         } else {
             for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
                 for (Processor processor : ysi.getProcessors()) {
-                    response.addProcessors(toProcessorInfo(processor, true));
+                    response.addProcessors(toProcessorInfo(processor));
                 }
             }
         }
@@ -110,7 +110,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     public void getProcessor(Context ctx, GetProcessorRequest request, Observer<ProcessorInfo> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
-        ProcessorInfo pinfo = toProcessorInfo(processor, true);
+        ProcessorInfo pinfo = toProcessorInfo(processor);
         observer.complete(pinfo);
     }
 
@@ -484,14 +484,9 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
     }
 
-    public static ProcessorInfo toProcessorInfo(Processor processor, boolean detail) {
-        ProcessorInfo.Builder b;
-        if (detail) {
-            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
-            b = ProcessorInfo.newBuilder(pinfo);
-        } else {
-            b = ProcessorInfo.newBuilder().setName(processor.getName());
-        }
+    public static ProcessorInfo toProcessorInfo(Processor processor) {
+        ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+        ProcessorInfo.Builder b = ProcessorInfo.newBuilder(pinfo);
 
         String instance = processor.getInstance();
         String name = processor.getName();

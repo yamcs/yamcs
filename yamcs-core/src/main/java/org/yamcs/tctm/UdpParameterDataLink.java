@@ -11,14 +11,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.TimeService;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -51,20 +50,12 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
     YConfiguration config;
-    final String name;
+    String name;
 
     private ScheduledThreadPoolExecutor timer;
 
-    /**
-     * Creates a new UDP data link
-     * 
-     * @param instance
-     * @param name
-     * @param config
-     * @throws ConfigurationException
-     *             if port is not defined in the config
-     */
-    public UdpParameterDataLink(String instance, String name, YConfiguration config) {
+    @Override
+    public void init(String instance, String name, YConfiguration config) {
         this.config = config;
         this.name = name;
         log = new Log(getClass(), instance);
@@ -122,7 +113,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
 
             for (Pvalue.ParameterValue gpv : pdata.getParameterList()) {
                 NamedObjectId id = gpv.getId();
-                if(id==null) {
+                if (id == null) {
                     log.warn("parameter without id, skipping");
                     continue;
                 }
@@ -130,8 +121,8 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
                 if (id.hasNamespace()) {
                     log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
                 }
-                ParameterValue pv  = ParameterValue.fromGpb(fqn, gpv);
-                long gentime = gpv.hasGenerationTime()?pv.getGenerationTime():now;
+                ParameterValue pv = ParameterValue.fromGpb(fqn, gpv);
+                long gentime = gpv.hasGenerationTime() ? pv.getGenerationTime() : now;
                 pv.setGenerationTime(gentime);
 
                 List<ParameterValue> pvals = valuesByTime.computeIfAbsent(gentime, x -> new ArrayList<>());
@@ -139,7 +130,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             }
 
             for (Entry<Long, List<ParameterValue>> group : valuesByTime.entrySet()) {
-                parameterSink.updateParameters((long)group.getKey(), recgroup, sequenceNumber, group.getValue());
+                parameterSink.updateParameters((long) group.getKey(), recgroup, sequenceNumber, group.getValue());
             }
         }
     }
