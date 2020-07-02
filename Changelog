@@ -25,6 +25,7 @@ Version 5.0.0 released
     support the baseType XTCE property which allows a type to inherit properties from another type.
     AbsoluteTimeParameterType uses java Instant as initial value (rather than Yamcs times)
 - remove the yamcs-simulation rpm. Simulation is one of the examples along others.
+- updated RocksdDB to a newer version such that Yamcs can be run now on Windows 64bits and Linux ARM64 (e.g. Rasbperry Pi 4)
 
 
 Version 4.10.9 released 24-Apr-2020
