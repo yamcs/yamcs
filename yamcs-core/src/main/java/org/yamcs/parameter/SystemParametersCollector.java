@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -61,7 +63,6 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
 
     static final List<String> FILE_SYSTEM_TYPES = Arrays.asList("ext4", "ext3", "xfs");
 
-    ScheduledThreadPoolExecutor timer;
     Stream stream;
 
     int seqCount = 0;
@@ -71,7 +72,8 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
 
     TimeService timeService;
     List<FileStore> fileStores;
-
+    ScheduledFuture<?> collectionFuture;
+    
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -134,19 +136,25 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
 
     @Override
     public void doStart() {
-        timeService = YamcsServer.getServer().getInstance(yamcsInstance).getTimeService();
-        timer = new ScheduledThreadPoolExecutor(1);
-        timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
+        YamcsServer server =YamcsServer.getServer();
+        timeService = server.getInstance(yamcsInstance).getTimeService();
+        ScheduledThreadPoolExecutor timer = server.getThreadPoolExecutor();
+        collectionFuture = timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
         notifyStarted();
     }
 
     @Override
     public void doStop() {
-        timer.shutdown();
+        collectionFuture.cancel(true);
         synchronized (instances) {
             instances.remove(yamcsInstance);
         }
-        notifyStopped();
+        try {
+            collectionFuture.get();
+            notifyStopped();
+        } catch (Exception e) {
+            notifyFailed(e);
+        }
     }
 
     /**
