@@ -23,6 +23,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * reader for tables with PartitionStorage.IN_KEY (the partition is prepended in front of the key)
+ * 
  * @author nm
  *
  */
@@ -31,24 +32,24 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     final PartitioningSpec partitioningSpec;
     private long numRecordsRead = 0;
     private final Tablespace tablespace;
-    
-    
-    protected RdbTableReaderStream(Tablespace tablespace, YarchDatabaseInstance ydb, PartitionManager pmgr,  boolean ascending, boolean follow) {
+    Thread thread;
+
+    protected RdbTableReaderStream(Tablespace tablespace, YarchDatabaseInstance ydb, PartitionManager pmgr,
+            boolean ascending, boolean follow) {
         super(ydb, pmgr, ascending, follow);
-        
+
         this.tablespace = tablespace;
         partitioningSpec = pmgr.getPartitioningSpec();
     }
 
-
-    @Override 
+    @Override
     public void doStart() {
-        (new Thread(this, "RdbTableReaderStream["+getName()+"]")).start();
+        thread = new Thread(this, "RdbTableReaderStream[" + getName() + "]");
+        thread.start();
     }
 
-
     /**
-     * reads a file, sending data only that conform with the start and end filters. 
+     * reads a file, sending data only that conform with the start and end filters.
      * returns true if the stop condition is met
      * 
      * All the partitions are from the same time interval and thus from one single RocksDB database
@@ -56,34 +57,38 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
      */
     @Override
     protected boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException {
-       
-        byte[] rangeStart=null;
-        boolean strictStart=false;
-        byte[] rangeEnd=null;
-        boolean strictEnd=false;
 
-        if(range!=null) {
+        byte[] rangeStart = null;
+        boolean strictStart = false;
+        byte[] rangeEnd = null;
+        boolean strictEnd = false;
+
+        if (range != null) {
             ColumnDefinition cd = tableDefinition.getKeyDefinition().getColumn(0);
             ColumnSerializer cs = tableDefinition.getColumnSerializer(cd.getName());
-            if(range.keyStart!=null) {
+            if (range.keyStart != null) {
                 strictStart = range.strictStart;
                 rangeStart = cs.toByteArray(range.keyStart);
             }
-            if(range.keyEnd!=null) {
+            if (range.keyEnd != null) {
                 strictEnd = range.strictEnd;
                 rangeEnd = cs.toByteArray(range.keyEnd);
             }
         }
-        
+
         return runValuePartitions(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
     }
 
-    /*
-     * runs value based partitions: the partition value is encoded as the first bytes of the key, so we have to make multiple parallel iterators
+    /**
+     * runs value based partitions: the partition value is encoded as the first bytes of the key, so we have to make
+     * multiple parallel iterators
+     *
+     * @return true if the end condition has been reached
      */
-    private boolean runValuePartitions(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+    private boolean runValuePartitions(List<Partition> partitions, byte[] rangeStart, boolean strictStart,
+            byte[] rangeEnd, boolean strictEnd) {
         DbIterator iterator = null;
-        
+
         RdbPartition p1 = (RdbPartition) partitions.get(0);
         String dbDir = p1.dir;
         log.debug("opening database {}", dbDir);
@@ -97,117 +102,127 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         Snapshot snapshot = null;
-        if(!follow) {
+        if (!follow) {
             snapshot = rdb.getDb().getSnapshot();
             readOptions.setSnapshot(snapshot);
         }
-        
+
         try {
             List<DbIterator> itList = new ArrayList<>(partitions.size());
-            //create an iterator for each partitions
-            for(Partition p: partitions) {
+            // create an iterator for each partitions
+            for (Partition p : partitions) {
                 p1 = (RdbPartition) p;
                 RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
-                
-                DbIterator it = getPartitionIterator(rocksIt, p1.tbsIndex,  ascending, rangeStart, strictStart, rangeEnd, strictEnd);
-                
-                if(it.isValid()) {
+
+                DbIterator it = getPartitionIterator(rocksIt, p1.tbsIndex, ascending, rangeStart, strictStart, rangeEnd,
+                        strictEnd);
+
+                if (it.isValid()) {
                     itList.add(it);
                 } else {
                     it.close();
                 }
             }
-            if(itList.size()==0) {
+            if (itList.size() == 0) {
                 return false;
-            } else if(itList.size()==1) {
+            } else if (itList.size() == 1) {
                 iterator = itList.get(0);
             } else {
-                iterator = new MergingIterator(itList, ascending?new SuffixAscendingComparator(4):new SuffixDescendingComparator(4) );
+                iterator = new MergingIterator(itList,
+                        ascending ? new SuffixAscendingComparator(4) : new SuffixDescendingComparator(4));
             }
-            if(ascending) {
+            if (ascending) {
                 return runAscending(iterator, rangeEnd, strictEnd);
             } else {
                 return runDescending(iterator, rangeStart, strictStart);
             }
         } finally {
-            if(iterator!=null) {
+            if (iterator != null) {
                 iterator.close();
             }
-            if(snapshot!=null) {
+            if (snapshot != null) {
                 snapshot.close();
             }
             readOptions.close();
             tablespace.dispose(rdb);
         }
     }
-    
+
     boolean runAscending(DbIterator iterator, byte[] rangeEnd, boolean strictEnd) {
-        while(!quit && iterator.isValid()){
+        while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
-            if(!emitIfNotPastStop(key, iterator.value(), rangeEnd, strictEnd)) {
+            if (!emitIfNotPastStop(key, iterator.value(), rangeEnd, strictEnd)) {
                 return true;
             }
+            if (quitting()) {
+                return false;
+            }
+
             iterator.next();
         }
         return false;
     }
-    
+
     boolean runDescending(DbIterator iterator, byte[] rangeStart, boolean strictStart) {
-        while(!quit && iterator.isValid()){
+        while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
-            if(!emitIfNotPastStart(key, iterator.value(), rangeStart, strictStart)) {
+            if (!emitIfNotPastStart(key, iterator.value(), rangeStart, strictStart)) {
                 return true;
+            }
+            if (quitting()) {
+                return false;
             }
             iterator.prev();
         }
         return false;
     }
-   /*
-    * create a ranging iterator for the given partition
-    * TODO: check usage of RocksDB prefix iterators
-    *  
-    */
-   private DbIterator getPartitionIterator(RocksIterator it, int tbsIndex, boolean ascending, byte[] rangeStart, boolean strictStart,
-           byte[] rangeEnd, boolean strictEnd) {
-       byte[] dbKeyStart;
-       byte[] dbKeyEnd;
-       boolean dbStrictStart, dbStrictEnd;
-       
-       if(rangeStart!=null) {
-           dbKeyStart = RdbStorageEngine.dbKey(tbsIndex, rangeStart);
-           dbStrictStart = strictStart;
-       } else {
-           dbKeyStart = RdbStorageEngine.dbKey(tbsIndex);
-           dbStrictStart = false;
-       }
-       
-       if(rangeEnd!=null) {
-           dbKeyEnd = RdbStorageEngine.dbKey(tbsIndex, rangeEnd);
-           dbStrictEnd = strictEnd;
-       } else {
-           dbKeyEnd = RdbStorageEngine.dbKey(tbsIndex+1);
-           dbStrictEnd = true;
-       }
-       if(ascending) {
-           return new AscendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
-       } else {
-           return new DescendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
-       }
-   }
- 
+
+    /*
+     * create a ranging iterator for the given partition
+     * TODO: check usage of RocksDB prefix iterators
+     * 
+     */
+    private DbIterator getPartitionIterator(RocksIterator it, int tbsIndex, boolean ascending, byte[] rangeStart,
+            boolean strictStart,
+            byte[] rangeEnd, boolean strictEnd) {
+        byte[] dbKeyStart;
+        byte[] dbKeyEnd;
+        boolean dbStrictStart, dbStrictEnd;
+
+        if (rangeStart != null) {
+            dbKeyStart = RdbStorageEngine.dbKey(tbsIndex, rangeStart);
+            dbStrictStart = strictStart;
+        } else {
+            dbKeyStart = RdbStorageEngine.dbKey(tbsIndex);
+            dbStrictStart = false;
+        }
+
+        if (rangeEnd != null) {
+            dbKeyEnd = RdbStorageEngine.dbKey(tbsIndex, rangeEnd);
+            dbStrictEnd = strictEnd;
+        } else {
+            dbKeyEnd = RdbStorageEngine.dbKey(tbsIndex + 1);
+            dbStrictEnd = true;
+        }
+        if (ascending) {
+            return new AscendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
+        } else {
+            return new DescendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
+        }
+    }
+
     public long getNumRecordsRead() {
         return numRecordsRead;
     }
 
-    
-    class RdbRawTuple extends RawTuple {       
+    class RdbRawTuple extends RawTuple {
         RocksIterator iterator;
         byte[] partition;
         byte[] key;
         byte[] value;
-        
+
         public RdbRawTuple(byte[] partition, byte[] key, byte[] value, RocksIterator iterator, int index) {
             super(index);
             this.partition = partition;
@@ -225,10 +240,11 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         protected byte[] getValue() {
             return value;
         }
-    }  
-    
+    }
+
     static class SuffixAscendingComparator implements Comparator<byte[]> {
         int prefixSize;
+
         public SuffixAscendingComparator(int prefixSize) {
             this.prefixSize = prefixSize;
         }
@@ -237,24 +253,24 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         public int compare(byte[] b1, byte[] b2) {
             int minLength = Math.min(b1.length, b2.length);
             for (int i = prefixSize; i < minLength; i++) {
-                int d=(b1[i]&0xFF)-(b2[i]&0xFF);
-                if(d!=0){
+                int d = (b1[i] & 0xFF) - (b2[i] & 0xFF);
+                if (d != 0) {
                     return d;
                 }
             }
             for (int i = 0; i < prefixSize; i++) {
-                int d=(b1[i]&0xFF)-(b2[i]&0xFF);
-                if(d!=0){
+                int d = (b1[i] & 0xFF) - (b2[i] & 0xFF);
+                if (d != 0) {
                     return d;
                 }
             }
             return b1.length - b2.length;
         }
     }
-    
-    
+
     static class SuffixDescendingComparator implements Comparator<byte[]> {
         int prefixSize;
+
         public SuffixDescendingComparator(int prefixSize) {
             this.prefixSize = prefixSize;
         }
@@ -263,18 +279,28 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         public int compare(byte[] b1, byte[] b2) {
             int minLength = Math.min(b1.length, b2.length);
             for (int i = prefixSize; i < minLength; i++) {
-                int d=(b2[i]&0xFF)-(b1[i]&0xFF);
-                if(d!=0){
+                int d = (b2[i] & 0xFF) - (b1[i] & 0xFF);
+                if (d != 0) {
                     return d;
                 }
             }
             for (int i = 0; i < prefixSize; i++) {
-                int d=(b2[i]&0xFF)-(b1[i]&0xFF);
-                if(d!=0){
+                int d = (b2[i] & 0xFF) - (b1[i] & 0xFF);
+                if (d != 0) {
                     return d;
                 }
             }
             return b2.length - b1.length;
         }
+    }
+
+    public boolean awaitClosure(int millisec) throws InterruptedException {
+        if (thread != null) {
+            thread.join(millisec);
+            return !thread.isAlive();
+        } else {
+            return true;
+        }
+
     }
 }

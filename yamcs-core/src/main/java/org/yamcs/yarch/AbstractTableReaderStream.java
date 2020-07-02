@@ -34,7 +34,6 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
                                              // column
 
     static AtomicInteger count = new AtomicInteger(0);
-    volatile protected boolean quit = false;
     Comparator<byte[]> bytesComparator = UnsignedBytes.lexicographicalComparator();
     private Tuple lastEmitted;
 
@@ -42,8 +41,8 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
     final protected boolean ascending;
     final protected boolean follow;
 
-    protected AbstractTableReaderStream(YarchDatabaseInstance ydb, PartitionManager partitionManager
-            , boolean ascending, boolean follow) {
+    protected AbstractTableReaderStream(YarchDatabaseInstance ydb, PartitionManager partitionManager, boolean ascending,
+            boolean follow) {
         super(ydb, partitionManager.getTableName() + "_" + count.getAndIncrement(),
                 partitionManager.getTableDefinition().getTupleDefinition());
         this.tableDefinition = partitionManager.getTableDefinition();
@@ -83,7 +82,7 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
                 }
             }
 
-            while ((!quit) && partitionIterator.hasNext()) {
+            while (isRunning() && partitionIterator.hasNext()) {
                 List<Partition> partitions = partitionIterator.next();
                 boolean endReached = runPartitions(partitions, rangeIndexFilter);
                 if (endReached) {
@@ -102,6 +101,8 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
      * condition is met
      * 
      * All the partitions are from the same time interval
+     * 
+     * @return returns true if the end condition has been reached.
      */
     protected abstract boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException;
 
@@ -270,7 +271,6 @@ public abstract class AbstractTableReaderStream extends Stream implements Runnab
 
     @Override
     public void doClose() {
-        quit = true;
     }
 
     public TableDefinition getTableDefinition() {

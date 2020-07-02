@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.codehaus.janino.Java.DoStatement;
 import org.yamcs.logging.Log;
 
 /**
@@ -97,6 +96,14 @@ public abstract class Stream {
         if (state.compareAndSet(SETUP, RUNNING)) {
             doStart();
         }
+    }
+
+    protected boolean isRunning() {
+        return state.get()==RUNNING;
+    }
+    
+    protected boolean quitting() {
+        return state.get()==QUITTING;
     }
 
     /**

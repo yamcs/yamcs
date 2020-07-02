@@ -7,8 +7,10 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -103,6 +105,9 @@ public class Tablespace {
     RDBFactory rdbFactory;
 
     Map<TableDefinition, RdbPartitionManager> partitionManagers = new ConcurrentHashMap<>();
+    static final Object DUMMY = new Object();
+    Map<RdbTableReaderStream, Object> readers = Collections
+            .synchronizedMap(new WeakHashMap<RdbTableReaderStream, Object>());
 
     public Tablespace(String name) {
         this.name = name;
@@ -411,10 +416,6 @@ public class Tablespace {
         return key;
     }
 
-    public void close() {
-        rdbFactory.shutdown();
-    }
-
     public RDBFactory getRdbFactory() {
         return rdbFactory;
     }
@@ -500,11 +501,11 @@ public class Tablespace {
     }
 
     private void changePvColumnType(TupleDefinition tdef, String cname) {
-        
+
         int idx = tdef.getColumnIndex(cname);
-        
+
         if (idx > 0) {
-            log.info("Chaning data type of column {} to {}", cname,  DataType.PARAMETER_VALUE);
+            log.info("Chaning data type of column {} to {}", cname, DataType.PARAMETER_VALUE);
             ColumnDefinition cd = new ColumnDefinition(cname, DataType.PARAMETER_VALUE);
             tdef.getColumnDefinitions().set(idx, cd);
         }
@@ -513,7 +514,7 @@ public class Tablespace {
     private void changeEventColumnType(TupleDefinition tdef, String cname) {
         int idx = tdef.getColumnIndex(cname);
         if (idx >= 0) {
-            log.info("Chaning data type of column {} to {}", cname,  Db.Event.class.getName());
+            log.info("Chaning data type of column {} to {}", cname, Db.Event.class.getName());
             ColumnDefinition cd = new ColumnDefinition(cname, DataType.protobuf(Db.Event.class.getName()));
             tdef.getColumnDefinitions().set(idx, cd);
         }
@@ -577,6 +578,25 @@ public class Tablespace {
         if (pmgr == null) {
             throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
         }
-        return new RdbTableReaderStream(this, ydb, pmgr, ascending, follow);
+        RdbTableReaderStream rrs = new RdbTableReaderStream(this, ydb, pmgr, ascending, follow);
+        readers.put(rrs, DUMMY);
+        return rrs;
     }
+
+    public void close() {
+        try {
+            for (RdbTableReaderStream rrs : readers.keySet()) {
+                rrs.close();
+                if (!rrs.awaitClosure(5000)) {
+                    log.warn("TableReader did not quit in 5 sec");
+                }
+            }
+
+            rdbFactory.shutdown();
+        } catch (InterruptedException e) {
+            log.warn("Interrupted during shutdown");
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }
