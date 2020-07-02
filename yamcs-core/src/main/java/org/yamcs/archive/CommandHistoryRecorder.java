@@ -49,13 +49,11 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
 
             stream = ydb.getStream(StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
             if (stream == null) {
-                log.warn("The stream {} has not been found", StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
-                notifyFailed(new Exception("The stream " + StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME
-                        + " has not been found"));
-                return;
+                log.info("The stream {} has not been found, skipping", StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
+                ydb.execute("upsert_append into " + TABLE_NAME + " select * from "
+                        + StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
             }
-            ydb.execute("upsert_append into " + TABLE_NAME + " select * from "
-                    + StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
+            
 
         } catch (Exception e) {
             log.error("Failed to setup the recording", e);
