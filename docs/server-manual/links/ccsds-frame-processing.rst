@@ -194,7 +194,10 @@ randomizeCltu (boolean)
     Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on. 
  
 virtualChannels (map)
-    **Required.** Used to specify the Virtual Channel specific configuration. 
+    **Required.** Used to specify the Virtual Channel specific configuration.
+
+errorDetection (string)
+    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
