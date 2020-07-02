@@ -1,10 +1,15 @@
 package org.yamcs.archive;
 
-import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
+import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
+import org.yamcs.StreamConfig;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -23,6 +28,14 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
     public static final String TABLE_NAME = "cmdhist";
 
     static TupleDefinition eventTpdef;
+    List<String> streamNames;
+
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        return spec;
+    }
 
     @Override
     protected void doStart() {
@@ -35,26 +48,27 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
                         + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) table_format=compressed";
                 ydb.execute(q);
             }
-
-            Stream stream = ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
-            if (stream == null) {
-                log.warn("The stream {} has not been found",
-                        StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
-                notifyFailed(new Exception("The stream " + StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME
-                        + " has not been found"));
+            if (config.containsKey("streams")) {
+                streamNames = config.getList("streams");
+            } else {
+                streamNames = StreamConfig.getInstance(yamcsInstance)
+                    .getEntries(StandardStreamType.cmdHist).stream().map(sce -> sce.getName()).collect(Collectors.toList());
+            }
+            if (streamNames.isEmpty()) {
+                notifyFailed(new ConfigurationException(
+                        "No command history streams have been configured. Please remove this service if the command history is not used."));
                 return;
             }
-            ydb.execute("upsert_append into " + TABLE_NAME + " select * from "
-                    + StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
-
-            stream = ydb.getStream(StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
-            if (stream == null) {
-                log.info("The stream {} has not been found, skipping", StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
-                ydb.execute("upsert_append into " + TABLE_NAME + " select * from "
-                        + StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
-            }
             
-
+            for (String sn: streamNames) {
+                Stream stream = ydb.getStream(sn);
+                if (stream == null) {
+                    log.warn("The stream {} has not been found", sn);
+                    notifyFailed(new ConfigurationException("The stream " + sn + " has not been found"));
+                    return;
+                }
+                ydb.execute("upsert_append into " + TABLE_NAME + " select * from "+sn);
+            }
         } catch (Exception e) {
             log.error("Failed to setup the recording", e);
             notifyFailed(e);
@@ -67,8 +81,9 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
     @Override
     protected void doStop() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        Utils.closeTableWriters(ydb, Arrays.asList(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME,
-                StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME));
+        Utils.closeTableWriters(ydb, StreamConfig.getInstance(yamcsInstance)
+                .getEntries(StandardStreamType.cmdHist).stream().map(sce -> sce.getName())
+                .collect(Collectors.toList()));
         notifyStopped();
     }
 }

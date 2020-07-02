@@ -1,9 +1,13 @@
 package org.yamcs.archive;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.yamcs.StandardTupleDefinitions;
@@ -17,6 +21,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
+import static org.yamcs.cmdhistory.StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME;
 /**
  * Generates and saves some some command history and then it performs a replay via ActiveMQ
  * 
@@ -29,10 +34,13 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     @Test
     public void testRecording() throws Exception {
         final int n = 100;
-        ydb.execute("create stream " + StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME
+        ydb.execute("create stream " + REALTIME_CMDHIST_STREAM_NAME
                 + StandardTupleDefinitions.TC.getStringDefinition());
         CommandHistoryRecorder cmdHistRecorder = new CommandHistoryRecorder();
-        cmdHistRecorder.init(ydb.getName(), YConfiguration.emptyConfig());
+        List<String> l = Arrays.asList(REALTIME_CMDHIST_STREAM_NAME);
+        Map<String, Object> m = new HashMap<>();
+        m.put("streams", l);
+        cmdHistRecorder.init(ydb.getName(), YConfiguration.wrap(m));
         cmdHistRecorder.startAsync();
 
         Stream rtstream = ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
