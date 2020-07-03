@@ -3,6 +3,8 @@ package org.yamcs.replication;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -54,10 +56,12 @@ public class ReplicationSlave extends AbstractYamcsService {
     SlaveChannelHandler slaveChannelHandler;
     List<String> streamNames;
     RandomAccessFile lastTxFile;
+    FileLock lastTxFileLock;
+
     Path txtfilePath;
     int localInstanceId;
     SslContext sslCtx = null;
-    
+
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
@@ -66,17 +70,17 @@ public class ReplicationSlave extends AbstractYamcsService {
         if (tcpRole == TcpRole.Client) {
             host = config.getString("masterHost");
             port = config.getInt("masterPort");
-            reconnectionInterval = 1000* config.getLong("reconnectionIntervalSec", 30);
+            reconnectionInterval = 1000 * config.getLong("reconnectionIntervalSec", 30);
             boolean enableTls = config.getBoolean("enableTls", false);
-            
+
             if (enableTls) {
                 try {
                     sslCtx = SslContextBuilder.forClient().build();
                 } catch (SSLException e) {
-                    throw new InitException("Failed to initialize the TLS: "+e.toString());
+                    throw new InitException("Failed to initialize the TLS: " + e.toString());
                 }
             }
-            
+
         } else {
             List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
             if (servers.isEmpty()) {
@@ -93,15 +97,22 @@ public class ReplicationSlave extends AbstractYamcsService {
         String dataDir = YarchDatabase.getDataDir();
         Path replicationDir = Paths.get(dataDir).resolve(yamcsInstance).resolve("replication");
         replicationDir.toFile().mkdirs();
-        txtfilePath = replicationDir.resolve("slave-lastid.txt");
+        String lastTxFilename = config.getString("lastTxFile", "slave-lastid.txt");
+
+        txtfilePath = replicationDir.resolve(lastTxFilename);
         try {
             lastTxFile = new RandomAccessFile(txtfilePath.toFile(), "rw");
+            lastTxFileLock = lastTxFile.getChannel().lock();
             String line = lastTxFile.readLine();
             if (line != null) {
                 lastTxId = Long.parseLong(line);
             } else {
                 lastTxId = -1;
             }
+        } catch (OverlappingFileLockException e) {
+            throw new InitException(
+                    "ERROR: cannot lock " + lastTxFilename + ". Is another replication slave running with this file?"
+                            + "Please consider using the lastTxFile option to specify a different filename");
         } catch (IOException e) {
             throw new InitException(e);
         } catch (NumberFormatException e) {
@@ -125,6 +136,14 @@ public class ReplicationSlave extends AbstractYamcsService {
     protected void doStop() {
         if (tcpClient != null) {
             tcpClient.stop();
+        }
+
+        try {
+            lastTxFileLock.close();
+            lastTxFile.close();
+        } catch (IOException e) {
+            log.error("Failed to close the last TX id file");
+            notifyFailed(e);
         }
         notifyStopped();
     }
@@ -179,14 +198,14 @@ public class ReplicationSlave extends AbstractYamcsService {
                 nettybuf.release();
             }
         }
-        
+
         private void doChannelRead(ChannelHandlerContext ctx, ByteBuf nettybuf) {
             ByteBuffer buf = nettybuf.nioBuffer();
-            
+
             if (state() != State.RUNNING) {
                 return;
             }
-            
+
             Message msg;
             try {
                 msg = Message.decode(buf);
@@ -199,13 +218,13 @@ public class ReplicationSlave extends AbstractYamcsService {
 
             if (msg.type == Message.DATA) {
                 TransactionMessage tmsg = (TransactionMessage) msg;
-               
+
                 if (tmsg.txId <= lastTxId) {
                     log.warn("Received data from the past txId={}, lastTxId={}", tmsg.txId, lastTxId);
                 } else {
                     checkMissing(tmsg);
                 }
-                
+
                 int streamId = tmsg.buf.getInt();
 
                 if (tmsg.instanceId == localInstanceId) {
@@ -225,8 +244,8 @@ public class ReplicationSlave extends AbstractYamcsService {
                 bbs.processData(tmsg.txId, tmsg.buf);
             } else if (msg.type == Message.STREAM_INFO) {
                 TransactionMessage tmsg = (TransactionMessage) msg;
-                if (tmsg.txId > lastTxId) { //we expect to receive previous stream info transactions
-                    checkMissing(tmsg); 
+                if (tmsg.txId > lastTxId) { // we expect to receive previous stream info transactions
+                    checkMissing(tmsg);
                 }
 
                 StreamInfo streamInfo = (StreamInfo) msg.protoMsg;
@@ -261,10 +280,8 @@ public class ReplicationSlave extends AbstractYamcsService {
             }
         }
 
-        
-        
         private void checkMissing(TransactionMessage tmsg) {
-            if(tmsg.txId != lastTxId + 1) {
+            if (tmsg.txId != lastTxId + 1) {
                 log.warn("Transactions {} to {} are missing", lastTxId + 1, tmsg.txId - 1);
             }
             lastTxId = tmsg.txId;
