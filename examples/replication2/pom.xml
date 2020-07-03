@@ -8,17 +8,13 @@
     <version>5.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>replication1</artifactId>
+  <artifactId>replication2</artifactId>
   <packaging>jar</packaging>
 
-  <name>Yamcs :: Examples :: Replication</name>
+  <name>Yamcs :: Examples :: Replication2</name>
   <description>
     Example demonstrating the use of replication
   </description>
-
-  <properties>
-    <maven.install.skip>true</maven.install.skip>
-  </properties>
 
 
   <dependencies>

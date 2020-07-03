@@ -5,20 +5,16 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.0.0</version>
+    <version>5.0.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>replication1</artifactId>
   <packaging>jar</packaging>
 
-  <name>Yamcs :: Examples :: Replication</name>
+  <name>Yamcs :: Examples :: Replication1</name>
   <description>
     Example demonstrating the use of replication
   </description>
-
-  <properties>
-    <maven.install.skip>true</maven.install.skip>
-  </properties>
 
 
   <dependencies>
