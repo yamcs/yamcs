@@ -1,0 +1,12 @@
+This contains an example with a Yamcs server with three instances node1, node2 and node3 with the data replicating:
+node1 -> node2
+node1 -> node3
+node2 -> node3 when the TM link to node1 goes down.
+
+The node2 TM link and  node2->node3 replication are disabled by default. A script can be written to monitor the node1 TM link and start the node2 link when the node1 link goes down.
+
+This setup corresponds to a node1 and node2 running in some sort of redundancy mode, pushing data to a node3.
+
+The three instances can be separated on different Yamcs servers by copying the instance configuration file. 
+
+Connecting via a web-browser, you can go to nodeX->Archive->Streams and observe the stream count.

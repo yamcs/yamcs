@@ -1,0 +1,74 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+        - tm_dump
+  - class: org.yamcs.parameter.SystemParametersCollector
+    args:
+      provideJvmVariables: true
+      provideFsVariables: true
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+        realtimeFiller: 
+            enabled: false
+        backFiller:
+            enabled: true
+            warmupTime: 60
+  - class: org.yamcs.replication.ReplicationSlave
+    name: replication-node1
+    args:
+        tcpRole: client
+        masterHost: localhost
+        masterPort: 8099
+        masterInstance: node1
+        streams: ["tm_realtime"]
+        lastTxFile: "node1-lasttxid.txt"
+  - class: org.yamcs.replication.ReplicationSlave
+    name: replication-node2
+    enabledAtStartup: false
+    args:
+        tcpRole: client
+        masterHost: localhost
+        masterPort: 8099
+        masterInstance: node2
+        streams: ["tm_realtime"]
+        lastTxFile: "node2-lasttxid.txt"
+
+
+
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
+    - name: "tm_dump"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc: ["tc_realtime"]
