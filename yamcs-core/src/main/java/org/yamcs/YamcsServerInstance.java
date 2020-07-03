@@ -70,6 +70,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Spec serviceSpec = new Spec();
         serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
         serviceSpec.addOption("args", OptionType.ANY);
+        serviceSpec.addOption("name", OptionType.STRING);
+        serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
@@ -137,12 +139,18 @@ public class YamcsServerInstance extends YamcsInstanceService {
     protected void doStart() {
         linkManager.startLinks();
         for (ServiceWithConfig swc : services) {
-            log.debug("Starting service {}", swc.getName());
-            swc.service.startAsync();
+            if(swc.enableAtStartup) {
+                log.debug("Starting service {}", swc.getName());
+                swc.service.startAsync();
+            } else {
+                log.debug("Not starting service {} because enableAtStartup is false", swc.getName());
+            }
         }
         for (ServiceWithConfig swc : services) {
-            log.info("Awaiting start of service {}", swc.getName());
-            ServiceUtil.awaitServiceRunning(swc.service);
+            if(swc.enableAtStartup) {
+                log.info("Awaiting start of service {}", swc.getName());
+                ServiceUtil.awaitServiceRunning(swc.service);
+            }
         }
         notifyStarted();
     }

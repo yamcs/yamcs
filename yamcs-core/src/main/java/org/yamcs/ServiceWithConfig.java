@@ -13,17 +13,21 @@ package org.yamcs;
 public class ServiceWithConfig {
     final YamcsService service;
  
-
     final String serviceClass;
     final String name;
     final Object args;
+    final boolean enableAtStartup;
 
-    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args) {
-        super();
+    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args, boolean enabledAtStartup) {
         this.service = service;
         this.serviceClass = serviceClass;
         this.name = name;
         this.args = args;
+        this.enableAtStartup = enabledAtStartup;
+    }
+
+    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args) {
+        this(service, serviceClass, name, args, true);
     }
 
     public YamcsService getService() {

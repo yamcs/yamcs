@@ -192,11 +192,12 @@ public class YamcsServer {
                 count++;
             }
             name = candidateName;
+            boolean enabledAtStartup = servconf.getBoolean("enabledAtStartup", true);
 
             targetLog.info("Loading service {}", name);
             ServiceWithConfig swc;
             try {
-                swc = createService(instance, servclass, name, args);
+                swc = createService(instance, servclass, name, args, enabledAtStartup);
                 serviceList.add(swc);
             } catch (NoClassDefFoundError e) {
                 targetLog.error("Cannot create service {}, with arguments {}: class {} not found", name, args,
@@ -228,7 +229,7 @@ public class YamcsServer {
         }
 
         LOG.info("Loading service {}", name);
-        ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args);
+        ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args, true);
         YAMCS.globalServiceList.add(swc);
 
         ManagementService managementService = ManagementService.getInstance();
@@ -244,6 +245,11 @@ public class YamcsServer {
      */
     public static void startServices(List<ServiceWithConfig> serviceList) throws ConfigurationException {
         for (ServiceWithConfig swc : serviceList) {
+            if (!swc.enableAtStartup) {
+                LOG.debug("NOT starting service {} because enableAtStartup=false (can be manually started)",
+                        swc.getName());
+                continue;
+            }
             LOG.debug("Starting service {}", swc.getName());
             swc.service.startAsync();
             try {
@@ -716,7 +722,8 @@ public class YamcsServer {
         return services;
     }
 
-    static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args)
+    static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args,
+            boolean enabledAtStartup)
             throws ConfigurationException, ValidationException, IOException {
         YamcsService service = null;
 
@@ -772,7 +779,7 @@ public class YamcsServer {
                 throw new ConfigurationException(e);
             }
         }
-        return new ServiceWithConfig(service, serviceClass, serviceName, args);
+        return new ServiceWithConfig(service, serviceClass, serviceName, args, enabledAtStartup);
     }
 
     // starts a service that has stopped or not yet started
@@ -793,7 +800,7 @@ public class YamcsServer {
                 case STOPPING:
                 case TERMINATED:
                     // start a new one
-                    swc = createService(instance, swc.serviceClass, serviceName, swc.args);
+                    swc = createService(instance, swc.serviceClass, serviceName, swc.args, swc.enableAtStartup);
                     serviceList.set(i, swc);
                     swc.service.startAsync();
                     break;
@@ -1073,6 +1080,8 @@ public class YamcsServer {
         Spec serviceSpec = new Spec();
         serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
         serviceSpec.addOption("args", OptionType.ANY);
+        serviceSpec.addOption("name", OptionType.STRING);
+        serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
@@ -1133,7 +1142,7 @@ public class YamcsServer {
                     if (Files.exists(varFile)) {
                         try (InputStream in = new FileInputStream(varFile.toFile())) {
                             @SuppressWarnings("unchecked")
-                            List<Map<String, Object>> varDefs = (List<Map<String, Object>>) new Yaml().load(in);
+                            List<Map<String, Object>> varDefs = new Yaml().load(in);
                             for (Map<String, Object> varDef : varDefs) {
                                 TemplateVariable.Builder varb = TemplateVariable.newBuilder();
                                 varb.setName(YConfiguration.getString(varDef, "name"));

@@ -22,7 +22,7 @@
     <th mat-header-cell *matHeaderCellDef></th>
     <td mat-cell *matCellDef="let service" style="text-align: right">
       <mat-menu #serviceMenu="matMenu" overlapTrigger="false" class="ya-menu">
-        <button mat-menu-item (click)="startService.emit(service.name)" [disabled]="service.state !== 'TERMINATED'">
+        <button mat-menu-item (click)="startService.emit(service.name)" [disabled]="service.state !== 'TERMINATED' && service.state !== 'NEW'">
           Start service
         </button>
         <button mat-menu-item (click)="stopService.emit(service.name)" [disabled]="service.state !== 'RUNNING'">

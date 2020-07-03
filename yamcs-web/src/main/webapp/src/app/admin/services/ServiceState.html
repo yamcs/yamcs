@@ -13,7 +13,7 @@
           [matTooltip]="service.state">
   highlight_off
 </mat-icon>
-<mat-icon *ngIf="service.state === 'TERMINATED'"
+<mat-icon *ngIf="service.state === 'TERMINATED' || service.state === 'NEW'"
           class="down"
           [matTooltip]="service.state">
   lens
