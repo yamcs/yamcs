@@ -271,19 +271,6 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.5.3</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <useReleaseProfile>false</useReleaseProfile>
-            <releaseProfiles>yamcs-release</releaseProfiles>
-            <pushChanges>false</pushChanges>
-            <localCheckout>true</localCheckout>
-            <goals>deploy</goals>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
@@ -341,7 +328,7 @@
         <plugin>
           <groupId>org.yamcs</groupId>
           <artifactId>yamcs-maven-plugin</artifactId>
-          <version>1.2.2</version>
+          <version>1.2.3</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -390,6 +377,11 @@
     </profile>
     <profile>
       <id>yamcs-release</id>
+      <activation>
+        <property>
+          <name>release</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>
