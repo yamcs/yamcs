@@ -28,6 +28,7 @@
 
   <modules>
     <module>ccsds-frames</module>
+    <module>cfdp</module>
     <module>replication1</module>
     <module>replication2</module>
     <module>simulation</module>
@@ -47,4 +48,28 @@
       </plugins>
     </pluginManagement>
   </build>
+  
+  <profiles>
+    <profile>
+      <!-- Do this only on Java 9+. On Java 8 setting this property will silently
+           disable Nashorn entirely... -->
+      <id>no-nashorn-warnings</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.yamcs</groupId>
+            <artifactId>yamcs-maven-plugin</artifactId>
+            <configuration>
+              <jvmArgs>
+                <jvmArg>-Dnashorn.args=--no-deprecation-warning</jvmArg>
+              </jvmArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
