@@ -65,6 +65,7 @@
     <module>distribution</module>
     <module>examples</module>
     <module>packet-viewer</module>
+    <module>simulator</module>
     <module>yamcs-api</module>
     <module>yamcs-client</module>
     <module>yamcs-core</module>

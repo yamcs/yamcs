@@ -18,7 +18,7 @@ services:
           name: "realtime"
           type: "realtime" 
     - class: org.yamcs.archive.CommandHistoryRecorder
-    - class: org.yamcs.simulation.SimulatorCommander
+    - class: org.yamcs.simulator.SimulatorCommander
       args:
           telnet:
               port: 10023
@@ -71,7 +71,7 @@ mdb:
           - type: "sheet"
             spec: "mdb/landing.xls"
     #Loads the performance testing mission database
-    - type: "org.yamcs.simulation.PerfMdbLoader"
+    - type: "org.yamcs.simulator.PerfMdbLoader"
       args:
          numPackets: 100
          packetSize: 1476

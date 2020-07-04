@@ -20,7 +20,7 @@ services:
       backFiller:
         enabled: true
         warmupTime: 60
-  - class: org.yamcs.simulation.SimulatorCommander
+  - class: org.yamcs.simulator.SimulatorCommander
     args:
       telnet:
         port: 10023

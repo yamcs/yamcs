@@ -3,26 +3,23 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.yamcs.examples</groupId>
-    <artifactId>examples</artifactId>
+    <groupId>org.yamcs</groupId>
+    <artifactId>yamcs</artifactId>
     <version>5.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>replication1</artifactId>
+  <artifactId>simulator</artifactId>
   <packaging>jar</packaging>
-
-  <name>Yamcs :: Examples :: Replication1</name>
+  <name>Yamcs :: Simulator</name>
   <description>
-    Example demonstrating the use of replication
+    Java-based simulator of a landing spacecraft for test and demo purposes
   </description>
 
+  <properties>
+    <javaModuleName>org.yamcs.simulator</javaModuleName>
+  </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.yamcs</groupId>
-      <artifactId>simulator</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
@@ -30,8 +27,18 @@
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-tse</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
     </dependency>
   </dependencies>
 </project>
