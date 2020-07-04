@@ -32,6 +32,7 @@ import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.GetInstanceRequest;
+import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.LinkInfo;
@@ -45,6 +46,7 @@ import org.yamcs.protobuf.ManagementApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.RestartInstanceRequest;
+import org.yamcs.protobuf.ServerApiClient;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
@@ -95,6 +97,7 @@ public class YamcsClient {
     private EventsApiClient eventService;
     private ProcessingApiClient processingService;
     private IamApiClient iamService;
+    private ServerApiClient serverService;
 
     private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
         this.host = host;
@@ -129,6 +132,7 @@ public class YamcsClient {
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
         processingService = new ProcessingApiClient(methodHandler);
+        serverService = new ServerApiClient(methodHandler);
     }
 
     public static Builder newBuilder(String host, int port) {
@@ -348,6 +352,12 @@ public class YamcsClient {
         CompletableFuture<ListProcessorsResponse> f = new CompletableFuture<>();
         processingService.listProcessors(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> response.getProcessorsList());
+    }
+
+    public CompletableFuture<GetServerInfoResponse> getServerInfo() {
+        CompletableFuture<GetServerInfoResponse> f = new CompletableFuture<>();
+        serverService.getServerInfo(null, Empty.getDefaultInstance(), new ResponseObserver<>(f));
+        return f;
     }
 
     public CompletableFuture<UserInfo> getOwnUserInfo() {
