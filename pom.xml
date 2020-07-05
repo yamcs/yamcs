@@ -62,7 +62,6 @@
   </properties>
 
   <modules>
-    <module>distribution</module>
     <module>examples</module>
     <module>packet-viewer</module>
     <module>simulator</module>
@@ -72,6 +71,9 @@
     <module>yamcs-tse</module>
     <module>yamcs-web</module>
     <module>yamcs-xtce</module>
+
+    <!-- Keep as last. It hosts the nexus uploading after a successful build -->
+    <module>distribution</module>
   </modules>
 
   <dependencies>
