@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": [
       "es2017",
+      "es2018.promise",
       "dom"
     ],
     "module": "esnext",
@@ -19,7 +20,7 @@
     "strictPropertyInitialization": false
   },
   "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
+    "fullTemplateTypeCheck": false,
     "strictInjectionParameters": true
   }
 }

@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { TmStatistics } from '../client';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -30,6 +30,8 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
 
   private statsByName: { [key: string]: PacketStats; } = {};
   dataSource = new MatTableDataSource<PacketStats>();
+  totalPacketRate$ = new BehaviorSubject<number>(0);
+  totalDataRate$ = new BehaviorSubject<number>(0);
 
   config: WebsiteConfig;
 
@@ -52,16 +54,29 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
         for (const packetName of (packetNames || [])) {
           this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
         }
-        this.dataSource.data = Object.values(this.statsByName);
+        this.updateData();
 
         this.tmstatsSubscription = this.tmstats$.subscribe(tmstats => {
           for (const entry of (tmstats || [])) {
             this.statsByName[entry.packetName] = entry;
           }
-          this.dataSource.data = Object.values(this.statsByName);
+          this.updateData();
         });
       });
     }
+  }
+
+  private updateData() {
+    const lines = Object.values(this.statsByName);
+    let totalPacketRate = 0;
+    let totalDataRate = 0;
+    for (const line of lines) {
+      totalPacketRate += Number(line.packetRate);
+      totalDataRate += Number(line.dataRate);
+    }
+    this.totalPacketRate$.next(totalPacketRate);
+    this.totalDataRate$.next(totalDataRate);
+    this.dataSource.data = lines;
   }
 
   ngOnDestroy() {

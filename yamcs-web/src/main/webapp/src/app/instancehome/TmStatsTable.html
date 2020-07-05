@@ -2,14 +2,13 @@
        *ngIf="dataSource"
        [dataSource]="dataSource"
        class="ya-data-table"
-       style="width: 100%"
        matSort
        matSortActive="packetName"
        matSortDirection="asc"
        matSortDisableClear>
 
   <ng-container matColumnDef="packetName">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Packet</th>
     <td mat-cell *matCellDef="let tmstats">
       <a *ngIf="config.features.tmArchive"
          routerLink="/telemetry/packets"
@@ -18,6 +17,7 @@
       </a>
       <ng-container *ngIf="!config.features.tmArchive">{{ tmstats.packetName }}</ng-container>
     </td>
+    <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
 
   <ng-container matColumnDef="lastReceived">
@@ -25,6 +25,7 @@
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ (tmstats.lastReceived | deltaWith:tmstats.lastPacketTime) || '-' }}
     </td>
+    <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
 
   <ng-container matColumnDef="lastPacketTime">
@@ -32,12 +33,16 @@
     <td mat-cell *matCellDef="let tmstats">
       {{ (tmstats.lastPacketTime | datetime) || '-' }}
     </td>
+    <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
 
   <ng-container matColumnDef="packetRate">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Packet&nbsp;Rate</th>
-    <td mat-cell *matCellDef="let tmstats" style="text-align: right;">
+    <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.packetRate }} p/s
+    </td>
+    <td mat-footer-cell *matFooterCellDef style="text-align: right">
+      {{ totalPacketRate$ | async }} p/s
     </td>
   </ng-container>
 
@@ -47,8 +52,12 @@
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.dataRate | dataRate }}
     </td>
+    <td mat-footer-cell *matFooterCellDef style="text-align: right">
+      {{ (totalDataRate$ | async) | dataRate }}
+    </td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
 </table>
