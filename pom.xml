@@ -62,15 +62,18 @@
   </properties>
 
   <modules>
-    <module>distribution</module>
     <module>examples</module>
     <module>packet-viewer</module>
+    <module>simulator</module>
     <module>yamcs-api</module>
     <module>yamcs-client</module>
     <module>yamcs-core</module>
     <module>yamcs-tse</module>
     <module>yamcs-web</module>
     <module>yamcs-xtce</module>
+
+    <!-- Keep as last. It hosts the nexus uploading after a successful build -->
+    <module>distribution</module>
   </modules>
 
   <dependencies>
@@ -270,19 +273,6 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.5.3</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <useReleaseProfile>false</useReleaseProfile>
-            <releaseProfiles>yamcs-release</releaseProfiles>
-            <pushChanges>false</pushChanges>
-            <localCheckout>true</localCheckout>
-            <goals>deploy</goals>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
@@ -340,7 +330,7 @@
         <plugin>
           <groupId>org.yamcs</groupId>
           <artifactId>yamcs-maven-plugin</artifactId>
-          <version>1.2.2</version>
+          <version>1.2.3</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -389,6 +379,11 @@
     </profile>
     <profile>
       <id>yamcs-release</id>
+      <activation>
+        <property>
+          <name>release</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>

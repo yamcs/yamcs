@@ -20,17 +20,17 @@
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
+      <artifactId>simulator</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.yamcs.examples</groupId>
-      <artifactId>simulation</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

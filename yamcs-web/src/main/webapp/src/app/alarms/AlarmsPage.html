@@ -89,6 +89,32 @@
 
   <div class="table-wrapper">
     <div class="panel-content" *ngIf="dataSource">
+      <dl class="dl-horizontal" style="margin-top: 0">
+        <dt>Unacknowledged alarms:</dt>
+        <dd>
+          <a routerLink="/alarms"
+             class="ya-link"
+             [queryParams]="{c: yamcs.context, view: 'unacknowledged'}">
+            <strong>{{ (dataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
+          </a><br>
+        </dd>
+        <dt>Acknowledged alarms:</dt>
+        <dd>
+          <a routerLink="/alarms"
+             class="ya-link"
+             [queryParams]="{c: yamcs.context, view: 'acknowledged'}">
+            <strong>{{ (dataSource.acknowledgedAlarms$ | async)?.length }}</strong>
+          </a>
+        </dd>
+        <dt>Shelved alarms:</dt>
+        <dd>
+          <a routerLink="/alarms"
+             class="ya-link"
+             [queryParams]="{c: yamcs.context, view: 'shelved'}">
+            <strong>{{ (dataSource.shelvedAlarms$ | async)?.length }}</strong>
+          </a>
+        </dd>
+      </dl>
       <form [formGroup]="filterForm">
         <div class="filter-bar">
           <app-search-filter formControlName="filter"

@@ -54,7 +54,7 @@ npm run build
 rm -rf node_modules
 cd -
 
-mvn package -P yamcs-release -DskipTests
+mvn package -Drelease -DskipTests
 
 rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
@@ -99,13 +99,13 @@ echo
 if [ $snapshot -eq 0 ]; then
     read -p "Do you want to stage $pomversion maven artifacts to Maven Central? [y/N] " yesNo
     if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -P yamcs-release -DskipTests deploy
+        mvn -f $clonedir -Drelease -DskipTests deploy
         echo 'Release the staging repository at https://oss.sonatype.org'
     fi
 else
     read -p "Do you want to publish $pomversion maven artifacts to Sonatype Snapshots? [y/N] " yesNo
     if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -P yamcs-release -DskipTests -DskipStaging deploy
+        mvn -f $clonedir -Drelease -DskipTests -DskipStaging deploy
     fi
 fi
 

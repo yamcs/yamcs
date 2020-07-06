@@ -22,10 +22,10 @@ export class RoutesPage implements AfterViewInit {
 
   displayedColumns = [
     // 'service',
-    'http',
+    'method',
     'requestCount',
     'errorCount',
-    'description',
+    'http',
   ];
 
   dataSource = new MatTableDataSource<Route>();
