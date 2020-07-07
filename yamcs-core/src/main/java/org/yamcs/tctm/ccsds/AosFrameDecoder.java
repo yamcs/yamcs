@@ -25,7 +25,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
     public AosFrameDecoder(AosManagedParameters aosParams) {
         this.aosParams = aosParams;
-        if (aosParams.errorCorrection == FrameErrorDetection.CRC16) {
+        if (aosParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
     }

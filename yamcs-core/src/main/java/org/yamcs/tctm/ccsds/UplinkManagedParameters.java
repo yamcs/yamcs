@@ -12,7 +12,7 @@ import org.yamcs.YConfiguration;
  *
  */
 public abstract class UplinkManagedParameters {
-    public enum FrameErrorCorrection {NONE, CRC16, CRC32};
+    public enum FrameErrorDetection {NONE, CRC16, CRC32};
    
     public enum ServiceType {
         PACKET
@@ -21,11 +21,12 @@ public abstract class UplinkManagedParameters {
     
     protected String physicalChannelName;
     protected int spacecraftId;
-    protected FrameErrorCorrection errorCorrection;
+    protected FrameErrorDetection errorDetection;
     
     public UplinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
         this.physicalChannelName = config.getString("physicalChannelName",  null);
+        this.errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class, FrameErrorDetection.CRC16);
     }
     
     abstract int getMaxFrameLength();

@@ -22,7 +22,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
     public TmFrameDecoder(TmManagedParameters tmParams) {
         this.tmParams = tmParams;
-        if (tmParams.errorCorrection == FrameErrorDetection.CRC16) {
+        if (tmParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
     }

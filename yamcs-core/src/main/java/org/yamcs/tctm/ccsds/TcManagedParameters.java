@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
 
 /**
  * Parameters used for generation of TC frames as per CCSDS 232.0-B-3
@@ -30,11 +31,10 @@ public class TcManagedParameters extends UplinkManagedParameters {
         if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + maxFrameLength);
         }
-
-        errorCorrection = config.getEnum("errorCorrection", FrameErrorCorrection.class, FrameErrorCorrection.CRC16);
-        if (errorCorrection == FrameErrorCorrection.CRC32) {
+        if (errorDetection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for TC frames");
         }
+        
         priorityScheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");

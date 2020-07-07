@@ -26,8 +26,7 @@ public class TmManagedParameters extends DownlinkManagedParameters {
             throw new ConfigurationException("Invalid frame length " + frameLength);
         }
         
-        errorCorrection = config.getEnum("errorDetection", FrameErrorDetection.class);
-        if(errorCorrection == FrameErrorDetection.CRC32) {
+        if(errorDetection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for TM frames");
         }
 

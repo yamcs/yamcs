@@ -47,7 +47,7 @@ public class Cop1TcPacketHandlerTest {
         m.put("spacecraftId", 6);
 
         m.put("maxFrameLength", 1000);
-        m.put("errorCorrection", "NONE");
+        m.put("errorDetection", "NONE");
         Map<String, Object> vc0 = new HashMap<>();
         List<Map<String, Object>> l = new ArrayList<>();
         l.add(vc0);

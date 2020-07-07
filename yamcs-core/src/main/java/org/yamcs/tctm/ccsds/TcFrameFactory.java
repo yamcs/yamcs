@@ -1,6 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -11,7 +11,7 @@ public class TcFrameFactory {
 
     public TcFrameFactory(TcManagedParameters tcParams) {
         this.tcParams = tcParams;
-        if (tcParams.errorCorrection == FrameErrorCorrection.CRC16) {
+        if (tcParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         } else {
             crc = null;

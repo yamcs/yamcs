@@ -24,9 +24,9 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
 
     public UslpFrameDecoder(UslpManagedParameters uslpParams) {
         this.uslpParams = uslpParams;
-        if (uslpParams.errorCorrection == FrameErrorDetection.CRC16) {
+        if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
-        } else if (uslpParams.errorCorrection == FrameErrorDetection.CRC32) {
+        } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
             crc = new ProximityCrc32();
         }
     }
@@ -46,14 +46,14 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
 
         int dataEnd = offset + length;
 
-        if (uslpParams.errorCorrection == FrameErrorDetection.CRC16) {
+        if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
             int c2 = ByteArrayUtils.decodeShort(data, dataEnd);
             if (c1 != c2) {
                 throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
             }
-        } else if (uslpParams.errorCorrection == FrameErrorDetection.CRC32) {
+        } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
             dataEnd -= 4;
             int c1 = crc.compute(data, offset, dataEnd - offset);
             int c2 = ByteArrayUtils.decodeInt(data, dataEnd);

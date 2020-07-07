@@ -32,7 +32,6 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
 
     public UslpManagedParameters(YConfiguration config) {
         super(config);
-        errorCorrection = config.getEnum("errorDetection", FrameErrorDetection.class);
 
         frameLength = config.getInt("frameLength", -1);
         if (frameLength < 0) {

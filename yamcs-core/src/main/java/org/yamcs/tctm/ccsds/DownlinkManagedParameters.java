@@ -17,11 +17,12 @@ public abstract class DownlinkManagedParameters {
 
     protected String physicalChannelName;
     protected int spacecraftId;
-    protected FrameErrorDetection errorCorrection;
+    protected FrameErrorDetection errorDetection;
     
     public DownlinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
         this.physicalChannelName = config.getString("physicalChannelName",  null);
+        errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class);
     }
     
     abstract int getMaxFrameLength();
