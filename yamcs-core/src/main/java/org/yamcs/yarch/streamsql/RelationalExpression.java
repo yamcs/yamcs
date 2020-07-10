@@ -19,8 +19,8 @@ public class RelationalExpression extends Expression {
     public RelationalExpression(Expression left, Expression right, RelOp relOp) throws ParseException {
         super(new Expression[] { left, right });
         this.relOp = relOp;
-       // if (left.isConstant() && right.isConstant())
-     //       constant = true;
+        // if (left.isConstant() && right.isConstant())
+        // constant = true;
     }
 
     public RelOp getRelation() {
@@ -58,16 +58,37 @@ public class RelationalExpression extends Expression {
 
     @Override
     public void doBind() throws StreamSqlException {
+        type = DataType.BOOLEAN;
+
         DataType ltype = children[0].getType();
         DataType rtype = children[1].getType();
-        if (!compatibleTypes(ltype, rtype))
-            throw new StreamSqlException(ErrCode.INCOMPATIBLE, ltype + " and " + rtype);
-        type = DataType.BOOLEAN;
-    }
+        if (DataType.compatible(ltype, rtype)) {
+            return;
+        }
+        
+        //if any of the two children is constant, we attempt a conversion, otherwise we throw an exception (an explicit conversion should be used)
+        if (children[0].isConstant()) {
+            try {
+                Object v = DataType.castAs(ltype, rtype, children[0].getConstantValue());
+                children[0] = new ValueExpression(v, rtype);
+                return;
+            } catch (IllegalArgumentException e) {
+                throw new StreamSqlException(ErrCode.INCOMPATIBLE,
+                        "Cannot convert " + children[0].getConstantValue() + " to " + rtype);
+            }
+        } else if (children[1].isConstant()) {
+            try {
+                Object v = DataType.castAs(rtype, ltype, children[1].getConstantValue());
+                children[1] = new ValueExpression(v, ltype);
+                return;
+            } catch (IllegalArgumentException e) {
+                throw new StreamSqlException(ErrCode.INCOMPATIBLE,
+                        "Cannot convert " + children[0].getConstantValue() + " to " + ltype);
+            }
+        }
 
-    private boolean compatibleTypes(DataType ltype, DataType rtype) {
-        // TODO Auto-generated method stub
-        return true;
+        throw new StreamSqlException(ErrCode.INCOMPATIBLE, "Cannot compare " + ltype + " and " + rtype);
+
     }
 
     @Override
@@ -94,7 +115,8 @@ public class RelationalExpression extends Expression {
                 }
                 break;
             default:
-                throw new StreamSqlException(ErrCode.COMPILE_ERROR, "Cannot use " + relOp + " not supported for data type " + ch0dt);
+                throw new StreamSqlException(ErrCode.COMPILE_ERROR,
+                        "Cannot use " + relOp + " not supported for data type " + ch0dt);
             }
         }
         code.append(")");

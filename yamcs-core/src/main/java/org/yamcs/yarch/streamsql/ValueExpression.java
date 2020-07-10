@@ -20,6 +20,12 @@ public class ValueExpression extends Expression {
         this.constantValue = value;
     }
 
+    public ValueExpression(Object value, DataType type) {
+        super(null);
+        this.constantValue = value;
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return constantValue.toString();

@@ -4,6 +4,7 @@
 package org.yamcs.yarch;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Types supported by yarch. Currently TUPLE and LIST do now work well.
@@ -264,8 +265,9 @@ public class DataType {
             case INT:
                 return Integer.decode(s);
             case LONG:
-            case TIMESTAMP:
                 return Long.decode(s);
+            case TIMESTAMP:
+                return TimeEncoding.parse(s);
             case STRING:
             case ENUM:
                 return s;
