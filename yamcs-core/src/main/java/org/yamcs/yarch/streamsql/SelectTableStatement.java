@@ -16,29 +16,28 @@ public class SelectTableStatement implements StreamSqlStatement {
 
     @Override
     public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
-        synchronized (dict) {
-            if (dict.getTable(expression.tupleSourceExpression.objectName) == null) {
-                throw new GenericStreamSqlException(String.format("Object %s does not exist or is not a table"));
-            }
-            if (resultListener == null) {
-                throw new GenericStreamSqlException("Cannot select without a result listener");
-            }
-            expression.bind(c);
-            Stream stream = expression.execute(c);
-            stream.addSubscriber(new StreamSubscriber() {
-
-                @Override
-                public void onTuple(Stream stream, Tuple tuple) {
-                    resultListener.next(tuple);
-                }
-
-                @Override
-                public void streamClosed(Stream stream) {
-                    resultListener.complete();
-                }
-            });
-            stream.start();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+        String tblName = expression.tupleSourceExpression.objectName;
+        if (ydb.getTable(tblName) == null) {
+            throw new GenericStreamSqlException(String.format("Object %s does not exist or is not a table", tblName));
         }
+        if (resultListener == null) {
+            throw new GenericStreamSqlException("Cannot select without a result listener");
+        }
+        expression.bind(c);
+        Stream stream = expression.execute(c);
+        stream.addSubscriber(new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                resultListener.next(tuple);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                resultListener.complete();
+            }
+        });
+        stream.start();
     }
 }
