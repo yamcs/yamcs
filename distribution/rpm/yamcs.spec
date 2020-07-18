@@ -35,10 +35,24 @@ if [ "$1" = 1 -o "$1" = install ] ; then
 fi
 
 
+%post
+systemctl daemon-reload
+
+
+%preun
+if [ "$1" == 0 ]; then
+    systemctl unmask yamcs.service
+    systemctl stop yamcs.service
+    systemctl disable yamcs.service
+fi
+
+
 %postun
-if [ "$1" = 0 -o "$1" = remove ] ; then
+if [ "$1" = 0 -o "$1" = remove ]; then
     userdel yamcs >/dev/null 2>&1 || :
     groupdel yamcs >/dev/null 2>&1 || :
+    systemctl daemon-reload
+    systemctl reset-failed
 fi
 
 
