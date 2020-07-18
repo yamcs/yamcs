@@ -147,6 +147,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
         return value.timestampValue;
       case 'BINARY':
         return window.atob(value.binaryValue!);
+      case 'ENUMERATED':
       case 'STRING':
         return value.stringValue;
       default:
