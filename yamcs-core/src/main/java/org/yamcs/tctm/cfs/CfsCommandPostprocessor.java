@@ -15,8 +15,6 @@ import org.yamcs.utils.ByteArrayUtils;
  * <li>checksum - 1 byte</li>
  * </ul>
  * The checksum is an XOR of all bytes from the packet with the initial checksum set to 0.
- * <p>
- * 
  * 
  * <p>
  * This class sets the CCSDS sequence count and packet length in the primary CCSDS header and the checksum in the

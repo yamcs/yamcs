@@ -147,8 +147,7 @@ public class CommandHistoryRequestManager extends AbstractService {
      * send updates.
      * 
      * @param cmdId
-     * @param key
-     * @param value
+     * @param attrs
      * 
      */
     public void updateCommand(CommandId cmdId, Map<String, Value> attrs)  {
