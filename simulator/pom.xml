@@ -31,12 +31,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-web</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
     </dependency>
