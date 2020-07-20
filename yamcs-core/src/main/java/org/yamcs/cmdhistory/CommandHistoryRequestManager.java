@@ -1,6 +1,7 @@
 package org.yamcs.cmdhistory;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,7 +73,6 @@ public class CommandHistoryRequestManager extends AbstractService {
         }
         log.warn("Received subscribe command for a command not in my active list: ({})", cmdId);
         throw new InvalidCommandId("command " + cmdId + " is not in the list of active commands", cmdId);
-
     }
 
     /**
@@ -149,12 +149,10 @@ public class CommandHistoryRequestManager extends AbstractService {
      * @param cmdId
      * @param key
      * @param value
-     * @throws InvalidCommandId
-     *             the command does not appear in the activeCommands hash
      * 
      */
-    public void updateCommand(CommandId cmdId, String key, Value value) throws InvalidCommandId {
-        log.debug("updateCommand cmdId={} key={} value={}", new Object[] { cmdId, key, value });
+    public void updateCommand(CommandId cmdId, Map<String, Value> attrs)  {
+        log.debug("updateCommand cmdId: {} attrs: {}", attrs);
         CommandHistoryEntry che = activeCommands.get(cmdId);
         if (che == null) {
             // If the commandId is valid, add the command in the active list, this case happens if an old command
@@ -162,23 +160,27 @@ public class CommandHistoryRequestManager extends AbstractService {
             che = CommandHistoryEntry.newBuilder().setCommandId(cmdId).build();
         }
 
-        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key)
-                .setValue(ValueUtility.toGbp(value)).build();
-        CommandHistoryEntry che1 = CommandHistoryEntry.newBuilder(che).addAttr(cha).build();
-        activeCommands.put(cmdId, che1);
+        CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder(che);
+
+        for(Map.Entry<String, Value> a: attrs.entrySet()) {
+            CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(a.getKey())
+                    .setValue(ValueUtility.toGbp(a.getValue())).build();
+            cheb.addAttr(cha).build();
+        }
+        activeCommands.put(cmdId, cheb.build());
 
         long changeDate = processor.getCurrentTime();
         for (Iterator<CommandHistoryFilter> it = historySubcriptions.keySet().iterator(); it.hasNext();) {
             CommandHistoryFilter filter = it.next();
             if (filter.matches(che)) {
-                historySubcriptions.get(filter).updatedCommand(cmdId, changeDate, key, value);
+                historySubcriptions.get(filter).updatedCommand(cmdId, changeDate, attrs);
             }
         }
         ConcurrentLinkedQueue<CommandHistoryConsumer> consumers = cmdSubcriptions.get(cmdId);
 
         if (consumers != null) {
             for (Iterator<CommandHistoryConsumer> it = consumers.iterator(); it.hasNext();) {
-                it.next().updatedCommand(cmdId, changeDate, key, value);
+                it.next().updatedCommand(cmdId, changeDate, attrs);
             }
         }
     }

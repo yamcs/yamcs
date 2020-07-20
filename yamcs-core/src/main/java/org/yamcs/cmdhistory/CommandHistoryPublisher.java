@@ -27,6 +27,11 @@ public interface CommandHistoryPublisher {
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
     public final static String Queue_KEY = "queue";
 
+    //these are used when publishing acks
+    public final static String SUFFIX_STATUS="_Status";
+    public final static String SUFFIX_TIME="_Time";
+    public final static String SUFFIX_MESSAGE="_Message";
+
     /**
      * Used by the links to add entries in the command history when the command has been sent via the link.
      * <p>
@@ -43,11 +48,6 @@ public interface CommandHistoryPublisher {
     public abstract void publish(CommandId cmdId, String key, byte[] binary);
 
     public abstract void addCommand(PreparedCommand pc);
-
-    default void publishWithTime(CommandId cmdId, String key, long time, String value) {
-        publish(cmdId, key + "_Time", time);
-        publish(cmdId, key + "_Status", value);
-    }
 
     /**
      * Publish an acknowledgement status to the command history.

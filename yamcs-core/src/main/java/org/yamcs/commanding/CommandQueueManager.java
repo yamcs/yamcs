@@ -255,8 +255,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         CommandQueue q = getQueue(user, pc);
         if (q == null) {
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
-                    missionTime, "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, AckStatus.NOK, "No queue available");
             unhandledCommand(pc);
             return null;
         }

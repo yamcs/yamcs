@@ -1,5 +1,7 @@
 package org.yamcs.cmdhistory;
 
+import java.util.Map;
+
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.parameter.Value;
@@ -24,5 +26,9 @@ public interface CommandHistoryConsumer {
      */
     void updatedCommand(CommandId cmdId, long changeDate, String key, Value value);
     
-
+    default void updatedCommand(CommandId cmdId, long changeDate, Map<String, Value> attrs) {
+        for(Map.Entry<String, Value> a: attrs.entrySet()) {
+            updatedCommand(cmdId, changeDate, a.getKey(), a.getValue());
+        }
+    }
 }

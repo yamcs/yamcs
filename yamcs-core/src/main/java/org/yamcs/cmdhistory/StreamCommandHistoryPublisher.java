@@ -84,19 +84,34 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     }
 
     @Override
-    public void publishWithTime(CommandId cmdId, String key, long time, String value) {
+    public void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
         TupleDefinition td = StandardTupleDefinitions.TC.copy();
-        td.addColumn(key + "_Status", DataType.STRING);
-        td.addColumn(key + "_Time", DataType.TIMESTAMP);
+        td.addColumn(key + SUFFIX_STATUS, DataType.STRING);
+        td.addColumn(key + SUFFIX_TIME, DataType.TIMESTAMP);
+        Tuple t;
 
-        Tuple t = new Tuple(td, new Object[] {
-                cmdId.getGenerationTime(),
-                cmdId.getOrigin(),
-                cmdId.getSequenceNumber(),
-                cmdId.getCommandName(),
-                value,
-                time
-        });
+        if (message == null) {
+            t = new Tuple(td, new Object[] {
+                    cmdId.getGenerationTime(),
+                    cmdId.getOrigin(),
+                    cmdId.getSequenceNumber(),
+                    cmdId.getCommandName(),
+                    state.toString(),
+                    time
+            });
+        } else {
+            td.addColumn(key + SUFFIX_MESSAGE, DataType.STRING);
+            t = new Tuple(td, new Object[] {
+                    cmdId.getGenerationTime(),
+                    cmdId.getOrigin(),
+                    cmdId.getSequenceNumber(),
+                    cmdId.getCommandName(),
+                    state.toString(),
+                    time,
+                    message
+            });
+        }
+
         stream.emitTuple(t);
     }
 

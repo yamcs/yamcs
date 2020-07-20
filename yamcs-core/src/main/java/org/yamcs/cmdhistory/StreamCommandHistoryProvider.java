@@ -1,10 +1,11 @@
 package org.yamcs.cmdhistory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -51,16 +52,14 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
             int i = StandardTupleDefinitions.TC.getColumnDefinitions().size();
             CommandId cmdId = PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns = tuple.getDefinition().getColumnDefinitions();
+            Map<String, Value> m = new HashMap<>();
             while (i < columns.size()) {
                 ColumnDefinition cd = columns.get(i++);
                 String key = cd.getName();
-                try {
-                    Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(key));
-                    chrm.updateCommand(cmdId, key, v);
-                } catch (InvalidCommandId e) {
-                    e.printStackTrace();
-                }
+                Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(key));
+                m.put(key, v);
             }
+            chrm.updateCommand(cmdId, m);
         }
     }
 
