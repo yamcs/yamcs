@@ -10,6 +10,12 @@ import * as utils from '../../shared/utils';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 
+// Legacy namespace. New projects should not make use of this.
+// Yamcs Studio maps names under this namespace to an "ops://"
+// datasource.
+const OPS_NAMESPACE = "MDB:OPS Name";
+const OPS_DATASOURCE = "ops://";
+
 @Component({
   selector: 'app-opi-display-viewer',
   template: `
@@ -52,7 +58,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
       const ids: NamedObjectId[] = [];
       for (const pvName of this.pvsByName.keys()) {
-        ids.push({ name: pvName });
+        if (pvName.startsWith(OPS_DATASOURCE)) { // Legacy
+          ids.push({ namespace: OPS_NAMESPACE, name: pvName.substr(6) });
+        } else {
+          ids.push({ name: pvName });
+        }
       }
 
       if (ids.length) {
@@ -72,7 +82,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
             const samples = new Map<string, Sample>();
             for (const pval of data.values) {
               pval.id = this.idMapping[pval.numericId];
-              samples.set(pval.id.name, this.toSample(pval));
+              let pvName = pval.id.name;
+              if (pval.id.namespace === OPS_NAMESPACE) {
+                pvName = OPS_DATASOURCE + pvName;
+              }
+              samples.set(pvName, this.toSample(pval));
             }
             this.display.setValues(samples);
           }
@@ -133,6 +147,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
         return value.timestampValue;
       case 'BINARY':
         return window.atob(value.binaryValue!);
+      case 'ENUMERATED':
       case 'STRING':
         return value.stringValue;
       default:
@@ -164,8 +179,21 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     });
 
     this.display.addEventListener('openpv', evt => {
-      const encoded = encodeURIComponent(evt.pvName);
-      this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
+      if (evt.pvName.startsWith('/')) {
+        const encoded = encodeURIComponent(evt.pvName);
+        this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
+      } else if (evt.pvName.startsWith(OPS_DATASOURCE)) {
+        // Find first the qualified name
+        this.yamcs.yamcsClient.getParameterById(this.yamcs.instance!, {
+          namespace: OPS_NAMESPACE,
+          name: evt.pvName.substr(6),
+        }).then(response => {
+          const encoded = encodeURIComponent(response.qualifiedName);
+          this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
+        });
+      } else {
+        alert(`Can't navigate to PV ${evt.pvName}`);
+      }
     });
 
     this.display.addProvider(this);
@@ -182,7 +210,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   }
 
   canProvide(pvName: string): boolean {
-    return pvName.startsWith('/');
+    return pvName.startsWith('/') || pvName.startsWith('ops://');
   }
 
   startProviding(pvs: PV[]): void {

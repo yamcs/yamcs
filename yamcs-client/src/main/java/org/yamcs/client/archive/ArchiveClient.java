@@ -25,6 +25,9 @@ import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRepeatOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.SourceOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumGapOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.CommandOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.EventSourceOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AlarmData;
@@ -53,6 +56,7 @@ import org.yamcs.protobuf.ListPacketIndexRequest;
 import org.yamcs.protobuf.ListParameterIndexRequest;
 import org.yamcs.protobuf.ListTagsRequest;
 import org.yamcs.protobuf.ListTagsResponse;
+import org.yamcs.protobuf.PacketsApiClient;
 import org.yamcs.protobuf.ParameterArchiveApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -68,6 +72,7 @@ import org.yamcs.protobuf.StreamEventIndexRequest;
 import org.yamcs.protobuf.StreamEventsRequest;
 import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
+import org.yamcs.protobuf.StreamPacketsRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Table.GetTableDataRequest;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
@@ -82,6 +87,7 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
@@ -99,6 +105,7 @@ public class ArchiveClient {
     private TableApiClient tableService;
     private EventsApiClient eventService;
     private TagApiClient tagService;
+    private PacketsApiClient packetService;
 
     public ArchiveClient(MethodHandler handler, String instance) {
         this.instance = instance;
@@ -110,6 +117,7 @@ public class ArchiveClient {
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
         tagService = new TagApiClient(handler);
+        packetService = new PacketsApiClient(handler);
     }
 
     public String getInstance() {
@@ -428,7 +436,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamCommands(StreamReceiver<Command> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamCommandsRequest.Builder requestb = StreamCommandsRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -436,6 +444,15 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof CommandOption) {
+                for (String command : ((CommandOption) option).commands) {
+                    requestb.addName(command);
+                }
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         commandService.streamCommands(null, requestb.build(), new Observer<CommandHistoryEntry>() {
@@ -477,7 +494,8 @@ public class ArchiveClient {
         return new EventPage(requestb.build()).future();
     }
 
-    public CompletableFuture<Void> streamEvents(StreamReceiver<Event> consumer, Instant start, Instant stop) {
+    public CompletableFuture<Void> streamEvents(StreamReceiver<Event> consumer, Instant start, Instant stop,
+            StreamOption... options) {
         StreamEventsRequest.Builder requestb = StreamEventsRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -485,6 +503,15 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof EventSourceOption) {
+                for (String source : ((EventSourceOption) option).eventSources) {
+                    requestb.addSource(source);
+                }
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         eventService.streamEvents(null, requestb.build(), new Observer<Event>() {
@@ -507,10 +534,53 @@ public class ArchiveClient {
         return f;
     }
 
+    public CompletableFuture<Void> streamPackets(StreamReceiver<TmPacketData> consumer, Instant start, Instant stop,
+            StreamOption... options) {
+        StreamPacketsRequest.Builder requestb = StreamPacketsRequest.newBuilder()
+                .setInstance(instance);
+        if (start != null) {
+            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
+        }
+        if (stop != null) {
+            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof StreamOptions.PacketOption) {
+                for (String packet : ((StreamOptions.PacketOption) option).packets) {
+                    requestb.addName(packet);
+                }
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
+        }
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        packetService.streamPackets(null, requestb.build(), new Observer<TmPacketData>() {
+
+            @Override
+            public void next(TmPacketData message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
+    }
+
     public CompletableFuture<Void> streamValues(List<String> parameters,
             StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
         StreamParameterValuesRequest.Builder requestb = StreamParameterValuesRequest.newBuilder()
                 .setInstance(instance);
+        for (String parameter : parameters) {
+            requestb.addIds(Helpers.toNamedObjectId(parameter));
+        }
         if (start != null) {
             requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
         }
@@ -947,6 +1017,48 @@ public class ArchiveClient {
         }
 
         static final class PacketOption implements IndexOption {
+            final String[] packets;
+
+            public PacketOption(String... packets) {
+                this.packets = packets;
+            }
+        }
+    }
+
+    public static final class StreamOptions {
+
+        public static interface StreamOption {
+        }
+
+        public static StreamOption commands(String... commands) {
+            return new CommandOption(commands);
+        }
+
+        public static StreamOption eventSources(String... eventSources) {
+            return new EventSourceOption(eventSources);
+        }
+
+        public static StreamOption packets(String... packets) {
+            return new PacketOption(packets);
+        }
+
+        static final class CommandOption implements StreamOption {
+            final String[] commands;
+
+            public CommandOption(String... commands) {
+                this.commands = commands;
+            }
+        }
+
+        static final class EventSourceOption implements StreamOption {
+            final String[] eventSources;
+
+            public EventSourceOption(String... eventSources) {
+                this.eventSources = eventSources;
+            }
+        }
+
+        static final class PacketOption implements StreamOption {
             final String[] packets;
 
             public PacketOption(String... packets) {

@@ -24,7 +24,7 @@ public class Helpers {
         if (name.startsWith("/")) {
             return NamedObjectId.newBuilder().setName(name).build();
         } else {
-            String[] parts = name.split("\\/", 1);
+            String[] parts = name.split("\\/", 2);
             if (parts.length < 2) {
                 throw new IllegalArgumentException(String.format("'%s' is not a valid name."
                         + " Use fully-qualified names or, alternatively,"
