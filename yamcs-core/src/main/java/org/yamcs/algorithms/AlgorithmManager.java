@@ -59,7 +59,7 @@ import com.google.common.collect.Lists;
  * Algorithm executors are created by {@link AlgorithmExecutorFactory} which themselves are created by the
  * {@link AlgorithmEngine}. The algorithm engines are registered at server startup using the
  * {@link #registerAlgorithmEngine(String, AlgorithmEngine)} method.
- * 
+ *
  * javascript will be automatically registered as well as python if available.
  */
 public class AlgorithmManager extends AbstractYamcsService
@@ -196,7 +196,7 @@ public class AlgorithmManager extends AbstractYamcsService
 
     /**
      * Create a new algorithm execution context.
-     * 
+     *
      * @param name
      *            - name of the context
      * @return the newly created context
@@ -207,9 +207,9 @@ public class AlgorithmManager extends AbstractYamcsService
 
     /**
      * Activate an algorithm in a context if not already active.
-     * 
+     *
      * If already active, the listener is added to the listener list.
-     * 
+     *
      * @param algorithm
      * @param execCtx
      * @param listener
@@ -405,7 +405,7 @@ public class AlgorithmManager extends AbstractYamcsService
 
     /**
      * Update parameters in context and run the affected algorithms
-     * 
+     *
      * @param items
      * @param ctx
      * @return the parameters resulting from running the algorithms
@@ -468,7 +468,7 @@ public class AlgorithmManager extends AbstractYamcsService
 
     /**
      * Override the algorithm
-     * 
+     *
      * @param calg
      * @param text
      */
@@ -498,10 +498,14 @@ public class AlgorithmManager extends AbstractYamcsService
      * parameters, but also any parameters that are part of the trigger set.
      */
     private static Set<Parameter> getParametersOfInterest(Algorithm algorithm) {
-        Stream<Parameter> triggerParams = algorithm.getTriggerSet().getOnParameterUpdateTriggers().stream()
-                .map(t -> t.getParameter());
         Stream<Parameter> inputParams = algorithm.getInputList().stream()
                 .map(ip -> ip.getParameterInstance().getParameter());
-        return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
+        if (algorithm.getTriggerSet() == null) {
+            return inputParams.collect(Collectors.toSet());
+        } else {
+            Stream<Parameter> triggerParams = algorithm.getTriggerSet().getOnParameterUpdateTriggers().stream()
+                    .map(t -> t.getParameter());
+            return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
+        }
     }
 }

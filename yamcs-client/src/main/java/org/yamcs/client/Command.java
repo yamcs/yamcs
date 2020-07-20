@@ -2,6 +2,7 @@ package org.yamcs.client;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -166,6 +167,13 @@ public class Command implements Comparable<Command> {
 
     public String getComment() {
         return (String) attributes.get(ATTR_COMMENT);
+    }
+
+    /**
+     * Returns all attributes of this commands.
+     */
+    public Map<String, Object> getAttributes() {
+        return Collections.unmodifiableMap(attributes);
     }
 
     public void merge(CommandHistoryEntry entry) {
