@@ -18,9 +18,9 @@ import org.yamcs.InitException;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
-import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.CcsdsPacket;
@@ -44,17 +44,17 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Completeness index of CCSDS telemetry. The structure of the rocksdb records:
- * 
+ *
  * <pre>
  * key: tbsIndex[4 bytes], apid[2bytes], start time[8 bytes], start seq count[2 bytes]
  * value: end time[8bytes], end seq count[2 bytes], num packets [4 bytes]
  * </pre>
- * 
+ *
  * FIXME: because the sequence count wraps around, there is a bug in case packets with the same timestamp and wrapped
  * around sequence counts are received - see testApidIndexSameTimeAndWraparound for failing test. the old TokyoCabinet
  * based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key. To
  * replicate this in RocksDB, one would need to have the RocksDB entries composed of all records with the same startime
- * 
+ *
  * @author nm
  *
  */
@@ -246,7 +246,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
 
     /**
      * Compares two packets (assuming apid is the same) and returns the same thing like the function above
-     * 
+     *
      * @param time1
      * @param seq1
      * @param time2
@@ -281,7 +281,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.yamcs.yarch.usoc.TmIndex#deleteRecords(long, long)
      */
     @Override
@@ -376,15 +376,12 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
                     ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
                             .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime()))
                             .setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
-                            .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
-                    // WARN: this string is parsed in the CompletenessGUI
-                    // TODO: remove it
-                    arb.setInfo("seqFirst: " + r.seqFirst + " seqLast: " + r.seqLast);
+                            .setSeqFirst(r.seqFirst)
+                            .setSeqLast(r.seqLast);
                     return arb.build();
                 }
             }
         }
-
     }
 
     @NotThreadSafe
@@ -475,7 +472,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.yamcs.yarch.usoc.TmIndex#getIterator(short, long, long)
      * names is ignored for the moment
      */
