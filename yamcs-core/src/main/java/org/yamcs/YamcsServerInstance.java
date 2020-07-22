@@ -139,7 +139,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     protected void doStart() {
         linkManager.startLinks();
         for (ServiceWithConfig swc : services) {
-            if(swc.enableAtStartup) {
+            if (swc.enableAtStartup) {
                 log.debug("Starting service {}", swc.getName());
                 swc.service.startAsync();
             } else {
@@ -147,7 +147,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             }
         }
         for (ServiceWithConfig swc : services) {
-            if(swc.enableAtStartup) {
+            if (swc.enableAtStartup) {
                 log.info("Awaiting start of service {}", swc.getName());
                 ServiceUtil.awaitServiceRunning(swc.service);
             }
@@ -163,6 +163,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         for (ServiceWithConfig swc : services) {
             stopFutures.add(serviceStoppers.submit(() -> {
                 swc.service.stopAsync();
+                log.debug("Awaiting termination of service {}", swc.getName());
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
