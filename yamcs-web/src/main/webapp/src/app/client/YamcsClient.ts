@@ -748,7 +748,7 @@ export default class YamcsClient implements HttpHandler {
     return url + this.queryString(options);
   }
 
-  async getRootSpaceSystems(instance: string, ) {
+  async getRootSpaceSystems(instance: string) {
     const url = `${this.apiUrl}/mdb/${instance}`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as SpaceSystemsWrapper;
@@ -898,7 +898,7 @@ export default class YamcsClient implements HttpHandler {
     return this.doFetch(url, { method: 'POST' });
   }
 
-  async getGaps(instance: string, ) {
+  async getGaps(instance: string) {
     const url = `${this.apiUrl}/dass/gaps/${instance}`;
     const response = await this.doFetch(url);
     return await response.json() as ListGapsResponse;

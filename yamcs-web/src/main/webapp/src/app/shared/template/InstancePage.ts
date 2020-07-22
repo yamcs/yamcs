@@ -6,7 +6,7 @@ import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+import { ConfigService, NavItem, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { User } from '../../shared/User';
@@ -35,6 +35,11 @@ export class InstancePage implements OnInit, OnDestroy {
   archiveActive = false;
   archiveExpanded = false;
 
+  telemetryItems: NavItem[] = [];
+  commandingItems: NavItem[] = [];
+  mdbItems: NavItem[] = [];
+  archiveItems: NavItem[] = [];
+
   private routerSubscription: Subscription;
 
   constructor(
@@ -46,6 +51,74 @@ export class InstancePage implements OnInit, OnDestroy {
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
+
+    if (this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
+      this.telemetryItems.push({ path: 'packets', label: 'Packets' });
+    }
+    if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
+      this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
+    }
+    if (this.user.hasObjectPrivilege('ReadBucket', 'displays')) {
+      this.telemetryItems.push({ path: 'displays', label: 'Displays' });
+    }
+    for (const item of configService.getExtraNavItems('telemetry')) {
+      if (item.condition && item.condition(this.user)) {
+        this.telemetryItems.push(item);
+      }
+    }
+
+    if (this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
+      this.commandingItems.push({ path: 'send', label: 'Send a command' });
+    }
+    if (this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
+      this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
+    }
+    if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
+      this.commandingItems.push({ path: 'history', label: 'Command History' });
+    }
+    if (this.config.features.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
+      this.commandingItems.push({ path: 'queues', label: 'Queues' });
+    }
+    if (this.config.commandClearances && this.user.hasSystemPrivilege('ControlCommandClearances')) {
+      this.commandingItems.push({ path: 'clearances', label: 'Clearances' });
+    }
+    for (const item of configService.getExtraNavItems('commanding')) {
+      if (item.condition && item.condition(this.user)) {
+        this.commandingItems.push(item);
+      }
+    }
+
+    if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
+      this.mdbItems.push({ path: '', label: 'Overview' });
+      this.mdbItems.push({ path: 'parameters', label: 'Parameters' });
+      this.mdbItems.push({ path: 'containers', label: 'Containers' });
+      this.mdbItems.push({ path: 'commands', label: 'Commands' });
+      this.mdbItems.push({ path: 'algorithms', label: 'Algorithms' });
+      for (const item of configService.getExtraNavItems('mdb')) {
+        if (item.condition && item.condition(this.user)) {
+          this.mdbItems.push(item);
+        }
+      }
+    }
+
+    if (this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
+      this.archiveItems.push({ path: 'overview', label: 'Overview' });
+    }
+    if (this.config.features.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
+      this.archiveItems.push({ path: 'gaps', label: 'Gaps' });
+    }
+    for (const item of configService.getExtraNavItems('archive')) {
+      if (item.condition && item.condition(this.user)) {
+        this.archiveItems.push(item);
+      }
+    }
+    if (this.user.hasSystemPrivilege('ReadTables')) {
+      this.archiveItems.push({ path: 'tables', label: 'Tables' });
+    }
+    if (this.user.hasAnyObjectPrivilegeOfType('Stream')) {
+      this.archiveItems.push({ path: 'streams', label: 'Streams' });
+    }
+
     this.sidebar$ = preferenceStore.sidebar$;
 
     this.routerSubscription = router.events.pipe(
@@ -129,64 +202,12 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.user.hasSystemPrivilege('ReadLinks');
   }
 
-  showPacketsItem() {
-    return this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
-  }
-
-  showDisplaysItem() {
-    return this.user.hasObjectPrivilege('ReadBucket', 'displays');
-  }
-
-  showParametersItem() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
-  }
-
   showEventsItem() {
     return this.user.hasSystemPrivilege('ReadEvents');
   }
 
   showAlarmsItem() {
     return this.user.hasSystemPrivilege('ReadAlarms');
-  }
-
-  showTablesItem() {
-    return this.user.hasSystemPrivilege('ReadTables');
-  }
-
-  showCommandQueuesItem() {
-    return this.config.features.tc && this.user.hasSystemPrivilege('ControlCommandQueue');
-  }
-
-  showSendACommand() {
-    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
-  }
-
-  showRunAStack() {
-    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
-  }
-
-  showCommandHistory() {
-    return this.user.hasAnyObjectPrivilegeOfType('CommandHistory');
-  }
-
-  showMDB() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
-  }
-
-  showArchiveOverview() {
-    return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
-  }
-
-  showGapsItem() {
-    return this.user.hasSystemPrivilege('RequestPlayback');
-  }
-
-  showStreamsItem() {
-    return this.user.hasAnyObjectPrivilegeOfType('Stream');
-  }
-
-  showCommandClearancesItem() {
-    return this.config.commandClearances && this.user.hasSystemPrivilege('ControlCommandClearances');
   }
 
   ngOnDestroy() {

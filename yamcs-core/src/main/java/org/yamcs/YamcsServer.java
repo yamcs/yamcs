@@ -37,7 +37,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +46,7 @@ import java.util.stream.Stream;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
+import org.yamcs.logging.YamcsLogManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.InstanceTemplate;
 import org.yamcs.protobuf.TemplateVariable;
@@ -83,6 +83,12 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServer {
+
+    static {
+        // Use a custom LogManager so that we can control the log shutdown.
+        // Keep this in static initializer. Setting as first in main() does not work.
+        System.setProperty("java.util.logging.manager", YamcsLogManager.class.getName());
+    }
 
     private static final String SERVER_ID_KEY = "serverId";
     private static final String SECRET_KEY = "secretKey";
@@ -265,10 +271,13 @@ public class YamcsServer {
     }
 
     public void shutDown() {
+        long t0 = System.nanoTime();
+        LOG.debug("Yamcs is shutting down");
         for (YamcsServerInstance ys : instances.values()) {
             ys.stopAsync();
         }
         for (YamcsServerInstance ys : instances.values()) {
+            LOG.debug("Awaiting termination of instance {}", ys.getName());
             ys.awaitOffline();
         }
         if (globalServiceList != null) {
@@ -276,11 +285,16 @@ public class YamcsServer {
                 swc.getService().stopAsync();
             }
             for (ServiceWithConfig swc : globalServiceList) {
+                LOG.debug("Awaiting termination of service {}", swc.getName());
                 swc.getService().awaitTerminated();
             }
         }
         // Shutdown database when we're sure no services are using it.
         RdbStorageEngine.getInstance().shutdown();
+
+        long stopTime = System.nanoTime() - t0;
+        LOG.debug("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
+        YamcsLogManager.shutdown();
     }
 
     public static boolean hasInstance(String instance) {
@@ -886,9 +900,11 @@ public class YamcsServer {
                 if (YAMCS.check) {
                     System.out.println("Configuration Invalid");
                 }
+                YamcsLogManager.shutdown();
                 System.exit(-1);
             } else {
                 LOG.error("Failure while attempting to validate configuration", t);
+                YamcsLogManager.shutdown();
                 System.exit(-1);
             }
         }
@@ -945,7 +961,7 @@ public class YamcsServer {
             Path configFile = YAMCS.configDirectory.resolve("logging.properties").toAbsolutePath();
             if (Files.exists(configFile)) {
                 try (InputStream in = Files.newInputStream(configFile)) {
-                    LogManager.getLogManager().readConfiguration(in);
+                    YamcsLogManager.setup(in);
                     LOG.info("Logging enabled using {}", configFile);
                 }
             } else {
@@ -1025,7 +1041,7 @@ public class YamcsServer {
         }
 
         try (InputStream in = new ByteArrayInputStream(buf.toString().getBytes())) {
-            LogManager.getLogManager().readConfiguration(in);
+            YamcsLogManager.setup(in);
         }
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             Formatter formatter = handler.getFormatter();
@@ -1141,7 +1157,6 @@ public class YamcsServer {
                     Path varFile = p.resolve("variables.yaml");
                     if (Files.exists(varFile)) {
                         try (InputStream in = new FileInputStream(varFile.toFile())) {
-                            @SuppressWarnings("unchecked")
                             List<Map<String, Object>> varDefs = new Yaml().load(in);
                             for (Map<String, Object> varDef : varDefs) {
                                 TemplateVariable.Builder varb = TemplateVariable.newBuilder();
