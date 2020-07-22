@@ -231,7 +231,7 @@ export class BucketPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-      this.storageClient.deleteObject(this.bucketInstance, 'displays', item.name).then(() => {
+      this.storageClient.deleteObject(this.bucketInstance, this.name, item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
