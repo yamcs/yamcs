@@ -14,6 +14,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
+import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -435,6 +436,26 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .addAttr(cha)
                         .build();
                 observer.next(entry);
+            }
+            
+            @Override
+            public void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {
+
+                CommandHistoryEntry.Builder entry = CommandHistoryEntry.newBuilder()
+                        .setId(cmdId.getGenerationTime() + "-" + cmdId.getOrigin() + "-" + cmdId.getSequenceNumber())
+                        .setOrigin(cmdId.getOrigin())
+                        .setCommandName(cmdId.getCommandName())
+                        .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
+                        .setCommandId(cmdId);
+                    for(Attribute a: attrs) {
+                        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                                .setName(a.getKey())
+                                .setValue(ValueUtility.toGbp(a.getValue()))
+                                .build();
+                        entry.addAttr(cha);
+                    }
+                observer.next(entry.build());
             }
         };
         CommandHistoryFilter subscription = requestManager.subscribeCommandHistory(null, since, listener);

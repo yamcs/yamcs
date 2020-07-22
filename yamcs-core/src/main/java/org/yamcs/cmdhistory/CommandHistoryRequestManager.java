@@ -1,6 +1,7 @@
 package org.yamcs.cmdhistory;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -150,7 +151,7 @@ public class CommandHistoryRequestManager extends AbstractService {
      * @param attrs
      * 
      */
-    public void updateCommand(CommandId cmdId, Map<String, Value> attrs)  {
+    public void updateCommand(CommandId cmdId, List<Attribute> attrs)  {
         log.debug("updateCommand cmdId: {} attrs: {}", attrs);
         CommandHistoryEntry che = activeCommands.get(cmdId);
         if (che == null) {
@@ -161,7 +162,7 @@ public class CommandHistoryRequestManager extends AbstractService {
 
         CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder(che);
 
-        for(Map.Entry<String, Value> a: attrs.entrySet()) {
+        for(Attribute a: attrs) {
             CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(a.getKey())
                     .setValue(ValueUtility.toGbp(a.getValue())).build();
             cheb.addAttr(cha).build();

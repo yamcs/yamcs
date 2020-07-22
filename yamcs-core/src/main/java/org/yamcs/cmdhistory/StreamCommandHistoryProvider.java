@@ -1,5 +1,6 @@
 package org.yamcs.cmdhistory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,14 +53,14 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
             int i = StandardTupleDefinitions.TC.getColumnDefinitions().size();
             CommandId cmdId = PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns = tuple.getDefinition().getColumnDefinitions();
-            Map<String, Value> m = new HashMap<>();
+            List<Attribute> l = new ArrayList<>(columns.size()-i);
             while (i < columns.size()) {
                 ColumnDefinition cd = columns.get(i++);
                 String key = cd.getName();
                 Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(key));
-                m.put(key, v);
+                l.add(new Attribute(key, v));
             }
-            chrm.updateCommand(cmdId, m);
+            chrm.updateCommand(cmdId, l);
         }
     }
 

@@ -23,6 +23,7 @@ import org.yamcs.client.Page;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -90,15 +91,12 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Message",
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NOK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK, 
                 "Transmission constraints check failed");
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
+        checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.NOK,
                 "Transmission constraints check failed");
     }
 
@@ -120,9 +118,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
     }
 
     @Test
@@ -141,18 +139,18 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdhist.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY,
-                "PENDING");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY,
+                AckStatus.PENDING);
 
         cmdhist = captor.poll(2000);
         assertNull(cmdhist);
         Value v = ValueHelper.newValue(true);
         processorClient.setValue("/REFMDB/SUBSYS1/AllowCriticalTC2", v).get();
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
     }
 
     @Test
@@ -174,17 +172,17 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.PENDING);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.OK);
 
         // check commands histogram
         Instant start = Instant.parse(cmdhist.getGenerationTimeUTC()).minusMillis(1);
@@ -217,9 +215,9 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
 
         cmdhist = captor.expectTimely();
         assertEquals(1, cmdhist.getAttrCount());
@@ -230,13 +228,11 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
 
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "NOK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
-                "Verifier Complete result: NOK");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.PENDING);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.NOK);
+        checkNextCmdHistoryAck("CommandComplete", AckStatus.NOK, "Verifier Complete result: NOK");
     }
 
     @Test
@@ -255,17 +251,17 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "DISABLED");
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.DISABLED);
 
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.PENDING);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.OK);
     }
 
     @Test
@@ -283,14 +279,14 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "DISABLED");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "DISABLED");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.DISABLED);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.DISABLED);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
     }
 
     @Test
@@ -314,18 +310,18 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.PENDING);
 
         Thread.sleep(1500); // the default verifier would have timed out in 1000ms
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
+        checkNextCmdHistoryAck("Verifier_Complete", AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.OK);
     }
 
     @Test
@@ -412,13 +408,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
 
-    private void checkNextCmdHistoryAttr(String name) throws InterruptedException, TimeoutException {
-        CommandHistoryEntry cmdhist = captor.expectTimely();
-        assertEquals(1, cmdhist.getAttrCount());
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(name, cha.getName());
-    }
-
     private void checkNextCmdHistoryAttr(String name, String value) throws InterruptedException, TimeoutException {
         CommandHistoryEntry cmdhist = captor.expectTimely();
         assertEquals(1, cmdhist.getAttrCount());
@@ -427,10 +416,29 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals(value, cha.getValue().getStringValue());
     }
 
-    private void checkNextCmdHistoryAttrStatusTime(String name, String value)
+    private void checkNextCmdHistoryAck(String name, AckStatus ack)
             throws InterruptedException, TimeoutException {
-        checkNextCmdHistoryAttr(name + "_Status", value);
-        checkNextCmdHistoryAttr(name + "_Time");
+        checkNextCmdHistoryAck(name, ack, null);
+    }
+
+    private void checkNextCmdHistoryAck(String name, AckStatus ack, String message)
+            throws InterruptedException, TimeoutException {
+
+        CommandHistoryEntry cmdhist = captor.expectTimely();
+        assertEquals(message == null ? 2 : 3, cmdhist.getAttrCount());
+        
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(name + "_Status", cha.getName());
+        assertEquals(ack.name(), cha.getValue().getStringValue());
+        
+        cha = cmdhist.getAttr(1);
+        assertEquals(name + "_Time", cha.getName());
+
+        if (message != null) {
+            cha = cmdhist.getAttr(2);
+            assertEquals(name + "_Message", cha.getName());
+            assertEquals(message, cha.getValue().getStringValue());
+        }
     }
 
     public static class MyTcDataLink extends AbstractTcDataLink {
