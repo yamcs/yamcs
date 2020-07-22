@@ -63,9 +63,9 @@ import com.google.gson.Gson;
  * enabled/disabled</li>
  * <li>TODO: can set exclusive flags - i.e. only one link from a group can be enabled at a time</li>
  * </ul>
- * 
+ *
  * The configuration of this service is done in the "dataLinks" sections of the yamcs.&lt;instance-name&gt;.yaml file.
- * 
+ *
  * @author nm
  */
 public class LinkManager {
@@ -235,7 +235,7 @@ public class LinkManager {
         Tuple t = null;
         if (ertime == TimeEncoding.INVALID_INSTANT) {
             t = new Tuple(StandardTupleDefinitions.TM,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), 
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
                             pwrt.getStatus(), pwrt.getPacket() });
         } else {
             t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
@@ -303,6 +303,7 @@ public class LinkManager {
         });
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
+                log.debug("Awaiting termination of link {}", link.getName());
                 ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });
@@ -408,7 +409,7 @@ public class LinkManager {
 
     /**
      * Return the link by the given name or null if there is no such link.
-     * 
+     *
      * @param linkName
      * @return
      */

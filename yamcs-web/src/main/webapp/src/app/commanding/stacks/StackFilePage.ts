@@ -10,6 +10,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { AddCommandDialog, CommandResult } from './AddCommandDialog';
 import { CommandArgument, StackEntry } from './StackEntry';
+import { StackFormatter } from './StackFormatter';
 
 @Component({
   templateUrl: './StackFilePage.html',
@@ -296,44 +297,11 @@ export class StackFilePage implements OnDestroy {
   }
 
   saveStack() {
-    const doc = document.implementation.createDocument(null, null, null);
-    const rootEl = doc.createElement('commandStack');
-    doc.appendChild(rootEl);
-
-    for (const entry of this.entries$.value) {
-      const entryEl = doc.createElement('command');
-      entryEl.setAttribute('qualifiedName', entry.name);
-      if (entry.comment) {
-        entryEl.setAttribute('comment', entry.comment);
-      }
-      for (const argument of entry.arguments) {
-        const argumentEl = doc.createElement('commandArgument');
-        argumentEl.setAttribute('argumentName', argument.name);
-        argumentEl.setAttribute('argumentValue', argument.value);
-        entryEl.appendChild(argumentEl);
-      }
-      rootEl.appendChild(entryEl);
-    }
-
-    let xmlString = new XMLSerializer().serializeToString(rootEl);
-    xmlString = this.formatXml(xmlString);
-
-    const b = new Blob([xmlString]);
+    const xml = new StackFormatter(this.entries$.value).toXML();
+    const b = new Blob([xml]);
     this.storageClient.uploadObject('_global', 'stacks', this.objectName, b).then(() => {
       this.dirty$.next(false);
     });
-  }
-
-  private formatXml(xml: string) {
-    let formatted = '';
-    let indent = '';
-    const spaces = '  ';
-    xml.split(/>\s*</).forEach(function (node) {
-      if (node.match(/^\/\w/)) indent = indent.substring(spaces.length);
-      formatted += indent + '<' + node + '>\r\n';
-      if (node.match(/^<?\w[^>]*[^\/]$/)) indent += spaces;
-    });
-    return formatted.substring(1, formatted.length - 3);
   }
 
   private getStringAttribute(node: Node, name: string) {

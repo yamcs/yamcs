@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +73,7 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
     TimeService timeService;
     List<FileStore> fileStores;
     ScheduledFuture<?> collectionFuture;
-    
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -136,7 +136,7 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
 
     @Override
     public void doStart() {
-        YamcsServer server =YamcsServer.getServer();
+        YamcsServer server = YamcsServer.getServer();
         timeService = server.getInstance(yamcsInstance).getTimeService();
         ScheduledThreadPoolExecutor timer = server.getThreadPoolExecutor();
         collectionFuture = timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
@@ -151,6 +151,8 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
         }
         try {
             collectionFuture.get();
+            notifyStopped();
+        } catch (CancellationException e) {
             notifyStopped();
         } catch (Exception e) {
             notifyFailed(e);
@@ -263,7 +265,7 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
      */
     public void registerProducer(SystemParametersProducer p) {
         log.debug("Registering system variables producer {}", p);
-        if(providers.contains(p)) {
+        if (providers.contains(p)) {
             throw new IllegalStateException("Producer already registered");
         }
         providers.add(p);
@@ -273,7 +275,7 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
      * Unregister producer - from now on it will not be invoked. Note that the collector collects parameters into a
      * different thread taking all producer in turns, and there might be one collection already started when this method
      * is called.
-     * 
+     *
      */
     public void unregisterProducer(SystemParametersProducer p) {
         log.debug("Unregistering system variables producer {}", p);

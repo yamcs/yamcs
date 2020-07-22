@@ -37,28 +37,17 @@
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
       </app-sidebar-nav-item>
-      <app-sidebar-nav-group *ngIf="showPacketsItem() || showParametersItem() || showDisplaysItem()"
+      <app-sidebar-nav-group *ngIf="telemetryItems"
                              label="Telemetry" icon="speed"
                              [active]="telemetryActive"
                              [expanded]="telemetryExpanded"
                              (toggle)="toggleTelemetryGroup()">
-        <app-sidebar-nav-item *ngIf="showPacketsItem()"
-                              routerLink="/telemetry/packets"
+        <app-sidebar-nav-item *ngFor="let item of telemetryItems"
+                              [routerLink]="'/telemetry/'+ item.path"
                               [queryParams]="{c: yamcs.context}"
+                              [exact]="item.path === ''"
                               [subitem]="true">
-          Packets
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showParametersItem()"
-                              routerLink="/telemetry/parameters"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Parameters
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showDisplaysItem()"
-                              routerLink="/telemetry/displays"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Displays
+          {{ item.label }}
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
@@ -76,40 +65,17 @@
         Alarms
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-group *ngIf="showCommandHistory() || showCommandQueuesItem() || showSendACommand()"
+      <app-sidebar-nav-group *ngIf="commandingItems"
                              label="Commanding" icon="rss_feed"
                              [active]="commandingActive"
                              [expanded]="commandingExpanded"
                              (toggle)="toggleCommandingGroup()">
-        <app-sidebar-nav-item *ngIf="showSendACommand()"
-                              routerLink="/commanding/send"
+        <app-sidebar-nav-item *ngFor="let item of commandingItems"
+                              [routerLink]="'/commanding/' + item.path"
                               [queryParams]="{c: yamcs.context}"
+                              [exact]="item.path === ''"
                               [subitem]="true">
-          Send a command
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showRunAStack()"
-                              routerLink="/commanding/stacks"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Command Stacks
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showCommandHistory()"
-                              routerLink="/commanding/history"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Command History
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
-                              routerLink="/commanding/queues"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Queues
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showCommandClearancesItem()"
-                              routerLink="/commanding/clearances"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Clearances
+          {{ item.label }}
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
@@ -120,75 +86,31 @@
         CFDP File Transfer
       </app-sidebar-nav-item>
 
-      <ng-container *ngIf="showMDB()">
-        <app-sidebar-nav-group label="Mission Database" icon="style"
-                               [active]="mdbActive"
-                               [expanded]="mdbExpanded"
-                               (toggle)="toggleMdbGroup()">
-          <app-sidebar-nav-item routerLink="/mdb"
-                                [queryParams]="{c: yamcs.context}"
-                                [exact]="true"
-                                [subitem]="true">
-            Overview
-          </app-sidebar-nav-item>
-          <app-sidebar-nav-item routerLink="/mdb/parameters"
-                                [queryParams]="{c: yamcs.context}"
-                                [subitem]="true">
-            Parameters
-          </app-sidebar-nav-item>
+      <app-sidebar-nav-group *ngIf="mdbItems"
+                             label="Mission Database" icon="style"
+                             [active]="mdbActive"
+                             [expanded]="mdbExpanded"
+                             (toggle)="toggleMdbGroup()">
+        <app-sidebar-nav-item *ngFor="let item of mdbItems"
+                              [routerLink]="'/mdb/' + item.path"
+                              [queryParams]="{c: yamcs.context}"
+                              [exact]="item.path === ''"
+                              [subitem]="true">
+          {{ item.label }}
+        </app-sidebar-nav-item>
+      </app-sidebar-nav-group>
 
-          <app-sidebar-nav-item routerLink="/mdb/containers"
-                                [queryParams]="{c: yamcs.context}"
-                                [subitem]="true">
-            Containers
-          </app-sidebar-nav-item>
-
-          <app-sidebar-nav-item routerLink="/mdb/commands"
-                                [queryParams]="{c: yamcs.context}"
-                                [subitem]="true">
-            Commands
-          </app-sidebar-nav-item>
-
-          <app-sidebar-nav-item routerLink="/mdb/algorithms"
-                                [queryParams]="{c: yamcs.context}"
-                                [subitem]="true">
-            Algorithms
-          </app-sidebar-nav-item>
-        </app-sidebar-nav-group>
-      </ng-container>
-
-      <app-sidebar-nav-group *ngIf="showArchiveOverview() || showGapsItem() || showTablesItem() || showStreamsItem()"
+      <app-sidebar-nav-group *ngIf="archiveItems"
                              label="Archive" icon="storage"
                              [active]="archiveActive"
                              [expanded]="archiveExpanded"
                              (toggle)="toggleArchiveGroup()">
-
-        <app-sidebar-nav-item *ngIf="showArchiveOverview()"
-                              routerLink="/archive/overview"
+        <app-sidebar-nav-item *ngFor="let item of archiveItems"
+                              [routerLink]="'/archive/' + item.path"
                               [queryParams]="{c: yamcs.context}"
+                              [exact]="item.path === ''"
                               [subitem]="true">
-          Overview
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="config.features.dass && showGapsItem()"
-                              routerLink="/archive/gaps"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Gaps
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="showTablesItem()"
-                              routerLink="/archive/tables"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Tables
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="showStreamsItem()"
-                              routerLink="/archive/streams"
-                              [queryParams]="{c: yamcs.context}"
-                              [subitem]="true">
-          Streams
+          {{ item.label }}
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
     </mat-nav-list>

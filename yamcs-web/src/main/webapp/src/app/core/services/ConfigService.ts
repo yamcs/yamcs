@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthInfo, CommandOption } from '../../client';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { User } from '../../shared/User';
 
 export interface WebsiteConfig {
   serverId: string;
@@ -25,6 +26,14 @@ export interface EventsConfig {
   extraColumns?: ExtraColumnInfo[];
 }
 
+export type NavGroup = 'telemetry' | 'commanding' | 'archive' | 'mdb';
+
+export interface NavItem {
+  path: string;
+  label: string;
+  condition?: (user: User) => boolean;
+}
+
 export interface ExtraColumnInfo extends ColumnInfo {
   /**
    * id of another column after which to insert this column.
@@ -40,10 +49,12 @@ export interface ExtraColumnInfo extends ColumnInfo {
 export class ConfigService {
 
   private websiteConfig: WebsiteConfig;
+  private extraNavItems = new Map<NavGroup, NavItem[]>();
 
   async loadWebsiteConfig() {
     const el = document.getElementById('appConfig')!;
     this.websiteConfig = JSON.parse(el.innerText);
+    return this.websiteConfig;
   }
 
   getServerId() {
@@ -64,5 +75,18 @@ export class ConfigService {
 
   getConfig() {
     return this.websiteConfig;
+  }
+
+  getExtraNavItems(group: NavGroup) {
+    return this.extraNavItems.get(group) || [];
+  }
+
+  addNavItem(group: NavGroup, item: NavItem) {
+    let items = this.extraNavItems.get(group);
+    if (!items) {
+      items = [];
+      this.extraNavItems.set(group, items);
+    }
+    items.push(item);
   }
 }
