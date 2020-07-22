@@ -54,6 +54,7 @@ export class ConfigService {
   async loadWebsiteConfig() {
     const el = document.getElementById('appConfig')!;
     this.websiteConfig = JSON.parse(el.innerText);
+    return this.websiteConfig;
   }
 
   getServerId() {
