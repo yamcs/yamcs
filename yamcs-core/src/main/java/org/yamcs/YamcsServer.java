@@ -84,12 +84,6 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public class YamcsServer {
 
-    static {
-        // Use a custom LogManager so that we can control the log shutdown.
-        // Keep this in static initializer. Setting as first in main() does not work.
-        System.setProperty("java.util.logging.manager", YamcsLogManager.class.getName());
-    }
-
     private static final String SERVER_ID_KEY = "serverId";
     private static final String SECRET_KEY = "secretKey";
     public static final String GLOBAL_INSTANCE = "_global";
