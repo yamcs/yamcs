@@ -24,9 +24,11 @@ public class YamcsLogManager extends LogManager {
         super.reset();
     }
 
-    public static YamcsLogManager setup(InputStream inputStream) throws IOException {
-        YamcsLogManager logManager = (YamcsLogManager) getLogManager();
-        logManager.internalReset();
+    public static LogManager setup(InputStream inputStream) throws IOException {
+        LogManager logManager = getLogManager();
+        if (logManager instanceof YamcsLogManager) {
+            ((YamcsLogManager) logManager).internalReset();
+        }
         logManager.readConfiguration(inputStream);
         return logManager;
     }
@@ -37,7 +39,7 @@ public class YamcsLogManager extends LogManager {
     public static void shutdown() {
         LogManager logManager = getLogManager();
         if (logManager instanceof YamcsLogManager) { // Not the case in unit tests
-            ((YamcsLogManager) getLogManager()).internalReset();
+            ((YamcsLogManager) logManager).internalReset();
         }
     }
 }

@@ -55,4 +55,4 @@ if [ "$JMX" = 1 ]; then
   JMX_OPTS="-Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 fi
 
-exec "$_RUNJAVA" $JAVA_OPTS $JMX_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ org.yamcs.YamcsServer "$@"
+exec "$_RUNJAVA" $JAVA_OPTS $JMX_OPTS -Djava.util.logging.manager=org.yamcs.logging.YamcsLogManager -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ org.yamcs.YamcsServer "$@"
