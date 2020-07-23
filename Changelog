@@ -1,6 +1,7 @@
 Version 5.0.1 
 - moved the simulator into its own package out of the examples (such that the examples are independent of eachother)
 - changed the errorCorrection into errorDetection for TC frames (for consistency with TM links and also to documentation)
+- added a parameter on CfsCommandPostprocessor to allow swaping between checksum and command code (necessary on little endian systems with older versions of cFS)
 
 Version 5.0.0 released 3-Jul-2020
 - migrated the .def table definitions into the rocksdb. 
