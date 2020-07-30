@@ -649,8 +649,8 @@ public class YamcsServer {
         }
     }
 
-    public static Set<YamcsServerInstance> getInstances() {
-        return new HashSet<>(YAMCS.instances.values());
+    public static List<YamcsServerInstance> getInstances() {
+        return new ArrayList<>(YAMCS.instances.values());
     }
 
     public YamcsServerInstance getInstance(String yamcsInstance) {

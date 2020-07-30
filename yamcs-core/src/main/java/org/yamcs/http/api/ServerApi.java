@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.yamcs.CommandOption;
 import org.yamcs.Plugin;
@@ -92,7 +91,7 @@ public class ServerApi extends AbstractServerApi<Context> {
         if (yconf.containsKey("defaultInstance")) {
             responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
         } else {
-            Set<YamcsServerInstance> instances = YamcsServer.getInstances();
+            List<YamcsServerInstance> instances = YamcsServer.getInstances();
             if (!instances.isEmpty()) {
                 YamcsServerInstance anyInstance = instances.iterator().next();
                 responseb.setDefaultYamcsInstance(anyInstance.getName());
