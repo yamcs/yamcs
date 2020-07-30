@@ -43,7 +43,7 @@ public class LimitedStream extends Stream implements StreamSubscriber {
             return;
         }
 
-        if (inputDataCount <= limit) {
+        if (getDataCount() <= limit) {
             emitTuple(tuple);
         } else {
             input.close();

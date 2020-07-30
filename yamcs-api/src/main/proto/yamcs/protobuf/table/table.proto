@@ -224,6 +224,8 @@ message GetTableDataRequest {
   repeated string cols = 3;
   
   // The zero-based row number at which to start outputting results. Default: ``0``
+  // Note that in the current rocksdb storage engine there is no way to jump to a row by its number. 
+  // This is why such a request will do a table scan and can be slow for large values of pos.
   optional int64 pos = 4;
   
   // The maximum number of returned records per page. Choose this value
