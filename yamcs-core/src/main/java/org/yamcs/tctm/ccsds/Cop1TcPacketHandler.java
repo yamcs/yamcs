@@ -52,7 +52,7 @@ import org.yamcs.xtce.util.AggregateMemberNames;
 public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
     static final String[] STATE_NAMES = new String[] { "Invalid", "Active", "Retransmit without wait",
             "Retransmit with wait", "Initialising without BC Frame", "Initialising with BC Frame", "Initial" };
-    
+
     public static final CommandOption OPTION_BYPASS = new CommandOption("cop1Bypass", "COP-1 Bypass",
             CommandOptionType.BOOLEAN).withHelp("Use BD mode even if AD was initiated.");
 
@@ -192,7 +192,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     @Override
     public void sendTc(PreparedCommand pc) {
         boolean tcBypassFlag = isBypass(pc);
-        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getId(), tcBypassFlag, bypassAll);
+        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getId(), tcBypassFlag,
+                bypassAll);
         if (!cop1Active) {
             sendSingleTc(pc, bypassAll || tcBypassFlag);
         } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
@@ -300,6 +301,16 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         for (PreparedCommand pc1 : l) {
             byte[] binary = cmdPostProcessor.process(pc1);
             int length = binary.length;
+            if (offset + length > data.length) {
+                log.error("TC of length " + length + " does not fit into the frame of length " + data.length
+                        + " at offset " + offset);
+                if (length != cmdPostProcessor.getBinaryLength(pc1)) {
+                    log.error(
+                            "Command postprocessor {} getBinaryLength() returned {} but the binary command length returned by process() is {}",
+                            cmdPostProcessor.getClass().getName(), cmdPostProcessor.getBinaryLength(pc1), length);
+                }
+                return null;
+            }
             System.arraycopy(binary, 0, data, offset, length);
             offset += length;
         }
