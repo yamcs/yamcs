@@ -55,7 +55,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
                 .setProcessor("realtime")
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
     }
 
     @Test
@@ -212,7 +211,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdhist.getCommandName());
         assertEquals(4, cmdhist.getSequenceNumber());
         assertEquals("IntegrationTest", cmdhist.getOrigin());
-        packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
+        packetGenerator.generateAlgVerifCmdAck((short) 25, (short) 5000, (byte) 0, 0);
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
@@ -226,7 +225,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         assertEquals("packetSeqNum", cha.getName());
         assertEquals(5000, cha.getValue().getSint32Value());
 
-        packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
+        packetGenerator.generateAlgVerifCmdAck((short) 25, (short) 5000, (byte) 1, 5);
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);
@@ -438,37 +437,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
             cha = cmdhist.getAttr(2);
             assertEquals(name + "_Message", cha.getName());
             assertEquals(message, cha.getValue().getStringValue());
-        }
-    }
-
-    public static class MyTcDataLink extends AbstractTcDataLink {
-        static short seqNum = 5000;
-
-        @Override
-        public void init(String yamcsInstance, String name, YConfiguration config) {
-            super.init(yamcsInstance, name, config);
-        }
-
-        @Override
-        public void sendTc(PreparedCommand preparedCommand) {
-            if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
-                commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
-            }
-        }
-
-        @Override
-        protected Status connectionStatus() {
-            return Status.OK;
-        }
-
-        @Override
-        protected void doStart() {
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            notifyStopped();
         }
     }
 }

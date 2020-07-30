@@ -1,6 +1,6 @@
 package org.yamcs.management;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -507,7 +507,7 @@ public class LinkManager {
                 String reason = "no link available";
                 log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
                 long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-                cmdHistPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
+                cmdHistPublisher.publishAck(commandId, AcknowledgeSent,
                         currentTime, AckStatus.NOK, reason);
                 cmdHistPublisher.commandFailed(commandId, currentTime, reason);
             }

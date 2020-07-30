@@ -234,7 +234,7 @@ public class YConfiguration {
         }
     }
 
-    public static boolean isNull(Map m, String key) {
+    public static boolean isNull(Map<?, ?> m, String key) {
         if (!m.containsKey(key)) {
             throw new ConfigurationException(staticConfPaths.get(m), "cannot find a mapping for key '" + key + "'");
         }
@@ -255,7 +255,7 @@ public class YConfiguration {
         }
     }
 
-    private static void checkKey(Map m, String key) throws ConfigurationException {
+    private static void checkKey(Map<String, Object> m, String key) throws ConfigurationException {
         if (!m.containsKey(key)) {
             throw new ConfigurationException(staticConfPaths.get(m), "cannot find a mapping for key '" + key + "'");
         } else if (m.get(key) == null) {
@@ -337,7 +337,7 @@ public class YConfiguration {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Map) {
-            Map<String, Object> m1 = (Map) o;
+            Map<String, Object> m1 = (Map<String, Object>) o;
             if (staticConfPaths.containsKey(m1)) {
                 staticConfPaths.put(m1, staticConfPaths.get(m) + "->" + key);
             }
@@ -371,7 +371,7 @@ public class YConfiguration {
      * @return
      * @throws ConfigurationException
      */
-    static public String getString(Map m, String key) throws ConfigurationException {
+    static public String getString(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
 
         Object o = m.get(key);
@@ -383,7 +383,7 @@ public class YConfiguration {
         }
     }
 
-    static public String getString(Map m, String key, String defaultValue) throws ConfigurationException {
+    static public String getString(Map<String, Object> m, String key, String defaultValue) throws ConfigurationException {
         if (m.containsKey(key)) {
             return getString(m, key);
         } else {
@@ -423,11 +423,11 @@ public class YConfiguration {
         List<YConfiguration> r = new ArrayList<>();
         Object o = root.get(key);
         if (o instanceof List) {
-            List l = (List) o;
+            List<?> l = (List<?>) o;
             for (int i = 0; i < l.size(); i++) {
                 Object o1 = l.get(i);
                 if (o1 instanceof Map) {
-                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) o1));
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map<String, Object>) o1));
                 } else {
                     throw new ConfigurationException(this, "One element of the list is not a map: " + o1);
                 }
@@ -465,15 +465,15 @@ public class YConfiguration {
         List<YConfiguration> r = new ArrayList<>();
         Object o = root.get(key);
         if (o instanceof List) {
-            List l = (List) o;
+            List<?> l = (List<?>) o;
             for (int i = 0; i < l.size(); i++) {
                 Object o1 = l.get(i);
                 if (o1 instanceof Map) {
-                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) o1));
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map<String, Object>) o1));
                 } else if (o1 instanceof String) {
                     Map<String, Object> m1 = new HashMap<>();
                     m1.put("class", o1);
-                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) m1));
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map<String, Object>) m1));
                 } else {
                     throw new ConfigurationException(this, "One element of the list is not a map: " + o1);
                 }
@@ -701,7 +701,7 @@ public class YConfiguration {
         return isList(root, key);
     }
 
-    public static boolean isList(Map m, String key) {
+    public static boolean isList(Map<String, Object> m, String key) {
         checkKey(m, key);
         Object o = m.get(key);
         return (o instanceof List);
@@ -859,7 +859,7 @@ public class YConfiguration {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof List) {
-            List l = (List) o;
+            List<T> l = (List<T>) o;
             String parentPath = staticConfPaths.get(m);
             for (int i = 0; i < l.size(); i++) {
                 Object o1 = l.get(i);
@@ -877,5 +877,36 @@ public class YConfiguration {
     @Override
     public String toString() {
         return root.toString();
+    }
+
+    /**
+     * If config.get(key) exists and is a list, and the list has the element idx and is a map, then return a configuration wrapper around that map.
+     * <p>
+     * Otherwise throw a ConfigurationException
+     * 
+     * @param key
+     * @param i
+     * @return
+     */
+    public YConfiguration getConfigListIdx(String key, int idx) {
+        checkKey(root, key);
+        Object o = root.get(key);
+        if (!(o instanceof List)) {
+            throw new ConfigurationException(staticConfPaths.get(root),
+                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+        }
+        
+        List<?> l = (List<?>) o;
+        if(idx>=l.size()) {
+            throw new ConfigurationException(staticConfPaths.get(root),
+                    "mapping for key '" + key + "' is a list but the requested index " +idx + " is outside of the list");
+        }
+        
+        Object o1 = l.get(idx);
+        if (!(o1 instanceof Map)) {
+            throw new ConfigurationException(this, "The element "+idx+" in the list is not a map but " + getUnqualfiedClassName(o1));
+        }
+        
+        return new YConfiguration(this, key + "[" + idx + "]", (Map<String, Object>) o1);
     }
 }

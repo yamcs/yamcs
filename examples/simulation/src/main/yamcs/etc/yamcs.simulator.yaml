@@ -143,5 +143,12 @@ streamConfig:
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime"]
+  tc: 
+     - name: tc_sim
+       processor: realtime
+       tcPatterns: ["/YSS/SIMULATOR/.*"]
+     - name: tc_tse
+       processor: realtime
+
+      
   sqlFile: "etc/extra_streams.sql"

@@ -10,8 +10,6 @@ realtime:
   services:
     - class: org.yamcs.StreamTmPacketProvider
     - class: org.yamcs.StreamTcCommandReleaser
-      args:
-        stream: "tc_realtime"
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)

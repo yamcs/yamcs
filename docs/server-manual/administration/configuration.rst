@@ -109,6 +109,6 @@ mdb (list)
 
     
 streamConfig(map)
-    This configures the list of streams created when Yamcs starts. The map contains an entry for each standard stream type (``tm``, ``cmdHist``, ``event``, etc) and additionally a key ``sqlFile`` can be used to load a StreamSQL file where user defined streams can be created. More information should be found in :doc:`../data-management/streams`
+    This configures the list of streams created when Yamcs starts. The map contains an entry for each standard stream type (``tm``, ``cmdHist``, ``event``, etc) and additionally a key ``sqlFile`` can be used to load a StreamSQL file where user defined streams can be created. More information can be found in :doc:`../data-management/streams`
     
     

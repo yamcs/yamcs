@@ -12,8 +12,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
-import org.yamcs.StreamConfig.StandardStreamType;
-import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -101,15 +100,15 @@ public class XtceTmRecorder extends AbstractYamcsService {
         if (config.containsKey("streams")) {
             List<String> streamNames = config.getList("streams");
             for (String sn : streamNames) {
-                StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
+                TmStreamConfigEntry sce = sc.getTmEntry(sn);
                 if (sce == null) {
                     throw new ConfigurationException("No stream config found for '" + sn + "'");
                 }
                 createRecorder(sce);
             }
         } else {
-            List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
-            for (StreamConfigEntry sce : sceList) {
+            List<TmStreamConfigEntry> sceList = sc.getTmEntries();
+            for (TmStreamConfigEntry sce : sceList) {
                 createRecorder(sce);
             }
         }
@@ -117,7 +116,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
-    private void createRecorder(StreamConfigEntry streamConf) {
+    private void createRecorder(TmStreamConfigEntry streamConf) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         SequenceContainer rootsc = streamConf.getRootContainer();
         if (rootsc == null) {

@@ -1,5 +1,6 @@
 instances:
  - IntegrationTest
+# - IntegrationTest2
 
 services:
   - class: org.yamcs.http.HttpServer

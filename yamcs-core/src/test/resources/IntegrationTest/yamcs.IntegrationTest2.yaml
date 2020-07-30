@@ -1,5 +1,4 @@
 services:
-  - class: org.yamcs.archive.XtceTmRecorder
   - class: org.yamcs.archive.ParameterRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
@@ -15,21 +14,25 @@ services:
 dataLinks:
   - name: tm_realtime
     class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    num: 0
+    num: 2
     stream: tm_realtime
   - name: tm2_realtime
     class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    num: 1
+    num: 3
     stream: tm2_realtime
             
   - name: pp_realtime
     class: org.yamcs.AbstractIntegrationTest$ParameterProvider
     stream: pp_realtime
-    num: 0
-  - name: tc_realtime
+    num: 1
+  - name: datalink_tc1
     class: org.yamcs.AbstractIntegrationTest$TcDataLink
-    num: 0
-    stream: tc_realtime
+    stream: tcstream1
+    num: 1
+  - name: datalink_tc2
+    class: org.yamcs.AbstractIntegrationTest$TcDataLink
+    stream: tcstream2
+    num: 2
 
 mdb:
   - type: "sheet"
@@ -50,6 +53,9 @@ streamConfig:
   param: ["sys_param", "pp_realtime", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: 
-    - name: "tc_realtime"
+  tc:
+    - name: tcstream1
+      processor: realtime
+      tcPatterns: ["/REFMDB/SUBSYS1/ONE.*"]
+    - name: tcstream2
       processor: realtime

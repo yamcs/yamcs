@@ -5,7 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -16,9 +18,11 @@ import org.junit.BeforeClass;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
@@ -46,7 +50,7 @@ public abstract class AbstractIntegrationTest {
     static YamcsServer yamcs;
 
     static {
-        // LoggingUtils.enableLogging();
+//         LoggingUtils.enableLogging();
     }
 
     @BeforeClass
@@ -56,7 +60,7 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws ClientException {
-        parameterProvider = ParameterProvider.instance;
+        parameterProvider = ParameterProvider.instance[0];
         assertNotNull(parameterProvider);
 
         connectionListener = new MyConnectionListener();
@@ -163,7 +167,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     public static class PacketProvider implements TmPacketDataLink {
-        static volatile PacketProvider[] instance = new PacketProvider[2];
+        static volatile PacketProvider[] instance = new PacketProvider[4];
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         YConfiguration config;
         String name;
@@ -233,16 +237,16 @@ public abstract class AbstractIntegrationTest {
         ParameterSink ppListener;
         long generationTime;
 
-        static volatile ParameterProvider instance;
+        static volatile ParameterProvider[] instance = new ParameterProvider[2];
         XtceDb xtcedb;
         YConfiguration config;
 
         String name;
 
-        public ParameterProvider(String yamcsInstance, String name, YConfiguration args) {
-            instance = this;
+        public ParameterProvider(String yamcsInstance, String name, YConfiguration config) {
+            instance[config.getInt("num", 0)] = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-            this.config = args;
+            this.config = config;
             this.name = name;
         }
 
@@ -339,6 +343,42 @@ public abstract class AbstractIntegrationTest {
         @Override
         public String getName() {
             return name;
+        }
+    }
+    
+
+    public static class TcDataLink extends AbstractTcDataLink {
+        static short seqNum = 5000;
+        static volatile TcDataLink[] instance = new TcDataLink[4];
+        
+        List<PreparedCommand> commands = new ArrayList<PreparedCommand>();
+        @Override
+        public void init(String yamcsInstance, String name, YConfiguration config) {
+            super.init(yamcsInstance, name, config);
+            instance[config.getInt("num", 0)] = this;
+        }
+
+        @Override
+        public void sendTc(PreparedCommand preparedCommand) {
+            if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
+                commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
+            }
+            commands.add(preparedCommand);
+        }
+
+        @Override
+        protected Status connectionStatus() {
+            return Status.OK;
+        }
+
+        @Override
+        protected void doStart() {
+            notifyStarted();
+        }
+
+        @Override
+        protected void doStop() {
+            notifyStopped();
         }
     }
 }

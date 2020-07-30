@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
 
 import java.io.IOException;
 
@@ -116,7 +116,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent,
                 currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
     }
@@ -126,7 +126,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX, getCurrentTime(),
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(),
                 AckStatus.OK);
     }
     public String getYamcsInstance() {

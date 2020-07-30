@@ -8,8 +8,6 @@ realtime:
           args: 
               streams: ["tm_realtime"]    
         - class: org.yamcs.StreamTcCommandReleaser
-          args:
-              stream: "tc_realtime"    
         - class: org.yamcs.tctm.StreamParameterProvider
        # implements XTCE algorithms
         - class: org.yamcs.algorithms.AlgorithmManager

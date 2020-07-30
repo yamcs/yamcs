@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -46,7 +47,6 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
         this.tmProcessor = proc.getTmProcessor();
         readStreamConfig(proc.getName());
         proc.setPacketProvider(this);
-
     }
 
     /**
@@ -71,7 +71,7 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
         }
 
         for (String streamName : streams) {
-            StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
+            TmStreamConfigEntry sce = streamConfig.getTmEntry(streamName);
             SequenceContainer rootContainer;
             rootContainer = sce.getRootContainer();
             if (rootContainer == null) {
