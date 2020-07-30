@@ -885,7 +885,7 @@ public class YConfiguration {
      * Otherwise throw a ConfigurationException
      * 
      * @param key
-     * @param i
+     * @param idx
      * @return
      */
     public YConfiguration getConfigListIdx(String key, int idx) {
