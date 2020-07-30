@@ -16,4 +16,9 @@ public class Running16BitChecksumCalculator implements ErrorDetectionWordCalcula
         }
         return checksum & 0xFFFF;
     }
+
+    @Override
+    public int sizeInBits() {
+        return 16;
+    }
 }

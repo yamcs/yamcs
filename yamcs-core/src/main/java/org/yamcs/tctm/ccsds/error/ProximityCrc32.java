@@ -24,4 +24,10 @@ public class ProximityCrc32 implements ErrorDetectionWordCalculator {
     public int compute(byte[] data, int offset, int length) {
         return cc.compute(data, offset, length, initialValue);
     }
+
+
+    @Override
+    public int sizeInBits() {
+        return 32;
+    }
 }

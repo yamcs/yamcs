@@ -14,4 +14,9 @@ public interface ErrorDetectionWordCalculator {
      * @return
      */
     public int compute(byte[] data, int offset, int length);
+    /**
+     * 
+     * @return size in bits of the calculated checksum (max 32)
+     */
+    public int sizeInBits();
 }

@@ -32,4 +32,9 @@ public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
 
     }
 
+    @Override
+    public int sizeInBits() {
+        return 16;
+    }
+
 }
