@@ -42,3 +42,8 @@ ranges-test:
     - type: xtce
       args:
           file: "../yamcs-xtce/src/test/resources/ranges-test.xml"
+          
+empty-match-criteria:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/empty-match-criteria.xml"

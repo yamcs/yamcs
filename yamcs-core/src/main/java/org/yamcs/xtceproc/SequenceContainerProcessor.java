@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
@@ -105,12 +106,8 @@ public class SequenceContainerProcessor {
             // And then any derived containers
             int bitp = buf.getPosition();
             for (SequenceContainer sc : inheritingContainers) {
-                if (sc.getRestrictionCriteria() == null) {
-                    log.warn("Container {} inherits without defining an inheritance condition. Ignoring the container.",
-                            sc.getName());
-                    continue;
-                }
-                if (sc.getRestrictionCriteria().isMet(pcontext.criteriaEvaluator)) {
+                MatchCriteria mc = sc.getRestrictionCriteria();
+                if (mc == null || mc.isMet(pcontext.criteriaEvaluator)) {
                     hasDerived = true;
                     buf.setPosition(bitp);
                     extract(sc);

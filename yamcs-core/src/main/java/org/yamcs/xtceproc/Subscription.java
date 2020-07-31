@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.IndirectParameterRefEntry;
+import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.SequenceContainer;
@@ -49,8 +50,11 @@ public class Subscription {
             // it can be that the inheritance condition parameters are not from the baseContainer, so we need to add
             // it explicitly
             addSequenceContainer(seq.getBaseContainer());
-            for (Parameter p : seq.getRestrictionCriteria().getDependentParameters()) {
-                addParameter(p);
+            MatchCriteria mc = seq.getRestrictionCriteria();
+            if (mc != null) {
+                for (Parameter p : mc.getDependentParameters()) {
+                    addParameter(p);
+                }
             }
 
         }
@@ -101,7 +105,7 @@ public class Subscription {
                 addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
             } else { // continue with the basecontainer if we are at the first entry
                 sctmp = sctmp.getBaseContainer();
-                if (sctmp != null && sctmp.getEntryList().size()>0)  {
+                if (sctmp != null && sctmp.getEntryList().size() > 0) {
                     addSequenceEntry(sctmp.getEntryList().get(sctmp.getEntryList().size() - 1));
                 }
             }

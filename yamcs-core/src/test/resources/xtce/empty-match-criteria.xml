@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="EMC"
+  xmlns="http://www.omg.org/spec/XTCE/20180204"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  shortDescription="Example XTCE to illustrate setting validity ranges for parameters and arguments">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="double" sizeInBits="64">
+        <FloatDataEncoding sizeInBits="64" byteOrder="mostSignificantByteFirst" encoding="IEEE754_1985" />
+        <ValidRange minInclusive="-90.0" maxInclusive="90.0" />
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter parameterTypeRef="double" name="para1" />
+      <Parameter parameterTypeRef="double" name="para2" />
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="c1">
+        <EntryList>
+          <ParameterRefEntry parameterRef="para1" />
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="c2">
+        <EntryList>
+          <ParameterRefEntry parameterRef="para2" />
+        </EntryList>
+        <BaseContainer containerRef="c1"/>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  
+ 
+</SpaceSystem>
