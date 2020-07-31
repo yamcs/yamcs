@@ -21,6 +21,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     long delayBetweenPackets = -1;
     Thread thread;
 
+    @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {
         super.init(yamcsInstance, name, config);
 
@@ -47,7 +48,6 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 }
             }
         } catch (InterruptedException e) {
-            log.debug("Interrupted", e);
             Thread.currentThread().interrupt();
         }
     }

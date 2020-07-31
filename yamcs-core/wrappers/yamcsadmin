@@ -17,6 +17,9 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
+# cd into YAMCS_HOME to support relative links in configuration files
+cd "$YAMCS_HOME"
+
 if [ -d "$JAVA_HOME" ]; then
   _RUNJAVA="$JAVA_HOME/bin/java"
 else
