@@ -1,3 +1,6 @@
+Version 5.1.1 released 2-Aug-2020
+- fixed the GenericCommandPostprocessor to work with errorDetection: NONE (which is also the default if no errorDetection is specified)
+
 Version 5.1.0 released 2-Aug-2020
 - moved the simulator into its own package out of the examples (such that the examples are independent of eachother)
 - changed the errorCorrection into errorDetection for TC frames (for consistency with TM links and also to documentation)
