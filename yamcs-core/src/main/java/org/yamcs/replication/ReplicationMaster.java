@@ -216,7 +216,11 @@ public class ReplicationMaster extends AbstractYamcsService {
                 rf.rf.close();
             }
         }
-
+        if (tcpRole == TcpRole.Client) {
+            for (SlaveServer sa : slaves) {
+                sa.client.stop();
+            }
+        }
         notifyStopped();
     }
 

@@ -1,12 +1,9 @@
 package org.yamcs.replication;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import javax.net.ssl.SSLException;
 
-import org.yamcs.InitException;
 import org.yamcs.logging.Log;
 
 import io.netty.bootstrap.Bootstrap;
@@ -16,7 +13,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;

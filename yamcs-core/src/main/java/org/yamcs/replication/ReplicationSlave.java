@@ -170,7 +170,7 @@ public class ReplicationSlave extends AbstractYamcsService {
     /**
      * Called when the tcpRole = Server and a new client connects to {@link ReplicationServer}
      * 
-     * @throws YamcsException
+     * @throws YamcsException if there is already a connection open to this slave
      */
     public ChannelHandler newChannelHandler() throws YamcsException {
         if (slaveChannelHandler != null) {
@@ -336,6 +336,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             log.debug("Connection {} closed", ctx.channel().remoteAddress());
             super.channelInactive(ctx);
+            slaveChannelHandler = null;
         }
 
         class ByteBufToStream {

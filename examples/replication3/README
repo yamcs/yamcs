@@ -1,0 +1,10 @@
+This contains an example with a Yamcs server with two instances node1 and node2 with the data replicating from node1(Master) to node2(Slave).
+node1 is acting as a TCP client and node2 is TCP server (this is the difference vs the replication1 example).
+
+The two instances can be separated on two different Yamcs servers by copying the instance configuration file. 
+
+In addition the ReplicationServer global service in yamcs.yaml has to be defined on the node2 (TCP server) side.
+
+To run execute mvn yamcs:run in this directory. 
+Connecting via a web-browser, you can go to nodeX->Archive->Streams and observe the stream count.
+The node1 data links counters are incrementing with the data recieved via the simulator while node2 data links are not connected.
