@@ -96,7 +96,6 @@ public class StreamTcCommandReleaser extends AbstractYamcsService implements Com
     @Override
     public void releaseCommand(PreparedCommand pc) {
         for (StreamWriter w : writers) {
-            System.out.println("sending command to " + w.stream.getName());
             if (w.releaseCommand(pc)) {
                 return;
             }

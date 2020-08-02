@@ -19,14 +19,14 @@ public class GenericCommandPostprocessor implements CommandPostprocessor {
     protected CommandHistoryPublisher commandHistoryListener;
 
     public GenericCommandPostprocessor(String yamcsInstance) {
-        errorDetectionCalculator = new Running16BitChecksumCalculator();
+        errorDetectionCalculator = null;
     }
 
     public GenericCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = GenericPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {
-            errorDetectionCalculator = new Running16BitChecksumCalculator();
+            errorDetectionCalculator = null;
         }
     }
 

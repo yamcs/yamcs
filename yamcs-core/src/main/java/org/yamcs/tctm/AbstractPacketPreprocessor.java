@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 import java.nio.ByteOrder;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -91,16 +92,28 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             return null;
         }
+        String type;
+        YConfiguration crcConf = null;
+        if (config.get(CONFIG_KEY_ERROR_DETECTION) instanceof Map<?, ?>) {
+            crcConf = config.getConfig(CONFIG_KEY_ERROR_DETECTION);
+            type = crcConf.getString("type");
+        } else {
+            type = config.getString(CONFIG_KEY_ERROR_DETECTION);
+        }
 
-        YConfiguration c = config.getConfig(CONFIG_KEY_ERROR_DETECTION);
-        String type = c.getString("type");
         if ("16-SUM".equalsIgnoreCase(type)) {
             return new Running16BitChecksumCalculator();
         } else if ("CRC-16-CCIIT".equalsIgnoreCase(type)) {
-            return new CrcCciitCalculator(c);
+            if(crcConf==null) {
+                return new CrcCciitCalculator(crcConf);
+            } else {
+                return new CrcCciitCalculator();
+            }
+        } else if ("NONE".equalsIgnoreCase(type)) {
+            return null;
         } else {
             throw new ConfigurationException(
-                    "Unknown errorDetectionWord type '" + type + "': supported types are 16-SUM and CRC-16-CCIIT");
+                    "Unknown errorDetectionWord type '" + type + "': supported types are 16-SUM and CRC-16-CCIIT (or NONE)");
         }
     }
 
