@@ -307,7 +307,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
         if (config != null) { // Can be null for an offline instance
             try {
                 MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-                if (!config.isList("mdb")) {
+                if (config.containsKey("mdbSpec")) {
+                    String configName = config.getString("mdbSpec");
+                    mdb.setConfigName(configName);
+                } else if (!config.isList("mdb")) {
                     String configName = config.getString("mdb");
                     mdb.setConfigName(configName);
                 }
