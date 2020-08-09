@@ -97,6 +97,14 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         // "anchors" is used to allow yaml anchors (reuse of blocks)
         spec.addOption("anchors", OptionType.ANY);
+
+        YamcsServer yamcs = YamcsServer.getServer();
+        Map<String, Spec> extraSections = yamcs.getConfigurationSections(ConfigScope.YAMCS_INSTANCE);
+        extraSections.forEach((key, sectionSpec) -> {
+            spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
+                    .withApplySpecDefaults(true);
+        });
+
         return spec;
     }
 

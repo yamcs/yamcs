@@ -1,7 +1,5 @@
 package org.yamcs;
 
-import org.yamcs.YamcsException;
-
 /**
  * Indicates a failure coming from a {@link Plugin}.
  */

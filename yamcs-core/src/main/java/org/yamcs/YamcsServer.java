@@ -135,7 +135,7 @@ public class YamcsServer {
     private boolean help;
 
     private YConfiguration config;
-    private Map<String, Spec> sectionSpecs = new HashMap<>();
+    private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
 
     private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
 
@@ -507,9 +507,29 @@ public class YamcsServer {
      * @param spec
      *            the specification of this configuration section.
      */
-    @Experimental
     public void addConfigurationSection(String key, Spec spec) {
-        sectionSpecs.put(key, spec);
+        addConfigurationSection(ConfigScope.YAMCS, key, spec);
+    }
+
+    /**
+     * Add the definition of an additional configuration section to a particulat configuration type
+     * 
+     * @param scope
+     *            the scope where this section belongs. When using file-based configuration this can be thought of as
+     *            the type of the configuration file.
+     * @param key
+     *            the name of this section. This represent a direct subkey of the main app config
+     * @param spec
+     *            the specification of this configuration section.
+     */
+    public void addConfigurationSection(ConfigScope scope, String key, Spec spec) {
+        Map<String, Spec> specs = sectionSpecs.computeIfAbsent(scope, x -> new HashMap<>());
+        specs.put(key, spec);
+    }
+
+    public Map<String, Spec> getConfigurationSections(ConfigScope scope) {
+        Map<String, Spec> specs = sectionSpecs.get(scope);
+        return specs != null ? specs : Collections.emptyMap();
     }
 
     /**
@@ -1072,7 +1092,7 @@ public class YamcsServer {
                 TimeEncoding.setUp(in);
             }
         } else {
-            // Default to a bundled version inside the yamcs-api jar
+            // Default to a bundled version from classpath
             TimeEncoding.setUp();
         }
 
@@ -1103,7 +1123,8 @@ public class YamcsServer {
         spec.addOption("serverId", OptionType.STRING);
         spec.addOption("secretKey", OptionType.STRING);
 
-        sectionSpecs.forEach((key, sectionSpec) -> {
+        Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
+        extraSections.forEach((key, sectionSpec) -> {
             spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
                     .withApplySpecDefaults(true);
         });

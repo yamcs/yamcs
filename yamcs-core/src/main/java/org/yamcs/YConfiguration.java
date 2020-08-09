@@ -38,7 +38,6 @@ import org.yaml.snakeyaml.error.YAMLException;
  *
  * @author nm
  */
-@SuppressWarnings("rawtypes")
 public class YConfiguration {
 
     public static File configDirectory; // This is used in client tools to overwrite
@@ -383,7 +382,8 @@ public class YConfiguration {
         }
     }
 
-    static public String getString(Map<String, Object> m, String key, String defaultValue) throws ConfigurationException {
+    static public String getString(Map<String, Object> m, String key, String defaultValue)
+            throws ConfigurationException {
         if (m.containsKey(key)) {
             return getString(m, key);
         } else {
@@ -880,7 +880,8 @@ public class YConfiguration {
     }
 
     /**
-     * If config.get(key) exists and is a list, and the list has the element idx and is a map, then return a configuration wrapper around that map.
+     * If config.get(key) exists and is a list, and the list has the element idx and is a map, then return a
+     * configuration wrapper around that map.
      * <p>
      * Otherwise throw a ConfigurationException
      * 
@@ -888,6 +889,7 @@ public class YConfiguration {
      * @param idx
      * @return
      */
+    @SuppressWarnings("unchecked")
     public YConfiguration getConfigListIdx(String key, int idx) {
         checkKey(root, key);
         Object o = root.get(key);
@@ -895,18 +897,20 @@ public class YConfiguration {
             throw new ConfigurationException(staticConfPaths.get(root),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
         }
-        
+
         List<?> l = (List<?>) o;
-        if(idx>=l.size()) {
+        if (idx >= l.size()) {
             throw new ConfigurationException(staticConfPaths.get(root),
-                    "mapping for key '" + key + "' is a list but the requested index " +idx + " is outside of the list");
+                    "mapping for key '" + key + "' is a list but the requested index " + idx
+                            + " is outside of the list");
         }
-        
+
         Object o1 = l.get(idx);
         if (!(o1 instanceof Map)) {
-            throw new ConfigurationException(this, "The element "+idx+" in the list is not a map but " + getUnqualfiedClassName(o1));
+            throw new ConfigurationException(this,
+                    "The element " + idx + " in the list is not a map but " + getUnqualfiedClassName(o1));
         }
-        
+
         return new YConfiguration(this, key + "[" + idx + "]", (Map<String, Object>) o1);
     }
 }
