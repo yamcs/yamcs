@@ -68,9 +68,12 @@ import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.SubscribeLinksRequest;
 import org.yamcs.protobuf.SystemInfo;
+import org.yamcs.protobuf.TemplateVariable;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.templating.Template;
+import org.yamcs.templating.Variable;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TimeEncoding;
@@ -154,11 +157,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             Observer<ListInstanceTemplatesResponse> observer) {
         ListInstanceTemplatesResponse.Builder templatesb = ListInstanceTemplatesResponse.newBuilder();
 
-        List<InstanceTemplate> templates = new ArrayList<>(YamcsServer.getInstanceTemplates());
+        List<Template> templates = new ArrayList<>(YamcsServer.getInstanceTemplates());
         templates.sort((t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
-        for (InstanceTemplate template : templates) {
-            templatesb.addTemplates(template);
+        for (Template template : templates) {
+            templatesb.addTemplates(toInstanceTemplate(template));
         }
         observer.complete(templatesb.build());
     }
@@ -172,7 +175,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             throw new NotFoundException("No template named '" + name + "'");
         }
 
-        InstanceTemplate template = yamcs.getInstanceTemplate(name);
+        InstanceTemplate template = toInstanceTemplate(yamcs.getInstanceTemplate(name));
         observer.complete(template);
     }
 
@@ -659,6 +662,37 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             serviceb.setProcessor(processor);
         }
         return serviceb.build();
+    }
+
+    private static InstanceTemplate toInstanceTemplate(Template template) {
+        InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
+                .setName(template.getName());
+
+        if (template.getDescription() != null) {
+            templateb.setDescription(template.getDescription());
+        }
+
+        for (Variable<?> variable : template.getVariables()) {
+            TemplateVariable.Builder varb = TemplateVariable.newBuilder()
+                    .setName(variable.getName())
+                    .setRequired(variable.isRequired())
+                    .setType(variable.getClass().getName());
+            if (variable.getDescription() != null) {
+                varb.setDescription(variable.getDescription());
+            }
+
+            // getChoices() may be dynamically calculated. Best call it once only.
+            List<?> choices = variable.getChoices();
+            if (choices != null) {
+                for (Object choice : choices) {
+                    varb.addChoices(choice.toString());
+                }
+            }
+
+            templateb.addVariables(varb);
+        }
+
+        return templateb.build();
     }
 
     public static String verifyInstance(String instance, boolean allowGlobal) {

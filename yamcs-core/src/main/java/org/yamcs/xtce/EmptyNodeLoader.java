@@ -3,7 +3,6 @@ package org.yamcs.xtce;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -18,8 +17,8 @@ public class EmptyNodeLoader implements SpaceSystemLoader {
 
     final String name;
 
-    public EmptyNodeLoader(Map<String, Object> args) {
-        name = YConfiguration.getString(args, "name");
+    public EmptyNodeLoader(YConfiguration args) {
+        name = args.getString("name");
     }
 
     public EmptyNodeLoader(String name) {

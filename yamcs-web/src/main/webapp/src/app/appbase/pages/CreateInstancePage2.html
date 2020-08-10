@@ -14,11 +14,20 @@
       Instance name<br>
       <input formControlName="name" type="text">
     </label>
-    <ng-container *ngIf="template.variables">
-      <label *ngFor="let v of template.variables">
+    <ng-container *ngFor="let v of template?.variables">
+
+      <label *ngIf="v.choices">
+        {{ v.description || v.name }}
+        <select [formControlName]="v.name">
+          <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="!v.choices">
         {{ v.description || v.name }}<br>
         <input [formControlName]="v.name" type="text">
       </label>
+
     </ng-container>
   </form>
   <p>&nbsp;</p>

@@ -102,6 +102,7 @@ export interface Instance {
 
 export interface InstanceTemplate {
   name: string;
+  description: string;
   variables: TemplateVariable[];
 }
 
@@ -109,6 +110,8 @@ export interface TemplateVariable {
   name: string;
   description?: string;
   required: boolean;
+  type: string;
+  choices?: string[];
 }
 
 export interface ConnectionInfo {

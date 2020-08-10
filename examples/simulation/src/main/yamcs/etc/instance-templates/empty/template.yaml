@@ -1,8 +1,9 @@
 services: []
 
 mdb:
-  - type: "empty"
-    name: "example"
+  - type: "emptyNode"
+    args:
+      name: "example"
 
 streamConfig:
   tm: ["tm_realtime", "tm_dump"]
