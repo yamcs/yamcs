@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -39,15 +38,16 @@ export class InstanceToolbar implements OnDestroy {
     readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
     private preferenceStore: PreferenceStore,
-    private router: Router,
   ) {
     this.processor$.next(yamcs.getProcessor());
-    this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
-    }, processor => {
-      this.processor$.next(processor);
-    });
+    if (yamcs.processor) {
+      this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
+        instance: yamcs.instance!,
+        processor: yamcs.processor,
+      }, processor => {
+        this.processor$.next(processor);
+      });
+    }
 
     this.connected$ = this.yamcs.yamcsClient.connected$;
     this.time$ = this.yamcs.time$;

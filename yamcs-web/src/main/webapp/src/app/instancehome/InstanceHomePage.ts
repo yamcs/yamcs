@@ -29,10 +29,12 @@ export class InstanceHomePage implements OnDestroy {
 
     this.user = authService.getUser()!;
     title.setTitle(this.yamcs.instance!);
-    this.tmstatsSubscription = yamcs.yamcsClient.createTMStatisticsSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-    }, stats => this.tmstats$.next(stats.tmstats || []));
+    if (this.yamcs.processor) {
+      this.tmstatsSubscription = yamcs.yamcsClient.createTMStatisticsSubscription({
+        instance: this.yamcs.instance!,
+        processor: this.yamcs.processor,
+      }, stats => this.tmstats$.next(stats.tmstats || []));
+    }
   }
 
   showPackets() {
