@@ -1,7 +1,7 @@
 package org.yamcs.templating;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.yamcs.utils.TemplateProcessor;
@@ -11,7 +11,7 @@ public class Template {
     private String name;
     private String source;
     private String description;
-    private Map<String, Variable<?>> variables = new HashMap<>();
+    private Map<String, Variable<?>> variables = new LinkedHashMap<>(); // Ordered
 
     public Template(String name, String source) {
         this.name = name;

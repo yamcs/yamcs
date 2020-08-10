@@ -35,11 +35,9 @@ export class CreateInstancePage2 {
     yamcs.yamcsClient.getInstanceTemplate(templateId).then(template => {
       this.template$.next(template);
       for (const variable of template.variables || []) {
-        if (variable.required) {
-          this.form.addControl(variable.name, new FormControl('', [Validators.required]));
-        } else {
-          this.form.addControl(variable.name, new FormControl());
-        }
+        const validators = variable.required ? [Validators.required] : [];
+        const initialValue = variable.choices ? variable.choices[0] : undefined;
+        this.form.addControl(variable.name, new FormControl(initialValue, validators));
       }
     });
   }

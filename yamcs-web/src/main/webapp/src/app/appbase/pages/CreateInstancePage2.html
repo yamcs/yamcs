@@ -17,16 +17,23 @@
       <input formControlName="name" type="text">
     </label>
     <ng-container *ngFor="let v of template?.variables">
-
+      <br>
       <label *ngIf="v.choices">
-        {{ v.description || v.name }}
+        {{ v.verboseName || v.name }}
+        <app-help [dialogTitle]="v.verboseName || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </app-help>
         <select [formControlName]="v.name">
           <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
         </select>
       </label>
 
       <label *ngIf="!v.choices">
-        {{ v.description || v.name }}<br>
+        {{ v.verboseName || v.name }}
+        <app-help [dialogTitle]="v.verboseName || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </app-help>
+        <br>
         <input [formControlName]="v.name" type="text">
       </label>
 

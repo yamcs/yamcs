@@ -8,21 +8,11 @@
     <version>5.1.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>replication3</artifactId>
+  <artifactId>templates</artifactId>
   <packaging>jar</packaging>
-
-  <name>Yamcs :: Examples :: Replication3</name>
-  <description>
-    Example demonstrating the use of replication
-  </description>
-
+  <name>Yamcs :: Examples :: Templates</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.yamcs</groupId>
-      <artifactId>simulator</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>

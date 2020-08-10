@@ -1,0 +1,21 @@
+# Variables are used like this: {{ foo }} anywhere in this file.
+# Yaml parsing only happens after variable substitution.
+
+{% if optional_foo %}
+# If a parameter is conditional (required: false), you can check if it was set using an if condition
+{% endif %}
+
+services: []
+
+mdb:
+  - type: "emptyNode"
+    args:
+      name: "{{ spaceSystem }}"
+
+streamConfig:
+  tm: ["tm_realtime", "tm_dump"]
+  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["sys_param", "pp_realtime"]
+  parameterAlarm: ["alarms_realtime"]
+  tc: ["tc_realtime"]

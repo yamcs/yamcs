@@ -28,4 +28,4 @@ incomingDir: /storage/yamcs-incoming
 secretKey: "changeme"
 
 yamcs-web:
-  tag: REPLICATION1
+  tag: REPLICATION3

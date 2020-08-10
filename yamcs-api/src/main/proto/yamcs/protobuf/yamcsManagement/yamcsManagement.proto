@@ -211,11 +211,14 @@ message TemplateVariable {
   // Variable name. 
   optional string name = 1;
   
+  // Verbose name for use in UI
+  optional string verboseName = 6;
+  
   // Type of variable (Java class extending org.yamcs.templating.Variable)
   optional string type = 4;
   
-  // Human-friendly description
-  optional string description = 2;
+  // Verbose user guidance (HTML)
+  optional string help = 2;
   
   // Whether this variable is required input
   optional bool required = 3;

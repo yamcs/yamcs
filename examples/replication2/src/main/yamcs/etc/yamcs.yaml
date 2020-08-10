@@ -29,5 +29,5 @@ incomingDir: /storage/yamcs-incoming
 secretKey: "changeme"
 
 yamcs-web:
-  tag: REPLICATION1
+  tag: REPLICATION2
   staticRoot: ../../../../yamcs-web/src/main/webapp/dist

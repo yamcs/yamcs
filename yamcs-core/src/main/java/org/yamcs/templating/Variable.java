@@ -5,8 +5,9 @@ import java.util.List;
 public abstract class Variable<T> {
 
     private String name;
+    private String verboseName;
     private boolean required;
-    private String description;
+    private String help;
     private List<T> choices;
 
     public String getName() {
@@ -17,6 +18,14 @@ public abstract class Variable<T> {
         this.name = name;
     }
 
+    public String getVerboseName() {
+        return verboseName;
+    }
+
+    public void setVerboseName(String verboseName) {
+        this.verboseName = verboseName;
+    }
+
     public boolean isRequired() {
         return required;
     }
@@ -25,12 +34,12 @@ public abstract class Variable<T> {
         this.required = required;
     }
 
-    public String getDescription() {
-        return description;
+    public String getHelp() {
+        return help;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setHelp(String help) {
+        this.help = help;
     }
 
     /**

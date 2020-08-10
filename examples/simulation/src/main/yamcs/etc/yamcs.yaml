@@ -22,7 +22,7 @@ incomingDir: /storage/yamcs-incoming
 secretKey: "changeme"
 
 yamcs-web:
-  tag: DEMO
+  tag: "Example: simulation"
   displayPath: displays
   stackPath: stacks
 

@@ -1183,14 +1183,12 @@ public class YamcsServer {
                                 String type = (String) varDef.getOrDefault("type", StringVariable.class.getName());
                                 Variable<?> variable = YObjectLoader.loadObject(type);
                                 variable.setName(YConfiguration.getString(varDef, "name"));
+                                variable.setVerboseName(YConfiguration.getString(varDef, "verboseName", null));
                                 variable.setRequired(YConfiguration.getBoolean(varDef, "required", true));
-                                if (varDef.containsKey("description")) {
-                                    variable.setDescription(YConfiguration.getString(varDef, "description"));
-                                }
+                                variable.setHelp(YConfiguration.getString(varDef, "help", null));
                                 if (varDef.containsKey("choices")) {
                                     variable.setChoices(YConfiguration.getList(varDef, "choices"));
                                 }
-
                                 template.addVariable(variable);
                             }
                         }

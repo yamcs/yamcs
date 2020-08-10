@@ -22,7 +22,7 @@ incomingDir: /storage/yamcs-incoming
 secretKey: "changeme"
 
 yamcs-web:
-  tag: CFDP-DEMO
+  tag: "Example: cfdp"
   features:
     cfdp: true
 

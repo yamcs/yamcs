@@ -677,8 +677,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
                     .setName(variable.getName())
                     .setRequired(variable.isRequired())
                     .setType(variable.getClass().getName());
-            if (variable.getDescription() != null) {
-                varb.setDescription(variable.getDescription());
+            if (variable.getVerboseName() != null) {
+                varb.setVerboseName(variable.getVerboseName());
+            }
+            if (variable.getHelp() != null) {
+                varb.setHelp(variable.getHelp());
             }
 
             // getChoices() may be dynamically calculated. Best call it once only.
