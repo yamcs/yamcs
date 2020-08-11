@@ -157,7 +157,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             Observer<ListInstanceTemplatesResponse> observer) {
         ListInstanceTemplatesResponse.Builder templatesb = ListInstanceTemplatesResponse.newBuilder();
 
-        List<Template> templates = new ArrayList<>(YamcsServer.getInstanceTemplates());
+        YamcsServer yamcs = YamcsServer.getServer();
+        List<Template> templates = new ArrayList<>(yamcs.getInstanceTemplates());
         templates.sort((t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
         for (Template template : templates) {
@@ -171,7 +172,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             Observer<InstanceTemplate> observer) {
         YamcsServer yamcs = YamcsServer.getServer();
         String name = request.getTemplate();
-        if (!YamcsServer.hasInstanceTemplate(name)) {
+        if (!yamcs.hasInstanceTemplate(name)) {
             throw new NotFoundException("No template named '" + name + "'");
         }
 

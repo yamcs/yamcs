@@ -290,8 +290,8 @@ public class YamcsServer {
         return YAMCS.instances.containsKey(instance);
     }
 
-    public static boolean hasInstanceTemplate(String template) {
-        return YAMCS.instanceTemplates.containsKey(template);
+    public boolean hasInstanceTemplate(String template) {
+        return instanceTemplates.containsKey(template);
     }
 
     public String getServerId() {
@@ -665,8 +665,8 @@ public class YamcsServer {
         return instances.get(yamcsInstance);
     }
 
-    public static Set<Template> getInstanceTemplates() {
-        return new HashSet<>(YAMCS.instanceTemplates.values());
+    public Set<Template> getInstanceTemplates() {
+        return new HashSet<>(instanceTemplates.values());
     }
 
     public Template getInstanceTemplate(String name) {
@@ -1145,7 +1145,7 @@ public class YamcsServer {
     }
 
     private void discoverTemplates() throws IOException {
-        Path templatesDir = Paths.get("etc", "instance-templates");
+        Path templatesDir = configDirectory.resolve("instance-templates");
         if (!Files.exists(templatesDir)) {
             return;
         }
@@ -1193,13 +1193,17 @@ public class YamcsServer {
                             }
                         }
 
-                        YAMCS.instanceTemplates.put(name, template);
+                        addInstanceTemplate(template);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
                 }
             });
         }
+    }
+
+    public void addInstanceTemplate(Template template) {
+        instanceTemplates.put(template.getName(), template);
     }
 
     public void addGlobalServicesAndInstances() throws IOException, ValidationException {
