@@ -32,7 +32,9 @@ public class WebPlugin implements Plugin {
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
+        spec.addOption("displayFolderPerInstance", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("stackPath", OptionType.STRING);
+        spec.addOption("stackFolderPerInstance", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("staticRoot", OptionType.STRING);
         spec.addOption("twoStageCommanding", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("commandClearances", OptionType.BOOLEAN).withDefault(false);

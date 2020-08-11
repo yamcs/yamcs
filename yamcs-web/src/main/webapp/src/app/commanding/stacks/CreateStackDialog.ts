@@ -43,11 +43,12 @@ export class CreateStackDialog {
       path = path.substring(0, path.length - 1);
     }
     const fullPath = path ? path + '/' + name : name;
+    const objectName = this.data.prefix + fullPath;
 
     const b = new Blob([], {
       type: 'application/xml'
     });
-    this.storageClient.uploadObject('_global', 'stacks', fullPath, b).then(() => {
+    this.storageClient.uploadObject('_global', 'stacks', objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

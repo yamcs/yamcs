@@ -44,7 +44,7 @@ export class ImportStackDialog {
       path = path.substring(0, path.length - 1);
     }
 
-    const files: { [key: string]: File } = this.filesInput.nativeElement.files;
+    const files: { [key: string]: File; } = this.filesInput.nativeElement.files;
 
     const uploadPromises = [];
     this.uploading$.next(true);
@@ -52,8 +52,8 @@ export class ImportStackDialog {
       if (!isNaN(parseInt(key, 10))) {
         const file = files[key];
         const fullPath = path ? path + '/' + file.name : file.name;
-
-        const promise = this.storageClient.uploadObject('_global', 'stacks', fullPath, file);
+        const objectName = this.data.prefix + fullPath;
+        const promise = this.storageClient.uploadObject('_global', 'stacks', objectName, file);
         uploadPromises.push(promise);
       }
     }

@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CommandSubscription, StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { AddCommandDialog, CommandResult } from './AddCommandDialog';
@@ -47,12 +48,16 @@ export class StackFilePage implements OnDestroy {
 
   private executionCounter = 0;
 
+  private folderPerInstance: boolean;
+
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
+    configService: ConfigService,
   ) {
+    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
@@ -95,10 +100,25 @@ export class StackFilePage implements OnDestroy {
   private getObjectNameFromUrl() {
     const url = this.route.snapshot.url;
     let objectName = '';
-    for (let i = 0; i < url.length; i++) {
-      objectName += (i > 0) ? '/' + url[i].path : url[i].path;
+    if (this.folderPerInstance) {
+      objectName += this.yamcs.instance!;
+    }
+    for (const segment of url) {
+      if (objectName) {
+        objectName += '/';
+      }
+      objectName += segment.path;
     }
     return objectName;
+  }
+
+  private getNameWithoutInstance(name: string) {
+    if (this.folderPerInstance) {
+      const instance = this.yamcs.instance!;
+      return name.substr(instance.length);
+    } else {
+      return name;
+    }
   }
 
   private loadFile(objectName: string) {
@@ -108,7 +128,8 @@ export class StackFilePage implements OnDestroy {
       this.folderLink = '/commanding/stacks/browse/';
       this.filename = this.objectName;
     } else {
-      this.folderLink = '/commanding/stacks/browse/' + this.objectName.substring(0, idx);
+      const folderWithoutInstance = this.getNameWithoutInstance(this.objectName.substring(0, idx));
+      this.folderLink = '/commanding/stacks/browse/' + folderWithoutInstance;
       this.filename = this.objectName.substring(idx + 1);
     }
 
@@ -153,6 +174,7 @@ export class StackFilePage implements OnDestroy {
         this.entries$.value.splice(idx, 1);
         this.entries$.next([...this.entries$.value]);
         this.selectedEntry$.next(null);
+        this.dirty$.next(true);
       }
     }
   }

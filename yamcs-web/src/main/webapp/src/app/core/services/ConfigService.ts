@@ -17,6 +17,8 @@ export interface WebsiteConfig {
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
+  displayFolderPerInstance: boolean;
+  stackFolderPerInstance: boolean;
 }
 
 export interface EventsConfig {

@@ -1,8 +1,8 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { StorageClient } from '../../client';
 import { BehaviorSubject } from 'rxjs';
+import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -44,7 +44,7 @@ export class UploadFilesDialog {
       path = path.substring(0, path.length - 1);
     }
 
-    const files: {[key: string]: File} = this.filesInput.nativeElement.files;
+    const files: { [key: string]: File; } = this.filesInput.nativeElement.files;
 
     const uploadPromises = [];
     this.uploading$.next(true);
@@ -52,8 +52,8 @@ export class UploadFilesDialog {
       if (!isNaN(parseInt(key, 10))) {
         const file = files[key];
         const fullPath = path ? path + '/' + file.name : file.name;
-
-        const promise = this.storageClient.uploadObject('_global', 'displays', fullPath, file);
+        const objectName = this.data.prefix + fullPath;
+        const promise = this.storageClient.uploadObject('_global', 'displays', objectName, file);
         uploadPromises.push(promise);
       }
     }
