@@ -211,8 +211,8 @@ message TemplateVariable {
   // Variable name. 
   optional string name = 1;
   
-  // Verbose name for use in UI
-  optional string verboseName = 6;
+  // Verbose name for use in UI forms
+  optional string label = 6;
   
   // Type of variable (Java class extending org.yamcs.templating.Variable)
   optional string type = 4;
@@ -225,6 +225,9 @@ message TemplateVariable {
   
   // List of valid choices
   repeated string choices = 5;
+  
+  // Initial value for use in UI forms
+  optional string initial = 7;
 }
 
 message ProcessorInfo {

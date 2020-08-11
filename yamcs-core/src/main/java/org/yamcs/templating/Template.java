@@ -4,14 +4,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.yamcs.utils.TemplateProcessor;
-
 public class Template {
 
     private String name;
     private String source;
     private String description;
-    private Map<String, Variable<?>> variables = new LinkedHashMap<>(); // Ordered
+    private Map<String, Variable> variables = new LinkedHashMap<>(); // Ordered
 
     public Template(String name, String source) {
         this.name = name;
@@ -34,11 +32,11 @@ public class Template {
         this.description = description;
     }
 
-    public Collection<Variable<?>> getVariables() {
+    public Collection<Variable> getVariables() {
         return variables.values();
     }
 
-    public void addVariable(Variable<?> variable) {
+    public void addVariable(Variable variable) {
         variables.put(variable.getName(), variable);
     }
 

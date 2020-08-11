@@ -2,16 +2,17 @@ description: Creates an empty instance, for demo purposes
 
 variables:
   - name: spaceSystem
-    verboseName: Example parameter
+    label: Example parameter
     help: Used as name of the root space system
   
   - name: bar
-    verboseName: Example combo parameter
+    label: Example combo parameter
     choices:
       - Option 1
       - Option 2
       - Option 3
+    initial: Option 2
   
   - name: optional_foo
-    verboseName: An optional parameter
+    label: An optional parameter
     required: false

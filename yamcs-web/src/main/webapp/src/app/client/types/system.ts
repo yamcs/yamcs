@@ -108,10 +108,11 @@ export interface InstanceTemplate {
 
 export interface TemplateVariable {
   name: string;
-  verboseName?: string;
+  label?: string;
   help?: string;
   required: boolean;
   type: string;
+  initial?: string;
   choices?: string[];
 }
 

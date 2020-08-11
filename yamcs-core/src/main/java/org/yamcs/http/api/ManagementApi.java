@@ -672,23 +672,26 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             templateb.setDescription(template.getDescription());
         }
 
-        for (Variable<?> variable : template.getVariables()) {
+        for (Variable variable : template.getVariables()) {
             TemplateVariable.Builder varb = TemplateVariable.newBuilder()
                     .setName(variable.getName())
                     .setRequired(variable.isRequired())
                     .setType(variable.getClass().getName());
-            if (variable.getVerboseName() != null) {
-                varb.setVerboseName(variable.getVerboseName());
+            if (variable.getLabel() != null) {
+                varb.setLabel(variable.getLabel());
             }
             if (variable.getHelp() != null) {
                 varb.setHelp(variable.getHelp());
             }
+            if (variable.getInitial() != null) {
+                varb.setInitial(variable.getInitial());
+            }
 
             // getChoices() may be dynamically calculated. Best call it once only.
-            List<?> choices = variable.getChoices();
+            List<String> choices = variable.getChoices();
             if (choices != null) {
-                for (Object choice : choices) {
-                    varb.addChoices(choice.toString());
+                for (String choice : choices) {
+                    varb.addChoices(choice);
                 }
             }
 

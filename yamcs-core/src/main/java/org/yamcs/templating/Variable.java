@@ -2,13 +2,14 @@ package org.yamcs.templating;
 
 import java.util.List;
 
-public abstract class Variable<T> {
+public class Variable {
 
     private String name;
-    private String verboseName;
+    private String label;
     private boolean required;
     private String help;
-    private List<T> choices;
+    private String initial;
+    private List<String> choices;
 
     public String getName() {
         return name;
@@ -18,12 +19,12 @@ public abstract class Variable<T> {
         this.name = name;
     }
 
-    public String getVerboseName() {
-        return verboseName;
+    public String getLabel() {
+        return label;
     }
 
-    public void setVerboseName(String verboseName) {
-        this.verboseName = verboseName;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public boolean isRequired() {
@@ -42,15 +43,23 @@ public abstract class Variable<T> {
         this.help = help;
     }
 
+    public String getInitial() {
+        return initial;
+    }
+
+    public void setInitial(String initial) {
+        this.initial = initial;
+    }
+
     /**
      * Different choices. If a non-null result is returned, this variable should be chosen from a dropdown input. This
      * is evaluated each time a user is about to create an instance.
      */
-    public List<T> getChoices() {
+    public List<String> getChoices() {
         return choices;
     }
 
-    public void setChoices(List<T> choices) {
+    public void setChoices(List<String> choices) {
         this.choices = choices;
     }
 }

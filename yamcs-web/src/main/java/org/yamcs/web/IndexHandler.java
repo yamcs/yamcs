@@ -24,7 +24,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
-import org.yamcs.utils.TemplateProcessor;
+import org.yamcs.templating.TemplateProcessor;
 
 import com.google.gson.Gson;
 import com.google.protobuf.util.JsonFormat;

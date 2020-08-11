@@ -36,7 +36,11 @@ export class CreateInstancePage2 {
       this.template$.next(template);
       for (const variable of template.variables || []) {
         const validators = variable.required ? [Validators.required] : [];
-        const initialValue = variable.choices ? variable.choices[0] : undefined;
+        let initialValue = variable.choices ? variable.choices[0] : undefined;
+        if (variable.initial !== undefined) {
+          initialValue = variable.initial;
+        }
+
         this.form.addControl(variable.name, new FormControl(initialValue, validators));
       }
     });

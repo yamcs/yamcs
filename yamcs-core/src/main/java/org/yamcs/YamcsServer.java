@@ -48,7 +48,6 @@ import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.Link;
-import org.yamcs.templating.StringVariable;
 import org.yamcs.templating.Template;
 import org.yamcs.templating.Variable;
 import org.yamcs.time.RealtimeTimeService;
@@ -1180,12 +1179,13 @@ public class YamcsServer {
                         if (metaDef.containsKey("variables")) {
                             List<Map<String, Object>> varDefs = YConfiguration.getList(metaDef, "variables");
                             for (Map<String, Object> varDef : varDefs) {
-                                String type = (String) varDef.getOrDefault("type", StringVariable.class.getName());
-                                Variable<?> variable = YObjectLoader.loadObject(type);
+                                String type = (String) varDef.getOrDefault("type", Variable.class.getName());
+                                Variable variable = YObjectLoader.loadObject(type);
                                 variable.setName(YConfiguration.getString(varDef, "name"));
-                                variable.setVerboseName(YConfiguration.getString(varDef, "verboseName", null));
+                                variable.setLabel(YConfiguration.getString(varDef, "label", null));
                                 variable.setRequired(YConfiguration.getBoolean(varDef, "required", true));
                                 variable.setHelp(YConfiguration.getString(varDef, "help", null));
+                                variable.setInitial(YConfiguration.getString(varDef, "initial", null));
                                 if (varDef.containsKey("choices")) {
                                     variable.setChoices(YConfiguration.getList(varDef, "choices"));
                                 }

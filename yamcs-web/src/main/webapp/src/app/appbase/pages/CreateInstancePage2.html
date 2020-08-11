@@ -19,8 +19,8 @@
     <ng-container *ngFor="let v of template?.variables">
       <br>
       <label *ngIf="v.choices">
-        {{ v.verboseName || v.name }}
-        <app-help [dialogTitle]="v.verboseName || v.name" *ngIf="v.help">
+        {{ v.label || v.name }}
+        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
           <div [innerHTML]="v.help"></div>
         </app-help>
         <select [formControlName]="v.name">
@@ -29,14 +29,13 @@
       </label>
 
       <label *ngIf="!v.choices">
-        {{ v.verboseName || v.name }}
-        <app-help [dialogTitle]="v.verboseName || v.name" *ngIf="v.help">
+        {{ v.label || v.name }}
+        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
           <div [innerHTML]="v.help"></div>
         </app-help>
         <br>
         <input [formControlName]="v.name" type="text">
       </label>
-
     </ng-container>
   </form>
   <p>&nbsp;</p>
