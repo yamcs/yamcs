@@ -37,7 +37,7 @@
        routerLinkActive #rlb="routerLinkActive"
        [active]="rlb.isActive"
        [queryParams]="{c: yamcs.context}"
-       *ngIf="config.features.tmArchive">
+       *ngIf="config.tmArchive">
       Chart
     </a>
     <a mat-tab-link
@@ -52,7 +52,7 @@
        routerLinkActive #rld="routerLinkActive"
        [active]="rld.isActive"
        [queryParams]="{c: yamcs.context}"
-       *ngIf="config.features.tmArchive">
+       *ngIf="config.tmArchive">
       Historical Data
     </a>
   </nav>

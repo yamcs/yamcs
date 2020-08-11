@@ -10,12 +10,12 @@
   <ng-container matColumnDef="packetName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Packet</th>
     <td mat-cell *matCellDef="let tmstats">
-      <a *ngIf="config.features.tmArchive"
+      <a *ngIf="config.tmArchive"
          routerLink="/telemetry/packets"
          [queryParams]="{c: yamcs.context, filter: tmstats.packetName}">
         {{ tmstats.packetName }}
       </a>
-      <ng-container *ngIf="!config.features.tmArchive">{{ tmstats.packetName }}</ng-container>
+      <ng-container *ngIf="!config.tmArchive">{{ tmstats.packetName }}</ng-container>
     </td>
     <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>

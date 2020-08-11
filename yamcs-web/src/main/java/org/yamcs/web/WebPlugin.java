@@ -38,14 +38,22 @@ public class WebPlugin implements Plugin {
         spec.addOption("commandClearances", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("completeness", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("logoutRedirectUrl", OptionType.STRING);
+        spec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
 
         Spec featuresSpec = new Spec();
-        featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
-        featuresSpec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
+        featuresSpec.addOption("cfdp", OptionType.BOOLEAN)
+                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
+        featuresSpec.addOption("dass", OptionType.BOOLEAN)
+                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
         featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false)
                 .withDeprecationMessage("The layout functionality was removed");
-        featuresSpec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
-        featuresSpec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
+        featuresSpec.addOption("tc", OptionType.BOOLEAN)
+                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
+        featuresSpec.addOption("tmArchive", OptionType.BOOLEAN)
+                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
         spec.addOption("features", OptionType.MAP)
                 .withSpec(featuresSpec)
                 .withApplySpecDefaults(true);

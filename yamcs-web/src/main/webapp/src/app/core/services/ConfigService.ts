@@ -7,16 +7,12 @@ export interface WebsiteConfig {
   serverId: string;
   auth: AuthInfo;
   tag: string;
-  features: FeaturesConfig;
   events?: EventsConfig;
   commandClearances: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
   completeness: boolean;
   logoutRedirectUrl: string;
-}
-
-export interface FeaturesConfig {
   cfdp: boolean;
   dass: boolean;
   tc: boolean;

@@ -212,7 +212,7 @@ export class CommandHistoryPage {
   }
 
   showResend() {
-    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
+    return this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
   }
 
   private updateURL() {

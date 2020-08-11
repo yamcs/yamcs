@@ -52,7 +52,7 @@ export class InstancePage implements OnInit, OnDestroy {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
 
-    if (this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
+    if (this.config.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
       this.telemetryItems.push({ path: 'packets', label: 'Packets' });
     }
     if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
@@ -67,16 +67,16 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
-    if (this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
+    if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
-    if (this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
+    if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
       this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
       this.commandingItems.push({ path: 'history', label: 'Command History' });
     }
-    if (this.config.features.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
+    if (this.config.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
       this.commandingItems.push({ path: 'queues', label: 'Queues' });
     }
     if (this.config.commandClearances && this.user.hasSystemPrivilege('ControlCommandClearances')) {
@@ -104,7 +104,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
       this.archiveItems.push({ path: 'overview', label: 'Overview' });
     }
-    if (this.config.features.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
+    if (this.config.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
       this.archiveItems.push({ path: 'gaps', label: 'Gaps' });
     }
     for (const item of configService.getExtraNavItems('archive')) {
