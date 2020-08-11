@@ -22,6 +22,10 @@ export class AuthService {
   private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
 
+  // Optional logout page where to redirect the browser after logging out of Yamcs
+  // If unset, defaults to a local login page.
+  private logoutRedirectUrl?: string;
+
   constructor(
     private yamcsService: YamcsService,
     configService: ConfigService,
@@ -29,6 +33,7 @@ export class AuthService {
     @Inject(APP_BASE_HREF) private baseHref: string,
   ) {
     this.authInfo = configService.getAuthInfo();
+    this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
@@ -228,7 +233,11 @@ export class AuthService {
     this.user$.next(null);
 
     if (navigateToLoginPage) {
-      this.router.navigate(['/login'], { queryParams: { next: '/' } });
+      if (this.logoutRedirectUrl) {
+        window.location.href = this.logoutRedirectUrl;
+      } else {
+        this.router.navigate(['/login'], { queryParams: { next: '/' } });
+      }
     }
   }
 

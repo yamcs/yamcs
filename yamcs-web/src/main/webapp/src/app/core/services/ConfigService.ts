@@ -13,6 +13,7 @@ export interface WebsiteConfig {
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
   completeness: boolean;
+  logoutRedirectUrl: string;
 }
 
 export interface FeaturesConfig {
