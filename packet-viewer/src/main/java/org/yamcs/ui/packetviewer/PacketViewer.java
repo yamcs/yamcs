@@ -634,7 +634,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             tmProcessor.stopAsync();
         }
         String instance = connectDialog.getInstance();
-        log("Loading remote mission database for Uamcs instance " + instance);
+        log("Loading remote mission database for Yamcs instance " + instance);
         try {
             byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
             try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb))) {
@@ -808,6 +808,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         client = YamcsClient.newBuilder(connectData.host, connectData.port)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
+                .withContext(connectData.contextPath)
                 .build();
         client.addConnectionListener(this);
         try {

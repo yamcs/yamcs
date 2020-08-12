@@ -57,17 +57,20 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
     private String PREF_HOST = "host";
     private String PREF_PORT = "port";
+    private String PREF_CONTEXT_PATH = "contextPath";
     private String PREF_USERNAME = "username";
     private String PREF_INSTANCE = "instance";
 
     private String host;
     private Integer port;
+    private String contextPath;
     private String username;
     private String password;
     private String instance;
 
     JTextField hostTextField;
     JTextField portTextField;
+    JTextField contextPathTextField;
     JTextField usernameTextField;
     private JPasswordField passwordTextField;
     // JCheckBox sslCheckBox;
@@ -100,17 +103,18 @@ public class ConnectDialog extends JDialog implements ActionListener {
             prefs.load(in);
         }
 
-        host = prefs.getProperty("host");
+        host = prefs.getProperty(PREF_HOST);
         try {
-            port = Integer.parseInt(prefs.getProperty("port"));
+            port = Integer.parseInt(prefs.getProperty(PREF_PORT));
         } catch (NumberFormatException e) {
         }
 
-        instance = prefs.getProperty("instance");
-        if (prefs.containsKey("username")) {
-            username = prefs.getProperty("username");
+        instance = prefs.getProperty(PREF_INSTANCE);
+        if (prefs.containsKey(PREF_USERNAME)) {
+            username = prefs.getProperty(PREF_USERNAME);
             password = null;
         }
+        contextPath = prefs.getProperty("contextPath", PREF_CONTEXT_PATH);
     }
 
     private void saveConnectionPreferences() {
@@ -122,6 +126,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
         }
         if (port != null) {
             prefs.setProperty(PREF_PORT, Integer.toString(port));
+        }
+        if (contextPath != null) {
+            prefs.setProperty(PREF_CONTEXT_PATH, contextPath);
         }
         if (instance != null) {
             prefs.setProperty(PREF_INSTANCE, instance);
@@ -182,6 +189,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         portTextField = new JTextField(String.valueOf(port != null ? port : 8090));
         cwest.gridy = 2;
         inputPanel.add(portTextField, cwest);
+
         /*
         	lab = new JLabel("Use SSL (not implemented): ");
         	lab.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -189,6 +197,15 @@ public class ConnectDialog extends JDialog implements ActionListener {
         	sslCheckBox = new JCheckBox(); sslCheckBox.setSelected(values.ssl);
         	c.gridy=3;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(sslCheckBox,c);
          */
+
+        lab = new JLabel("Context Path: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        ceast.gridy++;
+        inputPanel.add(lab, ceast);
+        contextPathTextField = new JTextField(contextPath);
+        contextPathTextField.setPreferredSize(new Dimension(160, contextPathTextField.getPreferredSize().height));
+        cwest.gridy++;
+        inputPanel.add(contextPathTextField, cwest);
 
         ceast.gridy++;
         cwest.gridy++;
@@ -370,6 +387,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 return; // do not close the dialog
             }
 
+            contextPath = contextPathTextField.getText();
+
             // values.ssl= sslCheckBox.isSelected();
             if (!usernameTextField.getText().isEmpty()) {
                 username = usernameTextField.getText();
@@ -379,7 +398,6 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 username = null;
                 password = null;
             }
-            passwordTextField.setText("");
 
             instance = (String) instanceCombo.getSelectedItem();
             if (instance == null) {
@@ -403,7 +421,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 }
             }
 
+            passwordTextField.setText("");
             saveConnectionPreferences();
+
             prefs.putBoolean("useServerMdb", useServerMdb);
             if (!useServerMdb) {
                 prefs.put("selectedLocalMdbConfig", (String) localMdbConfigCombo.getSelectedItem());
@@ -453,11 +473,14 @@ public class ConnectDialog extends JDialog implements ActionListener {
     private YamcsClient createClientForUseInDialogOnly() throws ClientException {
         String host = hostTextField.getText();
         int port = Integer.parseInt(portTextField.getText());
-        YamcsClient client = YamcsClient.newBuilder(host, port).build();
+        YamcsClient client = YamcsClient.newBuilder(host, port)
+                .withContext(contextPathTextField.getText())
+                .build();
 
         if (usernameTextField.getText().isEmpty()) {
             client.connectAnonymously();
         } else {
+            System.out.println("Connect with password " + new String(passwordTextField.getPassword()));
             client.connect(usernameTextField.getText(), passwordTextField.getPassword());
         }
 
@@ -468,6 +491,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         ConnectData data = new ConnectData();
         data.host = host;
         data.port = port;
+        data.contextPath = contextPath;
         if (username != null) {
             data.username = username;
             data.password = password.toCharArray();

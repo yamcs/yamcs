@@ -5,4 +5,5 @@ public class ConnectData {
     int port;
     String username;
     char[] password;
+    String contextPath;
 }
