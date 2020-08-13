@@ -52,6 +52,11 @@ contextPath (string)
 zeroCopyEnabled (boolean)
     Indicates whether zero-copy can be used to optimize non-SSL static file serving. Default: ``true``
 
+maxContentLength (integer)
+    Maximum allowed length of request bodies. This is applied to all non-streaming API requests. Default: ``65536``
+
+    Some routes may specify a custom ``maxBodySize`` option, in which case the maximum of the two values gets applied.
+
 webSocket (map)
     Configure WebSocket properties. Detailed below. If unset, Yamcs uses sensible defaults.
 
@@ -63,7 +68,7 @@ WebSocket sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 maxFrameLength (integer)
-    Maximum frame length in bytes. Default: ``65535``
+    Maximum frame length in bytes. Default: ``65536``
 
 writeBufferWaterMark (map)
     Water marks for the write buffer of each WebSocket connection. When the buffer is full, messages are dropped. High values lead to increased memory use, but connections will be more resilient against unstable networks (i.e. high jitter). Increasing the values also help if a large number of messages are generated in bursts. The map requires keys ``low`` and ``high`` indicating the low/high water mark in bytes.

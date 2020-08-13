@@ -14,18 +14,19 @@ import io.netty.handler.codec.http.HttpMethod;
 public class Route implements Comparable<Route> {
 
     private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)(\\?|\\*|\\*\\*)?\\}");
-    private static final int MAX_BODY_SIZE = 65536;
 
     private final Pattern pattern;
 
     private final Api<Context> api;
     private final String uriTemplate;
     private final HttpMethod httpMethod;
-    private final int maxBodySize;
     private final boolean offloaded;
     private final boolean deprecated;
     private final String body;
     private final RpcDescriptor descriptor;
+
+    // May be unspecified
+    private int maxBodySize;
 
     private Counter requestCounter;
     private Counter errorCounter;
@@ -70,7 +71,9 @@ public class Route implements Comparable<Route> {
         pattern = toPattern(uriTemplate);
 
         body = httpOptions.hasBody() ? httpOptions.getBody() : null;
-        maxBodySize = httpOptions.hasMaxBodySize() ? httpOptions.getMaxBodySize() : MAX_BODY_SIZE;
+        if (httpOptions.hasMaxBodySize()) {
+            maxBodySize = httpOptions.getMaxBodySize();
+        }
     }
 
     private Pattern toPattern(String route) {

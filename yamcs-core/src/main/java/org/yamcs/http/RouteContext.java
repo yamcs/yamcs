@@ -33,12 +33,15 @@ public class RouteContext extends Context {
     private Route route;
     private Matcher regexMatch;
 
+    private int maxBodySize;
+
     RouteContext(HttpServer httpServer, ChannelHandlerContext nettyContext, User user, HttpRequest nettyRequest,
             Route route, Matcher regexMatch) {
         super(httpServer, nettyContext, user, route.getApi());
         this.nettyRequest = nettyRequest;
         this.route = route;
         this.regexMatch = regexMatch;
+        maxBodySize = Math.max(httpServer.getConfig().getInt("maxContentLength"), route.getMaxBodySize());
 
         route.incrementRequestCount();
 
@@ -73,7 +76,7 @@ public class RouteContext extends Context {
     }
 
     public int getMaxBodySize() {
-        return route.getMaxBodySize();
+        return maxBodySize;
     }
 
     public String getURI() {
