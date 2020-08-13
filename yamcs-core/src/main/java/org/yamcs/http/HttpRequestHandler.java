@@ -362,7 +362,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         pipeline.addLast(new HttpObjectAggregator(65536));
 
         int maxFrameLength = wsConfig.getInt("maxFrameLength");
-        int maxDropped = wsConfig.getInt("connectionCloseNumDroppedMsg");
+        int maxDropped = wsConfig.getInt("maxDrops");
         int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
         int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
         WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
@@ -390,7 +390,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
         int maxFrameLength = wsConfig.getInt("maxFrameLength");
-        int maxDropped = wsConfig.getInt("connectionCloseNumDroppedMsg");
+        int maxDropped = wsConfig.getInt("maxDrops");
         int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
         int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
         WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);

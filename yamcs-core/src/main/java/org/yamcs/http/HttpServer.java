@@ -160,7 +160,9 @@ public class HttpServer extends AbstractYamcsService {
 
         Spec websocketSpec = new Spec();
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
-        websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER).withDefault(5);
+        websocketSpec.addOption("maxDrops", OptionType.INTEGER)
+                .withAliases("connectionCloseNumDroppedMsg")
+                .withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65535);
 
         Spec spec = new Spec();

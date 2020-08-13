@@ -29,7 +29,7 @@ This is a global service defined in ``etc/yamcs.yaml``. Example:
             writeBufferWaterMark:
               low: 32768
               high: 65536
-            connectionCloseNumDroppedMsg: 5
+            maxDrops: 5
           cors:
             allowOrigin: "*"
             allowCredentials: false
@@ -70,7 +70,7 @@ writeBufferWaterMark (map)
 
     Default: ``{ low: 32768, high: 65536}``
 
-connectionCloseNumDroppedMsg (integer)
+maxDrops (integer)
     Allowed number of message drops before closing the connection. Default: ``5``
 
 

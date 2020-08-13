@@ -49,7 +49,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private User user;
 
     // after how many consecutive dropped writes will the connection be closed
-    private int connectionCloseNumDroppedMsg;
+    private int maxDrops;
 
     private SocketAddress remoteAddress;
     private WriteBufferWaterMark writeBufferWaterMark;
@@ -57,12 +57,12 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private List<TopicContext> contexts = new ArrayList<>();
     private Map<Integer, Observer<Message>> clientObserversByCall = new HashMap<>();
 
-    public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int connectionCloseNumDroppedMsg,
+    public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int maxDrops,
             WriteBufferWaterMark writeBufferWaterMark) {
         this.httpServer = httpServer;
         this.nettyRequest = req;
         this.user = user;
-        this.connectionCloseNumDroppedMsg = connectionCloseNumDroppedMsg;
+        this.maxDrops = maxDrops;
         this.writeBufferWaterMark = writeBufferWaterMark;
     }
 
