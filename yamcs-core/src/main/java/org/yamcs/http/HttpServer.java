@@ -2,12 +2,18 @@ package org.yamcs.http;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +68,7 @@ import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -123,7 +130,7 @@ public class HttpServer extends AbstractYamcsService {
     private String contextPath;
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
-    private String tlsCert;
+    private List<String> tlsCerts;
     private String tlsKey;
 
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
@@ -169,7 +176,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("address", OptionType.STRING);
         spec.addOption("port", OptionType.INTEGER);
         spec.addOption("tlsPort", OptionType.INTEGER);
-        spec.addOption("tlsCert", OptionType.STRING);
+        spec.addOption("tlsCert", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
@@ -201,7 +208,7 @@ public class HttpServer extends AbstractYamcsService {
         tlsPort = config.getInt("tlsPort", -1);
 
         if (tlsPort != -1) {
-            tlsCert = config.getString("tlsCert");
+            tlsCerts = config.getList("tlsCert");
             tlsKey = config.getString("tlsKey");
         }
         contextPath = config.getString("contextPath");
@@ -334,7 +341,7 @@ public class HttpServer extends AbstractYamcsService {
         }
     }
 
-    public void startServer() throws InterruptedException, SSLException, CertificateException {
+    public void startServer() throws InterruptedException, SSLException, CertificateException, IOException {
         StaticFileHandler.init(staticRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
@@ -348,9 +355,21 @@ public class HttpServer extends AbstractYamcsService {
             log.debug("Serving http from {}", getHttpBaseUri());
         }
         if (tlsPort != -1) {
-            SslContext sslCtx = SslContextBuilder.forServer(new File(tlsCert), new File(tlsKey)).build();
-            createAndBindBootstrap(workerGroup, sslCtx, tlsPort);
-            log.debug("Serving https from {}", getHttpsBaseUri());
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            for (String cert : tlsCerts) {
+                try (InputStream certIn = Files.newInputStream(Paths.get(cert))) {
+                    ByteStreams.copy(certIn, buf);
+                }
+            }
+
+            try (InputStream chain = new ByteArrayInputStream(buf.toByteArray());
+                    InputStream key = new FileInputStream(tlsKey)) {
+                SslContext sslCtx = SslContextBuilder
+                        .forServer(chain, key)
+                        .build();
+                createAndBindBootstrap(workerGroup, sslCtx, tlsPort);
+                log.debug("Serving https from {}", getHttpsBaseUri());
+            }
         }
     }
 
