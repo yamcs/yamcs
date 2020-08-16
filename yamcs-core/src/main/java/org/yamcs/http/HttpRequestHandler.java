@@ -18,9 +18,12 @@ import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.LegacyWebSocketFrameHandler;
 import org.yamcs.logging.Log;
+import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.RemoteUserAuthModule;
+import org.yamcs.security.RemoteUserToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
@@ -237,6 +240,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        // Handle common case first: presence of an "Authorization" header
         if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
             String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
             if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
@@ -248,6 +252,18 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
         }
 
+        // Instances of RemoteUserAuthModule derive the user from custom HTTP headers
+        // (anything other than Authorization)
+        for (AuthModule authModule : securityStore.getAuthModules()) {
+            if (authModule instanceof RemoteUserAuthModule) {
+                String headerName = ((RemoteUserAuthModule) authModule).getHeader();
+                if (req.headers().contains(headerName)) {
+                    return handleRemoteUserAuth(ctx, req, headerName);
+                }
+            }
+        }
+
+        // Last resort:
         // There may be an access token in the cookie. This use case is added because
         // of web socket requests coming from the browser where it is not possible to
         // set custom authorization headers. It'd be interesting if we communicate the
@@ -260,7 +276,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (securityStore.getGuestUser().isActive()) {
             return securityStore.getGuestUser();
         } else {
-            throw new UnauthorizedException("Missing 'Authorization' or 'Cookie' header");
+            throw new UnauthorizedException("Missing authentication");
         }
     }
 
@@ -549,6 +565,25 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         try {
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof AuthenticationException) {
+                throw new UnauthorizedException(e.getCause().getMessage());
+            } else {
+                throw new InternalServerErrorException(e.getCause());
+            }
+        }
+    }
+
+    private User handleRemoteUserAuth(ChannelHandlerContext ctx, HttpRequest req, String headerName)
+            throws HttpException {
+        String username = req.headers().get(headerName);
+        try {
+            AuthenticationToken token = new RemoteUserToken(headerName, username);
             AuthenticationInfo authenticationInfo = securityStore.login(token).get();
             return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
         } catch (InterruptedException e) {

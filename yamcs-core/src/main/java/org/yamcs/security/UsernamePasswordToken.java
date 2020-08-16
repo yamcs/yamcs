@@ -3,7 +3,7 @@ package org.yamcs.security;
 import java.util.Objects;
 
 /**
- * A token using to login as a standard user with a password.
+ * A password-based token, usually associated with BASIC AUTH requests (convenient through curl)
  */
 public class UsernamePasswordToken implements AuthenticationToken {
 

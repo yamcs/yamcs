@@ -24,6 +24,8 @@ The default set of AuthModules include:
     Reads Yaml files to verify the credentials of the user, or assign privileges.
 :doc:`kerberos`
     Supports authenticating against a Kerberos server.
+:doc:`remote-user`
+    Supports authentication based on a custom HTTP header.
 :doc:`spnego`
     Supports authenticating against a Kerberos server using Single Sign On from a web context.
 :doc:`openid`
