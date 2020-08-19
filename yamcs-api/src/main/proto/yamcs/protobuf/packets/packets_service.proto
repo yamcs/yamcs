@@ -25,7 +25,7 @@ service PacketsApi {
   // List packets
   rpc ListPackets(ListPacketsRequest) returns (ListPacketsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime?}"
+      get: "/api/archive/{instance}/packets"
     };
   }
   
@@ -116,7 +116,7 @@ message GetPacketRequest {
   
   // an exact match of the packet's generation time in
   // ISO 8601 format. Example: 2015-10-20T06:47:02.000
-  optional int64 gentime = 2;
+  optional google.protobuf.Timestamp gentime = 2;
 
   // Yamcs-specific archive distinguisher
   optional int32 seqnum = 3;

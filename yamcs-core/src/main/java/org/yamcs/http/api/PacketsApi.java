@@ -160,7 +160,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void getPacket(Context ctx, GetPacketRequest request, Observer<TmPacketData> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        long gentime = request.getGentime();
+        long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
