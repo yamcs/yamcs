@@ -97,6 +97,14 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         // "anchors" is used to allow yaml anchors (reuse of blocks)
         spec.addOption("anchors", OptionType.ANY);
+
+        YamcsServer yamcs = YamcsServer.getServer();
+        Map<String, Spec> extraSections = yamcs.getConfigurationSections(ConfigScope.YAMCS_INSTANCE);
+        extraSections.forEach((key, sectionSpec) -> {
+            spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
+                    .withApplySpecDefaults(true);
+        });
+
         return spec;
     }
 
@@ -307,7 +315,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
         if (config != null) { // Can be null for an offline instance
             try {
                 MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-                if (!config.isList("mdb")) {
+                if (config.containsKey("mdbSpec")) {
+                    String configName = config.getString("mdbSpec");
+                    mdb.setConfigName(configName);
+                } else if (!config.isList("mdb")) {
                     String configName = config.getString("mdb");
                     mdb.setConfigName(configName);
                 }

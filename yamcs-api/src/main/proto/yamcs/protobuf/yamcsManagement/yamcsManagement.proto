@@ -199,13 +199,35 @@ message YamcsInstance {
 message InstanceTemplate {
   // Template name.
   optional string name = 1;
+
+  // Human-friendly description
+  optional string description = 3;
+
+  // List of variables that this template may expect  
   repeated TemplateVariable variables = 2;
 }
 
 message TemplateVariable {
+  // Variable name. 
   optional string name = 1;
-  optional string description = 2;
-  optional bool required = 3; 
+  
+  // Verbose name for use in UI forms
+  optional string label = 6;
+  
+  // Type of variable (Java class extending org.yamcs.templating.Variable)
+  optional string type = 4;
+  
+  // Verbose user guidance (HTML)
+  optional string help = 2;
+  
+  // Whether this variable is required input
+  optional bool required = 3;
+  
+  // List of valid choices
+  repeated string choices = 5;
+  
+  // Initial value for use in UI forms
+  optional string initial = 7;
 }
 
 message ProcessorInfo {

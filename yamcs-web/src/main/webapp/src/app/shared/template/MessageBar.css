@@ -9,6 +9,10 @@
   height: 48px;
 }
 
+.mat-toolbar-multiple-rows {
+  min-height: 48px;
+}
+
 .actions {
   position: absolute;
   top: 0;

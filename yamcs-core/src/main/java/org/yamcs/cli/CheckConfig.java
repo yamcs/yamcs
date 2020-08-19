@@ -25,7 +25,7 @@ public class CheckConfig extends Command {
 
     @Override
     void execute() throws Exception {
-        YamcsServer yamcs = new YamcsServer();
+        YamcsServer yamcs = YamcsServer.getServer();
 
         try {
             log.debug("Validating yamcs.yaml ...");
@@ -40,7 +40,7 @@ public class CheckConfig extends Command {
                 }
             }
 
-            if (config.containsKey("services")) {
+            if (config.containsKey("instances")) {
                 log.debug("Validating instances ...");
                 for (String name : config.<String> getList("instances")) {
                     YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);

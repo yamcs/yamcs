@@ -38,7 +38,7 @@ services:
           high: 65536
 
         # after how many consecutive lost messages the connection will be closed.
-        connectionCloseNumDroppedMsg: 5
+        maxDrops: 5
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml

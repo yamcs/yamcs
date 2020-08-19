@@ -5,16 +5,33 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.client.InstanceFilter;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
+import org.yamcs.templating.Template;
+
+import com.google.common.io.CharStreams;
 
 public class InstancesIntegrationTest extends AbstractIntegrationTest {
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        try (Reader in = new InputStreamReader(InstancesIntegrationTest.class.getResourceAsStream(
+                "/IntegrationTest/instance-templates/templ1/template.yaml"))) {
+            String source = CharStreams.toString(in);
+            Template template = new Template("templ1", source);
+            YamcsServer.getServer().addInstanceTemplate(template);
+        }
+    }
 
     @Test
     public void testStopStart() throws Exception {

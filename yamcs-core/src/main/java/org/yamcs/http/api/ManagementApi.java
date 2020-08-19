@@ -68,9 +68,12 @@ import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.SubscribeLinksRequest;
 import org.yamcs.protobuf.SystemInfo;
+import org.yamcs.protobuf.TemplateVariable;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.templating.Template;
+import org.yamcs.templating.Variable;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TimeEncoding;
@@ -154,11 +157,12 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             Observer<ListInstanceTemplatesResponse> observer) {
         ListInstanceTemplatesResponse.Builder templatesb = ListInstanceTemplatesResponse.newBuilder();
 
-        List<InstanceTemplate> templates = new ArrayList<>(YamcsServer.getInstanceTemplates());
+        YamcsServer yamcs = YamcsServer.getServer();
+        List<Template> templates = new ArrayList<>(yamcs.getInstanceTemplates());
         templates.sort((t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
-        for (InstanceTemplate template : templates) {
-            templatesb.addTemplates(template);
+        for (Template template : templates) {
+            templatesb.addTemplates(toInstanceTemplate(template));
         }
         observer.complete(templatesb.build());
     }
@@ -168,11 +172,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             Observer<InstanceTemplate> observer) {
         YamcsServer yamcs = YamcsServer.getServer();
         String name = request.getTemplate();
-        if (!YamcsServer.hasInstanceTemplate(name)) {
+        if (!yamcs.hasInstanceTemplate(name)) {
             throw new NotFoundException("No template named '" + name + "'");
         }
 
-        InstanceTemplate template = yamcs.getInstanceTemplate(name);
+        InstanceTemplate template = toInstanceTemplate(yamcs.getInstanceTemplate(name));
         observer.complete(template);
     }
 
@@ -659,6 +663,43 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             serviceb.setProcessor(processor);
         }
         return serviceb.build();
+    }
+
+    private static InstanceTemplate toInstanceTemplate(Template template) {
+        InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
+                .setName(template.getName());
+
+        if (template.getDescription() != null) {
+            templateb.setDescription(template.getDescription());
+        }
+
+        for (Variable variable : template.getVariables()) {
+            TemplateVariable.Builder varb = TemplateVariable.newBuilder()
+                    .setName(variable.getName())
+                    .setRequired(variable.isRequired())
+                    .setType(variable.getClass().getName());
+            if (variable.getLabel() != null) {
+                varb.setLabel(variable.getLabel());
+            }
+            if (variable.getHelp() != null) {
+                varb.setHelp(variable.getHelp());
+            }
+            if (variable.getInitial() != null) {
+                varb.setInitial(variable.getInitial());
+            }
+
+            // getChoices() may be dynamically calculated. Best call it once only.
+            List<String> choices = variable.getChoices();
+            if (choices != null) {
+                for (String choice : choices) {
+                    varb.addChoices(choice);
+                }
+            }
+
+            templateb.addVariables(varb);
+        }
+
+        return templateb.build();
     }
 
     public static String verifyInstance(String instance, boolean allowGlobal) {

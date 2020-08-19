@@ -160,8 +160,10 @@ public class HttpServer extends AbstractYamcsService {
 
         Spec websocketSpec = new Spec();
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
-        websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER).withDefault(5);
-        websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65535);
+        websocketSpec.addOption("maxDrops", OptionType.INTEGER)
+                .withAliases("connectionCloseNumDroppedMsg")
+                .withDefault(5);
+        websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65536);
 
         Spec spec = new Spec();
         spec.addOption("address", OptionType.STRING);
@@ -171,6 +173,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);

@@ -102,13 +102,18 @@ export interface Instance {
 
 export interface InstanceTemplate {
   name: string;
+  description: string;
   variables: TemplateVariable[];
 }
 
 export interface TemplateVariable {
   name: string;
-  description?: string;
+  label?: string;
+  help?: string;
   required: boolean;
+  type: string;
+  initial?: string;
+  choices?: string[];
 }
 
 export interface ConnectionInfo {

@@ -79,7 +79,7 @@
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
-      <app-sidebar-nav-item *ngIf="config.features.cfdp"
+      <app-sidebar-nav-item *ngIf="config.cfdp"
                             routerLink="/cfdp"
                             [queryParams]="{c: yamcs.context}">
         <mat-icon class="item-icon">file_copy</mat-icon>

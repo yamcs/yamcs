@@ -58,14 +58,14 @@ public class LegacyWebSocketFrameHandler extends SimpleChannelInboundHandler<Web
     private Map<String, WebSocketResource> resourcesByName = new HashMap<>();
 
     // after how many consecutive dropped writes will the connection be closed
-    private int connectionCloseNumDroppedMsg;
+    private int maxDrops;
 
     private WriteBufferWaterMark writeBufferWaterMark;
 
-    public LegacyWebSocketFrameHandler(HttpRequestInfo originalRequestInfo, int connectionCloseNumDroppedMsg,
+    public LegacyWebSocketFrameHandler(HttpRequestInfo originalRequestInfo, int maxDrops,
             WriteBufferWaterMark writeBufferWaterMark) {
         this.originalRequestInfo = originalRequestInfo;
-        this.connectionCloseNumDroppedMsg = connectionCloseNumDroppedMsg;
+        this.maxDrops = maxDrops;
         this.writeBufferWaterMark = writeBufferWaterMark;
     }
 
@@ -255,7 +255,7 @@ public class LegacyWebSocketFrameHandler extends SimpleChannelInboundHandler<Web
                     dataType, wsClient.getId(), wsClient.getUser());
             droppedWrites++;
 
-            if (droppedWrites >= connectionCloseNumDroppedMsg) {
+            if (droppedWrites >= maxDrops) {
                 log.warn("Too many ({}) dropped messages for client [id={}, username={}]. Forcing disconnect",
                         droppedWrites, wsClient.getId(), wsClient.getUser());
                 ctx.close();

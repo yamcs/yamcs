@@ -1,0 +1,18 @@
+description: Creates an empty instance, for demo purposes
+
+variables:
+  - name: spaceSystem
+    label: Example parameter
+    help: Used as name of the root space system
+  
+  - name: bar
+    label: Example combo parameter
+    choices:
+      - Option 1
+      - Option 2
+      - Option 3
+    initial: Option 2
+  
+  - name: optional_foo
+    label: An optional parameter
+    required: false

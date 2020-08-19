@@ -1,4 +1,4 @@
-package org.yamcs.utils;
+package org.yamcs.templating;
 
 import static org.junit.Assert.assertEquals;
 

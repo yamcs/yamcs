@@ -71,7 +71,8 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
-    this.storageClient.uploadObject('_global', 'displays', fullPath, b).then(() => {
+    const objectName = this.data.prefix + fullPath;
+    this.storageClient.uploadObject('_global', 'displays', objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

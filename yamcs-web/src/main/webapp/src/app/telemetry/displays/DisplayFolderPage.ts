@@ -8,6 +8,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
@@ -34,6 +35,8 @@ export class DisplayFolderPage implements OnDestroy {
   private routerSubscription: Subscription;
   private storageClient: StorageClient;
 
+  private folderPerInstance: boolean;
+
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
@@ -41,9 +44,11 @@ export class DisplayFolderPage implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    configService: ConfigService,
   ) {
     title.setTitle('Displays');
     this.storageClient = yamcs.createStorageClient();
+    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -57,15 +62,32 @@ export class DisplayFolderPage implements OnDestroy {
     const options: ListObjectsOptions = {
       delimiter: '/',
     };
+
+    let prefix = '';
+    if (this.folderPerInstance) {
+      prefix = this.yamcs.instance! + '/';
+    }
+
     const routeSegments = this.route.snapshot.url;
     if (routeSegments.length) {
-      options.prefix = routeSegments.map(s => s.path).join('/') + '/';
+      options.prefix = prefix + routeSegments.map(s => s.path).join('/') + '/';
+    } else if (prefix) {
+      options.prefix = prefix;
     }
 
     this.storageClient.listObjects('_global', 'displays', options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
+  }
+
+  private getNameWithoutInstance(name: string) {
+    if (this.folderPerInstance) {
+      const instance = this.yamcs.instance!;
+      return name.substr(instance.length);
+    } else {
+      return name;
+    }
   }
 
   private changedir(dir: ListObjectsResponse) {
@@ -75,12 +97,14 @@ export class DisplayFolderPage implements OnDestroy {
       items.push({
         folder: true,
         name: prefix,
+        nameWithoutInstance: this.getNameWithoutInstance(prefix),
       });
     }
     for (const object of dir.objects || []) {
       items.push({
         folder: false,
         name: object.name,
+        nameWithoutInstance: this.getNameWithoutInstance(object.name),
         modified: object.created,
         objectUrl: this.storageClient.getObjectURL('_global', 'displays', object.name),
       });
@@ -112,6 +136,7 @@ export class DisplayFolderPage implements OnDestroy {
       width: '400px',
       data: {
         path: this.getCurrentPath(),
+        prefix: this.folderPerInstance ? (this.yamcs.instance! + '/') : '',
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -126,6 +151,7 @@ export class DisplayFolderPage implements OnDestroy {
       width: '400px',
       data: {
         path: this.getCurrentPath(),
+        prefix: this.folderPerInstance ? (this.yamcs.instance! + '/') : '',
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -188,7 +214,7 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   deleteFile(item: BrowseItem) {
-    if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+    if (confirm(`Are you sure you want to delete ${item.nameWithoutInstance}?`)) {
       this.storageClient.deleteObject('_global', 'displays', item.name).then(() => {
         this.loadCurrentFolder();
       });
@@ -226,7 +252,10 @@ export class DisplayFolderPage implements OnDestroy {
       dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
         const uploadPromises: any[] = [];
         for (const droppedFile of droppedFiles) {
-          const objectPath = objectPrefix + droppedFile._fullPath;
+          let objectPath = objectPrefix + droppedFile._fullPath;
+          if (this.folderPerInstance) {
+            objectPath = this.yamcs.instance! + '/' + objectPath;
+          }
           const promise = this.storageClient.uploadObject('_global', 'displays', objectPath, droppedFile);
           uploadPromises.push(promise);
         }
@@ -271,6 +300,7 @@ export class DisplayFolderPage implements OnDestroy {
 export class BrowseItem {
   folder: boolean;
   name: string;
+  nameWithoutInstance: string;
   modified?: string;
   objectUrl?: string;
 }

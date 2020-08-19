@@ -2,8 +2,6 @@ package org.yamcs;
 
 import java.io.InputStream;
 
-import org.yamcs.ConfigurationException;
-
 public interface YConfigurationResolver {
 
     /**

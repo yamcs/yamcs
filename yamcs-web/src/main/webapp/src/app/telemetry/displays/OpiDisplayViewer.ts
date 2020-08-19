@@ -98,8 +98,12 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   private toSample(pval: ParameterValue): Sample {
     const time = utils.toDate(pval.generationTime);
     const severity = this.toAlarmSeverity(pval);
-    const value = this.unpackValue(pval.engValue);
-    return { time, severity, value };
+    if (pval.engValue) { // Can be unset of acquisitionStatus is invalid
+      const value = this.unpackValue(pval.engValue);
+      return { time, severity, value };
+    } else {
+      return { time, severity, value: undefined };
+    }
   }
 
   private toAlarmSeverity(pval: ParameterValue) {

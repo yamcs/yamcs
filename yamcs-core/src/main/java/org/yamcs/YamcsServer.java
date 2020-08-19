@@ -2,13 +2,9 @@ package org.yamcs;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.io.Writer;
@@ -48,16 +44,15 @@ import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.logging.YamcsLogManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.InstanceTemplate;
-import org.yamcs.protobuf.TemplateVariable;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.Link;
+import org.yamcs.templating.Template;
+import org.yamcs.templating.Variable;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
-import org.yamcs.utils.TemplateProcessor;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -135,13 +130,13 @@ public class YamcsServer {
     private boolean help;
 
     private YConfiguration config;
-    private Map<String, Spec> sectionSpecs = new HashMap<>();
+    private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
 
     private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
-    Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
+    Map<String, Template> instanceTemplates = new HashMap<>();
     List<ReadyListener> readyListeners = new ArrayList<>();
 
     private SecurityStore securityStore;
@@ -295,8 +290,8 @@ public class YamcsServer {
         return YAMCS.instances.containsKey(instance);
     }
 
-    public static boolean hasInstanceTemplate(String template) {
-        return YAMCS.instanceTemplates.containsKey(template);
+    public boolean hasInstanceTemplate(String template) {
+        return instanceTemplates.containsKey(template);
     }
 
     public String getServerId() {
@@ -507,9 +502,29 @@ public class YamcsServer {
      * @param spec
      *            the specification of this configuration section.
      */
-    @Experimental
     public void addConfigurationSection(String key, Spec spec) {
-        sectionSpecs.put(key, spec);
+        addConfigurationSection(ConfigScope.YAMCS, key, spec);
+    }
+
+    /**
+     * Add the definition of an additional configuration section to a particulat configuration type
+     * 
+     * @param scope
+     *            the scope where this section belongs. When using file-based configuration this can be thought of as
+     *            the type of the configuration file.
+     * @param key
+     *            the name of this section. This represent a direct subkey of the main app config
+     * @param spec
+     *            the specification of this configuration section.
+     */
+    public void addConfigurationSection(ConfigScope scope, String key, Spec spec) {
+        Map<String, Spec> specs = sectionSpecs.computeIfAbsent(scope, x -> new HashMap<>());
+        specs.put(key, spec);
+    }
+
+    public Map<String, Spec> getConfigurationSections(ConfigScope scope) {
+        Map<String, Spec> specs = sectionSpecs.get(scope);
+        return specs != null ? specs : Collections.emptyMap();
     }
 
     /**
@@ -557,7 +572,7 @@ public class YamcsServer {
      * 
      * @param name
      *            the name of the instance
-     * @param template
+     * @param templateName
      *            the name of an available template
      * @param templateArgs
      *            arguments to use while processing the template
@@ -569,35 +584,28 @@ public class YamcsServer {
      *             when a disk operation failed
      * @return the newly create instance
      */
-    public synchronized YamcsServerInstance createInstance(String name, String template,
+    public synchronized YamcsServerInstance createInstance(String name, String templateName,
             Map<String, Object> templateArgs, Map<String, String> labels, Map<String, Object> customMetadata)
             throws IOException {
-        if (instances.containsKey("name")) {
+        if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
+        }
+        if (!instanceTemplates.containsKey(templateName)) {
+            throw new IllegalArgumentException(String.format("Unknown template '%s'", templateName));
         }
 
         // Build instance metadata as a combination of internal properties and custom metadata from the caller
         InstanceMetadata metadata = new InstanceMetadata();
-        metadata.setTemplate(template);
+        metadata.setTemplate(templateName);
         metadata.setTemplateArgs(templateArgs);
         metadata.setLabels(labels);
         customMetadata.forEach((k, v) -> metadata.put(k, v));
 
-        String tmplResource = "/instance-templates/" + template + "/template.yaml";
-        InputStream is = YConfiguration.getResolver().getConfigurationStream(tmplResource);
-
-        StringBuilder buf = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                buf.append(line).append("\n");
-            }
-        }
-        String source = buf.toString();
-        String processed = TemplateProcessor.process(source, metadata.getTemplateArgs());
+        Template template = instanceTemplates.get(templateName);
+        String processed = template.process(metadata.getTemplateArgs());
 
         Path confFile = instanceDefDir.resolve("yamcs." + name + ".yaml");
-        try (FileWriter writer = new FileWriter(confFile.toFile())) {
+        try (Writer writer = Files.newBufferedWriter(confFile)) {
             writer.write(processed);
         }
 
@@ -657,11 +665,11 @@ public class YamcsServer {
         return instances.get(yamcsInstance);
     }
 
-    public static Set<InstanceTemplate> getInstanceTemplates() {
-        return new HashSet<>(YAMCS.instanceTemplates.values());
+    public Set<Template> getInstanceTemplates() {
+        return new HashSet<>(instanceTemplates.values());
     }
 
-    public InstanceTemplate getInstanceTemplate(String name) {
+    public Template getInstanceTemplate(String name) {
         return instanceTemplates.get(name);
     }
 
@@ -1072,7 +1080,7 @@ public class YamcsServer {
                 TimeEncoding.setUp(in);
             }
         } else {
-            // Default to a bundled version inside the yamcs-api jar
+            // Default to a bundled version from classpath
             TimeEncoding.setUp();
         }
 
@@ -1103,7 +1111,8 @@ public class YamcsServer {
         spec.addOption("serverId", OptionType.STRING);
         spec.addOption("secretKey", OptionType.STRING);
 
-        sectionSpecs.forEach((key, sectionSpec) -> {
+        Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
+        extraSections.forEach((key, sectionSpec) -> {
             spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
                     .withApplySpecDefaults(true);
         });
@@ -1136,40 +1145,65 @@ public class YamcsServer {
     }
 
     private void discoverTemplates() throws IOException {
-        Path templatesDir = Paths.get("etc", "instance-templates");
+        Path templatesDir = configDirectory.resolve("instance-templates");
         if (!Files.exists(templatesDir)) {
             return;
         }
 
         try (Stream<Path> dirStream = Files.list(templatesDir)) {
             dirStream.filter(Files::isDirectory).forEach(p -> {
-                if (Files.exists(p.resolve("template.yaml"))) {
-                    String name = p.getFileName().toString();
-                    InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
-                            .setName(name);
+                Path templateFile = p.resolve("template.yaml");
+                if (Files.exists(templateFile)) {
+                    try {
+                        String name = p.getFileName().toString();
+                        String source = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
+                        Template template = new Template(name, source);
 
-                    Path varFile = p.resolve("variables.yaml");
-                    if (Files.exists(varFile)) {
-                        try (InputStream in = new FileInputStream(varFile.toFile())) {
-                            List<Map<String, Object>> varDefs = new Yaml().load(in);
-                            for (Map<String, Object> varDef : varDefs) {
-                                TemplateVariable.Builder varb = TemplateVariable.newBuilder();
-                                varb.setName(YConfiguration.getString(varDef, "name"));
-                                varb.setRequired(YConfiguration.getBoolean(varDef, "required", true));
-                                if (varDef.containsKey("description")) {
-                                    varb.setDescription(YConfiguration.getString(varDef, "description"));
-                                }
-                                templateb.addVariables(varb);
+                        Path metaFile = p.resolve("meta.yaml");
+                        Path varFile = p.resolve("variables.yaml");
+                        Map<String, Object> metaDef = new HashMap<>();
+                        if (Files.exists(metaFile)) {
+                            try (InputStream in = Files.newInputStream(metaFile)) {
+                                metaDef = new Yaml().load(in);
                             }
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
+                        } else if (Files.exists(varFile)) {
+                            LOG.warn("DEPRECATED: Templates should use meta.yaml instead of variables.yaml"
+                                    + " (move variables.yaml content under a 'variables' key in meta.yaml)");
+                            try (InputStream in = Files.newInputStream(varFile)) {
+                                List<Map<String, Object>> varDefs = new Yaml().load(in);
+                                metaDef.put("variables", varDefs);
+                            }
                         }
-                    }
 
-                    YAMCS.instanceTemplates.put(name, templateb.build());
+                        template.setDescription(YConfiguration.getString(metaDef, "description", null));
+                        if (metaDef.containsKey("variables")) {
+                            List<Map<String, Object>> varDefs = YConfiguration.getList(metaDef, "variables");
+                            for (Map<String, Object> varDef : varDefs) {
+                                String type = (String) varDef.getOrDefault("type", Variable.class.getName());
+                                Variable variable = YObjectLoader.loadObject(type);
+                                variable.setName(YConfiguration.getString(varDef, "name"));
+                                variable.setLabel(YConfiguration.getString(varDef, "label", null));
+                                variable.setRequired(YConfiguration.getBoolean(varDef, "required", true));
+                                variable.setHelp(YConfiguration.getString(varDef, "help", null));
+                                variable.setInitial(YConfiguration.getString(varDef, "initial", null));
+                                if (varDef.containsKey("choices")) {
+                                    variable.setChoices(YConfiguration.getList(varDef, "choices"));
+                                }
+                                template.addVariable(variable);
+                            }
+                        }
+
+                        addInstanceTemplate(template);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
             });
         }
+    }
+
+    public void addInstanceTemplate(Template template) {
+        instanceTemplates.put(template.getName(), template);
     }
 
     public void addGlobalServicesAndInstances() throws IOException, ValidationException {

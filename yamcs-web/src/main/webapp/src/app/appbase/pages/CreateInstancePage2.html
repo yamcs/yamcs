@@ -1,3 +1,5 @@
+<app-message-bar #messageBar></app-message-bar>
+
 <mat-toolbar class="top">
   <mat-toolbar-row>
     <a mat-icon-button routerLink=".." color="primary">
@@ -14,9 +16,24 @@
       Instance name<br>
       <input formControlName="name" type="text">
     </label>
-    <ng-container *ngIf="template.variables">
-      <label *ngFor="let v of template.variables">
-        {{ v.description || v.name }}<br>
+    <ng-container *ngFor="let v of template?.variables">
+      <br>
+      <label *ngIf="v.choices">
+        {{ v.label || v.name }}
+        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </app-help>
+        <select [formControlName]="v.name">
+          <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="!v.choices">
+        {{ v.label || v.name }}
+        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </app-help>
+        <br>
         <input [formControlName]="v.name" type="text">
       </label>
     </ng-container>

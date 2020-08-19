@@ -24,7 +24,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
-import org.yamcs.utils.TemplateProcessor;
+import org.yamcs.templating.TemplateProcessor;
 
 import com.google.gson.Gson;
 import com.google.protobuf.util.JsonFormat;
@@ -107,6 +107,14 @@ public class IndexHandler extends Handler {
         String template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
 
         Map<String, Object> webConfig = new HashMap<>(config.toMap());
+
+        // Deprecated support for "features" section. yamcs-web already ignores it
+        if (webConfig.containsKey("features")) {
+            Map<String, Object> featuresConfig = YConfiguration.getMap(webConfig, "features");
+            // We must overwrite. Even if unset, the root level contains defaults.
+            webConfig.putAll(featuresConfig);
+            webConfig.remove("features");
+        }
 
         AuthInfo authInfo = AuthHandler.createAuthInfo();
         String authJson = JsonFormat.printer().print(authInfo);

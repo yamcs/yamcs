@@ -74,7 +74,9 @@
       <ng-container [ngSwitch]="extra.type">
         <label *ngSwitchCase="'BOOLEAN'">
           {{ extra.verboseName || extra.id }}
-          <app-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">{{ extra.help }}</app-help>
+          <app-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">
+            <div [innerHTML]="extra.help"></div>
+          </app-help>
           <br>
           <input type="radio" [formControlName]="'extra__' + extra.id" value="true"> true
           <input type="radio" [formControlName]="'extra__' + extra.id" value="false"> false
@@ -82,6 +84,9 @@
 
         <label *ngSwitchDefault>
           {{ extra.verboseName || extra.id }}
+          <app-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">
+            <div [innerHTML]="extra.help"></div>
+          </app-help>
           <input type="text" [formControlName]="'extra__' + extra.id">
         </label>
       </ng-container>

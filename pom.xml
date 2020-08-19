@@ -330,7 +330,7 @@
         <plugin>
           <groupId>org.yamcs</groupId>
           <artifactId>yamcs-maven-plugin</artifactId>
-          <version>1.2.3</version>
+          <version>1.2.5</version>
         </plugin>
       </plugins>
     </pluginManagement>

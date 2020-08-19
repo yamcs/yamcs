@@ -15,7 +15,7 @@
          style="width: 100%">
 
     <ng-container cdkColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <th mat-header-cell *matHeaderCellDef>Template</th>
       <td mat-cell *cdkCellDef="let row">
         <a [routerLink]="row.name">
           {{ row.name }}
@@ -26,7 +26,7 @@
     <ng-container cdkColumnDef="description">
       <th mat-header-cell *matHeaderCellDef>Description</th>
       <td mat-cell *cdkCellDef="let row">
-        -
+        {{ row.description || '-' }}
       </td>
     </ng-container>
 
