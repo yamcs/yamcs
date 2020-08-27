@@ -68,6 +68,7 @@ public class ParameterSubscription extends AbstractSubscription<SubscribeParamet
         if (!ids.isEmpty()) {
             clientObserver.next(SubscribeParametersRequest.newBuilder()
                     .setAction(Action.ADD)
+                    .setAbortOnInvalid(false)
                     .addAllId(ids)
                     .build());
         }
@@ -80,6 +81,7 @@ public class ParameterSubscription extends AbstractSubscription<SubscribeParamet
         if (!ids.isEmpty()) {
             clientObserver.next(SubscribeParametersRequest.newBuilder()
                     .setAction(Action.REMOVE)
+                    .setAbortOnInvalid(false)
                     .addAllId(ids)
                     .build());
         }
