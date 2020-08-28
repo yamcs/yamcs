@@ -1,5 +1,7 @@
 Version 5.1.2 released 28-Aug-2020
 - add support for variables when creating instances from templates
+- Add RemoteUserAuthModule for proxied authentication (API only)
+- Fix retrieval of single packets
 - minor tweaks and fixes
 
 Version 5.1.1 released 2-Aug-2020
