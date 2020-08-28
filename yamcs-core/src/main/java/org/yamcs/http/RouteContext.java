@@ -66,6 +66,16 @@ public class RouteContext extends Context {
     }
 
     @Override
+    public String getClientAddress() {
+        String forwardedFor = nettyRequest.headers().get("x-forwarded-for");
+        if (forwardedFor != null) {
+            return forwardedFor;
+        } else {
+            return super.getClientAddress();
+        }
+    }
+
+    @Override
     public MethodDescriptor getMethod() {
         String methodName = route.getDescriptor().getMethod();
         return api.getDescriptorForType().findMethodByName(methodName);

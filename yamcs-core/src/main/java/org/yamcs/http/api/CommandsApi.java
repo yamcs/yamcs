@@ -437,7 +437,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .build();
                 observer.next(entry);
             }
-            
+
             @Override
             public void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {
 
@@ -448,13 +448,13 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
                         .setCommandId(cmdId);
-                    for(Attribute a: attrs) {
-                        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
-                                .setName(a.getKey())
-                                .setValue(ValueUtility.toGbp(a.getValue()))
-                                .build();
-                        entry.addAttr(cha);
-                    }
+                for (Attribute a : attrs) {
+                    CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                            .setName(a.getKey())
+                            .setValue(ValueUtility.toGbp(a.getValue()))
+                            .build();
+                    entry.addAttr(cha);
+                }
                 observer.next(entry.build());
             }
         };
