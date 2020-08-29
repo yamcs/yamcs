@@ -805,10 +805,16 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     void connectYamcs(ConnectData connectData) {
         disconnect();
+        String context = connectData.contextPath;
+        if (context != null && context.isEmpty()) {
+            context = null;
+        }
         client = YamcsClient.newBuilder(connectData.host, connectData.port)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
-                .withContext(connectData.contextPath)
+                .withContext(context)
+                .withTls(connectData.tls)
+                .withVerifyTls(false)
                 .build();
         client.addConnectionListener(this);
         try {

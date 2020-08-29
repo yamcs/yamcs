@@ -25,6 +25,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -57,12 +58,14 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
     private String PREF_HOST = "host";
     private String PREF_PORT = "port";
+    private String PREF_TLS = "tls";
     private String PREF_CONTEXT_PATH = "contextPath";
     private String PREF_USERNAME = "username";
     private String PREF_INSTANCE = "instance";
 
     private String host;
     private Integer port;
+    private Boolean tls;
     private String contextPath;
     private String username;
     private String password;
@@ -70,10 +73,11 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
     JTextField hostTextField;
     JTextField portTextField;
+    JCheckBox tlsCheckBox;
     JTextField contextPathTextField;
     JTextField usernameTextField;
     private JPasswordField passwordTextField;
-    // JCheckBox sslCheckBox;
+
     private JComboBox<String> instanceCombo;
     private JComboBox<String> localMdbConfigCombo;
     boolean getInstance = false;
@@ -115,6 +119,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             password = null;
         }
         contextPath = prefs.getProperty("contextPath", PREF_CONTEXT_PATH);
+        tls = Boolean.parseBoolean(prefs.getProperty("tls", "false"));
     }
 
     private void saveConnectionPreferences() {
@@ -126,6 +131,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
         }
         if (port != null) {
             prefs.setProperty(PREF_PORT, Integer.toString(port));
+        }
+        if (tls != null) {
+            prefs.setProperty(PREF_TLS, Boolean.toString(tls));
         }
         if (contextPath != null) {
             prefs.setProperty(PREF_CONTEXT_PATH, contextPath);
@@ -190,21 +198,22 @@ public class ConnectDialog extends JDialog implements ActionListener {
         cwest.gridy = 2;
         inputPanel.add(portTextField, cwest);
 
-        /*
-        	lab = new JLabel("Use SSL (not implemented): ");
-        	lab.setHorizontalAlignment(SwingConstants.RIGHT);
-        	c.gridy=3;c.gridx=0;c.anchor=GridBagConstraints.EAST;inputPanel.add(lab,c);
-        	sslCheckBox = new JCheckBox(); sslCheckBox.setSelected(values.ssl);
-        	c.gridy=3;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(sslCheckBox,c);
-         */
+        lab = new JLabel("TLS: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        ceast.gridy++;
+        cwest.gridy++;
+        inputPanel.add(lab, ceast);
+        tlsCheckBox = new JCheckBox();
+        tlsCheckBox.setSelected(tls != null ? tls : false);
+        inputPanel.add(tlsCheckBox, cwest);
 
         lab = new JLabel("Context Path: ");
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         ceast.gridy++;
+        cwest.gridy++;
         inputPanel.add(lab, ceast);
         contextPathTextField = new JTextField(contextPath);
         contextPathTextField.setPreferredSize(new Dimension(160, contextPathTextField.getPreferredSize().height));
-        cwest.gridy++;
         inputPanel.add(contextPathTextField, cwest);
 
         ceast.gridy++;
@@ -388,8 +397,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             }
 
             contextPath = contextPathTextField.getText();
-
-            // values.ssl= sslCheckBox.isSelected();
+            tls = tlsCheckBox.isSelected();
             if (!usernameTextField.getText().isEmpty()) {
                 username = usernameTextField.getText();
                 password = new String(passwordTextField.getPassword());
@@ -473,14 +481,19 @@ public class ConnectDialog extends JDialog implements ActionListener {
     private YamcsClient createClientForUseInDialogOnly() throws ClientException {
         String host = hostTextField.getText();
         int port = Integer.parseInt(portTextField.getText());
+        String context = contextPathTextField.getText().trim();
+        if (context.isEmpty()) {
+            context = null;
+        }
         YamcsClient client = YamcsClient.newBuilder(host, port)
-                .withContext(contextPathTextField.getText())
+                .withContext(context)
+                .withTls(tlsCheckBox.isSelected())
+                .withVerifyTls(false)
                 .build();
 
         if (usernameTextField.getText().isEmpty()) {
             client.connectAnonymously();
         } else {
-            System.out.println("Connect with password " + new String(passwordTextField.getPassword()));
             client.connect(usernameTextField.getText(), passwordTextField.getPassword());
         }
 
@@ -492,6 +505,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
         data.host = host;
         data.port = port;
         data.contextPath = contextPath;
+        data.tls = tls;
         if (username != null) {
             data.username = username;
             data.password = password.toCharArray();
@@ -526,5 +540,4 @@ public class ConnectDialog extends JDialog implements ActionListener {
     public String getStreamName() {
         return streamName.getText();
     }
-
 }
