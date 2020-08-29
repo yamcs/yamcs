@@ -212,8 +212,8 @@ function printValueWithoutPreview(value: Value): string {
 
 export function printHexPreview(binaryValue: string) {
   const hex = convertBase64ToHex(binaryValue);
-  if (hex.length > 8) {
-    return '0x' + hex.slice(0, 8) + '…';
+  if (hex.length > 32) {
+    return '0x' + hex.slice(0, 32) + '…';
   } else if (hex.length > 0) {
     return '0x' + hex;
   } else {
