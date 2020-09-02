@@ -1,11 +1,17 @@
 package org.yamcs.tctm.cfs;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * CFS TC packets:
@@ -45,9 +51,11 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     protected CommandHistoryPublisher commandHistoryPublisher;
     final static int CHECKSUM_OFFSET = 7;
     final static int FC_OFFSET = 6;
+    final static int MIN_CMD_LENGTH = 7;
     final String yamcsInstance;
     private boolean swapChecksumFc = false;
-
+    static Logger log = LoggerFactory.getLogger(CfsCommandPostprocessor.class);
+    
     public CfsCommandPostprocessor(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
     }
@@ -60,6 +68,15 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     @Override
     public byte[] process(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
+        if(binary.length < MIN_CMD_LENGTH) {
+            String msg = ("Short command received, length:"+binary.length+", expected minimum length: "+MIN_CMD_LENGTH);
+            log.warn(msg);
+            long t = TimeEncoding.getWallclockTime();
+            commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent, t, AckStatus.NOK, msg);
+            commandHistoryPublisher.commandFailed(pc.getCommandId(), t, msg);
+            return null;
+        }
+        
         ByteArrayUtils.encodeShort(binary.length - 7, binary, 4);// set packet length
         int seqCount = seqFiller.fill(binary);
         commandHistoryPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);

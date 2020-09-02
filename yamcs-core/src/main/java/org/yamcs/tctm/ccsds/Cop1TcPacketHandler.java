@@ -225,16 +225,22 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     private void sendSingleTc(PreparedCommand pc, boolean bypass) {
         TcTransferFrame tf = makeFrame(pc, bypass);
-        boolean added = outQueue.offer(new QueuedFrame(tf));
-        if (!added) {
-            failedCommand(pc.getCommandId(), "OutQueue on link " + linkName + " full");
-        } else {
-            signalDataAvailable();
+        if (tf != null) {
+            boolean added = outQueue.offer(new QueuedFrame(tf));
+            if (!added) {
+                failedCommand(pc.getCommandId(), "OutQueue on link " + linkName + " full");
+            } else {
+                signalDataAvailable();
+            }
         }
     }
 
     private TcTransferFrame makeFrame(PreparedCommand pc, boolean bypassFlag) {
         byte[] binary = cmdPostProcessor.process(pc);
+        if (binary == null) {
+            log.warn("command postprocessor did not process the command");
+            return null;
+        }
 
         TcTransferFrame tf = frameFactory.makeFrame(vmp.vcId, binary.length, pc.getGenerationTime());
         tf.setCommands(Arrays.asList(pc));
@@ -300,6 +306,10 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         int offset = tf.getDataStart();
         for (PreparedCommand pc1 : l) {
             byte[] binary = cmdPostProcessor.process(pc1);
+            if (binary == null) {
+                log.warn("command postprocessor did not process the command");
+                continue;
+            }
             int length = binary.length;
             if (offset + length > data.length) {
                 log.error("TC of length " + length + " does not fit into the frame of length " + data.length

@@ -176,7 +176,11 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     @Override
     public void uplinkCommand(PreparedCommand pc) {
         byte[] binary = cmdPostProcessor.process(pc);
-
+        if (binary == null) {
+            log.warn("command postprocessor did not process the command");
+            return;
+        }
+        
         int retries = 5;
         boolean sent = false;
 

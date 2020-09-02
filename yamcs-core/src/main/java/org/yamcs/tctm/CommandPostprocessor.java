@@ -14,8 +14,10 @@ import org.yamcs.commanding.PreparedCommand;
 public interface CommandPostprocessor {
 
     /**
-     * processes the command and returns the binary buffer
+     * processes the command and returns the binary buffer.
      * 
+     * Returns null if the command cannot be processed (e.g. its size does not correspond to what this processor expects).
+     * In this case the postprocessor is expected to fail the command in the command history (also filling in an appropiate reason)
      * @param pc
      * @return
      */
