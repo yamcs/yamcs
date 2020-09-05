@@ -432,9 +432,6 @@ public class Processor extends AbstractService {
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        if (tmPacketProvider != null) {
-            tmPacketProvider.stopAsync();
-        }
         if (eventAlarmServer != null) {
             eventAlarmServer.stopAsync();
         }
