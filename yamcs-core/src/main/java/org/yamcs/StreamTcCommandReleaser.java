@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,18 +25,15 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
  * @author nm
  *
  */
-public class StreamTcCommandReleaser extends AbstractYamcsService implements CommandReleaser {
+public class StreamTcCommandReleaser extends AbstractProcessorService implements CommandReleaser {
     List<StreamWriter> writers = new ArrayList<>();
     private CommandHistoryPublisher commandHistoryPublisher;
-    Processor processor;
 
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
-    }
 
     @Override
-    public void init(Processor proc) {
-        readStreamConfig(proc.getName());
+    public void init(Processor proc, YConfiguration config, Object spec) {
+        super.init(proc, config, spec);
+        readStreamConfig();
         try {
             proc.setCommandReleaser(this);
         } catch (ValidationException e) {
@@ -47,7 +43,9 @@ public class StreamTcCommandReleaser extends AbstractYamcsService implements Com
         this.commandHistoryPublisher = proc.getCommandHistoryPublisher();
     }
 
-    private void readStreamConfig(String procName) {
+    private void readStreamConfig() {
+        String yamcsInstance = getYamcsInstance();
+        String procName = processor.getName();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 

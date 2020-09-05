@@ -104,7 +104,7 @@ public class Processor extends AbstractService {
     ProcessorData processorData;
     @GuardedBy("this")
     HashSet<ConnectedClient> connectedClients = new HashSet<>();
-    List<ServiceWithConfig> serviceList;
+    List<ProcessorServiceWithConfig> serviceList;
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
     YamcsServerInstance ysi;
@@ -144,8 +144,8 @@ public class Processor extends AbstractService {
      * @throws ProcessorException
      * @throws ConfigurationException
      */
-    void init(List<ServiceWithConfig> serviceList, ProcessorConfig config, Object spec)
-            throws ProcessorException, ConfigurationException {
+    void init(List<ProcessorServiceWithConfig> serviceList, ProcessorConfig config, Object spec)
+            throws ProcessorException, InitException {
         log.debug("Initialzing the processor with the configuration {}", config);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -177,13 +177,9 @@ public class Processor extends AbstractService {
         containerRequestManager = new ContainerRequestManager(this, tmProcessor);
         parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
 
-        for (ServiceWithConfig swc : serviceList) {
+        for (ProcessorServiceWithConfig swc : serviceList) {
             ProcessorService service = (ProcessorService) swc.service;
-            if (spec == null) {
-                service.init(this);
-            } else {
-                service.init(this, spec);
-            }
+            service.init(this, swc.getConfig(), spec);
         }
 
         parameterRequestManager.init();
@@ -262,7 +258,7 @@ public class Processor extends AbstractService {
             startIfNecessary(commandingManager);
             startIfNecessary(eventAlarmServer);
 
-            for (ServiceWithConfig swc : serviceList) {
+            for (ProcessorServiceWithConfig swc : serviceList) {
                 startIfNecessary(swc.service);
             }
 
@@ -275,7 +271,7 @@ public class Processor extends AbstractService {
             awaitIfNecessary(commandingManager);
             awaitIfNecessary(eventAlarmServer);
 
-            for (ServiceWithConfig swc : serviceList) {
+            for (ProcessorServiceWithConfig swc : serviceList) {
                 swc.service.awaitRunning();
             }
 
@@ -286,7 +282,7 @@ public class Processor extends AbstractService {
         propagateProcessorStateChange();
     }
 
-    public List<ServiceWithConfig> getServices() {
+    public List<ProcessorServiceWithConfig> getServices() {
         return serviceList.stream().collect(Collectors.toList());
     }
 
@@ -425,7 +421,7 @@ public class Processor extends AbstractService {
         // first send a STOPPING event
         listeners.forEach(l -> l.processorStateChanged(this));
 
-        for (ServiceWithConfig swc : serviceList) {
+        for (ProcessorServiceWithConfig swc : serviceList) {
             swc.service.stopAsync();
         }
 
@@ -607,7 +603,7 @@ public class Processor extends AbstractService {
     public <T extends ProcessorService> List<T> getServices(Class<T> serviceClass) {
         List<T> services = new ArrayList<>();
         if (serviceList != null) {
-            for (ServiceWithConfig swc : serviceList) {
+            for (ProcessorServiceWithConfig swc : serviceList) {
                 if (swc.getServiceClass().equals(serviceClass.getName())) {
                     services.add((T) swc.service);
                 }

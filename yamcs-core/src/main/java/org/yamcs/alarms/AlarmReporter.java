@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
@@ -25,15 +26,10 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Generates alarm events for a processor, by subscribing to all relevant parameters.
  */
-public class AlarmReporter extends AbstractService implements ParameterConsumer, ProcessorService {
-
-    private String yamcsInstance;
-    private Processor processor;
+public class AlarmReporter extends AbstractProcessorService implements ParameterConsumer, ProcessorService {
 
     private String source;
 
@@ -42,20 +38,13 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter = new HashMap<>();
 
-    public AlarmReporter(String yamcsInstance) {
-        this(yamcsInstance, YConfiguration.emptyConfig());
-    }
-
-    public AlarmReporter(String yamcsInstance, YConfiguration config) {
-        this.yamcsInstance = yamcsInstance;
-        source = config.getString("source", "AlarmChecker");
-    }
 
     @Override
-    public void init(Processor processor) {
-        this.processor = processor;
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource(source);
+    public void init(Processor processor, YConfiguration config, Object spec) {
+        super.init(processor, config, spec);
+        eventProducer = EventProducerFactory.getEventProducer(processor.getInstance());
+        source = config.getString("source", "AlarmChecker");
+        eventProducer.setSource(source);        
     }
 
     @Override
@@ -66,7 +55,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
         // Auto-subscribe to parameters with alarms
         Set<Parameter> requiredParameters = new HashSet<>();
         try {
-            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            XtceDb xtcedb = XtceDbFactory.getInstance(getYamcsInstance());
             for (Parameter parameter : xtcedb.getParameters()) {
                 ParameterType ptype = parameter.getParameterType();
                 if (ptype != null && ptype.hasAlarm()) {

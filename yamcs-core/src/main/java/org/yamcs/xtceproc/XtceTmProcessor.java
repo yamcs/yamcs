@@ -2,6 +2,7 @@ package org.yamcs.xtceproc;
 
 import java.util.List;
 
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
@@ -9,6 +10,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.TmPacket;
 import org.yamcs.TmProcessor;
+import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterListener;
@@ -21,8 +23,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * 
  * Does the job of getting containers and transforming them into parameters which are then sent to the parameter request
@@ -30,17 +30,14 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
  * 
- * @author mache
+ * @author nm
  * 
  */
 
-public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
-
-    Log log;
+public class XtceTmProcessor extends AbstractProcessorService implements TmProcessor, ParameterProvider, ContainerProvider {
     private ParameterListener parameterRequestManager;
     private ContainerListener containerRequestManager;
 
-    public final Processor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
 
@@ -65,8 +62,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public void init(Processor processor) throws ConfigurationException {
-        // do nothing, we already know the processor
+    public void init(Processor processor, YConfiguration config, Object spec) throws ConfigurationException {
+        super.init(processor, config, spec);
     }
 
     @Override

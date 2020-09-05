@@ -27,13 +27,6 @@ public class ContainerRequestManager implements ContainerListener {
     private XtceTmProcessor tmProcessor;
 
     /**
-     * Creates a new ContainerRequestManager, configured to listen to a newly created XtceTmProcessor.
-     */
-    public ContainerRequestManager(Processor proc) {
-        this(proc, new XtceTmProcessor(proc));
-    }
-
-    /**
      * Creates a new ContainerRequestManager, configured to listen to the specified XtceTmProcessor.
      */
     public ContainerRequestManager(Processor proc, XtceTmProcessor tmProcessor) {

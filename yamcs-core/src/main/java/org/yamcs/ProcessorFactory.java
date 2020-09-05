@@ -2,10 +2,17 @@ package org.yamcs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yamcs.logging.Log;
+import org.yamcs.management.ManagementService;
+import org.yamcs.utils.YObjectLoader;
 
 /**
  * Used to create processors as defined in processor.yaml
@@ -14,7 +21,6 @@ import org.yamcs.logging.Log;
  *
  */
 public class ProcessorFactory {
-
     /**
      * Returns the processor types as defined in <tt>processor.yaml</tt>
      */
@@ -44,11 +50,11 @@ public class ProcessorFactory {
      * @throws ValidationException
      */
     public static Processor create(String yamcsInstance, String name, String type, String creator, Object spec)
-            throws ProcessorException, ConfigurationException, ValidationException {
+            throws ProcessorException, ConfigurationException, ValidationException, InitException {
         YConfiguration pc = null;
         YConfiguration conf = YConfiguration.getConfiguration("processor");
 
-        List<ServiceWithConfig> serviceList;
+        List<ProcessorServiceWithConfig> serviceList;
         try {
             if (!conf.containsKey(type)) {
                 throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getPath());
@@ -56,7 +62,7 @@ public class ProcessorFactory {
             conf = conf.getConfig(type);
             Log targetLog = new Log(ProcessorFactory.class, yamcsInstance);
             targetLog.setContext(name);
-            serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"), targetLog);
+            serviceList = createServices(yamcsInstance, conf.getServiceConfigList("services"), targetLog);
 
             if (conf.containsKey("config")) {
                 pc = conf.getConfig("config");
@@ -71,7 +77,6 @@ public class ProcessorFactory {
     /**
      * Create a Processor by specifying the service.
      * 
-     * The type is not used in this case, except for showing it in the yamcs monitor.
      * 
      * @param instance
      * @param name
@@ -82,14 +87,15 @@ public class ProcessorFactory {
      * @throws ProcessorException
      * @throws ConfigurationException
      **/
-    public static Processor create(String instance, String name, String type, List<ServiceWithConfig> serviceList,
-            String creator, ProcessorConfig config, Object spec) throws ProcessorException, ConfigurationException {
+    public static Processor create(String instance, String name, String type,
+            List<ProcessorServiceWithConfig> serviceList,
+            String creator, ProcessorConfig config, Object spec) throws ProcessorException, ConfigurationException, InitException {
         if (config == null) {
             throw new NullPointerException("config cannot be null");
         }
         Processor proc = new Processor(instance, name, type, creator);
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
-        if (ysi != null) {//Unit Tests create processors outside of any instance
+        if (ysi != null) {// Unit Tests create processors outside of any instance
             ysi.addProcessor(proc);
         }
         proc.init(serviceList, config, spec);
@@ -100,12 +106,97 @@ public class ProcessorFactory {
      * creates a processor with the services already instantiated. used from unit tests
      */
     public static Processor create(String yamcsInstance, String name, ProcessorService... services)
-            throws ProcessorException, ConfigurationException {
-        List<ServiceWithConfig> serviceList = new ArrayList<>();
+            throws ProcessorException, ConfigurationException, InitException {
+        List<ProcessorServiceWithConfig> serviceList = new ArrayList<>();
         for (ProcessorService service : services) {
             serviceList.add(
-                    new ServiceWithConfig(service, service.getClass().getName(), service.getClass().getName(), null));
+                    new ProcessorServiceWithConfig(service, service.getClass().getName(), service.getClass().getName(),
+                            YConfiguration.emptyConfig()));
         }
         return create(yamcsInstance, name, "test", serviceList, "test", new ProcessorConfig(), null);
+    }
+    
+    /**
+     * creates a processor with the services already instantiated. used from unit tests
+     */
+    public static Processor create(String yamcsInstance, String name, ProcessorServiceWithConfig... serviceList)
+            throws ProcessorException, ConfigurationException, InitException {
+        return create(yamcsInstance, name, "test", Arrays.asList(serviceList), "test", new ProcessorConfig(), null);
+    }
+
+    static List<ProcessorServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig, Log targetLog)
+            throws ValidationException, IOException {
+        ManagementService managementService = ManagementService.getInstance();
+        Set<String> names = new HashSet<>();
+        List<ProcessorServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
+        for (YConfiguration servconf : servicesConfig) {
+            String servclass;
+            YConfiguration config;
+            String name = null;
+            servclass = servconf.getString("class");
+            if(servconf.containsKey("config")) {
+                config = servconf.getConfig("config");
+            } else if(servconf.containsKey("args")) {
+                config = servconf.getConfig("args");
+            } else {
+                config = YConfiguration.emptyConfig();
+            }
+
+            name = servconf.getString("name", servclass.substring(servclass.lastIndexOf('.') + 1));
+            String candidateName = name;
+            int count = 1;
+            while (names.contains(candidateName)) {
+                candidateName = name + "-" + count;
+                count++;
+            }
+            name = candidateName;
+
+            targetLog.info("Loading processor service {}", name);
+            ProcessorServiceWithConfig swc;
+            try {
+                swc = createService(instance, servclass, name, config, targetLog);
+                serviceList.add(swc);
+            } catch (NoClassDefFoundError e) {
+                targetLog.error("Cannot create service {}, with arguments {}: class {} not found", name, config,
+                        e.getMessage());
+                throw e;
+            } catch (ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                targetLog.error("Cannot create service {}, with arguments {}: {}", name, config, e.getMessage());
+                throw e;
+            }
+            if (managementService != null) {
+                managementService.registerService(instance, name, swc.service);
+            }
+            names.add(name);
+        }
+
+        return serviceList;
+    }
+
+    static ProcessorServiceWithConfig createService(String instance, String serviceClass, String serviceName,
+            YConfiguration config, Log targetLog)
+            throws ConfigurationException, ValidationException, IOException {
+        ProcessorService service = null;
+
+        service = YObjectLoader.loadObject(serviceClass);
+        Spec spec = service.getSpec();
+        if (spec != null) {
+            if (targetLog.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = config.getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                targetLog.debug("Raw args for {}: {}", serviceName, safeArgs);
+            }
+
+            config = spec.validate((YConfiguration) config);
+
+            if (targetLog.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = config.getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                targetLog.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
+            }
+        }
+        return new ProcessorServiceWithConfig(service, serviceClass, serviceName, config);
     }
 }

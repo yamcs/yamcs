@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
@@ -27,8 +27,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ParameterTypeUtils;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Implements software parameters - these are parameters that can be set from the clients.
  * 
@@ -38,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class LocalParameterManager extends AbstractService implements SoftwareParameterManager, ParameterProvider {
+public class LocalParameterManager extends AbstractProcessorService implements SoftwareParameterManager, ParameterProvider {
 
     ExecutorService executor = Executors.newFixedThreadPool(1);
     private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();
@@ -56,7 +54,8 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
     }
 
     @Override
-    public void init(Processor proc) throws ConfigurationException {
+    public void init(Processor proc, YConfiguration config, Object spec) {
+        super.init(proc, config, spec);
         init(proc.getXtceDb());
         this.proc = proc;
         this.lvc = proc.getLastValueCache();

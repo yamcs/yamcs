@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -44,7 +44,7 @@ public class AlgorithmWithContextTest {
     }
 
     @Before
-    public void beforeEachTest() throws ConfigurationException, ProcessorException {
+    public void beforeEachTest() throws InitException, ProcessorException {
         db = XtceDbFactory.getInstance("refmdb");
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
@@ -57,7 +57,6 @@ public class AlgorithmWithContextTest {
         config.put("libraries", jslib);
 
         AlgorithmManager am = new AlgorithmManager();
-        am.init("refmdb", YConfiguration.wrap(config));
         c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, am);
         prm = c.getParameterRequestManager();
     }
@@ -85,7 +84,6 @@ public class AlgorithmWithContextTest {
 
         assertEquals(2, params.size());
         assertNull(params.get(0));
-        Object o = params.get(1);
         assertEquals(10, ((Number) params.get(1)).intValue());
     }
 }

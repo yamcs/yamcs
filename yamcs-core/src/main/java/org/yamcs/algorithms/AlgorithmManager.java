@@ -17,10 +17,7 @@ import java.util.stream.Stream;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.AbstractYamcsService;
-import org.yamcs.ConfigurationException;
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
@@ -62,14 +59,11 @@ import com.google.common.collect.Lists;
  *
  * javascript will be automatically registered as well as python if available.
  */
-public class AlgorithmManager extends AbstractYamcsService
+public class AlgorithmManager extends AbstractProcessorService
         implements ParameterProvider, DVParameterConsumer, ProcessorService {
-    private static final Logger log = LoggerFactory.getLogger(AlgorithmManager.class);
     static final String KEY_ALGO_NAME = "algoName";
 
     XtceDb xtcedb;
-
-    String yamcsInstance;
 
     // the id used for subscribing to the parameterManager
     int subscriptionId;
@@ -84,18 +78,14 @@ public class AlgorithmManager extends AbstractYamcsService
 
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
-    Processor processor;
     AlgorithmExecutionContext globalCtx;
 
-    Map<String, List<String>> libraries = null;
     EventProducer eventProducer;
 
     final static Map<String, AlgorithmEngine> algorithmEngines = new HashMap<>();
 
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
-
-    YConfiguration config;
 
     static {
         registerScriptEngines();
@@ -117,18 +107,9 @@ public class AlgorithmManager extends AbstractYamcsService
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
-        this.yamcsInstance = yamcsInstance;
-        this.config = config;
-    }
-
-    public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
-        algorithmEngines.put(name, eng);
-    }
-
-    @Override
-    public void init(Processor processor) {
-        this.processor = processor;
+    public void init(Processor processor, YConfiguration config, Object spec) {
+        super.init(processor, config, spec);
+        
         this.eventProducer = processor.getProcessorData().getEventProducer();
         this.parameterRequestManager = processor.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
@@ -143,7 +124,10 @@ public class AlgorithmManager extends AbstractYamcsService
             }
         }
     }
-
+    
+    public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
+        algorithmEngines.put(name, eng);
+    }
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
         for (OutputParameter oParam : algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());

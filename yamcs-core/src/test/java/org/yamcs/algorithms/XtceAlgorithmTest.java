@@ -28,7 +28,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class XtceAlgorithmTest {
     static String instance = "BogusSAT";
     private static XtceDb db;
-    private static Processor c;
+    private static Processor proc;
     private static ParameterRequestManager prm;
 
     @BeforeClass
@@ -37,10 +37,9 @@ public class XtceAlgorithmTest {
         EventProducerFactory.setMockup(false);
         XtceDbFactory.reset();
         AlgorithmManager am = new AlgorithmManager();
-        am.init(instance, YConfiguration.emptyConfig());
-        c = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);
-        prm = c.getParameterRequestManager();
-        db = c.getXtceDb();
+        proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);
+        prm = proc.getParameterRequestManager();
+        db = proc.getXtceDb();
     }
 
     @Test
@@ -78,7 +77,7 @@ public class XtceAlgorithmTest {
     static class MyParaProvider extends AbstractService implements ParameterProvider {
 
         @Override
-        public void init(Processor processor) {
+        public void init(Processor processor, YConfiguration config, Object spec) {
             processor.getParameterRequestManager().addParameterProvider(this);
         }
 

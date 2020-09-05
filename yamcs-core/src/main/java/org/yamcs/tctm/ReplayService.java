@@ -6,8 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
@@ -55,7 +54,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.yarch.protobuf.Db.Event;
 
-import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.util.JsonFormat;
 
 /**
@@ -64,12 +62,11 @@ import com.google.protobuf.util.JsonFormat;
  * @author nm
  * 
  */
-public class ReplayService extends AbstractService
+public class ReplayService extends AbstractProcessorService
         implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
     static final long timeout = 10000;
 
     EndAction endAction;
-    static Logger log = LoggerFactory.getLogger(ReplayService.class.getName());
 
     ReplayOptions originalReplayRequest;
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
@@ -79,9 +76,7 @@ public class ReplayService extends AbstractService
     XtceDb xtceDb;
     volatile long replayTime;
 
-    private String yamcsInstance;
     YarchReplay yarchReplay;
-    Processor processor;
     // the originalReplayRequest contains possibly only parameters.
     // the modified one sent to the ReplayServer contains the raw data required for extracting/processing those
     // parameters
@@ -93,34 +88,17 @@ public class ReplayService extends AbstractService
     // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
     List<String> excludeParameterGroups = null;
 
-    /**
-     *
-     * @param instance
-     * @param args
-     *            - the argument passed in the processor.yaml
-     * @throws ConfigurationException
-     */
     @Override
-    public void init(String instance, YConfiguration args) throws ConfigurationException {
-        this.yamcsInstance = instance;
-        xtceDb = XtceDbFactory.getInstance(instance);
+    public void init(Processor proc, YConfiguration args, Object spec) {
+        super.init(proc, args, spec);
+        if(spec == null) {
+            throw new IllegalArgumentException("Please provide the spec");
+        }
+        xtceDb = XtceDbFactory.getInstance(getYamcsInstance());
         securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
             excludeParameterGroups = args.getList("excludeParameterGroups");
         }
-    }
-
-    @Override
-    public void init(Processor proc) {
-        throw new IllegalArgumentException("Please provide the spec");
-    }
-
-    /**
-     * Spec
-     */
-    @Override
-    public void init(Processor proc, Object spec) {
-        this.processor = proc;
         this.tmProcessor = proc.getTmProcessor();
         proc.setCommandHistoryProvider(this);
         parameterRequestManager = proc.getParameterRequestManager();
@@ -313,7 +291,7 @@ public class ReplayService extends AbstractService
     }
 
     private void createReplay() throws ProcessorException {
-        List<ReplayServer> services = YamcsServer.getServer().getServices(yamcsInstance, ReplayServer.class);
+        List<ReplayServer> services = YamcsServer.getServer().getServices(getYamcsInstance(), ReplayServer.class);
         if (services.isEmpty()) {
             throw new ProcessorException("ReplayServer not configured for this instance");
         }

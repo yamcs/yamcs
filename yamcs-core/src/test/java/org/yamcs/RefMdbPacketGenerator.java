@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Generates packets according to the refmdb database.
  * 
- * Works either as a ProcessprService part of a processor or as TmPacketProvider in the integration tests
+ * Works either as a ProcessorService part of a processor or as TmPacketProvider in the integration tests
  * 
  * @author nm
  *
@@ -127,7 +127,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public void init(Processor proc) {
+    public void init(Processor proc,  YConfiguration config, Object spec) {
         this.tmProcessor = proc.getTmProcessor();
         proc.setPacketProvider(this);
         rootSc = proc.getXtceDb().getRootSequenceContainer();

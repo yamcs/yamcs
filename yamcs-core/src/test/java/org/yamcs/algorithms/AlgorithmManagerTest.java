@@ -17,11 +17,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
+import org.yamcs.ProcessorService;
+import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
@@ -51,7 +53,7 @@ public class AlgorithmManagerTest {
     private Queue<Event> q;
 
     @Before
-    public void beforeEachTest() throws ConfigurationException, ProcessorException {
+    public void beforeEachTest() throws InitException, ProcessorException {
         EventProducerFactory.setMockup(true);
         q = EventProducerFactory.getMockupQueue();
 
@@ -61,15 +63,24 @@ public class AlgorithmManagerTest {
         tmGenerator = new RefMdbPacketGenerator();
         tmGenerator = new RefMdbPacketGenerator();
         Map<String, Object> jslib = new HashMap<>();
-        Map<String, Object> config = new HashMap<>();
+
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
+        Map<String, Object> config = new HashMap<>();
         config.put("libraries", jslib);
+
+
         AlgorithmManager algMgr = new AlgorithmManager();
-        algMgr.init("refmdb", YConfiguration.wrap(config));
-        proc = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, algMgr);
+        proc = ProcessorFactory.create("refmdb", "AlgorithmManagerTest",
+                 getPwc(tmGenerator, YConfiguration.emptyConfig()),
+                 getPwc(algMgr, YConfiguration.wrap(config)));
         prm = proc.getParameterRequestManager();
 
+    }
+
+    static ProcessorServiceWithConfig getPwc(ProcessorService service, YConfiguration config) {
+        return new ProcessorServiceWithConfig(service, service.getClass().getName(), 
+                service.getClass().getName(), config);
     }
 
     @After
