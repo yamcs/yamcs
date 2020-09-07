@@ -149,8 +149,8 @@ import jxl.read.biff.BiffException;
  * Starting with Yamcs 5, we do register the types in the XtceDb and we duplicate them for each parameter/command that
  * defines alarms or validity ranges.
  * <p>
- * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters
- * and &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt_&lt;argument_name&gt for command arguments.
+ * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters and
+ * &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt_&lt;argument_name&gt for command arguments.
  *
  * @author nm, ddw
  *
@@ -2248,6 +2248,7 @@ public class V7Loader extends V7LoaderBase {
         String triggerValue = getContent(cells, cnValue);
 
         SpreadsheetLoadContext ctx1 = ctx.copy();
+        int columnIndex = h.get(cnValue); // Don't evaluate this inside the callback
         paraRef.addResolvedAction(nd -> {
 
             Parameter para = (Parameter) nd;
@@ -2257,7 +2258,7 @@ public class V7Loader extends V7LoaderBase {
             ParameterType.Builder<?> ptypeb = oldPtype.toBuilder();
 
             if (ptypeb instanceof IntegerParameterType.Builder) {
-                double tvd = parseDouble(ctx1, cells[h.get(cnValue)]);
+                double tvd = parseDouble(ctx1, cells[columnIndex]);
                 IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptypeb;
                 if ("low".equals(trigger)) {
                     ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
@@ -2268,7 +2269,7 @@ public class V7Loader extends V7LoaderBase {
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
             } else if (ptypeb instanceof FloatParameterType.Builder) {
-                double tvd = parseDouble(ctx1, cells[h.get(cnValue)]);
+                double tvd = parseDouble(ctx1, cells[columnIndex]);
                 FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 if ("low".equals(trigger)) {
                     fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
