@@ -106,7 +106,19 @@
     <tr>
       <th width="100">Value</th>
       <th width="100">Label</th>
-      <th width="200">Alarm Level (default)</th>
+      <th>Alarm Level (default)</th>
+      <th *ngFor="let context of parameter.type.contextAlarm">
+        <ng-container *ngFor="let comparison of context.comparison; let first = first">
+          <ng-container *ngIf="!first">, </ng-container>
+          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+             [queryParams]="{c: yamcs.context}"
+             class="secundary">
+            {{ comparison.parameter.name }}
+          </a>
+          {{ comparison.operator | operator }}
+          {{ comparison.value }}
+        </ng-container>
+      </th>
     </tr>
     <tr *ngFor="let enumValue of parameter.type?.enumValue">
       <td style="white-space: nowrap">{{ enumValue.value }}</td>
@@ -117,6 +129,13 @@
           {{ level }}
         </ng-container>
         <span *ngIf="!getDefaultAlarmLevel(parameter, enumValue)">-</span>
+      </td>
+      <td *ngFor="let context of parameter.type.contextAlarm">
+        <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
+          <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+          {{ level }}
+        </ng-container>
+        <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>
       </td>
     </tr>
   </table>
@@ -129,30 +148,60 @@
   </div>
 
   <h4>Alarm Levels</h4>
-  <table yaDataTable *ngIf="parameter.type?.defaultAlarm?.staticAlarmRange as ranges; else noLevels">
-    <tr>
-      <th>Alarm Level (default)</th>
-      <th>Range</th>
-    </tr>
-    <tr *ngFor="let range of ranges">
-      <td>
-        <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
-        {{ range.level }}
-      </td>
-      <td>
-        <app-interval *ngIf="(range.minInclusive !== undefined
+  <ng-container *ngIf="parameter.type?.defaultAlarm || parameter.type?.contextAlarm; else noLevels">
+    <table yaDataTable *ngIf="parameter.type?.defaultAlarm">
+      <tr>
+        <th>Alarm Level (default)</th>
+        <th>Range</th>
+      </tr>
+      <tr *ngFor="let range of parameter.type?.defaultAlarm?.staticAlarmRange">
+        <td>
+          <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+          {{ range.level }}
+        </td>
+        <td>
+          <app-interval *ngIf="(range.minInclusive !== undefined
                           || range.minExclusive !== undefined
                           || range.maxInclusive !== undefined
                           || range.maxExclusive !== undefined); else dash"
-                      [left]="range.minInclusive | nvl:range.minExclusive"
-                      [right]="range.maxInclusive | nvl:range.maxExclusive"
-                      [leftInclusive]="range.minInclusive !== undefined"
-                      [rightInclusive]="range.maxInclusive !== undefined">
-        </app-interval>
-        <ng-template #dash>-</ng-template>
-      </td>
-    </tr>
-  </table>
+                        [left]="range.minInclusive | nvl:range.minExclusive"
+                        [right]="range.maxInclusive | nvl:range.maxExclusive"
+                        [leftInclusive]="range.minInclusive !== undefined"
+                        [rightInclusive]="range.maxInclusive !== undefined">
+          </app-interval>
+          <ng-template #dash>-</ng-template>
+        </td>
+      </tr>
+    </table>
+    <ng-container *ngFor="let contextAlarm of parameter.type?.contextAlarm; let first=first">
+      <p *ngIf="!first">&nbsp;</p>
+      <h5>Context: <code>{{ contextAlarm.context }}</code></h5>
+      <table yaDataTable>
+        <tr>
+          <th>Level</th>
+          <th>Range</th>
+        </tr>
+        <tr *ngFor="let range of contextAlarm.alarm.staticAlarmRange">
+          <td>
+            <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+            {{ range.level }}
+          </td>
+          <td>
+            <app-interval *ngIf="(range.minInclusive !== undefined
+                            || range.minExclusive !== undefined
+                            || range.maxInclusive !== undefined
+                            || range.maxExclusive !== undefined); else dash"
+                          [left]="range.minInclusive | nvl:range.minExclusive"
+                          [right]="range.maxInclusive | nvl:range.maxExclusive"
+                          [leftInclusive]="range.minInclusive !== undefined"
+                          [rightInclusive]="range.maxInclusive !== undefined">
+            </app-interval>
+            <ng-template #dash>-</ng-template>
+          </td>
+        </tr>
+      </table>
+    </ng-container>
+  </ng-container>
   <ng-template #noLevels>None</ng-template>
   <p>&nbsp;</p>
 </ng-container>

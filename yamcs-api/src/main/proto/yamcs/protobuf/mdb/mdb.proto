@@ -207,11 +207,11 @@ message ContextAlarmInfo {
   repeated ComparisonInfo comparison = 1;
   optional AlarmInfo alarm = 2;
   
-  // This can be used in UpdateParameteRequest to pass a context
+  // This can be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
-  optional string context = 3; 
+  optional string context = 3;
 }
 
 message DataEncodingInfo {
@@ -234,11 +234,11 @@ message ContextCalibratorInfo {
   repeated ComparisonInfo comparison = 1;
   optional CalibratorInfo calibrator = 2;
 
-  // This can be used in UpdateParameteRequest to pass a context
+  // This can be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
-  optional string context = 3; 
+  optional string context = 3;
 }
 
 message CalibratorInfo {

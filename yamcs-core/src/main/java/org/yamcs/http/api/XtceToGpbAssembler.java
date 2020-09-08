@@ -25,6 +25,7 @@ import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
 import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
@@ -51,7 +52,6 @@ import org.yamcs.protobuf.Mdb.VerifierInfo;
 import org.yamcs.protobuf.Mdb.VerifierInfo.TerminationActionType;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
@@ -85,6 +85,7 @@ import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
+import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatArgumentType;
@@ -103,6 +104,7 @@ import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
+import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OperatorType;
@@ -635,15 +637,30 @@ public class XtceToGpbAssembler {
                 if (ipt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
                 }
+                if (ipt.getContextAlarmList() != null) {
+                    for (NumericContextAlarm contextAlarm : ipt.getContextAlarmList()) {
+                        infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
+                    }
+                }
             } else if (parameterType instanceof FloatParameterType) {
                 FloatParameterType fpt = (FloatParameterType) parameterType;
                 if (fpt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
                 }
+                if (fpt.getContextAlarmList() != null) {
+                    for (NumericContextAlarm contextAlarm : fpt.getContextAlarmList()) {
+                        infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
+                    }
+                }
             } else if (parameterType instanceof EnumeratedParameterType) {
                 EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
                 if (ept.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ept.getDefaultAlarm()));
+                }
+                if (ept.getContextAlarmList() != null) {
+                    for (EnumerationContextAlarm contextAlarm : ept.getContextAlarmList()) {
+                        infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
+                    }
                 }
                 for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
                     infob.addEnumValue(toEnumValue(xtceValue));
@@ -756,9 +773,11 @@ public class XtceToGpbAssembler {
             for (Comparison xtceComparison : xtceList.getComparisonList()) {
                 comparisons.add(toComparisonInfo(xtceComparison));
             }
-        } else {
-            throw new IllegalStateException("Unexpected match criteria " + matchCriteria);
         }
+
+        // Other classes (ANDedConditions, ORedConditions) are ignored for now
+        // These first require serializing support for arbitrary expressions.
+
         return comparisons;
     }
 
@@ -929,6 +948,14 @@ public class XtceToGpbAssembler {
         return alarmInfob.build();
     }
 
+    private static ContextAlarmInfo toContextAlarmInfo(NumericContextAlarm contextAlarm) {
+        ContextAlarmInfo.Builder resultb = ContextAlarmInfo.newBuilder()
+                .setAlarm(toAlarmInfo(contextAlarm))
+                .setContext(contextAlarm.getContextString())
+                .addAllComparison(toComparisons(contextAlarm.getContextMatch()));
+        return resultb.build();
+    }
+
     public static AlarmInfo toAlarmInfo(EnumerationAlarm enumerationAlarm) {
         AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
         alarmInfob.setMinViolations(enumerationAlarm.getMinViolations());
@@ -936,6 +963,14 @@ public class XtceToGpbAssembler {
             alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
         }
         return alarmInfob.build();
+    }
+
+    private static ContextAlarmInfo toContextAlarmInfo(EnumerationContextAlarm contextAlarm) {
+        ContextAlarmInfo.Builder resultb = ContextAlarmInfo.newBuilder()
+                .setAlarm(toAlarmInfo(contextAlarm))
+                .setContext(contextAlarm.getContextString())
+                .addAllComparison(toComparisons(contextAlarm.getContextMatch()));
+        return resultb.build();
     }
 
     public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {

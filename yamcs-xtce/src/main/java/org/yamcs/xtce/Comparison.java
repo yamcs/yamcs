@@ -8,10 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.util.DataTypeUtil;
 
 /**
- * A simple ParameterInstanceRef to value comparison.
- * DIFFERS_FROM_XTCE:
- * 1) in xtce the value is stored as a string and it's not very clear how it's compared with an integer
- * 2) in xtce Comparison extends ParameterInstanceRef, and MatchCriteria is a choice of Comparison, ComparisonList, ...
+ * A simple ParameterInstanceRef to value comparison. DIFFERS_FROM_XTCE: 1) in xtce the value is stored as a string and
+ * it's not very clear how it's compared with an integer 2) in xtce Comparison extends ParameterInstanceRef, and
+ * MatchCriteria is a choice of Comparison, ComparisonList, ...
  */
 public class Comparison implements MatchCriteria {
     private static final long serialVersionUID = 9L;
@@ -27,23 +26,22 @@ public class Comparison implements MatchCriteria {
     transient static Logger log = LoggerFactory.getLogger(Comparison.class.getName());
 
     /**
-     * Makes a new comparison with a generic stringValue
-     * at this step the paraRef could be pointing to an unknown parameter.
-     * resolveValueType can(should) be called later to create the correct value if it's not string
+     * Makes a new comparison with a generic stringValue at this step the paraRef could be pointing to an unknown
+     * parameter. resolveValueType can(should) be called later to create the correct value if it's not string
      * 
      * @param paraRef
      * @param stringValue
      * @param op
      */
     public Comparison(ParameterInstanceRef paraRef, String stringValue, OperatorType op) {
-        if(stringValue==null) {
+        if (stringValue == null) {
             throw new NullPointerException("stringValue");
         }
         this.instanceRef = paraRef;
         this.stringValue = stringValue;
         this.value = stringValue;
         this.comparisonOperator = op;
-        
+
         checkParaRef(paraRef);
     }
 
@@ -62,6 +60,7 @@ public class Comparison implements MatchCriteria {
         this.comparisonOperator = op;
         checkParaRef(paraRef);
     }
+
     public Comparison(ParameterInstanceRef paraRef, double doubleValue, OperatorType op) {
         this.instanceRef = paraRef;
         this.value = doubleValue;
@@ -71,34 +70,43 @@ public class Comparison implements MatchCriteria {
     }
 
     private void checkParaRef(ParameterInstanceRef paraRef) {
-        if(paraRef.getInstance()!=0) {
+        if (paraRef.getInstance() != 0) {
             throw new UnsupportedOperationException("Condition on parameter values from history are not supported");
         }
     }
+
     @Override
     public boolean isMet(CriteriaEvaluator evaluator) {
         return evaluator.evaluate(comparisonOperator, instanceRef, value);
     }
 
+    @Override
+    public String toExpressionString() {
+        return String.format("%s %s %s", instanceRef.getParameter().getName(),
+                OperatorType.operatorToString(comparisonOperator),
+                value);
+    }
+
     /**
-     * Called when the type of the parameter used for comparison is known,
-     * so we have to find the value from stringValue that we can compare to it
+     * Called when the type of the parameter used for comparison is known, so we have to find the value from stringValue
+     * that we can compare to it
      */
     public void resolveValueType() {
         boolean useCalibratedValue = instanceRef.useCalibratedValue();
         ParameterType ptype = instanceRef.getParameter().getParameterType();
-        
-        if(ptype instanceof AggregateParameterType) {
-            if(instanceRef.getMemberPath() == null) {
-                throw new IllegalArgumentException("Reference to an aggregate parameter type "+ptype.getName()+" without speciyfing the path");
+
+        if (ptype instanceof AggregateParameterType) {
+            if (instanceRef.getMemberPath() == null) {
+                throw new IllegalArgumentException(
+                        "Reference to an aggregate parameter type " + ptype.getName() + " without speciyfing the path");
             }
-            ParameterType ptype1  = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
-            if(ptype1 == null) {
-                throw new IllegalArgumentException("reference "+PathElement.pathToString(instanceRef.getMemberPath())
-                        +" points to a nonexistent member inside the parameter type "+ptype.getName());
+            ParameterType ptype1 = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
+            if (ptype1 == null) {
+                throw new IllegalArgumentException("reference " + PathElement.pathToString(instanceRef.getMemberPath())
+                        + " points to a nonexistent member inside the parameter type " + ptype.getName());
             }
             ptype = ptype1;
-        } 
+        }
         try {
             if (useCalibratedValue) {
                 value = ptype.parseString(stringValue);
@@ -172,6 +180,7 @@ public class Comparison implements MatchCriteria {
     public Parameter getParameter() {
         return instanceRef.getParameter();
     }
+
     ParameterInstanceRef getParameterInstanceRef() {
         return instanceRef;
     }

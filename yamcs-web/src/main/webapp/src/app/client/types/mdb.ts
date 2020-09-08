@@ -25,7 +25,7 @@ export interface SpaceSystem extends NameDescription {
 }
 
 export interface SpaceSystemsPage {
-  spaceSystems?: SpaceSystem[]
+  spaceSystems?: SpaceSystem[];
   continuationToken?: string;
   totalSize: number;
 }
@@ -72,6 +72,7 @@ export interface ParameterType {
   dataEncoding?: DataEncoding;
   unitSet?: UnitInfo[];
   defaultAlarm: AlarmInfo;
+  contextAlarm: ContextAlarmInfo[];
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: Member[];
@@ -94,6 +95,12 @@ export interface AlarmInfo {
   minViolations: number;
   staticAlarmRange: AlarmRange[];
   enumerationAlarm: EnumerationAlarm[];
+}
+
+export interface ContextAlarmInfo {
+  comparison: ComparisonInfo[];
+  context: string;
+  alarm: AlarmInfo;
 }
 
 export interface EnumerationAlarm {
