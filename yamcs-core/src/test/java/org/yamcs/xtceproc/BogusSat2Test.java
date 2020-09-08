@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,6 +17,8 @@ import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
@@ -156,5 +159,17 @@ public class BogusSat2Test {
     public void testAbstractMetaCommand() {
         MetaCommand mc = db.getMetaCommand("/BogusSAT/CCSDSTelecommand");
         assertTrue(mc.isAbstract());
+    }
+    
+    @Test
+    public void testAggregatePtypeNameDescription() {
+        AggregateParameterType pt = (AggregateParameterType)db.getParameterType("/BogusSAT/SC001/Onboard_Processor_Config/Config_Log_Levels_Type");
+        
+        assertEquals("Test Long Description", pt.getLongDescription());
+        List<AncillaryData> l = pt.getAncillaryData();
+        assertEquals(1, l.size());
+        AncillaryData ad = l.get(0);
+        assertEquals("TEST_ANC_DATA", ad.getName());
+        assertEquals("1", ad.getValue());
     }
 }

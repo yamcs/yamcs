@@ -25,25 +25,17 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * @author nm
  *
  */
-public class StreamTmPacketProvider extends AbstractYamcsService implements TmPacketProvider {
+public class StreamTmPacketProvider extends AbstractProcessorService implements TmPacketProvider {
     Stream stream;
     TmProcessor tmProcessor;
     volatile boolean disabled = false;
     volatile long lastPacketTime;
 
     List<StreamReader> readers = new ArrayList<>();
-    String yamcsInstance;
-    YConfiguration config;
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
-        this.yamcsInstance = yamcsInstance;
-        this.config = config;
-    }
-
-    @Override
-    public void init(Processor proc) {
+    public void init(Processor proc, YConfiguration config, Object spec) {
+        super.init(proc, config, spec);
         this.tmProcessor = proc.getTmProcessor();
         readStreamConfig(proc.getName());
         proc.setPacketProvider(this);
@@ -54,6 +46,7 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
      * have configured the processor to this processor in yamcs.instance.yaml
      */
     private void readStreamConfig(String procName) {
+        String yamcsInstance = getYamcsInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 

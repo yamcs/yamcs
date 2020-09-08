@@ -45,7 +45,7 @@ public class GenericPacketInputStream implements PacketInputStream {
     private final int initialBytesToStrip;
     DataInputStream dataInputStream;
     static Log log = new Log(GenericPacketInputStream.class);
-    
+
     long streamOffset = 0;
 
     public GenericPacketInputStream(InputStream inputStream, Map<String, Object> args) {
@@ -65,7 +65,7 @@ public class GenericPacketInputStream implements PacketInputStream {
     @Override
     public byte[] readPacket() throws IOException, PacketTooLongException {
         log.trace("Reading packet length of size {} at offset {}", lengthFieldEndOffset, streamOffset);
-        
+
         byte[] b = new byte[lengthFieldEndOffset];
         dataInputStream.readFully(b);
         int length;
@@ -87,12 +87,14 @@ public class GenericPacketInputStream implements PacketInputStream {
         }
         length += lengthAdjustment;
         log.trace("packet length after adjustment: {}", length);
-        
-        
+
         if (length > maxPacketLength) {
-            throw new IOException("Error reading packet at offset "+streamOffset, new PacketTooLongException(maxPacketLength, length));
+            throw new IOException(
+                    "Error reading packet at offset " + streamOffset + ": length " + length
+                            + " greater than maximum allowed " + maxPacketLength,
+                    new PacketTooLongException(maxPacketLength, length));
         }
-        streamOffset+=lengthFieldEndOffset;
+        streamOffset += lengthFieldEndOffset;
         byte[] packet = new byte[length - initialBytesToStrip];
         int offset;
         if (initialBytesToStrip <= lengthFieldEndOffset) {
@@ -102,10 +104,10 @@ public class GenericPacketInputStream implements PacketInputStream {
             offset = 0;
             int skip = initialBytesToStrip - lengthFieldEndOffset;
             skipFully(dataInputStream, skip);
-            streamOffset+=skip;
+            streamOffset += skip;
         }
         dataInputStream.readFully(packet, offset, packet.length - offset);
-        streamOffset+=(packet.length - offset);
+        streamOffset += (packet.length - offset);
 
         return packet;
     }
@@ -116,7 +118,7 @@ public class GenericPacketInputStream implements PacketInputStream {
             if (skipped == 0)
                 throw new EOFException("Tried to skip " + n + " but reached EOF");
             n -= skipped;
-            
+
         }
     }
 }

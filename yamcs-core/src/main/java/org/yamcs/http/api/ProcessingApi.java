@@ -18,7 +18,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
-import org.yamcs.ServiceWithConfig;
+import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -491,7 +491,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         String instance = processor.getInstance();
         String name = processor.getName();
 
-        for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
+        for (ProcessorServiceWithConfig serviceWithConfig : processor.getServices()) {
             b.addServices(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
         }
         return b.build();

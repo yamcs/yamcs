@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -43,12 +43,12 @@ public class AlgorithmManagerJavaTest {
 
     static String instance = "refmdb";
     private XtceDb db;
-    private Processor c;
+    private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
 
     @Before
-    public void beforeEachTest() throws ConfigurationException, ProcessorException {
+    public void beforeEachTest() throws InitException, ProcessorException {
         EventProducerFactory.setMockup(true);
 
         db = XtceDbFactory.getInstance(instance);
@@ -63,15 +63,13 @@ public class AlgorithmManagerJavaTest {
 
         config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager();
-        am.init("refmdb", YConfiguration.wrap(config));
-
-        c = ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", tmGenerator, am);
-        prm = c.getParameterRequestManager();
+        processor = ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", tmGenerator, am);
+        prm = processor.getParameterRequestManager();
     }
 
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        c.quit();
+        processor.quit();
     }
 
     @Test
@@ -80,7 +78,7 @@ public class AlgorithmManagerJavaTest {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoJavaFloat1");
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
-        c.start();
+        processor.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(0.1672918, params.get(0).getEngValue().getDoubleValue(), 0.001);
@@ -92,7 +90,7 @@ public class AlgorithmManagerJavaTest {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoJavaFloat2");
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
-        c.start();
+        processor.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(3.3672918, params.get(0).getEngValue().getDoubleValue(), 0.001);
@@ -104,7 +102,7 @@ public class AlgorithmManagerJavaTest {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoJavaFloat3");
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
-        c.start();
+        processor.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(8.2672918, params.get(0).getEngValue().getDoubleValue(), 0.001);

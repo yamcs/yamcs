@@ -1,8 +1,6 @@
 package org.yamcs.parameter;
 
-import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
-import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
@@ -21,13 +19,6 @@ import org.yamcs.xtce.Parameter;
  *
  */
 public interface ParameterProvider extends ProcessorService {
-    /**
-     * Called before the startup to pass on the processor and initialize whatever needed
-     * @param processor
-     * @throws ConfigurationException 
-     */
-    public abstract void init(Processor processor);
-
     /**
      * Send parameters to this listener.
      * Normally is the channel.parameterRequestManager but something different may be used for unit tests or special applications (PacketViewer)

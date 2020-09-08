@@ -59,8 +59,8 @@ public class AlarmTest {
 
         Map<String, Object> config = new HashMap<>();
         config.put("processor", "AlarmTest");
-        alarmReporter = new AlarmReporter(yamcsInstance, YConfiguration.wrap(config));
-        alarmReporter.init(processor);
+        alarmReporter = new AlarmReporter();
+        alarmReporter.init(processor, YConfiguration.wrap(config), null);
     }
 
     @After

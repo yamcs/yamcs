@@ -954,6 +954,10 @@ public class XtceAssembler {
             }
             doc.writeEndElement();
         }
+        List<AncillaryData> l = nameDescription.getAncillaryData();
+        if (l != null) {
+            writeAncillaryData(doc, l);
+        }
     }
 
     private static void writeUnitSet(XMLStreamWriter doc, List<UnitType> unitSet) throws XMLStreamException {
@@ -1050,14 +1054,11 @@ public class XtceAssembler {
             doc.writeEndElement();// BaseContainer
         }
 
-        List<AncillaryData> l = container.getAncillaryData();
-        if (l != null) {
-            writeAncillaryData(doc, l);
-        }
+       
         doc.writeEndElement();// SequenceContainer
     }
 
-    private void writeAncillaryData(XMLStreamWriter doc, List<AncillaryData> l) throws XMLStreamException {
+    private static void writeAncillaryData(XMLStreamWriter doc, List<AncillaryData> l) throws XMLStreamException {
         doc.writeStartElement("AncillaryDataSet");
         for (AncillaryData ad : l) {
             doc.writeStartElement("AncillaryData");
@@ -1233,12 +1234,12 @@ public class XtceAssembler {
         }
     }
 
-    private void writeAttributeIfNotNull(XMLStreamWriter doc, String name, String value) throws XMLStreamException {
+    private static void writeAttributeIfNotNull(XMLStreamWriter doc, String name, String value) throws XMLStreamException {
         if (value != null) {
             doc.writeAttribute(name, value);
         }
     }
-    private void writeCharactersIfNotNull(XMLStreamWriter doc, String text) throws XMLStreamException {
+    private static void writeCharactersIfNotNull(XMLStreamWriter doc, String text) throws XMLStreamException {
         if (text != null) {
             doc.writeCharacters(text);
         }

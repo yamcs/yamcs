@@ -1051,6 +1051,10 @@
 						</xtce:BinaryDataEncoding>
 					</xtce:BinaryParameterType>
 					<xtce:AggregateParameterType name="Config_Log_Levels_Type">
+						<LongDescription>Test Long Description</LongDescription>
+    					<AncillaryDataSet>
+        					<AncillaryData name="TEST_ANC_DATA">1</AncillaryData>
+    					</AncillaryDataSet>
 						<xtce:MemberList>
 							<xtce:Member name="COREINF" typeRef="Log_Level_Type" shortDescription="Log level for Common Infrastructure Software" />
 							<xtce:Member name="ANTCTRL" typeRef="Log_Level_Type" shortDescription="Log level for Payload Antenna Control Software" />

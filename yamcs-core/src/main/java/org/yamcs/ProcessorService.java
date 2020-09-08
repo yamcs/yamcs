@@ -1,24 +1,30 @@
 package org.yamcs;
 
+import com.google.common.util.concurrent.Service;
+
 /**
  * This interface has to be implemented by all services that run as part of a processor.
  * 
- * <p>
- * The implementing classes need to have one {@link #init(String, YConfiguration)} method called with the configuration passed as "args" in the service 
- * definition in processor.yaml and an extra {@link #init(Processor, Object)} called with the configuration passed by the user when creating the service.
- *   
  * 
  */
-public interface ProcessorService extends YamcsService {
+public interface ProcessorService extends Service {
 
-    public void init(Processor proc);
+    /**
+     * Returns the valid configuration of the input args of this service.
+     * 
+     * @return the argument specification, or <tt>null</tt> if the args should not be validated.
+     */
+    default Spec getSpec() {
+        return null;
+    }
 
     /**
      * @param proc
+     * @param config
+     *          service configuration as specified in processor.yaml
      * @param spec
-     *            passed by the user when creating the processor (for instance via the REST API)
+     *          passed by the user when creating the processor (for instance via the REST API)
+     * 
      */
-    default void init(Processor proc, Object spec) {
-        init(proc);
-    }
+     void init(Processor proc, YConfiguration config, Object spec) throws InitException;
 }

@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.yamcs.InstanceMetadata;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -652,6 +653,20 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     public static ServiceInfo toServiceInfo(ServiceWithConfig serviceWithConfig, String instance, String processor) {
+        ServiceInfo.Builder serviceb = ServiceInfo.newBuilder()
+                .setName(serviceWithConfig.getName())
+                .setClassName(serviceWithConfig.getServiceClass())
+                .setState(ServiceState.valueOf(serviceWithConfig.getService().state().name()));
+        if (instance != null) {
+            serviceb.setInstance(instance);
+        }
+        if (processor != null) {
+            serviceb.setProcessor(processor);
+        }
+        return serviceb.build();
+    }
+    
+    public static ServiceInfo toServiceInfo(ProcessorServiceWithConfig serviceWithConfig, String instance, String processor) {
         ServiceInfo.Builder serviceb = ServiceInfo.newBuilder()
                 .setName(serviceWithConfig.getName())
                 .setClassName(serviceWithConfig.getServiceClass())

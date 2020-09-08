@@ -97,6 +97,7 @@ import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.MathOperator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -462,11 +463,8 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                spaceSystem.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
-            } else if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                XtceAliasSet aliasSet = readAliasSet();
-                spaceSystem.setAliasSet(aliasSet);
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(spaceSystem);
             } else if (isStartElementWithName(XTCE_HEADER)) {
                 readHeader(spaceSystem);
             } else if (isStartElementWithName(XTCE_TELEMTRY_META_DATA)) {
@@ -764,10 +762,10 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_MEMBER_LIST)) {
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(typeBuilder);
+            } else if (isStartElementWithName(XTCE_MEMBER_LIST)) {
                 typeBuilder.addMembers(readMemberList(spaceSystem, true));
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                typeBuilder.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isEndElementWithName(XTCE_AGGREGATE_PARAMETER_TYPE)) {
                 return incompleteType;
             } else {
@@ -854,8 +852,8 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                typeBuilder.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(XTCE_DIMENSION_LIST)) {
                 List<IntegerValue> dimList = readDimensionList(spaceSystem);
                 dim = dimList.size();
@@ -923,9 +921,8 @@ public class XtceStaxReader {
     }
 
     private boolean readBaseTypeProperties(BaseDataType.Builder<?> typeBuilder) throws XMLStreamException {
-        if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-            typeBuilder.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
-            return true;
+        if (isNamedItemProperty()) {
+            readNamedItemProperty(typeBuilder);
         } else if (isStartElementWithName(XTCE_UNIT_SET)) {
             typeBuilder.addAllUnits(readUnitSet());
             return true;
@@ -1313,8 +1310,8 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                typeBuilder.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(XTCE_UNIT_SET)) {
                 typeBuilder.addAllUnits(readUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
@@ -2233,14 +2230,10 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                parameter.setAliasSet(readAliasSet());
-            } else if (isStartElementWithName(XTCE_PARAMETER_PROPERTIES)) {
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(parameter);
+            }  else if (isStartElementWithName(XTCE_PARAMETER_PROPERTIES)) {
                 readParameterProperties(spaceSystem, parameter);
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                parameter.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
-            } else if (isStartElementWithName(XTCE_ANCILLARY_DATA_SET)) {
-                skipXtceSection(XTCE_ANCILLARY_DATA_SET);
             } else if (isEndElementWithName(XTCE_PARAMETER)) {
                 return parameter;
             } else {
@@ -2407,6 +2400,8 @@ public class XtceStaxReader {
         }
     }
 
+  
+    
     private SequenceContainer readSequenceContainer(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_SEQUENCE_CONTAINER);
         checkStartElementPreconditions();
@@ -2417,22 +2412,17 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
-            if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                seqContainer.setAliasSet(readAliasSet());
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(seqContainer);
             } else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
                 readEntryList(spaceSystem, seqContainer, null);
             } else if (isStartElementWithName(XTCE_BASE_CONTAINER)) {
                 readBaseContainer(spaceSystem, seqContainer);
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                seqContainer.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 seqContainer.setRateInStream(readRateInStream(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
                 BinaryDataEncoding.Builder bde = readBinaryDataEncoding(spaceSystem);
                 seqContainer.setSizeInBits(bde.getSizeInBits());
-            } else if (isStartElementWithName(XTCE_ANCILLARY_DATA_SET)) {
-                seqContainer.setAncillaryData(readAncillaryDataSet());
             } else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 return seqContainer;
             } else {
@@ -2916,10 +2906,8 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_MATH_OPERATION)) {
                 readMathOperation(spaceSystem, algo);
-            } else if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                algo.setAliasSet(readAliasSet());
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                algo.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            } if (isNamedItemProperty()) {
+                readNamedItemProperty(algo);
             } else if (isEndElementWithName(XTCE_MATH_ALGORITHM)) {
                 spaceSystem.addAlgorithm(algo);
                 return;
@@ -3272,10 +3260,8 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                mc.setAliasSet(readAliasSet());
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                mc.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(mc);
             } else if (isStartElementWithName(XTCE_BASE_META_COMMAND)) {
                 readBaseMetaCommand(spaceSystem, mc);
             } else if (isStartElementWithName(XTCE_COMMAND_CONTAINER)) {
@@ -3426,11 +3412,9 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                arg.setAliasSet(readAliasSet());
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                arg.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
-            } else if (isEndElementWithName(XTCE_ARGUMENT)) {
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(arg);
+            }  else if (isEndElementWithName(XTCE_ARGUMENT)) {
                 return arg;
             } else {
                 logUnknown();
@@ -3555,14 +3539,12 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                cmdContainer.setAliasSet(readAliasSet());
-            } else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(cmdContainer);
+            }  else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
                 readEntryList(spaceSystem, cmdContainer, mc);
             } else if (isStartElementWithName(XTCE_BASE_CONTAINER)) {
                 readBaseContainer(spaceSystem, cmdContainer);
-            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
-                cmdContainer.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 cmdContainer.setRateInStream(readRateInStream(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
@@ -3955,7 +3937,34 @@ public class XtceStaxReader {
         return (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT && xmlEvent
                 .asStartElement().getName().getLocalPart().equals(localName));
     }
+    
+    
+    private boolean isNamedItemProperty() {
+        if(xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT) 
+            return false; 
+        String name = xmlEvent.asStartElement().getName().getLocalPart();
+        return name==XTCE_ALIAS_SET || name == XTCE_LONG_DESCRIPTION || name == XTCE_ANCILLARY_DATA_SET;
+    }
 
+    void readNamedItemProperty(NameDescription nd) throws XMLStreamException {
+        if (isStartElementWithName(XTCE_ALIAS_SET)) {
+            nd.setAliasSet(readAliasSet());
+        } else if (isStartElementWithName(XTCE_ANCILLARY_DATA_SET)) {
+            nd.setAncillaryData(readAncillaryDataSet());
+        } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
+            nd.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+        }
+    }
+    
+    void readNamedItemProperty(NameDescription.Builder<?> nd) throws XMLStreamException {
+        if (isStartElementWithName(XTCE_ALIAS_SET)) {
+            nd.setAliasSet(readAliasSet());
+        } else if (isStartElementWithName(XTCE_ANCILLARY_DATA_SET)) {
+            nd.setAncillaryData(readAncillaryDataSet());
+        } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
+            nd.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+        }
+    }
     /**
      * Test if the xmlEvent is of type END_ELEMENT and has particular local name. This test is used to identify the end
      * of section.

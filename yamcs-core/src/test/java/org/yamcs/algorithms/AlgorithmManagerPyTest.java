@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -27,6 +27,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
+import static org.yamcs.algorithms.AlgorithmManagerTest.getPwc;
 /**
  * Just a small sanity check to verify python/jython still works. Uses algorithms in the spreadsheet that are
  * interpreted the same in javascript and python
@@ -46,7 +47,7 @@ public class AlgorithmManagerPyTest {
     private ParameterRequestManager prm;
 
     @Before
-    public void beforeEachTest() throws ConfigurationException, ProcessorException {
+    public void beforeEachTest() throws InitException, ProcessorException {
         EventProducerFactory.setMockup(true);
 
         db = XtceDbFactory.getInstance(instance);
@@ -62,9 +63,10 @@ public class AlgorithmManagerPyTest {
         config.put("libraries", jslib);
 
         AlgorithmManager am = new AlgorithmManager();
-        am.init("refmdb", YConfiguration.wrap(config));
-
-        processor = ProcessorFactory.create(instance, "AlgorithmManagerPyTest", tmGenerator, am);
+        processor = ProcessorFactory.create("refmdb", "AlgorithmManagerPyTest",
+                getPwc(tmGenerator, YConfiguration.emptyConfig()),
+                getPwc(am, YConfiguration.wrap(config)));
+        
         prm = processor.getParameterRequestManager();
     }
 

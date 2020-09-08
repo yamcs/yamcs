@@ -94,6 +94,10 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         int offset = tf.getDataStart();
         for (PreparedCommand pc1 : l) {
             byte[] binary = cmdPostProcessor.process(pc1);
+            if (binary == null) {
+                log.warn("command postprocessor did not process the command");
+                continue;
+            }
             int length = binary.length;
             System.arraycopy(binary, 0, data, offset, length);
             offset += length;

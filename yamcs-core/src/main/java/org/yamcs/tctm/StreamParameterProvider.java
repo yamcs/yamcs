@@ -5,8 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
@@ -29,7 +28,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Provides parameters from yarch streams (pp_realtime) to ParameterRequestManager.
@@ -37,16 +35,17 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class StreamParameterProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
+public class StreamParameterProvider extends AbstractProcessorService implements StreamSubscriber, ParameterProvider {
     List<Stream> streams = new ArrayList<>();
     ParameterListener paraListener;
     XtceDb xtceDb;
-    private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
 
     ParameterTypeProcessor ptypeProcessor;
 
 
-    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(Processor processor, YConfiguration config, Object spec) {
+        super.init(processor, config, spec);
+        String yamcsInstance = processor.getInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
@@ -69,14 +68,12 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
             }
             streams.add(stream);
         }
-    }
-
-    @Override
-    public void init(Processor processor) {
+        
         ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
         processor.getParameterRequestManager().addParameterProvider(this);
         streams.forEach(s -> s.addSubscriber(this));
     }
+
 
     @Override
     protected void doStart() {
