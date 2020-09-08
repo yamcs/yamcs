@@ -285,6 +285,7 @@ message ParameterTypeInfo {
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
+  map<string, AncillaryDataInfo> ancillaryData = 10;
 }
 
 message GetParameterTypeRequest {
@@ -333,6 +334,13 @@ message ParameterInfo {
   optional ParameterTypeInfo type = 6;
   optional DataSourceType dataSource = 7;
   optional UsedByInfo usedBy = 8;
+  map<string, AncillaryDataInfo> ancillaryData = 9;
+}
+
+message AncillaryDataInfo {
+  optional string value = 1;
+  optional string mimeType = 2;
+  optional string href = 3;
 }
 
 message ArgumentTypeInfo {
@@ -404,6 +412,7 @@ message CommandInfo {
   repeated TransmissionConstraintInfo constraint = 11;
   optional CommandContainerInfo commandContainer = 13;
   repeated VerifierInfo verifier = 14;
+  map<string, AncillaryDataInfo> ancillaryData = 15;
 }
 
 message VerifierInfo {
@@ -480,6 +489,7 @@ message ContainerInfo {
   repeated ComparisonInfo restrictionCriteria = 9;
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
+  map<string, AncillaryDataInfo> ancillaryData = 12;
 }
 
 message InputParameterInfo {

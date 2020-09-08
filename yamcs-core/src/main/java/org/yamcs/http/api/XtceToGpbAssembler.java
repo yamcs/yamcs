@@ -15,6 +15,7 @@ import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
+import org.yamcs.protobuf.Mdb.AncillaryDataInfo;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
@@ -56,6 +57,7 @@ import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
@@ -103,6 +105,7 @@ import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -155,6 +158,11 @@ public class XtceToGpbAssembler {
                 Map<String, String> aliases = c.getAliasSet().getAliases();
                 for (Entry<String, String> me : aliases.entrySet()) {
                     cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
+            }
+            if (c.getAncillaryData() != null) {
+                for (AncillaryData data : c.getAncillaryData()) {
+                    cb.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
                 }
             }
             if (c.getRateInStream() != null) {
@@ -331,6 +339,11 @@ public class XtceToGpbAssembler {
                 Map<String, String> aliases = cmd.getAliasSet().getAliases();
                 for (Entry<String, String> me : aliases.entrySet()) {
                     cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
+            }
+            if (cmd.getAncillaryData() != null) {
+                for (AncillaryData data : cmd.getAncillaryData()) {
+                    cb.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
                 }
             }
 
@@ -570,9 +583,28 @@ public class XtceToGpbAssembler {
                     b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
+            if (p.getAncillaryData() != null) {
+                for (AncillaryData data : p.getAncillaryData()) {
+                    b.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
+                }
+            }
         }
 
         return b.build();
+    }
+
+    public static AncillaryDataInfo toAncillaryDataInfo(AncillaryData data) {
+        AncillaryDataInfo.Builder infob = AncillaryDataInfo.newBuilder();
+        if (data.getValue() != null) {
+            infob.setValue(data.getValue());
+        }
+        if (data.getMimeType() != null) {
+            infob.setMimeType(data.getMimeType());
+        }
+        if (data.getHref() != null) {
+            infob.setHref(data.getHref().toString());
+        }
+        return infob.build();
     }
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
@@ -629,6 +661,14 @@ public class XtceToGpbAssembler {
                 BaseDataType bdt = (BaseDataType) parameterType;
                 if (bdt.getEncoding() != null) {
                     infob.setDataEncoding(toDataEncodingInfo(bdt.getEncoding()));
+                }
+            }
+            if (parameterType instanceof NameDescription) {
+                NameDescription namedItem = (NameDescription) parameterType;
+                if (namedItem.getAncillaryData() != null) {
+                    for (AncillaryData data : namedItem.getAncillaryData()) {
+                        infob.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
+                    }
                 }
             }
 
