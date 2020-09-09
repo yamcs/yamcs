@@ -61,20 +61,6 @@ service MdbApi {
     };
   }
   
-  // List parameter types
-  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/mdb/{instance}/parameter-types"
-    };
-  }
-  
-  // Get a parameter type
-  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
-    option (yamcs.api.route) = {
-      get: "/api/mdb/{instance}/parameter-types/{name*}"
-    };
-  }
-  
   // List containers
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
@@ -286,11 +272,6 @@ message ParameterTypeInfo {
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
   map<string, AncillaryDataInfo> ancillaryData = 10;
-}
-
-message GetParameterTypeRequest {
-  optional string instance = 1;
-  optional string name = 2;
 }
 
 message GetContainerRequest {
@@ -532,15 +513,6 @@ message ListSpaceSystemsRequest {
   optional int32 limit = 9;
 }
 
-message ListParameterTypesRequest {
-  optional string instance = 1;
-  optional string q = 2;
-  optional bool details = 4;
-  optional string next = 7;
-  optional int32 pos = 8;
-  optional int32 limit = 9;
-}
-
 message ListContainersRequest {
   // Yamcs instance name.
   optional string instance = 1;
@@ -652,12 +624,6 @@ message ListParametersRequest {
 message ListParametersResponse {
   repeated string spaceSystems = 4;
   repeated ParameterInfo parameters = 1;
-  optional string continuationToken = 2;
-  optional int32 totalSize = 3;
-}
-
-message ListParameterTypesResponse {
-  repeated ParameterTypeInfo types = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }

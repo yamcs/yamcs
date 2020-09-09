@@ -46,7 +46,6 @@ import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
 import org.yamcs.protobuf.Mdb.GetMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetParameterRequest;
-import org.yamcs.protobuf.Mdb.GetParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.GetSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsResponse;
@@ -54,8 +53,6 @@ import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.protobuf.Mdb.ListContainersRequest;
 import org.yamcs.protobuf.Mdb.ListContainersResponse;
-import org.yamcs.protobuf.Mdb.ListParameterTypesRequest;
-import org.yamcs.protobuf.Mdb.ListParameterTypesResponse;
 import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsRequest;
@@ -79,7 +76,6 @@ import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
@@ -334,77 +330,6 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
 
         observer.complete(responseb.build());
-    }
-
-    @Override
-    public void listParameterTypes(Context ctx, ListParameterTypesRequest request,
-            Observer<ListParameterTypesResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-
-        // Should eventually be replaced in a generic mdb search operation
-        NameDescriptionSearchMatcher matcher = null;
-        if (request.hasQ()) {
-            matcher = new NameDescriptionSearchMatcher(request.getQ());
-        }
-
-        boolean details = request.getDetails();
-
-        List<ParameterType> matchedTypes = new ArrayList<>();
-        for (ParameterType t : mdb.getParameterTypes()) {
-            if (matcher != null && !matcher.matches((NameDescription) t)) {
-                continue;
-            }
-            matchedTypes.add(t);
-        }
-
-        Collections.sort(matchedTypes, (t1, t2) -> {
-            return ((NameDescription) t1).getQualifiedName().compareTo(((NameDescription) t2).getQualifiedName());
-        });
-
-        int totalSize = matchedTypes.size();
-
-        String next = request.hasNext() ? request.getNext() : null;
-        int pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        if (next != null) {
-            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
-            matchedTypes = matchedTypes.stream().filter(t -> {
-                return ((NameDescription) t).getQualifiedName().compareTo(pageToken.name) > 0;
-            }).collect(Collectors.toList());
-        } else if (pos > 0) {
-            matchedTypes = matchedTypes.subList(pos, matchedTypes.size());
-        }
-
-        NamedObjectPageToken continuationToken = null;
-        if (limit < matchedTypes.size()) {
-            matchedTypes = matchedTypes.subList(0, limit);
-            ParameterType lastType = matchedTypes.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(((NameDescription) lastType).getQualifiedName(), false);
-        }
-
-        ListParameterTypesResponse.Builder responseb = ListParameterTypesResponse.newBuilder();
-        responseb.setTotalSize(totalSize);
-        for (ParameterType t : matchedTypes) {
-            responseb.addTypes(
-                    XtceToGpbAssembler.toParameterTypeInfo(t, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
-        }
-        if (continuationToken != null) {
-            responseb.setContinuationToken(continuationToken.encodeAsString());
-        }
-        observer.complete(responseb.build());
-    }
-
-    @Override
-    public void getParameterType(Context ctx, GetParameterTypeRequest request,
-            Observer<ParameterTypeInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        ParameterType p = verifyParameterType(mdb, request.getName());
-
-        ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(p, DetailLevel.FULL);
-        observer.complete(pinfo);
     }
 
     @Override
