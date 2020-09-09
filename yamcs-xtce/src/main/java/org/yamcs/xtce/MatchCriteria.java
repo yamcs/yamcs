@@ -23,6 +23,8 @@ public interface MatchCriteria extends Serializable {
      */
     boolean isMet(CriteriaEvaluator evaluator);
 
+    public String toExpressionString();
+
     /**
      * For debugging purpose
      * 
@@ -66,6 +68,11 @@ public interface MatchCriteria extends Serializable {
         @Override
         public Set<Parameter> getDependentParameters() {
             return Collections.emptySet();
+        }
+
+        @Override
+        public String toExpressionString() {
+            return "";
         }
     };
 }

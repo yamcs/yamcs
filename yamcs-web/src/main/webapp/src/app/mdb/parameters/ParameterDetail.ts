@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { EnumValue, Parameter } from '../../client';
+import { ContextAlarmInfo, EnumValue, Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -25,6 +25,15 @@ export class ParameterDetail {
             return enumAlarm.level;
           }
         }
+      }
+    }
+  }
+
+  getEnumerationAlarmLevel(contextAlarm: ContextAlarmInfo, enumValue: EnumValue) {
+    const alarm = contextAlarm.alarm;
+    for (const enumAlarm of alarm.enumerationAlarm) {
+      if (enumAlarm.label === enumValue.label) {
+        return enumAlarm.level;
       }
     }
   }

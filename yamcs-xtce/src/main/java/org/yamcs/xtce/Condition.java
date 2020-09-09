@@ -6,15 +6,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * The Condition is XTCE overlaps with the Comparison. Condition allows two operands to be Parameters
  * 
  * @author dho
  *
  */
-public class Condition implements BooleanExpression {	
-    
+public class Condition implements BooleanExpression {
 
     private static final long serialVersionUID = 1L;
 
@@ -23,10 +21,10 @@ public class Condition implements BooleanExpression {
 
     OperatorType comparisonOperator;
 
-    //the string is used to create the object and then is changed to the other type, depending on the valueType
-    String stringValue = null;    
+    // the string is used to create the object and then is changed to the other type, depending on the valueType
+    String stringValue = null;
 
-    transient static Logger LOG=LoggerFactory.getLogger(Condition.class.getName());    
+    transient static Logger LOG = LoggerFactory.getLogger(Condition.class.getName());
 
     public Condition(OperatorType comparisonOperator, ParameterInstanceRef lValueRef, ParameterInstanceRef rValueRef) {
         super();
@@ -45,18 +43,18 @@ public class Condition implements BooleanExpression {
     }
 
     /**
-     * Called when the type of the parameter used for comparison is known, 
-     * so we have to find the value from stringValue that we can compare to it 
+     * Called when the type of the parameter used for comparison is known, so we have to find the value from stringValue
+     * that we can compare to it
      */
     public void resolveValueType() {
         if (((rValueRef == null) || (!(rValueRef instanceof ParameterInstanceRef))) && (stringValue != null)) {
             boolean useCalibratedValue = lValueRef.useCalibratedValue();
             ParameterType ptype = lValueRef.getParameter().getParameterType();
-            if(useCalibratedValue) {
+            if (useCalibratedValue) {
                 rValueRef = ptype.parseString(stringValue);
             } else {
                 rValueRef = ptype.parseStringForRawValue(stringValue);
-            }    		
+            }
         } else {
             LOG.error("Cannot resolveValueType, inconsistent state");
         }
@@ -69,25 +67,36 @@ public class Condition implements BooleanExpression {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset=new HashSet<>();
+        Set<Parameter> pset = new HashSet<>();
 
         pset.add(lValueRef.getParameter());
         if (rValueRef instanceof ParameterInstanceRef) {
-            pset.add(((ParameterInstanceRef)rValueRef).getParameter());
+            pset.add(((ParameterInstanceRef) rValueRef).getParameter());
         }
         return pset;
-    }	
+    }
+
+    @Override
+    public String toExpressionString() {
+        String expr = String.format("%s %s ", lValueRef.getParameter().getName(),
+                OperatorType.operatorToString(comparisonOperator));
+        if (rValueRef instanceof ParameterInstanceRef) {
+            return expr + ((ParameterInstanceRef) rValueRef).getParameter().getQualifiedName();
+        } else {
+            return expr + stringValue;
+        }
+    }
 
     @Override
     public String toString() {
-        String rValue = stringValue; 
+        String rValue = stringValue;
         if (stringValue == null) {
-            if (((ParameterInstanceRef)rValueRef).getParameter() == null) {
+            if (((ParameterInstanceRef) rValueRef).getParameter() == null) {
                 rValue = "paraName(unresolved)";
             } else {
-                rValue = "paramName(" + ((ParameterInstanceRef)rValueRef).getParameter().getName() + ")";
+                rValue = "paramName(" + ((ParameterInstanceRef) rValueRef).getParameter().getName() + ")";
             }
-        } 
+        }
 
         String lValue = "paraName(unresolved)";
         if (lValueRef.getParameter() != null) {
@@ -97,8 +106,7 @@ public class Condition implements BooleanExpression {
         return "Condition: " + lValue + OperatorType.operatorToString(comparisonOperator) + rValue;
 
     }
-    
-    
+
     public ParameterInstanceRef getlValueRef() {
         return lValueRef;
     }
@@ -110,7 +118,7 @@ public class Condition implements BooleanExpression {
     public Object getrValueRef() {
         return rValueRef;
     }
-    
+
     public OperatorType getComparisonOperator() {
         return comparisonOperator;
     }

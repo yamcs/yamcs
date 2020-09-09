@@ -61,20 +61,6 @@ service MdbApi {
     };
   }
   
-  // List parameter types
-  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/mdb/{instance}/parameter-types"
-    };
-  }
-  
-  // Get a parameter type
-  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
-    option (yamcs.api.route) = {
-      get: "/api/mdb/{instance}/parameter-types/{name*}"
-    };
-  }
-  
   // List containers
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
@@ -207,11 +193,11 @@ message ContextAlarmInfo {
   repeated ComparisonInfo comparison = 1;
   optional AlarmInfo alarm = 2;
   
-  // This can be used in UpdateParameteRequest to pass a context
+  // This can be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
-  optional string context = 3; 
+  optional string context = 3;
 }
 
 message DataEncodingInfo {
@@ -234,11 +220,11 @@ message ContextCalibratorInfo {
   repeated ComparisonInfo comparison = 1;
   optional CalibratorInfo calibrator = 2;
 
-  // This can be used in UpdateParameteRequest to pass a context
+  // This can be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
-  optional string context = 3; 
+  optional string context = 3;
 }
 
 message CalibratorInfo {
@@ -285,11 +271,7 @@ message ParameterTypeInfo {
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
-}
-
-message GetParameterTypeRequest {
-  optional string instance = 1;
-  optional string name = 2;
+  map<string, AncillaryDataInfo> ancillaryData = 10;
 }
 
 message GetContainerRequest {
@@ -333,6 +315,13 @@ message ParameterInfo {
   optional ParameterTypeInfo type = 6;
   optional DataSourceType dataSource = 7;
   optional UsedByInfo usedBy = 8;
+  map<string, AncillaryDataInfo> ancillaryData = 9;
+}
+
+message AncillaryDataInfo {
+  optional string value = 1;
+  optional string mimeType = 2;
+  optional string href = 3;
 }
 
 message ArgumentTypeInfo {
@@ -404,6 +393,7 @@ message CommandInfo {
   repeated TransmissionConstraintInfo constraint = 11;
   optional CommandContainerInfo commandContainer = 13;
   repeated VerifierInfo verifier = 14;
+  map<string, AncillaryDataInfo> ancillaryData = 15;
 }
 
 message VerifierInfo {
@@ -480,6 +470,7 @@ message ContainerInfo {
   repeated ComparisonInfo restrictionCriteria = 9;
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
+  map<string, AncillaryDataInfo> ancillaryData = 12;
 }
 
 message InputParameterInfo {
@@ -517,15 +508,6 @@ message AlgorithmInfo {
 message ListSpaceSystemsRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional string next = 7;
-  optional int32 pos = 8;
-  optional int32 limit = 9;
-}
-
-message ListParameterTypesRequest {
-  optional string instance = 1;
-  optional string q = 2;
-  optional bool details = 4;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -642,12 +624,6 @@ message ListParametersRequest {
 message ListParametersResponse {
   repeated string spaceSystems = 4;
   repeated ParameterInfo parameters = 1;
-  optional string continuationToken = 2;
-  optional int32 totalSize = 3;
-}
-
-message ListParameterTypesResponse {
-  repeated ParameterTypeInfo types = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }

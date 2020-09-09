@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * All comparisons must be true.
@@ -12,7 +13,7 @@ import java.util.Set;
  *
  */
 public class ComparisonList implements MatchCriteria {
-    
+
     private static final long serialVersionUID = 200805131551L;
     ArrayList<Comparison> comparisons = new ArrayList<>();
 
@@ -22,26 +23,33 @@ public class ComparisonList implements MatchCriteria {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset = new HashSet<Parameter>();
+        Set<Parameter> pset = new HashSet<>();
         for (Comparison c : comparisons) {
             pset.addAll(c.getDependentParameters());
         }
         return pset;
     }
-    
+
     @Override
     public boolean isMet(CriteriaEvaluator evaluator) {
-        for(Comparison c:comparisons) {
+        for (Comparison c : comparisons) {
             if (!c.isMet(evaluator)) {
-            	return false;
+                return false;
             }
         }
-        
+
         return true;
     }
 
     public List<Comparison> getComparisonList() {
         return comparisons;
+    }
+
+    @Override
+    public String toExpressionString() {
+        return comparisons.stream()
+                .map(Comparison::toExpressionString)
+                .collect(Collectors.joining(" and "));
     }
 
     @Override

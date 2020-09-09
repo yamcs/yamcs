@@ -66,6 +66,19 @@
             <td>{{ value.aggregateValue!.value[i] | value }}</td>
           </tr>
         </table>
+        <table *ngSwitchCase="'ARRAY'" yaDataTable>
+          <tr>
+            <th>Index</th>
+            <th>Value</th>
+          </tr>
+          <tr *ngFor="let element of value.arrayValue!; index as i">
+            <td>
+              <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '[' + i + ']']"
+                 [queryParams]="{c: yamcs.context}">{{ i }}</a>
+            </td>
+            <td>{{ element | value }}</td>
+          </tr>
+        </table>
         <span class="pval" *ngSwitchDefault>
           <app-expirable [pval]="pval" style="white-space: nowrap">
             <ng-container *ngIf="pval.monitoringResult">
