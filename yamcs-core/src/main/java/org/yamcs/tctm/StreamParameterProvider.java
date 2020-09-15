@@ -56,7 +56,9 @@ public class StreamParameterProvider extends AbstractProcessorService implements
             streamNames = config.getList("streams");
         } else {
             streamNames = StreamConfig.getInstance(yamcsInstance).getEntries(StandardStreamType.param).stream()
-                    .map(sce -> sce.getName()).collect(Collectors.toList());
+                    .map(sce -> sce.getName())
+                    .filter(s-> !Processor.PROC_PARAMETERS_STREAM.equals(s))
+                    .collect(Collectors.toList());
         }
 
         log.debug("Subscribing to streams {} ", streamNames);
