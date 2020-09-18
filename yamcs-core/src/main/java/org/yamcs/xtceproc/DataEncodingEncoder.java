@@ -82,7 +82,7 @@ public class DataEncodingEncoder {
             v = Math.round(rawValue.getFloatValue());
             break;
         default:
-            throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to string");
+            throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to integer");
         }
         int sizeInBits = ide.getSizeInBits();
 

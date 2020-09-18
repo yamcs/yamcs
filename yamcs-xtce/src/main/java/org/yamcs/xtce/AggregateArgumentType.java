@@ -2,8 +2,6 @@ package org.yamcs.xtce;
 
 import java.util.List;
 
-import org.yamcs.xtce.BooleanArgumentType.Builder;
-
 public class AggregateArgumentType extends AggregateDataType implements ArgumentType {
     private static final long serialVersionUID = 2L;
     
