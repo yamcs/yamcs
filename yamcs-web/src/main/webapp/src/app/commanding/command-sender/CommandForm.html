@@ -6,6 +6,7 @@
     <ng-container [ngSwitch]="argument.type?.engType">
 
       <label *ngSwitchCase="'enumeration'">
+        <div class="datatype">{{ argument.type?.engType }}</div>
         {{ argument.name }}
         <select [formControlName]="argument.name">
           <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
@@ -25,6 +26,7 @@
       </label>
 
       <label *ngSwitchDefault>
+        <div class="datatype">{{ argument.type?.engType }}</div>
         {{ argument.name }}
         <input type="text" [formControlName]="argument.name">
       </label>
@@ -37,6 +39,7 @@
     <ng-container [ngSwitch]="argument.type?.engType">
 
       <label *ngSwitchCase="'enumeration'" class="hasInitial">
+        <div class="datatype">{{ argument.type?.engType }}</div>
         {{ argument.name }}
         <select [formControlName]="argument.name">
           <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
@@ -50,7 +53,13 @@
         <input type="radio" [formControlName]="argument.name" value="false"> false
       </label>
 
+      <label *ngSwitchCase="'binary'">
+        {{ argument.name }}
+        <app-binary-input [formControlName]="argument.name"></app-binary-input>
+      </label>
+
       <label *ngSwitchDefault class="hasInitial">
+        <div class="datatype">{{ argument.type?.engType }}</div>
         {{ argument.name }}
         <input type="text" [formControlName]="argument.name">
       </label>
