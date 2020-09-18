@@ -18,16 +18,20 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.parameter.Value;
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 /**
  * Created by msc on 27/05/15.
  */
-public class XtceCommandEncodingTest {
+public class RefMdbCommandEncodingTest {
     static XtceDb xtcedb;
     static MetaCommandProcessor metaCommandProcessor;
 
@@ -427,5 +431,24 @@ public class XtceCommandEncodingTest {
                 new ArgumentAssignment("uint64_arg", "2"),
                 new ArgumentAssignment("ccsds-apid", "123")); // Already assigned by parent
         metaCommandProcessor.buildCommand(mc, assignments);
+    }
+    
+    @Test
+    public void testTimeArg() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/TIME_ARG_TC");
+        assertNotNull(mc);
+        String tstring = "2020-01-01T00:00:00.123Z";
+        long tlong = TimeEncoding.parse(tstring);
+        
+        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring));
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
+        Value v1 = cbr.args.get(mc.getArgument("t1"));
+        
+        assertEquals(tlong, v1.getTimestampValue());
+        byte[] cmdb = cbr.getCmdPacket();
+        assertEquals(4, cmdb.length);
+        int gpsTime = ByteArrayUtils.decodeInt(cmdb, 0);
+        assertEquals(TimeEncoding.toGpsTimeMillisec(tlong)/1000, gpsTime);
+        
     }
 }

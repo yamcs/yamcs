@@ -3,11 +3,14 @@ package org.yamcs.xtceproc;
 import java.util.List;
 
 import org.yamcs.ErrorInCommand;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BooleanArgumentType;
@@ -17,19 +20,26 @@ import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.IntegerArgumentType;
+import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 
 public class ArgumentTypeProcessor {
     ProcessorData pdata;
-
+    final Log log;
+    
     public ArgumentTypeProcessor(ProcessorData pdata) {
         if (pdata == null) {
             throw new NullPointerException();
         }
         this.pdata = pdata;
+        log = new Log(this.getClass(), pdata.getYamcsInstance());
+        log.setContext(pdata.getProcessorName());
     }
 
     public Value decalibrate(ArgumentType atype, Value v) {
@@ -45,6 +55,8 @@ public class ArgumentTypeProcessor {
             return decalibrateBinary((BinaryArgumentType) atype, v);
         } else if (atype instanceof BooleanArgumentType) {
             return decalibrateBoolean((BooleanArgumentType) atype, v);
+        } else if (atype instanceof AbsoluteTimeArgumentType) {
+            return decalibrateAbsoluteTime((AbsoluteTimeArgumentType) atype, v);
         } else {
             throw new IllegalArgumentException("decalibration for " + atype + " not implemented");
         }
@@ -107,7 +119,7 @@ public class ArgumentTypeProcessor {
     private Value decalibrateBoolean(BooleanArgumentType ipt, Value v) {
         if (v.getType() != Type.BOOLEAN) {
             throw new IllegalStateException(
-                    "Unsupported raw value type '" + v.getType() + "' cannot be converted to boolean");
+                    "Unsupported value type '" + v.getType() + "' cannot be converted to boolean");
         }
         return v;
     }
@@ -168,6 +180,69 @@ public class ArgumentTypeProcessor {
         return raw;
     }
 
+    private Value decalibrateAbsoluteTime(AbsoluteTimeArgumentType atype, Value v) {
+        if (v.getType() != Type.TIMESTAMP) {
+            throw new IllegalStateException(
+                    "Unsupported value type '" + v.getType() + "' cannot be converted to timestamp");
+        }
+        
+        ReferenceTime rtime = atype.getReferenceTime();
+        TimeEpoch epoch = rtime.getEpoch();
+        long epochOffset = 0;
+
+        if (epoch != null) {
+            epochOffset = getEpochOffset(epoch, v.getTimestampValue());
+        } else {
+            throw new IllegalStateException("Cannot convert absolute time argument without an epoch");
+        }
+        DataEncoding enc = atype.getEncoding();
+        
+        if(enc instanceof FloatDataEncoding) {
+            return ValueUtility.getDoubleValue(scaleDouble(atype, epochOffset));
+        } else if (enc instanceof IntegerDataEncoding) {
+            return ValueUtility.getSint64Value(scaleInt(atype, epochOffset));
+        } else {
+            throw new IllegalStateException("Cannot convert encode absolute time with "+enc+" encoding");
+        }
+    }
+    
+    static long getEpochOffset(TimeEpoch epoch, long time) {
+        CommonEpochs ce = epoch.getCommonEpoch();
+
+        if (ce != null) {
+            switch (ce) {
+            case GPS:
+                return TimeEncoding.toGpsTimeMillisec(time);
+            case J2000:
+                return TimeEncoding.toJ2000Millisec(time);
+            case TAI:
+                return TimeEncoding.toTaiMillisec(time);
+            case UNIX:
+                return TimeEncoding.toUnixMillisec(time);
+            default:
+                throw new IllegalStateException("Unknonw epoch " + ce);
+            }
+        } else {
+            return TimeEncoding.parse(epoch.getDateTime());
+        }
+    }
+    
+    private long scaleInt(AbsoluteTimeArgumentType atype, long time) {
+        if (atype.needsScaling()) {
+            return (long) ((time - 1000 * atype.getOffset())/(1000 * atype.getScale()));
+        } else {
+            return time/1000;
+        }
+    }
+
+    private double scaleDouble(AbsoluteTimeArgumentType atype, long time) {
+        if (atype.needsScaling()) {
+            return ((time - 1000 * atype.getOffset())/(1000 * atype.getScale()));
+        } else {
+            return time/1000.0;
+        }
+    }
+    
     public static void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
         if (type instanceof IntegerArgumentType) {
             IntegerArgumentType intType = (IntegerArgumentType) type;
@@ -238,7 +313,7 @@ public class ArgumentTypeProcessor {
                 throw new ErrorInCommand("Value '" + v
                         + "' supplied for enumeration argument cannot be found in enumeration list " + vlist);
             }
-        } else if (type instanceof BooleanArgumentType) {
+        } else if (type instanceof BooleanArgumentType || type instanceof AbsoluteTimeArgumentType) {
             // nothing to check
         } else {
             throw new IllegalArgumentException("Cannot process values of type " + type);

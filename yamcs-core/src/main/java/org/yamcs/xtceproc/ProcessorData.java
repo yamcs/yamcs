@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.events.QuietEventProducer;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -53,9 +52,10 @@ public class ProcessorData {
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
 
     final XtceDb xtcedb;
-    static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
+    final Log log;
     final EventProducer eventProducer;
-
+    final String processorName;
+    
     private Map<String, Object> userData = new HashMap<>();
 
     private LastValueCache lastValueCache = new LastValueCache();
@@ -90,7 +90,11 @@ public class ProcessorData {
         this.yamcsInstance = instance;
         this.xtcedb = xtcedb;
         this.processorConfig = config;
+        this.processorName = procName;
+        
         parameterTypeProcessor = new ParameterTypeProcessor(this);
+        log = new Log(this.getClass(), instance);
+        log.setContext(procName);
 
         if ((instance != null) && config.generateEvents()) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
@@ -361,6 +365,10 @@ public class ProcessorData {
 
     public ProcessorConfig getProcessorConfig() {
         return processorConfig;
+    }
+
+    public String getProcessorName() {
+        return processorName;
     }
 
 }

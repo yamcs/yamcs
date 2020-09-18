@@ -1,10 +1,12 @@
 package org.yamcs.xtceproc;
 
+import java.time.Instant;
 import java.util.Map;
 
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AggregateDataType;
@@ -71,7 +73,7 @@ public class DataTypeProcessor {
         } else if (type instanceof BooleanDataType) {
             v = ValueUtility.getBooleanValue((Boolean) o);
         } else if (type instanceof AbsoluteTimeDataType) {
-            v = ValueUtility.getTimestampValue((Long) o);
+            v = ValueUtility.getTimestampValue(TimeEncoding.parse((String) o));
         } else if (type instanceof AggregateDataType) {
             v = getAggregateValue((AggregateDataType) type, (Map<String, Object>) o);
         } else if (type instanceof ArrayDataType) {

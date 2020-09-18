@@ -102,11 +102,12 @@ public class MetaCommandContainerProcessor {
 
         ArgumentType atype = arg.getArgumentType();
         DataEncoding encoding = ((BaseDataType) atype).getEncoding();
-        if(encoding==null) {
-            throw new CommandEncodingException("No encoding available for type '"+atype.getName()+"' used for argument '"+arg.getName()+"'");
+        if (encoding == null) {
+            throw new CommandEncodingException("No encoding available for type '" + atype.getName()
+                    + "' used for argument '" + arg.getName() + "'");
         }
         Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
-        
+
         pcontext.deEncoder.encodeRaw(encoding, rawValue);
 
     }
@@ -115,14 +116,15 @@ public class MetaCommandContainerProcessor {
         Parameter para = paraEntry.getParameter();
         Value paraValue = pcontext.getParameterValue(para);
         if (paraValue == null) {
-            throw new CommandEncodingException("No value found for parameter '"+para.getName()+"'");
+            throw new CommandEncodingException("No value found for parameter '" + para.getName() + "'");
         }
-     
+
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
         DataEncoding encoding = ((BaseDataType) ptype).getEncoding();
-        if(encoding==null) {
-            throw new CommandEncodingException("No encoding available for type '"+ptype.getName()+"' used for parameter '"+para.getName()+"'");
+        if (encoding == null) {
+            throw new CommandEncodingException("No encoding available for type '" + ptype.getName()
+                    + "' used for parameter '" + para.getName() + "'");
         }
         pcontext.deEncoder.encodeRaw(encoding, rawValue);
 

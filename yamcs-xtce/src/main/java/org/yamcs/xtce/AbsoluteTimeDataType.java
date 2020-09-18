@@ -25,7 +25,7 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     private static final long serialVersionUID = 1;
 
     ReferenceTime referenceTime;
-    Instant initialValue;
+    String initialValue;
     
     protected AbsoluteTimeDataType(Builder<?> builder) {
         super(builder);
@@ -51,22 +51,21 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
      */
     protected void setInitialValue(Object initialValue) {
         if(initialValue instanceof String) {
-            this.initialValue = Instant.parse((String) initialValue);    
-        } else if(initialValue instanceof Instant) {
-            this.initialValue = (Instant) initialValue;
+            Instant.parse((String) initialValue);
+            this.initialValue = (String) initialValue;
         } else {
             throw new IllegalArgumentException("Invalid type for initial value"+initialValue.getClass());
         }
         
     }
 
-    public Instant getInitialValue() {
+    public String getInitialValue() {
         return initialValue;
     }
 
     @Override
-    public Instant parseString(String stringValue) {
-        return Instant.parse(stringValue);
+    public String parseString(String stringValue) {
+        return stringValue;
     }
 
     @Override
@@ -85,7 +84,7 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
         public Builder() {
         }
 
-        public Builder(AbsoluteTimeParameterType dataType) {
+        public Builder(AbsoluteTimeDataType dataType) {
             super(dataType);
             this.referenceTime = dataType.referenceTime;
         }

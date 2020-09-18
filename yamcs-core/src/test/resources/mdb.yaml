@@ -15,6 +15,10 @@ refmdb-v6:
            file: "mdb/refmdb-v6.xls"
            enableAliasReferences: false
       
+refxtce:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/ref-xtce.xml"
       
 ccsds-green-book:
     - type: xtce

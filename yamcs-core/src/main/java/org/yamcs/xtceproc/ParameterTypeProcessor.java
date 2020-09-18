@@ -318,55 +318,65 @@ public class ParameterTypeProcessor {
     private Value calibrateAbsoluteTime(ParameterValueList context, AbsoluteTimeParameterType ptype, Value rawValue) {
         ReferenceTime rtime = ptype.getReferenceTime();
         TimeEpoch epoch = rtime.getEpoch();
-        long referenceTime = 0;
+      
+       
+        long offsetMillisec;
+        switch (rawValue.getType()) {
+        case SINT32:
+            offsetMillisec = computeTime(ptype, rawValue.getSint32Value());
+            break;
+        case SINT64:
+            offsetMillisec =  computeTime(ptype, rawValue.getSint64Value());
+        case UINT32:
+            offsetMillisec =  computeTime(ptype, rawValue.getUint32Value() & 0xFFFFFFFFL);
+            break;
+        case UINT64:
+            offsetMillisec =  computeTime(ptype, rawValue.getUint64Value());
+            break;
+        case FLOAT:
+            offsetMillisec =  computeTime(ptype, rawValue.getFloatValue());
+            break;
+        case DOUBLE:
+            offsetMillisec =  computeTime(ptype, rawValue.getDoubleValue());
+            break;
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to absolute time");
+        }
+        long time = 0;
 
         if (epoch != null) {
-            referenceTime = getEpochTime(epoch);
+            time = getEpochTime(epoch, offsetMillisec);
         } else {
             ParameterInstanceRef ref = rtime.getOffsetFrom();
             if (ref != null) {
-                referenceTime = getParaReferenceTime(context, ptype, ref);
+                long referenceTime = getParaReferenceTime(context, ptype, ref);
                 if (referenceTime == TimeEncoding.INVALID_INSTANT) {
                     return null;
                 }
+                time = offsetMillisec+referenceTime;
             } else {
                 log.warn("{}: cannot calibrate with a epoch without a reference", ptype.getName());
                 return null;
             }
         }
-        long rt = referenceTime;
-        switch (rawValue.getType()) {
-        case SINT32:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getSint32Value()));
-        case SINT64:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getSint64Value()));
-        case UINT32:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getUint32Value() & 0xFFFFFFFFL));
-        case UINT64:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getUint64Value()));
-        case FLOAT:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getFloatValue()));
-        case DOUBLE:
-            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getDoubleValue()));
-        default:
-            throw new IllegalStateException(
-                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to absolute time");
+        return ValueUtility.getTimestampValue(time);
+        
+    }
+
+    private long computeTime(AbsoluteTimeParameterType ptype, long offset) {
+        if (ptype.needsScaling()) {
+            return (long) (1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
+        } else {
+            return 1000 * offset;
         }
     }
 
-    private long computeTime(AbsoluteTimeParameterType ptype, long epochMillisec, long offset) {
+    private long computeTime(AbsoluteTimeParameterType ptype, double offset) {
         if (ptype.needsScaling()) {
-            return (long) (epochMillisec + 1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
+            return (long) (1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
         } else {
-            return epochMillisec + 1000 * offset;
-        }
-    }
-
-    private long computeTime(AbsoluteTimeParameterType ptype, long epochMillisec, double offset) {
-        if (ptype.needsScaling()) {
-            return (long) (epochMillisec + 1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
-        } else {
-            return (long) (epochMillisec + 1000 * offset);
+            return (long) (1000 * offset);
         }
     }
 
@@ -391,19 +401,19 @@ public class ParameterTypeProcessor {
         return v.getTimestampValue();
     }
 
-    private long getEpochTime(TimeEpoch epoch) {
+    static long getEpochTime(TimeEpoch epoch, long offset) {
         CommonEpochs ce = epoch.getCommonEpoch();
 
         if (ce != null) {
             switch (ce) {
             case GPS:
-                return TimeEncoding.fromGpsMillisec(0);
+                return TimeEncoding.fromGpsMillisec(offset);
             case J2000:
-                return TimeEncoding.fromJ2000Millisec(0);
+                return TimeEncoding.fromJ2000Millisec(offset);
             case TAI:
-                return TimeEncoding.fromTaiMillisec(0);
+                return TimeEncoding.fromTaiMillisec(offset);
             case UNIX:
-                return TimeEncoding.fromUnixMillisec(0);
+                return TimeEncoding.fromUnixMillisec(offset);
             default:
                 throw new IllegalStateException("Unknonw epoch " + ce);
             }

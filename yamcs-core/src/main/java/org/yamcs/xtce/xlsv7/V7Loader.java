@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
@@ -700,10 +701,7 @@ public class V7Loader extends V7LoaderBase {
         } else if (PARAM_ENGTYPE_BINARY.equalsIgnoreCase(engtype)) {
             ptype = param ? new BinaryParameterType.Builder() : new BinaryArgumentType.Builder();
         } else if (PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-            if (!param) {
-                throw new SpreadsheetLoadException(ctx, "Absolute time arguments are not supported");
-            }
-            ptype = new AbsoluteTimeParameterType.Builder();
+            ptype = param? new AbsoluteTimeParameterType.Builder() :new AbsoluteTimeArgumentType.Builder();
         } else if (engtype.startsWith("{")) {
             if (!engtype.endsWith("}")) {
                 throw new SpreadsheetLoadException(ctx, "Missing ending { from the aggregate");

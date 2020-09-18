@@ -36,6 +36,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.DoubleRange;
+import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
@@ -175,6 +176,7 @@ public class XtceStaxReader {
     private static final String XTCE_LONG_DESCRIPTION = "LongDescription";
     private static final String XTCE_HEADER = "Header";
     private static final String XTCE_ABSOLUTE_TIME_PARAMETER_TYPE = "AbsoluteTimeParameterType";
+    private static final String XTCE_ABSOLUTE_TIME_ARGUMENT_TYPE = "AbsoluteTimeArgumentType";
     private static final String XTCE_PARAMETER_SET = "ParameterSet";
     private static final String XTCE_PARAMETER = "Parameter";
     private static final String XTCE_PARAMETER_REF = "ParameterRef";
@@ -2979,6 +2981,8 @@ public class XtceStaxReader {
                 incompleteType = readStringArgumentType(spaceSystem);
             } else if (isStartElementWithName(XTCE_AGGREGATE_ARGUMENT_TYPE)) {
                 incompleteType = readAggregateArgumentType(spaceSystem);
+            } else if (isStartElementWithName(XTCE_ABSOLUTE_TIME_ARGUMENT_TYPE)) {
+                incompleteType = readAbsoluteTimeArgumentType(spaceSystem);
             } else {
                 logUnknown();
             }
@@ -3197,6 +3201,36 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 skipXtceSection(XTCE_CONTEXT_ALARM_LIST);
             } else if (isEndElementWithName(XTCE_STRING_ARGUMENT_TYPE)) {
+                return incompleteType;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
+
+    private IncompleteType readAbsoluteTimeArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_ABSOLUTE_TIME_ARGUMENT_TYPE);
+        StartElement element = checkStartElementPreconditions();
+
+        AbsoluteTimeArgumentType.Builder typeBuilder = new AbsoluteTimeArgumentType.Builder();
+        IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
+
+        readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (readBaseTypeProperties(typeBuilder)) {
+                continue;
+            } else if (isStartElementWithName(XTCE_REFERENCE_TIME)) {
+                typeBuilder.setReferenceTime(readReferenceTime(spaceSystem));
+            } else if (isStartElementWithName(XTCE_ENCODING)) {
+                readEncoding(spaceSystem, typeBuilder);
+            } else if (isEndElementWithName(XTCE_ABSOLUTE_TIME_ARGUMENT_TYPE)) {
+                if (typeBuilder.getReferenceTime() == null) {
+                    throw new XMLStreamException("AbsoluteTimeParameterType without a reference time not supported",
+                            xmlEvent.getLocation());
+                }
                 return incompleteType;
             } else {
                 logUnknown();

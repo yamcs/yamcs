@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/space/xtce ../../../../omg/space/xtce/schema/SpaceSystemV1.2-27Feb2014-mods.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+	<xtce:CommandMetaData>
+		<xtce:ArgumentTypeSet>
+			<xtce:AbsoluteTimeArgumentType name="gps_time_type">
+				<xtce:UnitSet />
+				<xtce:Encoding>
+					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+				</xtce:Encoding>
+				<xtce:ReferenceTime>
+						<xtce:Epoch>GPS</xtce:Epoch>
+					</xtce:ReferenceTime>
+			</xtce:AbsoluteTimeArgumentType>
+			<xtce:AbsoluteTimeArgumentType name="unix_time_type">
+				<xtce:UnitSet />
+				<xtce:Encoding>
+					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+				</xtce:Encoding>
+				<xtce:ReferenceTime>
+						<xtce:Epoch>UNIX</xtce:Epoch>
+					</xtce:ReferenceTime>
+			</xtce:AbsoluteTimeArgumentType>
+		</xtce:ArgumentTypeSet>
+		<xtce:MetaCommandSet>
+			<xtce:MetaCommand name="command1">
+				<xtce:ArgumentList>
+					<xtce:Argument name="t1" argumentTypeRef="gps_time_type" />
+					<xtce:Argument name="t2" argumentTypeRef="unix_time_type" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command1_Container">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="t1" />
+						<xtce:ArgumentRefEntry argumentRef="t2" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+		</xtce:MetaCommandSet>
+	</xtce:CommandMetaData>
+</xtce:SpaceSystem>

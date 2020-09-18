@@ -329,6 +329,7 @@ public class TimeEncoding {
         return taiUtcConverter.unixToInstant(milliseconds);
     }
 
+    
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant WARNING: this conversion will
      * lose precision (microsecond to millisecond)
@@ -348,7 +349,7 @@ public class TimeEncoding {
      * @param instant
      * @return
      */
-    public static long toUnixTime(long instant) {
+    public static long toUnixMillisec(long instant) {
         return taiUtcConverter.instantToUnix(instant);
     }
 
@@ -413,9 +414,17 @@ public class TimeEncoding {
     public static long fromTaiMillisec(long taitime) {
         return taitime + TAI_EPOCH_YAMCS_EPOCH_DELTA;
     }
+    
+    public static long toTaiMillisec(long instant) {
+        return instant - TAI_EPOCH_YAMCS_EPOCH_DELTA;
+    }
 
     public static long fromJ2000Millisec(long j2000time) {
         return j2000time + J2000_EPOCH_YAMCS_EPOCH_DELTA;
+    }
+    
+    public static long toJ2000Millisec(long instant) {
+        return instant - J2000_EPOCH_YAMCS_EPOCH_DELTA;
     }
 
     /**
