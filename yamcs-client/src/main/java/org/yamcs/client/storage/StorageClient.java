@@ -30,4 +30,8 @@ public class StorageClient {
         bucketService.uploadObject(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
+
+    public Bucket getBucket(String bucket) {
+        return new Bucket(bucketService, bucket);
+    }
 }
