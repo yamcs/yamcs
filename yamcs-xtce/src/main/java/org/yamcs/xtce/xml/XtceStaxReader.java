@@ -354,6 +354,8 @@ public class XtceStaxReader {
                 } else if (isStartElementWithName(XTCE_SPACE_SYSTEM)) {
                     SpaceSystem ss = readSpaceSystem();
                     spaceSystem.addSpaceSystem(ss);
+                } else if (eventType == XMLStreamConstants.PROCESSING_INSTRUCTION) {
+                    log.debug("Skipping processing instruction: {} ", xmlEvent);
                 } else {
                     // something went wrong, all options should be handled by the
                     // upper if-branches
@@ -2234,7 +2236,7 @@ public class XtceStaxReader {
 
             if (isNamedItemProperty()) {
                 readNamedItemProperty(parameter);
-            }  else if (isStartElementWithName(XTCE_PARAMETER_PROPERTIES)) {
+            } else if (isStartElementWithName(XTCE_PARAMETER_PROPERTIES)) {
                 readParameterProperties(spaceSystem, parameter);
             } else if (isEndElementWithName(XTCE_PARAMETER)) {
                 return parameter;
@@ -2402,8 +2404,6 @@ public class XtceStaxReader {
         }
     }
 
-  
-    
     private SequenceContainer readSequenceContainer(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_SEQUENCE_CONTAINER);
         checkStartElementPreconditions();
@@ -2908,7 +2908,8 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_MATH_OPERATION)) {
                 readMathOperation(spaceSystem, algo);
-            } if (isNamedItemProperty()) {
+            }
+            if (isNamedItemProperty()) {
                 readNamedItemProperty(algo);
             } else if (isEndElementWithName(XTCE_MATH_ALGORITHM)) {
                 spaceSystem.addAlgorithm(algo);
@@ -3208,7 +3209,6 @@ public class XtceStaxReader {
         }
     }
 
-
     private IncompleteType readAbsoluteTimeArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_ABSOLUTE_TIME_ARGUMENT_TYPE);
         StartElement element = checkStartElementPreconditions();
@@ -3448,7 +3448,7 @@ public class XtceStaxReader {
 
             if (isNamedItemProperty()) {
                 readNamedItemProperty(arg);
-            }  else if (isEndElementWithName(XTCE_ARGUMENT)) {
+            } else if (isEndElementWithName(XTCE_ARGUMENT)) {
                 return arg;
             } else {
                 logUnknown();
@@ -3575,7 +3575,7 @@ public class XtceStaxReader {
 
             if (isNamedItemProperty()) {
                 readNamedItemProperty(cmdContainer);
-            }  else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
+            } else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
                 readEntryList(spaceSystem, cmdContainer, mc);
             } else if (isStartElementWithName(XTCE_BASE_CONTAINER)) {
                 readBaseContainer(spaceSystem, cmdContainer);
@@ -3971,13 +3971,12 @@ public class XtceStaxReader {
         return (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT && xmlEvent
                 .asStartElement().getName().getLocalPart().equals(localName));
     }
-    
-    
+
     private boolean isNamedItemProperty() {
-        if(xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT) 
-            return false; 
+        if (xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT)
+            return false;
         String name = xmlEvent.asStartElement().getName().getLocalPart();
-        return name==XTCE_ALIAS_SET || name == XTCE_LONG_DESCRIPTION || name == XTCE_ANCILLARY_DATA_SET;
+        return name == XTCE_ALIAS_SET || name == XTCE_LONG_DESCRIPTION || name == XTCE_ANCILLARY_DATA_SET;
     }
 
     void readNamedItemProperty(NameDescription nd) throws XMLStreamException {
@@ -3989,7 +3988,7 @@ public class XtceStaxReader {
             nd.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
         }
     }
-    
+
     void readNamedItemProperty(NameDescription.Builder<?> nd) throws XMLStreamException {
         if (isStartElementWithName(XTCE_ALIAS_SET)) {
             nd.setAliasSet(readAliasSet());
@@ -3999,6 +3998,7 @@ public class XtceStaxReader {
             nd.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
         }
     }
+
     /**
      * Test if the xmlEvent is of type END_ELEMENT and has particular local name. This test is used to identify the end
      * of section.

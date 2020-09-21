@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
 <xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/space/xtce ../../../../omg/space/xtce/schema/SpaceSystemV1.2-27Feb2014-mods.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+	xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
 	<xtce:CommandMetaData>
 		<xtce:ArgumentTypeSet>
 			<xtce:AbsoluteTimeArgumentType name="gps_time_type">
