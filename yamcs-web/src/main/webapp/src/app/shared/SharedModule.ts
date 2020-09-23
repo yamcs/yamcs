@@ -61,6 +61,7 @@ import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
+import { ClassNameHtmlPipe } from './pipes/ClassNameHtmlPipe';
 import { DataRatePipe } from './pipes/DataRatePipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
@@ -217,6 +218,7 @@ const pipes = [
   AgoPipe,
   BasenamePipe,
   BinarySizePipe,
+  ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
   DefaultProcessorPipe,

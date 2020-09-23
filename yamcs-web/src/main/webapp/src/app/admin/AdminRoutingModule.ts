@@ -28,6 +28,8 @@ import { DatabasePage } from './rocksdb/DatabasePage';
 import { DatabasesPage } from './rocksdb/DatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
+import { ThreadPage } from './threads/ThreadPage';
+import { ThreadsPage } from './threads/ThreadsPage';
 
 const routes: Routes = [
   {
@@ -165,6 +167,14 @@ const routes: Routes = [
         path: 'iam/roles/:name',
         pathMatch: 'full',
         component: RolePage,
+      },
+      {
+        path: 'threads',
+        pathMatch: 'full',
+        component: ThreadsPage,
+      }, {
+        path: 'threads/:id',
+        component: ThreadPage,
       }
     ]
   }
@@ -199,6 +209,8 @@ export const routingComponents = [
   RoutesPage,
   ServiceAccountsPage,
   ServicesPage,
+  ThreadsPage,
+  ThreadPage,
   UsersPage,
   UserPage,
 ];

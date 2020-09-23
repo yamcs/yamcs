@@ -54,6 +54,10 @@ public class CallObserver implements Observer<Message> {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, buf);
             httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, responseBody.getContentType());
             httpResponse.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf.readableBytes());
+            if (responseBody.hasFilename()) {
+                httpResponse.headers().set(HttpHeaderNames.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + responseBody.getFilename() + "\"");
+            }
             ctx.addTransferredSize(buf.readableBytes());
             completeRequest(httpResponse);
         } else {

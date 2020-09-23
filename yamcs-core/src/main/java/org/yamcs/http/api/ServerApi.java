@@ -1,9 +1,18 @@
 package org.yamcs.http.api;
 
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.yamcs.CommandOption;
 import org.yamcs.Plugin;
@@ -13,10 +22,13 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.MediaType;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.http.Topic;
@@ -27,12 +39,19 @@ import org.yamcs.protobuf.CloseConnectionRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.GetServerInfoResponse.CommandOptionInfo;
 import org.yamcs.protobuf.GetServerInfoResponse.PluginInfo;
+import org.yamcs.protobuf.GetThreadRequest;
 import org.yamcs.protobuf.ListClientConnectionsResponse;
 import org.yamcs.protobuf.ListRoutesResponse;
+import org.yamcs.protobuf.ListThreadsRequest;
+import org.yamcs.protobuf.ListThreadsResponse;
 import org.yamcs.protobuf.ListTopicsResponse;
 import org.yamcs.protobuf.RouteInfo;
+import org.yamcs.protobuf.ThreadGroupInfo;
+import org.yamcs.protobuf.ThreadInfo;
 import org.yamcs.protobuf.TopicInfo;
+import org.yamcs.protobuf.TraceElementInfo;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 import io.netty.channel.Channel;
@@ -231,8 +250,165 @@ public class ServerApi extends AbstractServerApi<Context> {
     }
 
     @Override
+    public void listThreads(Context ctx, ListThreadsRequest request, Observer<ListThreadsResponse> observer) {
+        ListThreadsResponse.Builder responseb = ListThreadsResponse.newBuilder();
+
+        // Try to acquire group information only available from the actual Thread object
+        Map<Long, ThreadGroupInfo> groupsById = new HashMap<>();
+        for (Thread thread : Thread.getAllStackTraces().keySet()) {
+            ThreadGroup group = thread.getThreadGroup();
+            if (group != null) {
+                groupsById.put(thread.getId(), toThreadGroupInfo(group));
+            }
+        }
+
+        // Use MXBean for the actual dump, inject group info if (still) matched
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        for (java.lang.management.ThreadInfo managementInfo : bean.dumpAllThreads(false, false)) {
+            ThreadGroupInfo group = groupsById.get(managementInfo.getThreadId());
+            responseb.addThreads(toThreadInfo(managementInfo, group));
+        }
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void dumpThreads(Context ctx, Empty request, Observer<HttpBody> observer) {
+        ByteString.Output out = ByteString.newOutput();
+        ThreadMXBean mxbean = ManagementFactory.getThreadMXBean();
+        try {
+            for (java.lang.management.ThreadInfo threadInfo : mxbean.dumpAllThreads(false, false)) {
+                String dump = describeThread(threadInfo);
+                out.write(dump.getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            observer.completeExceptionally(e);
+            return;
+        }
+
+        String timestamp = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        observer.next(HttpBody.newBuilder()
+                .setFilename("thread-dump-" + timestamp.replace(':', '-') + ".txt")
+                .setContentType(MediaType.PLAIN_TEXT.toString())
+                .setData(out.toByteString())
+                .build());
+    }
+
+    // Same as ThreadInfo.toString but without stack trace limitation
+    private String describeThread(java.lang.management.ThreadInfo thread) {
+        StringBuilder sb = new StringBuilder("\"" + thread.getThreadName() + "\"" +
+                " Id=" + thread.getThreadId() + " " +
+                thread.getThreadState());
+        if (thread.getLockName() != null) {
+            sb.append(" on " + thread.getLockName());
+        }
+        if (thread.getLockOwnerName() != null) {
+            sb.append(" owned by \"" + thread.getLockOwnerName() +
+                    "\" Id=" + thread.getLockOwnerId());
+        }
+        if (thread.isSuspended()) {
+            sb.append(" (suspended)");
+        }
+        if (thread.isInNative()) {
+            sb.append(" (in native)");
+        }
+        sb.append('\n');
+
+        StackTraceElement[] stackTrace = thread.getStackTrace();
+        for (int i = 0; i < stackTrace.length && i < stackTrace.length; i++) {
+            StackTraceElement ste = stackTrace[i];
+            sb.append("\tat " + ste.toString());
+            sb.append('\n');
+            if (i == 0 && thread.getLockInfo() != null) {
+                Thread.State ts = thread.getThreadState();
+                switch (ts) {
+                case BLOCKED:
+                    sb.append("\t-  blocked on " + thread.getLockInfo());
+                    sb.append('\n');
+                    break;
+                case WAITING:
+                    sb.append("\t-  waiting on " + thread.getLockInfo());
+                    sb.append('\n');
+                    break;
+                case TIMED_WAITING:
+                    sb.append("\t-  waiting on " + thread.getLockInfo());
+                    sb.append('\n');
+                    break;
+                default:
+                }
+            }
+        }
+
+        return sb.append('\n').toString();
+    }
+
+    @Override
+    public void getThread(Context ctx, GetThreadRequest request, Observer<ThreadInfo> observer) {
+        ThreadGroupInfo groupInfo = null;
+        for (Thread thread : Thread.getAllStackTraces().keySet()) {
+            if (thread.getId() == request.getId()) {
+                ThreadGroup group = thread.getThreadGroup();
+                if (group != null) {
+                    groupInfo = toThreadGroupInfo(group);
+                }
+                break;
+            }
+        }
+
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        java.lang.management.ThreadInfo managementInfo = bean.getThreadInfo(request.getId(), Integer.MAX_VALUE);
+        if (managementInfo != null) {
+            observer.complete(toThreadInfo(managementInfo, groupInfo));
+        } else {
+            throw new NotFoundException("No thread with ID " + request.getId());
+        }
+    }
+
+    @Override
     public void closeConnection(Context ctx, CloseConnectionRequest request, Observer<Empty> observer) {
         httpServer.closeChannel(request.getId());
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    private ThreadGroupInfo toThreadGroupInfo(ThreadGroup group) {
+        ThreadGroupInfo.Builder b = ThreadGroupInfo.newBuilder()
+                .setName(group.getName())
+                .setDaemon(group.isDaemon());
+        ThreadGroup parent = group.getParent();
+        if (parent != null) {
+            b.setParent(toThreadGroupInfo(parent));
+        }
+        return b.build();
+    }
+
+    private ThreadInfo toThreadInfo(java.lang.management.ThreadInfo threadInfo, ThreadGroupInfo group) {
+        ThreadInfo.Builder threadb = ThreadInfo.newBuilder()
+                .setId(threadInfo.getThreadId())
+                .setName(threadInfo.getThreadName())
+                .setState(threadInfo.getThreadState().name())
+                .setNative(threadInfo.isInNative())
+                .setSuspended(threadInfo.isSuspended());
+
+        StackTraceElement[] trace = threadInfo.getStackTrace();
+        for (int i = 0; i < trace.length; i++) {
+            StackTraceElement traceEl = trace[i];
+            TraceElementInfo.Builder elb = TraceElementInfo.newBuilder()
+                    .setClassName(traceEl.getClassName())
+                    .setMethodName(traceEl.getMethodName());
+            String fileName = traceEl.getFileName();
+            if (fileName != null) {
+                elb.setFileName(fileName);
+            }
+            int lineNumber = traceEl.getLineNumber();
+            if (lineNumber >= 0) {
+                elb.setLineNumber(lineNumber);
+            }
+            threadb.addTrace(elb);
+        }
+
+        if (group != null) {
+            threadb.setGroup(group);
+        }
+
+        return threadb.build();
     }
 }
