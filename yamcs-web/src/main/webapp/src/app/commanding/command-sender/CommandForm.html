@@ -1,6 +1,7 @@
 <form [formGroup]="form"
       class="ya-form"
       [class.showAll]="showAll$ | async">
+
   <ng-container *ngFor="let argument of arguments; let first = first">
     <br *ngIf="!first">
     <ng-container [ngSwitch]="argument.type?.engType">
@@ -18,6 +19,11 @@
         {{ argument.name }}<br>
         <input type="radio" [formControlName]="argument.name" value="true"> true
         <input type="radio" [formControlName]="argument.name" value="false"> false
+      </label>
+
+      <label *ngSwitchCase="'time'">
+        {{ argument.name }}
+        <app-date-time [formControlName]="argument.name"></app-date-time>
       </label>
 
       <label *ngSwitchCase="'binary'">
@@ -51,6 +57,11 @@
         {{ argument.name }}<br>
         <input type="radio" [formControlName]="argument.name" value="true"> true
         <input type="radio" [formControlName]="argument.name" value="false"> false
+      </label>
+
+      <label *ngSwitchCase="'time'">
+        {{ argument.name }}
+        <app-date-time [formControlName]="argument.name"></app-date-time>
       </label>
 
       <label *ngSwitchCase="'binary'">
