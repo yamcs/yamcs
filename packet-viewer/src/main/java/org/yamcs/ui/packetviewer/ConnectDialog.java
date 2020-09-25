@@ -118,7 +118,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             username = prefs.getProperty(PREF_USERNAME);
             password = null;
         }
-        contextPath = prefs.getProperty("contextPath", PREF_CONTEXT_PATH);
+        contextPath = prefs.getProperty(PREF_CONTEXT_PATH, null);
         tls = Boolean.parseBoolean(prefs.getProperty("tls", "false"));
     }
 
