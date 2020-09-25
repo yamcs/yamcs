@@ -106,7 +106,7 @@ public interface Link {
      * 
      * @param yamcsInstance
      * @param linkName
-     * @param config  - the configuration
+     * @param config  - the configuration - cannot be null (but can be empty)
      */
     default void init(String yamcsInstance, String linkName, YConfiguration config) {
     }

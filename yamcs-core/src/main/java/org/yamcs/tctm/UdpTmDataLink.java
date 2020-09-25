@@ -63,9 +63,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public void run() {
         while (isRunningAndEnabled()) {
-            TmPacket pwrt = getNextPacket();
-            if (pwrt != null) {
-                tmSink.processPacket(pwrt);
+            TmPacket tmpkt = getNextPacket();
+            if (tmpkt != null) {
+                processPacket(tmpkt);
             }
         }
     }

@@ -2,10 +2,10 @@ package org.yamcs.time;
 
 /**
  * Simulation time model where the simulation starts at javaTime0
- *
- * the simElapsedTime is the simulation elapsedTime counting from javaTime0
- *
- * the speed is the simulation speed. If greater than 0, the time passes even without the update of the simElapsedTime
+ * <p>
+ * The simElapsedTime is the simulation elapsedTime counting from javaTime0
+ * <p>
+ * The speed is the simulation speed. If greater than 0, the time passes even without the update of the simElapsedTime
  *
  *
  * @author nm
@@ -36,10 +36,18 @@ public class SimulationTimeService implements TimeService {
         this.simElapsedTime = simElapsedTime;
     }
 
+    /**
+     * Set the time0
+     * @param time0
+     */
     public void setTime0(long time0) {
         javaTime0 = time0;
     }
 
+    /**
+     * Set the simulation speed. If greater than 0, the time passes even without the update of the simElapsedTime. 
+     * @param simSpeed
+     */
     public void setSimSpeed(double simSpeed) {
         this.speed = simSpeed;
     }

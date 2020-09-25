@@ -96,11 +96,11 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         }
 
         while (isRunningAndEnabled()) {
-            TmPacket pwrt = getNextPacket();
-            if (pwrt == null) {
+            TmPacket tmpkt = getNextPacket();
+            if (tmpkt == null) {
                 break;
             }
-            tmSink.processPacket(pwrt);
+            processPacket(tmpkt);
         }
     }
 

@@ -62,10 +62,10 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             log.info("Injecting the content of {}", f);
             try {
                 TmFileReader prov = getTmFileReader(f.getAbsolutePath());
-                TmPacket pwrt;
-                while ((pwrt = prov.readPacket(timeService.getMissionTime())) != null) {
-                    tmSink.processPacket(pwrt);
-                    updateStats(pwrt.getPacket().length);
+                TmPacket tmpkt;
+                while ((tmpkt = prov.readPacket(timeService.getMissionTime())) != null) {
+                    processPacket(tmpkt);
+                    updateStats(tmpkt.getPacket().length);
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
                     }
