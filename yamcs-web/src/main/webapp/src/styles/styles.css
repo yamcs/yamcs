@@ -233,6 +233,7 @@ a.ya-link.ya-header-link {
   color: black;
   text-transform: inherit;
   cursor: default;
+  position: relative;
 }
 
 .ya-form label.invalid {
