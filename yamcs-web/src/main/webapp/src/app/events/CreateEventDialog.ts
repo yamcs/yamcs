@@ -21,7 +21,7 @@ export class CreateEventDialog {
     this.form = formBuilder.group({
       message: ['', Validators.required],
       severity: 'INFO',
-      time: [utils.printLocalDate(yamcs.getMissionTime(), 'hhmmss'), Validators.required],
+      time: [utils.toISOString(yamcs.getMissionTime()), Validators.required],
     });
   }
 

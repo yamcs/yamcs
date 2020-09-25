@@ -52,7 +52,7 @@ import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { BinaryInput } from './forms/BinaryInput';
 import { CommandSelector } from './forms/CommandSelector';
-import { DateTime } from './forms/DateTime';
+import { DateTimeInput } from './forms/DateTimeInput';
 import { DownloadButton } from './forms/DownloadButton';
 import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { ObjectSelector } from './forms/ObjectSelector';
@@ -172,7 +172,7 @@ const sharedComponents = [
   ColumnChooser,
   CommandSelector,
   ConnectedLabel,
-  DateTime,
+  DateTimeInput,
   DetailPane,
   DetailToolbar,
   Dots,

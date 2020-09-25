@@ -6,8 +6,8 @@
         </app-select>
 
         <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
-          <app-date-time formControlName="customStart"></app-date-time>
-          <app-date-time formControlName="customStop"></app-date-time>
+          <app-date-time-input formControlName="customStart"></app-date-time-input>
+          <app-date-time-input formControlName="customStop"></app-date-time-input>
           <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
         </ng-container>
 

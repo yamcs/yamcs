@@ -18,7 +18,7 @@ export class JumpToDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     if (this.data.date) {
-      this.date.setValue(utils.printLocalDate(this.data.date, 'hhmm'));
+      this.date.setValue(utils.toISOString(this.data.date));
     }
   }
 
