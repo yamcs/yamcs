@@ -3,6 +3,8 @@ package org.yamcs.xtce;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.List;
 
 import org.yamcs.ConfigurationException;
 
@@ -18,10 +20,25 @@ public interface SpaceSystemLoader {
      * loads the SpaceSystem database in memory.
      * Some references may be unresolved
      * 
+     * @deprecated this method is deprecated in favour of {@link #loadList()}
+     * 
      * @throws DatabaseLoadException
      */
+    @Deprecated
     SpaceSystem load() throws ConfigurationException, DatabaseLoadException;
 
+    /**
+     * Loads a list of SpaceSystems. 
+     * <p>
+     * They will be added to the parent in the order in which they appear in the list.
+     * <p>By default this method calls the {@link #load()} and returns a list with one element.
+     *   
+     * @return - the list of 
+     * @throws DatabaseLoadException
+     */
+    default List<SpaceSystem> loadList() throws DatabaseLoadException {
+        return Arrays.asList(load());
+    }
     /**
      * @param consistencyDateFile
      *            check in this file when the last database has been loaded

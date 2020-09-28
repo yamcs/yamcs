@@ -51,3 +51,9 @@ empty-match-criteria:
     - type: xtce
       args:
           file: "src/test/resources/xtce/empty-match-criteria.xml"
+          
+          
+xtce-fileset:
+    - type: xtce
+      args:
+          fileset: ["src/test/resources/xtce/a*.xml", "src/test/resources/xtce/b.xml"]

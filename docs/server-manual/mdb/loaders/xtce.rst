@@ -7,12 +7,24 @@ This loader reads TM/TC definitions from an XML file compliant with the XTCE exc
 Configuration
 -------------
 
-The loader is configured in ``etc/mdb.yaml`` or in the instance configuration by specifying the 'type' as ``xtce``, and providing the location of the XML file in the ``spec`` attribute.
+The loader is configured in ``etc/mdb.yaml`` or in the instance configuration by specifying the 'type' as ``xtce``, and providing the location of the XML file in the ``file`` attribute.
 
 .. code-block:: yaml
 
     - type: "xtce"
-      spec: "BogusSAT.xml"
+      args:
+        file: "BogusSAT.xml"
+      
+      
+Since Yamcs 5.2, it is possible to load multiple XML files by using the ``fileset`` attribute:
+.. code-block:: yaml
+
+    - type: "xtce"
+       args:
+          fileset: ["a*.xml", "b.xml"]
+          
+A glob pattern can be used to match multiple files and/or the files can be specified in the list. The ``**`` for matching directories recursively is not supported.
+
 
 
 Compatibility

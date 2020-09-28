@@ -25,6 +25,9 @@ Multiple different types of loaders may be combined in the loader tree to assemb
 
 For start-up performance, the database is cached serialized on disk in the cache directory. The cached database is composed of two files, one storing the data itself and the other one storing the time when the cache file has been created. These files should be considered Yamcs internal and are subject to change.
 
+Since Yamcs 5.2.0, a database loader (for example the XTCE loader) is able to load multiple space systems which will all be added as siblings. In this case, the subLoaders option cannot be anymore specified (because otherwise it would not be clear to which of the loaded space systems the children will be added).
+
+
 .. note::
 
     Yamcs does not persist TM/TC definitions and therefore does not have any "import" functionality.
