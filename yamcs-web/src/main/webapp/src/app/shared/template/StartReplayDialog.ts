@@ -34,10 +34,10 @@ export class StartReplayDialog {
 
     this.form = formBuilder.group({
       name: [generateRandomName(), Validators.required],
-      start: [utils.printLocalDate(initialStart, 'hhmm'), [
+      start: [utils.toISOString(initialStart), [
         Validators.required,
       ]],
-      stop: [utils.printLocalDate(initialStop, 'hhmm')],
+      stop: [utils.toISOString(initialStop)],
     });
   }
 

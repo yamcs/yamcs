@@ -47,8 +47,8 @@ export class DownloadDumpDialog {
       start = subtractDuration(stop, 'PT1H');
     }
     this.form.setValue({
-      start: utils.printLocalDate(start, 'hhmm'),
-      stop: utils.printLocalDate(stop, 'hhmm'),
+      start: utils.toISOString(start),
+      stop: utils.toISOString(stop),
     });
   }
 

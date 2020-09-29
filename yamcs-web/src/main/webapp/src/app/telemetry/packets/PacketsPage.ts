@@ -92,8 +92,8 @@ export class PacketsPage {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filterForm.get('customStart')!.setValue(utils.printLocalDate(customStart, 'hhmm'));
-        this.filterForm.get('customStop')!.setValue(utils.printLocalDate(customStop, 'hhmm'));
+        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
+        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;

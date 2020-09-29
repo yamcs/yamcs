@@ -386,7 +386,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
-        pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
+        pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, true, maxFrameLength));
 
         pipeline.addLast(new WebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
 
@@ -414,7 +414,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
-        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
+        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, true, maxFrameLength));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);

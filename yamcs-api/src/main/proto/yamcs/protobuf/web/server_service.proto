@@ -9,6 +9,7 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
 
 // Handles incoming requests related to api routes
 service ServerApi {
@@ -34,6 +35,27 @@ service ServerApi {
     };
   }
   
+  // List threads
+  rpc ListThreads(ListThreadsRequest) returns (ListThreadsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/threads"
+    };
+  }
+
+  // Get info on a single thread
+  rpc GetThread(GetThreadRequest) returns (ThreadInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/threads/{id}"
+    };
+  }
+
+  // Get a text-dump with thread information
+  rpc DumpThreads(google.protobuf.Empty) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/threads:dump"
+    };
+  }
+
   // List client connections
   rpc ListClientConnections(google.protobuf.Empty) returns (ListClientConnectionsResponse) {
     option (yamcs.api.route) = {
@@ -47,6 +69,15 @@ service ServerApi {
       delete: "/api/connections/{id}"
     };
   }
+}
+
+message GetThreadRequest {
+  // Thread ID
+  optional int64 id = 1;
+}
+
+message ListThreadsResponse {
+  repeated ThreadInfo threads = 1;
 }
 
 message ListRoutesResponse {
@@ -86,6 +117,34 @@ message TopicInfo {
   optional string inputType = 5;
   optional string outputType = 6;
   optional bool deprecated = 7;
+}
+
+message TraceElementInfo {
+  optional string className = 1;
+  optional string fileName = 2;
+  optional string methodName = 3;
+  optional int32 lineNumber = 4;
+}
+
+message ListThreadsRequest {
+  // Maximum depth of each thread's stacktrace. Default: no limit.
+  optional int32 depth = 1;
+}
+
+message ThreadGroupInfo {
+  optional string name = 1;
+  optional bool daemon = 2;
+  optional ThreadGroupInfo parent = 3;
+}
+
+message ThreadInfo {
+  optional int64 id = 1;
+  optional string name = 2;
+  optional string state = 3;
+  optional bool native = 4;
+  optional bool suspended = 5;
+  optional ThreadGroupInfo group = 6;
+  repeated TraceElementInfo trace = 7;
 }
 
 message GetServerInfoResponse {

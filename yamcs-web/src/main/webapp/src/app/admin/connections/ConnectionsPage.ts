@@ -1,17 +1,19 @@
-import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 import { ClientConnectionInfo } from '../../client';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
+import { TrackBySelectionModel } from '../../shared/table/TrackBySelectionModel';
 
 @Component({
   templateUrl: './ConnectionsPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConnectionsPage implements AfterViewInit {
+export class ConnectionsPage implements AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort)
   sort: MatSort;
@@ -33,21 +35,28 @@ export class ConnectionsPage implements AfterViewInit {
     'actions',
   ];
 
-  dataSource = new MatTableDataSource<ClientConnectionInfo>();
-  selection = new SelectionModel<ClientConnectionInfo>(true, []);
+  tableTrackerFn = (index: number, conn: ClientConnectionInfo) => conn.id;
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  dataSource = new MatTableDataSource<ClientConnectionInfo>();
+  selection = new TrackBySelectionModel<ClientConnectionInfo>(this.tableTrackerFn, true, []);
+
+  private syncSubscription: Subscription;
+
+  constructor(
+    private yamcs: YamcsService,
+    title: Title,
+    synchronizer: Synchronizer,
+  ) {
     title.setTitle('Client connections');
+
     this.refresh();
+    this.syncSubscription = synchronizer.syncSlow(() => this.refresh());
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
-
-  // trackBy is needed to prevent menu from closing when the queue object is updated
-  tableTrackerFn = (index: number, conn: ClientConnectionInfo) => conn.id;
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
@@ -68,9 +77,9 @@ export class ConnectionsPage implements AfterViewInit {
     this.selection.toggle(row);
   }
 
-  refresh() {
-    this.selection.clear();
+  private refresh() {
     this.yamcs.yamcsClient.getClientConnections().then(conns => {
+      this.selection.matchNewValues(conns || []);
       this.dataSource.data = conns || [];
     });
   }
@@ -87,5 +96,11 @@ export class ConnectionsPage implements AfterViewInit {
 
   isGroupCloseEnabled() {
     return !this.selection.isEmpty();
+  }
+
+  ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
   }
 }

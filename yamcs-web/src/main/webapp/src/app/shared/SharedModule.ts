@@ -52,7 +52,7 @@ import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { BinaryInput } from './forms/BinaryInput';
 import { CommandSelector } from './forms/CommandSelector';
-import { DateTime } from './forms/DateTime';
+import { DateTimeInput } from './forms/DateTimeInput';
 import { DownloadButton } from './forms/DownloadButton';
 import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { ObjectSelector } from './forms/ObjectSelector';
@@ -61,6 +61,7 @@ import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
+import { ClassNameHtmlPipe } from './pipes/ClassNameHtmlPipe';
 import { DataRatePipe } from './pipes/DataRatePipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
@@ -171,7 +172,7 @@ const sharedComponents = [
   ColumnChooser,
   CommandSelector,
   ConnectedLabel,
-  DateTime,
+  DateTimeInput,
   DetailPane,
   DetailToolbar,
   Dots,
@@ -217,6 +218,7 @@ const pipes = [
   AgoPipe,
   BasenamePipe,
   BinarySizePipe,
+  ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
   DefaultProcessorPipe,

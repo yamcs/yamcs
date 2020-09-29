@@ -23,7 +23,7 @@
 
       <label *ngSwitchCase="'time'">
         {{ argument.name }}
-        <app-date-time [formControlName]="argument.name"></app-date-time>
+        <app-date-time-input [formControlName]="argument.name"></app-date-time-input>
       </label>
 
       <label *ngSwitchCase="'binary'">
@@ -61,7 +61,7 @@
 
       <label *ngSwitchCase="'time'">
         {{ argument.name }}
-        <app-date-time [formControlName]="argument.name"></app-date-time>
+        <app-date-time-input [formControlName]="argument.name"></app-date-time-input>
       </label>
 
       <label *ngSwitchCase="'binary'">

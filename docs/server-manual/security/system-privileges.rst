@@ -35,6 +35,8 @@ ManageAnyBucket
     Provides full control over any bucket (including user buckets).
 ReadEvents
     Allows to read any event.
+ReadThreads
+    Allows to read thread information.
 WriteEvents
     Allows to manually post events.
 WriteTables

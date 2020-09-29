@@ -34,8 +34,8 @@ export class ExportArchiveDataDialog implements OnDestroy {
     }
 
     this.form.setValue({
-      start: utils.printLocalDate(start, 'hhmm'),
-      stop: utils.printLocalDate(stop, 'hhmm'),
+      start: utils.toISOString(start),
+      stop: utils.toISOString(stop),
     });
 
     this.formChangeSubscription = this.form.valueChanges.subscribe(() => {

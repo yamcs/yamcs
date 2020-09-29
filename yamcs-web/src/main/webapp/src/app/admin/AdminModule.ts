@@ -17,6 +17,8 @@ import { MessageNamePipe } from './routes/MessageNamePipe';
 import { RouteDetail } from './routes/RouteDetail';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
+import { ThreadsTable } from './threads/ThreadsTable';
+import { TraceElement } from './threads/TraceElement';
 
 const pipes = [
   MessageNamePipe,
@@ -42,6 +44,8 @@ const pipes = [
     RouteDetail,
     ServiceState,
     ServicesTable,
+    ThreadsTable,
+    TraceElement,
     UploadObjectsDialog,
     UploadProgressDialog,
     UsersTable,

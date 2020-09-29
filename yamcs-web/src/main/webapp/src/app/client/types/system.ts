@@ -40,6 +40,32 @@ export interface ListProcessorTypesResponse {
   types: string[];
 }
 
+export interface ListThreadsResponse {
+  threads: ThreadInfo[];
+}
+
+export interface ThreadGroup {
+  name: string;
+  parent?: ThreadGroup;
+}
+
+export interface ThreadInfo {
+  id: number;
+  name: string;
+  state: string;
+  native: boolean;
+  suspended: boolean;
+  group: ThreadGroup;
+  trace: TraceElementInfo[];
+}
+
+export interface TraceElementInfo {
+  className: string;
+  fileName: string;
+  methodName: string;
+  lineNumber: number;
+}
+
 export interface ListClearancesResponse {
   clearances: Clearance[];
 }

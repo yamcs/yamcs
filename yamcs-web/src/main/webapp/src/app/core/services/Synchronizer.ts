@@ -10,10 +10,14 @@ export class Synchronizer {
   /**
    * Shared observable that emits every second.
    */
+  private everyFiveSeconds$: Observable<number>;
   private everySecond$: Observable<number>;
   private everyHalfSecond$: Observable<number>;
 
   constructor() {
+    this.everyFiveSeconds$ = timer(5000, 5000).pipe(
+      share(),
+    );
     this.everySecond$ = timer(1000, 1000).pipe(
       share(),
     );
@@ -27,6 +31,13 @@ export class Synchronizer {
    */
   sync(fn: () => void): Subscription {
     return this.everySecond$.subscribe(fn);
+  }
+
+  /**
+   * Execute a function every 5000ms.
+   */
+  syncSlow(fn: () => void): Subscription {
+    return this.everyFiveSeconds$.subscribe(fn);
   }
 
   /**
