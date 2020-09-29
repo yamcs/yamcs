@@ -50,6 +50,7 @@ import org.yamcs.protobuf.ThreadGroupInfo;
 import org.yamcs.protobuf.ThreadInfo;
 import org.yamcs.protobuf.TopicInfo;
 import org.yamcs.protobuf.TraceElementInfo;
+import org.yamcs.security.SystemPrivilege;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -251,6 +252,8 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void listThreads(Context ctx, ListThreadsRequest request, Observer<ListThreadsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+
         ListThreadsResponse.Builder responseb = ListThreadsResponse.newBuilder();
 
         // Try to acquire group information only available from the actual Thread object
@@ -273,6 +276,8 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void dumpThreads(Context ctx, Empty request, Observer<HttpBody> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+
         ByteString.Output out = ByteString.newOutput();
         ThreadMXBean mxbean = ManagementFactory.getThreadMXBean();
         try {
@@ -343,6 +348,8 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void getThread(Context ctx, GetThreadRequest request, Observer<ThreadInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+
         ThreadGroupInfo groupInfo = null;
         for (Thread thread : Thread.getAllStackTraces().keySet()) {
             if (thread.getId() == request.getId()) {

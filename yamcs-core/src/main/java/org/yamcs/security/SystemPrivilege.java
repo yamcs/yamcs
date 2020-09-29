@@ -82,6 +82,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadTables = new SystemPrivilege("ReadTables");
 
     /**
+     * Allows to read thread information
+     */
+    public static final SystemPrivilege ReadThreads = new SystemPrivilege("ReadThreads");
+
+    /**
      * Allows to change online the MDB (calibrators, alarms and algorithms)
      */
     public static final SystemPrivilege ChangeMissionDatabase = new SystemPrivilege("ChangeMissionDatabase");
