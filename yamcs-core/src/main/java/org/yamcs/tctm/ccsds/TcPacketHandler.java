@@ -67,7 +67,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         List<PreparedCommand> l = new ArrayList<>();
         PreparedCommand pc;
         while ((pc = commandQueue.peek()) != null) {
-            int pcLength = pc.getBinary().length;
+            int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
                 pc = commandQueue.poll();
                 if (pc == null) {
