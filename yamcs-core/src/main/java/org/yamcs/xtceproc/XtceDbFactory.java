@@ -137,7 +137,11 @@ public class XtceDbFactory {
         if (db == null) {
             // Construct a Space System with one branch from the config file and the other one /yamcs for system
             // variables
-            SpaceSystem rootSs = loaderTree.load();
+            List<SpaceSystem> sslist = loaderTree.load();
+            if (sslist.size() != 1) {
+                throw new IllegalStateException("root loader has to load exactly one subsystem");
+            }
+            SpaceSystem rootSs = sslist.get(0);
             SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
@@ -146,7 +150,7 @@ public class XtceDbFactory {
             int n;
             while ((n = resolveReferences(rootSs, rootSs, refFinder)) > 0) {
             }
-            
+
             StringBuilder sb = new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
             if (n == 0) {
@@ -199,15 +203,17 @@ public class XtceDbFactory {
      * @param sysDb
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
-    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, ReferenceFinder refFinder) throws DatabaseLoadException {
+    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, ReferenceFinder refFinder)
+            throws DatabaseLoadException {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
-        if (refs == null) { //this can happen if the spacesystem has been unserialized since the reference name is transient
-            //do not return here, we need to check the subsystems below
+        if (refs == null) { // this can happen if the spacesystem has been unserialized since the reference name is
+                            // transient
+            // do not return here, we need to check the subsystems below
             refs = Collections.emptyList();
         }
-        
-        int n = refs.isEmpty()?-1:0;
+
+        int n = refs.isEmpty() ? -1 : 0;
 
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
@@ -227,10 +233,11 @@ public class XtceDbFactory {
                 throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
             boolean resolved;
-            if(rr.getAggregateMemberPath() == null) {
+            if (rr.getAggregateMemberPath() == null) {
                 resolved = nr.tryResolve(rr.getNameDescription());
             } else {
-                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(), rr.getAggregateMemberPath());
+                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(),
+                        rr.getAggregateMemberPath());
             }
             if (resolved) {
                 n++;
@@ -271,7 +278,6 @@ public class XtceDbFactory {
         return sp;
     }
 
-
     private static LoaderTree getLoaderTree(YConfiguration c)
             throws ConfigurationException, DatabaseLoadException {
         String type = c.getString("type");
@@ -293,7 +299,7 @@ public class XtceDbFactory {
             type = "org.yamcs.xtce.EmptyNodeLoader";
         }
         try {
-            if(args==null) {
+            if (args == null) {
                 l = YObjectLoader.loadObject(type);
             } else {
                 l = YObjectLoader.loadObject(type, args);
@@ -520,20 +526,24 @@ public class XtceDbFactory {
             return false;
         }
 
-        public SpaceSystem load() throws ConfigurationException {
-            try {
-                SpaceSystem rss = root.load();
-                if (children != null) {
-                    for (LoaderTree lt : children) {
-                        SpaceSystem ss = lt.load();
+        public List<SpaceSystem> load() throws ConfigurationException {
+            List<SpaceSystem> ssList = root.loadList();
+
+            if (children != null) {
+                if (ssList.size() != 1) {
+                    throw new ConfigurationException("Cannot load multiple space systems and have sub loaders");
+                }
+                SpaceSystem rss = ssList.get(0);
+
+                for (LoaderTree lt : children) {
+                    List<SpaceSystem> clist = lt.load();
+                    for (SpaceSystem ss : clist) {
                         rss.addSpaceSystem(ss);
                         ss.setParent(rss);
                     }
                 }
-                return rss;
-            } catch (ConfigurationException e) {
-                throw e;
             }
+            return ssList;
         }
 
         public void writeConsistencyDate(FileWriter fw) throws IOException {
