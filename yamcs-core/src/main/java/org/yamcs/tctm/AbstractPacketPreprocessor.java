@@ -14,11 +14,16 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
-
+/**
+ * This class provides some common facilities for the packet preprocessors.
+ * 
+ * @author nm
+ *
+ */
 public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     public static enum TimeEpochs {
-        TAI, J2000, UNIX, GPS
+        TAI, J2000, UNIX, GPS, CUSTOM
     };
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
@@ -29,8 +34,15 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
     protected EventProducer eventProducer;
     protected TimeService timeService;
+
     // used by some preprocessors to convert the generation time in the packet to yamcs time
     protected TimeEpochs timeEpoch;
+
+    // if timeEpoch is CUSTOM, the following two are used
+    // customEpoch is a Yamcs instant if customEpochIncludeLeapSecond = true 
+    // and is a unix time if customEpochIncludeLeapSecond=false
+    protected long customEpoch;
+    protected boolean customEpochIncludeLeapSecond;
 
     protected TimeDecoder timeDecoder = null;
     protected ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
@@ -50,7 +62,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-
+        System.out.println("config: "+config.getRoot());
         configureTimeDecoder(config);
 
         if (config != null) {
@@ -82,7 +94,16 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                         + " not supported. Supported: CUC=CCSDS unsegmented time");
             }
             timeEpoch = c.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
+            if (timeEpoch == TimeEpochs.CUSTOM) {
+                customEpochIncludeLeapSecond = c.getBoolean("timeIncludesLeapSeconds", true);
+                String epochs = c.getString("epochUTC");
+                customEpoch = TimeEncoding.parse(epochs);
+                if (!customEpochIncludeLeapSecond) {
+                    customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
+                }
+            }
         } else {
+            timeEpoch = TimeEpochs.GPS;
             timeDecoder = new CucTimeDecoder(-1);
         }
         log.debug("Using time decoder {}", timeDecoder);
@@ -104,7 +125,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         if ("16-SUM".equalsIgnoreCase(type)) {
             return new Running16BitChecksumCalculator();
         } else if ("CRC-16-CCIIT".equalsIgnoreCase(type)) {
-            if(crcConf==null) {
+            if (crcConf == null) {
                 return new CrcCciitCalculator(crcConf);
             } else {
                 return new CrcCciitCalculator();
@@ -113,12 +134,13 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             return null;
         } else {
             throw new ConfigurationException(
-                    "Unknown errorDetectionWord type '" + type + "': supported types are 16-SUM and CRC-16-CCIIT (or NONE)");
+                    "Unknown errorDetectionWord type '" + type
+                            + "': supported types are 16-SUM and CRC-16-CCIIT (or NONE)");
         }
     }
 
-    protected static long shiftFromEpoch(TimeEpochs epoch, long t) {
-        switch (epoch) {
+    protected long shiftFromEpoch(long t) {
+        switch (timeEpoch) {
         case GPS:
             return TimeEncoding.fromGpsMillisec(t);
         case J2000:
@@ -127,8 +149,14 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             return TimeEncoding.fromTaiMillisec(t);
         case UNIX:
             return TimeEncoding.fromUnixMillisec(t);
+        case CUSTOM:
+            if (customEpochIncludeLeapSecond) {
+                return customEpoch + t;
+            } else {
+                return TimeEncoding.fromUnixMillisec(customEpoch + t);
+            }
         default:
-            throw new IllegalStateException("Unknonw epoch " + epoch);
+            throw new IllegalStateException("Unknonw epoch " + timeEpoch);
         }
     }
 }

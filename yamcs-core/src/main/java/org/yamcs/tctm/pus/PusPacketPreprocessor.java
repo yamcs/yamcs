@@ -121,7 +121,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         } else {
             try {
                 long t = timeDecoder.decode(packet, pktTimeOffset);
-                gentime = timeEpoch == null ? t : shiftFromEpoch(timeEpoch, t);
+                gentime = timeEpoch == null ? t : shiftFromEpoch(t);
             } catch (Exception e) {
                 eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
                 corrupted = true;
@@ -152,7 +152,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         } else {
             try {
                 long t = timeDecoder.decode(packet, timePktTimeOffset);
-                gentime = timeEpoch == null ? t : shiftFromEpoch(timeEpoch, t);
+                gentime = timeEpoch == null ? t : shiftFromEpoch(t);
             } catch (Exception e) {
                 eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
                 corrupted = true;

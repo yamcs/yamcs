@@ -16,13 +16,47 @@ import org.yamcs.utils.TimeEncoding;
  * Preprocessor for the CFS TM packets:
  * <ul>
  * <li>CCSDS primary header 6 bytes</li>
- * <li>Time seconds (GPS -TBD) 4 bytes</li>
- * <li>Time milliseconds 2 bytes</li>
+ * <li>Time seconds 4 bytes</li>
+ * <li>subseconds(1/2^16 fraction of seconds) 2 bytes</li>
  * </ul>
  * 
- * Note: since Yamcs 5 there is an option byteOrder: LITTLE_ENDIAN which can be configured for this preprocessor. 
- * <p>The option is used only for decoding the timestamp in the secondary header: the 4 bytes second and 2 bytes milliseconds are decoded in little endian.
- * <p> The primary CCSDS header is always decoded as BIG_ENDIAN.
+ * Options:
+ * <pre>
+ *   dataLinks:
+ *   ...
+ *      packetPreprocessor: org.yamcs.tctm.cfs.CfsPacketPreprocessor
+ *      packetPreprocessorArgs:
+ *          byteOrder: LITTLE_ENDIAN
+ *          timeEncoding:
+ *              epoch: CUSTOM
+ *              epochUTC: 1970-01-01T00:00:00Z
+ *              timeIncludesLeapSeconds: false
+ *   
+ *  </pre>  
+ * 
+ * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used only for decoding the timestamp in the secondary header: the 4 bytes second and 2 bytes
+ * subseconds are decoded in little endian.
+ * <p>
+ * The primary CCSDS header is always decoded as BIG_ENDIAN.
+ * <p>
+ * The conversion of the extracted time to Yamcs time is based on the timeEncoding properties.
+ * 
+ * {@code epoch} can be one of TAI, J2000, UNIX, GPS, CUSTOM.
+ * <p>
+ * If CUSTOM is specified, the {@code epochUTC} has to be used to specify the UTC time which is used as an epoch (UTC is
+ * used here loosely because strictly speaking UTC has been only introduced in 1972 so it does not make sense for the times before).
+ * <p>
+ * The time read from the packet is interpreted as delta from {@code epochUTC}.
+ * <p>If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds included
+ * (practically it is the real time that passed).
+ * <p>
+ * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
+ * <p>
+ * The example above is equivalent with:
+ * <pre>
+ * timeEncoding:
+ *    epoch: UNIX
+ * </pre>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
@@ -83,8 +117,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
             subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
         }
-
-        return TimeEncoding.fromGpsMillisec(1000 * sec + subsecs * 1000 / 65536);
+        return shiftFromEpoch(1000 * sec + subsecs * 1000 / 65536);
     }
 
     public boolean checkForSequenceDiscontinuity() {
