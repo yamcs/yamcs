@@ -19,13 +19,13 @@ import com.google.protobuf.Timestamp;
 /**
  * Utility class to convert between TAI and UTC. It reads the UTC-TAI.history (available at
  * http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)
- * 
+ * <p>
  * It only supports added leap seconds not removed ones (negative leap seconds have never happened and probably never
  * will).
- * 
+ * <p>
  * It only works correctly with the times after 1972 when the difference between TAI and UTC is an integer number of
  * seconds.
- * 
+ * <p>
  * Most of the code is copied or inspired from the TAI C library http://cr.yp.to/libtai.html
  *
  *
@@ -380,7 +380,7 @@ public class TaiUtcConverter {
     }
 
     /**
-     * transforms unix time expressed in milliseconds since 1970 to instant
+     * transforms UNIX time expressed in milliseconds since 1970 to instant
      * 
      * @param t
      * @return
@@ -396,6 +396,7 @@ public class TaiUtcConverter {
         }
         return t + ls * 1000;
     }
+
 
     public static boolean isLeap(final int year) {
         return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
