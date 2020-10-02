@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Represents a list of aggregate member names.
  * 
- * 
+ * <p>
  * This class maintains a cache of aggregate members names in order to be reused for all the aggregate values with the
  * same type.
  * 

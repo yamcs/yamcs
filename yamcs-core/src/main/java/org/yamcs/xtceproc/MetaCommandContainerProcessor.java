@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.*;
@@ -101,15 +102,28 @@ public class MetaCommandContainerProcessor {
         }
 
         ArgumentType atype = arg.getArgumentType();
-        DataEncoding encoding = ((BaseDataType) atype).getEncoding();
-        if (encoding == null) {
-            throw new CommandEncodingException("No encoding available for type '" + atype.getName()
-                    + "' used for argument '" + arg.getName() + "'");
-        }
         Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
+        encodeRawValue(arg.getName(), atype, rawValue, pcontext);
+    }
 
-        pcontext.deEncoder.encodeRaw(encoding, rawValue);
-
+    private void encodeRawValue(String argName, ArgumentType atype, Value rawValue, TcProcessingContext pcontext) {
+        if (atype instanceof BaseDataType) {
+            DataEncoding encoding = ((BaseDataType) atype).getEncoding();
+            if (encoding == null) {
+                throw new CommandEncodingException("No encoding available for type '" + atype.getName()
+                        + "' used for argument '" + argName + "'");
+            }
+            pcontext.deEncoder.encodeRaw(encoding, rawValue);
+        } else if (atype instanceof AggregateArgumentType) {
+            AggregateArgumentType aggtype = (AggregateArgumentType) atype;
+            AggregateValue aggRawValue = (AggregateValue)rawValue;
+            for (Member aggm : aggtype.getMemberList()) {
+                Value mvalue = aggRawValue.getMemberValue(aggm.getName());
+                encodeRawValue(argName+"."+aggm.getName(), (ArgumentType) aggm.getType(), mvalue, pcontext);
+            }
+        } else {
+            throw new CommandEncodingException("Arguments of type "+atype+" not supported");
+        }
     }
 
     private void fillInParameterEntry(ParameterEntry paraEntry, TcProcessingContext pcontext) {

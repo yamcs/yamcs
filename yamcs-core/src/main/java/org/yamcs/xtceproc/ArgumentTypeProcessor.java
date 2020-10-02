@@ -1,9 +1,11 @@
 package org.yamcs.xtceproc;
 
 import java.util.List;
+import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -11,6 +13,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
+import org.yamcs.xtce.AggregateArgumentType;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BooleanArgumentType;
@@ -23,6 +26,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.Member;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.TimeEpoch;
@@ -57,10 +61,14 @@ public class ArgumentTypeProcessor {
             return decalibrateBoolean((BooleanArgumentType) atype, v);
         } else if (atype instanceof AbsoluteTimeArgumentType) {
             return decalibrateAbsoluteTime((AbsoluteTimeArgumentType) atype, v);
+        } else if (atype instanceof AggregateArgumentType) {
+            return decalibrateAggregate((AggregateArgumentType) atype, (AggregateValue)v);
         } else {
             throw new IllegalArgumentException("decalibration for " + atype + " not implemented");
         }
     }
+
+    
 
     private Value decalibrateEnumerated(EnumeratedArgumentType atype, Value v) {
         if(v.getType()==Type.ENUMERATED) {
@@ -243,6 +251,19 @@ public class ArgumentTypeProcessor {
         }
     }
     
+    
+    private Value decalibrateAggregate(AggregateArgumentType atype, AggregateValue v) {
+        System.out.println("v: "+v);
+        AggregateValue rv = new AggregateValue(atype.getMemberNames());
+        for(Member aggm: atype.getMemberList()) {
+            Value mv = decalibrate((ArgumentType)aggm.getType(), v.getMemberValue(aggm.getName()));
+            rv.setMemberValue(aggm.getName(), mv);
+        }
+        
+        return rv;
+    }
+    
+    
     public static void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
         if (type instanceof IntegerArgumentType) {
             IntegerArgumentType intType = (IntegerArgumentType) type;
@@ -312,6 +333,16 @@ public class ArgumentTypeProcessor {
             if (!found) {
                 throw new ErrorInCommand("Value '" + v
                         + "' supplied for enumeration argument cannot be found in enumeration list " + vlist);
+            }
+        } else if (type instanceof AggregateArgumentType) {
+            AggregateArgumentType atype = (AggregateArgumentType)type;
+            Map<String, Object> mvalue = (Map<String, Object>)o;
+            
+            for(Member m: atype.getMemberList()) {
+                if(!mvalue.containsKey(m.getName())) {
+                    throw new ErrorInCommand("Value for aggregate argument '" +type.getName() 
+                            + "' does not contain a value for member " + m.getName());   
+                }
             }
         } else if (type instanceof BooleanArgumentType || type instanceof AbsoluteTimeArgumentType) {
             // nothing to check

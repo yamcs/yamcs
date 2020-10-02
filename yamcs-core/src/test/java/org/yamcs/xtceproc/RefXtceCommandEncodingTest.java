@@ -2,6 +2,7 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -20,6 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 /**
@@ -60,6 +62,29 @@ public class RefXtceCommandEncodingTest {
         
         int unixTime = ByteArrayUtils.decodeInt(cmdb, 4);
         assertEquals(Instant.parse(tstring).toEpochMilli()/1000, unixTime);
+        
+    }
+    
+    @Test(expected = org.yamcs.ErrorInCommand.class)
+    public void testAggregateCmdArgIncompleteValue() throws Exception{
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 0}");
+        arguments.add(argumentAssignment1);
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+    
+    @Test
+    public void testAggregateCmdArg() throws Exception{
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 23.4}");
+        arguments.add(argumentAssignment1);
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals(12, b.length);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        assertEquals(42, bb.getInt());
+        assertEquals(23.4, bb.getDouble(), 1e-5);
         
     }
 }
