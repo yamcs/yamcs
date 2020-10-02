@@ -62,7 +62,6 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        System.out.println("config: "+config.getRoot());
         configureTimeDecoder(config);
 
         if (config != null) {
