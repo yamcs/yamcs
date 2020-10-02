@@ -91,8 +91,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             } else {
                 long t = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeLong(packet, timestampOffset)
                         : ByteArrayUtils.decodeLongLE(packet, timestampOffset);
-
-                gentime = TimeEncoding.fromUnixMillisec(t);
+                gentime = shiftFromEpoch(t);
             }
         }
 
