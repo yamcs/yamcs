@@ -45,7 +45,9 @@ invalidPackets (string)
 
 invalidPacketsStream (string)
     If ``invalidPackets`` is set to ``DIVERT``, this configures the stream where the packets are sent.
-    
+
+updateSimulationTime (boolean)
+    If set to true, the link will update the simulation time using the generation time of each packet received. The SimulationTimeService has to be configured for the instance, otherwise an error will be raised at startup.
 
 Other options are link-specific and documented in their respective sections.
           
