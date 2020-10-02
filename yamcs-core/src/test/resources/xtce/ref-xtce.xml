@@ -10,8 +10,8 @@
 					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
 				</xtce:Encoding>
 				<xtce:ReferenceTime>
-						<xtce:Epoch>GPS</xtce:Epoch>
-					</xtce:ReferenceTime>
+					<xtce:Epoch>GPS</xtce:Epoch>
+				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeArgumentType>
 			<xtce:AbsoluteTimeArgumentType name="unix_time_type">
 				<xtce:UnitSet />
@@ -19,9 +19,27 @@
 					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
 				</xtce:Encoding>
 				<xtce:ReferenceTime>
-						<xtce:Epoch>UNIX</xtce:Epoch>
-					</xtce:ReferenceTime>
+					<xtce:Epoch>UNIX</xtce:Epoch>
+				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeArgumentType>
+
+			<xtce:AggregateArgumentType name="aggr_arg_type1">
+				<xtce:MemberList>
+					<xtce:Member name="m1" typeRef="u32" />
+					<xtce:Member name="m2" typeRef="f64limit100" />
+				</xtce:MemberList>
+			</xtce:AggregateArgumentType>
+			<xtce:IntegerArgumentType name="u32" signed="false">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+			</xtce:IntegerArgumentType>
+			<xtce:FloatArgumentType name="f64limit100">
+				<xtce:UnitSet />
+				<xtce:FloatDataEncoding sizeInBits="64" />
+				<xtce:ValidRangeSet>
+					 <xtce:ValidRange maxInclusive="100"/>
+				</xtce:ValidRangeSet>
+			</xtce:FloatArgumentType>
 		</xtce:ArgumentTypeSet>
 		<xtce:MetaCommandSet>
 			<xtce:MetaCommand name="command1">
@@ -33,6 +51,16 @@
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="t1" />
 						<xtce:ArgumentRefEntry argumentRef="t2" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="command2">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="aggr_arg_type1" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="test_cmd_arg">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
 				</xtce:CommandContainer>
 			</xtce:MetaCommand>

@@ -83,7 +83,7 @@ The other elements are supported one way or another, exceptions or changes from 
   | Introduced in XTCE 1.2 for command arguments. Yamcs only supports one range in the set.
 
 * | BooleanDataType
-  | In XTCE, each ``BooleanDataType`` has a string representation. In Yamcs the value is mapped to a org.yacms.parameter.BooleanValue or the protobuf equivalnet that is a wrapper for a boolean (either true or false in all sane programming languages). The string value is neverhteless supported in comparisons and mathalgorithms but they are converted internally to the boolean value. If you want to get to the string representation from the client, use an ``EnumeratedParameterType``.
+  | In XTCE, each ``BooleanDataType`` has a string representation. In Yamcs the value is mapped to a org.yacms.parameter.BooleanValue or the protobuf equivalent that is a wrapper for a boolean (either true or false in all sane programming languages). The string value is neverhteless supported in comparisons and mathalgorithms but they are converted internally to the boolean value. If you want to get to the string representation from the client, use an ``EnumeratedParameterType``.
 
 * | RelativeTimeDataType
   | Not supported.
@@ -106,6 +106,6 @@ The other elements are supported one way or another, exceptions or changes from 
 
 .. rubric:: Commanding
 
-* Aggregates and Arrays are not supported for commands (they are for telemetry).
+* Arrays are not supported for commands (they are for telemetry).
 * | ArgumentRefEntry
   | ``IncludeCondition`` and ``RepeatEntry`` are not supported
