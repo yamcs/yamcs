@@ -85,6 +85,14 @@ public class RefXtceCommandEncodingTest {
         ByteBuffer bb = ByteBuffer.wrap(b);
         assertEquals(42, bb.getInt());
         assertEquals(23.4, bb.getDouble(), 1e-5);
-        
+    }
+
+    @Test(expected = org.yamcs.ErrorInCommand.class)
+    public void testAggregateCmdArgOutOfRange() throws Exception{
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 123.4}");
+        arguments.add(argumentAssignment1);
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
     }
 }

@@ -26,16 +26,19 @@
 			<xtce:AggregateArgumentType name="aggr_arg_type1">
 				<xtce:MemberList>
 					<xtce:Member name="m1" typeRef="u32" />
-					<xtce:Member name="m2" typeRef="f64" />
+					<xtce:Member name="m2" typeRef="f64limit100" />
 				</xtce:MemberList>
 			</xtce:AggregateArgumentType>
 			<xtce:IntegerArgumentType name="u32" signed="false">
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
 			</xtce:IntegerArgumentType>
-			<xtce:FloatArgumentType name="f64">
+			<xtce:FloatArgumentType name="f64limit100">
 				<xtce:UnitSet />
 				<xtce:FloatDataEncoding sizeInBits="64" />
+				<xtce:ValidRangeSet>
+					 <xtce:ValidRange maxInclusive="100"/>
+				</xtce:ValidRangeSet>
 			</xtce:FloatArgumentType>
 		</xtce:ArgumentTypeSet>
 		<xtce:MetaCommandSet>

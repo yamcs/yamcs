@@ -339,10 +339,12 @@ public class ArgumentTypeProcessor {
             Map<String, Object> mvalue = (Map<String, Object>)o;
             
             for(Member m: atype.getMemberList()) {
+                
                 if(!mvalue.containsKey(m.getName())) {
                     throw new ErrorInCommand("Value for aggregate argument '" +type.getName() 
                             + "' does not contain a value for member " + m.getName());   
                 }
+                checkRange((ArgumentType) m.getType(), mvalue.get(m.getName()));
             }
         } else if (type instanceof BooleanArgumentType || type instanceof AbsoluteTimeArgumentType) {
             // nothing to check
