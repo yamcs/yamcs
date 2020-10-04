@@ -2,6 +2,8 @@ package org.yamcs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +29,23 @@ public class Spec {
     public static final Spec ANY = new Spec();
     static {
         ANY.allowUnknownKeys = true;
+    }
+
+    private static final Spec OPTION_DESCRIPTOR = new Spec();
+    static {
+        OPTION_DESCRIPTOR.addOption("title", OptionType.STRING).withRequired(true);
+        OPTION_DESCRIPTOR.addOption("description", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.STRING);
+        OPTION_DESCRIPTOR.addOption("type", OptionType.STRING)
+                .withRequired(true)
+                .withChoices(OptionType.class);
+        OPTION_DESCRIPTOR.addOption("required", OptionType.BOOLEAN).withDefault(false);
+        OPTION_DESCRIPTOR.addOption("secret", OptionType.BOOLEAN).withDefault(false);
+        OPTION_DESCRIPTOR.addOption("default", OptionType.ANY);
+        OPTION_DESCRIPTOR.addOption("elementType", OptionType.STRING)
+                .withChoices(OptionType.class);
+        OPTION_DESCRIPTOR.addOption("suboptions", OptionType.MAP)
+                .withSpec(ANY);
     }
 
     private Map<String, Option> options = new HashMap<>();
@@ -221,7 +240,7 @@ public class Spec {
                     throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
-                Object defaultValue = option.getDefaultValue();
+                Object defaultValue = option.computeDefaultValue();
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
@@ -229,6 +248,10 @@ public class Spec {
         }
 
         return result;
+    }
+
+    public Collection<Option> getOptions() {
+        return options.values();
     }
 
     private Option getOption(String key) {
@@ -414,6 +437,8 @@ public class Spec {
         private final Spec parentSpec;
         private final String name;
         private final OptionType type;
+        private String title;
+        private List<String> description;
         private boolean required;
         private boolean secret;
         private Object defaultValue;
@@ -427,6 +452,56 @@ public class Spec {
             this.parentSpec = parentSpec;
             this.name = name;
             this.type = type;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public OptionType getType() {
+            return type;
+        }
+
+        public boolean isRequired() {
+            return required;
+        }
+
+        public boolean isSecret() {
+            return secret;
+        }
+
+        public OptionType getElementType() {
+            return elementType;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public List<String> getDescription() {
+            return description;
+        }
+
+        public String getDeprecationMessage() {
+            return deprecationMessage;
+        }
+
+        public Spec getSpec() {
+            return spec;
+        }
+
+        public Object getDefaultValue() {
+            return defaultValue;
+        }
+
+        public Option withTitle(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Option withDescription(String... description) {
+            this.description = Arrays.asList(description);
+            return this;
         }
 
         /**
@@ -481,6 +556,15 @@ public class Spec {
         public Option withChoices(Object... choices) {
             this.choices = Arrays.asList(choices);
             return this;
+        }
+
+        /**
+         * Sets the allowed values of this option based on the states of an Enum.
+         */
+        public <T extends Enum<T>> Option withChoices(Class<T> enumClass) {
+            return withChoices(EnumSet.allOf(enumClass).stream()
+                    .map(Enum::name)
+                    .toArray());
         }
 
         /**
@@ -554,7 +638,7 @@ public class Spec {
             }
         }
 
-        private Object getDefaultValue() {
+        private Object computeDefaultValue() {
             if (defaultValue != null) {
                 if (type == OptionType.LIST_OR_ELEMENT && !(defaultValue instanceof List)) {
                     return Arrays.asList(defaultValue);
@@ -564,7 +648,7 @@ public class Spec {
             if (applySpecDefaults) {
                 Map<String, Object> result = new LinkedHashMap<>();
                 for (Option option : spec.options.values()) {
-                    Object subDefaultValue = option.getDefaultValue();
+                    Object subDefaultValue = option.computeDefaultValue();
                     if (subDefaultValue != null) {
                         result.put(option.name, subDefaultValue);
                     }
@@ -573,6 +657,38 @@ public class Spec {
             }
             return null;
         }
+    }
+
+    /**
+     * Creates a spec object based on a option descriptors.
+     */
+    @SuppressWarnings("unchecked")
+    public static Spec fromDescriptor(Map<String, Map<String, Object>> optionDescriptors) throws ValidationException {
+        Spec spec = new Spec();
+        for (Entry<String, Map<String, Object>> entry : optionDescriptors.entrySet()) {
+            String optionName = entry.getKey();
+            Map<String, Object> optionDescriptor = OPTION_DESCRIPTOR.validate(entry.getValue());
+
+            Option option = spec.addOption(optionName, OptionType.valueOf((String) optionDescriptor.get("type")))
+                    .withTitle((String) optionDescriptor.get("title"))
+                    .withDefault(optionDescriptor.get("default"))
+                    .withRequired((boolean) optionDescriptor.get("required"))
+                    .withSecret((boolean) optionDescriptor.get("secret"))
+                    .withDeprecationMessage((String) optionDescriptor.get("deprecationMessage"));
+            if (optionDescriptor.containsKey("description")) {
+                option.withDescription(((List<String>) optionDescriptor.get("description")).toArray(new String[0]));
+            }
+            if (optionDescriptor.containsKey("elementType")) {
+                option.withElementType(OptionType.valueOf((String) optionDescriptor.get("elementType")));
+            }
+            if (optionDescriptor.containsKey("suboptions")) {
+                Map<String, Map<String, Object>> suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor
+                        .get("suboptions");
+                Spec subspec = fromDescriptor(suboptionDescriptors);
+                option.withSpec(subspec);
+            }
+        }
+        return spec;
     }
 
     /**

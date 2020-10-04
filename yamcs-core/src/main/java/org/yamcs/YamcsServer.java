@@ -130,6 +130,7 @@ public class YamcsServer {
     private boolean help;
 
     private YConfiguration config;
+    private Spec spec;
     private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
 
     private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
@@ -309,8 +310,8 @@ public class YamcsServer {
      * An example use case would be a custom TC {@link Link} that may support additional arguments for controlling its
      * behaviour.
      * <p>
-     * While not enforced we recommend to call this method from a {@link Plugin#onLoad()} hook as this will avoid
-     * registering an option multiple times (attempts to do so would generate an error).
+     * While not enforced we recommend to call this method from a {@link Plugin#onLoad(YConfiguration)} hook as this
+     * will avoid registering an option multiple times (attempts to do so would generate an error).
      * 
      * @param option
      *            the new command option.
@@ -344,6 +345,13 @@ public class YamcsServer {
      */
     public YConfiguration getConfig() {
         return config;
+    }
+
+    /**
+     * Returns the configuration specification for the config returned by {@link #getConfig()}.
+     */
+    public Spec getSpec() {
+        return spec;
     }
 
     private int getOnlineInstanceCount() {
@@ -1101,7 +1109,7 @@ public class YamcsServer {
         serviceSpec.addOption("name", OptionType.STRING);
         serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
-        Spec spec = new Spec();
+        spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
                 .withSpec(serviceSpec);
         spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
@@ -1109,7 +1117,7 @@ public class YamcsServer {
         spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
         spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
         spec.addOption("serverId", OptionType.STRING);
-        spec.addOption("secretKey", OptionType.STRING);
+        spec.addOption("secretKey", OptionType.STRING).withSecret(true);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {

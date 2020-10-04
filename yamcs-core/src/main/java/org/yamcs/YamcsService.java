@@ -9,7 +9,7 @@ import com.google.common.util.concurrent.Service;
 public interface YamcsService extends Service {
 
     /**
-     * Returns the valid configuration of the input args of this service.
+     * Returns the valid configuration options for this service.
      * 
      * @return the argument specification, or <tt>null</tt> if the args should not be validated.
      */

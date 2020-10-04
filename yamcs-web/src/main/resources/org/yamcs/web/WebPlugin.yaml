@@ -1,0 +1,144 @@
+options:
+  tag:
+    title: Tag
+    description:
+      - Short descriptor string of this Yamcs server. If present this is shown in the top
+        bar. The primary motivation for this option is to be able to distinguish between
+        multiple Yamcs servers in distributed deployments.
+    type: STRING
+    
+  displayPath:
+    title: Display Path
+    description:
+      - Filesystem path where to find display resources. If this is not specified, Yamcs
+        stores displays in a regular bucket (in binary form). Using the filesystem allows
+        to manage displays outside of Yamcs; for example with a versioning system.
+    type: STRING
+    
+  displayFolderPerInstance:
+    title: Display Folder Per Instance
+    description:
+      - Controls whether displays are specific to an instance.
+    type: BOOLEAN
+    default: false
+
+  stackPath:
+    title: Stack Path
+    description:
+      - Filesystem path where to find command stacks. If this is not specified, Yamcs
+        stores stacks in a regular bucket (in binary form). Using the filesystem allows
+        to manage stacks outside of Yamcs; for example with a versioning system.
+    type: STRING
+    
+  stackFolderPerInstance:
+    title: Stack Folder Per Instance
+    description:
+      - Controls whether stacks are specific to an instance.
+    type: BOOLEAN
+    default: false
+    
+  staticRoot:
+    title: Static Root
+    description:
+      - Filesystem path where to locate the web files for the Yamcs Web Interface
+        (*.js, *.css, *.html, ...). If not specified, Yamcs will search the
+        classpath for these resources (preferred).
+      - It should only be necessary to use this option when doing development work
+        on the Yamcs Web Interface. It allows to run npm in watch mode for a
+        save-and-refresh development cycle.
+    type: STRING
+
+  twoStageCommanding:
+    title: Two-stage Commanding
+    description:
+      - Controls whether to protect commanding from from accidental clicks.
+        If true issuing a command will require two clicks at least (arm-and-issue).
+      - This feature is primarily intended for an operational setting.
+    type: BOOLEAN
+    default: false
+
+  commandClearances:
+    title: Require Level-based Command Clearance
+    description:
+      - Controls whether commands, in addition to privilege checking, require a user to
+        be cleared for sending them.
+      - This feature is primarily intended for an operational setting as an alternative
+        to supervised command queues.
+    type: BOOLEAN
+    default: false
+
+  completeness:
+    title: Show CCSDS Completeness Functionalities
+    description:
+      - Controls whether functionalities related to CCSDS completeness are shown.
+      - Only enable when the service CcsdsTmIndex is used.
+    type: BOOLEAN
+    default: false
+    
+  logoutRedirectUrl:
+    title: Logout Redirect URL
+    description:
+      - The URL to redirect to after logging out of Yamcs. If unset, users are
+        redirected to the built-in login page.
+    type: STRING
+
+  cfdp:
+    title: Show CFDP Functionalities
+    description:
+      - Controls whether functionalities related to CFDP are shown.
+      - Only enable when the service CfdpService is used.
+    type: BOOLEAN
+    default: false
+    
+  dass:
+    title: Show DaSS Functionalities
+    description:
+      - Controls whether functionalities related to DaSS gap retrieval
+        are shown.
+      - This function requires proprietary services that are not available
+        in the open-source Yamcs distribution, and shall be removed whenever
+        technically possible.
+    type: BOOLEAN
+    default: false
+
+  tc:
+    title: Show Commanding Functionalities
+    description:
+      - Controls whether commmanding functionalities are shown.
+    type: BOOLEAN
+    default: true
+
+  tmArchive:
+    title: Show TM Archive Functionalities
+    description:
+      - Controls whether functionalities related to TM archiving are shown.
+    type: BOOLEAN
+    default: true
+
+  events:
+    title: Events
+    type: LIST
+    elementType: MAP
+    suboptions:
+      extraColumns:
+        title: Extra Columns
+        description:
+          - Additional event columns specific to a deployment.
+          - This feature makes use of Protobuf 2 extensions to the Event message.
+        type: MAP
+        suboptions:
+          id:
+            title: ID
+            type: STRING
+            required: true
+          label:
+            title: Label
+            type: STRING
+            required: true
+          after:
+            title: After
+            type: STRING
+            required: true
+          width:
+            title: Width
+            type: STRING

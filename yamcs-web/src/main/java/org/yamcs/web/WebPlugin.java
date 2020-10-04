@@ -11,8 +11,6 @@ import java.nio.file.Paths;
 
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
-import org.yamcs.Spec;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.HttpServer;
@@ -28,59 +26,8 @@ public class WebPlugin implements Plugin {
 
     private Log log = new Log(getClass());
 
-    public WebPlugin() {
-        Spec spec = new Spec();
-        spec.addOption("tag", OptionType.STRING);
-        spec.addOption("displayPath", OptionType.STRING);
-        spec.addOption("displayFolderPerInstance", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("stackPath", OptionType.STRING);
-        spec.addOption("stackFolderPerInstance", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("staticRoot", OptionType.STRING);
-        spec.addOption("twoStageCommanding", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("commandClearances", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("completeness", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("logoutRedirectUrl", OptionType.STRING);
-        spec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
-        spec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
-
-        Spec featuresSpec = new Spec();
-        featuresSpec.addOption("cfdp", OptionType.BOOLEAN)
-                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
-        featuresSpec.addOption("dass", OptionType.BOOLEAN)
-                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
-        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false)
-                .withDeprecationMessage("The layout functionality was removed");
-        featuresSpec.addOption("tc", OptionType.BOOLEAN)
-                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
-        featuresSpec.addOption("tmArchive", OptionType.BOOLEAN)
-                .withDeprecationMessage("Define this property one level higher ('features' block was deprecated)");
-        spec.addOption("features", OptionType.MAP)
-                .withSpec(featuresSpec)
-                .withApplySpecDefaults(true);
-
-        Spec extraColumnSpec = new Spec();
-        extraColumnSpec.addOption("id", OptionType.STRING).withRequired(true);
-        extraColumnSpec.addOption("label", OptionType.STRING).withRequired(true);
-        extraColumnSpec.addOption("after", OptionType.STRING).withRequired(true);
-        extraColumnSpec.addOption("width", OptionType.STRING);
-
-        Spec eventsSpec = new Spec();
-        eventsSpec.addOption("extraColumns", OptionType.LIST).withElementType(OptionType.MAP).withSpec(extraColumnSpec);
-        spec.addOption("events", OptionType.MAP).withSpec(eventsSpec);
-
-        YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
-    }
-
     @Override
-    public void onLoad() throws PluginException {
-        YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
-        YConfiguration config = YConfiguration.emptyConfig();
-        if (yamcsConfig.containsKey("yamcs-web")) {
-            config = yamcsConfig.getConfig("yamcs-web");
-        }
-
+    public void onLoad(YConfiguration config) throws PluginException {
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         try {
             if (config.containsKey("displayPath")) {
