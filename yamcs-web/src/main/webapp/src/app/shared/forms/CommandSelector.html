@@ -20,15 +20,15 @@
 
   <ng-container cdkColumnDef="description">
     <th mat-header-cell *cdkHeaderCellDef>Description</th>
-    <td mat-cell *cdkCellDef="let command">
-      {{ command.shortDescription || '-' }}
+    <td mat-cell *cdkCellDef="let item">
+      {{ item.command?.shortDescription || '-' }}
     </td>
   </ng-container>
 
   <ng-container cdkColumnDef="significance">
     <th mat-header-cell *cdkHeaderCellDef style="width: 1px">Significance</th>
-    <td mat-cell *cdkCellDef="let command">
-      <app-significance-level [level]="command.significance?.consequenceLevel"></app-significance-level>
+    <td mat-cell *cdkCellDef="let item">
+      <app-significance-level [level]="item.command?.significance?.consequenceLevel"></app-significance-level>
     </td>
   </ng-container>
 
