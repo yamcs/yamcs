@@ -4,6 +4,7 @@ import java.nio.ByteOrder;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.tctm.AbstractPacketPreprocessor.TimeEpochs;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -18,8 +19,10 @@ import org.yamcs.utils.TimeEncoding;
  * <tr>
  * <td>timestampOffset</td>
  * <td>Offset in the packet where to read the 8 bytes timestamp from. If negative, do not read the timestmap from within
- * the
- * packet but use the local wallclock time instead</td>
+ * the packet but use the local wallclock time instead. The way to translate the timestamp to Yamcs time is configured
+ * by the {@code timeEncoding} property.
+ * 
+ * </td>
  * </tr>
  * <tr>
  * <td>seqCountOffset</td>
@@ -33,9 +36,14 @@ import org.yamcs.utils.TimeEncoding;
  * </tr>
  * <tr>
  * <td>byteOrder</td>
- * <td>Can be BIG_ENDIAN (default) or LITTLE_ENDIAN. Configures the byte order used for reading the timestamp, sequence count and crc</td>
+ * <td>Can be BIG_ENDIAN (default) or LITTLE_ENDIAN. Configures the byte order used for reading the timestamp, sequence
+ * count and crc</td>
  * </tr>
- * 
+ * <tr>
+ * <td>timeEncoding</td>
+ * <td>Can be used to configure the way the timestamp is translated to Yamcs time. See the
+ * {@link AbstractPacketPreprocessor} for details. If this option is not specified, the default epoch used is UNIX.
+ * See the
  * </table>
  * 
  * @author nm
@@ -53,6 +61,9 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
         super(yamcsInstance, config);
         timestampOffset = config.getInt("timestampOffset");
         seqCountOffset = config.getInt("seqCountOffset");
+        if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
+            this.timeEpoch = TimeEpochs.UNIX;
+        }
     }
 
     @Override

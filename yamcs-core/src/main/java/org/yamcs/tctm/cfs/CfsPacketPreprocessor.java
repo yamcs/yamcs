@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.logging.Log;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -21,6 +20,7 @@ import org.yamcs.utils.TimeEncoding;
  * </ul>
  * 
  * Options:
+ * 
  * <pre>
  *   dataLinks:
  *   ...
@@ -31,36 +31,31 @@ import org.yamcs.utils.TimeEncoding;
  *              epoch: CUSTOM
  *              epochUTC: 1970-01-01T00:00:00Z
  *              timeIncludesLeapSeconds: false
- *   
- *  </pre>  
  * 
- * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used only for decoding the timestamp in the secondary header: the 4 bytes second and 2 bytes
+ * </pre>
+ * 
+ * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used only for decoding the timestamp in the secondary
+ * header: the 4 bytes second and 2 bytes
  * subseconds are decoded in little endian.
  * <p>
  * The primary CCSDS header is always decoded as BIG_ENDIAN.
  * <p>
- * The conversion of the extracted time to Yamcs time is based on the timeEncoding properties.
- * 
- * {@code epoch} can be one of TAI, J2000, UNIX, GPS, CUSTOM.
- * <p>
- * If CUSTOM is specified, the {@code epochUTC} has to be used to specify the UTC time which is used as an epoch (UTC is
- * used here loosely because strictly speaking UTC has been only introduced in 1972 so it does not make sense for the times before).
- * <p>
- * The time read from the packet is interpreted as delta from {@code epochUTC}.
- * <p>If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds included
- * (practically it is the real time that passed).
- * <p>
- * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
- * <p>
- * The example above is equivalent with:
+ * For explanation on the {@code timeEncoding} property, please see {@link AbstractPacketPreprocessor}. The default
+ * timeEncoding used if none is specified, is GPS, equivalent with this configuration:
  * <pre>
  * timeEncoding:
- *    epoch: UNIX
+ *     epoch: GPS
+ * </pre>
+ * which is also equivalent with this more detailed configuration:
+ * <pre>
+ * timeEncoding:
+ *     epoch: CUSTOM
+ *     epochUTC: "1980-01-06T00:00:00Z"
+ *     timeIncludesLeapSeconds: true
  * </pre>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
-    private final Log log;
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
 
@@ -70,7 +65,9 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
-        this.log = new Log(getClass(), yamcsInstance);
+        if(!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
+            this.timeEpoch = TimeEpochs.GPS;
+        }
     }
 
     @Override

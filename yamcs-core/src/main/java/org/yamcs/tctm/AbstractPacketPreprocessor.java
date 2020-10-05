@@ -16,7 +16,41 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 /**
  * This class provides some common facilities for the packet preprocessors.
+ * Options:
+ * <pre>
+ *   dataLinks:
+ *   ...
+ *      packetPreprocessor: org.yamcs.tctm.concrete_classname
+ *      packetPreprocessorArgs:
+ *          byteOrder: LITTLE_ENDIAN
+ *          timeEncoding:
+ *              epoch: CUSTOM
+ *              epochUTC: 1970-01-01T00:00:00Z
+ *              timeIncludesLeapSeconds: false
+ *   
+ *  </pre>  
  * 
+ * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used by some implementing classes to decode parts of the header.
+ * <p>
+ * The {@code timeEncoding} is used to convert the extracted time to Yamcs time.
+ * 
+ * {@code epoch} can be one of TAI, J2000, UNIX, GPS, CUSTOM.
+ * <p>
+ * If CUSTOM is specified, the {@code epochUTC} has to be used to specify the UTC time which is used as an epoch (UTC is
+ * used here loosely because strictly speaking UTC has been only introduced in 1972 so it does not make sense for the times before).
+ * <p>
+ * The time read from the packet is interpreted as delta from {@code epochUTC}.
+ * <p>If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds included
+ * (practically it is the real time that passed).
+ * <p>
+ * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
+ * <p>
+ * The example above is equivalent with:
+ * <pre>
+ * timeEncoding:
+ *    epoch: UNIX
+ * </pre>
+ * If this option is not configured, the default will be different for each pre-processor.   
  * @author nm
  *
  */
