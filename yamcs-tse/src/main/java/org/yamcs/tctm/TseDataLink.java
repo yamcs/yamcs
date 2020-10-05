@@ -52,7 +52,6 @@ public class TseDataLink extends AbstractLink {
     // the angle brackets which are used for argument substitution)
     private static final Pattern PARAMETER_REFERENCE = Pattern.compile("`(.*?)`");
 
-    private volatile boolean disabled = false;
     private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
     private AtomicLong outCount = new AtomicLong();
 
@@ -201,25 +200,6 @@ public class TseDataLink extends AbstractLink {
     }
 
     @Override
-    public void enable() {
-        disabled = false;
-        createBootstrap();
-    }
-
-    @Override
-    public void disable() {
-        disabled = true;
-        if (channel != null) {
-            channel.close();
-        }
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    @Override
     public long getDataInCount() {
         return ppStream.getDataCount() - inStartCount;
     }
@@ -243,7 +223,7 @@ public class TseDataLink extends AbstractLink {
     }
 
     private void createBootstrap() {
-        if (disabled) {
+        if (disabled.get()) {
             return;
         }
         if (channel != null && channel.isActive()) {
@@ -278,7 +258,7 @@ public class TseDataLink extends AbstractLink {
                 log.info("Link established to {}:{}", host, port);
                 channel = f.channel();
                 channel.closeFuture().addListener(closeFuture -> {
-                    if (!disabled && !eventLoopGroup.isShuttingDown()) {
+                    if (isRunningAndEnabled()) {
                         log.warn("Link to {}:{} closed. Retrying in 10s", host, port);
                         eventLoopGroup.schedule(() -> createBootstrap(), 10, TimeUnit.SECONDS);
                     }
@@ -303,13 +283,15 @@ public class TseDataLink extends AbstractLink {
     }
 
     @Override
-    protected void doDisable() throws Exception {
-        channel.close();
+    protected void doEnable() throws Exception {
+        createBootstrap();
     }
 
     @Override
-    protected void doEnable() throws Exception {
-        createBootstrap();
+    protected void doDisable() throws Exception {
+        if (channel != null) {
+            channel.close();
+        }
     }
 
     @Override

@@ -124,10 +124,10 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     }
 
     protected void doDisable() throws Exception {
-    };
+    }
 
     protected void doEnable() throws Exception {
-    };
+    }
 
     /**
      * In case the link should be connected (i.e. is running and enabled) this method is called to return the actual
