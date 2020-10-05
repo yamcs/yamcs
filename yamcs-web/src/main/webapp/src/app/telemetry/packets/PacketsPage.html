@@ -57,11 +57,8 @@
     <div class="panel-content">
       <form [formGroup]="filterForm">
         <div class="filter-bar">
-          <app-search-filter formControlName="filter"
-                             placeholder="Filter by text search">
-          </app-search-filter>
-        </div>
-        <div class="filter-bar">
+          <app-select [options]="nameOptions$ | async"
+                      formControlName="name"></app-select>
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
