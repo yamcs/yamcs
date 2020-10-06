@@ -181,9 +181,6 @@ enum ProtoDataType {
   INSTANCE = 20;
   STREAM_EVENT = 21;
   COP1_STATUS = 22;
-  
-  
-  EXTENSION_DATA = 100;
 }
 
 //used to replay (concurrently) TM packets, parameters and events

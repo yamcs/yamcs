@@ -12,13 +12,10 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
@@ -55,8 +52,6 @@ import org.yamcs.http.api.TagApi;
 import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
-import org.yamcs.http.websocket.ConnectedWebSocketClient;
-import org.yamcs.http.websocket.WebSocketResource;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
@@ -123,10 +118,8 @@ public class HttpServer extends AbstractYamcsService {
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
 
-    // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
+    // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
     private CorsConfig corsConfig;
-
-    private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
 
     private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
     private JsonFormat.Parser jsonParser;
@@ -428,14 +421,6 @@ public class HttpServer extends AbstractYamcsService {
 
     public List<Topic> getTopics() {
         return topics;
-    }
-
-    public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {
-        webSocketExtensions.add(extension);
-    }
-
-    public Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> getWebSocketExtensions() {
-        return webSocketExtensions;
     }
 
     public ProtobufRegistry getProtobufRegistry() {
