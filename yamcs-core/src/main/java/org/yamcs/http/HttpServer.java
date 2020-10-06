@@ -2,18 +2,12 @@ package org.yamcs.http;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,11 +62,11 @@ import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
@@ -93,7 +87,6 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
@@ -124,14 +117,11 @@ public class HttpServer extends AbstractYamcsService {
 
     private MetricRegistry metricRegistry = new MetricRegistry();
 
-    private InetAddress address;
-    private int port;
-    private int tlsPort;
+    private List<Binding> bindings = new ArrayList<>(2);
+
     private String contextPath;
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
-    private List<String> tlsCerts;
-    private String tlsKey;
 
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
@@ -172,10 +162,19 @@ public class HttpServer extends AbstractYamcsService {
                 .withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65536);
 
+        Spec bindingSpec = new Spec();
+        bindingSpec.addOption("address", OptionType.STRING);
+        bindingSpec.addOption("port", OptionType.INTEGER).withRequired(true);
+        bindingSpec.addOption("tlsCert", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
+        bindingSpec.addOption("tlsKey", OptionType.STRING);
+        bindingSpec.requireTogether("tlsCert", "tlsKey");
+
         Spec spec = new Spec();
         spec.addOption("address", OptionType.STRING);
         spec.addOption("port", OptionType.INTEGER);
-        spec.addOption("tlsPort", OptionType.INTEGER);
+        spec.addOption("tlsPort", OptionType.INTEGER).withDeprecationMessage(
+                "Use 'port' instead. If you want to use both TLS and non-TLS, define "
+                        + "'port' and optionally 'address', 'tlsCert' and 'tlsKey' under a subsection 'bindings'");
         spec.addOption("tlsCert", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
@@ -184,9 +183,21 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
+        spec.addOption("bindings", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(bindingSpec);
 
-        spec.requireOneOf("port", "tlsPort");
-        spec.requireTogether("tlsPort", "tlsCert", "tlsKey");
+        // Use bindings instead, tlsPort will be removed
+        spec.mutuallyExclusive("port", "tlsPort");
+
+        // When using multiple bindings, best to avoid confusion and disable the top-level properties
+        spec.mutuallyExclusive("address", "bindings");
+        spec.mutuallyExclusive("port", "bindings");
+        spec.mutuallyExclusive("tlsPort", "bindings");
+        spec.mutuallyExclusive("tlsCert", "bindings");
+        spec.mutuallyExclusive("tlsKey", "bindings");
+
+        spec.requireTogether("tlsCert", "tlsKey");
         return spec;
     }
 
@@ -196,21 +207,25 @@ public class HttpServer extends AbstractYamcsService {
 
         clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        if (config.containsKey("address")) {
+        if (config.containsKey("port") || config.containsKey("tlsPort")) {
             try {
-                address = InetAddress.getByName(config.getString("address"));
+                Binding binding = Binding.fromConfig(config);
+                bindings.add(binding);
             } catch (UnknownHostException e) {
-                throw new InitException("Cannot determine IP address for '" + address + "'", e);
+                throw new InitException("Cannot determine IP address for binding " + config, e);
+            }
+        }
+        if (config.containsKey("bindings")) {
+            for (YConfiguration bindingConfig : config.getConfigList("bindings")) {
+                try {
+                    Binding binding = Binding.fromConfig(bindingConfig);
+                    bindings.add(binding);
+                } catch (UnknownHostException e) {
+                    throw new InitException("Cannot determine IP address for binding " + bindingConfig, e);
+                }
             }
         }
 
-        port = config.getInt("port", -1);
-        tlsPort = config.getInt("tlsPort", -1);
-
-        if (tlsPort != -1) {
-            tlsCerts = config.getList("tlsCert");
-            tlsKey = config.getString("tlsKey");
-        }
         contextPath = config.getString("contextPath");
         if (!contextPath.isEmpty()) {
             if (!contextPath.startsWith("/")) {
@@ -350,96 +365,34 @@ public class HttpServer extends AbstractYamcsService {
         workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
-        if (port != -1) {
-            createAndBindBootstrap(workerGroup, null, port);
-            log.debug("Serving http from {}", getHttpBaseUri());
-        }
-        if (tlsPort != -1) {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            for (String cert : tlsCerts) {
-                try (InputStream certIn = Files.newInputStream(Paths.get(cert))) {
-                    ByteStreams.copy(certIn, buf);
-                }
-            }
-
-            try (InputStream chain = new ByteArrayInputStream(buf.toByteArray());
-                    InputStream key = new FileInputStream(tlsKey)) {
-                SslContext sslCtx = SslContextBuilder
-                        .forServer(chain, key)
-                        .build();
-                createAndBindBootstrap(workerGroup, sslCtx, tlsPort);
-                log.debug("Serving https from {}", getHttpsBaseUri());
-            }
+        for (Binding binding : bindings) {
+            createAndBindBootstrap(workerGroup, binding);
+            log.debug("Serving from {}{}", binding, contextPath);
         }
     }
 
-    private void createAndBindBootstrap(EventLoopGroup workerGroup, SslContext sslCtx, int port)
-            throws InterruptedException {
+    private void createAndBindBootstrap(EventLoopGroup workerGroup, Binding binding)
+            throws InterruptedException, SSLException, IOException {
+        SslContext sslContext = null;
+        if (binding.isTLS()) {
+            sslContext = binding.createSslContext();
+        }
+
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(this, sslCtx));
+                .childHandler(new HttpServerChannelInitializer(this, sslContext));
 
         // Bind and start to accept incoming connections.
+        InetAddress address = binding.getAddress();
+        int port = binding.getPort();
         if (address == null) {
             bootstrap.bind(new InetSocketAddress(port)).sync();
         } else {
             bootstrap.bind(new InetSocketAddress(address, port)).sync();
         }
-    }
-
-    public boolean isHttpEnabled() {
-        return port != -1;
-    }
-
-    /**
-     * Returns a prettified rendering of the known absolute http address (including context root).
-     */
-    public String getHttpBaseUri() {
-        if (!isHttpEnabled()) {
-            return null;
-        }
-
-        StringBuilder b = new StringBuilder("http://");
-        try {
-            InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
-            b.append(inetAddress.getHostName());
-        } catch (UnknownHostException e) {
-            b.append("localhost");
-        }
-        if (port != 80) {
-            b.append(":").append(port);
-        }
-
-        return b.append(contextPath).toString();
-    }
-
-    public boolean isHttpsEnabled() {
-        return tlsPort != -1;
-    }
-
-    /**
-     * Returns a prettified rendering of the known absolute https address (including context root).
-     */
-    public String getHttpsBaseUri() {
-        if (!isHttpsEnabled()) {
-            return null;
-        }
-
-        StringBuilder b = new StringBuilder("https://");
-        try {
-            InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
-            b.append(inetAddress.getHostName());
-        } catch (UnknownHostException e) {
-            b.append("localhost");
-        }
-        if (tlsPort != 443) {
-            b.append(":").append(tlsPort);
-        }
-
-        return b.append(contextPath).toString();
     }
 
     Handler createHandler(String pathSegment) {
@@ -449,6 +402,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public TokenStore getTokenStore() {
         return tokenStore;
+    }
+
+    public List<Binding> getBindings() {
+        return bindings;
     }
 
     public String getContextPath() {
@@ -523,6 +480,6 @@ public class HttpServer extends AbstractYamcsService {
             public void onFailure(Throwable t) {
                 notifyFailed(ExceptionUtil.unwind(t));
             }
-        });
+        }, MoreExecutors.directExecutor());
     }
 }

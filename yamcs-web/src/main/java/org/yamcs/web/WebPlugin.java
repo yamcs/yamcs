@@ -13,6 +13,7 @@ import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.Binding;
 import org.yamcs.http.HttpServer;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.FileUtils;
@@ -90,11 +91,8 @@ public class WebPlugin implements Plugin {
         // Print these log statements via a ready listener because it is more helpful
         // if they appear at the end of the boot log.
         YamcsServer.getServer().addReadyListener(() -> {
-            if (httpServer.isHttpEnabled()) {
-                log.info("Website deployed at {}", httpServer.getHttpBaseUri());
-            }
-            if (httpServer.isHttpsEnabled()) {
-                log.info("Website deployed at {}", httpServer.getHttpsBaseUri());
+            for (Binding binding : httpServer.getBindings()) {
+                log.info("Website deployed at {}{}", binding, httpServer.getContextPath());
             }
         });
     }
