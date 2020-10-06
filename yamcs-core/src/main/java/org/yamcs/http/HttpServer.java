@@ -226,6 +226,16 @@ public class HttpServer extends AbstractYamcsService {
             }
         }
 
+        if (bindings.isEmpty()) {
+            if (config.containsKey("bindings")) {
+                log.info("Running without binding");
+            } else {
+                // User does not specify anything at all, just provide HTTP over 8090
+                // TODO this can become the default of the top-level 'port' property but first tlsPort must be gone
+                bindings.add(new Binding(8090));
+            }
+        }
+
         contextPath = config.getString("contextPath");
         if (!contextPath.isEmpty()) {
             if (!contextPath.startsWith("/")) {
