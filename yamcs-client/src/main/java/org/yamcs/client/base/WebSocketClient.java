@@ -271,7 +271,7 @@ public class WebSocketClient {
     }
 
     public boolean isConnected() {
-        return nettyChannel.isOpen();
+        return nettyChannel != null && nettyChannel.isOpen();
     }
 
     private SslContext getSslContext() throws GeneralSecurityException, SSLException {
