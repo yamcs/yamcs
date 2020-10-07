@@ -3,31 +3,23 @@ Configuration Sections
 
 Some of the standard configuration files can be extended with custom configuration options. This is called a configuration section. Sections are represented by a top-level identifier and are scoped to a type of configuration file.
 
-Configuration sections should be added from the constructor of a custom Yamcs plugin. This ensures they are added only once, and will allow Yamcs to properly validate server configuration.
+A Yamcs plugin is automatically associated with a configuration section named after the plugin identifier.
 
-As an example, the ``yamcs-web`` module is packaged as a Yamcs plugin, and has this class that adds support for a ``yamcs-web`` section to the main ``yamcs.yaml``:
+For example, the ``yamcs-web`` module is packaged as a Yamcs plugin, and accepts configuration options read from the ``yamcs-web`` section of the main ``yamcs.yaml``:
 
 .. code-block:: java
 
     public class WebPlugin implements Plugin {
 
-        public WebPlugin {
+        public Spec getSpec() {
             Spec spec = new Spec();
             // ...
-
-
-            YamcsServer yamcs = YamcsServer.getServer();
-            yamcs.addConfigurationSection("yamcs-web", spec);
+            return spec;
         }
 
         @Override
-        public void onLoad() throws PluginException {
-            // Retrieve the actual configuration
-            YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
-            YConfiguration config = YConfiguration.emptyConfig();
-            if (yamcsConfig.containsKey("yamcs-web")) {
-                config = yamcsConfig.getConfig("yamcs-web");
-            }
+        public void onLoad(YConfiguration config) throws PluginException {
+            // Use the actual configuration
         }
     }
 
@@ -44,7 +36,7 @@ If you have custom components that want to access this configuration, one possib
 
 .. rubric:: Instance-specific configuration
 
-Besides extending the main configuration file ``yamcs.yaml``, you may also want to add instance-specific configuration options. These would be considered when validating any ``yamcs.[instance].yaml`` file:
+Besides global plugin configuration options in ``yamcs.yaml``, you may also want to add instance-specific configuration options. These would be considered when validating any ``yamcs.[instance].yaml`` file:
 
 .. code-block:: java
 

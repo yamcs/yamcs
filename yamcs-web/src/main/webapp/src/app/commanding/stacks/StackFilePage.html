@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
     <a mat-icon-button
        [routerLink]="folderLink"
        [queryParams]="{c: yamcs.context}"
@@ -44,62 +44,82 @@
     </button>
   </app-instance-toolbar>
 
-  <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
-    <div id="drag-boundary">
-      <div cdkDrag cdkDragBoundary="#drag-boundary"
-           class="entry"
-           *ngFor="let entry of entries$ | async"
-           [class.selected]="entry === (selectedEntry$ | async)">
+  <app-detail-pane>
+    <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">
+      <app-detail-toolbar>
+        Command Info
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-stacked-command-detail [entry]="selectedEntry">
+        </app-stacked-command-detail>
+        <p>&nbsp;</p>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select an entry
+      </app-detail-toolbar>
+    </ng-template>
+  </app-detail-pane>
 
-        <div class="in">
-          <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
-            <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
-              [{{ entry.executionNumber }}]:
-            </ng-container>
-            <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
-              [ ]:
-            </ng-container>
-          </div>
-          <div class="body">
-            {{ entry.name }}
-            <mat-icon *ngIf="entry.comment"
-                      [matTooltip]="entry.comment"
-                      class="icon14"
-                      style="vertical-align: middle;">
-              comment
-            </mat-icon>
-            <span *ngFor="let item of entry.extra | keyvalue">
-              [{{ item.key}}: {{ item.value | value }}]
-            </span>
-            <table class="args">
-              <tr *ngFor="let arg of entry.arguments">
-                <td class="key" width="1">
-                  {{ arg.name }}
-                </td>
-                <td class="value">{{ arg.value }}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-        <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
-          <div class="seq" (click)="selectEntry(entry)"></div>
-          <div class="body" [class.err]="entry.err">
-            <ng-container *ngIf="entry.err">
-              {{ entry.err }}
-            </ng-container>
-            <ng-container *ngIf="!entry.err">
-              <app-yamcs-acknowledgments-table [command]="entry.record"
-                                               [inline]="true">
-              </app-yamcs-acknowledgments-table>
+  <div class="panel-wrapper">
+    <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
+      <div id="drag-boundary">
+        <div cdkDrag cdkDragBoundary="#drag-boundary"
+             class="entry"
+             *ngFor="let entry of entries$ | async"
+             [class.selected]="entry === (selectedEntry$ | async)">
 
-              <ng-container *ngIf="entry.record?.extra.length">
-                <div class="block">
-                  <app-extra-acknowledgments-table [command]="entry.record"
-                                                   [inline]="true">
-                  </app-extra-acknowledgments-table>
-                </div>
+          <div class="in">
+            <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
+              <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+                [{{ entry.executionNumber }}]:
               </ng-container>
-            </ng-container>
+              <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
+                [ ]:
+              </ng-container>
+            </div>
+            <div class="body">
+              {{ entry.name }}
+              <mat-icon *ngIf="entry.comment"
+                        [matTooltip]="entry.comment"
+                        class="icon14"
+                        style="vertical-align: middle;">
+                comment
+              </mat-icon>
+              <span *ngFor="let item of entry.extra | keyvalue">
+                [{{ item.key}}: {{ item.value | value }}]
+              </span>
+              <table class="args">
+                <tr *ngFor="let arg of entry.arguments">
+                  <td class="key" width="1">
+                    {{ arg.name }}
+                  </td>
+                  <td class="value">{{ arg.value }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+            <div class="seq" (click)="selectEntry(entry)"></div>
+            <div class="body" [class.err]="entry.err">
+              <ng-container *ngIf="entry.err">
+                {{ entry.err }}
+              </ng-container>
+              <ng-container *ngIf="!entry.err">
+                <app-yamcs-acknowledgments-table [command]="entry.record"
+                                                 [inline]="true">
+                </app-yamcs-acknowledgments-table>
+
+                <ng-container *ngIf="entry.record?.extra.length">
+                  <div class="block">
+                    <app-extra-acknowledgments-table [command]="entry.record"
+                                                     [inline]="true">
+                    </app-extra-acknowledgments-table>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
           </div>
         </div>
       </div>

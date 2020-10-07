@@ -1,8 +1,6 @@
 # System-wide services
 services:
   - class: org.yamcs.http.HttpServer
-    args:
-      port: 8090
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
@@ -23,8 +21,7 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: "Example: cfdp"
-  features:
-    cfdp: true
+  cfdp: true
 
   # Hook the webapp sources directly to the output of npm. This
   # allows running npm in watch mode without restarting Yamcs.

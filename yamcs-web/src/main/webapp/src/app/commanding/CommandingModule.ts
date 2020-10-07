@@ -16,6 +16,7 @@ import { AddCommandDialog } from './stacks/AddCommandDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { ImportStackDialog } from './stacks/ImportStackDialog';
 import { RenameStackDialog } from './stacks/RenameStackDialog';
+import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
 @NgModule({
@@ -38,6 +39,7 @@ import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
     QueuesTable,
     RenameStackDialog,
     SendCommandWizardStep,
+    StackedCommandDetail,
     StackFilePageDirtyDialog,
     TransmissionConstraintsIcon,
     YamcsAcknowledgmentsTable,

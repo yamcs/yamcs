@@ -2,8 +2,8 @@ package org.yamcs;
 
 /**
  * A command option. Instances of this class should be registered once, system-wide, against an instance of
- * {@link YamcsServer}. While not enforced, we recommend to use a {@link Plugin#onLoad()} hook as this will guarantee
- * that the registration is done only once.
+ * {@link YamcsServer}. While not enforced, it is preferred to use a {@link Plugin#onLoad(YConfiguration)} hook as this
+ * will guarantee that the registration is done only once.
  */
 public class CommandOption {
 

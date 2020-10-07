@@ -3,7 +3,6 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
 import { DownloadPacketsOptions, GetPacketsOptions, Packet } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
@@ -31,8 +30,6 @@ export class PacketsPage {
     'size',
   ];
 
-  filterControl = new FormControl();
-
   @ViewChild('intervalSelect')
   intervalSelect: Select;
 
@@ -45,7 +42,7 @@ export class PacketsPage {
   appliedInterval: string;
 
   filterForm = new FormGroup({
-    filter: new FormControl(),
+    name: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
@@ -54,6 +51,10 @@ export class PacketsPage {
   dataSource: PacketsDataSource;
 
   detailPacket$ = new BehaviorSubject<Packet | null>(null);
+
+  nameOptions$ = new BehaviorSubject<Option[]>([
+    { id: 'ANY', label: 'Any name' },
+  ]);
 
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour' },
@@ -65,7 +66,9 @@ export class PacketsPage {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  private filter: string;
+  // Would prefer to use formGroup, but when using valueChanges this
+  // only is updated after the callback...
+  private name: string;
 
   constructor(
     readonly yamcs: YamcsService,
@@ -78,13 +81,23 @@ export class PacketsPage {
 
     this.dataSource = new PacketsDataSource(this.yamcs, synchronizer);
 
+    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then(names => {
+      for (const name of names) {
+        this.nameOptions$.next([
+          ...this.nameOptions$.value,
+          {
+            id: name,
+            label: name,
+          }
+        ]);
+      }
+    });
+
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
-      this.filter = filter;
+    this.filterForm.get('name')!.valueChanges.forEach(name => {
+      this.name = (name !== 'ANY') ? name : null;
       this.loadData();
     });
 
@@ -110,9 +123,9 @@ export class PacketsPage {
 
   private initializeOptions() {
     const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('filter')) {
-      this.filter = queryParams.get('filter') || '';
-      this.filterForm.get('filter')!.setValue(this.filter);
+    if (queryParams.has('name')) {
+      this.name = queryParams.get('name') || '';
+      this.filterForm.get('name')!.setValue(this.name);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
@@ -173,8 +186,8 @@ export class PacketsPage {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      options.name = this.filter;
+    if (this.name) {
+      options.name = this.name;
     }
 
     const dlOptions: DownloadPacketsOptions = {};
@@ -184,8 +197,8 @@ export class PacketsPage {
     if (this.validStop) {
       dlOptions.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      dlOptions.name = this.filter;
+    if (this.name) {
+      dlOptions.name = this.name;
     }
 
     this.dataSource.loadEntries('realtime', options).then(packets => {
@@ -199,8 +212,8 @@ export class PacketsPage {
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
-    if (this.filter) {
-      options.name = this.filter;
+    if (this.name) {
+      options.name = this.name;
     }
 
     this.dataSource.loadMoreData({});
@@ -210,7 +223,7 @@ export class PacketsPage {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
-        filter: this.filter || null,
+        filter: this.name || null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

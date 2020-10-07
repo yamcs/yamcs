@@ -1,4 +1,5 @@
 Sphinx==3.0.3
 sphinxcontrib-fulltoc
 protobuf
+pyyaml
 yamcs-client

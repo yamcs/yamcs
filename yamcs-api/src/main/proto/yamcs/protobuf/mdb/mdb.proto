@@ -704,9 +704,11 @@ message SpaceSystemInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
+  repeated NamedObjectId alias = 16;
   optional string version = 5;
   repeated HistoryInfo history = 14;
   repeated SpaceSystemInfo sub = 15;
+  map<string, AncillaryDataInfo> ancillaryData = 17;
 }
 
 // Used to change calibrators or alarms for one parameter

@@ -1137,6 +1137,17 @@ public class XtceToGpbAssembler {
         if (ss.getLongDescription() != null) {
             b.setLongDescription(ss.getLongDescription());
         }
+        if (ss.getAliasSet() != null) {
+            Map<String, String> aliases = ss.getAliasSet().getAliases();
+            for (Entry<String, String> me : aliases.entrySet()) {
+                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+        }
+        if (ss.getAncillaryData() != null) {
+            for (AncillaryData data : ss.getAncillaryData()) {
+                b.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
+            }
+        }
         Header h = ss.getHeader();
         if (h != null) {
             if (h.getVersion() != null) {

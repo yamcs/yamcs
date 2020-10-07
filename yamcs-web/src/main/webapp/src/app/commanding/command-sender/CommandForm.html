@@ -79,7 +79,7 @@
   </ng-container>
 
   <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
-    <br>
+    <br *ngIf="arguments.length">
     <app-text-action (click)="showAll$.next(true)"
                      icon="double_arrow">
       Show {{ argumentsWithInitial.length }}

@@ -121,7 +121,7 @@ export class StackFilePage implements OnDestroy {
     }
   }
 
-  private loadFile(objectName: string) {
+  private async loadFile(objectName: string) {
     this.objectName = objectName;
     const idx = this.objectName.lastIndexOf('/');
     if (idx === -1) {
@@ -135,15 +135,35 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    this.storageClient.getObject('_global', 'stacks', objectName).then(response => {
-      if (response.ok) {
-        response.text().then(text => {
-          const xmlParser = new DOMParser();
-          const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
-          this.parseXML(doc.documentElement);
-        });
+    const response = await this.storageClient.getObject('_global', 'stacks', objectName);
+    if (response.ok) {
+      const text = await response.text();
+      const xmlParser = new DOMParser();
+      const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
+
+      const entries = this.parseXML(doc.documentElement);
+
+      // Enrich entries with MDB info, it's used in the detail panel
+      const promises = [];
+      for (const entry of entries) {
+        promises.push(this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, entry.name).then(command => {
+          entry.command = command;
+        }));
       }
-    });
+
+      // Wait on all definition requests to arrive
+      for (const promise of promises) {
+        try {
+          await promise;
+        } catch {
+          // For now, don't care
+        }
+      }
+
+      // Only now, update the page
+      this.entries$.next(entries);
+      this.selectedEntry$.next(entries.length ? entries[0] : null);
+    }
   }
 
   private parseXML(root: Node) {
@@ -158,8 +178,7 @@ export class StackFilePage implements OnDestroy {
       }
     }
 
-    this.entries$.next(entries);
-    this.selectedEntry$.next(entries.length ? entries[0] : null);
+    return entries;
   }
 
   selectEntry(entry: StackEntry) {

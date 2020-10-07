@@ -9,31 +9,54 @@
 
     <dl class="dl-horizontal no-lead no-trail" *ngIf="command$ | async as command">
       <dt>Command</dt>
-      <dd>{{ command?.qualifiedName | shortName }}</dd>
+      <dd>{{ command.qualifiedName | shortName }}</dd>
 
       <dt>Space system</dt>
-      <dd>{{ (command?.qualifiedName | spaceSystemName) || '-' }}</dd>
+      <dd>{{ (command.qualifiedName | spaceSystemName) || '-' }}</dd>
 
-      <ng-container *ngFor="let alias of command?.alias">
+      <ng-container *ngFor="let alias of command.alias">
         <dt>{{ alias.namespace }}</dt>
         <dd>{{ alias.name }}</dd>
       </ng-container>
 
-      <ng-container *ngIf="command?.longDescription || command?.shortDescription">
+      <ng-container *ngIf="command.longDescription || command.shortDescription">
         <dt>Description</dt>
-        <dd>{{ command?.longDescription || command?.shortDescription || '-' }}</dd>
+        <dd>{{ command.longDescription || command.shortDescription || '-' }}</dd>
       </ng-container>
 
       <dt>Significance</dt>
       <dd>
-        <app-significance-level [level]="command?.significance?.consequenceLevel"></app-significance-level>
-        &nbsp;&nbsp;{{ command?.significance?.reasonForWarning }}
+        <app-significance-level [level]="command.significance?.consequenceLevel"></app-significance-level>
+        &nbsp;&nbsp;{{ command.significance?.reasonForWarning }}
       </dd>
     </dl>
 
     <app-warning-message *ngIf="!(cleared$ | async)">
       You're not cleared to send this command
     </app-warning-message>
+
+    <ng-container *ngIf="command$ | async as command">
+      <ng-container *ngIf="command.constraint">
+        <p>&nbsp;</p>
+        <h3>Constraints</h3>
+        <table yaDataTable>
+          <tr>
+            <th>Constraint</th>
+            <th>Timeout</th>
+          </tr>
+          <tr *ngFor="let constraint of command.constraint">
+            <td>
+              <ng-container *ngFor="let comparison of constraint.comparison">
+                {{ comparison.parameter.qualifiedName }}
+                {{ comparison.operator | operator }}
+                {{ comparison.value }}
+              </ng-container>
+            </td>
+            <td>{{ constraint.timeout || '-' }}</td>
+          </tr>
+        </table>
+      </ng-container>
+    </ng-container>
 
     <p *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">&nbsp;</p>
     <h3 *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">Arguments</h3>
