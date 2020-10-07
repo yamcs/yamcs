@@ -60,7 +60,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     private boolean checkForSequenceDiscontinuity = true;
 
     public CfsPacketPreprocessor(String yamcsInstance) {
-        this(yamcsInstance, null);
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
