@@ -29,77 +29,55 @@
 </dl>
 
 <p>&nbsp;</p>
-
-<div class="pval-frame">
-  <div class="header ya-form">
-    <div class="action">
-      <mat-menu #moreMenu="matMenu" class="ya-menu">
-        <button mat-menu-item (click)="showRaw$.next(true)">
-          <mat-icon [class.unchecked]="!(showRaw$ | async)">check</mat-icon>
-          Raw value
-        </button>
-        <button mat-menu-item (click)="showRaw$.next(false)">
-          <mat-icon [class.unchecked]="showRaw$ | async">check</mat-icon>
-          Engineering value
-        </button>
-      </mat-menu>
-      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-    </div>
-    <ng-container *ngIf="showRaw$ | async">Raw value</ng-container>
-    <ng-container *ngIf="!(showRaw$ | async)">Engineering value</ng-container>
-  </div>
-  <div class="body">
-    <ng-container *ngIf="value$ | async as value">
-      <ng-container [ngSwitch]="value.type">
-        <table *ngSwitchCase="'AGGREGATE'" yaDataTable>
-          <tr>
-            <th>Member</th>
-            <th>Value</th>
-          </tr>
-          <tr *ngFor="let name of value.aggregateValue!.name; index as i">
-            <td>
-              <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '.' + name]"
-                 [queryParams]="{c: yamcs.context}">{{ name }}</a>
-            </td>
-            <td>{{ value.aggregateValue!.value[i] | value }}</td>
-          </tr>
-        </table>
-        <table *ngSwitchCase="'ARRAY'" yaDataTable>
-          <tr>
-            <th>Index</th>
-            <th>Value</th>
-          </tr>
-          <tr *ngFor="let element of value.arrayValue!; index as i">
-            <td>
-              <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '[' + i + ']']"
-                 [queryParams]="{c: yamcs.context}">{{ i }}</a>
-            </td>
-            <td>{{ element | value }}</td>
-          </tr>
-        </table>
-        <span class="pval" *ngSwitchDefault>
-          <app-expirable [pval]="pval" style="white-space: nowrap">
-            <ng-container *ngIf="pval.monitoringResult">
-              <app-alarm-level [level]="pval.monitoringResult"></app-alarm-level>&nbsp;
-            </ng-container>
-            {{ value | value }}
-            <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
-          </app-expirable>
-        </span>
-        <br>
-        <div class="meter-size-constrainer">
-          <ng-container *ngIf="pval.alarmRange">
-            <app-severity-meter [pval]="pval"></app-severity-meter>
-          </ng-container>
-          <br>
-          <span class="subtext">
-            Generation time: {{ pval?.generationTime | datetime }}<br>
-          </span>
-        </div>
+<h3>Current value</h3>
+<ng-container *ngIf="pval.engValue as value">
+  <ng-container [ngSwitch]="value.type">
+    <table *ngSwitchCase="'AGGREGATE'" yaDataTable>
+      <tr>
+        <th>Member</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let name of value.aggregateValue!.name; index as i">
+        <td>
+          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '.' + name]"
+             [queryParams]="{c: yamcs.context}">{{ name }}</a>
+        </td>
+        <td>{{ value.aggregateValue!.value[i] | value }}</td>
+      </tr>
+    </table>
+    <table *ngSwitchCase="'ARRAY'" yaDataTable>
+      <tr>
+        <th>Index</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let element of value.arrayValue!; index as i">
+        <td>
+          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '[' + i + ']']"
+             [queryParams]="{c: yamcs.context}">{{ i }}</a>
+        </td>
+        <td>{{ element | value }}</td>
+      </tr>
+    </table>
+    <span class="pval" *ngSwitchDefault>
+      <app-expirable [pval]="pval" style="white-space: nowrap">
+        <ng-container *ngIf="pval.monitoringResult">
+          <app-alarm-level [level]="pval.monitoringResult"></app-alarm-level>&nbsp;
+        </ng-container>
+        {{ value | value }}
+        <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+      </app-expirable>
+    </span>
+    <br>
+    <div class="meter-size-constrainer">
+      <ng-container *ngIf="pval.alarmRange">
+        <app-severity-meter [pval]="pval"></app-severity-meter>
       </ng-container>
-    </ng-container>
-    <span *ngIf="!(value$ | async)" style="white-space: nowrap">---</span>
-  </div>
-</div>
+      <br>
+      <span class="subtext">
+        Generation time: {{ pval?.generationTime | datetime }}<br>
+        Raw value: {{ pval.rawValue | value }}<br>
+      </span>
+    </div>
+  </ng-container>
+</ng-container>
+<span *ngIf="!(pval.engValue)" style="white-space: nowrap">---</span>
