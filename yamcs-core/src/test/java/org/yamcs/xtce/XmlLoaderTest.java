@@ -145,9 +145,9 @@ public class XmlLoaderTest {
         assertEquals(SizeType.FIXED, sencoding.getSizeType());
         assertEquals(128, bencoding.getSizeInBits());
         
-        
-       
-       
+        IntegerParameterType ptype2 = (IntegerParameterType) db.getParameterType("/BogusSAT/CCSDSPacketLengthType");
+        List<UnitType> unitl = ptype2.getUnitSet();
+        assertEquals(1, unitl.size());
     }
     
     
