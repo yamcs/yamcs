@@ -135,6 +135,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
         if (action == Action.REPLACE) {
             if (subscriptionId != -1) {
                 pidrm.removeRequest(subscriptionId);
+                subscriptionId = -1;
             }
             subscriptionId = pidrm.addRequest(idList, updateOnExpiration, user);
         } else if (action == Action.ADD) {
