@@ -296,6 +296,15 @@ message MemberInfo {
   optional ParameterTypeInfo type = 6;
 }
 
+message ArgumentMemberInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ArgumentTypeInfo type = 6;
+}
+
 message ArrayInfo {
   optional ParameterTypeInfo type = 1;
   optional int32 dimensions = 2;
@@ -331,6 +340,7 @@ message ArgumentTypeInfo {
   repeated EnumValue enumValue = 5;
   optional double rangeMin = 6;
   optional double rangeMax = 7;
+  repeated ArgumentMemberInfo member = 8;
 }
 
 message ArgumentInfo {

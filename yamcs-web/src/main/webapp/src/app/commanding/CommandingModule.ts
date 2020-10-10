@@ -8,6 +8,7 @@ import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgment
 import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
 import { CommandForm } from './command-sender/CommandForm';
+import { CommandFormArgument } from './command-sender/CommandFormArgument';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
@@ -31,6 +32,7 @@ import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
     ChangeLevelDialog,
     CommandDetail,
     CommandForm,
+    CommandFormArgument,
     CommandHistoryPrintable,
     CreateStackDialog,
     ExtraAcknowledgmentsTable,

@@ -1,0 +1,48 @@
+<ng-container *ngIf="controlName$ | async as controlName"
+              [formGroup]="formGroup"
+              [ngSwitch]="argument.type?.engType">
+
+  <label *ngSwitchCase="'enumeration'">
+    <div class="datatype">{{ argument.type?.engType }}</div>
+    {{ argument.name }}
+    <select [formControlName]="controlName">
+      <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
+        {{ enumValue.label }}</option>
+    </select>
+  </label>
+
+  <label *ngSwitchCase="'boolean'">
+    {{ argument.name }}<br>
+    <input type="radio" [formControlName]="controlName" value="true"> true
+    <input type="radio" [formControlName]="controlName" value="false"> false
+  </label>
+
+  <label *ngSwitchCase="'time'">
+    {{ argument.name }}
+    <app-date-time-input [formControlName]="controlName"></app-date-time-input>
+  </label>
+
+  <label *ngSwitchCase="'binary'">
+    {{ argument.name }}
+    <app-binary-input [formControlName]="controlName"></app-binary-input>
+  </label>
+
+  <label *ngSwitchCase="'aggregate'">
+    <div class="datatype">{{ argument.type?.engType }}</div>
+    {{ argument.name }}
+    <div class="members">
+      <ng-container *ngFor="let member of argument.type?.member; let first = first; let last = last">
+        <app-command-form-argument [argument]="member" [formGroup]="formGroup"
+                                   [parent]="parent ? (parent + '.' + argument.name) : argument.name">
+        </app-command-form-argument>
+        <br>
+      </ng-container>
+    </div>
+  </label>
+
+  <label *ngSwitchDefault>
+    <div class="datatype">{{ argument.type?.engType }}</div>
+    {{ argument.name }}
+    <input type="text" [formControlName]="controlName">
+  </label>
+</ng-container>

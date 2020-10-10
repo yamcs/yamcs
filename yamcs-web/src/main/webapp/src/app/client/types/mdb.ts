@@ -190,6 +190,7 @@ export interface ArgumentType {
   enumValue: EnumValue[];
   rangeMin: number;
   rangeMax: number;
+  member: Member[];
 }
 
 export interface ArgumentAssignment {
