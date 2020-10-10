@@ -343,8 +343,10 @@ public class WebSocketClient {
         Call call = confirmedCalls.get(message.getCall());
         if (call != null) {
             call.serverObserver.unpackNext(message.getData());
-        } else {
-            log.warning("Received a message for an unknown call: " + message);
+        } else if (log.isLoggable(Level.FINER)) {
+            // Usually just means that there was just a message underway while
+            // the call was in the process of being cancelled.
+            log.finer("Received a message for an unknown call: " + message);
         }
     }
 
