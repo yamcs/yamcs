@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { Argument, Member } from '../../client';
+import { Argument, ArgumentMember } from '../../client';
 
 @Component({
   selector: 'app-command-form-argument',
@@ -15,7 +15,7 @@ export class CommandFormArgument implements OnInit {
   formGroup: FormGroup;
 
   @Input()
-  argument: Argument | Member;
+  argument: Argument | ArgumentMember;
 
   @Input()
   parent: string;

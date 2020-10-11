@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentAssignment, Command, CommandHistoryEntry, CommandOption, Member, Value } from '../../client';
+import { AggregateValue, Argument, ArgumentAssignment, ArgumentType, Command, CommandHistoryEntry, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
+import { requireFloat, requireInteger } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
 
@@ -289,10 +290,27 @@ export class CommandForm implements OnChanges {
         this.addMemberControls(prefix + '.' + member.name + '.', member.type.member || []);
       } else {
         const controlName = prefix + member.name;
+        const validators = this.getValidatorsForType(member.type as ArgumentType);
         this.form.addControl(
-          controlName, new FormControl('', Validators.required));
+          controlName, new FormControl('', validators));
       }
     }
+  }
+
+  private getValidatorsForType(type: ArgumentType) {
+    const validators = [Validators.required];
+    if (type.engType === 'integer') {
+      validators.push(requireInteger);
+    } else if (type.engType === 'float') {
+      validators.push(requireFloat);
+    }
+    if (type.rangeMax !== undefined) {
+      validators.push(Validators.max(type.rangeMax));
+    }
+    if (type.rangeMin !== undefined) {
+      validators.push(Validators.min(type.rangeMin));
+    }
+    return validators;
   }
 
   private isArgumentWithInitialValue(argumentName: string) {

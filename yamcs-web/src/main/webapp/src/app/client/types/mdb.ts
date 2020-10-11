@@ -80,7 +80,11 @@ export interface ParameterType {
 
 export interface Member {
   name: string;
-  type: ParameterType;
+  type: ParameterType | ArgumentType;
+}
+
+export interface ArgumentMember extends Member {
+  type: ArgumentType;
 }
 
 export interface AbsoluteTimeInfo {
@@ -190,7 +194,7 @@ export interface ArgumentType {
   enumValue: EnumValue[];
   rangeMin: number;
   rangeMax: number;
-  member: Member[];
+  member: ArgumentMember[];
 }
 
 export interface ArgumentAssignment {

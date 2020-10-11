@@ -825,8 +825,12 @@ public class XtceToGpbAssembler {
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
             if (fat.getValidRange() != null) {
-                infob.setRangeMin(fat.getValidRange().getMin());
-                infob.setRangeMax(fat.getValidRange().getMax());
+                if (!Double.isNaN(fat.getValidRange().getMin())) {
+                    infob.setRangeMin(fat.getValidRange().getMin());
+                }
+                if (!Double.isNaN(fat.getValidRange().getMax())) {
+                    infob.setRangeMax(fat.getValidRange().getMax());
+                }
             }
         } else if (argumentType instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType eat = (EnumeratedArgumentType) argumentType;

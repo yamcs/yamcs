@@ -55,6 +55,7 @@ import { CommandSelector } from './forms/CommandSelector';
 import { DateTimeInput } from './forms/DateTimeInput';
 import { DownloadButton } from './forms/DownloadButton';
 import { DownloadMenuItem } from './forms/DownloadMenuItem';
+import { Errors } from './forms/Errors';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
@@ -179,6 +180,7 @@ const sharedComponents = [
   DownloadButton,
   DownloadMenuItem,
   EmptyMessage,
+  Errors,
   Expirable,
   Help,
   HelpDialog,
