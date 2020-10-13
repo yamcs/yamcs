@@ -1,9 +1,10 @@
-Version 5.2 released
+Version 5.2 released 13-Oct-2020
 - allow all TM data links to update a simulation time if configured
 - allow the XTCE loader to load multiple files using a glob pattern or a list
 - added support for absolute time command arguments
 - added more options for time decoding of Cfs and Pus packet preprocessors.
 - added support for command arguments of type aggregate
+- minor tweaks and fixes
 
 Version 5.1.3 released 9-Sep-2020
 - minor tweaks and fixes
