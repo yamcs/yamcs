@@ -18,6 +18,7 @@ import org.yamcs.protobuf.UpdateClearanceRequest;
 import org.yamcs.security.ClearanceListener;
 import org.yamcs.security.Directory;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.security.protobuf.Clearance;
 import org.yamcs.utils.TimeEncoding;
@@ -28,6 +29,8 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
 
     @Override
     public void listClearances(Context ctx, Empty request, Observer<ListClearancesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandClearances);
+
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         List<User> users = securityStore.getDirectory().getUsers();
         Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
@@ -41,6 +44,8 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
 
     @Override
     public void updateClearance(Context ctx, UpdateClearanceRequest request, Observer<ClearanceInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandClearances);
+
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         String username = request.getUsername();
         Directory directory = securityStore.getDirectory();
@@ -65,6 +70,8 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
 
     @Override
     public void deleteClearance(Context ctx, DeleteClearanceRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandClearances);
+
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         String username = request.getUsername();
         Directory directory = securityStore.getDirectory();

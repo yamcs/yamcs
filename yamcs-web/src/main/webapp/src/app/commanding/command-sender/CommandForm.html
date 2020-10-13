@@ -4,82 +4,17 @@
 
   <ng-container *ngFor="let argument of arguments; let first = first">
     <br *ngIf="!first">
-    <ng-container [ngSwitch]="argument.type?.engType">
-
-      <label *ngSwitchCase="'enumeration'">
-        <div class="datatype">{{ argument.type?.engType }}</div>
-        {{ argument.name }}
-        <select [formControlName]="argument.name">
-          <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-            {{ enumValue.label }}</option>
-        </select>
-      </label>
-
-      <label *ngSwitchCase="'boolean'">
-        {{ argument.name }}<br>
-        <input type="radio" [formControlName]="argument.name" value="true"> true
-        <input type="radio" [formControlName]="argument.name" value="false"> false
-      </label>
-
-      <label *ngSwitchCase="'time'">
-        {{ argument.name }}
-        <app-date-time-input [formControlName]="argument.name"></app-date-time-input>
-      </label>
-
-      <label *ngSwitchCase="'binary'">
-        {{ argument.name }}
-        <app-binary-input [formControlName]="argument.name"></app-binary-input>
-      </label>
-
-      <label *ngSwitchDefault>
-        <div class="datatype">{{ argument.type?.engType }}</div>
-        {{ argument.name }}
-        <input type="text" [formControlName]="argument.name">
-      </label>
-
-    </ng-container>
+    <app-command-form-argument [argument]="argument" [formGroup]="form"></app-command-form-argument>
   </ng-container>
 
   <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
     <br class="hasInitial" *ngIf="!first || arguments.length">
-    <ng-container [ngSwitch]="argument.type?.engType">
-
-      <label *ngSwitchCase="'enumeration'" class="hasInitial">
-        <div class="datatype">{{ argument.type?.engType }}</div>
-        {{ argument.name }}
-        <select [formControlName]="argument.name">
-          <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-            {{ enumValue.label }}</option>
-        </select>
-      </label>
-
-      <label *ngSwitchCase="'boolean'" class="hasInitial">
-        {{ argument.name }}<br>
-        <input type="radio" [formControlName]="argument.name" value="true"> true
-        <input type="radio" [formControlName]="argument.name" value="false"> false
-      </label>
-
-      <label *ngSwitchCase="'time'">
-        {{ argument.name }}
-        <app-date-time-input [formControlName]="argument.name"></app-date-time-input>
-      </label>
-
-      <label *ngSwitchCase="'binary'">
-        {{ argument.name }}
-        <app-binary-input [formControlName]="argument.name"></app-binary-input>
-      </label>
-
-      <label *ngSwitchDefault class="hasInitial">
-        <div class="datatype">{{ argument.type?.engType }}</div>
-        {{ argument.name }}
-        <input type="text" [formControlName]="argument.name">
-      </label>
-
-    </ng-container>
+    <app-command-form-argument [argument]="argument" [formGroup]="form" class="hasInitial">
+    </app-command-form-argument>
   </ng-container>
 
   <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
-    <br>
+    <br *ngIf="arguments.length">
     <app-text-action (click)="showAll$.next(true)"
                      icon="double_arrow">
       Show {{ argumentsWithInitial.length }}

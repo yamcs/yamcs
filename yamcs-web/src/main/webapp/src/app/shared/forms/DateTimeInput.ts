@@ -8,7 +8,6 @@ import { UtcDateAdapter } from './UtcDateAdapter';
 // Used as a signal to show validation results
 const INVALID_ISOSTRING = 'invalid';
 const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-const ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(.\d{3})?)?Z?$/;
 
 @Component({
   selector: 'app-date-time-input',
@@ -84,7 +83,7 @@ export class DateTimeInput implements ControlValueAccessor, Validator {
 
   validate(control: FormControl): ValidationErrors | null {
     if (control.value === INVALID_ISOSTRING) {
-      return { date: 'Invalid date' };
+      return { date: true };
     }
     return null;
   }

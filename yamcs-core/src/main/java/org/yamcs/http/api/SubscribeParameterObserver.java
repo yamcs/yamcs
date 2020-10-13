@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.InvalidIdentification;
@@ -37,7 +39,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
     private int subscriptionId = -1;
     private ParameterWithIdRequestHelper pidrm;
 
-    private Map<NamedObjectId, Integer> numericIdMap = new HashMap<>();
+    private ConcurrentMap<NamedObjectId, Integer> numericIdMap = new ConcurrentHashMap<>();
     private AtomicInteger numericIdGenerator = new AtomicInteger();
 
     public SubscribeParameterObserver(User user, Observer<SubscribeParametersData> responseObserver) {
@@ -85,7 +87,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                     responseObserver.completeExceptionally(ex);
                 } else {
                     if (idList.size() == e.getInvalidParameters().size()) {
-                        log.warn("Received subscribe attempt will all-invalid parameters");
+                        log.warn("Received subscribe attempt with only invalid parameters");
                         idList = Collections.emptyList();
                     } else {
                         Set<NamedObjectId> valid = new HashSet<>(idList);
@@ -107,20 +109,28 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             SubscribeParametersData.Builder datab = SubscribeParametersData.newBuilder()
                     .addAllInvalid(invalid);
 
+            Map<NamedObjectId, Integer> mappingUpdate = new HashMap<>(idList.size());
             for (NamedObjectId id : idList) {
                 int numericId = numericIdGenerator.incrementAndGet();
-                numericIdMap.put(id, numericId);
+                mappingUpdate.put(id, numericId);
                 datab.putMapping(numericId, id);
             }
             if (subscriptionId != -1 && (!request.hasSendFromCache() || request.getSendFromCache())) {
                 for (ParameterValueWithId rec : pidrm.getValuesFromCache(subscriptionId)) {
                     ParameterValue pval = rec.getParameterValue();
-                    int numericId = numericIdMap.get(rec.getId());
-                    datab.addValues(pval.toGpb(numericId));
+                    Integer numericId = mappingUpdate.get(rec.getId());
+                    if (numericId != null) {
+                        datab.addValues(pval.toGpb(numericId));
+                    }
                 }
             }
 
             responseObserver.next(datab.build());
+
+            // After having sent out the mapping, update internal state
+            // (updates come from another thread, and we want to client to
+            // know a mapping before receiving a value for it)
+            numericIdMap.putAll(mappingUpdate);
         } catch (InvalidIdentification e) {
             log.warn("Invalid identification: {}", e.getMessage());
             responseObserver.completeExceptionally(e);
@@ -135,6 +145,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
         if (action == Action.REPLACE) {
             if (subscriptionId != -1) {
                 pidrm.removeRequest(subscriptionId);
+                subscriptionId = -1;
             }
             subscriptionId = pidrm.addRequest(idList, updateOnExpiration, user);
         } else if (action == Action.ADD) {

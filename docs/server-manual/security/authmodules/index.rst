@@ -8,6 +8,7 @@ AuthModules
     ldap
     yaml
     kerberos
+    remote-user
     spnego
     openid
 

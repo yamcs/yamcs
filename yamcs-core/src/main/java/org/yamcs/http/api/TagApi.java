@@ -104,7 +104,7 @@ public class TagApi extends AbstractTagApi<Context> {
         }
 
         // Echo back the tag, with its assigned ID
-        observer.complete(newTag);
+        observer.complete(enrichTag(newTag));
     }
 
     @Override
@@ -134,7 +134,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
         try {
             ArchiveTag updatedTag = tagDb.updateTag(tagTime, tag.getId(), tagb.build());
-            observer.complete(updatedTag);
+            observer.complete(enrichTag(updatedTag));
         } catch (YamcsException e) {
             throw new InternalServerErrorException(e);
         } catch (IOException e) {
@@ -171,7 +171,7 @@ public class TagApi extends AbstractTagApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        observer.complete(deletedTag);
+        observer.complete(enrichTag(deletedTag));
     }
 
     private ArchiveTag enrichTag(ArchiveTag tag) {

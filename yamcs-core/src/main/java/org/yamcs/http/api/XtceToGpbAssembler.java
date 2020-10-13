@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.AncillaryDataInfo;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
+import org.yamcs.protobuf.Mdb.ArgumentMemberInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
 import org.yamcs.protobuf.Mdb.ArrayInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
@@ -54,6 +55,8 @@ import org.yamcs.protobuf.Mdb.VerifierInfo.TerminationActionType;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
@@ -81,6 +84,7 @@ import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.EnumeratedDataType;
@@ -134,6 +138,8 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
+
+import com.google.gson.Gson;
 
 public class XtceToGpbAssembler {
 
@@ -404,7 +410,7 @@ public class XtceToGpbAssembler {
             b.setType(toArgumentTypeInfo(xtceType));
             if (!b.hasInitialValue()) {
                 String initialValue = null;
-                initialValue = getDataTypeInitialValue((BaseDataType) xtceArgument.getArgumentType());
+                initialValue = getDataTypeInitialValue(xtceArgument.getArgumentType());
                 if (initialValue != null) {
                     b.setInitialValue(initialValue);
                 }
@@ -736,51 +742,78 @@ public class XtceToGpbAssembler {
         return infob.build();
     }
 
-    private static String getDataTypeInitialValue(BaseDataType dataType) {
-        if (dataType == null) {
+    private static String getDataTypeInitialValue(DataType dataType) {
+        if (dataType == null || dataType.getInitialValue() == null) {
             return null;
         }
+
         if (dataType instanceof IntegerDataType) {
             IntegerDataType idt = (IntegerDataType) dataType;
             Long l = idt.getInitialValue();
-            if (l == null) {
-                return null;
+            if (idt.isSigned()) {
+                return l.toString();
             } else {
-                if (idt.isSigned()) {
-                    return l.toString();
-                } else {
-                    return Long.toUnsignedString(l);
-                }
+                return Long.toUnsignedString(l);
             }
         } else if (dataType instanceof FloatArgumentType) {
-            return ((FloatArgumentType) dataType).getInitialValue() != null
-                    ? ((FloatArgumentType) dataType).getInitialValue() + ""
-                    : null;
+            return ((FloatArgumentType) dataType).getInitialValue() + "";
         } else if (dataType instanceof EnumeratedDataType) {
             return ((EnumeratedDataType) dataType).getInitialValue();
         } else if (dataType instanceof StringDataType) {
             return ((StringDataType) dataType).getInitialValue();
         } else if (dataType instanceof BinaryDataType) {
             byte[] initialValue = ((BinaryDataType) dataType).getInitialValue();
-            return initialValue != null ? StringConverter.arrayToHexString(initialValue) : null;
+            return StringConverter.arrayToHexString(initialValue);
         } else if (dataType instanceof BooleanDataType) {
-            return ((BooleanDataType) dataType).getInitialValue() != null
-                    ? ((BooleanDataType) dataType).getInitialValue().toString()
-                    : null;
+            return ((BooleanDataType) dataType).getInitialValue().toString();
+        } else if (dataType instanceof AggregateDataType) {
+            Map<String, Object> value = ((AggregateDataType) dataType).getInitialValue();
+            return new Gson().toJson(value);
         }
         return null;
     }
 
     public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
-        ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder();
+        ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder()
+                .setEngType(argumentType.getTypeAsString());
 
-        if (((BaseDataType) argumentType).getEncoding() != null) {
-            infob.setDataEncoding(toDataEncodingInfo(((BaseDataType) argumentType).getEncoding()));
+        if (argumentType instanceof BaseDataType) {
+            BaseDataType bdt = (BaseDataType) argumentType;
+            if (bdt.getEncoding() != null) {
+                infob.setDataEncoding(toDataEncodingInfo(bdt.getEncoding()));
+            }
+            for (UnitType ut : argumentType.getUnitSet()) {
+                infob.addUnitSet(toUnitInfo(ut));
+            }
         }
 
-        infob.setEngType(argumentType.getTypeAsString());
-        for (UnitType ut : argumentType.getUnitSet()) {
-            infob.addUnitSet(toUnitInfo(ut));
+        if (argumentType instanceof AggregateArgumentType) {
+            AggregateArgumentType aat = (AggregateArgumentType) argumentType;
+            for (Member member : aat.getMemberList()) {
+                ArgumentMemberInfo.Builder memberb = ArgumentMemberInfo.newBuilder();
+                memberb.setName(member.getName());
+                if (member.getQualifiedName() != null) {
+                    memberb.setQualifiedName(member.getQualifiedName());
+                }
+                if (member.getType() instanceof ArgumentType) {
+                    ArgumentType ptype = (ArgumentType) member.getType();
+                    memberb.setType(toArgumentTypeInfo(ptype));
+                }
+                if (member.getShortDescription() != null) {
+                    memberb.setShortDescription(member.getShortDescription());
+                }
+                if (member.getLongDescription() != null) {
+                    memberb.setLongDescription(member.getLongDescription());
+                }
+                if (member.getAliasSet() != null) {
+                    Map<String, String> aliases = member.getAliasSet().getAliases();
+                    for (Entry<String, String> me : aliases.entrySet()) {
+                        memberb.addAlias(NamedObjectId.newBuilder()
+                                .setName(me.getValue()).setNamespace(me.getKey()));
+                    }
+                }
+                infob.addMember(memberb);
+            }
         }
 
         if (argumentType instanceof IntegerArgumentType) {
@@ -792,8 +825,12 @@ public class XtceToGpbAssembler {
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
             if (fat.getValidRange() != null) {
-                infob.setRangeMin(fat.getValidRange().getMin());
-                infob.setRangeMax(fat.getValidRange().getMax());
+                if (!Double.isNaN(fat.getValidRange().getMin())) {
+                    infob.setRangeMin(fat.getValidRange().getMin());
+                }
+                if (!Double.isNaN(fat.getValidRange().getMax())) {
+                    infob.setRangeMax(fat.getValidRange().getMax());
+                }
             }
         } else if (argumentType instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType eat = (EnumeratedArgumentType) argumentType;
@@ -1136,6 +1173,17 @@ public class XtceToGpbAssembler {
         }
         if (ss.getLongDescription() != null) {
             b.setLongDescription(ss.getLongDescription());
+        }
+        if (ss.getAliasSet() != null) {
+            Map<String, String> aliases = ss.getAliasSet().getAliases();
+            for (Entry<String, String> me : aliases.entrySet()) {
+                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+        }
+        if (ss.getAncillaryData() != null) {
+            for (AncillaryData data : ss.getAncillaryData()) {
+                b.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
+            }
         }
         Header h = ss.getHeader();
         if (h != null) {

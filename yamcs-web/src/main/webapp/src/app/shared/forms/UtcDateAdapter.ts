@@ -163,7 +163,7 @@ export class UtcDateAdapter extends DateAdapter<Date> {
     // We need to correct for the fact that JS native Date treats years in range [0, 99] as
     // abbreviations for 19xx.
     if (year >= 0 && year < 100) {
-      result.setFullYear(this.getYear(result) - 1900);
+      result.setUTCFullYear(this.getYear(result) - 1900);
     }
     return result;
   }

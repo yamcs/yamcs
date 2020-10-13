@@ -1,0 +1,28 @@
+.meta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+}
+
+.meta .item {
+  flex: none;
+  background-color: #eee;
+  font-weight: normal;
+  font-family: 'Roboto Mono', monospace;
+  color: rgba(0, 0, 0, .654);
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-left: 10px;
+}
+
+.meta.error .item {
+  background-color: crimson;
+  color: white;
+}
+
+.members {
+  margin-top: 5px;
+  padding-top: 5px;
+  padding-left: 10px;
+}

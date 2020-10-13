@@ -11,7 +11,6 @@ import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.http.HttpServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -59,13 +58,6 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         addResource(new StreamsResource(this));
         addResource(new TimeResource(this));
         addResource(new Cop1Resource(this));
-
-        for (HttpServer httpServer : YamcsServer.getServer().getGlobalServices(HttpServer.class)) {
-            httpServer.getWebSocketExtensions().forEach(supplier -> {
-                WebSocketResource resource = supplier.apply(this);
-                addResource(resource);
-            });
-        }
     }
 
     @Override

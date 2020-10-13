@@ -84,7 +84,6 @@ public class YamcsClient {
     private final RestClient baseClient;
     private final WebSocketClient websocketClient;
 
-    private volatile boolean connected;
     private volatile boolean closed = false;
 
     private List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
@@ -118,7 +117,6 @@ public class YamcsClient {
                     connectionListeners.forEach(l -> l.log(msg));
                     log.warning(msg);
                 }
-                connected = false;
                 connectionListeners.forEach(l -> l.disconnected());
             }
         });
@@ -492,12 +490,12 @@ public class YamcsClient {
         return context;
     }
 
-    public boolean isConnected() {
-        return connected;
+    public void addConnectionListener(ConnectionListener connectionListener) {
+        connectionListeners.add(connectionListener);
     }
 
-    public void addConnectionListener(ConnectionListener connectionListener) {
-        this.connectionListeners.add(connectionListener);
+    public void removeConnectionListener(ConnectionListener connectionListener) {
+        connectionListeners.remove(connectionListener);
     }
 
     public WebSocketClient getWebSocketClient() {
@@ -565,7 +563,7 @@ public class YamcsClient {
             return;
         }
         closed = true;
-        if (connected) {
+        if (websocketClient.isConnected()) {
             websocketClient.disconnect();
         }
         baseClient.close();

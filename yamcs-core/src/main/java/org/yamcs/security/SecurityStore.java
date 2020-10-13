@@ -160,6 +160,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadEvents);
         systemPrivileges.add(SystemPrivilege.ReadTables);
+        systemPrivileges.add(SystemPrivilege.ReadThreads);
         systemPrivileges.add(SystemPrivilege.WriteEvents);
         systemPrivileges.add(SystemPrivilege.WriteTables);
 

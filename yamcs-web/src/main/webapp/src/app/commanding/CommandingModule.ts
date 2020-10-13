@@ -8,6 +8,7 @@ import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgment
 import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
 import { CommandForm } from './command-sender/CommandForm';
+import { CommandFormArgument } from './command-sender/CommandFormArgument';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
@@ -16,6 +17,7 @@ import { AddCommandDialog } from './stacks/AddCommandDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { ImportStackDialog } from './stacks/ImportStackDialog';
 import { RenameStackDialog } from './stacks/RenameStackDialog';
+import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
 @NgModule({
@@ -30,6 +32,7 @@ import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
     ChangeLevelDialog,
     CommandDetail,
     CommandForm,
+    CommandFormArgument,
     CommandHistoryPrintable,
     CreateStackDialog,
     ExtraAcknowledgmentsTable,
@@ -38,6 +41,7 @@ import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
     QueuesTable,
     RenameStackDialog,
     SendCommandWizardStep,
+    StackedCommandDetail,
     StackFilePageDirtyDialog,
     TransmissionConstraintsIcon,
     YamcsAcknowledgmentsTable,

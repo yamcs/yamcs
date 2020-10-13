@@ -328,7 +328,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                  * }
                  */
             } else {
-                log.warn("parameter removal requested for {}but not part of subscription {}", para, subscriptionId);
+                log.warn("parameter removal requested for {} but not part of subscription {}", para, subscriptionId);
             }
         } else {
             log.warn("parameter removal requested for {} but not subscribed", para);

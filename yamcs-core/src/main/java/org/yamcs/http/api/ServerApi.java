@@ -25,6 +25,7 @@ import org.yamcs.YamcsVersion;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.MediaType;
@@ -202,6 +203,10 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void listClientConnections(Context ctx, Empty request, Observer<ListClientConnectionsResponse> observer) {
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
+
         List<ClientConnectionInfo> result = new ArrayList<>();
         for (Channel channel : httpServer.getClientChannels()) {
             ClientConnectionInfo.Builder connectionb = ClientConnectionInfo.newBuilder()
@@ -372,6 +377,9 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void closeConnection(Context ctx, CloseConnectionRequest request, Observer<Empty> observer) {
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
         httpServer.closeChannel(request.getId());
         observer.complete(Empty.getDefaultInstance());
     }

@@ -26,6 +26,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
+    @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
@@ -43,7 +44,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         }
         this.packetInputStreamArgs = config.get("packetInputStreamArgs");
     }
-    
+
     protected void openSocket() throws IOException {
         InetAddress address = InetAddress.getByName(host);
         tmSocket = new Socket();
@@ -122,8 +123,10 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
                 log.warn("TM Connection closed");
                 tmSocket = null;
             } catch (IOException e) {
-                String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-                log.info("Cannot open or read TM socket {}:{} {}'. Retrying in 10s", host, port, exc);
+                if (isRunningAndEnabled()) {
+                    String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
+                    log.info("Cannot open or read TM socket {}:{} {}'. Retrying in 10s", host, port, exc);
+                }
                 try {
                     tmSocket.close();
                 } catch (Exception e2) {
@@ -183,6 +186,6 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     @Override
     protected Status connectionStatus() {
-        return (tmSocket == null)?Status.UNAVAIL:Status.OK;
+        return (tmSocket == null) ? Status.UNAVAIL : Status.OK;
     }
 }

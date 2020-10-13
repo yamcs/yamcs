@@ -15,8 +15,6 @@ The number of configuration options in ``etc/yamcs.yaml`` are realatively limite
 
     services:
         - class: org.yamcs.http.HttpServer
-          args:
-          port: 8090
 
     instances:
         - simulator
@@ -32,8 +30,7 @@ The number of configuration options in ``etc/yamcs.yaml`` are realatively limite
         tag: DEMO
         displayPath: displays
         stackPath: stacks
-        features:
-            cfdp: true
+        cfdp: true
 
         staticRoot: ../../../yamcs-web/src/main/webapp/dist
 
@@ -70,21 +67,20 @@ The instance configuration file ``yamcs.<instance-name>.yaml`` contains most of 
         - class: org.yamcs.archive.XtceTmRecorder
         ...
 
-    
     dataLinks:
         - name: tm_realtime
           enabledAtStartup: false
           class: org.yamcs.tctm.TcpTmDataLink
-          ....
-          
+          ...
+
     mdb:
         - type: "sheet"
           spec: "mdb/simulator-ccsds.xls"
           subloaders: 
                - type: "sheet"
                  spec: "mdb/simulator-tmtc.xls"
-          ....
-          
+          ...
+
     streamConfig:
         tm:
           - name: "tm_realtime"
@@ -94,11 +90,11 @@ The instance configuration file ``yamcs.<instance-name>.yaml`` contains most of 
             processor: "realtime"
           - name: "tm_dump"
         cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
-        
+
     timeService:
         class: org.yamcs.time.SimulationTimeService
-        
-        
+
+
 The following options are supported
 
 services (list)
@@ -116,5 +112,3 @@ streamConfig(map)
     
 timeService(map)
     This configures the source of the "mission time". By default the RealtimeTimeService uses the local comuter clock as the time source. The `javadoc:org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the REST API. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.
-    
-    

@@ -15,7 +15,6 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.TimeInfo;
-import org.yamcs.protobuf.WebSocketExtensionData;
 import org.yamcs.protobuf.WebSocketServerMessage;
 import org.yamcs.protobuf.WebSocketServerMessage.MessageType;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -93,8 +92,6 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setConnectionInfo((ConnectionInfo) message);
         } else if (dataType == ProtoDataType.COP1_STATUS) {
             responseb.setCop1Status((Cop1Status) message);
-        } else if (dataType == ProtoDataType.EXTENSION_DATA) {
-            responseb.setExtensionData((WebSocketExtensionData) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }
