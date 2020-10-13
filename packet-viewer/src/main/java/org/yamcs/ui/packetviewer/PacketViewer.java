@@ -475,7 +475,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     void updateTitle() {
         SwingUtilities.invokeLater(() -> {
             StringBuilder title = new StringBuilder("Yamcs Packet Viewer");
-            if (client != null && client.isConnected()) {
+            if (client != null && client.getWebSocketClient().isConnected()) {
                 title.append(" [").append(client.getUrl()).append("]");
             } else if (lastFile != null) {
                 title.append(" - ");

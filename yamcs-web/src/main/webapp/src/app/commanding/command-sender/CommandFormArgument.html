@@ -1,0 +1,69 @@
+<ng-container *ngIf="controlName$ | async as controlName"
+              [formGroup]="formGroup"
+              [ngSwitch]="argument.type?.engType">
+
+  <label *ngSwitchCase="'enumeration'">
+    <div class="meta">
+      <div class="item">{{ argument.type.engType }}</div>
+    </div>
+    {{ argument.name }}
+    <app-errors [controlName]="controlName"></app-errors>
+    <select [formControlName]="controlName">
+      <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
+        {{ enumValue.label }}</option>
+    </select>
+  </label>
+
+  <label *ngSwitchCase="'boolean'">
+    {{ argument.name }}
+    <app-errors [controlName]="controlName"></app-errors>
+    <br>
+    <input type="radio" [formControlName]="controlName" value="true"> true
+    <input type="radio" [formControlName]="controlName" value="false"> false
+  </label>
+
+  <label *ngSwitchCase="'time'">
+    {{ argument.name }}
+    <app-errors [controlName]="controlName"></app-errors>
+    <app-date-time-input [formControlName]="controlName"></app-date-time-input>
+  </label>
+
+  <label *ngSwitchCase="'binary'">
+    <div class="meta">
+      <div class="item" [class.error]="err.invalid$ | async">{{ argument.type.engType }}</div>
+    </div>
+    {{ argument.name }}
+    <app-errors #err [controlName]="controlName"></app-errors>
+    <app-binary-input [formControlName]="controlName"></app-binary-input>
+  </label>
+
+  <label *ngSwitchCase="'aggregate'">
+    <div class="meta">
+      <div class="item">{{ argument.type.engType }}</div>
+    </div>
+    {{ argument.name }}
+    <div class="members">
+      <ng-container *ngFor="let member of argument.type?.member">
+        <app-command-form-argument [argument]="member" [formGroup]="formGroup"
+                                   [parent]="parent ? (parent + '.' + argument.name) : argument.name">
+        </app-command-form-argument>
+        <br>
+      </ng-container>
+    </div>
+  </label>
+
+  <label *ngSwitchDefault>
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item"
+           *ngIf="argument.type.rangeMin !== undefined || argument.type.rangeMax !== undefined">
+        <app-interval [left]="argument.type.rangeMin"
+                      [right]="argument.type.rangeMax">
+        </app-interval>
+      </div>
+      <div class="item">{{ argument.type.engType }}</div>
+    </div>
+    {{ argument.name }}
+    <app-errors #err [controlName]="controlName"></app-errors>
+    <input type="text" [formControlName]="controlName">
+  </label>
+</ng-container>

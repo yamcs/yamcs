@@ -83,7 +83,7 @@ export class DateTimeInput implements ControlValueAccessor, Validator {
 
   validate(control: FormControl): ValidationErrors | null {
     if (control.value === INVALID_ISOSTRING) {
-      return { date: 'Invalid date' };
+      return { date: true };
     }
     return null;
   }

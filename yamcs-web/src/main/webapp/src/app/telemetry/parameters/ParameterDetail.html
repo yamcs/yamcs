@@ -30,7 +30,7 @@
 
 <p>&nbsp;</p>
 <h3>Current value</h3>
-<ng-container *ngIf="pval.engValue as value">
+<ng-container *ngIf="pval?.engValue as value">
   <ng-container [ngSwitch]="value.type">
     <table *ngSwitchCase="'AGGREGATE'" yaDataTable>
       <tr>
@@ -74,10 +74,10 @@
       </ng-container>
       <br>
       <span class="subtext">
-        Generation time: {{ pval?.generationTime | datetime }}<br>
-        Raw value: {{ pval.rawValue | value }}<br>
+        Generation time: {{ pval.generationTime | datetime }}<br>
+        Raw value: {{ (pval.rawValue | value) || '-' }}<br>
       </span>
     </div>
   </ng-container>
 </ng-container>
-<span *ngIf="!(pval.engValue)" style="white-space: nowrap">---</span>
+<span *ngIf="!(pval?.engValue)" style="white-space: nowrap">---</span>

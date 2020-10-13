@@ -137,7 +137,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             default:
                 Topic topic = matchTopic(message.getType());
                 if (topic == null) {
-                    throw new NotFoundException("No such topic");
+                    throw new NotFoundException("No topic '" + message.getType() + "'");
                 }
                 if (message.getCall() > 0) {
                     streamToExistingCall(nettyContext, message, topic);

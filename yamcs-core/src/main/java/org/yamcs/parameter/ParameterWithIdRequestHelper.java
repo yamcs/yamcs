@@ -495,7 +495,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for (int subscriptionId : subscriptions.keySet()) {
             prm.removeRequest(subscriptionId);
         }
-        if(subscribeAllId!=-1) {
+        subscriptions.clear();
+        if (subscribeAllId != -1) {
             prm.unsubscribeAll(subscribeAllId);
         }
     }
