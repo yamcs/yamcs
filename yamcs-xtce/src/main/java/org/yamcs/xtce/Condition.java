@@ -78,8 +78,7 @@ public class Condition implements BooleanExpression {
 
     @Override
     public String toExpressionString() {
-        String expr = String.format("%s %s ", lValueRef.getParameter().getName(),
-                OperatorType.operatorToString(comparisonOperator));
+        String expr = String.format("%s %s ", lValueRef.getParameter().getName(), comparisonOperator);
         if (rValueRef instanceof ParameterInstanceRef) {
             return expr + ((ParameterInstanceRef) rValueRef).getParameter().getQualifiedName();
         } else {
@@ -103,7 +102,7 @@ public class Condition implements BooleanExpression {
             lValue = "paraName(" + lValueRef.getParameter().getName() + ")";
         }
 
-        return "Condition: " + lValue + OperatorType.operatorToString(comparisonOperator) + rValue;
+        return "Condition: " + lValue + comparisonOperator + rValue;
 
     }
 

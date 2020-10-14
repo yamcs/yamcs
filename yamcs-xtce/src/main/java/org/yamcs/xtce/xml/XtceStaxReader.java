@@ -2800,7 +2800,7 @@ public class XtceStaxReader {
             value = "=="; // default value
         }
 
-        OperatorType optype = Comparison.stringToOperator(value);
+        OperatorType optype = OperatorType.fromSymbol(value);
 
         String theValue;
         theValue = readMandatoryAttribute("value", xmlEvent.asStartElement());
@@ -3975,8 +3975,9 @@ public class XtceStaxReader {
     }
 
     private boolean isNamedItemProperty() {
-        if (xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT)
+        if (xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT) {
             return false;
+        }
         String name = xmlEvent.asStartElement().getName().getLocalPart();
         return name == XTCE_ALIAS_SET || name == XTCE_LONG_DESCRIPTION || name == XTCE_ANCILLARY_DATA_SET;
     }

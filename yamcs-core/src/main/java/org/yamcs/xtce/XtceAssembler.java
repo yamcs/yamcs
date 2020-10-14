@@ -23,31 +23,9 @@ import javax.xml.transform.stream.StreamSource;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.xtce.AggregateParameterType;
-import org.yamcs.xtce.BooleanParameterType;
-import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatValidRange;
-import org.yamcs.xtce.Header;
-import org.yamcs.xtce.History;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.IntegerValidRange;
-import org.yamcs.xtce.Member;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
-import org.yamcs.xtce.StringParameterType;
-import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
 
 /**
  * 
@@ -1054,7 +1032,6 @@ public class XtceAssembler {
             doc.writeEndElement();// BaseContainer
         }
 
-       
         doc.writeEndElement();// SequenceContainer
     }
 
@@ -1064,7 +1041,7 @@ public class XtceAssembler {
             doc.writeStartElement("AncillaryData");
             writeAttributeIfNotNull(doc, "name", ad.getName());
             writeAttributeIfNotNull(doc, "mimeType", ad.getMimeType());
-            if(ad.getHref()!=null) {
+            if (ad.getHref() != null) {
                 doc.writeAttribute("href", ad.getHref().toString());
             }
             writeCharactersIfNotNull(doc, ad.getValue());
@@ -1168,7 +1145,7 @@ public class XtceAssembler {
         }
         doc.writeAttribute("value", comparison.getStringValue());
         if (comparison.getComparisonOperator() != OperatorType.EQUALITY) {
-            doc.writeAttribute("comparisonOperator", OperatorType.operatorToString(comparison.getComparisonOperator()));
+            doc.writeAttribute("comparisonOperator", comparison.getComparisonOperator().getSymbol());
         }
         doc.writeEndElement();
     }
@@ -1234,11 +1211,13 @@ public class XtceAssembler {
         }
     }
 
-    private static void writeAttributeIfNotNull(XMLStreamWriter doc, String name, String value) throws XMLStreamException {
+    private static void writeAttributeIfNotNull(XMLStreamWriter doc, String name, String value)
+            throws XMLStreamException {
         if (value != null) {
             doc.writeAttribute(name, value);
         }
     }
+
     private static void writeCharactersIfNotNull(XMLStreamWriter doc, String text) throws XMLStreamException {
         if (text != null) {
             doc.writeCharacters(text);
