@@ -80,14 +80,14 @@ public class SequenceContainerProcessor {
                     if (se instanceof ParameterEntry) {
                         ParameterEntry pe = (ParameterEntry) se;
                         log.warn("Could not extract parameter " + pe.getParameter().getQualifiedName()
-                                + "from container " + se.getContainer().getQualifiedName() +
-                                " at position " + buf.getPosition()
+                                + " from container " + se.getContainer().getQualifiedName()
+                                + " at position " + buf.getPosition()
                                 + " because it falls beyond the end of the container. Container size in bits: "
                                 + buf.sizeInBits());
                     } else {
                         log.warn("Could not extract entry " + se + "of size "
-                                + buf.sizeInBits() + "bits from container " + se.getContainer().getQualifiedName() +
-                                " position " + buf.getPosition()
+                                + buf.sizeInBits() + "bits from container " + se.getContainer().getQualifiedName()
+                                + " position " + buf.getPosition()
                                 + "because it falls beyond the end of the container. Container size in bits: "
                                 + buf.sizeInBits());
                     }
