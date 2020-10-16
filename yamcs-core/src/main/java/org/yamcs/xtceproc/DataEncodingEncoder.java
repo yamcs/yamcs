@@ -36,17 +36,22 @@ public class DataEncodingEncoder {
     public void encodeRaw(DataEncoding de, Value rawValue) {
         pcontext.bitbuf.setByteOrder(de.getByteOrder());
 
-        if (de instanceof IntegerDataEncoding) {
-            encodeRawInteger((IntegerDataEncoding) de, rawValue);
-        } else if (de instanceof FloatDataEncoding) {
-            encodeRawFloat((FloatDataEncoding) de, rawValue);
-        } else if (de instanceof StringDataEncoding) {
-            encodeRawString((StringDataEncoding) de, rawValue);
-        } else if (de instanceof BinaryDataEncoding) {
-            encodeRawBinary((BinaryDataEncoding) de, rawValue);
+        if (de.getToBinaryTransformAlgorithm() != null) {
+            DataEncoder denc = pcontext.pdata.getDataEncoder(de);
+            denc.encodeRaw(de, rawValue, pcontext.bitbuf);
         } else {
-            log.error("DataEncoding {} not implemented", de);
-            throw new IllegalArgumentException("DataEncoding " + de + " not implemented");
+            if (de instanceof IntegerDataEncoding) {
+                encodeRawInteger((IntegerDataEncoding) de, rawValue);
+            } else if (de instanceof FloatDataEncoding) {
+                encodeRawFloat((FloatDataEncoding) de, rawValue);
+            } else if (de instanceof StringDataEncoding) {
+                encodeRawString((StringDataEncoding) de, rawValue);
+            } else if (de instanceof BinaryDataEncoding) {
+                encodeRawBinary((BinaryDataEncoding) de, rawValue);
+            } else {
+                log.error("DataEncoding {} not implemented", de);
+                throw new IllegalArgumentException("DataEncoding " + de + " not implemented");
+            }
         }
     }
 
@@ -172,7 +177,7 @@ public class DataEncodingEncoder {
             bitbuf.putByte(sde.getTerminationChar());
             break;
         default:
-            throw new IllegalStateException("Unsupported size type "+sde.getSizeType());
+            throw new IllegalStateException("Unsupported size type " + sde.getSizeType());
         }
 
         int newBitPosition = bitbuf.getPosition();
@@ -229,7 +234,7 @@ public class DataEncodingEncoder {
             } else {
                 bitbuf.putBits(Double.doubleToLongBits(v), 64);
             }
-        } else if (de.getEncoding() ==  org.yamcs.xtce.FloatDataEncoding.Encoding.MILSTD_1750A) {
+        } else if (de.getEncoding() == org.yamcs.xtce.FloatDataEncoding.Encoding.MILSTD_1750A) {
             if (de.getSizeInBits() == 32) {
                 bitbuf.putBits(MilStd1750A.encode32(v), 32);
             } else {
@@ -260,11 +265,12 @@ public class DataEncodingEncoder {
             break;
         case LEADING_SIZE:
             bitbuf.setByteOrder(ByteOrder.BIG_ENDIAN); // TBD
-            bitbuf.putBits(v.length, bde.getSizeInBitsOfSizeTag()); //bde.getSizeInBitsOfSizeTag() can be 0 but bitbuf won't mind
+            bitbuf.putBits(v.length, bde.getSizeInBitsOfSizeTag()); // bde.getSizeInBitsOfSizeTag() can be 0 but bitbuf
+                                                                    // won't mind
             bitbuf.put(v);
             break;
         default:
-            throw new IllegalStateException("Unsupported size type "+bde.getType());
+            throw new IllegalStateException("Unsupported size type " + bde.getType());
         }
     }
 }

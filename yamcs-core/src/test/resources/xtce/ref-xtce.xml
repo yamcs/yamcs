@@ -2,6 +2,30 @@
 <?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
 <xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+	
+    <xtce:TelemetryMetaData>
+       <xtce:ParameterTypeSet>
+			<xtce:BinaryParameterType name="binary_param_type">
+				<xtce:BinaryDataEncoding>
+					<xtce:FromBinaryTransformAlgorithm name="LeadingSizeBinaryDecoder" shortDescription="decodes byte arrays whith the size specified at the beginning">
+						<xtce:AlgorithmText language="java">
+       	   		    		org.yamcs.algo.LeadingSizeBinaryDecoder(8)
+       	   	   			</xtce:AlgorithmText>     
+					</xtce:FromBinaryTransformAlgorithm>	
+				</xtce:BinaryDataEncoding>
+			</xtce:BinaryParameterType>
+		</xtce:ParameterTypeSet>
+		<xtce:ParameterSet>
+			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type"/>
+		</xtce:ParameterSet>
+		<xtce:ContainerSet>
+			<xtce:SequenceContainer name="packet1">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="param1"/>
+				</xtce:EntryList>
+			</xtce:SequenceContainer>		
+		</xtce:ContainerSet>
+	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>
 		<xtce:ArgumentTypeSet>
 			<xtce:AbsoluteTimeArgumentType name="gps_time_type">
@@ -40,6 +64,15 @@
 					 <xtce:ValidRange maxInclusive="100"/>
 				</xtce:ValidRangeSet>
 			</xtce:FloatArgumentType>
+			<xtce:BinaryArgumentType name="barray">
+				<xtce:BinaryDataEncoding>
+					<xtce:ToBinaryTransformAlgorithm name="LeadingSizeBinaryEncoder" shortDescription="encodes byte arrays whith the size specified at the beginning">
+						<xtce:AlgorithmText language="java">
+       	   		    		org.yamcs.algo.LeadingSizeBinaryEncoder(16)
+       	   	   			</xtce:AlgorithmText>     
+					</xtce:ToBinaryTransformAlgorithm>	
+				</xtce:BinaryDataEncoding>
+			</xtce:BinaryArgumentType>
 		</xtce:ArgumentTypeSet>
 		<xtce:MetaCommandSet>
 			<xtce:MetaCommand name="command1">
@@ -59,6 +92,16 @@
 					<xtce:Argument name="arg1" argumentTypeRef="aggr_arg_type1" />
 				</xtce:ArgumentList>
 				<xtce:CommandContainer name="test_cmd_arg">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="command3">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="barray" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command3">
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>

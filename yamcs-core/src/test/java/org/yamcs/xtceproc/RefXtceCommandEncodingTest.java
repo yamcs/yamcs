@@ -21,11 +21,10 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 /**
- * Created by msc on 27/05/15.
+ * Tests command encoding with the ref-xtce.xml
  */
 public class RefXtceCommandEncodingTest {
     static XtceDb xtcedb;
@@ -94,5 +93,17 @@ public class RefXtceCommandEncodingTest {
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 123.4}");
         arguments.add(argumentAssignment1);
         metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+    
+    @Test
+    public void testBinaryArgCmd() throws Exception{
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "010203AB");
+        arguments.add(argumentAssignment1);
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals(6, b.length);
+        assertEquals(4, ByteBuffer.wrap(b).getShort());
+        assertEquals("010203AB", StringConverter.arrayToHexString(b, 2, 4));
     }
 }

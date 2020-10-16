@@ -22,13 +22,13 @@ public class DataDecoderFactory {
             throw new XtceProcessingException("Unsupported language for Data Decoder: '"+ca.getLanguage()+"'. Only Java supported");
         }
 
-        return loadJavaDecoder(ca, null);
+        return loadJavaAlgo(ca, null);
     }
 
 
-    private static DataDecoder loadJavaDecoder(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {
+    static <T> T loadJavaAlgo(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {
         Pattern p = Pattern.compile("([\\w\\$\\.]+)(\\(.*\\))?", Pattern.DOTALL);
-        Matcher m = p.matcher(alg.getAlgorithmText());
+        Matcher m = p.matcher(alg.getAlgorithmText().trim());
         if(!m.matches()) {
             throw new XtceProcessingException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
         }

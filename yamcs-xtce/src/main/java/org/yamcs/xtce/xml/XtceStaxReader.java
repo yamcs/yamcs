@@ -44,6 +44,7 @@ import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -1335,7 +1336,7 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
 
-        BinaryDataEncoding.Builder binaryDataEncoding = null;
+        BinaryDataEncoding.Builder binaryDataEncoding = new BinaryDataEncoding.Builder();
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1343,15 +1344,14 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 IntegerValue v = readIntegerValue(spaceSystem);
                 if (v instanceof FixedIntegerValue) {
-                    binaryDataEncoding = new BinaryDataEncoding.Builder()
-                            .setSizeInBits((int) ((FixedIntegerValue) v).getValue());
+                    binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
             } else if (isStartElementWithName("FromBinaryTransformAlgorithm")) {
-                skipXtceSection("FromBinaryTransformAlgorithm");
+                binaryDataEncoding.setFromBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem));
             } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
-                skipXtceSection("ToBinaryTransformAlgorithm");
+                binaryDataEncoding.setToBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem));
             } else if (isEndElementWithName(tag)) {
                 return binaryDataEncoding;
             }
@@ -2885,18 +2885,21 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
+            Algorithm algo = null;
             if (isStartElementWithName(XTCE_MATH_ALGORITHM)) {
-                readMathAlgorithm(spaceSystem);
+                algo = readMathAlgorithm(spaceSystem);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
-                readCustomAlgorithm(spaceSystem);
+                algo = readCustomAlgorithm(spaceSystem);
             } else if (isEndElementWithName(XTCE_ALGORITHM_SET)) {
                 return;
+            }
+            if (algo != null) {
+                spaceSystem.addAlgorithm(algo);
             }
         }
     }
 
-    private void readMathAlgorithm(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private MathAlgorithm readMathAlgorithm(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         checkStartElementPreconditions();
 
         String value = readMandatoryAttribute("name", xmlEvent.asStartElement());
@@ -2912,8 +2915,7 @@ public class XtceStaxReader {
             if (isNamedItemProperty()) {
                 readNamedItemProperty(algo);
             } else if (isEndElementWithName(XTCE_MATH_ALGORITHM)) {
-                spaceSystem.addAlgorithm(algo);
-                return;
+                return algo;
             } else {
                 logUnknown();
             }
@@ -3701,7 +3703,8 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private void readCustomAlgorithm(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private CustomAlgorithm readCustomAlgorithm(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
@@ -3720,8 +3723,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_INPUT_SET)) {
                 algo.setInputSet(readInputSet(spaceSystem));
             } else if (isEndElementWithName(tag)) {
-                spaceSystem.addAlgorithm(algo);
-                return;
+                return algo;
             } else {
                 logUnknown();
             }

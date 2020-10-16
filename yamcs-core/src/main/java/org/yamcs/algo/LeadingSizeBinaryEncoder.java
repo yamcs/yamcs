@@ -1,0 +1,23 @@
+package org.yamcs.algo;
+
+import org.yamcs.algorithms.AlgorithmExecutionContext;
+import org.yamcs.parameter.Value;
+import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.CustomAlgorithm;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtceproc.AbstractDataEncoder;
+
+public class LeadingSizeBinaryEncoder extends AbstractDataEncoder {
+    
+    int sizeInBitsOfSizeTag = 16;
+    public LeadingSizeBinaryEncoder(CustomAlgorithm alg, AlgorithmExecutionContext ctx, Integer sizeInBitsOfSizeTag) {
+        this.sizeInBitsOfSizeTag = sizeInBitsOfSizeTag;
+    }
+    
+    @Override
+    public void encodeRaw(DataEncoding de, Value rawValue, BitBuffer bitbuf) {
+        byte[] b = rawValue.getBinaryValue();
+        bitbuf.putBits(b.length, sizeInBitsOfSizeTag);
+        bitbuf.put(b);
+    }
+}

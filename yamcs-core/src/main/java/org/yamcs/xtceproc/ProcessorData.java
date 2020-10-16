@@ -50,6 +50,7 @@ public class ProcessorData {
 
     private Map<Calibrator, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
+    private Map<DataEncoding, DataEncoder> encoders = new HashMap<>();
 
     final XtceDb xtcedb;
     final Log log;
@@ -228,6 +229,15 @@ public class ProcessorData {
         }
 
         return dd;
+    }
+
+    public DataEncoder getDataEncoder(DataEncoding de) {
+        DataEncoder enc = encoders.get(de);
+        if (enc == null) {
+            enc = DataEncoderFactory.get(de.getToBinaryTransformAlgorithm());
+        }
+
+        return enc;
     }
 
     public XtceDb getXtceDb() {

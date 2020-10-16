@@ -36,6 +36,9 @@ public abstract class DataEncoding implements Serializable {
     // the algorithm will be used to convert from binary to raw value
     protected Algorithm fromBinaryTransformAlgorithm;
 
+    // the algorithm will be used to convert from raw value to binary
+    protected Algorithm toBinaryTransformAlgorithm;
+
     /**
      * copy constructor
      * 
@@ -45,6 +48,7 @@ public abstract class DataEncoding implements Serializable {
         this.sizeInBits = de.sizeInBits;
         this.byteOrder = de.byteOrder;
         this.fromBinaryTransformAlgorithm = de.fromBinaryTransformAlgorithm;
+        this.toBinaryTransformAlgorithm = de.toBinaryTransformAlgorithm;
     }
 
     DataEncoding(Builder<?> builder, int defaultSizeInBits) {
@@ -58,6 +62,7 @@ public abstract class DataEncoding implements Serializable {
         }
 
         this.fromBinaryTransformAlgorithm = builder.fromBinaryTransformAlgorithm;
+        this.toBinaryTransformAlgorithm = builder.toBinaryTransformAlgorithm;
 
         if (builder.baseEncoding != null) {
             DataEncoding baseEncoding = builder.baseEncoding;
@@ -70,6 +75,9 @@ public abstract class DataEncoding implements Serializable {
             }
             if (builder.fromBinaryTransformAlgorithm == null) {
                 this.fromBinaryTransformAlgorithm = baseEncoding.fromBinaryTransformAlgorithm;
+            }
+            if (builder.toBinaryTransformAlgorithm == null) {
+                this.toBinaryTransformAlgorithm = baseEncoding.toBinaryTransformAlgorithm;
             }
         }
     }
@@ -126,6 +134,14 @@ public abstract class DataEncoding implements Serializable {
         this.fromBinaryTransformAlgorithm = fromBinaryTransformAlgorithm;
     }
 
+    public Algorithm getToBinaryTransformAlgorithm() {
+        return toBinaryTransformAlgorithm;
+    }
+
+    public void setToBinaryTransformAlgorithm(Algorithm toBinaryTransformAlgorithm) {
+        this.toBinaryTransformAlgorithm = toBinaryTransformAlgorithm;
+    }
+
     public Set<Parameter> getDependentParameters() {
         return Collections.emptySet();
     }
@@ -141,12 +157,14 @@ public abstract class DataEncoding implements Serializable {
         protected Integer sizeInBits;
         transient ByteOrder byteOrder = null;
         private Algorithm fromBinaryTransformAlgorithm;
+        private Algorithm toBinaryTransformAlgorithm;
         DataEncoding baseEncoding;
 
         public Builder(DataEncoding encoding) {
             this.sizeInBits = encoding.sizeInBits;
             this.byteOrder = encoding.byteOrder;
             this.fromBinaryTransformAlgorithm = encoding.fromBinaryTransformAlgorithm;
+            this.toBinaryTransformAlgorithm = encoding.toBinaryTransformAlgorithm;
         }
 
         public Builder() {
@@ -162,6 +180,11 @@ public abstract class DataEncoding implements Serializable {
             return self();
         }
         
+        public T setToBinaryTransformAlgorithm(Algorithm alg) {
+            this.toBinaryTransformAlgorithm = alg;
+            return self();
+        }
+
         public T setByteOrder(ByteOrder byteOrder) {
             this.byteOrder = byteOrder;
             return self();
@@ -177,7 +200,6 @@ public abstract class DataEncoding implements Serializable {
         public Integer getSizeInBits() {
             return sizeInBits;
         }
-
     }
 
     public abstract Builder<?> toBuilder();
