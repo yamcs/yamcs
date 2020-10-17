@@ -67,6 +67,13 @@ options:
     type: BOOLEAN
     default: false
 
+  commandExports:
+    title: Show Command Export Functionalities
+    description:
+      - Controls whether the button to generate an offline command report is shown.
+    type: BOOLEAN
+    default: true
+
   completeness:
     title: Show CCSDS Completeness Functionalities
     description:

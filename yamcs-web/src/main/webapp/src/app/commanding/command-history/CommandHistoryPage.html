@@ -11,6 +11,7 @@
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
             color="primary"
+            *ngIf="showCommandExports()"
             [disabled]="!((dataSource.records$ | async)?.length)">
       <mat-icon>save_alt</mat-icon>
       EXPORT

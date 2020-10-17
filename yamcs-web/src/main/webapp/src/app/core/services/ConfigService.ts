@@ -9,6 +9,7 @@ export interface WebsiteConfig {
   tag: string;
   events?: EventsConfig;
   commandClearances: boolean;
+  commandExports: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
   hasTemplates: boolean;
