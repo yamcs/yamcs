@@ -328,6 +328,13 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async deleteUser(name: string) {
+    const url = `${this.apiUrl}/users/${name}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
   async deleteIdentity(username: string, provider: string) {
     const url = `${this.apiUrl}/users/${username}/identities/${provider}`;
     const response = await this.doFetch(url, { method: 'DELETE' });

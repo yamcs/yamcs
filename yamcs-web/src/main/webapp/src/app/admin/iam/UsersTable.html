@@ -50,6 +50,9 @@
         <a mat-menu-item [routerLink]="[user.name, 'edit']">
           Edit user
         </a>
+        <button mat-menu-item (click)="deleteUser.next(user.name)">
+          Delete user
+        </button>
       </mat-menu>
       <button mat-button [matMenuTriggerFor]="groupMenu" class="icon">
         <mat-icon>more_vert</mat-icon>
