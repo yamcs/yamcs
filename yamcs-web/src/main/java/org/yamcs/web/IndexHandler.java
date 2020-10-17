@@ -121,14 +121,16 @@ public class IndexHandler extends Handler {
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
         webConfig.put("auth", authMap);
 
+        YamcsServer yamcs = YamcsServer.getServer();
+
         List<Map<String, Object>> commandOptions = new ArrayList<>();
-        for (CommandOption option : YamcsServer.getServer().getCommandOptions()) {
+        for (CommandOption option : yamcs.getCommandOptions()) {
             String json = JsonFormat.printer().print(ServerApi.toCommandOptionInfo(option));
             commandOptions.add(new Gson().fromJson(json, Map.class));
         }
         webConfig.put("commandOptions", commandOptions);
-
-        webConfig.put("serverId", YamcsServer.getServer().getServerId());
+        webConfig.put("serverId", yamcs.getServerId());
+        webConfig.put("hasTemplates", !yamcs.getInstanceTemplates().isEmpty());
 
         Map<String, Object> args = new HashMap<>(4);
         args.put("contextPath", httpServer.getContextPath());

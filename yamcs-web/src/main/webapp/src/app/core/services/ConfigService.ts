@@ -11,6 +11,7 @@ export interface WebsiteConfig {
   commandClearances: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
+  hasTemplates: boolean;
   completeness: boolean;
   logoutRedirectUrl: string;
   cfdp: boolean;
@@ -70,6 +71,10 @@ export class ConfigService {
 
   getCommandOptions() {
     return this.websiteConfig.commandOptions;
+  }
+
+  hasTemplates() {
+    return this.websiteConfig.hasTemplates;
   }
 
   getConfig() {
