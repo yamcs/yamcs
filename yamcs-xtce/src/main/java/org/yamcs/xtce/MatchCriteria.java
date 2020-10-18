@@ -25,6 +25,25 @@ public interface MatchCriteria extends Serializable {
 
     public String toExpressionString();
 
+    static String printExpressionReference(ParameterInstanceRef ref) {
+        if (!ref.useCalibratedValue()) {
+            return "'raw://" + ref.getParameter().getQualifiedName() + "'";
+        } else {
+            return "'" + ref.getParameter().getQualifiedName() + "'";
+        }
+    }
+
+    static String printExpressionValue(Object value) {
+        if (value != null && value instanceof String) {
+            // Need to allow for quotes and slashes within the string itself
+            // Turn '\' into '\\' and next, '"' into '\"'
+            String escaped = ((String) value).replace("\\", "\\\\").replace("\"", "\\\"");
+            return "\"" + escaped + "\"";
+        } else {
+            return String.valueOf(value);
+        }
+    }
+
     /**
      * For debugging purpose
      * 
@@ -72,7 +91,7 @@ public interface MatchCriteria extends Serializable {
 
         @Override
         public String toExpressionString() {
-            return "";
+            return "true";
         }
     };
 }

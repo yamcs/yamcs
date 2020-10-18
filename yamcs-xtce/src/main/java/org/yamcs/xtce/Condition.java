@@ -1,10 +1,10 @@
 package org.yamcs.xtce;
 
+import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
+import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The Condition is XTCE overlaps with the Comparison. Condition allows two operands to be Parameters
@@ -16,15 +16,13 @@ public class Condition implements BooleanExpression {
 
     private static final long serialVersionUID = 1L;
 
-    ParameterInstanceRef lValueRef = null;
-    Object rValueRef = null;
+    ParameterInstanceRef lValueRef;
+    Object rValueRef;
 
     OperatorType comparisonOperator;
 
     // the string is used to create the object and then is changed to the other type, depending on the valueType
-    String stringValue = null;
-
-    transient static Logger LOG = LoggerFactory.getLogger(Condition.class.getName());
+    String stringValue;
 
     public Condition(OperatorType comparisonOperator, ParameterInstanceRef lValueRef, ParameterInstanceRef rValueRef) {
         super();
@@ -48,15 +46,12 @@ public class Condition implements BooleanExpression {
      */
     public void resolveValueType() {
         if (((rValueRef == null) || (!(rValueRef instanceof ParameterInstanceRef))) && (stringValue != null)) {
-            boolean useCalibratedValue = lValueRef.useCalibratedValue();
             ParameterType ptype = lValueRef.getParameter().getParameterType();
-            if (useCalibratedValue) {
+            if (lValueRef.useCalibratedValue()) {
                 rValueRef = ptype.parseString(stringValue);
             } else {
                 rValueRef = ptype.parseStringForRawValue(stringValue);
             }
-        } else {
-            LOG.error("Cannot resolveValueType, inconsistent state");
         }
     }
 
@@ -78,12 +73,18 @@ public class Condition implements BooleanExpression {
 
     @Override
     public String toExpressionString() {
-        String expr = String.format("%s %s ", lValueRef.getParameter().getName(), comparisonOperator);
+        StringBuilder buf = new StringBuilder();
+        buf.append(printExpressionReference(lValueRef));
+        buf.append(" ");
+        buf.append(comparisonOperator);
+        buf.append(" ");
+
         if (rValueRef instanceof ParameterInstanceRef) {
-            return expr + ((ParameterInstanceRef) rValueRef).getParameter().getQualifiedName();
+            buf.append(printExpressionReference((ParameterInstanceRef) rValueRef));
         } else {
-            return expr + stringValue;
+            buf.append(printExpressionValue(rValueRef));
         }
+        return buf.toString();
     }
 
     @Override

@@ -1,5 +1,8 @@
 package org.yamcs.xtce;
 
+import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
+import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -79,22 +82,9 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public String toExpressionString() {
-        String ref = instanceRef.getParameter().getQualifiedName();
-        if (!instanceRef.useCalibratedValue()) {
-            ref = "raw://" + ref;
-        }
-
-        String repr;
-        if (value != null && value instanceof String) {
-            // Need to allow for quotes and slashes within the string itself
-            // Turn '\' into '\\' and next, '"' into '\"'
-            String escaped = ((String) value).replace("\\", "\\\\").replace("\"", "\\\"");
-            repr = "\"" + escaped + "\"";
-        } else {
-            repr = String.valueOf(value);
-        }
-
-        return String.format("%s %s %s", ref, comparisonOperator, repr);
+        return printExpressionReference(instanceRef) + " "
+                + comparisonOperator + " "
+                + printExpressionValue(value);
     }
 
     /**
