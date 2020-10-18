@@ -1,0 +1,28 @@
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+}
+
+.line {
+  font-family: 'Roboto Mono', monospace;
+  white-space: pre;
+}
+
+.cnt {
+  color: #777;
+}
+
+.hl {
+  background-color: lime;
+}
+
+.selected, .hl.selected {
+  background-color: lime;
+}
+
+.ascii {
+  color: #777;
+  margin-left: 0.5em;
+}
