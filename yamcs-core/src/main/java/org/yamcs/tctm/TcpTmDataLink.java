@@ -23,7 +23,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     ParameterValue svConnectionStatus;
 
     String packetInputStreamClassName;
-    Object packetInputStreamArgs;
+    YConfiguration packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
     @Override
@@ -39,10 +39,12 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         initialDelay = config.getLong("initialDelay", -1);
         if (config.containsKey("packetInputStreamClassName")) {
             this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
+            this.packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
         } else {
             this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            this.packetInputStreamArgs = YConfiguration.emptyConfig();
         }
-        this.packetInputStreamArgs = config.get("packetInputStreamArgs");
+        
     }
 
     protected void openSocket() throws IOException {

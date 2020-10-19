@@ -1,57 +1,47 @@
 package org.yamcs.tctm;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.zip.GZIPInputStream;
 
-import org.yamcs.TmPacket;
-import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.YConfiguration;
+import org.yamcs.utils.DeprecationInfo;
 
 /**
- * Plays files in pacts format, hrdp format or containing raw ccsds packets.
+ * Plays files in PaCTS format, HRDP format or containing raw CCSSDS ISS packets.
+ * <p>
+ * Used in the context of ISS/Columbus ground control; it should eventually be removed from the Yamcs core.
  * 
  * @author nm
  *
  */
-public class TmFileReader {
+@Deprecated
+@DeprecationInfo(info = "this class will be moved outside of yamcs-core because it is specific to ISS/Columbus ground environment. "
+        + "Please use the GenericPacketInputStream or the CcsdsPacketInputStream instead.")
+public class UsocPacketInputStream implements PacketInputStream {
     protected InputStream inputStream;
     int fileoffset = 0;
     int packetcount = 0;
-    PacketPreprocessor packetPreprocessor;
+    int maxPacketLength;
+
+    public UsocPacketInputStream(InputStream inputStream) throws IOException {
+        this(inputStream, YConfiguration.emptyConfig());
+    }
 
     /**
      * Constructs a reader for telemetry files. It reads the first two bytes to see if it's gzip
      * 
-     * @param fileName
-     * @param packetPreprocessor
+     * @param inputStream
+     * @param args
      * @throws IOException
      */
-    public TmFileReader(String fileName, PacketPreprocessor packetPreprocessor) throws IOException {
-        this.packetPreprocessor = packetPreprocessor;
-        inputStream = new FileInputStream(fileName);
-        boolean gzip = false;
-
-        // read the first two bytes to check if it's gzip
-        byte[] b = new byte[2];
-        int x = inputStream.read(b);
-        if ((x == 2) && (b[0] == 0x1F) && ((b[1] & 0xFF) == 0x8B)) {
-            gzip = true;
-        }
-        inputStream.close();
-
-        if (gzip) {
-            inputStream = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
-        } else {
-            inputStream = new BufferedInputStream(new FileInputStream(fileName));
-        }
+    public UsocPacketInputStream(InputStream inputStream, YConfiguration args) throws IOException {
+        this.inputStream = inputStream;
+        this.maxPacketLength = args.getInt("maxPacketLength", 1500);
     }
 
-    public TmPacket readPacket(long rectime) throws IOException {
+    @Override
+    public byte[] readPacket() throws IOException, PacketTooLongException {
         int res;
         byte[] buffer;
         byte[] fourb = new byte[4];
@@ -60,8 +50,6 @@ public class TmFileReader {
             inputStream.close();
             return null;
         } else if (res != 4) {
-            System.err.println("fourb: " + StringConverter.arrayToHexString(fourb));
-            inputStream.close();
             throw new IOException("Could only read " + res + " out of 4 bytes. Corrupted file?");
         }
 
@@ -73,13 +61,7 @@ public class TmFileReader {
             byte[] b = new byte[6];
             res = inputStream.read(b);
             if (res != 6) {
-                inputStream.close();
                 throw new IOException("Could only read " + res + " out of 6 bytes. Corrupted file?");
-            } else {
-                ByteBuffer bb = ByteBuffer.wrap(b);
-                long unixTimesec = (0xFFFFFFFFL & (long) bb.getInt(1)) + 315964800L;
-                int unixTimeMicrosec = (bb.get() & 0xFF) * (1000000 / 256);
-                rectime = TimeEncoding.fromUnixTime(unixTimesec, unixTimeMicrosec);
             }
         } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
             System.arraycopy(fourb, 0, ccsdshdr, 0, 4);
@@ -122,7 +104,7 @@ public class TmFileReader {
             throw new IOException("CCSDS packet header short read " + res + "/16-ccsdshdroffset");
         }
         int len = ((ccsdshdr[4] & 0xff) << 8) + (ccsdshdr[5] & 0xff) + 7;
-        if ((len < 16) || len > CcsdsPacket.MAX_CCSDS_SIZE) {
+        if ((len < 16) || len > maxPacketLength) {
             inputStream.close();
             throw new IOException("invalid ccsds packet of length " + len + ". Corrupted file?");
         }
@@ -138,11 +120,10 @@ public class TmFileReader {
                 throw new IOException("no new line at the end of the PaCTS packet");
             }
         }
-        return packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), buffer));
+        return buffer;
     }
 
     public void close() throws IOException {
         inputStream.close();
     }
-
 }

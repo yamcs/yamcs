@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -48,13 +47,13 @@ public class GenericPacketInputStream implements PacketInputStream {
 
     long streamOffset = 0;
 
-    public GenericPacketInputStream(InputStream inputStream, Map<String, Object> args) {
+    public GenericPacketInputStream(InputStream inputStream, YConfiguration args) {
         this.dataInputStream = new DataInputStream(inputStream);
-        this.maxPacketLength = YConfiguration.getInt(args, "maxPacketLength");
-        this.lengthFieldOffset = YConfiguration.getInt(args, "lengthFieldOffset");
-        this.lengthFieldLength = YConfiguration.getInt(args, "lengthFieldLength");
-        this.lengthAdjustment = YConfiguration.getInt(args, "lengthAdjustment");
-        this.initialBytesToStrip = YConfiguration.getInt(args, "initialBytesToStrip");
+        this.maxPacketLength = args.getInt("maxPacketLength");
+        this.lengthFieldOffset = args.getInt("lengthFieldOffset");
+        this.lengthFieldLength = args.getInt("lengthFieldLength");
+        this.lengthAdjustment = args.getInt("lengthAdjustment");
+        this.initialBytesToStrip = args.getInt("initialBytesToStrip");
         lengthFieldEndOffset = lengthFieldOffset + lengthFieldLength;
 
         if (lengthFieldLength != 1 && lengthFieldLength != 2 && lengthFieldLength != 3 && lengthFieldLength != 4) {
@@ -120,5 +119,10 @@ public class GenericPacketInputStream implements PacketInputStream {
             n -= skipped;
 
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        dataInputStream.close();
     }
 }

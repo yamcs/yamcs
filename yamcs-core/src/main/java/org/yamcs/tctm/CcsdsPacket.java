@@ -1,13 +1,10 @@
 package org.yamcs.tctm;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.yamcs.utils.ByteArrayUtils;
 
 public class CcsdsPacket {
-    static public final int MAX_CCSDS_SIZE = 1500;
     protected ByteBuffer bb;
 
     public CcsdsPacket(byte[] packet) {
@@ -162,25 +159,6 @@ public class CcsdsPacket {
 
     private boolean checksumPresent() {
         return ((bb.get(11) >> 5) & 1) == 1;
-    }
-
-    public static CcsdsPacket getPacketFromStream(InputStream input) throws IOException {
-        byte[] b = new byte[6];
-        ByteBuffer bb = ByteBuffer.wrap(b);
-        if (input.read(b) < 6) {
-            throw new IOException("cannot read CCSDS primary header\n");
-        }
-        int ccsdslen = bb.getShort(4) & 0xFFFF;
-        if (ccsdslen > MAX_CCSDS_SIZE) {
-            throw new IOException("illegal CCSDS length " + ccsdslen);
-        }
-        bb = ByteBuffer.allocate(ccsdslen + 7);
-        bb.put(b);
-
-        if (input.read(bb.array(), 6, ccsdslen + 1) < ccsdslen + 1) {
-            throw new IOException("cannot read full packet");
-        }
-        return new CcsdsPacket(bb);
     }
 
     public static short getAPID(byte[] packet) {

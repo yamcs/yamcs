@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.utils.ByteArrayUtils;
 
 import com.google.common.primitives.Bytes;
@@ -17,7 +18,7 @@ import com.google.common.primitives.Bytes;
 public class CfdpPacketInputStream implements PacketInputStream {
     DataInputStream dataInputStream;
 
-    public CfdpPacketInputStream(InputStream inputStream) {
+    public CfdpPacketInputStream(InputStream inputStream, YConfiguration config) {
         this.dataInputStream = new DataInputStream(inputStream);
     }
 
@@ -44,5 +45,10 @@ public class CfdpPacketInputStream implements PacketInputStream {
         byte[] packet = new byte[totalLength - b.length];
         dataInputStream.readFully(packet);
         return Bytes.concat(b, packet);
+    }
+
+    @Override
+    public void close() throws IOException {
+        dataInputStream.close();
     }
 }

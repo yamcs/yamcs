@@ -3,7 +3,6 @@ package org.yamcs.tctm;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import org.yamcs.YConfiguration;
 
@@ -21,9 +20,9 @@ public class CcsdsPacketInputStream implements PacketInputStream {
     DataInputStream dataInputStream;
     int maxPacketLength = 1500;
 
-    public CcsdsPacketInputStream(InputStream inputStream, Map<String, Object> args) {
+    public CcsdsPacketInputStream(InputStream inputStream, YConfiguration args) {
         this.dataInputStream = new DataInputStream(inputStream);
-        this.maxPacketLength = YConfiguration.getInt(args, "maxPacketLength", maxPacketLength);
+        this.maxPacketLength = args.getInt("maxPacketLength", maxPacketLength);
     }
 
     public CcsdsPacketInputStream(InputStream inputStream) {
@@ -44,5 +43,10 @@ public class CcsdsPacketInputStream implements PacketInputStream {
         System.arraycopy(hdr, 0, packet, 0, hdr.length);
         dataInputStream.readFully(packet, hdr.length, remaining);
         return packet;
+    }
+
+    @Override
+    public void close() throws IOException {
+        dataInputStream.close();
     }
 }
