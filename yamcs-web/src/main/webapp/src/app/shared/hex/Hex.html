@@ -1,44 +1,5 @@
 <div [style.fontSize]="fontSize + 'px'"
      [style.lineHeight]="fontSize + 'px'"
-     [style.margin]="0"
-     *ngIf="model$ | async as model">
-  <div *ngFor="let line of model.lines"
-       class="line"
-       [attr.data-bitpos]="line.bitpos">
-    <span class="cnt">{{ line.charCountHex }}: </span>
-    <span class="hex">
-      <ng-container *ngFor="let component of line.hexComponents; let last = last">
-        <span *ngIf="component.type === 'word'"
-              class="word"
-              [attr.data-bitpos]="component.bitpos">
-          <span *ngFor="let nibble of component.nibbles; let i = index"
-                #nibble
-                class="nibble"
-                [attr.data-bitpos]="component.bitpos + (i * 4)">{{ nibble }}</span>
-        </span>
-        <span *ngIf="component.type === 'filler'"
-              #hexFiller
-              class="hexfiller"
-              [class.last]="last"
-              [attr.data-bitpos]="component.bitpos">{{ component.content }}</span>
-      </ng-container>
-    </span>
-    <span class="ascii">
-      <span *ngFor="let component of line.asciiComponents; let last = last"
-            class="word"
-            [attr.data-bitpos]="component.bitpos">
-        <ng-container *ngIf="component.type === 'word'">
-          <span *ngFor="let c of component.chars; let i = index"
-                #char
-                class="char"
-                [attr.data-bitpos]="component.bitpos + (i * 8)">{{ c }}</span>
-        </ng-container>
-        <span *ngIf="component.type === 'filler'"
-              #asciiFiller
-              class="asciifiller"
-              [class.last]="last"
-              [attr.data-bitpos]="component.bitpos">{{ component.content }}</span>
-      </span>
-    </span>
-  </div>
+     [style.margin]="0">
+  <div [innerHTML]="html$ | async"></div>
 </div>

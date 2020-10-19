@@ -116,6 +116,10 @@ body {
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+.ya-data-table td.mono, .ya-data-table th.mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
 dd, dt {
   font-size: 12px;
   color: rgba(0, 0, 0, .654);

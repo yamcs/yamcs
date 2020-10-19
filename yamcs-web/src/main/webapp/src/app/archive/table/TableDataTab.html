@@ -29,7 +29,8 @@
           <td *ngFor="let column of table.keyColumn">
             {{ (record.column | columnValue:column.name | value) || '-' }}
           </td>
-          <td *ngFor="let column of table.valueColumn">
+          <td *ngFor="let column of table.valueColumn"
+              [class.mono]="column.type === 'BINARY'">
             {{ (record.column | columnValue:column.name | value) || '-' }}
           </td>
         </tr>

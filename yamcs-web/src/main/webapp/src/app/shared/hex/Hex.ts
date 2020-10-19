@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnChanges, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
-import { BitRange, HexModel } from './model';
+import { BitRange } from '../BitRange';
+import { HexModel } from './model';
 
 @Component({
   selector: 'app-hex',
@@ -8,7 +10,7 @@ import { BitRange, HexModel } from './model';
   styleUrls: ['./Hex.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Hex implements OnChanges {
+export class Hex implements OnChanges, OnDestroy {
 
   @Input()
   base64String: string;
@@ -16,57 +18,80 @@ export class Hex implements OnChanges {
   @Input()
   fontSize = 10;
 
-  @ViewChildren('nibble')
-  private nibbleRefs: QueryList<ElementRef>;
-
-  @ViewChildren('hexFiller')
-  private hexFillerRefs: QueryList<ElementRef>;
-
-  @ViewChildren('char')
-  private charRefs: QueryList<ElementRef>;
-
   model$ = new BehaviorSubject<HexModel | null>(null);
-  private highlightedEls: HTMLElement[] = [];
-  private selectedEls: HTMLElement[] = [];
+  html$ = new BehaviorSubject<SafeHtml | null>(null);
+
+  private lastSelection: BitRange;
+  private lastHighlight: BitRange;
 
   // Bit position when a press was started
-  private linePressStart?: BitRange;
-  private hexPressStart?: BitRange;
-  private hexFillerPressStart?: number;
-  private asciiPressStart?: BitRange;
-  private asciiFillerPressStart?: number;
+  private pressStart?: BitRange;
+
+  private loadWorker: Worker;
+
+  constructor(private ref: ElementRef, sanitizer: DomSanitizer) {
+    this.loadWorker = new Worker('./worker', { type: 'module' });
+    this.loadWorker.onmessage = ({ data }) => {
+      switch (data.type) {
+        case 'model':
+          const model = data.model;
+          this.clearHighlight();
+          this.clearSelection();
+          this.model$.next(model);
+          this.html$.next(sanitizer.bypassSecurityTrustHtml(data.html));
+          break;
+        case 'selection':
+          this.clearSelection();
+          for (const id of data.selection) {
+            document.getElementById(id)?.classList.add('selected');
+          }
+          break;
+        case 'highlight':
+          this.clearHighlight();
+          for (const id of data.ids) {
+            document.getElementById(id)?.classList.add('hl');
+          }
+          break;
+        default:
+          throw Error(`Unexpected worker response type ${data.type}`);
+      }
+    };
+  }
 
   ngOnChanges() {
-    this.clearHighlight();
-    this.clearSelection();
-
-    const raw = atob(this.base64String);
-    this.model$.next(new HexModel(raw));
+    this.loadWorker.postMessage({
+      type: 'init',
+      options: {
+        base64String: this.base64String,
+      }
+    });
   }
 
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
-    this.clearSelection();
     const el = event.target as HTMLElement;
+    const model = this.model$.value!;
 
     if (el.classList.contains('cnt')) {
-      const line = el.parentElement!;
-      const lineRange = new BitRange(Number(line.dataset.bitpos), 128);
-      this.linePressStart = lineRange;
+      const lineEl = el.parentElement!;
+      const bitpos = model.positionables.get(lineEl.id)!;
+      const lineRange = new BitRange(bitpos, 128);
+      this.pressStart = lineRange;
       this.setSelection(lineRange);
     } else if (el.classList.contains('nibble')) {
-      const word = el.parentElement!;
-      const wordRange = new BitRange(Number(word.dataset.bitpos), 16);
-      this.hexPressStart = wordRange;
+      const wordEl = el.parentElement!;
+      const bitpos = model.positionables.get(wordEl.id)!;
+      const wordRange = new BitRange(bitpos, 16);
+      this.pressStart = wordRange;
       this.setSelection(wordRange);
-    } else if (el.classList.contains('hexfiller')) {
-      this.hexFillerPressStart = Number(el.dataset.bitpos);
+    } else if (el.classList.contains('filler')) {
+      const bitpos = model.positionables.get(el.id)!;
+      this.pressStart = new BitRange(bitpos, 0);
     } else if (el.classList.contains('char')) {
-      const charRange = new BitRange(Number(el.dataset.bitpos), 8);
-      this.asciiPressStart = charRange;
+      const bitpos = model.positionables.get(el.id)!;
+      const charRange = new BitRange(bitpos, 8);
+      this.pressStart = charRange;
       this.setSelection(charRange);
-    } else if (el.classList.contains('asciifiller')) {
-      this.asciiFillerPressStart = Number(el.dataset.bitpos);
     }
 
     // Prevent text selection when mouse leaves our component
@@ -76,174 +101,111 @@ export class Hex implements OnChanges {
 
   @HostListener('mouseover', ['$event.target', '!!$event.which'])
   onMouseOver(el: HTMLElement, pressing: boolean) {
-    this.clearHighlight();
+    const model = this.model$.value!;
 
     if (el.classList.contains('cnt')) {
       // Highlight entire line if the leading charcount is hovered
       const lineEl = el.parentElement!;
-      const lineRange = new BitRange(Number(lineEl.dataset.bitpos), 128);
-      this.addToHighlight(lineRange);
+      const bitpos = model.positionables.get(lineEl.id)!;
+      const lineRange = new BitRange(bitpos, 128);
 
-      if (pressing && this.linePressStart) {
-        const joined = this.linePressStart.join(lineRange);
+      if (pressing && this.pressStart) {
+        const joined = this.pressStart.join(lineRange);
         this.setSelection(joined);
+      } else {
+        this.setHighlight(lineRange);
       }
     } else if (el.classList.contains('nibble')) {
       // Highlight entire word when any of its four nibbles is hovered
       const wordEl = el.parentElement!;
-      const wordRange = new BitRange(Number(wordEl.dataset.bitpos), 16);
-      this.addToHighlight(wordRange);
+      const bitpos = model.positionables.get(wordEl.id)!;
+      const wordRange = new BitRange(bitpos, 16);
 
-      if (pressing) {
-        if (this.hexPressStart) {
-          // Select all bits between current word and word when mouse was pressed
-          const joined = this.hexPressStart.join(wordRange);
-          this.setSelection(joined);
-        } else if (this.hexFillerPressStart !== undefined) {
-          // Use filler as a cursor and select until current word
-          const joined = wordRange.joinBit(this.hexFillerPressStart);
-          this.setSelection(joined);
-        }
+      if (pressing && this.pressStart) {
+        // Select all bits between current word and word when mouse was pressed
+        const joined = this.pressStart.join(wordRange);
+        this.setSelection(joined);
+      } else {
+        this.setHighlight(wordRange);
       }
-    } else if (el.classList.contains('hexfiller')) {
-      const fillerpos = Number(el.dataset.bitpos);
-      if (pressing) {
-        if (this.hexPressStart) {
-          const joined = this.hexPressStart.joinBit(fillerpos);
-          this.setSelection(joined);
-        } else if (this.hexFillerPressStart !== undefined) {
-          const joined = new BitRange(this.hexFillerPressStart, 0).joinBit(fillerpos);
-          this.setSelection(joined);
-        }
+    } else if (el.classList.contains('filler')) {
+      const fillerpos = model.positionables.get(el.id)!;
+      if (pressing && this.pressStart) {
+        const joined = this.pressStart.joinBit(fillerpos);
+        this.setSelection(joined);
       }
     } else if (el.classList.contains('char')) {
       // Highlight byte when a character is hovered
-      const charRange = new BitRange(Number(el.dataset.bitpos), 8);
-      this.addToHighlight(charRange);
+      const bitpos = model.positionables.get(el.id)!;
+      const charRange = new BitRange(bitpos, 8);
 
-      if (pressing) {
-        if (this.asciiPressStart) {
-          const joined = this.asciiPressStart.join(charRange);
-          this.setSelection(joined);
-        } else if (this.asciiFillerPressStart !== undefined) {
-          const joined = charRange.joinBit(this.asciiFillerPressStart);
-          this.setSelection(joined);
-        }
-      }
-    } else if (el.classList.contains('asciifiller')) {
-      const fillerpos = Number(el.dataset.bitpos);
-      if (pressing) {
-        if (this.asciiPressStart) {
-          const joined = this.asciiPressStart.joinBit(fillerpos);
-          this.setSelection(joined);
-        } else if (this.asciiFillerPressStart !== undefined) {
-          const joined = new BitRange(this.asciiFillerPressStart, 0).joinBit(fillerpos);
-          this.setSelection(joined);
-        }
+      if (pressing && this.pressStart) {
+        const joined = this.pressStart.join(charRange);
+        this.setSelection(joined);
+      } else {
+        this.setHighlight(charRange);
       }
     }
   }
 
   @HostListener('document:mouseup')
   onMouseUp() {
-    this.linePressStart = undefined;
-    this.hexPressStart = undefined;
-    this.hexFillerPressStart = undefined;
-    this.asciiPressStart = undefined;
-    this.asciiFillerPressStart = undefined;
+    this.pressStart = undefined;
   }
 
   @HostListener('document:mouseout')
   onMouseOut() {
-    this.clearHighlight();
-  }
-
-  /**
-   * Returns a hex string of the entire input
-   */
-  public getHexString() {
-    const model = this.model$.value;
-    return model?.printHex();
+    // Handle via worker, just in case an operation is already underway.
+    this.setHighlight(new BitRange(0, 0));
   }
 
   private clearSelection() {
-    for (const el of this.selectedEls) {
+    (this.ref.nativeElement as HTMLElement).querySelectorAll('.selected').forEach(el => {
       el.classList.remove('selected');
-    }
-    this.selectedEls.length = 0;
+    });
   }
 
   private clearHighlight() {
-    for (const el of this.highlightedEls) {
+    (this.ref.nativeElement as HTMLElement).querySelectorAll('.hl').forEach(el => {
       el.classList.remove('hl');
-    }
-    this.highlightedEls.length = 0;
-  }
-
-  private addToHighlight(range: BitRange) {
-    // Limit to max bitlength
-    const model = this.model$.value;
-    range = range.intersect(new BitRange(0, model!.bitlength))!;
-
-    this.nibbleRefs.forEach(ref => {
-      const nibbleEl: HTMLElement = ref.nativeElement;
-      const nibbleRange = new BitRange(Number(nibbleEl.dataset.bitpos), 4);
-      if (range.overlaps(nibbleRange)) {
-        nibbleEl.classList.add('hl');
-        this.highlightedEls.push(nibbleEl);
-      }
-    });
-    this.hexFillerRefs.forEach(ref => {
-      const fillerEl: HTMLElement = ref.nativeElement;
-      const fillerPosition = Number(fillerEl.dataset.bitpos);
-      if (!fillerEl.classList.contains('last')) {
-        if (range.containsBitExclusive(fillerPosition)) {
-          fillerEl.classList.add('hl');
-          this.highlightedEls.push(fillerEl);
-        }
-      }
-    });
-    this.charRefs.forEach(ref => {
-      const charEl: HTMLElement = ref.nativeElement;
-      const charRange = new BitRange(Number(charEl.dataset.bitpos), 8);
-      if (range.overlaps(charRange)) {
-        charEl.classList.add('hl');
-        this.highlightedEls.push(charEl);
-      }
     });
   }
 
   private setSelection(range: BitRange) {
-    // Limit to max bitlength
-    const model = this.model$.value;
-    range = range.intersect(new BitRange(0, model!.bitlength))!;
+    // Avoid spamming the worker thread
+    if (this.lastSelection && this.lastSelection.equals(range)) {
+      return;
+    }
 
-    this.clearSelection();
-    this.nibbleRefs.forEach(ref => {
-      const nibbleEl: HTMLElement = ref.nativeElement;
-      const nibbleRange = new BitRange(Number(nibbleEl.dataset.bitpos), 4);
-      if (range.overlaps(nibbleRange)) {
-        nibbleEl.classList.add('selected');
-        this.selectedEls.push(nibbleEl);
+    this.lastSelection = range;
+    this.loadWorker.postMessage({
+      type: 'select',
+      options: {
+        bitpos: range.start,
+        bitlength: range.bitlength,
       }
     });
-    this.hexFillerRefs.forEach(ref => {
-      const fillerEl: HTMLElement = ref.nativeElement;
-      const fillerPosition = Number(fillerEl.dataset.bitpos);
-      if (!fillerEl.classList.contains('last')) {
-        if (range.containsBitExclusive(fillerPosition)) {
-          fillerEl.classList.add('selected');
-          this.selectedEls.push(fillerEl);
-        }
+  }
+
+  private setHighlight(range: BitRange) {
+    // Avoid spamming the worker thread
+    if (this.lastHighlight && this.lastHighlight.equals(range)) {
+      return;
+    }
+
+    this.lastHighlight = range;
+    this.loadWorker.postMessage({
+      type: 'highlight',
+      options: {
+        bitpos: range.start,
+        bitlength: range.bitlength,
       }
     });
-    this.charRefs.forEach(ref => {
-      const charEl: HTMLElement = ref.nativeElement;
-      const charRange = new BitRange(Number(charEl.dataset.bitpos), 8);
-      if (range.overlaps(charRange)) {
-        charEl.classList.add('selected');
-        this.selectedEls.push(charEl);
-      }
-    });
+  }
+
+  ngOnDestroy() {
+    if (this.loadWorker) {
+      this.loadWorker.terminate();
+    }
   }
 }

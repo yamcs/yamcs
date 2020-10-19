@@ -114,7 +114,7 @@
 
         <ng-container matColumnDef="data">
           <th mat-header-cell *matHeaderCellDef>Data</th>
-          <td mat-cell *matCellDef="let packet">
+          <td mat-cell *matCellDef="let packet" class="mono">
             {{ packet.packet | hex }}
           </td>
         </ng-container>
