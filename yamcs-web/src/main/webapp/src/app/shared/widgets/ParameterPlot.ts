@@ -1,9 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Input, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import Dygraph from 'dygraphs';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Parameter } from '../../client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { ModifyParameterDialog } from '../../telemetry/parameters/ModifyParameterDialog';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
@@ -19,7 +18,7 @@ import { ParameterSeries } from './ParameterSeries';
   styleUrls: ['./ParameterPlot.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterPlot implements AfterViewInit, OnDestroy {
+export class ParameterPlot implements AfterViewInit {
 
   @Input()
   dataSource: DyDataSource;
@@ -53,12 +52,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @Input() lightGridLineColor = '#f2f2f2';
   @Input() lightPlotAreaBackgroundColor = '#fff';
   @Input() lightHighlightColor = '#e1e1e1';
-
-  @Input() darkAxisBackgroundColor = '#191919';
-  @Input() darkAxisLineColor = '#2e2e2e';
-  @Input() darkGridLineColor = '#212121';
-  @Input() darkPlotAreaBackgroundColor = '#111';
-  @Input() darkHighlightColor = '#2e2e2e';
 
   axisBackgroundColor = this.lightAxisBackgroundColor;
   axisLineColor = this.lightAxisLineColor;
@@ -95,15 +88,10 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   // Flag to prevent from reloading while the user is busy with a pan or zoom operation
   private disableDataReload = false;
 
-  private darkModeSubscription: Subscription;
-
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
   timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
-  constructor(private preferenceStore: PreferenceStore, private dialog: MatDialog) {
-    this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
-      this.applyTheme(darkMode);
-    });
+  constructor(private dialog: MatDialog) {
   }
 
   ngAfterViewInit() {
@@ -178,7 +166,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     stop.setTime(stop.getTime() + 0.1 * delta);
 
     this.dataSource.updateWindow(start, stop, [null, null]);
-    this.applyTheme(this.preferenceStore.isDarkMode());
+    this.applyTheme();
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
@@ -510,21 +498,13 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     }));
   }
 
-  private applyTheme(dark: boolean) {
+  private applyTheme() {
     // Update model
-    if (dark) {
-      this.axisBackgroundColor = this.darkAxisBackgroundColor;
-      this.axisLineColor = this.darkAxisLineColor;
-      this.gridLineColor = this.darkGridLineColor;
-      this.plotAreaBackgroundColor = this.darkPlotAreaBackgroundColor;
-      this.highlightColor = this.darkHighlightColor;
-    } else {
-      this.axisBackgroundColor = this.lightAxisBackgroundColor;
-      this.axisLineColor = this.lightAxisLineColor;
-      this.gridLineColor = this.lightGridLineColor;
-      this.plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
-      this.highlightColor = this.lightHighlightColor;
-    }
+    this.axisBackgroundColor = this.lightAxisBackgroundColor;
+    this.axisLineColor = this.lightAxisLineColor;
+    this.gridLineColor = this.lightGridLineColor;
+    this.plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
+    this.highlightColor = this.lightHighlightColor;
 
     // Apply model
     if (this.dygraph) {
@@ -598,11 +578,5 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
-  }
-
-  ngOnDestroy() {
-    if (this.darkModeSubscription) {
-      this.darkModeSubscription.unsubscribe();
-    }
   }
 }
