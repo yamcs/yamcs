@@ -56,6 +56,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         if("TIMESTAMP".equalsIgnoreCase(type)) {return DataType.TIMESTAMP;}
         if("PARAMETER_VALUE".equalsIgnoreCase(type)) {return DataType.PARAMETER_VALUE;}
         if("BINARY".equalsIgnoreCase(type))  {return DataType.BINARY;}
+        if("HRES_TIMESTAMP".equalsIgnoreCase(type)) {return DataType.HRES_TIMESTAMP;}
 
         throw new ParseException("Unknown data type '"+type+"'");
     }

@@ -17,7 +17,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class DataType {
     
-    public enum _type {BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST}
+    public enum _type {BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST, HRES_TIMESTAMP}
     public final _type val;
     
     public static final DataType BYTE = new DataType(_type.BYTE, (byte)1);
@@ -35,6 +35,8 @@ public class DataType {
     public static final byte PROTOBUF_ID = 12;
     public static final byte TUPLE_ID = 13;
     public static final byte LIST_ID = 14;
+
+    public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte)15);
     
     //the id has been added in Yamcs 4.11 - it will be stored on disk as 
     private final byte id;
@@ -97,6 +99,9 @@ public class DataType {
         }
         if("LONG".equals(name)) {
             return LONG;
+        }
+        if("HRES_TIMESTAMP".equals(name)) {
+            return HRES_TIMESTAMP;
         }
         
         if("PARAMETER_VALUE".equals(name)){

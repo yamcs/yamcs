@@ -24,6 +24,7 @@ public class TimeEncoding {
     // these two are used for open intervals
     public static final long MIN_INSTANT = Long.MIN_VALUE;
     public static long MAX_INSTANT = 185539080470435999L;
+    
 
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691191000L;

@@ -16,6 +16,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.DataType._type;
 
@@ -40,6 +41,7 @@ public class ColumnSerializerFactory {
     static final DoubleColumnSerializer DOUBLE_CS = new DoubleColumnSerializer();
     static final StringColumnSerializer STRING_CS = new StringColumnSerializer();
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
+    static final HresTimestampColumnSerializer HRES_TIMESTAMP_CS = new HresTimestampColumnSerializer();
     static final ParameterValueColumnSerializer PARAMETER_VALUE_CS = new ParameterValueColumnSerializer();
 
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>();
@@ -102,6 +104,8 @@ public class ColumnSerializerFactory {
             return (ColumnSerializer<T>) BINARY_CS;
         case PARAMETER_VALUE:
             return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
+        case HRES_TIMESTAMP:
+            return (ColumnSerializer<T>) HRES_TIMESTAMP_CS;
         case LIST:
         case TUPLE:
             // TODO
@@ -358,6 +362,55 @@ public class ColumnSerializerFactory {
         }
     }
 
+    
+    static class HresTimestampColumnSerializer extends AbstractColumnSerializer<Instant> {
+        public HresTimestampColumnSerializer() {
+            super(12);
+        }
+
+        @Override
+        public Instant deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
+            long millis = stream.readLong();
+            int picos = stream.readInt();
+            return Instant.get(millis, picos);
+        }
+
+        @Override
+        public Instant deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
+            long millis = byteBuf.getLong();
+            int picos = byteBuf.getInt();
+            return Instant.get(millis, picos);
+        }
+
+        @Override
+        public void serialize(DataOutputStream stream, Instant v) throws IOException {
+            stream.writeLong(v.getMillis());
+            stream.writeInt(v.getPicos());
+        }
+
+        @Override
+        public void serialize(ByteBuffer byteBuf, Instant v) {
+            byteBuf.putLong(v.getMillis());
+            byteBuf.putInt(v.getPicos());
+        }
+
+        @Override
+        public byte[] toByteArray(Instant v) {
+            byte[] b= new byte[12];
+            ByteArrayUtils.encodeLong(v.getMillis(), b, 0);
+            ByteArrayUtils.encodeInt(v.getPicos(), b, 8);
+            return b;
+        }
+
+        @Override
+        public Instant fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+            long millis = ByteArrayUtils.decodeLong(b, 0);
+            int picos = ByteArrayUtils.decodeInt(b, 8);
+            return Instant.get(millis, picos);
+        }
+    }
+    
+    
     static class StringColumnSerializer extends AbstractColumnSerializer<String> {
         public StringColumnSerializer() {
             super(32);

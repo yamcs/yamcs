@@ -319,10 +319,9 @@ public class YConfiguration {
 
     /**
      * If the key is pointing to a map, creates and returns a configuration object out of that map
-     * 
      * <p>
      * The returned object will have its parent set to this object
-     * 
+     * <p>If the key does not exist a ConfigurationException is thrown.
      * @param key
      * @return
      */
@@ -331,10 +330,14 @@ public class YConfiguration {
         return new YConfiguration(this, key, m);
     }
 
+    /**
+     * Same as {@link #getConfig(String)} but return an empty config if the key does not exist.
+     * @param key
+     * @return
+     */
     public YConfiguration getConfigOrEmpty(String key) {
-        Map<String, Object> m = getMap(key);
-        if(m!=null) {
-            return new YConfiguration(this, key, m);
+        if(root.containsKey(key)) {
+            return getConfig(key);
         } else {
             return YConfiguration.emptyConfig();
         }
