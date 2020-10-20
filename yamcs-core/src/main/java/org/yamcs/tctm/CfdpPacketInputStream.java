@@ -18,7 +18,8 @@ import com.google.common.primitives.Bytes;
 public class CfdpPacketInputStream implements PacketInputStream {
     DataInputStream dataInputStream;
 
-    public CfdpPacketInputStream(InputStream inputStream, YConfiguration config) {
+    @Override
+    public void init(InputStream inputStream, YConfiguration config) {
         this.dataInputStream = new DataInputStream(inputStream);
     }
 

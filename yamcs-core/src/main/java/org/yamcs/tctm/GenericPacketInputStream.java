@@ -36,18 +36,19 @@ import org.yamcs.utils.ByteArrayUtils;
  *
  */
 public class GenericPacketInputStream implements PacketInputStream {
-    private final int maxPacketLength;
-    private final int lengthFieldOffset;
-    private final int lengthFieldLength;
-    private final int lengthFieldEndOffset;
-    private final int lengthAdjustment;
-    private final int initialBytesToStrip;
+    private int maxPacketLength;
+    private int lengthFieldOffset;
+    private int lengthFieldLength;
+    private int lengthFieldEndOffset;
+    private int lengthAdjustment;
+    private int initialBytesToStrip;
     DataInputStream dataInputStream;
     static Log log = new Log(GenericPacketInputStream.class);
 
     long streamOffset = 0;
 
-    public GenericPacketInputStream(InputStream inputStream, YConfiguration args) {
+    @Override
+    public void init(InputStream inputStream, YConfiguration args) {
         this.dataInputStream = new DataInputStream(inputStream);
         this.maxPacketLength = args.getInt("maxPacketLength");
         this.lengthFieldOffset = args.getInt("lengthFieldOffset");

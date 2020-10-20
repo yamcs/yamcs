@@ -53,16 +53,12 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         tmSocket.setKeepAlive(true);
         tmSocket.connect(new InetSocketAddress(address, port), 1000);
         try {
-            if (packetInputStreamArgs != null) {
-                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, tmSocket.getInputStream(),
-                        packetInputStreamArgs);
-            } else {
-                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, tmSocket.getInputStream());
-            }
+            packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName);
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packetInput stream", e);
             throw e;
         }
+        packetInputStream.init(tmSocket.getInputStream(), packetInputStreamArgs);
     }
 
     @Override

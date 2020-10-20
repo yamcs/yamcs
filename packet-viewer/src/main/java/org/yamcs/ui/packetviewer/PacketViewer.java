@@ -155,7 +155,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     private String defaultNamespace;
     private PacketPreprocessor packetPreprocessor;
 
-    private Object packetInputStreamArgs;
+    private YConfiguration packetInputStreamArgs;
     private String packetInputStreamClassName;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
@@ -1213,16 +1213,13 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         this.packetInputStreamClassName = config.getString("packetInputStreamClassName",
                 CcsdsPacketInputStream.class.getName());
-        this.packetInputStreamArgs = config.get("packetInputStreamArgs");
+        this.packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
     }
 
     private PacketInputStream getPacketInputStream(InputStream inputStream) throws IOException {
-        if (packetInputStreamArgs != null) {
-            return YObjectLoader.loadObject(packetInputStreamClassName, inputStream,
-                    packetInputStreamArgs);
-        } else {
-            return YObjectLoader.loadObject(packetInputStreamClassName, inputStream);
-        }
+        PacketInputStream packetInputStream= YObjectLoader.loadObject(packetInputStreamClassName);
+        packetInputStream.init(inputStream, packetInputStreamArgs);
+        return packetInputStream;
     }
 
 }

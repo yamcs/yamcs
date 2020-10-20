@@ -136,17 +136,13 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 : new BufferedInputStream(new FileInputStream(fileName));
         PacketInputStream packetInputStream;
         try {
-            if (packetInputStreamArgs != null) {
-                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, inputStream,
-                        packetInputStreamArgs);
-            } else {
-                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, inputStream);
-            }
+            packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName);
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packetInput stream", e);
             inputStream.close();
             throw e;
         }
+        packetInputStream.init(inputStream, config);
         return packetInputStream;
     }
 

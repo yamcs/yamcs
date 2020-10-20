@@ -20,13 +20,10 @@ public class CcsdsPacketInputStream implements PacketInputStream {
     DataInputStream dataInputStream;
     int maxPacketLength = 1500;
 
-    public CcsdsPacketInputStream(InputStream inputStream, YConfiguration args) {
+    @Override
+    public void init(InputStream inputStream, YConfiguration args) {
         this.dataInputStream = new DataInputStream(inputStream);
         this.maxPacketLength = args.getInt("maxPacketLength", maxPacketLength);
-    }
-
-    public CcsdsPacketInputStream(InputStream inputStream) {
-        this.dataInputStream = new DataInputStream(inputStream);
     }
 
     @Override

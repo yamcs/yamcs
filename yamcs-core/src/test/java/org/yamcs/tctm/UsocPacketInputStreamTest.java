@@ -6,10 +6,10 @@ import java.nio.ByteBuffer;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.tctm.UsocPacketInputStream;
 
 import static org.junit.Assert.*;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.utils.TimeEncoding;
 
 public class UsocPacketInputStreamTest {
@@ -21,7 +21,8 @@ public class UsocPacketInputStreamTest {
 
     @Test
     public void testRawCcsdsReader() throws InterruptedException, IOException, PacketTooLongException {
-        UsocPacketInputStream tfr = new UsocPacketInputStream(new FileInputStream("src/test/resources/TmFileReaderTest-rawccsds"));
+        UsocPacketInputStream tfr = new UsocPacketInputStream();
+        tfr.init(new FileInputStream("src/test/resources/TmFileReaderTest-rawccsds"), YConfiguration.emptyConfig());
         byte[] packet = tfr.readPacket();
 
         assertNotNull(packet);
@@ -44,7 +45,8 @@ public class UsocPacketInputStreamTest {
 
     @Test(expected = IOException.class)
     public void testHrdpReader() throws InterruptedException, IOException, PacketTooLongException {
-        UsocPacketInputStream tfr = new UsocPacketInputStream(new FileInputStream("src/test/resources/TmFileReaderTest-hrdp-corrupted"));
+        UsocPacketInputStream tfr = new UsocPacketInputStream();
+        tfr.init(new FileInputStream("src/test/resources/TmFileReaderTest-hrdp-corrupted"), YConfiguration.emptyConfig());
         byte[] packet = tfr.readPacket();
         assertNotNull(packet);
         ByteBuffer bb = ByteBuffer.wrap(packet);

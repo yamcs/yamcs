@@ -331,6 +331,15 @@ public class YConfiguration {
         return new YConfiguration(this, key, m);
     }
 
+    public YConfiguration getConfigOrEmpty(String key) {
+        Map<String, Object> m = getMap(key);
+        if(m!=null) {
+            return new YConfiguration(this, key, m);
+        } else {
+            return YConfiguration.emptyConfig();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     static public Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);

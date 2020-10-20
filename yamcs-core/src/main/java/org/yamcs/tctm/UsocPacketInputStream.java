@@ -24,18 +24,9 @@ public class UsocPacketInputStream implements PacketInputStream {
     int packetcount = 0;
     int maxPacketLength;
 
-    public UsocPacketInputStream(InputStream inputStream) throws IOException {
-        this(inputStream, YConfiguration.emptyConfig());
-    }
-
-    /**
-     * Constructs a reader for telemetry files. It reads the first two bytes to see if it's gzip
-     * 
-     * @param inputStream
-     * @param args
-     * @throws IOException
-     */
-    public UsocPacketInputStream(InputStream inputStream, YConfiguration args) throws IOException {
+    
+    @Override
+    public void init(InputStream inputStream, YConfiguration args) {
         this.inputStream = inputStream;
         this.maxPacketLength = args.getInt("maxPacketLength", 1500);
     }
