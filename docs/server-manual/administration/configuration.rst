@@ -9,7 +9,7 @@ The root configuration file is ``etc/yamcs.yaml``. It contains a list of Yamcs i
 Server Configuration
 --------------------
 
-The number of configuration options in ``etc/yamcs.yaml`` are realatively limited. A sample configuration file is below.
+The number of configuration options in ``etc/yamcs.yaml`` are relatively limited. A sample configuration file is below.
 
 .. code-block:: yaml
 
@@ -31,8 +31,6 @@ The number of configuration options in ``etc/yamcs.yaml`` are realatively limite
         displayPath: displays
         stackPath: stacks
         cfdp: true
-
-        staticRoot: ../../../yamcs-web/src/main/webapp/dist
 
 The following options are supported
 

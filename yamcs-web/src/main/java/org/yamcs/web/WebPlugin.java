@@ -60,11 +60,21 @@ public class WebPlugin implements Plugin {
 
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
 
-        // Deploy the website, either from classpath or from a manually
-        // configured directory. The latter is primarily intended for
-        // development work on the web interface.
+        // Deploy the website, for practical reasons we have three different
+        // mechanisms. In order:
+        // 1) Check a system property yamcs.web.staticRoot
+        // 2) Check a property in yamcs.yaml
+        // 3) Load from classpath (packaged inside yamcs-web)
+        //
+        // End-users should use (3). (1) and (2) make it possible to develop
+        // on the web sources. (1) Allows doing so without needing to modify
+        // the yamcs.yaml
         Path staticRoot;
-        if (config.containsKey("staticRoot")) {
+        String staticRootOverride = System.getProperty("yamcs.web.staticRoot");
+        if (staticRootOverride != null) {
+            staticRoot = Paths.get(staticRootOverride);
+            staticRoot = staticRoot.toAbsolutePath().normalize();
+        } else if (config.containsKey("staticRoot")) {
             staticRoot = Paths.get(config.getString("staticRoot"));
             staticRoot = staticRoot.toAbsolutePath().normalize();
         } else {

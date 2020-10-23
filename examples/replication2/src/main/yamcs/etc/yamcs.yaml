@@ -28,4 +28,3 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: REPLICATION2
-  staticRoot: ../../../../yamcs-web/src/main/webapp/dist
