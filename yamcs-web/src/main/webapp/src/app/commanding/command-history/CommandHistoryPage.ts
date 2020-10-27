@@ -215,6 +215,10 @@ export class CommandHistoryPage {
     return this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
   }
 
+  showCommandExports() {
+    return this.config.commandExports;
+  }
+
   private updateURL() {
     this.router.navigate([], {
       relativeTo: this.route,

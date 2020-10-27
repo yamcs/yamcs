@@ -59,6 +59,7 @@ import { Errors } from './forms/Errors';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
+import { Hex } from './hex/Hex';
 import { AgoPipe } from './pipes/AgoPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
@@ -112,9 +113,9 @@ import { WarningMessage } from './template/WarningMessage';
 import { AlarmLabel } from './widgets/AlarmLabel';
 import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
-import { Hex } from './widgets/Hex';
 import { Label } from './widgets/Label';
 import { Labels } from './widgets/Labels';
+import { LiveExpression } from './widgets/LiveExpression';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
@@ -192,6 +193,7 @@ const sharedComponents = [
   Label,
   Labels,
   Led,
+  LiveExpression,
   MessageBar,
   ObjectSelector,
   ParameterLegend,

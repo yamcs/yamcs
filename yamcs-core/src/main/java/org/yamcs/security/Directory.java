@@ -113,6 +113,16 @@ public class Directory {
         persistChanges();
     }
 
+    public synchronized void deleteUser(User user) throws IOException {
+        String username = user.getName();
+        log.info("Removing user {}", user);
+        for (Group group : groups.values()) {
+            group.removeMember(user.getId());
+        }
+        users.remove(username);
+        persistChanges();
+    }
+
     public synchronized void addGroup(Group group) throws IOException {
         String groupName = group.getName();
         if (groups.containsKey(groupName)) {
@@ -172,8 +182,9 @@ public class Directory {
         return new ApplicationCredentials(applicationId, applicationSecret /* not the hash */);
     }
 
-    public synchronized void deleteServiceAccount(String name) {
+    public synchronized void deleteServiceAccount(String name) throws IOException {
         serviceAccounts.remove(name);
+        persistChanges();
     }
 
     public synchronized void updateApplicationProperties(ServiceAccount service) throws IOException {

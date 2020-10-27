@@ -385,7 +385,7 @@ message ComparisonInfo {
 }
 
 message TransmissionConstraintInfo {
-  repeated ComparisonInfo comparison = 1;
+  optional string expression = 3;
   optional int64 timeout = 2;
 }
 

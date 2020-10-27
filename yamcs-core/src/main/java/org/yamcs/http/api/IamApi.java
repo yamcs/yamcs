@@ -13,6 +13,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractIamApi;
@@ -24,6 +25,7 @@ import org.yamcs.protobuf.DeleteGroupRequest;
 import org.yamcs.protobuf.DeleteIdentityRequest;
 import org.yamcs.protobuf.DeleteRoleAssignmentRequest;
 import org.yamcs.protobuf.DeleteServiceAccountRequest;
+import org.yamcs.protobuf.DeleteUserRequest;
 import org.yamcs.protobuf.ExternalIdentityInfo;
 import org.yamcs.protobuf.GetGroupRequest;
 import org.yamcs.protobuf.GetRoleRequest;
@@ -303,8 +305,34 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new ForbiddenException("Insufficient privileges");
         }
         Directory directory = securityStore.getDirectory();
-        directory.deleteServiceAccount(request.getName());
-        observer.complete(Empty.getDefaultInstance());
+        try {
+            directory.deleteServiceAccount(request.getName());
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IOException e) {
+            observer.completeExceptionally(e);
+        }
+    }
+
+    @Override
+    public void deleteUser(Context ctx, DeleteUserRequest request, Observer<Empty> observer) {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
+        Directory directory = securityStore.getDirectory();
+        String username = request.getName();
+        User user = directory.getUser(username);
+        if (user == null) {
+            throw new NotFoundException();
+        }
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        try {
+            httpServer.getTokenStore().forgetUser(user.getName());
+            directory.deleteUser(user);
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IOException e) {
+            observer.completeExceptionally(e);
+        }
     }
 
     @Override

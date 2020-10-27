@@ -5,15 +5,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.yamcs.xtce.ANDedConditions;
-import org.yamcs.xtce.BooleanExpression;
-import org.yamcs.xtce.Comparison;
-import org.yamcs.xtce.Condition;
-import org.yamcs.xtce.ExpressionList;
-import org.yamcs.xtce.ORedConditions;
-import org.yamcs.xtce.OperatorType;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.util.NameReference;
 
 /**
@@ -31,7 +22,7 @@ public class ConditionParser {
     }
 
     public MatchCriteria parseMatchCriteria(String criteriaString) throws ParseException {
-    criteriaString = criteriaString.trim();
+        criteriaString = criteriaString.trim();
         if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|("))
                 && (criteriaString.endsWith(")"))) {
             return parseBooleanExpression(criteriaString);
@@ -46,30 +37,26 @@ public class ConditionParser {
             return toComparison(criteriaString);
         }
     }
+
     /**
      * Boolean expression has the following pattern: op(epx1;exp2;...;expn)
      *
-     * op is & (AND) or | (OR)
-     * expi are boolean expression or condition
+     * op is & (AND) or | (OR) expi are boolean expression or condition
      *
      * A condition is defined as: parametername op value
      *
-     * value can be
-     * - plain value
-     * - quoted with " or ”. The two quote characters can be used interchangeably . Backslash can be use to escape those
-     * double quote.
-     * - $other_parametername
+     * value can be - plain value - quoted with " or ”. The two quote characters can be used interchangeably . Backslash
+     * can be use to escape those double quote. - $other_parametername
      *
      * parametername can be suffixed with .raw
      *
      * Top level expression can be in the form epx1;exp2;...;expn which will be transformed into &(epx1;exp2;...;expn)
-     * for
-     * compatibility with the previously implemented Comparison
+     * for compatibility with the previously implemented Comparison
      * 
      * @param rawExpression
      * 
      * @return
-     * @throws ParseException 
+     * @throws ParseException
      */
     public BooleanExpression parseBooleanExpression(String rawExpression) throws ParseException {
         String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
@@ -179,14 +166,14 @@ public class ConditionParser {
             }
 
             rParamRef = new ParameterInstanceRef(rParamCalibrated);
-            cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rParamRef);
+            cond = new Condition(OperatorType.fromSymbol(op), lParamRef, rParamRef);
         } else {
             rParamRef = null;
             if ((rValue.startsWith("\"") || rValue.startsWith("”")) &&
                     (rValue.endsWith("\"") || rValue.endsWith("”"))) {
                 rValue = rValue.substring(1, rValue.length() - 1);
             }
-            cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rValue);
+            cond = new Condition(OperatorType.fromSymbol(op), lParamRef, rValue);
         }
 
         if (rParamRef != null) {
@@ -237,8 +224,11 @@ public class ConditionParser {
         if ("=".equals(op)) {
             op = "==";
         }
-        OperatorType opType = Comparison.stringToOperator(op);
-        if (opType == null) {
+
+        OperatorType opType;
+        try {
+            opType = OperatorType.fromSymbol(op);
+        } catch (IllegalArgumentException e) {
             throw new ParseException("Unknown operator '" + op + "'", 0);
         }
 

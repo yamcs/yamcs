@@ -1,11 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { Subscription } from 'rxjs';
 import { StorageClient } from '../../client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
@@ -21,20 +19,17 @@ import { Viewer } from './Viewer';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScriptViewer implements Viewer, OnDestroy {
+export class ScriptViewer implements Viewer {
 
   @ViewChild('scriptContainer', { static: true })
   private scriptContainer: ElementRef;
 
   private editor: ace.Editor;
 
-  private darkModeSubscription: Subscription;
-
   private storageClient: StorageClient;
 
   constructor(
     yamcs: YamcsService,
-    private preferenceStore: PreferenceStore,
     private changeDetector: ChangeDetectorRef,
   ) {
     this.storageClient = yamcs.createStorageClient();
@@ -51,31 +46,12 @@ export class ScriptViewer implements Viewer, OnDestroy {
       });
     });
 
-    this.applyTheme(this.preferenceStore.isDarkMode());
-    this.darkModeSubscription = this.preferenceStore.darkMode$.subscribe(darkMode => {
-      this.applyTheme(darkMode);
-    });
+    this.editor.setTheme('ace/theme/eclipse');
 
     return Promise.resolve();
   }
 
   public hasPendingChanges() {
     return false;
-  }
-
-  private applyTheme(dark: boolean) {
-    if (this.editor) {
-      if (dark) {
-        this.editor.setTheme('ace/theme/twilight');
-      } else {
-        this.editor.setTheme('ace/theme/eclipse');
-      }
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.darkModeSubscription) {
-      this.darkModeSubscription.unsubscribe();
-    }
   }
 }

@@ -55,7 +55,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   viewportRange$ = new BehaviorSubject<Range | null>(null);
 
   private tooltipInstance: TimelineTooltip;
-  private darkModeSubscription: Subscription;
 
   private timeSubscription: Subscription;
 
@@ -74,16 +73,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     configService: ConfigService,
   ) {
     title.setTitle('Archive Overview');
-
-    this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
-      if (this.timeline) {
-        if (darkMode) {
-          this.timeline.updateOptions({ theme: 'dark' });
-        } else {
-          this.timeline.updateOptions({ theme: 'base' });
-        }
-      }
-    });
 
     if (configService.getConfig().completeness) {
       this.legendOptions = [
@@ -155,9 +144,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
       wallclock: false,
       sidebarWidth: 200,
     };
-    if (this.preferenceStore.isDarkMode()) {
-      opts.theme = 'dark';
-    }
     this.timeline = new Timeline(this.container.nativeElement, opts);
 
     this.timeline.on('viewportChanged', () => {
@@ -625,9 +611,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.darkModeSubscription) {
-      this.darkModeSubscription.unsubscribe();
-    }
     if (this.timeSubscription) {
       this.timeSubscription.unsubscribe();
     }

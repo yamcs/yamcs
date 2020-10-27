@@ -109,14 +109,7 @@
         <th>Timeout</th>
       </tr>
       <tr *ngFor="let constraint of command.constraint">
-        <td>
-          <ng-container *ngFor="let comparison of constraint.comparison">
-            <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ comparison.parameter.qualifiedName }}</a>
-            {{ comparison.operator | operator }}
-            {{ comparison.value }}
-          </ng-container>
-        </td>
+        <td>{{ constraint.expression }}</td>
         <td>{{ constraint.timeout || '-' }}</td>
       </tr>
     </table>

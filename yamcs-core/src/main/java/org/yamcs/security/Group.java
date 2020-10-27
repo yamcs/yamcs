@@ -57,6 +57,11 @@ public class Group {
         this.members.add(memberId);
     }
 
+    public boolean removeMember(int memberId) {
+        // Boxing to not remove by index
+        return members.remove((Integer) memberId);
+    }
+
     public boolean hasMember(int memberId) {
         return members.contains(memberId);
     }

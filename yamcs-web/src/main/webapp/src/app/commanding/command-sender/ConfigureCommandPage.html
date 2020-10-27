@@ -43,16 +43,23 @@
           <tr>
             <th>Constraint</th>
             <th>Timeout</th>
+            <th>Live Evaluation</th>
           </tr>
           <tr *ngFor="let constraint of command.constraint">
-            <td>
-              <ng-container *ngFor="let comparison of constraint.comparison">
-                {{ comparison.parameter.qualifiedName }}
-                {{ comparison.operator | operator }}
-                {{ comparison.value }}
-              </ng-container>
-            </td>
+            <td>{{ constraint.expression }}</td>
             <td>{{ constraint.timeout || '-' }}</td>
+            <td>
+              <span class="evaluation valid" *ngIf="(expr.result$ | async) === true">
+                satisfied
+              </span>
+              <span class="evaluation invalid" *ngIf="(expr.result$ | async) === false">
+                not satisfied
+              </span>
+              <app-live-expression #expr
+                                   [expression]="constraint.expression"
+                                   [style.display]="'none'">
+              </app-live-expression>
+            </td>
           </tr>
         </table>
       </ng-container>

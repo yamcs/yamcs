@@ -260,8 +260,9 @@ export class CommandForm implements OnChanges {
         initialValue = '';
       }
 
+      const validators = this.getValidatorsForType(argument.type);
       this.form.addControl(
-        argument.name, new FormControl(initialValue, Validators.required));
+        argument.name, new FormControl(initialValue, validators));
     }
   }
 

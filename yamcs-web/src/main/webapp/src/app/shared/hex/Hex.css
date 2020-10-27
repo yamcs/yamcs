@@ -1,0 +1,30 @@
+* {
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
+
+::ng-deep .line {
+  font-family: 'Roboto Mono', monospace;
+  white-space: pre;
+}
+
+::ng-deep .cnt {
+  color: #777;
+}
+
+::ng-deep .hl, ::ng-deep .hl.selected {
+  background-color: purple;
+  color: yellow;
+}
+
+::ng-deep .selected {
+  background-color: blue;
+  color: white;
+}
+
+::ng-deep .ascii {
+  color: #777;
+  margin-left: 0.5em;
+}

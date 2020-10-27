@@ -427,18 +427,9 @@ public class XtceToGpbAssembler {
     }
 
     public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint) {
-        TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
-        if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
-            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria()));
-        } else if (xtceConstraint.getMatchCriteria() instanceof ComparisonList) {
-            ComparisonList xtceList = (ComparisonList) xtceConstraint.getMatchCriteria();
-            for (Comparison xtceComparison : xtceList.getComparisonList()) {
-                b.addComparison(toComparisonInfo(xtceComparison));
-            }
-        } else {
-            throw new IllegalStateException("Unexpected match criteria " + xtceConstraint.getMatchCriteria());
-        }
-        b.setTimeout(xtceConstraint.getTimeout());
+        TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder()
+                .setTimeout(xtceConstraint.getTimeout())
+                .setExpression(xtceConstraint.getMatchCriteria().toExpressionString());
         return b.build();
     }
 
