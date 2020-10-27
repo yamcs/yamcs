@@ -13,6 +13,7 @@ import { CommandForm } from './CommandForm';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
+  styleUrls: ['./ConfigureCommandPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigureCommandPage implements AfterViewInit, OnDestroy {

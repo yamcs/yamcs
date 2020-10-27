@@ -46,16 +46,3 @@ $app-warn: mat-palette($mat-red);
 
 $app-theme: mat-light-theme($app-primary, $app-accent, $app-warn);
 @include angular-material-theme($app-theme);
-
-// Dark theme
-$dark-primary: mat-palette($mat-blue-grey);
-$dark-accent:  mat-palette($mat-amber, A200, A100, A400);
-$dark-warn: mat-palette($mat-red);
-$dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
-
-body.dark-theme {
-  @include angular-material-theme($dark-theme);
-  @import 'dark-theme';
-
-  background-color: #111;
-}

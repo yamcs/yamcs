@@ -70,16 +70,23 @@ public class TokenStore {
     }
 
     private void forgetExpiredAccessTokens() {
-        for (String accessToken : accessTokens.keySet()) {
+        accessTokens.entrySet().removeIf(entry -> {
             try {
-                JwtToken jwtToken = new JwtToken(accessToken, YamcsServer.getServer().getSecretKey());
-                if (jwtToken.isExpired()) {
-                    accessTokens.remove(accessToken);
-                }
+                JwtToken jwtToken = new JwtToken(entry.getKey(), YamcsServer.getServer().getSecretKey());
+                return jwtToken.isExpired();
             } catch (JwtDecodeException e) {
-                accessTokens.remove(accessToken);
+                return true;
             }
-        }
+        });
+    }
+
+    public synchronized void forgetUser(String username) {
+        refreshTokens.entrySet().removeIf(entry -> {
+            return username.equals(entry.getValue().getUsername());
+        });
+        accessTokens.entrySet().removeIf(entry -> {
+            return username.equals(entry.getValue().getUsername());
+        });
     }
 
     public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo) {

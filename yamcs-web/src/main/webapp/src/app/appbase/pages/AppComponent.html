@@ -47,12 +47,6 @@
         <mat-icon>account_box</mat-icon>
         Profile
       </a>
-      <button mat-menu-item (click)="toggleDarkTheme()">
-        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-        Dark mode:
-        <span *ngIf="darkMode$ | async">On</span>
-        <span *ngIf="!(darkMode$ | async)">Off</span>
-      </button>
       <ng-container *ngIf="user | superuser">
         <mat-divider></mat-divider>
         <a mat-menu-item routerLink="admin">

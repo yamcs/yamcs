@@ -1,10 +1,11 @@
 package org.yamcs.xtce;
 
+import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
+import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.util.DataTypeUtil;
 
 /**
@@ -13,6 +14,7 @@ import org.yamcs.xtce.util.DataTypeUtil;
  * MatchCriteria is a choice of Comparison, ComparisonList, ...
  */
 public class Comparison implements MatchCriteria {
+
     private static final long serialVersionUID = 9L;
     ParameterInstanceRef instanceRef;
 
@@ -22,8 +24,6 @@ public class Comparison implements MatchCriteria {
     String stringValue;
 
     private Object value;
-
-    transient static Logger log = LoggerFactory.getLogger(Comparison.class.getName());
 
     /**
      * Makes a new comparison with a generic stringValue at this step the paraRef could be pointing to an unknown
@@ -82,9 +82,9 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public String toExpressionString() {
-        return String.format("%s %s %s", instanceRef.getParameter().getName(),
-                OperatorType.operatorToString(comparisonOperator),
-                value);
+        return printExpressionReference(instanceRef) + " "
+                + comparisonOperator + " "
+                + printExpressionValue(value);
     }
 
     /**
@@ -134,49 +134,6 @@ public class Comparison implements MatchCriteria {
         return pset;
     }
 
-    public static String operatorToString(OperatorType op) {
-        switch (op) {
-        case EQUALITY: {
-            return "==";
-        }
-        case INEQUALITY: {
-            return "!=";
-        }
-        case LARGERTHAN: {
-            return ">";
-        }
-        case LARGEROREQUALTHAN: {
-            return ">=";
-        }
-        case SMALLERTHAN: {
-            return "<";
-        }
-        case SMALLEROREQUALTHAN: {
-            return "<=";
-        }
-        }
-        return "unknown";
-    }
-
-    public static OperatorType stringToOperator(String s) {
-        if ("==".equals(s)) {
-            return OperatorType.EQUALITY;
-        } else if ("!=".equals(s)) {
-            return OperatorType.INEQUALITY;
-        } else if (">".equals(s)) {
-            return OperatorType.LARGERTHAN;
-        } else if (">=".equals(s)) {
-            return OperatorType.LARGEROREQUALTHAN;
-        } else if ("<".equals(s)) {
-            return OperatorType.SMALLERTHAN;
-        } else if ("<=".equals(s)) {
-            return OperatorType.SMALLEROREQUALTHAN;
-        } else {
-            log.warn("unknown operator type " + s);
-        }
-        return null;
-    }
-
     public Parameter getParameter() {
         return instanceRef.getParameter();
     }
@@ -198,10 +155,10 @@ public class Comparison implements MatchCriteria {
         if (instanceRef.getParameter() != null) {
             return "Comparison: paraName(" + instanceRef.getParameter().getName()
                     + (instanceRef.useCalibratedValue() ? ".eng" : ".raw") + ")" +
-                    operatorToString(comparisonOperator) + stringValue;
+                    comparisonOperator + stringValue;
         } else {
             return "Comparison: paraName(unresolved)" +
-                    operatorToString(comparisonOperator) + stringValue;
+                    comparisonOperator + stringValue;
         }
     }
 }

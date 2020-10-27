@@ -17,8 +17,12 @@ public class ORedConditions extends ExpressionList implements BooleanExpression 
 
     @Override
     public String toExpressionString() {
-        return expressions.stream()
-                .map(BooleanExpression::toExpressionString)
-                .collect(Collectors.joining(" or "));
+        if (expressions.size() == 1) {
+            return expressions.get(0).toExpressionString();
+        } else {
+            return expressions.stream()
+                    .map(expr -> "(" + expr.toExpressionString() + ")")
+                    .collect(Collectors.joining(" or "));
+        }
     }
 }

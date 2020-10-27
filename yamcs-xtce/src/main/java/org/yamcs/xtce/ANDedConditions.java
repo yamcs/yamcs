@@ -17,8 +17,12 @@ public class ANDedConditions extends ExpressionList {
 
     @Override
     public String toExpressionString() {
-        return expressions.stream()
-                .map(BooleanExpression::toExpressionString)
-                .collect(Collectors.joining(" and "));
+        if (expressions.size() == 1) {
+            return expressions.get(0).toExpressionString();
+        } else {
+            return expressions.stream()
+                    .map(expr -> "(" + expr.toExpressionString() + ")")
+                    .collect(Collectors.joining(" and "));
+        }
     }
 }

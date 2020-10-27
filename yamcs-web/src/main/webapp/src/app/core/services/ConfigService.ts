@@ -9,8 +9,10 @@ export interface WebsiteConfig {
   tag: string;
   events?: EventsConfig;
   commandClearances: boolean;
+  commandExports: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
+  hasTemplates: boolean;
   completeness: boolean;
   logoutRedirectUrl: string;
   cfdp: boolean;
@@ -70,6 +72,10 @@ export class ConfigService {
 
   getCommandOptions() {
     return this.websiteConfig.commandOptions;
+  }
+
+  hasTemplates() {
+    return this.websiteConfig.hasTemplates;
   }
 
   getConfig() {

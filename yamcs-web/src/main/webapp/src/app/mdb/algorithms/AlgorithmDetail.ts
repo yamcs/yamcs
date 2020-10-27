@@ -1,12 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/mode/python';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { Subscription } from 'rxjs';
 import { Algorithm } from '../../client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -15,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
   styleUrls: ['./AlgorithmDetail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlgorithmDetail implements AfterViewInit, OnDestroy {
+export class AlgorithmDetail implements AfterViewInit {
 
   @ViewChild('text', { static: true })
   textContainer: ElementRef;
@@ -28,9 +26,7 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
 
   private editor: ace.Editor;
 
-  private darkModeSubscription: Subscription;
-
-  constructor(readonly yamcs: YamcsService, private preferenceStore: PreferenceStore) {
+  constructor(readonly yamcs: YamcsService) {
   }
 
   ngAfterViewInit() {
@@ -48,23 +44,6 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
         console.warn(`Unexpected language ${this.algorithm.language}`);
     }
 
-    this.applyTheme(this.preferenceStore.isDarkMode());
-    this.darkModeSubscription = this.preferenceStore.darkMode$.subscribe(darkMode => {
-      this.applyTheme(darkMode);
-    });
-  }
-
-  private applyTheme(dark: boolean) {
-    if (dark) {
-      this.editor.setTheme('ace/theme/twilight');
-    } else {
-      this.editor.setTheme('ace/theme/eclipse');
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.darkModeSubscription) {
-      this.darkModeSubscription.unsubscribe();
-    }
+    this.editor.setTheme('ace/theme/eclipse');
   }
 }

@@ -478,7 +478,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             throws BadRequestException {
         SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
         if (mgr == null) {
-            throw new BadRequestException("SoftwareParameterManager not activated for this processor");
+            throw new BadRequestException(String.format("Cannot set the value of %s parameters"
+                    + " on processor %s", ds, processor.getName()));
         } else {
             return mgr;
         }

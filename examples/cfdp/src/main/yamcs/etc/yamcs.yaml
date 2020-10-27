@@ -23,10 +23,6 @@ yamcs-web:
   tag: "Example: cfdp"
   cfdp: true
 
-  # Hook the webapp sources directly to the output of npm. This
-  # allows running npm in watch mode without restarting Yamcs.
-  staticRoot: ../../../../yamcs-web/src/main/webapp/dist
-
 buckets:
   - name: cfdpUp
     # the path here is relative to the current directory as set by maven

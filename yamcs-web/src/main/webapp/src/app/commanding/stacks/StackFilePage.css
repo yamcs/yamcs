@@ -57,6 +57,8 @@ div.entry .seq {
   padding-right: 10px;
   user-select: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
   font-family: 'Roboto Mono', monospace;
   color: #bdbdbd;
 }

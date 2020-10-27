@@ -109,6 +109,34 @@ export function convertBase64ToHex(base64: string) {
   return result;
 }
 
+export function convertValue(value: Value) {
+  switch (value.type) {
+    case 'FLOAT':
+      return value.floatValue;
+    case 'DOUBLE':
+      return value.doubleValue;
+    case 'UINT32':
+      return value.uint32Value;
+    case 'SINT32':
+      return value.sint32Value;
+    case 'UINT64':
+      return value.uint64Value;
+    case 'SINT64':
+      return value.sint64Value;
+    case 'BOOLEAN':
+      return value.booleanValue;
+    case 'TIMESTAMP':
+      return value.timestampValue;
+    case 'BINARY':
+      return window.atob(value.binaryValue!);
+    case 'ENUMERATED':
+    case 'STRING':
+      return value.stringValue;
+    default:
+      throw new Error(`Unexpected value type ${value.type}`);
+  }
+}
+
 const adjectives = [
   'amused', 'acid', 'adaptable', 'alleged', 'agreeable', 'aspiring', 'awestruck', 'berserk', 'bright',
   'busy', 'calm', 'caring', 'chilly', 'cool', 'curious', 'dapper', 'dazzling', 'dizzy', 'eager',

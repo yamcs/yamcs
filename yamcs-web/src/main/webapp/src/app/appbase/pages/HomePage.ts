@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance, InstancesSubscription } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -51,6 +52,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private messageService: MessageService,
     private route: ActivatedRoute,
     private router: Router,
+    private config: ConfigService,
   ) {
     title.setTitle('Instances');
 
@@ -182,9 +184,9 @@ export class HomePage implements AfterViewInit, OnDestroy {
     return this.authService.getUser()!.hasSystemPrivilege('ControlServices');
   }
 
-  mayCreateInstances() {
+  isCreateInstanceEnabled() {
     const user = this.authService.getUser()!;
-    return user.hasSystemPrivilege('CreateInstances');
+    return this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances');
   }
 
   private updateURL() {

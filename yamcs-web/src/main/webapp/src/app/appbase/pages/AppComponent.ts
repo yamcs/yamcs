@@ -32,7 +32,6 @@ export class AppComponent implements OnDestroy {
   user$: Observable<User | null>;
 
   sidebar$: Observable<boolean>;
-  darkMode$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
   showMenuToggle$: Observable<boolean>;
 
@@ -63,11 +62,6 @@ export class AppComponent implements OnDestroy {
 
     this.sidebar$ = preferenceStore.sidebar$;
 
-    this.darkMode$ = preferenceStore.darkMode$;
-    if (preferenceStore.isDarkMode()) {
-      this.enableDarkMode();
-    }
-
     this.showMenuToggle$ = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd),
       map(evt => {
@@ -92,14 +86,6 @@ export class AppComponent implements OnDestroy {
     });
   }
 
-  toggleDarkTheme() {
-    if (this.preferenceStore.isDarkMode()) {
-      this.disableDarkMode();
-    } else {
-      this.enableDarkMode();
-    }
-  }
-
   toggleSidebar() {
     if (this.preferenceStore.showSidebar()) {
       this.preferenceStore.setShowSidebar(false);
@@ -122,16 +108,6 @@ export class AppComponent implements OnDestroy {
 
   logout() {
     this.authService.logout(true);
-  }
-
-  private enableDarkMode() {
-    document.body.classList.add('dark-theme');
-    this.preferenceStore.setDarkMode(true);
-  }
-
-  private disableDarkMode() {
-    document.body.classList.remove('dark-theme');
-    this.preferenceStore.setDarkMode(false);
   }
 
   ngOnDestroy() {

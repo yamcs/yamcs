@@ -78,7 +78,14 @@ service IamApi {
       get: "/api/user"
     };
   }
-  
+ 
+  // Delete a user
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/users/{name}"
+    };
+  }
+
   // Delete an external identity
   rpc DeleteIdentity(DeleteIdentityRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
@@ -210,6 +217,10 @@ message DeleteServiceAccountRequest {
 }
 
 message GetUserRequest {
+  optional string name  = 1;
+}
+
+message DeleteUserRequest {
   optional string name  = 1;
 }
 

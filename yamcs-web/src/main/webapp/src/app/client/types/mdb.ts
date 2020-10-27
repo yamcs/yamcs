@@ -208,7 +208,7 @@ export interface Significance {
 }
 
 export interface TransmissionConstraint {
-  comparison: ComparisonInfo[];
+  expression: string;
   timeout: number;
 }
 
