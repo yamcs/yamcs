@@ -263,7 +263,7 @@ public class Simulator extends AbstractService {
         CCSDSPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
             if (commandPacket.getPacketType() == 10) {
-                log.info("BATT COMMAND: " + commandPacket.getPacketId());
+                log.info("Received TC packet-id: " + commandPacket.getPacketId());
 
                 switch (commandPacket.getPacketId()) {
                 case 1:
@@ -271,6 +271,12 @@ public class Simulator extends AbstractService {
                     break;
                 case 2:
                     switchBatteryOff(commandPacket);
+                    break;
+                case 3:
+                    criticalTc1(commandPacket);
+                    break;
+                case 4:
+                    criticalTc2(commandPacket);
                     break;
                 case 5:
                     listRecordings(commandPacket);
@@ -281,6 +287,7 @@ public class Simulator extends AbstractService {
                 case 7:
                     deleteRecording(commandPacket);
                     break;
+                  
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
                 }
@@ -344,6 +351,19 @@ public class Simulator extends AbstractService {
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
         log.info("Command DELETE_RECORDING for file {}", fileName);
         deleteLosDataFile(fileName);
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+    }
+
+
+    private void criticalTc1(CCSDSPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        log.info("Command CRITICAL_TC1");
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+    }
+
+    private void criticalTc2(CCSDSPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        log.info("Command CRITICAL_TC2");
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
