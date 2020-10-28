@@ -9,7 +9,7 @@ import org.junit.Test;
 
 
 public class EnumTest extends YarchTestCase {
-    int n=10;
+    int n = 10;
     
     
     private void populate(String tblname) throws Exception {
@@ -40,7 +40,7 @@ public class EnumTest extends YarchTestCase {
         populate("testenum");
         ydb.execute("create stream testenum_out as select * from testenum");
         final List<Tuple> tuples= fetchAll("testenum_out");
-    
+
         for(int i=0;i<n;i++) {
             Tuple t=tuples.get(i);
             assertEquals(i*1000l, (long)(Long)t.getColumn(0));
@@ -54,6 +54,8 @@ public class EnumTest extends YarchTestCase {
         populate("testenum2");
         ydb.execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid')");
         final List<Tuple> tuples= fetchAll("testenum2_out");
+        assertEquals((n+9)/10, tuples.size());
+
         int i = 1;
         for(Tuple t:tuples) {
             assertEquals(i*1000l, (long)(Long)t.getColumn(0));
@@ -61,17 +63,50 @@ public class EnumTest extends YarchTestCase {
             i+=10;
         }
     }
-    
+
+
+    @Test
+    public void test2Desc() throws Exception {
+        populate("testenum2");
+        ydb.execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid') order desc");
+        final List<Tuple> tuples= fetchAll("testenum2_out");
+        assertEquals((n+9)/10, tuples.size());
+
+        for(Tuple t:tuples) {
+            assertEquals("pn1", (String)t.getColumn(1));
+        }
+    }
+
+
     @Test
     public void test3() throws Exception {
         populate("testenum3");
         ydb.execute("create stream testenum3_out as select * from testenum3 where packetName in ('invalid')");
         final List<Tuple> tuples= fetchAll("testenum3_out");
-        int i = 1;
+        assertEquals(0, tuples.size());
+    }
+
+    @Test
+    public void test4() throws Exception {
+        populate("testenum2");
+        ydb.execute("create stream testenum2_out as select * from testenum2 where packetName='pn1'");
+        final List<Tuple> tuples= fetchAll("testenum2_out");
+        assertEquals((n+9)/10, tuples.size());
+
         for(Tuple t:tuples) {
-            assertEquals(i*1000l, (long)(Long)t.getColumn(0));
-            assertEquals("pn"+(i%10), (String)t.getColumn(1));
-            i+=10;
+            assertEquals("pn1", (String)t.getColumn(1));
+        }
+    }
+
+    @Test
+    public void test4Desc() throws Exception {
+        populate("testenum2");
+        ydb.execute("create stream testenum2_out as select * from testenum2 where packetName='pn1' order desc");
+        final List<Tuple> tuples= fetchAll("testenum2_out");
+        assertEquals((n+9)/10, tuples.size());
+
+        for(Tuple t:tuples) {
+            assertEquals("pn1", (String)t.getColumn(1));
         }
     }
 }
