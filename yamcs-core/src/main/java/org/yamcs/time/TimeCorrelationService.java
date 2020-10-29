@@ -10,6 +10,9 @@ import java.util.concurrent.Semaphore;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
+import org.yamcs.cfdp.CfdpService;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.external.SimpleRegression;
@@ -207,6 +210,36 @@ public class TimeCorrelationService extends AbstractYamcsService {
             throw new InitException(e);
         }
 
+    }
+
+    /**
+     * Helper method to get an instance of this service configured for a clock name
+     * 
+     * @param yamcsInstance
+     * @param clockName
+     * @return the service or null if not defined.
+     * @throws IllegalArgumentException
+     *             if the yamcsInstance is incorrect (no instance on that name)
+     */
+    public static TimeCorrelationService getInstance(String yamcsInstance, String clockName) {
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+        if (ysi == null) {
+            throw new IllegalArgumentException("Invalid Yamcs instance '" + yamcsInstance + "'");
+        }
+        
+        return ysi.getServices(TimeCorrelationService.class).stream()
+                .filter(tcs -> tcs.getClockName().equals(clockName)).findFirst().orElse(null);
+    }
+
+    /**
+     * same as {@link #getInstance(String, String)} but returns the instance for the default clock name
+     * {@link #DEFAULT_CLOCK_NAME}
+     * 
+     * @param yamcsInstance
+     * @return
+     */
+    public static TimeCorrelationService getInstance(String yamcsInstance) {
+        return getInstance(yamcsInstance, DEFAULT_CLOCK_NAME);
     }
 
     /**
