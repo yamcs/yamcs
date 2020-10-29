@@ -83,7 +83,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                 }
                 frameCount++;
 
-                frameHandler.handleFrame(TimeEncoding.getWallclockTime(), datagram.getData(), datagram.getOffset(),
+                frameHandler.handleFrame(TimeEncoding.getWallclockHresTime(), datagram.getData(), datagram.getOffset(),
                         length);
             } catch (IOException e) {
                 if (isDisabled()) {

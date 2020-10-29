@@ -1,5 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -52,7 +53,7 @@ public abstract class DownlinkTransferFrame {
     boolean ocfPresent = false;
     
     int firstHeaderPointer;
-    private long ertime = TimeEncoding.INVALID_INSTANT;
+    private Instant ertime = Instant.INVALID_INSTANT;
     
     public DownlinkTransferFrame(byte[] data, int spacecraftId, int virtualChannelId) {
         this.data = data;
@@ -185,11 +186,11 @@ public abstract class DownlinkTransferFrame {
      * 
      * @return the earth reception time of the frame
      */
-    public long getEarthRceptionTime() {
+    public Instant getEarthRceptionTime() {
         return ertime;
     }
 
-    public void setEearthRceptionTime(long ertime) {
+    public void setEearthRceptionTime(Instant ertime) {
         this.ertime = ertime;
     }
     

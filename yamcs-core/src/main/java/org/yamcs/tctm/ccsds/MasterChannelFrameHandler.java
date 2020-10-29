@@ -9,6 +9,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
+import org.yamcs.time.Instant;
 
 /**
  * Handles incoming TM frames by distributing them to different VirtualChannelHandlers
@@ -72,7 +73,7 @@ public class MasterChannelFrameHandler {
         handlers = params.createVcHandlers(yamcsInstance, linkName);
     }
 
-    public void handleFrame(long ertime, byte[] data, int offset, int length) throws TcTmException {
+    public void handleFrame(Instant ertime, byte[] data, int offset, int length) throws TcTmException {
         DownlinkTransferFrame frame = null;
         try {
             frame = frameDecoder.decode(data, offset, length);

@@ -35,16 +35,18 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * provided by a ground station. This service expects the time to be provided in the {@link Instant} format which has
  * picoseconds resolution.</li>
  * </ul>
+ * 
  * In addition it takes two other parameters:
+ * 
  * <ul>
  * <li>onboardDelay - configurable in the service configuration. It covers any delay happening on-board (sampling time,
  * radiation time)
  * <li>tof - time of flight - the time it takes for the signal to reach the ground. This is computed by the
- * {@link TimeOfFlightEstimator} and can be fixed value or dynamically interpolated from data provided by a flight
+ * {@link TimeOfFlightEstimator} and can be fixed or dynamically interpolated from data provided by a flight
  * dynamics system.</li>
  * </ul>
  * <p>
- * Computes {@code m} - gradient and {@code c} - offset such that
+ * Computes {@code m} = gradient and {@code c} = offset such that
  * <p>
  * {@code ob_time = m*obt + c}
  * <p>
@@ -52,9 +54,9 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * <p>
  * The number of samples used for computing the coefficients is configurable and has to be minimum 2.
  * <p>
- * <b>accuracy and validity</b>
+ * <h2>Accuracy and validity</h2>
  * Once the coefficients have been calculated, for each new sample received a deviation is calculated as the delta
- * between the OBT calculated using the coefficients and the OBT which is part of the sample (after adjusting for
+ * between the OBT computed using the coefficients and the OBT which is part of the sample (after adjusting for
  * delays). The deviation is compared with the accuracy and validity parameters:
  * <p>
  * If the deviation is greater than {@code accuracy} but smaller than {@code validity}, then a recalculation of the
@@ -64,9 +66,12 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * from the buffer except the last one are dropped. The time returned by {@link #getTime(long)} will be invalid until
  * the required number of new samples is received and the next recalculation is performed
  * 
- * <p>
- * The service keeps track of multiple such intervals corresponding to different on-board time resets. At Yamcs startup
+ * <h2>Historical coefficients</h2>
+ * The service keeps track of multiple intervals corresponding to different on-board time resets. At Yamcs startup
  * the service loads a list of intervals from the tco table.
+ * <p>
+ * If using the historical recording to insert some old data into the Yamcs, in order to get the correct coefficients
+ * one has to know the approximate time when the data has been generated.
  *
  * <p>
  * To use this service there will be typically one component which adds samples using the
@@ -144,7 +149,6 @@ public class TimeCorrelationService extends AbstractYamcsService {
         tofEstimator = new TimeOfFlightEstimator(tofConfig);
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
 
-        
         if (saveCoefficients) {
             String streamName = TABLE_NAME + "_" + clockName;
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);

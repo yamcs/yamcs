@@ -8,6 +8,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TaiUtcConverter.ValidityLine;
 
 import com.google.protobuf.Timestamp;
@@ -24,7 +25,6 @@ public class TimeEncoding {
     // these two are used for open intervals
     public static final long MIN_INSTANT = Long.MIN_VALUE;
     public static long MAX_INSTANT = 185539080470435999L;
-    
 
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691191000L;
@@ -34,9 +34,14 @@ public class TimeEncoding {
 
     static TaiUtcConverter taiUtcConverter;
     static Pattern iso8601Pattern = Pattern
-            .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})\\d{0,3})?Z?");
-    static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?Z?");
+            .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})\\d{0,9})?Z?");
+    static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})\\d{0,9})?Z?");
 
+    
+    static Pattern iso8601PatternHres = Pattern
+            .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})(\\d{0,9}))?Z?");
+    static Pattern doyPatternHres = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})(\\d{0,9}))?Z?");
+    
     public static void setUp() {
         try {
             taiUtcConverter = new TaiUtcConverter();
@@ -67,8 +72,26 @@ public class TimeEncoding {
         return taiUtcConverter.unixToInstant(System.currentTimeMillis());
     }
 
+    /**
+     * Returns the current operating system time but converted to Yamcs instant.
+     * 
+     * @return
+     */
     public static long getWallclockTime() {
         return taiUtcConverter.unixToInstant(System.currentTimeMillis());
+    }
+
+    /**
+     * Sane as {@link #getWallclockTime()} but returns a high resolution instant.
+     * <p>
+     * Currently java does not make it easy to get a high resolution time so the returned object has always the
+     * picosecond field set to 0.
+     * 
+     * @return
+     */
+    public static Instant getWallclockHresTime() {
+        long millis = taiUtcConverter.unixToInstant(System.currentTimeMillis());
+        return Instant.get(millis);
     }
 
     private static void formatOn2Digits(int x, StringBuilder sb) {
@@ -307,7 +330,67 @@ public class TimeEncoding {
         }
         return taiUtcConverter.utcToInstant(dtc);
     }
+    
+    
+    public static Instant parseHres(String s) {
+        
+        TaiUtcConverter.DateTimeComponents dtc;
+        Matcher m = iso8601PatternHres.matcher(s);
+        int picos = 0;
+        
+        if (m.matches()) {
 
+            int year = Integer.parseInt(m.group(1));
+            int month = Integer.parseInt(m.group(2));
+            int day = Integer.parseInt(m.group(3));
+            int hour = Integer.parseInt(m.group(4));
+            int minute = Integer.parseInt(m.group(5));
+            int second = Integer.parseInt(m.group(6));
+            int millisec = 0;
+            
+            if (m.group(7) != null) {
+                millisec = Integer.parseInt(m.group(8));
+                picos = getPicos(m.group(9));
+            }
+            
+            dtc = new TaiUtcConverter.DateTimeComponents(year, month, day, hour, minute, second, millisec);
+        } else {
+            m = doyPatternHres.matcher(s);
+            if (m.matches()) {
+                int year = Integer.parseInt(m.group(1));
+                int doy = Integer.parseInt(m.group(2));
+                int hour = Integer.parseInt(m.group(3));
+                int minute = Integer.parseInt(m.group(4));
+                int second = Integer.parseInt(m.group(5));
+                int millisec = 0;
+                if (m.group(6) != null) {
+                    millisec = Integer.parseInt(m.group(7));
+                    picos = getPicos(m.group(9));
+                }
+
+                dtc = new TaiUtcConverter.DateTimeComponents(year, doy, hour, minute, second, millisec);
+
+            } else {
+                throw new IllegalArgumentException(
+                        "Cannot parse '" + s + "' with the pattern '" + iso8601Pattern + " or " + doyPattern);
+            }
+        }
+        long millis =  taiUtcConverter.utcToInstant(dtc);
+        return Instant.get(millis, picos);
+    }
+    
+    //get the number of picoseconds from a max to 9 digits number aligned at left
+    static private int getPicos(String ps) {
+        if(ps.length()==0) {
+            return 0;
+        }
+        int r = Integer.parseInt(ps);
+        
+        for(int i=ps.length(); i<9; i++) {
+            r*=10;
+        }
+        return r;
+    }
     /**
      * Transforms UNIX time (milliseconds since 1970) to instant
      * 
@@ -330,7 +413,6 @@ public class TimeEncoding {
         return taiUtcConverter.unixToInstant(milliseconds);
     }
 
-    
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant WARNING: this conversion will
      * lose precision (microsecond to millisecond)
@@ -415,7 +497,7 @@ public class TimeEncoding {
     public static long fromTaiMillisec(long taitime) {
         return taitime + TAI_EPOCH_YAMCS_EPOCH_DELTA;
     }
-    
+
     public static long toTaiMillisec(long instant) {
         return instant - TAI_EPOCH_YAMCS_EPOCH_DELTA;
     }
@@ -423,7 +505,7 @@ public class TimeEncoding {
     public static long fromJ2000Millisec(long j2000time) {
         return j2000time + J2000_EPOCH_YAMCS_EPOCH_DELTA;
     }
-    
+
     public static long toJ2000Millisec(long instant) {
         return instant - J2000_EPOCH_YAMCS_EPOCH_DELTA;
     }

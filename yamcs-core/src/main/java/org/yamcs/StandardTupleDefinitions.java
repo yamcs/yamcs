@@ -37,7 +37,7 @@ public class StandardTupleDefinitions {
         
         TM_WITH_ERT = TM.copy();
         //earth reception time
-        TM_WITH_ERT.addColumn(TM_ERTIME_COLUMN, DataType.TIMESTAMP);
+        TM_WITH_ERT.addColumn(TM_ERTIME_COLUMN, DataType.HRES_TIMESTAMP);
     }
     static {
         INVALID_TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);

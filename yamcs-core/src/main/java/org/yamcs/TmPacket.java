@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -36,7 +37,7 @@ public class TmPacket {
 
     private long rectime = TimeEncoding.INVALID_INSTANT; // Yamcs reception time
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
-    private long ertime = TimeEncoding.INVALID_INSTANT; // earth reception time
+    private Instant ertime = Instant.INVALID_INSTANT; // earth reception time
 
     private int seqCount;
     private byte[] pkt;
@@ -121,14 +122,19 @@ public class TmPacket {
      * the first bit of the last containing frame has been received at the ground station.
      * <p>
      * Some links will not set this parameter.
+     * <p>
+     * The reason this uses a high resolution instant whereas the others are using millisecond resolution times is that
+     * the ground stations usually have high resolution clocks able to provide this accuracy. This is also the time
+     * used to perform space to ground time synchronisation.
+     * 
      * 
      * @return the time of the reception of the packet on ground.
      */
-    public long getEarthReceptionTime() {
+    public Instant getEarthReceptionTime() {
         return ertime;
     }
 
-    public void setEarthRceptionTime(long ertime) {
+    public void setEarthRceptionTime(Instant ertime) {
         this.ertime = ertime;
     }
 

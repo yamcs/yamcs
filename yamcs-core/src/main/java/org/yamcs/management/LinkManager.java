@@ -37,6 +37,7 @@ import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.StreamPbParameterSender;
 import org.yamcs.tctm.TcDataLink;
 import org.yamcs.tctm.TmPacketDataLink;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
@@ -231,9 +232,9 @@ public class LinkManager {
             } // if action is PROCESS, continue below
         }
 
-        long ertime = pwrt.getEarthReceptionTime();
+        Instant ertime = pwrt.getEarthReceptionTime();
         Tuple t = null;
-        if (ertime == TimeEncoding.INVALID_INSTANT) {
+        if (ertime == Instant.INVALID_INSTANT) {
             t = new Tuple(StandardTupleDefinitions.TM,
                     new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
                             pwrt.getStatus(), pwrt.getPacket() });

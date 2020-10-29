@@ -3,6 +3,7 @@ package org.yamcs.tctm.ccsds;
 import java.util.Arrays;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -38,7 +39,7 @@ public class FrameStreamHelper {
         gftdef = new TupleDefinition();
         gftdef.addColumn(new ColumnDefinition(RECTIME_CNAME, DataType.TIMESTAMP));
         gftdef.addColumn(new ColumnDefinition(SEQ_CNAME, DataType.INT));
-        gftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.TIMESTAMP));
+        gftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.HRES_TIMESTAMP));
         gftdef.addColumn(new ColumnDefinition(SCID_CNAME, DataType.INT));
         gftdef.addColumn(new ColumnDefinition(VCID_CNAME, DataType.INT));
         gftdef.addColumn(new ColumnDefinition(DATA_CNAME, DataType.BINARY));
@@ -46,7 +47,7 @@ public class FrameStreamHelper {
         bftdef = new TupleDefinition();
         bftdef.addColumn(new ColumnDefinition(RECTIME_CNAME, DataType.TIMESTAMP));
         bftdef.addColumn(new ColumnDefinition(SEQ_CNAME, DataType.INT));
-        bftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.TIMESTAMP));
+        bftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.HRES_TIMESTAMP));
         bftdef.addColumn(new ColumnDefinition(DATA_CNAME, DataType.BINARY));
 
     }
@@ -86,7 +87,7 @@ public class FrameStreamHelper {
                 getData(data, offset, length))));
     }
 
-    public void sendBadFrame(int seq, long ertime, byte[] data, int offset, int length, String errMsg) {
+    public void sendBadFrame(int seq, Instant ertime, byte[] data, int offset, int length, String errMsg) {
         if (badFrameStream == null) {
             return;
         }

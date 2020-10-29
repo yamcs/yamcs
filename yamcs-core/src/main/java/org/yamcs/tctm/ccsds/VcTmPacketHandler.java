@@ -14,6 +14,7 @@ import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
 
@@ -39,7 +40,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
 
     AggregatedDataLink parent;
     private TimeService timeService;
-    private long ertime;
+    private Instant ertime;
 
     public VcTmPacketHandler(String yamcsInstance, String name, VcDownlinkManagedParameters vmp) {
         this.vmp = vmp;

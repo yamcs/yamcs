@@ -54,6 +54,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.parser.ParseException;
@@ -725,6 +726,14 @@ public class TableApi extends AbstractTableApi<Context> {
                 if (column != null) {
                     v.setTimestampValue((Long) column);
                     v.setStringValue(TimeEncoding.toString((Long) column));
+                }
+                break;
+            case HRES_TIMESTAMP:
+                v.setType(Type.TIMESTAMP);
+                if (column != null) {
+                    long m = ((Instant) column).getMillis();
+                    v.setTimestampValue(m);
+                    v.setStringValue(TimeEncoding.toString(m));
                 }
                 break;
             case ENUM:

@@ -12,7 +12,7 @@ import org.yamcs.utils.TimeEncoding;
  *
  */
 public class Instant implements Comparable<Instant> {
-    static final Instant INVALID_INSTANT = new Instant(TimeEncoding.INVALID_INSTANT);
+    public static final Instant INVALID_INSTANT = new Instant(TimeEncoding.INVALID_INSTANT);
     static final int PICOS_PER_MILLIS = 1000_000_000;
 
     public static final long MIN_INSTANT = Long.MIN_VALUE + 1;
