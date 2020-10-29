@@ -14,12 +14,12 @@ public class StreamSelectParameterValueTest extends YarchTestCase {
 
     public void createFeeder1() throws YarchException {
         Stream s;
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance ydb = context.getDb();
         final TupleDefinition tpdef = new TupleDefinition();
         tpdef.addColumn("pv", DataType.PARAMETER_VALUE);
         tpdef.addColumn("count", DataType.INT);
 
-        s = (new Stream(dict, "stream_in", tpdef) {
+        s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
             public void doStart() {
                 for (int count = 0; count < n; count++) {
@@ -35,7 +35,7 @@ public class StreamSelectParameterValueTest extends YarchTestCase {
             protected void doClose() {
             }
         });
-        dict.addStream(s);
+        ydb.addStream(s);
     }
 
     @Test

@@ -25,6 +25,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 /**
@@ -181,27 +182,15 @@ public class TimeCorrelationService extends AbstractYamcsService {
         try {
             // we add them to a temporary list because CopyOnWriteArrayList is not very efficient at adding one by one
             List<TcoCoefficients> tmpl = new ArrayList<>();
-            Semaphore sema = new Semaphore(0);
             StreamSqlStatement stmt = ydb.createStatement(
                     "select * from " + TABLE_NAME + " where obclk=? order desc limit " + MAX_HISTCOEF,
                     clockName);
-            ydb.execute(stmt, new ResultListener() {
+            
+            StreamSqlResult res = ydb.execute(stmt);
+            while(res.hasNext()) {
+                tmpl.add(TcoCoefficients.fromTuple(res.next()));
+            }
 
-                @Override
-                public void next(Tuple tuple) {
-                    tmpl.add(TcoCoefficients.fromTuple(tuple));
-                }
-
-                @Override
-                public void completeExceptionally(Throwable t) {
-                }
-
-                @Override
-                public void complete() {
-                    sema.release();
-                }
-            });
-            sema.acquire();
             if (!tmpl.isEmpty()) {
                 curCoefficients = tmpl.get(0);
             }

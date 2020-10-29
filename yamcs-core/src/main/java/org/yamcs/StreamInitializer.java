@@ -104,7 +104,7 @@ public class StreamInitializer {
         log.debug("Loading SQL File {}", o);
         String filename = (String) o;
         File f = new File(filename);
-        ExecutionContext context = new ExecutionContext(yamcsInstance);
+        ExecutionContext context = new ExecutionContext(YarchDatabase.getInstance(yamcsInstance));
         try (FileReader reader = new FileReader(f)) {
             StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;

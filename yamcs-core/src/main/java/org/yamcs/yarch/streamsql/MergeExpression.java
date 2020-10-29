@@ -33,7 +33,7 @@ class MergeExpression implements StreamExpression {
 
     @Override
     public Stream execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance ydb = c.getDb();
         Stream[] streams = new Stream[sources.size()];
         for (int i = 0; i < streams.length; i++) {
             streams[i] = sources.get(i).execute(c);
@@ -41,7 +41,7 @@ class MergeExpression implements StreamExpression {
         if (streams.length == 1) {
             return streams[0];
         } else {
-            Stream ms = new MergeStream(dict, streams, mergeColumn, ascending);
+            Stream ms = new MergeStream(ydb, streams, mergeColumn, ascending);
             return ms;
         }
     }

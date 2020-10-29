@@ -1,5 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
@@ -8,11 +10,10 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class InsertStatement implements StreamSqlStatement {
+public class InsertStatement extends SimpleStreamSqlStatement {
 
     String name;
     StreamExpression expression;
@@ -26,8 +27,8 @@ public class InsertStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance ydb = context.getDb();
 
         TableDefinition outputTableDef = ydb.getTable(name);
         Stream outputStream = outputTableDef == null ? ydb.getStream(name) : null;
@@ -36,8 +37,8 @@ public class InsertStatement implements StreamSqlStatement {
             throw new ResourceNotFoundException(name);
         }
 
-        expression.bind(c);
-        Stream inputStream = expression.execute(c);
+        expression.bind(context);
+        Stream inputStream = expression.execute(context);
 
         if (outputTableDef != null) {
             try {
@@ -63,6 +64,5 @@ public class InsertStatement implements StreamSqlStatement {
             });
 
         }
-        resultListener.complete();
     }
 }

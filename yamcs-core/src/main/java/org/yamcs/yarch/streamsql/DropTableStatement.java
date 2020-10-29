@@ -1,10 +1,12 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.YarchDatabase;
+import java.util.function.Consumer;
+
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class DropTableStatement implements StreamSqlStatement {
+public class DropTableStatement extends SimpleStreamSqlStatement {
 
     boolean ifExists;
     String tblName;
@@ -15,8 +17,8 @@ public class DropTableStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance ydb = context.getDb();
         try {
             synchronized (ydb) {
                 if (!ifExists || ydb.getTable(tblName) != null) {
@@ -26,6 +28,6 @@ public class DropTableStatement implements StreamSqlStatement {
         } catch (YarchException e) {
             throw new GenericStreamSqlException(e.getMessage());
         }
-        resultListener.complete();
     }
+
 }

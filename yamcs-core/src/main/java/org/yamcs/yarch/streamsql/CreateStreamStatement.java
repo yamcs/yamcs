@@ -1,13 +1,15 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.function.Consumer;
+
 import org.yamcs.yarch.InternalStream;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CreateStreamStatement implements StreamSqlStatement {
+public class CreateStreamStatement extends SimpleStreamSqlStatement {
 
     String streamName;
     StreamExpression expression;
@@ -24,27 +26,27 @@ public class CreateStreamStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener listener) throws StreamSqlException {
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
-        synchronized (dict) {
-            if (dict.streamOrTableExists(streamName)) {
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance db = context.getDb();
+        synchronized (db) {
+            if (db.streamOrTableExists(streamName)) {
                 throw new StreamAlreadyExistsException(streamName);
             }
 
             Stream stream;
             if (expression != null) {
-                expression.bind(c);
-                stream = expression.execute(c);
+                expression.bind(context);
+                stream = expression.execute(context);
                 stream.setName(streamName);
             } else {
-                stream = new InternalStream(dict, streamName, tupleDefinition);
+                stream = new InternalStream(db, streamName, tupleDefinition);
             }
             try {
-                dict.addStream(stream);
+                db.addStream(stream);
             } catch (YarchException e) {
                 throw new GenericStreamSqlException(e.getMessage());
             }
-            listener.complete();
         }
     }
+
 }

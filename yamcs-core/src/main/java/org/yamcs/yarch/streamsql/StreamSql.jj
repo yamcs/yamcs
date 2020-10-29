@@ -459,12 +459,11 @@ ShowTablesStatement ShowTablesStatement() throws StreamSqlException: {
 }
 
 ShowStreamStatement ShowStreamStatement() throws StreamSqlException: {
-    boolean showPort=false;
     String name;
 } {
-    <K_SHOW> <K_STREAM> name=ObjectName() [<K_PORT> {showPort=true;}]
+    <K_SHOW> <K_STREAM> name=ObjectName()
     {
-	return new ShowStreamStatement(name,showPort);
+	return new ShowStreamStatement(name);
     }
 }
 
@@ -588,7 +587,7 @@ DeleteStatement DeleteStatement() throws StreamSqlException: {
 } {
     "DELETE" "FROM" tableName=ObjectName() ["WHERE" expression=Expression() ] ";"
     {
-	return new DeleteStatement(tableName,expression);
+	return new DeleteStatement(tableName, expression);
     }
 }
 

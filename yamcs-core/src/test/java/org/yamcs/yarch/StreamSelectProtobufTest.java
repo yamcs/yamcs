@@ -18,12 +18,12 @@ public class StreamSelectProtobufTest extends YarchTestCase {
 
     public void createFeeder1() throws YarchException {
         Stream s;
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance ydb = context.getDb();
         final TupleDefinition tpdef = new TupleDefinition();
         tpdef.addColumn("event", DataType.protobuf(Event.class.getName()));
         tpdef.addColumn("y", DataType.INT);
 
-        s = (new Stream(dict, "stream_in", tpdef) {
+        s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
             public void doStart() {
                 for (int i = 0; i < n; i++) {
@@ -43,7 +43,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
             protected void doClose() {
             }
         });
-        dict.addStream(s);
+        ydb.addStream(s);
     }
 
     @Test

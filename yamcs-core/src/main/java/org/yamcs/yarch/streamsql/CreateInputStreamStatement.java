@@ -1,9 +1,12 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.function.Consumer;
+
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
-public class CreateInputStreamStatement implements StreamSqlStatement {
+public class CreateInputStreamStatement extends SimpleStreamSqlStatement {
 
     TupleDefinition definition;
     String streamName;
@@ -14,7 +17,7 @@ public class CreateInputStreamStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
         throw new StreamSqlException(ErrCode.NOT_IMPLEMENTED, "InputStream not implemented");
     }
 }

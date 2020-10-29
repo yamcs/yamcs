@@ -23,12 +23,12 @@ import org.yamcs.yarch.streamsql.StreamSqlParser;
 
 public abstract class YarchTestCase {
     protected StreamSqlParser parser;
-    protected ExecutionContext context;
     protected YarchDatabaseInstance ydb;
     static boolean littleEndian;
     protected String instance;
     Random random = new Random();
-
+    ExecutionContext context;
+    
     @BeforeClass
     public static void setUpYarch() throws Exception {
         YConfiguration.setupTest(null); // reset the prefix if maven runs multiple tests
@@ -47,7 +47,7 @@ public abstract class YarchTestCase {
         YConfiguration config = YConfiguration.getConfiguration("yamcs");
         Path dir = Paths.get(config.getString("dataDir"));
         instance = "yarchtest_" + this.getClass().getSimpleName();
-        context = new ExecutionContext(instance);
+      
 
         if (YarchDatabase.hasInstance(instance)) {
             YarchDatabase.removeInstance(instance);
@@ -68,6 +68,7 @@ public abstract class YarchTestCase {
         }
 
         ydb = YarchDatabase.getInstance(instance);
+        context = new ExecutionContext(ydb);
     }
 
     protected void execute(String cmd, Object... args) throws StreamSqlException, ParseException {

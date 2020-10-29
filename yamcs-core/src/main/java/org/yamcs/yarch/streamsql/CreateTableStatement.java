@@ -1,15 +1,17 @@
 package org.yamcs.yarch.streamsql;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CreateTableStatement implements StreamSqlStatement {
+public class CreateTableStatement  extends SimpleStreamSqlStatement  {
 
     boolean ifNotExists;
     String tableName;
@@ -51,8 +53,8 @@ public class CreateTableStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance ydb = context.getDb();
         synchronized (ydb) {
             TableDefinition tableDefinition = new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
@@ -77,7 +79,6 @@ public class CreateTableStatement implements StreamSqlStatement {
                 if (!ifNotExists || ydb.getTable(tableName) == null) {
                     ydb.createTable(tableDefinition);
                 }
-                resultListener.complete();
             } catch (YarchException e) {
                 throw new GenericStreamSqlException("Cannot create table: " + e.getMessage());
             }
@@ -87,4 +88,5 @@ public class CreateTableStatement implements StreamSqlStatement {
     public void setEngine(String engine) {
         this.engine = engine;
     }
+
 }

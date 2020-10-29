@@ -1,11 +1,13 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-public class MergeStatement implements StreamSqlStatement {
+public class MergeStatement extends SimpleStreamSqlStatement {
 
     static Logger log = LoggerFactory.getLogger(MergeStatement.class.getName());
 
@@ -14,11 +16,11 @@ public class MergeStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
-        synchronized (dict) {
+    protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance ydb = context.getDb();
+        synchronized (ydb) {
             log.warn("Merge statement not yet implemented");
             throw new NotImplementedException("Merge statement");
-        }
+        }        
     }
 }

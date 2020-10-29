@@ -6,6 +6,6 @@ package org.yamcs.yarch.streamsql;
  * @author nm
  */
 public interface StreamSqlStatement {
-
     void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException;
+    StreamSqlResult execute(ExecutionContext c) throws StreamSqlException;
 }

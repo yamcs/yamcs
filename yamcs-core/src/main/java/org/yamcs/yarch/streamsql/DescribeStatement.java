@@ -1,15 +1,16 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.function.Consumer;
+
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-public class DescribeStatement implements StreamSqlStatement {
+public class DescribeStatement extends SimpleStreamSqlStatement {
 
     private static final TupleDefinition TDEF_TABLE = new TupleDefinition();
     static {
@@ -31,32 +32,32 @@ public class DescribeStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext c, ResultListener resultListener) throws StreamSqlException {
-        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
+    public void execute(ExecutionContext c, Consumer<Tuple> consumer) throws StreamSqlException {
+        YarchDatabaseInstance ydb = c.getDb();
 
         TableDefinition tdef = null;
         Stream stream = null;
-        synchronized (dict) {
-            tdef = dict.getTable(objectName);
-            stream = dict.getStream(objectName);
+        synchronized (ydb) {
+            tdef = ydb.getTable(objectName);
+            stream = ydb.getStream(objectName);
         }
         if (tdef != null) {
-            describeTable(tdef, resultListener);
+            describeTable(tdef, consumer);
         } else if (stream != null) {
-            describeStream(stream, resultListener);
+            describeStream(stream, consumer);
         } else {
             throw new ResourceNotFoundException(objectName);
         }
     }
 
-    private void describeTable(TableDefinition tdef, ResultListener resultListener) {
+    private void describeTable(TableDefinition tdef, Consumer<Tuple> consumer) {
         for (ColumnDefinition cdef : tdef.getKeyDefinition().getColumnDefinitions()) {
             Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
                     "*"
             });
-            resultListener.next(tuple);
+            consumer.accept(tuple);
         }
         for (ColumnDefinition cdef : tdef.getValueDefinition().getColumnDefinitions()) {
             Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
@@ -64,19 +65,17 @@ public class DescribeStatement implements StreamSqlStatement {
                     cdef.getType().toString(),
                     null
             });
-            resultListener.next(tuple);
+            consumer.accept(tuple);
         }
-        resultListener.complete();
     }
 
-    private void describeStream(Stream stream, ResultListener resultListener) {
+    private void describeStream(Stream stream, Consumer<Tuple> consumer) {
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             Tuple tuple = new Tuple(TDEF_STREAM, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
             });
-            resultListener.next(tuple);
+            consumer.accept(tuple);
         }
-        resultListener.complete();
     }
 }

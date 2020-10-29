@@ -549,7 +549,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_la1[16] = jj_gen;
       ;
     }
-        {if (true) return new ShowStreamStatement(name,showPort);}
+        {if (true) return new ShowStreamStatement(name);}
     throw new Error("Missing return statement in function");
   }
 

@@ -28,6 +28,7 @@ import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
 import org.yaml.snakeyaml.Yaml;
@@ -53,8 +54,8 @@ public class YarchDatabaseInstance {
 
     Map<String, TableDefinition> tables = new HashMap<>();
     transient Map<String, Stream> streams = new HashMap<>();
-    
-    //the tablespace where the data from this yarch instance is stored
+
+    // the tablespace where the data from this yarch instance is stored
     String tablespaceName;
 
     private BucketDatabase bucketDatabase;
@@ -178,7 +179,7 @@ public class YarchDatabaseInstance {
      */
     void loadTables() throws YarchException {
         for (StorageEngine storageEngine : YarchDatabase.getStorageEngines()) {
-            List<TableDefinition>  list =  storageEngine.loadTables(this);
+            List<TableDefinition> list = storageEngine.loadTables(this);
             for (TableDefinition tblDef : list) {
                 tblDef.setDb(this);
                 managementService.registerTable(instanceName, tblDef);
@@ -412,10 +413,14 @@ public class YarchDatabaseInstance {
         }
     }
 
-    public void execute(StreamSqlStatement stmt, ResultListener resultListener)
-            throws StreamSqlException, ParseException {
-        ExecutionContext context = new ExecutionContext(instanceName);
+    public void execute(StreamSqlStatement stmt, ResultListener resultListener) throws StreamSqlException {
+        ExecutionContext context = new ExecutionContext(this);
         stmt.execute(context, resultListener);
+    }
+
+    public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {
+        ExecutionContext context = new ExecutionContext(this);
+        return stmt.execute(context);
     }
 
     public void execute(String query, Object... args) throws StreamSqlException, ParseException {

@@ -60,8 +60,8 @@ public class TupleSourceExpression {
             streamExpression.bind(c);
             definition = streamExpression.getOutputDefinition();
         } else {
-            YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
-            TableDefinition tbl = dict.getTable(objectName);
+            YarchDatabaseInstance ydb = c.getDb();
+            TableDefinition tbl = ydb.getTable(objectName);
             if (tbl != null) {
                 if (histoColumn == null) {
                     definition = tbl.getTupleDefinition();
@@ -82,7 +82,7 @@ public class TupleSourceExpression {
                     definition.addColumn(new ColumnDefinition("num", DataType.INT));
                 }
             } else {
-                Stream stream = dict.getStream(objectName);
+                Stream stream = ydb.getStream(objectName);
                 if (stream == null) {
                     throw new ResourceNotFoundException(objectName);
                 }
@@ -112,7 +112,7 @@ public class TupleSourceExpression {
         if (streamExpression != null) {
             stream = streamExpression.execute(c);
         } else if (objectName != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
+            YarchDatabaseInstance ydb = c.getDb();
             if (!ascending) {
                 follow = false;
             }
