@@ -15,12 +15,12 @@
 }
 
 ::ng-deep .line .hl, ::ng-deep .line .hl.selected {
-  background-color: purple;
-  color: yellow;
+  background-color: #aec5d9;
+  color: #000000;
 }
 
 ::ng-deep .line .selected {
-  background-color: blue;
+  background-color: #5787b1;
   color: white;
 }
 
