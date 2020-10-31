@@ -28,15 +28,16 @@ public class AscendingRangeIterator implements DbIterator {
      *    same is valid for strictEnd  
      *  
      *  So with the following DB:
+     *  <pre>
      *  1: 0x00 0x00 0x00 0x02
      *  2: 0x01 0x01 0x01 0x00
      *  3: 0x01 0x01 0x01 0x03
      *  4: 0x01 0x01 0x02 0x00
-     *  
+     *  </pre>
      *  and rangeStart = 0x01 0x01 0x01, strictStart=true
-     *  
+     *  <p>
      *  the iterator will skip records 1,2 and 3 and start from record 4
-     *  
+     *  <p>
      *  To scan all records that start with a prefix, you can use rangeStart=rangeStop=prefix , strictStart=strictStop=false
      *  
      */
@@ -65,18 +66,15 @@ public class AscendingRangeIterator implements DbIterator {
             }
         } else {
             iterator.seek(rangeStart);
+            if(strictStart) {
+                while(iterator.isValid() && ByteArrayUtils.startsWith(iterator.key(), rangeStart)) {
+                    iterator.next();
+                }
+            }
+
             if(iterator.isValid()) {
                 curKey = iterator.key();
-
-                if(strictStart && ByteArrayUtils.startsWith(curKey, rangeStart)) {
-                    iterator.next();
-                    if(iterator.isValid()) {
-                        curKey = iterator.key();
-                        startFound = true;
-                    }
-                } else {
-                    startFound = true;
-                }
+                startFound = true;
             }
         }
         if(startFound) {
