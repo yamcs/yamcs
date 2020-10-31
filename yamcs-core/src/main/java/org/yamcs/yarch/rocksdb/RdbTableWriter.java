@@ -1,6 +1,7 @@
 package org.yamcs.yarch.rocksdb;
 
 import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 import static org.yamcs.yarch.HistogramSegment.segmentStart;
 
 import java.io.IOException;
@@ -12,7 +13,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
@@ -107,7 +107,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     private boolean load(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
+        byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
 
         db.put(k, v);
@@ -115,7 +115,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     private boolean insert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
+        byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
 
         if (rdb.get(k) == null) {
@@ -127,7 +127,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     private boolean upsert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
+        byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
 
         if (rdb.get(k) == null) {
@@ -147,7 +147,7 @@ public class RdbTableWriter extends TableWriter {
      * @throws RocksDBException
      */
     private boolean insertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] dbKey = getPartitionKey(partition, tableDefinition.serializeKey(t));
+        byte[] dbKey = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         rdb.lock(dbKey);
         try {
             byte[] v = rdb.get(dbKey);
@@ -184,7 +184,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     private boolean upsertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] dbKey = getPartitionKey(partition, tableDefinition.serializeKey(t));
+        byte[] dbKey = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         rdb.lock(dbKey);
         try {
             byte[] v = rdb.get(dbKey);
@@ -224,13 +224,6 @@ public class RdbTableWriter extends TableWriter {
         } finally {
             rdb.unlock(dbKey);
         }
-    }
-
-    // prepends the partition binary value to the key
-    private byte[] getPartitionKey(RdbPartition partition, byte[] k) {
-        byte[] pk = ByteArrayUtils.encodeInt(partition.tbsIndex, new byte[4 + k.length], 0);
-        System.arraycopy(k, 0, pk, 4, k.length);
-        return pk;
     }
 
     /**
