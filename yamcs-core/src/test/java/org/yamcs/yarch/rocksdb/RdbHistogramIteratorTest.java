@@ -43,7 +43,7 @@ public class RdbHistogramIteratorTest  extends YarchTestCase {
     public TableDefinition populate() throws Exception {
         String query="create table table1(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) "
                 + "partition by time(gentime) table_format=compressed engine rocksdb2";
-        ydb.execute(query);
+        execute(query);
         
 
         TableDefinition tblDef= ydb.getTable("table1");

@@ -21,7 +21,7 @@ public class HistogramStreamTest extends YarchTestCase {
     private void populate(String tblName) throws Exception {
         String query = "create table " + tblName
                 + "(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed";
-        ydb.execute(query);
+        execute(query);
 
         execute("create stream " + tblName + "_in(gentime timestamp, seqNum int, name string)");
         execute("insert into " + tblName + " select * from " + tblName + "_in");
@@ -53,7 +53,7 @@ public class HistogramStreamTest extends YarchTestCase {
         populate("test1");
         String query = "create stream test1_out as select * from test1 histogram(name) where last>" + (n * 1000)
                 + " and first<90000000";
-        ydb.execute(query);
+        execute(query);
         final List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(m, tuples.size());
         Tuple t = tuples.get(0);
@@ -65,14 +65,14 @@ public class HistogramStreamTest extends YarchTestCase {
         assertEquals((3 * n - 1) * 1000L, (long) (Long) t.getColumn(2));
         assertEquals(n, (int) (Integer) t.getColumn(3));
 
-        ydb.execute("drop table test1");
+        execute("drop table test1");
     }
 
     @Test
     public void test2() throws Exception {
         populate("test2");
         String query = "create stream test2_out as select * from test2 histogram(name)";
-        ydb.execute(query);
+        execute(query);
         Stream s = ydb.getStream("test2_out");
         final AtomicInteger count = new AtomicInteger();
         final Semaphore semaphore = new Semaphore(0);
@@ -98,7 +98,7 @@ public class HistogramStreamTest extends YarchTestCase {
         s.start();
         assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS));
 
-        ydb.execute("drop table test2");
+        execute("drop table test2");
     }
 
     @Ignore // FIXME
@@ -106,7 +106,7 @@ public class HistogramStreamTest extends YarchTestCase {
     public void testWithMergeTime() throws Exception {
         populate("test3");
         String query = "create stream test3_out as select * from test3 histogram(name, " + ((n + 1) * 1000) + 1 + ")";
-        ydb.execute(query);
+        execute(query);
         final List<Tuple> tuples = fetchAll("test3_out");
         assertEquals(m, tuples.size());
         Tuple t = tuples.get(0);
@@ -117,28 +117,28 @@ public class HistogramStreamTest extends YarchTestCase {
         assertEquals((3 * n - 1) * 1000L, (long) (Long) t.getColumn(2));
         assertEquals(2 * n, (int) (Integer) t.getColumn(3));
 
-        ydb.execute("drop table test3");
+        execute("drop table test3");
     }
 
     @Test
     public void testEmpyStream() throws Exception {
         populate("testEmptyStream");
         String query = "create stream testEmptyStream_out as select * from testEmptyStream histogram(name) where last>0 and first<-1";
-        ydb.execute(query);
+        execute(query);
         final List<Tuple> tuples = fetchAll("testEmptyStream_out");
         assertEquals(0, tuples.size());
 
         String query1 = "create stream testEmptyStream_out1 as select * from testEmptyStream histogram(name) where last>76797379324836000";
-        ydb.execute(query1);
+        execute(query1);
         final List<Tuple> tuples1 = fetchAll("testEmptyStream_out1");
         assertEquals(0, tuples1.size());
 
         String query2 = "create stream testEmptyStream_out2 as select * from testEmptyStream histogram(name) where first>76797379324836000";
-        ydb.execute(query2);
+        execute(query2);
         final List<Tuple> tuples2 = fetchAll("testEmptyStream_out2");
         assertEquals(0, tuples2.size());
 
-        ydb.execute("drop table testEmptyStream");
+        execute("drop table testEmptyStream");
     }
 
     @Test
@@ -146,7 +146,7 @@ public class HistogramStreamTest extends YarchTestCase {
         populate("test1");
         String query = "create stream test1_out as select * from test1 histogram(name) where first>" + (n * 3000)
                 + " and last<100000000";
-        ydb.execute(query);
+        execute(query);
         final List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(1, tuples.size());
         Tuple t = tuples.get(0);
@@ -155,7 +155,7 @@ public class HistogramStreamTest extends YarchTestCase {
 
         t = tuples.get(0);
         assertEquals("histotest1m", (String) t.getColumn(0));
-        ydb.execute("drop table test1");
+        execute("drop table test1");
     }
 
 }

@@ -14,10 +14,10 @@ public class WriterTest extends YarchTestCase {
 
     @Test
     public void TestUpsert() throws Exception {
-        ydb.execute("create table tbl_upsert"
+        execute("create table tbl_upsert"
                 + "(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName))");
-        ydb.execute("create stream tbl_upsert_in(gentime timestamp, packetName enum, packet binary)");
-        ydb.execute("upsert into tbl_upsert select * from tbl_upsert_in");
+        execute("create stream tbl_upsert_in(gentime timestamp, packetName enum, packet binary)");
+        execute("upsert into tbl_upsert select * from tbl_upsert_in");
 
         Stream s = ydb.getStream("tbl_upsert_in");
         TupleDefinition td = new TupleDefinition();
@@ -37,7 +37,7 @@ public class WriterTest extends YarchTestCase {
 
         execute("close stream tbl_upsert_in");
 
-        ydb.execute("create stream tbl_upsert_out as select * from tbl_upsert");
+        execute("create stream tbl_upsert_out as select * from tbl_upsert");
         final List<Tuple> tuples = fetchAll("tbl_upsert_out");
         assertEquals(2, tuples.size());
 
@@ -49,16 +49,16 @@ public class WriterTest extends YarchTestCase {
         assertEquals("pn2", t2.getColumn("packetName"));
         assertTrue(Arrays.equals(b1, (byte[]) t2.getColumn("packet")));
 
-        ydb.execute("drop table tbl_upsert");
+        execute("drop table tbl_upsert");
     }
 
     @Test
     public void TestUpsertAppend() throws Exception {
         long t = TimeEncoding.parse("2017-11-17T13:48:33.323");
-        ydb.execute("create table tbl_upsert_append "
+        execute("create table tbl_upsert_append "
                 + "(gentime timestamp, name string, seq int, primary key(gentime,name, seq))");
-        ydb.execute("create stream tbl_upsert_append_in(gentime timestamp)");
-        ydb.execute("upsert_append into tbl_upsert_append select * from tbl_upsert_append_in");
+        execute("create stream tbl_upsert_append_in(gentime timestamp)");
+        execute("upsert_append into tbl_upsert_append select * from tbl_upsert_append_in");
 
         Stream s = ydb.getStream("tbl_upsert_append_in");
         TupleDefinition td = new TupleDefinition();
@@ -78,7 +78,7 @@ public class WriterTest extends YarchTestCase {
         s.emitTuple(new Tuple(td1, new Object[] { t + 1000, "pn1", 2, "v4" }));
         execute("close stream tbl_upsert_append_in");
 
-        ydb.execute("create stream tbl_upsert_append_out as select * from tbl_upsert_append");
+        execute("create stream tbl_upsert_append_out as select * from tbl_upsert_append");
         final List<Tuple> tuples = fetchAll("tbl_upsert_append_out");
         assertEquals(3, tuples.size());
 
@@ -91,16 +91,16 @@ public class WriterTest extends YarchTestCase {
         assertEquals("pn2", t2.getColumn("name"));
         assertEquals("v2", (String) t2.getColumn("p1"));
 
-        ydb.execute("drop table tbl_upsert_append");
+        execute("drop table tbl_upsert_append");
     }
 
     @Test
     public void TestUpsertAppendParralel() throws Exception {
         long t = TimeEncoding.parse("2019-11-17T13:48:33.323");
-        ydb.execute("create table tbl_upsert_append "
+        execute("create table tbl_upsert_append "
                 + "(gentime timestamp, name string, seq int, primary key(gentime,name, seq))");
-        ydb.execute("create stream tbl_upsert_append_in(gentime timestamp)");
-        ydb.execute("upsert_append into tbl_upsert_append select * from tbl_upsert_append_in");
+        execute("create stream tbl_upsert_append_in(gentime timestamp)");
+        execute("upsert_append into tbl_upsert_append select * from tbl_upsert_append_in");
 
         Stream s = ydb.getStream("tbl_upsert_append_in");
         TupleDefinition td = new TupleDefinition();
@@ -125,7 +125,7 @@ public class WriterTest extends YarchTestCase {
         }
         execute("close stream tbl_upsert_append_in");
 
-        ydb.execute("create stream tbl_upsert_append_out as select * from tbl_upsert_append");
+        execute("create stream tbl_upsert_append_out as select * from tbl_upsert_append");
         final List<Tuple> tuples = fetchAll("tbl_upsert_append_out");
         assertEquals(1, tuples.size());
 
@@ -135,6 +135,6 @@ public class WriterTest extends YarchTestCase {
             assertEquals("v"+i, (String) t1.getColumn("p"+i));
         }
 
-        ydb.execute("drop table tbl_upsert_append");
+        execute("drop table tbl_upsert_append");
     }
 }

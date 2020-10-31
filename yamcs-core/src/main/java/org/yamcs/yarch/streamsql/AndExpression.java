@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.utils.parser.ParseException;
 
 public class AndExpression extends Expression {
@@ -13,7 +13,7 @@ public class AndExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
+    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
         ArrayList<Expression> new_expressions = new ArrayList<>();
         for (Expression expr : children) {
             Expression new_expr = expr.addFilter(tableStream);

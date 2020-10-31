@@ -8,7 +8,8 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
@@ -98,6 +99,9 @@ public class SelectExpression implements StreamExpression {
         inputDef = tupleSourceExpression.getDefinition();
         if (whereClause != null) {
             whereClause.bind(inputDef);
+            if(whereClause.getType()!=DataType.BOOLEAN) {
+                throw new GenericStreamSqlException("Invalid where clause, should return a boolean");
+            }
         }
         if (windowSpec != null) {
             windowSpec.bind(inputDef);
@@ -228,8 +232,8 @@ public class SelectExpression implements StreamExpression {
     public Stream execute(ExecutionContext c) throws StreamSqlException {
         Stream stream = tupleSourceExpression.execute(c);
 
-        if ((stream instanceof DbReaderStream) && (whereClause != null)) {
-            DbReaderStream dbStream = (DbReaderStream) stream;
+        if ((stream instanceof FilterableTarget) && (whereClause != null)) {
+            FilterableTarget dbStream = (FilterableTarget) stream;
             whereClause = whereClause.addFilter(dbStream);
         }
         CompiledExpression cWhereClause = (whereClause == null) ? null : whereClause.compile();

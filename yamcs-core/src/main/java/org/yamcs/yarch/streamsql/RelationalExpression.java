@@ -2,7 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 import org.yamcs.utils.parser.ParseException;
@@ -28,7 +28,7 @@ public class RelationalExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
+    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
         if ((children[1] instanceof ColumnExpression) && (children[0].isConstant())) {
             // swap left with right
             Expression tmp = children[1];

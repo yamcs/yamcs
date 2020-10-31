@@ -423,7 +423,23 @@ public class YarchDatabaseInstance {
         return stmt.execute(context);
     }
 
-    public void execute(String query, Object... args) throws StreamSqlException, ParseException {
+    /**
+     * Executes a query and returns a result.
+     * <p>
+     * If the result contains streaming data (select from table or stream) you have to close the result 
+     * 
+     * @param query
+     * @param args
+     * @return
+     * @throws StreamSqlException
+     * @throws ParseException
+     */
+    public StreamSqlResult execute(String query, Object... args) throws StreamSqlException, ParseException {
+        StreamSqlStatement stmt = createStatement(query, args);
+        return execute(stmt);
+    }
+    
+    public void executeDiscardingResult(String query, Object... args) throws StreamSqlException, ParseException {
         StreamSqlStatement stmt = createStatement(query, args);
         execute(stmt, new ResultListener() { // Discards everything
 

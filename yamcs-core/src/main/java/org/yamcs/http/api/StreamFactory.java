@@ -36,7 +36,7 @@ public class StreamFactory {
 
         log.debug("Executing: {}", sql);
         try {
-            ydb.execute(sql, args.toArray());
+            ydb.executeDiscardingResult(sql, args.toArray());
         } catch (StreamSqlException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
@@ -59,8 +59,8 @@ public class StreamFactory {
 
         log.debug("Executing: {}", sql);
         try {
-            ydb.execute(sql);
-            ydb.execute(String.format("insert into %s select * from %s", table.getName(), streamName));
+            ydb.executeDiscardingResult(sql);
+            ydb.executeDiscardingResult(String.format("insert into %s select * from %s", table.getName(), streamName));
         } catch (StreamSqlException | ParseException e) {
             throw new InternalServerErrorException(e);
         }

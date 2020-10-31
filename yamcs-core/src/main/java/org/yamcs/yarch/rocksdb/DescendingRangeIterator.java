@@ -58,6 +58,9 @@ public class DescendingRangeIterator implements DbIterator {
         this.strictEnd = strictEnd;
         init();
     }
+    public DescendingRangeIterator(RocksIterator it, DbRange range) {
+        this(it, range.rangeStart, range.strictStart, range.rangeEnd, range.strictEnd);
+    }
 
     private void init() {
         boolean endFound = false;

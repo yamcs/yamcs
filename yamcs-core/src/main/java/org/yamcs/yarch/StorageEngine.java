@@ -59,13 +59,12 @@ public interface StorageEngine {
 
     /**
      * 
-     * Creates a new table reader.
+     * Creates a new table iterator.
      * 
      * @param ydb
      * @param tblDef
      */
-    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending,
-            boolean follow);
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending, boolean follow);
 
     public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 

@@ -12,7 +12,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
@@ -52,10 +52,10 @@ public abstract class Expression {
      * add a filter to the table if applicable and returns an expression where the condition is removed.
      * 
      * @param tableStream
-     * @return
+     * @return the expression left after the conditions has been added on the target or null if all the conditions have been added
      * @throws StreamSqlException
      */
-    public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
+    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
         // by default do nothing
         return this;
     }

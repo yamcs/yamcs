@@ -219,7 +219,7 @@ public class YarchReplay implements StreamSubscriber {
                 YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
                 if (db.getStream(streamName) != null) {
                     log.debug("running query: {}", query);
-                    db.execute(query);
+                    db.executeDiscardingResult(query);
                 } else {
                     log.debug("Stream already closed");
                 }

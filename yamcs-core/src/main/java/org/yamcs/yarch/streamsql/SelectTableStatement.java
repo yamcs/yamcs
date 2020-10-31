@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.yamcs.logging.Log;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -64,11 +65,13 @@ public class SelectTableStatement implements StreamSqlStatement {
     }
     
     
+    
     static class QueueStreamSqlResult implements StreamSqlResult, StreamSubscriber {
         final Stream stream;
         BlockingQueue<Tuple> queue = new ArrayBlockingQueue<Tuple>(1024);
         Tuple next;
-
+        static Log log = new Log(QueueStreamSqlResult.class);
+        
         QueueStreamSqlResult(Stream stream) {
             this.stream = stream;
         }
@@ -125,6 +128,14 @@ public class SelectTableStatement implements StreamSqlStatement {
         @Override
         public void streamClosed(Stream stream) {
             queue.add(END_SIGNAL);
+        }
+        
+        @Override
+        public void finalize() {
+            if(!stream.isClosed()) {
+                log.error("Stream {} left dangling (StreamSqlResult has been discarded before closing)", stream.getName());
+                close();
+            }
         }
     }
 

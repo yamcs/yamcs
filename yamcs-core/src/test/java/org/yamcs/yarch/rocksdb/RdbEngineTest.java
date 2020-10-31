@@ -66,7 +66,7 @@ public class RdbEngineTest extends YarchTestCase {
     private void checkNoReaderStreamPossible(RdbStorageEngine rse, TableDefinition tblDef) {
         IllegalArgumentException iae = null;
         try {
-            rse.newTableReaderStream(ydb, tblDef, true, true);
+            rse.newTableWalker(ydb, tblDef, true, true);
         } catch (IllegalArgumentException e) {
             iae = e;
         }
@@ -76,7 +76,7 @@ public class RdbEngineTest extends YarchTestCase {
     public TableDefinition populate() throws Exception {
         String query = "create table table1(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) "
                 + "partition by time(gentime) table_format=compressed engine rocksdb2";
-        ydb.execute(query);
+        execute(query);
         long t1 = TimeEncoding.parse("2016-12-16T00:00:00");
 
         TableDefinition tblDef = ydb.getTable("table1");

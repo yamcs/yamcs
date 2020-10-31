@@ -132,6 +132,10 @@ public abstract class Stream {
         return state.get();
     }
 
+    public boolean isClosed() {
+        return state.get()==QUITTING;
+    }
+
     public long getDataCount() {
         return dataCount.get();
     }

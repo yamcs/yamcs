@@ -1,7 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.utils.parser.ParseException;
 
 public class OrExpression extends Expression {
@@ -11,7 +11,7 @@ public class OrExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
+    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
         return this;
     }
 

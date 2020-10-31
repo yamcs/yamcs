@@ -9,8 +9,9 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.HistogramReaderStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWalker;
+import org.yamcs.yarch.TableReaderStream;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
@@ -36,7 +37,7 @@ public class TupleSourceExpression {
     String histoColumn;
 
     boolean ascending = true;
-    boolean follow = true;
+    boolean follow = false;
 
     // after binding
     TupleDefinition definition;
@@ -119,7 +120,8 @@ public class TupleSourceExpression {
             TableDefinition tbl = ydb.getTable(objectName);
             if (tbl != null) {
                 if (histoColumn == null) {
-                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(ydb, tbl, ascending, follow);
+                    TableWalker tblit = ydb.getStorageEngine(tbl).newTableWalker(ydb, tbl, ascending, follow);
+                    stream = new TableReaderStream(ydb, tbl, tblit);
                 } else {
                     HistogramReaderStream histoStream;
                     try {

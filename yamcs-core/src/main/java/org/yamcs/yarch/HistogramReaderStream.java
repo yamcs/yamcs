@@ -18,7 +18,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-public class HistogramReaderStream extends Stream implements Runnable, DbReaderStream {
+public class HistogramReaderStream extends Stream implements Runnable, FilterableTarget {
     // this is the table and the column on which we run the histogram
     final private ColumnSerializer<?> histoColumnSerializer;
     HistogramIterator iter;

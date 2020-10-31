@@ -87,7 +87,7 @@ public class RdbSelectPerfTest extends YarchTestCase {
         if(packetName!=null) {
             q =  q +" where pname='"+packetName+"'";
         }
-        ydb.execute(q);
+        execute(q);
         Stream s = ydb.getStream("s");
 
         Semaphore semaphore = new Semaphore(0);

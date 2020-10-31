@@ -12,7 +12,7 @@ public class StreamSqlParserTest extends YarchTestCase {
 
     @Test
     public void testCreateDropTable() throws ParseException, StreamSqlException {
-        ydb.execute(
+        execute(
                 "create table droptabletest_test1(\"time\" timestamp, apidSeqCount int, packet binary, primary key(\"time\",apidSeqCount))");
         TableDefinition tbl = ydb.getTable("droptabletest_test1");
         assertNotNull(tbl);
@@ -26,7 +26,7 @@ public class StreamSqlParserTest extends YarchTestCase {
         ColumnDefinition cpacket = tbl.getColumnDefinition("packet");
         assertEquals(cpacket.getType(), DataType.BINARY);
 
-        ydb.execute("drop table droptabletest_test1");
+        execute("drop table droptabletest_test1");
         tbl = ydb.getTable("droptabletest_test1");
 
         assertNull(tbl);
@@ -34,25 +34,25 @@ public class StreamSqlParserTest extends YarchTestCase {
 
     @Test
     public void testExists() throws ParseException, StreamSqlException {
-        ydb.execute("create table if not exists existstest_test1(col1 int, primary key(col1))");
+        execute("create table if not exists existstest_test1(col1 int, primary key(col1))");
         TableDefinition tbl = ydb.getTable("existstest_test1");
         assertNotNull(tbl);
         assertEquals(tbl.getName(), "existstest_test1");
         assertNotNull(tbl.getColumnDefinition("col1"));
 
-        ydb.execute("create table if not exists existstest_test1(col1 int, col2 int, primary key(col1))");
+        execute("create table if not exists existstest_test1(col1 int, col2 int, primary key(col1))");
         tbl = ydb.getTable("existstest_test1");
         assertNotNull(tbl);
         assertEquals(tbl.getName(), "existstest_test1");
         assertNotNull(tbl.getColumnDefinition("col1"));
         assertNull(tbl.getColumnDefinition("col2"));
 
-        ydb.execute("drop table if exists existstest_test1");
+        execute("drop table if exists existstest_test1");
         tbl = ydb.getTable("existstest_test1");
 
         assertNull(tbl);
 
-        ydb.execute("drop table if exists sometablethatreallydoesntexist");
+        execute("drop table if exists sometablethatreallydoesntexist");
     }
 
     @Test

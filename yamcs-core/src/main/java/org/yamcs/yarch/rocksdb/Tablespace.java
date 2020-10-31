@@ -31,6 +31,8 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWalker;
+import org.yamcs.yarch.TableReaderStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -106,8 +108,8 @@ public class Tablespace {
 
     Map<TableDefinition, RdbPartitionManager> partitionManagers = new ConcurrentHashMap<>();
     static final Object DUMMY = new Object();
-    Map<RdbTableReaderStream, Object> readers = Collections
-            .synchronizedMap(new WeakHashMap<RdbTableReaderStream, Object>());
+    
+    Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
 
     public Tablespace(String name) {
         this.name = name;
@@ -571,32 +573,23 @@ public class Tablespace {
         log.info("Tablespace {}: loaded {} tables for instance {}", name, list.size(), yamcsInstance);
         return list;
     }
-
-    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef,
+    
+    public TableWalker newTableIterator(YarchDatabaseInstance ydb, TableDefinition tblDef,
             boolean ascending, boolean follow) {
         PartitionManager pmgr = partitionManagers.get(tblDef);
         if (pmgr == null) {
             throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
         }
-        RdbTableReaderStream rrs = new RdbTableReaderStream(this, ydb, pmgr, ascending, follow);
-        readers.put(rrs, DUMMY);
+        RdbTableWalker rrs = new RdbTableWalker(this, ydb, pmgr, ascending, follow);
+        iterators.put(rrs, DUMMY);
         return rrs;
     }
 
     public void close() {
-        try {
-            for (RdbTableReaderStream rrs : readers.keySet()) {
+            for (RdbTableWalker rrs : iterators.keySet()) {
                 rrs.close();
-                if (!rrs.awaitClosure(5000)) {
-                    log.warn("TableReader did not quit in 5 sec");
-                }
             }
-
             rdbFactory.shutdown();
-        } catch (InterruptedException e) {
-            log.warn("Interrupted during shutdown");
-            Thread.currentThread().interrupt();
-        }
     }
 
 }

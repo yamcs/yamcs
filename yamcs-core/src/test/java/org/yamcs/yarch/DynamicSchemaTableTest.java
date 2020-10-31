@@ -113,7 +113,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         assertEquals(6, ((Short)t.getColumn("v6")).shortValue());
         
         
-        ydb.execute("drop table test_insert");
+        execute("drop table test_insert");
     }
 
     @Test
@@ -143,7 +143,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         assertEquals(3, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
         
-        ydb.execute("create stream test_inserta_out as select * from test_inserta");
+        execute("create stream test_inserta_out as select * from test_inserta");
         Stream sout=ydb.getStream("test_inserta_out");
         final Semaphore semaphore=new Semaphore(0);
         final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
@@ -172,7 +172,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         assertEquals(2, t.getColumns().size());
         assertEquals(2L, ((Long)t.getColumn("t")).longValue());
         assertEquals(30, ((Integer)t.getColumn("v3")).intValue());
-        ydb.execute("drop table test_inserta");
+        execute("drop table test_inserta");
     }
 
     @Test
@@ -231,7 +231,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         assertEquals(2L, ((Long)t.getColumn("t")).longValue());
         assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
         
-        ydb.execute("drop table test_upsert");
+        execute("drop table test_upsert");
     }
     
     @Test

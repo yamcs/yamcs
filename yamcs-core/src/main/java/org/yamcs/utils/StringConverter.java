@@ -88,6 +88,9 @@ public class StringConverter {
     }
     
     public static String arrayToHexString(byte[] b) {
+        if(b==null) {
+            return "null";
+        }
         return arrayToHexString(b, 0, b.length);
     }
     

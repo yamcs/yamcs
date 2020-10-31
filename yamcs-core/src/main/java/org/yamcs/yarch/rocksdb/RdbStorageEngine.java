@@ -19,8 +19,8 @@ import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.StorageEngine;
-import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -129,11 +129,10 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl
-            , boolean ascending, boolean follow) {
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending, boolean follow) {
         Tablespace tblsp = getTablespace(ydb, tbl);
 
-        return tblsp.newTableReaderStream(ydb, tbl, ascending, follow);
+        return tblsp.newTableIterator(ydb, tbl, ascending, follow);
     }
 
     @Override

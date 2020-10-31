@@ -22,7 +22,7 @@ public class StreamSelectTest extends YarchTestCase {
 
     @Test
     public void testFilter1() throws Exception {
-        ydb.execute("create stream tm_in(gentime timestamp, id int)");
+        execute("create stream tm_in(gentime timestamp, id int)");
 
         new StreamChecker("tm_out1", "select * from tm_in where id=5 or id=3",
                 new TupleChecker() {
@@ -44,7 +44,7 @@ public class StreamSelectTest extends YarchTestCase {
 
     @Test
     public void testFilter2() throws Exception {
-        ydb.execute("create stream tm_in(gentime timestamp, id int)");
+        execute("create stream tm_in(gentime timestamp, id int)");
         StreamChecker sc1 = new StreamChecker("tm_out1", "select * from tm_in where id=5 or id=3",
                 new TupleChecker() {
                     int x = 3;
@@ -84,7 +84,7 @@ public class StreamSelectTest extends YarchTestCase {
     @Test
     public void testFilter3() throws Exception {
         long t0 = TimeEncoding.parse("2020-07-10T00:00:00");
-        ydb.execute("create stream tm_in(gentime timestamp, id int)");
+        execute("create stream tm_in(gentime timestamp, id int)");
         StreamChecker sc1 = new StreamChecker("tm_out1", "select * from tm_in where gentime > '2020-07-10T00:00:02' and '2020-07-10T00:00:05' >= gentime",
                 new TupleChecker() {
                     int x = 3;
@@ -106,7 +106,7 @@ public class StreamSelectTest extends YarchTestCase {
     
     @Test
     public void testNegative() throws Exception {
-        ydb.execute("create stream tm_negative_in(gentime timestamp, id int)");
+        execute("create stream tm_negative_in(gentime timestamp, id int)");
 
         new StreamChecker("tm_negative_out", "select * from tm_negative_in where id=-5 or id > -3",
                 new TupleChecker() {
@@ -132,7 +132,7 @@ public class StreamSelectTest extends YarchTestCase {
 
         StreamChecker(String name, String query, TupleChecker tc) throws StreamSqlException, ParseException {
             this.tc = tc;
-            ydb.execute("create stream " + name + " as " + query);
+            execute("create stream " + name + " as " + query);
             ydb.getStream(name).addSubscriber(this);
         }
 

@@ -79,6 +79,21 @@ public class ByteArrayUtils {
         return b;
     }
 
+    static public byte[] minusOne(byte[] a) {
+        byte[] b = Arrays.copyOf(a, a.length);
+        int i = b.length - 1;
+        while (i >= 0 && b[i] == 0) {
+            b[i] = (byte) 0xFF;
+            i--;
+        }
+        if (i == -1) {
+            throw new IllegalArgumentException("underflow");
+        } else {
+            b[i] = (byte) (((b[i] & 0xFF)-1));
+        }
+        return b;
+    }
+
     /**
      * lexicographic comparison which returns 0 if one of the array is a subarray of the other one
      * 

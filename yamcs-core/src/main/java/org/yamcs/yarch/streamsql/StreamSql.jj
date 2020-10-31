@@ -584,10 +584,13 @@ MergeExpression MergeExpression() throws StreamSqlException: {
 DeleteStatement DeleteStatement() throws StreamSqlException: {
     String tableName;
     Expression expression=null;
+    BigDecimal limit = new BigDecimal(-1);
 } {
-    "DELETE" "FROM" tableName=ObjectName() ["WHERE" expression=Expression() ] ";"
+    "DELETE" "FROM" tableName=ObjectName()
+    ["WHERE" expression=Expression() ]
+    ["LIMIT" limit=NumericConstant() ]
     {
-	return new DeleteStatement(tableName, expression);
+	return new DeleteStatement(tableName, expression, limit.longValue());
     }
 }
 

@@ -40,7 +40,6 @@ class MergingIterator implements DbIterator {
 
     @Override
     public void next() {
-
         DbIterator it  = priorityQueue.poll();
         it.next();
         if(it.isValid()) {

@@ -11,10 +11,10 @@ public class EnumTest2 extends YarchTestCase {
     int n = 20;
 
     private void populate(String tblname) throws Exception {
-        ydb.execute("create table " + tblname
+        execute("create table " + tblname
                 + "(packetName enum, gentime timestamp, packet binary, primary key(packetName, gentime))");
-        ydb.execute("create stream " + tblname + "_in(gentime timestamp, packetName enum, packet binary)");
-        ydb.execute("insert into " + tblname + " select * from " + tblname + "_in");
+        execute("create stream " + tblname + "_in(gentime timestamp, packetName enum, packet binary)");
+        execute("insert into " + tblname + " select * from " + tblname + "_in");
 
         Stream s = ydb.getStream(tblname + "_in");
         TupleDefinition td = new TupleDefinition();
@@ -38,7 +38,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test1() throws Exception {
         populate("testenum1");
-        ydb.execute("create stream testenum_out as select * from testenum1");
+        execute("create stream testenum_out as select * from testenum1");
         final List<Tuple> tuples = fetchAll("testenum_out");
         int k= 0;
         for (int j = 0; j < 10; j++) {
@@ -54,7 +54,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test2() throws Exception {
         populate("testenum2");
-        ydb.execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid')");
+        execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid')");
 
         final List<Tuple> tuples = fetchAll("testenum2_out");
         System.out.println("tuples: " + tuples);
@@ -71,7 +71,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test2Desc() throws Exception {
         populate("testenum2");
-        ydb.execute("create stream testenum2_out as select * from testenum2 where  packetName in ('pn1', 'invalid')");
+        execute("create stream testenum2_out as select * from testenum2 where  packetName in ('pn1', 'invalid')");
 
         final List<Tuple> tuples = fetchAll("testenum2_out");
         System.out.println("tuples: " + tuples);
@@ -88,7 +88,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test3() throws Exception {
         populate("testenum3");
-        ydb.execute("create stream testenum3_out as select * from testenum3 where packetName in ('invalid')");
+        execute("create stream testenum3_out as select * from testenum3 where packetName in ('invalid')");
         final List<Tuple> tuples = fetchAll("testenum3_out");
         assertEquals(0, tuples.size());
     }
@@ -96,7 +96,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test3Desc() throws Exception {
         populate("testenum3");
-        ydb.execute(
+        execute(
                 "create stream testenum3_out as select * from testenum3 where packetName in ('invalid') order desc");
         final List<Tuple> tuples = fetchAll("testenum3_out");
         assertEquals(0, tuples.size());
@@ -105,7 +105,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test4() throws Exception {
         populate("testenum4");
-        ydb.execute("create stream testenum2_out as select * from testenum4 where packetName='pn1'");
+        execute("create stream testenum2_out as select * from testenum4 where packetName='pn1'");
         final List<Tuple> tuples = fetchAll("testenum2_out");
         assertEquals((n + 9) / 10, tuples.size());
 
@@ -117,7 +117,7 @@ public class EnumTest2 extends YarchTestCase {
     @Test
     public void test4Desc() throws Exception {
         populate("testenum4");
-        ydb.execute("create stream testenum2_out as select * from testenum4 where packetName='pn1' order desc");
+        execute("create stream testenum2_out as select * from testenum4 where packetName='pn1' order desc");
         final List<Tuple> tuples = fetchAll("testenum2_out");
         assertEquals((n + 9) / 10, tuples.size());
 

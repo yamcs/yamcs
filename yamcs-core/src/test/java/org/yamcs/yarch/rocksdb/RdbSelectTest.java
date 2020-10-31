@@ -64,7 +64,7 @@ public class RdbSelectTest extends YarchTestCase {
 
     @Test
     public void testUnspecifiedOrder() throws Exception {
-        ydb.execute("create stream s1 as select * from RdbSelectTest");
+        execute("create stream s1 as select * from RdbSelectTest");
         Stream s1 = ydb.getStream("s1");
         List<Tuple> tuples = fetchTuples(s1);
         assertEquals(3, tuples.size());
@@ -78,7 +78,7 @@ public class RdbSelectTest extends YarchTestCase {
     @Test
     public void testOrderAscending() throws Exception {
         // keyword ORDER is allowed but unneeded (defaults to ascending)
-        ydb.execute("create stream s1 as select * from RdbSelectTest order");
+        execute("create stream s1 as select * from RdbSelectTest order");
         Stream s1 = ydb.getStream("s1");
         List<Tuple> tuples = fetchTuples(s1);
         assertEquals(3, tuples.size());
@@ -89,7 +89,7 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3000L, tuples.get(2).getColumn("gentime"));
         
         // keywords ORDER ASC unneeded, but allowed 
-        ydb.execute("create stream s2 as select * from RdbSelectTest order asc");
+        execute("create stream s2 as select * from RdbSelectTest order asc");
         Stream s2 = ydb.getStream("s2");
         tuples = fetchTuples(s2);
         assertEquals(3, tuples.size());
@@ -102,7 +102,7 @@ public class RdbSelectTest extends YarchTestCase {
     
     @Test
     public void testOrderDescending() throws Exception {
-        ydb.execute("create stream s1 as select * from RdbSelectTest order desc");
+        execute("create stream s1 as select * from RdbSelectTest order desc");
         Stream s1 = ydb.getStream("s1");
         List<Tuple> tuples = fetchTuples(s1);
         assertEquals(3, tuples.size());
@@ -117,7 +117,7 @@ public class RdbSelectTest extends YarchTestCase {
         long t4 = TimeEncoding.getWallclockTime();
         tw.onTuple(null, new Tuple(tdef, new Object[]{t4, 20, 2}));
         
-        ydb.execute("create stream s2 as select * from RdbSelectTest order desc");
+        execute("create stream s2 as select * from RdbSelectTest order desc");
         Stream s2 = ydb.getStream("s2");
         tuples = fetchTuples(s2);
         assertEquals(4, tuples.size());
@@ -127,7 +127,7 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(1000L, tuples.get(3).getColumn("gentime"));
         
         // Filter with a strict range end
-        ydb.execute("create stream s3 as select * from RdbSelectTest where gentime<3000 order desc");        
+        execute("create stream s3 as select * from RdbSelectTest where gentime<3000 order desc");        
         Stream s3 = ydb.getStream("s3");
         tuples = fetchTuples(s3);
         
@@ -137,7 +137,7 @@ public class RdbSelectTest extends YarchTestCase {
         
         
         // Filter with a non-strict range end
-        ydb.execute("create stream s4 as select * from RdbSelectTest where gentime<=2000 order desc");        
+        execute("create stream s4 as select * from RdbSelectTest where gentime<=2000 order desc");        
         Stream s4 = ydb.getStream("s4");
         tuples = fetchTuples(s4);
         assertEquals(2, tuples.size());
@@ -145,7 +145,7 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(1000L, tuples.get(1).getColumn("gentime"));
 
         // Filter with a strict range start
-        ydb.execute("create stream s5 as select * from RdbSelectTest where gentime>2000 order desc");        
+        execute("create stream s5 as select * from RdbSelectTest where gentime>2000 order desc");        
         Stream s5 = ydb.getStream("s5");
         tuples = fetchTuples(s5);
         assertEquals(2, tuples.size());
@@ -153,7 +153,7 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3000L, tuples.get(1).getColumn("gentime"));
         
         // Filter with a non-strict range start
-        ydb.execute("create stream s6 as select * from RdbSelectTest where gentime>=3000 order desc");        
+        execute("create stream s6 as select * from RdbSelectTest where gentime>=3000 order desc");        
         Stream s6 = ydb.getStream("s6");
         tuples = fetchTuples(s6);
         assertEquals(2, tuples.size());
@@ -163,7 +163,7 @@ public class RdbSelectTest extends YarchTestCase {
     
     @Test
     public void testOrderedMerge() throws Exception {
-        ydb.execute("create stream s1 as merge " + 
+        execute("create stream s1 as merge " + 
             "(select * from RdbSelectTest where gentime <3000 order desc), " +
             "(select * from RdbSelectTest where gentime >= 3000 order desc) " +
             "using gentime order desc");
@@ -179,13 +179,13 @@ public class RdbSelectTest extends YarchTestCase {
     
     @Test(expected=ParseException.class)
     public void testInvalidOrder() throws Exception {
-        ydb.execute("create stream s1 as select * from RdbSelectTest order blabla");
+        execute("create stream s1 as select * from RdbSelectTest order blabla");
     }
     
     @Test
     public void testFollow() throws Exception {
         // Sanity check
-        ydb.execute("create stream s1 as select * from RdbSelectTest");
+        execute("create stream s1 as select * from RdbSelectTest");
         Stream s1 = ydb.getStream("s1");
         List<Tuple> tuples = fetchTuples(s1);
         assertEquals(3, tuples.size());
@@ -193,14 +193,14 @@ public class RdbSelectTest extends YarchTestCase {
         // Record a tuple in one of the existing partitions
         // (and ordered -after- the first tuple of the table)
         Tuple sameMonthTuple = new Tuple(tdef, new Object[]{2001L, 20, 2});
-        ydb.execute("create stream s2 as select * from RdbSelectTest");
+        execute("create stream s2 as select * from RdbSelectTest");
         Stream s2 = ydb.getStream("s2");
         tuples = fetchTuplesAndProduceOne(s2, sameMonthTuple);
         assertEquals(4, tuples.size());
         
         // Record a tuple that is sure to be in another partition
         // (more than a month separated)
-        ydb.execute("create stream s3 as select * from RdbSelectTest");
+        execute("create stream s3 as select * from RdbSelectTest");
         Stream s3 = ydb.getStream("s3");
         long t = TimeEncoding.getWallclockTime();
         Tuple farOutTuple = new Tuple(tdef, new Object[]{t, 20, 2});
@@ -214,7 +214,7 @@ public class RdbSelectTest extends YarchTestCase {
         int tableSize = 3;
         
         // Sanity check
-        ydb.execute("create stream s1 as select * from RdbSelectTest nofollow");
+        execute("create stream s1 as select * from RdbSelectTest nofollow");
         Stream s1 = ydb.getStream("s1");
         List<Tuple> tuples = fetchTuples(s1);
         assertEquals(tableSize, tuples.size());
@@ -222,7 +222,7 @@ public class RdbSelectTest extends YarchTestCase {
         // Record a tuple in one of the existing partitions
         // (and ordered -after- the first tuple of the table)
         Tuple sameMonthTuple = new Tuple(tdef, new Object[]{2001L, 20, 2});
-        ydb.execute("create stream s2 as select * from RdbSelectTest nofollow");
+        execute("create stream s2 as select * from RdbSelectTest nofollow");
         Stream s2 = ydb.getStream("s2");
         tuples = fetchTuplesAndProduceOne(s2, sameMonthTuple);
         assertEquals(tableSize, tuples.size());
@@ -230,7 +230,7 @@ public class RdbSelectTest extends YarchTestCase {
         tableSize++;
         // Record a tuple that is sure to be in another partition
         // (more than a month separated)
-        ydb.execute("create stream s3 as select * from RdbSelectTest nofollow");
+        execute("create stream s3 as select * from RdbSelectTest nofollow");
         Stream s3 = ydb.getStream("s3");
         long t = TimeEncoding.getWallclockTime();
         Tuple farOutTuple = new Tuple(tdef, new Object[]{t, 20, 2});

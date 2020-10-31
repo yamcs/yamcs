@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.FilterableTarget;
 
 import org.yamcs.yarch.streamsql.ColumnExpression;
 import org.yamcs.yarch.streamsql.Expression;
@@ -36,7 +36,7 @@ public class InExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
+    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
         if (!(children[0] instanceof ColumnExpression)) {
             return this;
         }
