@@ -3,7 +3,6 @@ package org.yamcs.yarch;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +11,6 @@ import org.junit.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class TableRowDeleteTest2 extends YarchTestCase {
-    Random random = new Random();
     private void populate(String tblName) throws Exception {
         ydb.execute("create table " + tblName
                 + "(a int, b int, c int, d string, primary key(a,b,c))");

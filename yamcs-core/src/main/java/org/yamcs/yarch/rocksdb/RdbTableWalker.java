@@ -15,7 +15,6 @@ import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.AbstractTableWalker;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
