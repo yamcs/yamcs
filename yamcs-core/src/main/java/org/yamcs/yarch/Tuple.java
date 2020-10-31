@@ -41,6 +41,14 @@ public class Tuple {
         this.columns = cols;
     }
 
+    public void setColumn(int index, Object value) {
+        columns.set(index, value);
+    }
+
+    public void setColumn(String colName, Object value) {
+        columns.set(getColumnIndex(colName), value);
+    }
+
     public int getColumnIndex(String colName) {
         return definition.getColumnIndex(colName);
     }

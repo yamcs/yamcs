@@ -273,6 +273,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     |
     statement=SelectTableStatement()
     |
+    statement=UpdateTableStatement()
+    |
     statement=UpsertStatement()
     |
     statement=UpsertAppendStatement()
@@ -591,6 +593,33 @@ DeleteStatement DeleteStatement() throws StreamSqlException: {
     ["LIMIT" limit=NumericConstant() ]
     {
 	return new DeleteStatement(tableName, expression, limit.longValue());
+    }
+}
+
+
+UpdateTableStatement UpdateTableStatement() throws StreamSqlException: {
+    String tableName;
+    String colName;
+    Expression whereExpr = null;
+    Expression colValue;
+    List<UpdateTableStatement.UpdateItem> updateList = new ArrayList<UpdateTableStatement.UpdateItem>();
+    BigDecimal limit = new BigDecimal(-1);
+} {
+    "UPDATE" tableName=ObjectName()
+    "SET" 
+     colName = ObjectName() "=" colValue = SimpleExpression()
+       { 
+          updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
+       }
+     ("," colName = ObjectName() "=" colValue = SimpleExpression()
+       {
+     	  updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
+       } 
+     )*
+    ["WHERE" whereExpr=Expression() ]
+    ["LIMIT" limit=NumericConstant() ]
+    {
+	return new UpdateTableStatement(tableName, updateList, whereExpr, limit.longValue());
     }
 }
 

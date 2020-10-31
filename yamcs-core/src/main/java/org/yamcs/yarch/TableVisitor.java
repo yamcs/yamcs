@@ -16,9 +16,10 @@ public interface TableVisitor {
             this.stop = stop;
         }
 
-        public Action(byte[] updateValue, boolean stop) {
-            this.updateData = updateValue;
-            this.stop = stop;
+        public static Action updateAction(byte[] updateValue, boolean stop) {
+            Action a = new Action(ActionType.UPDATE, stop);
+            a.updateData = updateValue;
+            return a;
         }
 
         public boolean stop() {
