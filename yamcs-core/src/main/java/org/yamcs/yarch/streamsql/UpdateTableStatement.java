@@ -70,7 +70,11 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                         } else {
                             colv = DataType.castAs(item.type, item.compiledExpr.getValue(tuple));
                         }
-                        tuple.setColumn(item.colName, colv);
+                        if(tuple.hasColumn(item.colName)) {
+                            tuple.setColumn(item.colName, colv);
+                        } else {
+                            tuple.addColumn(item.colName, item.type, colv);
+                        }
                     }
                     long c = updated.incrementAndGet();
                     boolean stop = (limit > 0 && c >= limit);
@@ -96,26 +100,33 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
         }
 
         for (UpdateItem ui : updateList) {
-            ColumnDefinition cd = tableDefinition.getColumnDefinition(ui.colName);
-            if (cd == null) {
-                throw new ColumnNotFoundException(
-                        "Table '" + tableName + "' does not contain a column '" + ui.colName + "'");
-            }
-            if (tableDefinition.getKeyDefinition().getColumn(ui.colName) != null) {
-                throw new NotSupportedException("Column '" + ui.colName + "' is part of the primary key");
-            }
-
             ui.value.bind(tableDefinition.getTupleDefinition());
 
-            if (!DataType.compatible(ui.value.getType(), cd.getType())) {
-                throw new IncompatibilityException("Cannot assign values of type " + ui.value.getType() + " to column '"
-                        + cd.getName() + "' of type " + cd.getType());
-            }
-            if (ui.value.isConstant()) {
-                ui.constantValue = DataType.castAs(cd.getType(), ui.value.getConstantValue());
+            ColumnDefinition cd = tableDefinition.getColumnDefinition(ui.colName);
+            if (cd == null) {
+                ui.type = ui.value.getType();
+                if (ui.value.isConstant()) {
+                    ui.constantValue = ui.value.getConstantValue();
+                } else {
+                    ui.compiledExpr = ui.value.compile();
+                }
             } else {
+                if (tableDefinition.getKeyDefinition().getColumn(ui.colName) != null) {
+                    throw new NotSupportedException("Column '" + ui.colName + "' is part of the primary key");
+                }
+
+                if (!DataType.compatible(ui.value.getType(), cd.getType())) {
+                    throw new IncompatibilityException(
+                            "Cannot assign values of type " + ui.value.getType() + " to column '"
+                                    + cd.getName() + "' of type " + cd.getType());
+                }
+
                 ui.type = cd.getType();
-                ui.compiledExpr = ui.value.compile();
+                if (ui.value.isConstant()) {
+                    ui.constantValue = DataType.castAs(cd.getType(), ui.value.getConstantValue());
+                } else {
+                    ui.compiledExpr = ui.value.compile();
+                }
             }
         }
 

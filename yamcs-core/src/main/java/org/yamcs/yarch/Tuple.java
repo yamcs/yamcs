@@ -81,6 +81,10 @@ public class Tuple {
         return columns.get(i);
     }
 
+    public void addColumn(String colName, DataType type, Object colValue) {
+        definition.addColumn(colName, type);
+        columns.add(colValue);
+    }
     /**
      * 
      * @return return the number of columns
@@ -105,4 +109,5 @@ public class Tuple {
         sb.append(")");
         return sb.toString();
     }
+
 }

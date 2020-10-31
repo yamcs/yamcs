@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
@@ -18,12 +17,6 @@ public class TableUpdateTest extends YarchTestCase {
     @Test(expected = StreamSqlException.class)
     public void testInvalidTable() throws Exception {
         execute("update invalid_table set d =\"new value\"");
-    }
-
-    @Test(expected = ColumnNotFoundException.class)
-    public void testInvalidColumn() throws Exception {
-        createTable("invl1");
-        execute("update invl1 set bubu =\"new value\"");
     }
 
     @Test(expected = StreamSqlException.class)
@@ -60,7 +53,7 @@ public class TableUpdateTest extends YarchTestCase {
         assertEquals(1000l, t.getColumn("updated"));
 
         verify("select * from tbl1",
-                (a, b, c, d) -> {
+                (a, b, c, d, e) -> {
                     assertEquals("new value", d);
                 }, 1000);
         execute("drop table tbl1");
@@ -74,10 +67,9 @@ public class TableUpdateTest extends YarchTestCase {
         Tuple t = r.next();
         assertEquals(100l, t.getColumn("inspected"));
         assertEquals(100l, t.getColumn("updated"));
-        
-        
+
         verify("select * from tbl12",
-                (a, b, c, d) -> {
+                (a, b, c, d, e) -> {
                     if(a==1) {
                         assertEquals("new value", d);
                     } else {
@@ -98,7 +90,7 @@ public class TableUpdateTest extends YarchTestCase {
         
         
         verify("select * from tbl12",
-                (a, b, c, d) -> {
+                (a, b, c, d, e) -> {
                     if(a>1) {
                         assertEquals("bubu"+b, d);
                     } else {
@@ -117,10 +109,9 @@ public class TableUpdateTest extends YarchTestCase {
         Tuple t = r.next();
         assertEquals(2l, t.getColumn("inspected"));
         assertEquals(2l, t.getColumn("updated"));
-        
-        
+
         verify("select * from tbl12",
-                (a, b, c, d) -> {
+                (a, b, c, d, e) -> {
                     if(a==1 && b==0 & c<2) {
                         assertEquals("new value", d);
                     } else {
@@ -128,6 +119,26 @@ public class TableUpdateTest extends YarchTestCase {
                     }
                 }, 1000);
         execute("drop table tbl12");
+    }
+
+    @Test
+    public void testUpdateExtraColumn() throws Exception {
+        populate("tbl13");
+        StreamSqlResult r = ydb.execute("update tbl13 set e ='new value' where a=1 limit 2");
+        assertTrue(r.hasNext());
+        Tuple t = r.next();
+        assertEquals(2l, t.getColumn("inspected"));
+        assertEquals(2l, t.getColumn("updated"));
+
+        verify("select * from tbl13",
+                (a, b, c, d, e) -> {
+                    if(a==1 && b==0 & c<2) {
+                        assertEquals("new value", e);
+                    } else {
+                        assertNull(e);
+                    }
+                }, 1000);
+        execute("drop table tbl13");
     }
 
     private void createTable(String tblName) throws StreamSqlException, ParseException {
@@ -171,8 +182,9 @@ public class TableUpdateTest extends YarchTestCase {
                 int b = (Integer) tuple.getColumn(1);
                 int c = (Integer) tuple.getColumn(2);
                 String d = (String) tuple.getColumn(3);
+                String e = tuple.size()>4? (String) tuple.getColumn(4): null;
 
-                checker.check(a, b, c, d);
+                checker.check(a, b, c, d, e);
                 ai.getAndIncrement();
             }
         });
@@ -182,6 +194,6 @@ public class TableUpdateTest extends YarchTestCase {
     }
 
     interface Checker {
-        public void check(int a, int b, int c, String d);
+        public void check(int a, int b, int c, String d, String e);
     }
 }
