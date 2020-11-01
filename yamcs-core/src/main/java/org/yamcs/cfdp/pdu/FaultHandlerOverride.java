@@ -24,7 +24,7 @@ public class FaultHandlerOverride {
     }
 
     public TLV toTLV() {
-        return new TLV(TLV.TYPE_FaultHandlerOverride,
+        return new TLV(TLV.TYPE_FAULT_HANDLER_OVERRIDE,
                 new byte[] { (byte) (getConditionCode().getCode() << 4
                         | getHandlerCode().getCode()) });
     }

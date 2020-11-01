@@ -27,5 +27,8 @@ public class ResponseObserver<T> implements Observer<T> {
 
     @Override
     public void complete() {
+        if(!future.isDone()) {
+            future.completeExceptionally(new IllegalStateException("no response received"));
+        }
     }
 }

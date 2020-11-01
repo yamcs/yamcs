@@ -24,7 +24,7 @@ public class GenericCommandPostprocessor implements CommandPostprocessor {
 
     public GenericCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
-            errorDetectionCalculator = GenericPacketPreprocessor.getErrorDetectionWordCalculator(config);
+            errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {
             errorDetectionCalculator = null;
         }

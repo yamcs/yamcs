@@ -17,7 +17,7 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         this.conditionCode = code;
         this.fileChecksum = checksum;
         this.fileSize = filesize;
-        if (this.conditionCode != ConditionCode.NoError) {
+        if (this.conditionCode != ConditionCode.NO_ERROR) {
             this.faultLocation = faultLocation;
         }
         finishConstruction();
@@ -31,8 +31,8 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         this.fileChecksum = CfdpUtils.getUnsignedInt(buffer);
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
 
-        if (conditionCode != ConditionCode.NoError
-                && conditionCode != ConditionCode.Reserved) {
+        if (conditionCode != ConditionCode.NO_ERROR
+                && conditionCode != ConditionCode.RESERVED) {
             this.faultLocation = TLV.readTLV(buffer);
         }
     }

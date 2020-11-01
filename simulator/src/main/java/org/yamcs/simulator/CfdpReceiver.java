@@ -64,13 +64,13 @@ public class CfdpReceiver {
             }
             processEofPacket((EofPacket) packet);
             break;
-        case Finished:
+        case FINISHED:
             log.info("Finished CFDP packet received");
             break;
         case ACK:
             log.info("ACK CFDP packet received");
             break;
-        case Metadata:
+        case METADATA:
             log.info("Metadata CFDP packet received");
             MetadataPacket metadata = (MetadataPacket) packet;
             long packetLength = metadata.getFileLength();
@@ -80,10 +80,10 @@ public class CfdpReceiver {
         case NAK:
             log.info("NAK CFDP packet received");
             break;
-        case Prompt:
+        case PROMPT:
             log.info("Prompt CFDP packet received");
             break;
-        case KeepAlive:
+        case KEEP_ALIVE:
             log.info("KeepAlive CFDP packet received");
             break;
         default:
@@ -94,7 +94,7 @@ public class CfdpReceiver {
 
     private void processEofPacket(EofPacket packet) {
         ConditionCode code = packet.getConditionCode();
-        if (code != ConditionCode.NoError) {
+        if (code != ConditionCode.NO_ERROR) {
             log.info("EOF CFDP packet received with error code {}; the transfer is aborted", code);
             return;
         }
@@ -113,7 +113,7 @@ public class CfdpReceiver {
         AckPacket EofAck = new AckPacket(
                 FileDirectiveCode.EOF,
                 FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
-                ConditionCode.NoError,
+                ConditionCode.NO_ERROR,
                 TransactionStatus.Active,
                 header);
         transmitCfdp(EofAck);
@@ -142,9 +142,9 @@ public class CfdpReceiver {
                     packet.getHeader().getDestinationId(),
                     packet.getHeader().getSequenceNumber());
 
-            FinishedPacket finished = new FinishedPacket(ConditionCode.NoError,
+            FinishedPacket finished = new FinishedPacket(ConditionCode.NO_ERROR,
                     true, // data complete
-                    FileStatus.SuccessfulRetention,
+                    FileStatus.SUCCESSFUL_RETENTION,
                     null,
                     header);
 
@@ -214,9 +214,9 @@ public class CfdpReceiver {
                         packet.getHeader().getSequenceNumber());
 
                 FinishedPacket finished = new FinishedPacket(
-                        ConditionCode.NoError,
+                        ConditionCode.NO_ERROR,
                         false, // data complete
-                        FileStatus.SuccessfulRetention,
+                        FileStatus.SUCCESSFUL_RETENTION,
                         null,
                         header);
 

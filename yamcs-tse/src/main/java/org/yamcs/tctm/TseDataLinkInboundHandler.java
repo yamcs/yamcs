@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.time.TimeService;
@@ -69,7 +70,7 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
 
         for (org.yamcs.protobuf.Pvalue.ParameterValue proto : pdata.getParameterList()) {
             String qualifiedName = proto.getId().getName();
-            ParameterValue pv = ParameterValue.fromGpb(qualifiedName, proto);
+            ParameterValue pv = BasicParameterValue.fromGpb(qualifiedName, proto);
             Parameter p = xtcedb.getParameter(qualifiedName);
             if (p == null) {
                 log.warn("Ignoring unknown parameter {}", qualifiedName);

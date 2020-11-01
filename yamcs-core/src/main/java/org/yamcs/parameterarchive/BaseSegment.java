@@ -16,8 +16,8 @@ public abstract class BaseSegment {
     public static final byte FORMAT_ID_GenericValueSegment = 10;
     public static final byte FORMAT_ID_IntValueSegment = 11;
     public static final byte FORMAT_ID_StringValueSegment = 13;
-    @Deprecated
-    public static final byte FORMAT_ID_OldBooleanValueSegment = 15;
+
+    //public static final byte FORMAT_ID_OldBooleanValueSegment = 15;
     public static final byte FORMAT_ID_FloatValueSegment = 16;
     public static final byte FORMAT_ID_DoubleValueSegment = 17;
     public static final byte FORMAT_ID_LongValueSegment = 18;

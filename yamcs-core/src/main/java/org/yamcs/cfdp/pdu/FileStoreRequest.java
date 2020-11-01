@@ -43,7 +43,7 @@ public class FileStoreRequest {
 
     public TLV toTLV() {
         if (secondFileName != null) {
-            return new TLV(TLV.TYPE_FileStoreRequest,
+            return new TLV(TLV.TYPE_FILE_STORE_REQUEST,
                     ByteBuffer
                             .allocate(1
                                     + firstFileName.getValue().length + 1
@@ -55,7 +55,7 @@ public class FileStoreRequest {
                             .put(secondFileName.getValue())
                             .array());
         } else {
-            return new TLV(TLV.TYPE_FileStoreRequest,
+            return new TLV(TLV.TYPE_FILE_STORE_REQUEST,
                     ByteBuffer
                             .allocate(1
                                     + firstFileName.getValue().length + 1)

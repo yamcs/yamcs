@@ -1,5 +1,6 @@
 package org.yamcs;
 
+import org.yamcs.alarms.AlarmStreamer;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.protobuf.Db.Event;
@@ -22,6 +23,9 @@ public class StandardTupleDefinitions {
     
     public static final String TC_ORIGIN_COLUMN = "origin";
     public static final String PARAMETER_COLUMN = "parameter";
+    
+    public static final String SOURCE_COLUMN = "source";
+    public static final String BODY_COLUMN = "body";
     
     public static final TupleDefinition TM = new TupleDefinition();
     public static final TupleDefinition INVALID_TM = new TupleDefinition();
@@ -71,15 +75,15 @@ public class StandardTupleDefinitions {
     // this is the commandId (used as the primary key when recording), the rest will be handled dynamically
     static {
         EVENT.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
-        EVENT.addColumn("source", DataType.ENUM);
-        EVENT.addColumn("seqNum", DataType.INT);
-        EVENT.addColumn("body", DataType.protobuf(Event.class.getName()));
+        EVENT.addColumn(SOURCE_COLUMN, DataType.ENUM);
+        EVENT.addColumn(SEQNUM_COLUMN, DataType.INT);
+        EVENT.addColumn(BODY_COLUMN, DataType.protobuf(Event.class.getName()));
     }
 
     public static final TupleDefinition PARAMETER_ALARM = new TupleDefinition();
     // user time, parameter name sequence number and event
     static {
-        PARAMETER_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
+        PARAMETER_ALARM.addColumn(AlarmStreamer.CNAME_TRIGGER_TIME, DataType.TIMESTAMP);
         PARAMETER_ALARM.addColumn(PARAMETER_COLUMN, DataType.STRING);
         PARAMETER_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         PARAMETER_ALARM.addColumn("event", DataType.STRING);
@@ -88,7 +92,7 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition EVENT_ALARM = new TupleDefinition();
     // user time, parameter name sequence number and event
     static {
-        EVENT_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
+        EVENT_ALARM.addColumn(AlarmStreamer.CNAME_TRIGGER_TIME, DataType.TIMESTAMP);
         EVENT_ALARM.addColumn("eventSource", DataType.STRING);
         EVENT_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         EVENT_ALARM.addColumn("alarmEvent", DataType.STRING);

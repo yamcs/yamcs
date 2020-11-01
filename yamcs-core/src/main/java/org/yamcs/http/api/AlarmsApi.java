@@ -1,11 +1,7 @@
 package org.yamcs.http.api;
 
-import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_BY;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_TIME;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEAR_MSG;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.*;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,12 +113,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         SqlBuilder sqlbEvent = new SqlBuilder(AlarmRecorder.EVENT_ALARM_TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlbParam.whereColAfterOrEqual("triggerTime", request.getStart());
-            sqlbEvent.whereColAfterOrEqual("triggerTime", request.getStart());
+            sqlbParam.whereColAfterOrEqual(CNAME_TRIGGER_TIME, request.getStart());
+            sqlbEvent.whereColAfterOrEqual(CNAME_TRIGGER_TIME, request.getStart());
         }
         if (request.hasStop()) {
-            sqlbParam.whereColBefore("triggerTime", request.getStop());
-            sqlbEvent.whereColBefore("triggerTime", request.getStop());
+            sqlbParam.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
+            sqlbEvent.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
 
         /*
@@ -135,7 +131,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         sqlbEvent.limit(pos, limit);
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING triggerTime ORDER DESC";
+        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING "+CNAME_TRIGGER_TIME+" ORDER DESC";
         StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
 
             @Override
@@ -163,10 +159,10 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("triggerTime", request.getStart());
+            sqlb.whereColAfterOrEqual(CNAME_TRIGGER_TIME, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("triggerTime", request.getStop());
+            sqlb.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -235,15 +231,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             throw new BadRequestException("No state specified");
         }
 
-        String state = null;
-        String comment = null;
-
-        if (request.hasState()) {
-            state = request.getState();
-        }
-        if (request.hasComment()) {
-            comment = request.getComment();
-        }
+        String state = request.getState();
+        String comment = request.hasComment()? request.getComment():null;
 
         // TODO permissions on AlarmServer
         String username = ctx.user.getName();

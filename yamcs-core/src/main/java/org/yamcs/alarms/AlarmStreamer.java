@@ -11,6 +11,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     protected Stream stream;
     final DataType dataType;
     final TupleDefinition tdefTemplate;
+    public final static String CNAME_TRIGGER_TIME = "triggerTime";
     public final static String CNAME_CLEARED_BY = "clearedBy";
     public final static String CNAME_CLEAR_MSG = "clearedMessage";
     public final static String CNAME_CLEARED_TIME = "clearedTime";

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AbsoluteTimeInfo;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
@@ -989,26 +989,26 @@ public class XtceToGpbAssembler {
         alarmInfob.setMinViolations(numericAlarm.getMinViolations());
         AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
         if (staticRanges.getWatchRange() != null) {
-            AlarmRange watchRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
+            AlarmRange watchRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
             alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
-            AlarmRange warningRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING,
+            AlarmRange warningRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING,
                     staticRanges.getWarningRange());
             alarmInfob.addStaticAlarmRange(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
-            AlarmRange distressRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS,
+            AlarmRange distressRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS,
                     staticRanges.getDistressRange());
             alarmInfob.addStaticAlarmRange(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
-            AlarmRange criticalRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL,
+            AlarmRange criticalRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL,
                     staticRanges.getCriticalRange());
             alarmInfob.addStaticAlarmRange(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
-            AlarmRange severeRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE,
+            AlarmRange severeRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE,
                     staticRanges.getSevereRange());
             alarmInfob.addStaticAlarmRange(severeRange);
         }

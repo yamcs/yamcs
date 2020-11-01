@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -86,6 +87,12 @@ public class XtceAssembler {
 
             try (Reader reader = new StringReader(unindentedXML); Writer writer = new StringWriter()) {
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                
+                //Sonarqube suggestion to protect Java XML Parsers from XXE attack
+                //see https://rules.sonarsource.com/java/RSPEC-2755
+                transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); 
+                transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, ""); 
+                
                 Transformer transformer = transformerFactory.newTransformer();
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");

@@ -379,7 +379,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
      * @return
      */
     protected List<AggrMember> parseAggregateExpr(String engType) {
-        String s = engType.substring(1, engType.length()-1).replaceAll("\n\r", "").trim();
+        String s = engType.substring(1, engType.length()-1).replace("\n\r", "").trim();
         String[] a = s.split(";");
         List<AggrMember> l = new ArrayList<>();
         for(String b:a) {

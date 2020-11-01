@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -12,7 +13,7 @@ import org.yamcs.tctm.Link;
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     protected List<Link> subLinks;
     protected  MasterChannelFrameHandler frameHandler;
-    protected volatile int frameCount;
+    protected AtomicLong frameCount = new AtomicLong(0);
 
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
@@ -29,7 +30,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
     @Override
     public long getDataInCount() {
-        return frameCount;
+        return frameCount.get();
     }
 
     @Override
@@ -39,7 +40,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
     @Override
     public void resetCounters() {
-        frameCount = 0;
+        frameCount.set(0);
     }
 
     @Override

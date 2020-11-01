@@ -24,10 +24,10 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
     private List<FileStoreResponse> filestoreResponses = new ArrayList<FileStoreResponse>();
 
     public enum FileStatus {
-        DeliberatelyDiscarded((byte) 0x00),
-        FilestoreRejection((byte) 0x01),
-        SuccessfulRetention((byte) 0x02),
-        FileStatusUnreported((byte) 0x03);
+        DELIBERATELY_DISCARDED((byte) 0x00),
+        FILESTORE_REJECTION((byte) 0x01),
+        SUCCESSFUL_RETENTION((byte) 0x02),
+        FILE_STATUS_UNREPORTED((byte) 0x03);
 
         private byte code;
 
@@ -115,7 +115,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
 
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
-        return FileDirectiveCode.Finished;
+        return FileDirectiveCode.FINISHED;
     }
 
     public ConditionCode getConditionCode() {

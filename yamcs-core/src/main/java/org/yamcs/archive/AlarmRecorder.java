@@ -16,6 +16,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 /**
  * Records alarms. Uses a 'simple' upsert_append solution for now.
  */
@@ -33,7 +34,7 @@ public class AlarmRecorder extends AbstractYamcsService {
             if (ydb.getTable(PARAMETER_ALARM_TABLE_NAME) == null) {
                 String cols = StandardTupleDefinitions.PARAMETER_ALARM.getStringDefinition1();
                 String query = "create table " + PARAMETER_ALARM_TABLE_NAME + "(" + cols
-                        + ", primary key(triggerTime, parameter, seqNum)) table_format=compressed";
+                        + ", primary key("+CNAME_TRIGGER_TIME+", parameter, seqNum)) table_format=compressed";
                 ydb.execute(query);
             }
             setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.parameterAlarm);
@@ -41,7 +42,7 @@ public class AlarmRecorder extends AbstractYamcsService {
             if (ydb.getTable(EVENT_ALARM_TABLE_NAME) == null) {
                 String cols = StandardTupleDefinitions.EVENT_ALARM.getStringDefinition1();
                 String query = "create table " + EVENT_ALARM_TABLE_NAME + "(" + cols
-                        + ", primary key(triggerTime, eventSource, seqNum)) table_format=compressed";
+                        + ", primary key("+CNAME_TRIGGER_TIME+", eventSource, seqNum)) table_format=compressed";
                 ydb.execute(query);
             }
 

@@ -203,7 +203,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     private CfdpTransfer instantiateTransaction(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()
-                && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
+                && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.METADATA) {
             MetadataPacket mpkt = (MetadataPacket) packet;
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"

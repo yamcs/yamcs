@@ -80,7 +80,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         rescheduleInactivityTimer();
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
-            case Metadata:
+            case METADATA:
                 // do nothing, already processed this (constructor)
                 break;
             case EOF:
@@ -109,7 +109,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                 break;
             case ACK:
                 AckPacket ack = (AckPacket) packet;
-                if (ack.getDirectiveCode() == FileDirectiveCode.Finished) {
+                if (ack.getDirectiveCode() == FileDirectiveCode.FINISHED) {
                     this.incomingTransferState = IncomingTransferState.FINISHED_ACK_RECEIVED;
                     changeState(TransferState.COMPLETED);
                   
@@ -141,7 +141,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         // verify checksum
         if (expectedChecksum == incomingDataFile.getChecksum()) {
             if(acknowledged) {
-                sendFinishedPacket(packet, ConditionCode.NoError);
+                sendFinishedPacket(packet, ConditionCode.NO_ERROR);
                 this.incomingTransferState = IncomingTransferState.FINISHED_SENT;
             } else {
                 changeState(TransferState.COMPLETED);
@@ -150,7 +150,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         } else {
             log.warn("File checksum failure; EOF packet indicates {} while data received has {}", expectedChecksum, incomingDataFile.getChecksum());
             if (acknowledged) {
-                sendFinishedPacket(packet, ConditionCode.FileChecksumFailure);
+                sendFinishedPacket(packet, ConditionCode.FILE_CHECKSUM_FAILURE);
             }
             saveFileInBucket(true, Collections.emptyList());
             changeState(TransferState.FAILED);
@@ -184,7 +184,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         sendPacket(new AckPacket(
                 FileDirectiveCode.EOF,
                 FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
-                ConditionCode.NoError,
+                ConditionCode.NO_ERROR,
                 TransactionStatus.Active,
                 getHeader(packet)));
     }
@@ -201,18 +201,18 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
 
         FinishedPacket fpck;
 
-        if (code == ConditionCode.NoError) {
+        if (code == ConditionCode.NO_ERROR) {
             fpck = new FinishedPacket(
-                    ConditionCode.NoError,
+                    ConditionCode.NO_ERROR,
                     true, // data complete
-                    FileStatus.SuccessfulRetention,
+                    FileStatus.SUCCESSFUL_RETENTION,
                     null,
                     getHeader(packet));
         } else {
             fpck = new FinishedPacket(
                     code,
                     false, // data complete
-                    FileStatus.DeliberatelyDiscarded,
+                    FileStatus.DELIBERATELY_DISCARDED,
                     null,
                     getHeader(packet));
         }

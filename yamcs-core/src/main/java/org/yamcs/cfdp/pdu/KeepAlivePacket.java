@@ -34,7 +34,7 @@ public class KeepAlivePacket extends CfdpPacket implements FileDirective {
 
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
-        return FileDirectiveCode.KeepAlive;
+        return FileDirectiveCode.KEEP_ALIVE;
     }
 
     @Override

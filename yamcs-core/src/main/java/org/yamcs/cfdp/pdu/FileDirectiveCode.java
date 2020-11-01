@@ -7,14 +7,14 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 public enum FileDirectiveCode {
-    Reserved((byte) 0x00),
+    RESERVED((byte) 0x00),
     EOF((byte) 0x04),
-    Finished((byte) 0x05),
+    FINISHED((byte) 0x05),
     ACK((byte) 0x06),
-    Metadata((byte) 0x07),
+    METADATA((byte) 0x07),
     NAK((byte) 0x08),
-    Prompt((byte) 0x09),
-    KeepAlive((byte) 0x0C);
+    PROMPT((byte) 0x09),
+    KEEP_ALIVE((byte) 0x0C);
 
     private byte code;
 
@@ -34,7 +34,7 @@ public enum FileDirectiveCode {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
-            return Reserved;
+            return RESERVED;
         }
     }
 

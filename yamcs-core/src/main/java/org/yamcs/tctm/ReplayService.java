@@ -72,7 +72,6 @@ public class ReplayService extends AbstractProcessorService
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
     private ParameterRequestManager parameterRequestManager;
     TmProcessor tmProcessor;
-    volatile long dataCount = 0;
     XtceDb xtceDb;
     volatile long replayTime;
 
@@ -133,7 +132,6 @@ public class ReplayService extends AbstractProcessorService
 
         switch (type) {
         case TM_PACKET:
-            dataCount++;
             ReplayPacket rp = (ReplayPacket) data;
             replayTime = rp.getGenerationTime();
             String qn = rp.getQualifiedName();

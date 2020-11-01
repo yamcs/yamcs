@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.Parameter;
@@ -117,7 +118,7 @@ public class ParameterReplayHandler implements ReplayHandler {
             if (o instanceof ParameterValue) {
                 pv = (ParameterValue) o;
             } else if (o instanceof org.yamcs.protobuf.Pvalue.ParameterValue) {
-                pv = ParameterValue.fromGpb(t.getColumnDefinition(i).getName(),
+                pv = BasicParameterValue.fromGpb(t.getColumnDefinition(i).getName(),
                         (org.yamcs.protobuf.Pvalue.ParameterValue) o);
             } else {
                 log.warn("got unexpected value for column {}: {}", colName, o);

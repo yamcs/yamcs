@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -70,7 +71,7 @@ public class XtceLoader implements SpaceSystemLoader {
         this.xtceFileNames = Arrays.asList(fn);
         configHash = Integer.toUnsignedString(fn.hashCode());
     }
-    
+
     public XtceLoader(YConfiguration config) {
         if (config.containsKey("file")) {
             String fn = (String) config.get("file");
@@ -120,19 +121,26 @@ public class XtceLoader implements SpaceSystemLoader {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             // Merge multiple character data blocks into a single event (e.g. algorithm text)
             factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
-           XMLEventReader xmlEventReader = factory.createXMLEventReader(in);
-           while(xmlEventReader.hasNext()) {
-               XMLEvent xmlEvent = xmlEventReader.nextEvent();
-               int eventType = xmlEvent.getEventType();
-               if (eventType == XMLStreamConstants.START_ELEMENT) {
-                   Attribute att = xmlEvent.asStartElement().getAttributeByName(new QName("name"));
-                   if(att !=null) {
-                       return att.getValue() + Long.toString(file.lastModified());   
-                   } else {
-                       return null;
-                   }
-               }
-           }
+            
+            //Sonarqube suggestion to protect Java XML Parsers from XXE attack
+            //see https://rules.sonarsource.com/java/RSPEC-2755
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+            XMLEventReader xmlEventReader = factory.createXMLEventReader(in);
+            
+            while (xmlEventReader.hasNext()) {
+                XMLEvent xmlEvent = xmlEventReader.nextEvent();
+                int eventType = xmlEvent.getEventType();
+                if (eventType == XMLStreamConstants.START_ELEMENT) {
+                    Attribute att = xmlEvent.asStartElement().getAttributeByName(new QName("name"));
+                    if (att != null) {
+                        return att.getValue() + Long.toString(file.lastModified());
+                    } else {
+                        return null;
+                    }
+                }
+            }
         } catch (IOException | XMLStreamException e) {
             log.warn("Exception when parsing XML file ", e);
         }
@@ -217,7 +225,7 @@ public class XtceLoader implements SpaceSystemLoader {
 
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-        
+
         String configName = getConfigName();
         consistencyDateFile.write("XTCE " + configName + "\n");
     }

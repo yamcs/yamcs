@@ -7,11 +7,11 @@ import com.google.common.collect.Maps;
 
 public enum HandlerCode {
 
-    Reserved(0),
-    NoticeOfCancellation(1),
-    NoticeOfSuspension(2),
-    IgnoreError(3),
-    AbandonTransaction(4);
+    RESERVED(0),
+    NOTICE_OF_CANCELLATION(1),
+    NOTICE_OF_SUSPENSION(2),
+    IGNORE_ERROR(3),
+    ABANDON_TRANSACTION(4);
 
     private int code;
 
@@ -31,7 +31,7 @@ public enum HandlerCode {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
-            return Reserved;
+            return RESERVED;
         }
     }
 

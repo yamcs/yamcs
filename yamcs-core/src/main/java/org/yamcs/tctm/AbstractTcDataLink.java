@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -25,7 +26,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected CommandHistoryPublisher commandHistoryPublisher;
 
-    protected volatile long dataCount;
+    protected AtomicLong dataCount = new AtomicLong();
 
     protected String sv_linkStatus_id, sp_dataCount_id;
 
@@ -92,12 +93,12 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     @Override
     public long getDataOutCount() {
-        return dataCount;
+        return dataCount.get();
     }
 
     @Override
     public void resetCounters() {
-        dataCount = 0;
+        dataCount.set(0);
     }
     @Override
     public AggregatedDataLink getParent() {

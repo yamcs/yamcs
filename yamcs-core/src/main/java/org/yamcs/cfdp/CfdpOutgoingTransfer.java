@@ -167,7 +167,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             // else do nothing, we should wait for a FinishPacket
             break;
         case SENDING_FINISHED:
-            eofPacket = getEofPacket(ConditionCode.NoError);
+            eofPacket = getEofPacket(ConditionCode.NO_ERROR);
             sendPacket(eofPacket);
             this.outgoingTransferState = OutgoingTransferState.EOF_SENT;
             EOFAckTimer = System.currentTimeMillis();
@@ -201,7 +201,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             break;
 
         case CANCELING:
-            sendPacket(getEofPacket(ConditionCode.CancelRequestReceived));
+            sendPacket(getEofPacket(ConditionCode.CANCEL_REQUEST_RECEIVED));
             this.outgoingTransferState = OutgoingTransferState.CANCELED;
             break;
         case CANCELED:
@@ -273,11 +273,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         long filesize;
         TLV tlv;
 
-        if (code == ConditionCode.NoError) {
+        if (code == ConditionCode.NO_ERROR) {
             checksum = request.getChecksum();
             filesize = request.getFileLength();
             tlv = null;
-        } else if (code == ConditionCode.CancelRequestReceived) {
+        } else if (code == ConditionCode.CANCEL_REQUEST_RECEIVED) {
             filesize = getTransferredSize();
             checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
             tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
@@ -302,9 +302,9 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 this.cfdpTransactionId.getSequenceNumber());
 
         return new AckPacket(
-                FileDirectiveCode.Finished,
+                FileDirectiveCode.FINISHED,
                 FileDirectiveSubtypeCode.FinishedByEndSystem,
-                ConditionCode.NoError,
+                ConditionCode.NO_ERROR,
                 TransactionStatus.Terminated,
                 header);
     }
@@ -375,11 +375,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                     log.info("Received ACK packet while in {} state", outgoingTransferState);
                 }
                 break;
-            case Finished:
+            case FINISHED:
                 finishedPacket = (FinishedPacket) packet;
 
                 // depending on the conditioncode, the transfer was a success or a failure
-                if (finishedPacket.getConditionCode() != ConditionCode.NoError) {
+                if (finishedPacket.getConditionCode() != ConditionCode.NO_ERROR) {
                     sendPacket(getAckPacket());
 
                     changeState(TransferState.FAILED);

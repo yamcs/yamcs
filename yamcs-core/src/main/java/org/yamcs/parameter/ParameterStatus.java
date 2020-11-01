@@ -193,6 +193,6 @@ public class ParameterStatus {
         if (range == null) {
             return;
         }
-        pvfb.addAlarmRange(ParameterValue.toGpbAlarmRange(level, range));
+        pvfb.addAlarmRange(BasicParameterValue.toGpbAlarmRange(level, range));
     }
 }

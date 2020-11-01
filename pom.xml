@@ -60,8 +60,11 @@
       **/me/lemire/integercompression/**,
       **/org/yamcs/protobuf/**,
       **/org/yamcs/yarch/streamsql/StreamSqlParser*,
-      **/org/yamcs/ui/packetviewer/filter/FilterParser*
-      **/org/yamcs/examples/**
+      **/org/yamcs/ui/packetviewer/filter/**,
+      **/org/yamcs/examples/**,
+      **/org/yamcs/xtce/xlsv6/*,
+      **/org/yamcs/simulator/**,
+      **/org/yamcs/utils/parser/*
     </sonar.exclusions>
   </properties>
 

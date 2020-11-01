@@ -102,7 +102,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             System.arraycopy(binary, 0, data, offset, length);
             offset += length;
         }
-        dataCount += l.size();
+        dataCount.getAndAdd(l.size());
         frameFactory.encodeFrame(tf);
         return tf;
     }

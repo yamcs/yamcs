@@ -9,15 +9,12 @@ import org.yamcs.utils.StringConverter;
  *
  */
 public class TLV {
-   
-
-
-    static final byte TYPE_FileStoreRequest= 0x00;
-    static final byte TYPE_FileStoreResponse = 0x01;
-    static final byte TYPE_MessageToUser = 0x02;
-    static final byte TYPE_FaultHandlerOverride = 0x04;
-    static final byte TYPE_FlowLabel = 0x05;
-    static final byte TYPE_EntityId= 0x06;
+    static final byte TYPE_FILE_STORE_REQUEST= 0x00;
+    static final byte TYPE_FILE_STORE_RESPONSE = 0x01;
+    static final byte TYPE_MESSAGE_TO_USER = 0x02;
+    static final byte TYPE_FAULT_HANDLER_OVERRIDE = 0x04;
+    static final byte TYPE_FLOW_LABEL = 0x05;
+    static final byte TYPE_ENTITY_ID= 0x06;
     
     
     private byte type;
@@ -51,7 +48,7 @@ public class TLV {
     
 
     public static TLV getEntityIdTLV(long entityId, int entityIdLength) {
-        return new TLV(TYPE_EntityId, CfdpUtils.longToBytes(entityId, entityIdLength));
+        return new TLV(TYPE_ENTITY_ID, CfdpUtils.longToBytes(entityId, entityIdLength));
     }
     
     @Override

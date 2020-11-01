@@ -31,7 +31,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
         enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
         if (config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
-            errorDetectionCalculator = GenericPacketPreprocessor.getErrorDetectionWordCalculator(config);
+            errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {
             errorDetectionCalculator = new Running16BitChecksumCalculator();
         }

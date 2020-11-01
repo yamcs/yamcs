@@ -153,14 +153,14 @@ public class XtceStaxReader {
 
     // XTCE Schema defined tags, to minimize the mistyping errors
 
-    private static final String XTCE_RelativeTimeParameterType = "RelativeTimeParameterType";
+    private static final String XTCE_RELATIVE_TIME_PARAMETER_TYPE = "RelativeTimeParameterType";
     private static final String XTCE_ARRAY_PARAMETER_TYPE = "ArrayParameterType";
     private static final String XTCE_AGGREGATE_PARAMETER_TYPE = "AggregateParameterType";
     private static final String XTCE_AGGREGATE_ARGUMENT_TYPE = "AggregateArgumentType";
 
-    private static final String XTCE_AuthorSet = "AuthorSet";
-    private static final String XTCE_NoteSet = "NoteSet";
-    private static final String XTCE_HistorySet = "HistorySet";
+    private static final String XTCE_AUTHOR_SET = "AuthorSet";
+    private static final String XTCE_NOTE_SET = "NoteSet";
+    private static final String XTCE_HISTORY_SET = "HistorySet";
 
     private static final String XTCE_TELEMTRY_META_DATA = "TelemetryMetaData";
     private static final String XTCE_PARAMETER_TYPE_SET = "ParameterTypeSet";
@@ -411,7 +411,7 @@ public class XtceStaxReader {
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
-            if (nr.getReference().charAt(0) == SpaceSystem.PATH_SEPARATOR) {
+            if (nr.getReference().charAt(0) == NameDescription.PATH_SEPARATOR) {
                 continue;
             }
             FoundReference rr = refFinder.findReference(topSs, nr, ss);
@@ -632,12 +632,12 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_AuthorSet)) {
-                skipXtceSection(XTCE_AuthorSet);
-            } else if (isStartElementWithName(XTCE_NoteSet)) {
-                skipXtceSection(XTCE_NoteSet);
-            } else if (isStartElementWithName(XTCE_HistorySet)) {
-                skipXtceSection(XTCE_HistorySet);
+            if (isStartElementWithName(XTCE_AUTHOR_SET)) {
+                skipXtceSection(XTCE_AUTHOR_SET);
+            } else if (isStartElementWithName(XTCE_NOTE_SET)) {
+                skipXtceSection(XTCE_NOTE_SET);
+            } else if (isStartElementWithName(XTCE_HISTORY_SET)) {
+                skipXtceSection(XTCE_HISTORY_SET);
             } else if (isEndElementWithName(XTCE_HEADER)) {
                 return;
             } else {
@@ -704,7 +704,7 @@ public class XtceStaxReader {
                 incompleteType = readBinaryParameterType(spaceSystem);
             } else if (isStartElementWithName(XTCE_STRING_PARAMETER_TYPE)) {
                 incompleteType = readStringParameterType(spaceSystem);
-            } else if (isStartElementWithName(XTCE_RelativeTimeParameterType)) {
+            } else if (isStartElementWithName(XTCE_RELATIVE_TIME_PARAMETER_TYPE)) {
                 incompleteType = readRelativeTimeParameterType();
             } else if (isStartElementWithName(XTCE_ABSOLUTE_TIME_PARAMETER_TYPE)) {
                 incompleteType = readAbsoluteTimeParameterType(spaceSystem);
@@ -968,7 +968,7 @@ public class XtceStaxReader {
 
     private IncompleteType readRelativeTimeParameterType() throws IllegalStateException,
             XMLStreamException {
-        skipXtceSection(XTCE_RelativeTimeParameterType);
+        skipXtceSection(XTCE_RELATIVE_TIME_PARAMETER_TYPE);
         return null;
     }
 
@@ -1282,7 +1282,7 @@ public class XtceStaxReader {
         FloatValidRange fvr = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName("ValidRange")) {
+            if (isStartElementWithName(XTCE_VALID_RANGE)) {
                 if (fvr != null) {
                     throw new XMLStreamException("Only one ValidRange supported. ", xmlEvent.getLocation());
                 }
@@ -1680,6 +1680,9 @@ public class XtceStaxReader {
             } else if (isStartElementWithName("Operator")) {
                 list.add(new MathOperation.Element(readMathOperator()));
             } else if (isStartElementWithName(XTCE_TRIGGER_SET)) {
+                if (algo == null) {
+                    throw new XMLStreamException("Cannot specify a trigger set for a calibration");
+                }
                 algo.setTriggerSet(readTriggerSet(spaceSystem));
             } else if (isEndElementWithName(tag)) {
                 break;
@@ -3987,7 +3990,7 @@ public class XtceStaxReader {
             return false;
         }
         String name = xmlEvent.asStartElement().getName().getLocalPart();
-        return name == XTCE_ALIAS_SET || name == XTCE_LONG_DESCRIPTION || name == XTCE_ANCILLARY_DATA_SET;
+        return XTCE_ALIAS_SET.equals(name) || XTCE_LONG_DESCRIPTION.equals(name) || XTCE_ANCILLARY_DATA_SET.equals(name);
     }
 
     void readNamedItemProperty(NameDescription nd) throws XMLStreamException {

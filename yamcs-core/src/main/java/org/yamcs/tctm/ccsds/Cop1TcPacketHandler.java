@@ -219,7 +219,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             qf.cf.complete(null);
         }
         frameFactory.encodeFrame(qf.tf);
-        dataCount++;
+        dataCount.getAndIncrement();
         return qf.tf;
     }
 

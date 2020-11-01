@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -121,7 +122,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
                 if (id.hasNamespace()) {
                     log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
                 }
-                ParameterValue pv = ParameterValue.fromGpb(fqn, gpv);
+                ParameterValue pv = BasicParameterValue.fromGpb(fqn, gpv);
                 long gentime = gpv.hasGenerationTime() ? pv.getGenerationTime() : now;
                 pv.setGenerationTime(gentime);
 

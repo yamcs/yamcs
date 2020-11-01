@@ -113,7 +113,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
             return "DISABLED";
         } else {
             return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, packetCount, invalidDatagramCount);
+                    port, packetCount.get(), invalidDatagramCount);
         }
     }
 

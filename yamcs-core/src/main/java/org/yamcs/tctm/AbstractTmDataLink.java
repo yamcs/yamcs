@@ -2,6 +2,7 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -14,7 +15,7 @@ import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
 
 public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
-    protected volatile long packetCount = 0;
+    protected AtomicLong packetCount = new AtomicLong(0);
     DataRateMeter packetRateMeter = new DataRateMeter();
     DataRateMeter dataRateMeter = new DataRateMeter();
 
@@ -84,7 +85,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
 
     @Override
     public long getDataInCount() {
-        return packetCount;
+        return packetCount.get();
     }
 
     @Override
@@ -128,13 +129,13 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
      * @param packetSize
      */
     protected void updateStats(int packetSize) {
-        packetCount++;
+        packetCount.getAndIncrement();
         packetRateMeter.mark(1);
         dataRateMeter.mark(packetSize);
     }
 
     @Override
     public void resetCounters() {
-        packetCount = 0;
+        packetCount.set(0);
     }
 }

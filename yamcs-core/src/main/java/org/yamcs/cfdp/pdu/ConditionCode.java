@@ -8,20 +8,20 @@ import com.google.common.collect.Maps;
 
 public enum ConditionCode {
 
-    NoError((byte) 0x00),
-    AckLimitReached((byte) 0x01),
-    KeepAliveReached((byte) 0x02),
-    InvalidTransmissionMode((byte) 0x03),
-    FilestoreRejection((byte) 0x04),
-    FileChecksumFailure((byte) 0x05),
-    FileSizeError((byte) 0x06),
-    NakLimitReached((byte) 0x07),
-    InactivityDetected((byte) 0x08),
-    InvalidFileStructure((byte) 0x09),
-    CheckLimitReached((byte) 0x0A),
-    SuspendRequestReceived((byte) 0x0E),
-    CancelRequestReceived((byte) 0x0F),
-    Reserved((byte) 0x0B);
+    NO_ERROR((byte) 0x00),
+    ACK_LIMIT_REACHED((byte) 0x01),
+    KEEP_ALIVE_REACHED((byte) 0x02),
+    INVALID_TRANSMISSION_MODE((byte) 0x03),
+    FILESTORE_REJECTION((byte) 0x04),
+    FILE_CHECKSUM_FAILURE((byte) 0x05),
+    FILE_SIZE_ERROR((byte) 0x06),
+    NAK_LIMIT_REACHED((byte) 0x07),
+    INACTIVITY_DETECTED((byte) 0x08),
+    INVALID_FILE_STRUCTURE((byte) 0x09),
+    CHECK_LIMIT_REACHED((byte) 0x0A),
+    SUSPEND_REQUEST_RECEIVED((byte) 0x0E),
+    CANCEL_REQUEST_RECEIVED((byte) 0x0F),
+    RESERVED((byte) 0x0B);
 
     private byte code;
 
@@ -41,7 +41,7 @@ public enum ConditionCode {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
-            return Reserved;
+            return RESERVED;
         }
     }
 

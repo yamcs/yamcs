@@ -178,7 +178,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         if (tmSocket == null) {
             return String.format("Not connected to %s:%d", host, port);
         } else {
-            return String.format("OK, connected to %s:%d, received %d packets", host, port, packetCount);
+            return String.format("OK, connected to %s:%d, received %d packets", host, port, packetCount.get());
         }
     }
 

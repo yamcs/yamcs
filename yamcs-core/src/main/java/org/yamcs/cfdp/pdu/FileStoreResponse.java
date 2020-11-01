@@ -57,7 +57,7 @@ public class FileStoreResponse {
     }
 
     public TLV toTLV() {
-        return new TLV(TLV.TYPE_FileStoreResponse,
+        return new TLV(TLV.TYPE_FILE_STORE_RESPONSE,
                 ByteBuffer
                         .allocate(1
                                 + firstFileName.getValue().length

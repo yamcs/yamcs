@@ -137,29 +137,34 @@ public class AuthHandler extends Handler {
             HttpPostRequestDecoder formDecoder = new HttpPostRequestDecoder(req);
             try {
                 String grantType = getStringFromForm(formDecoder, "grant_type");
-                log.info("Access token request using grant_type '{}'", grantType);
-                switch (grantType) {
-                case "password":
-                    handleTokenRequestWithPasswordGrant(ctx, req, formDecoder);
-                    break;
-                case "authorization_code":
-                    handleTokenRequestWithAuthorizationCode(ctx, req, formDecoder);
-                    break;
-                case "refresh_token":
-                    handleTokenRequestWithRefreshToken(ctx, req, formDecoder);
-                    break;
-                case "client_credentials":
-                    handleTokenRequestWithClientCredentials(ctx, req, formDecoder);
-                    break;
-                case "spnego":
-                    // TODO ?
-                    // Could maybe move the http handling from SpnegoAuthModule here.
-                    // Saves us a roundtrip for the intermediate authorization_code
-                    // Spnego with token response is not really covered by oauth spec, and
-                    // could be considered a special case due to the browser negotiation.
-                default:
+                if (grantType == null) {
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
-                            "Unsupported grant_type '" + grantType + "'");
+                            "grant_type not specified");
+                } else {
+                    log.info("Access token request using grant_type '{}'", grantType);
+                    switch (grantType) {
+                    case "password":
+                        handleTokenRequestWithPasswordGrant(ctx, req, formDecoder);
+                        break;
+                    case "authorization_code":
+                        handleTokenRequestWithAuthorizationCode(ctx, req, formDecoder);
+                        break;
+                    case "refresh_token":
+                        handleTokenRequestWithRefreshToken(ctx, req, formDecoder);
+                        break;
+                    case "client_credentials":
+                        handleTokenRequestWithClientCredentials(ctx, req, formDecoder);
+                        break;
+                    case "spnego":
+                        // TODO ?
+                        // Could maybe move the http handling from SpnegoAuthModule here.
+                        // Saves us a roundtrip for the intermediate authorization_code
+                        // Spnego with token response is not really covered by oauth spec, and
+                        // could be considered a special case due to the browser negotiation.
+                    default:
+                        HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
+                                "Unsupported grant_type '" + grantType + "'");
+                    }
                 }
             } catch (IOException e) {
                 log.error("Unexpected error while attempting user login", e);
@@ -177,6 +182,9 @@ public class AuthHandler extends Handler {
             HttpPostRequestDecoder formDecoder) throws IOException {
         String username = getStringFromForm(formDecoder, "username");
         String password = getStringFromForm(formDecoder, "password");
+        if(password == null) {
+            password = "";
+        }
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();

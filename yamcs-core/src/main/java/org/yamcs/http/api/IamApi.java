@@ -604,8 +604,8 @@ public class IamApi extends AbstractIamApi<Context> {
             User createdBy = directory.getUser(serviceAccount.getCreatedBy());
             if (createdBy != null) {
                 b.setCreatedBy(toUserInfo(createdBy, false));
+                b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
             }
-            b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
         }
         return b.build();
     }

@@ -35,7 +35,7 @@ public class PromptPacket extends CfdpPacket implements FileDirective {
 
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
-        return FileDirectiveCode.Prompt;
+        return FileDirectiveCode.PROMPT;
     }
 
     @Override

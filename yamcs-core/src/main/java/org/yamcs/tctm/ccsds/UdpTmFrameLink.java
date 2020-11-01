@@ -81,7 +81,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                             + frameHandler.getMaxFrameSize());
                     continue;
                 }
-                frameCount++;
+                frameCount.getAndIncrement();
 
                 frameHandler.handleFrame(TimeEncoding.getWallclockHresTime(), datagram.getData(), datagram.getOffset(),
                         length);
@@ -107,7 +107,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
             return "DISABLED";
         } else {
             return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, frameCount, invalidDatagramCount);
+                    port, frameCount.get(), invalidDatagramCount);
         }
     }
 

@@ -63,6 +63,7 @@ public class UsersCli extends Command {
 
             if (username == null) {
                 console.println("username not specified");
+                System.exit(-1);
             }
 
             User user = directory.getUser(username.get(0));

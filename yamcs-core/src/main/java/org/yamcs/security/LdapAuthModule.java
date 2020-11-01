@@ -149,9 +149,13 @@ public class LdapAuthModule implements AuthModule {
             String username = authenticationInfo.getUsername();
             try {
                 LdapUserInfo info = searchUserInfo(username);
-                authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
-                authenticationInfo.setDisplayName(info.cn);
-                authenticationInfo.setEmail(info.email);
+                if(info == null) {
+                    log.warn("User {} not found in LDAP", username);
+                } else {
+                    authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
+                    authenticationInfo.setDisplayName(info.cn);
+                    authenticationInfo.setEmail(info.email);
+                }
             } catch (NamingException e) {
                 log.warn("Failed to search LDAP for user {}", username, e);
             }

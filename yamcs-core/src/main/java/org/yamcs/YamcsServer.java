@@ -395,7 +395,7 @@ public class YamcsServer {
     }
 
     private YConfiguration loadInstanceConfig(String instanceName) {
-        Path configFile = instanceDefDir.resolve("yamcs." + instanceName + ".yaml");
+        Path configFile = instanceDefDir.resolve(configFileName(instanceName));
         if (Files.exists(configFile)) {
             try (InputStream is = Files.newInputStream(configFile)) {
                 String confPath = configFile.toAbsolutePath().toString();
@@ -441,10 +441,10 @@ public class YamcsServer {
         }
         YarchDatabase.removeInstance(instanceName);
         XtceDbFactory.remove(instanceName);
-        Path f = instanceDefDir.resolve("yamcs." + instanceName + ".yaml");
+        Path f = instanceDefDir.resolve(configFileName(instanceName));
         if (Files.exists(f)) {
             LOG.debug("Renaming {} to {}.offline", f.toAbsolutePath(), f.getFileName());
-            Files.move(f, f.resolveSibling("yamcs." + instanceName + ".yaml.offline"));
+            Files.move(f, f.resolveSibling(configFileName(instanceName)+".offline"));
         }
 
         return ysi;
@@ -452,8 +452,8 @@ public class YamcsServer {
 
     public void removeInstance(String instanceName) throws IOException {
         stopInstance(instanceName);
-        Files.deleteIfExists(instanceDefDir.resolve("yamcs." + instanceName + ".yaml"));
-        Files.deleteIfExists(instanceDefDir.resolve("yamcs." + instanceName + ".yaml.offline"));
+        Files.deleteIfExists(instanceDefDir.resolve(configFileName(instanceName)));
+        Files.deleteIfExists(instanceDefDir.resolve(configFileName(instanceName)+".offline"));
         instances.remove(instanceName);
     }
 
@@ -486,9 +486,9 @@ public class YamcsServer {
         }
 
         if (ysi.state() == InstanceState.OFFLINE) {
-            Path f = instanceDefDir.resolve("yamcs." + instanceName + ".yaml.offline");
+            Path f = instanceDefDir.resolve(configFileName(instanceName)+".offline");
             if (Files.exists(f)) {
-                Files.move(f, instanceDefDir.resolve("yamcs." + instanceName + ".yaml"));
+                Files.move(f, instanceDefDir.resolve(configFileName(instanceName)));
             }
             YConfiguration instanceConfig = loadInstanceConfig(instanceName);
             ysi.init(instanceConfig);
@@ -612,7 +612,7 @@ public class YamcsServer {
         Template template = instanceTemplates.get(templateName);
         String processed = template.process(metadata.getTemplateArgs());
 
-        Path confFile = instanceDefDir.resolve("yamcs." + name + ".yaml");
+        Path confFile = instanceDefDir.resolve(configFileName(name));
         try (Writer writer = Files.newBufferedWriter(confFile)) {
             writer.write(processed);
         }
@@ -1369,5 +1369,9 @@ public class YamcsServer {
 
     public ScheduledThreadPoolExecutor getThreadPoolExecutor() {
         return timer;
+    }
+    
+    static String configFileName(String yamcsInstance) {
+        return "yamcs."+yamcsInstance+".yaml";
     }
 }

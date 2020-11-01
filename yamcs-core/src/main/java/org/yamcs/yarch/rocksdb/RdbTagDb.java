@@ -27,7 +27,7 @@ public class RdbTagDb implements TagDb {
     static Logger log = LoggerFactory.getLogger(RdbTagDb.class);
 
     private final Tablespace tablespace;
-    static final int __key_size = 16;
+    static final int KEY_SIZE = 16;
     AtomicInteger idgenerator = new AtomicInteger(0);
     final String yamcsInstance;
     final int tbsIndex;
@@ -73,7 +73,7 @@ public class RdbTagDb implements TagDb {
     }
 
     private byte[] key(long start, int id) {
-        byte[] key = new byte[__key_size];
+        byte[] key = new byte[KEY_SIZE];
         encodeInt(tbsIndex, key, 0);
         encodeLong(start, key, TBS_INDEX_SIZE);
         encodeInt(id, key, 12);

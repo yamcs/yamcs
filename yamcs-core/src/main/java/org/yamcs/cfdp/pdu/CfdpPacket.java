@@ -63,22 +63,22 @@ public abstract class CfdpPacket {
             case EOF:
                 toReturn = new EofPacket(buffer, header);
                 break;
-            case Finished:
+            case FINISHED:
                 toReturn = new FinishedPacket(buffer, header);
                 break;
             case ACK:
                 toReturn = new AckPacket(buffer, header);
                 break;
-            case Metadata:
+            case METADATA:
                 toReturn = new MetadataPacket(buffer, header);
                 break;
             case NAK:
                 toReturn = new NakPacket(buffer, header);
                 break;
-            case Prompt:
+            case PROMPT:
                 toReturn = new PromptPacket(buffer, header);
                 break;
-            case KeepAlive:
+            case KEEP_ALIVE:
                 toReturn = new KeepAlivePacket(buffer, header);
                 break;
             default:

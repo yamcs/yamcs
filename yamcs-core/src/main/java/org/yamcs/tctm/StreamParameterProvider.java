@@ -13,6 +13,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
@@ -105,7 +106,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
                 if (ppdef == null) {
                     continue;
                 }
-                pv = ParameterValue.fromGpb(ppdef, gpv);
+                pv = BasicParameterValue.fromGpb(ppdef, gpv);
             } else if (o instanceof ParameterValue) {
                 pv = (ParameterValue) o;
                 if (pv.getParameter() == null) {

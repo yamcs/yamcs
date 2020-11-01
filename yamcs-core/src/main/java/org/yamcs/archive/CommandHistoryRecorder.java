@@ -43,8 +43,8 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
 
         String keycols = StandardTupleDefinitions.TC.getStringDefinition1();
         try {
-            if (ydb.getTable("cmdhist") == null) {
-                String q = "create table cmdhist (" + keycols
+            if (ydb.getTable(TABLE_NAME) == null) {
+                String q = "create table "+TABLE_NAME+" (" + keycols
                         + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) table_format=compressed";
                 ydb.execute(q);
             }

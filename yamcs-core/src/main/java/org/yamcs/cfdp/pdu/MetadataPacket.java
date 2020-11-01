@@ -115,7 +115,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
 
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
-        return FileDirectiveCode.Metadata;
+        return FileDirectiveCode.METADATA;
     }
 
     public String getSourceFilename() {

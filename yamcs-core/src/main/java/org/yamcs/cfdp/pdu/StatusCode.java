@@ -8,20 +8,20 @@ import com.google.common.collect.Maps;
 
 public enum StatusCode {
 
-    Successful((byte) 0x00),
-    CreateNotAllowed((byte) 0x01),
-    NotPerformed((byte) 0x0f),
-    FileDoesNotExist((byte) 0x01),
-    DeleteNotAllowed((byte) 0x02),
-    OldFileNameDoesNotExist((byte) 0x01),
-    NewFileNameAlreadyExists((byte) 0x02),
-    RenameNotAllowed((byte) 0x03),
-    FileName1DoesNotExist((byte) 0x01),
-    FileName2DoesNotExist((byte) 0x02),
-    AppendNotAllowed((byte) 0x03),
-    ReplaceNotAllowed((byte) 0x03),
-    DirectoryCannotBeCreated((byte) 0x01),
-    DirectoryDoesNotExist((byte) 0x01);
+    SUCCESSFUL((byte) 0x00),
+    CREATE_NOT_ALLOWED((byte) 0x01),
+    NOT_PERFORMED((byte) 0x0f),
+    FILE_DOES_NOT_EXIST((byte) 0x01),
+    DELETE_NOT_ALLOWED((byte) 0x02),
+    OLD_FILE_NAME_DOES_NOT_EXIST((byte) 0x01),
+    NEW_FILE_NAME_ALREADY_EXISTS((byte) 0x02),
+    RENAME_NOT_ALLOWED((byte) 0x03),
+    FILE_NAME_DOES_NOT_EXIST((byte) 0x01),
+    FILE_NAME_2_DOES_NOT_EXIST((byte) 0x02),
+    APPEND_NOT_ALLOWED((byte) 0x03),
+    REPLACE_NOT_ALLOWED((byte) 0x03),
+    DIRECTORY_CANNOT_BE_CREATED((byte) 0x01),
+    DIRECTORY_DOES_NOT_EXIST((byte) 0x01);
 
     private byte code;
 

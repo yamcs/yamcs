@@ -17,6 +17,6 @@ public class MessageToUser {
     }
 
     public TLV toTLV() {
-        return new TLV(TLV.TYPE_MessageToUser, getMessage());
+        return new TLV(TLV.TYPE_MESSAGE_TO_USER, getMessage());
     }
 }

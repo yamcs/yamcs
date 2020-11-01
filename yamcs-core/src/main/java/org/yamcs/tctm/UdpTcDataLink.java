@@ -56,7 +56,7 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
         }
         DatagramPacket packet = new DatagramPacket(binary, binary.length, address, port);
         socket.send(packet);
-        dataCount++;
+        dataCount.getAndIncrement();
         ackCommand(pc.getCommandId());
     }
 
