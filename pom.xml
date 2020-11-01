@@ -57,7 +57,10 @@
     <rocksdbVersion>5.18.4</rocksdbVersion>
     <slf4jVersion>1.7.1</slf4jVersion>
     <sonar.exclusions>
-      **/me/lemire/integercompression/**,**/org/yamcs/protobuf/**,**/org/yamcs/yarch/streamsql/**
+      **/me/lemire/integercompression/**,
+      **/org/yamcs/protobuf/**,
+      **/org/yamcs/yarch/streamsql/StreamSqlParser*,
+      **/org/yamcs/ui/packetviewer/FilterParser*
     </sonar.exclusions>
   </properties>
 
