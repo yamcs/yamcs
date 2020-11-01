@@ -239,11 +239,10 @@ public class TimeEncoding {
      * @return GPS time
      */
     public static GpsCcsdsTime toGpsTime(final long instant) {
-        GpsCcsdsTime gpsTime = new GpsCcsdsTime();
         long shiftedMillis = instant - GPS_EPOCH_YAMCS_EPOCH_DELTA;
-        gpsTime.coarseTime = (int) (shiftedMillis / 1000);
-        gpsTime.fineTime = (byte) (((shiftedMillis % 1000) * 256 / 1000));
-        return gpsTime;
+        int coarseTime = (int) (shiftedMillis / 1000);
+        byte fineTime = (byte) (((shiftedMillis % 1000) * 256 / 1000));
+        return new GpsCcsdsTime(coarseTime, fineTime);
     }
 
     /**

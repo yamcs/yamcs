@@ -92,7 +92,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     private static final Log log = new Log(ManagementApi.class);
 
-    public static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
+    public static final Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
     @Override
     public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {

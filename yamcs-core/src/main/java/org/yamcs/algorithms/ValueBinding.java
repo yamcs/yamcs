@@ -14,14 +14,13 @@ import org.yamcs.utils.TimeEncoding;
  * of Rhino that maps boxed primitives to JavaScript Objects instead of Numbers
  */
 public abstract class ValueBinding {
-
-    public Date acquisitionTime;
-    public long acquisitionTimeMs;
-    public Date generationTime;
-    public long generationTimeMs;
-    public AcquisitionStatus acquisitionStatus;
-    public MonitoringResult monitoringResult;
-    public RangeCondition rangeCondition;
+    protected Date acquisitionTime;
+    protected long acquisitionTimeMs;
+    protected Date generationTime;
+    protected long generationTimeMs;
+    protected AcquisitionStatus acquisitionStatus;
+    protected MonitoringResult monitoringResult;
+    protected RangeCondition rangeCondition;
 
     public void updateValue(ParameterValue newValue) {
         acquisitionStatus = newValue.getAcquisitionStatus();

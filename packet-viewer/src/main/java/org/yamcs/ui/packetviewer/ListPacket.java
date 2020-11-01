@@ -59,9 +59,7 @@ public class ListPacket {
 
     void load(File srcFile) throws IOException {
         if (incomplete) {
-            FileInputStream reader = null;
-            try {
-                reader = new FileInputStream(srcFile);
+            try (FileInputStream reader = new FileInputStream(srcFile)){
                 byte[] data = new byte[length];
                 long n = fileOffset + buf.length;
                 if (reader.skip(n) != n) {
@@ -75,10 +73,6 @@ public class ListPacket {
                 }
                 System.arraycopy(buf, 0, data, 0, buf.length);
                 buf = data;
-            } finally {
-                if (reader != null) {
-                    reader.close();
-                }
             }
             incomplete = false;
         }

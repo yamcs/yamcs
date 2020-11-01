@@ -15,6 +15,7 @@ import org.yamcs.AbstractProcessorService;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.utils.AggregateUtil;
@@ -46,8 +47,10 @@ public class LocalParameterManager extends AbstractProcessorService implements S
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
 
-    public void init(String yamcsInstance, YConfiguration config) {
+    //called from unit test
+    void init(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
+        log = new Log(getClass(), yamcsInstance);
     }
 
     @Override

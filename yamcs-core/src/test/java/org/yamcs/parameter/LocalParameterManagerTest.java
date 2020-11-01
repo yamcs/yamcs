@@ -31,7 +31,7 @@ public class LocalParameterManagerTest {
     @Test
     public void test() throws Exception {
         LocalParameterManager spm = new LocalParameterManager();
-        spm.init("test", YConfiguration.emptyConfig());
+        spm.init("test");
         XtceDb xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
         MyParamConsumer consumer = new MyParamConsumer();
 

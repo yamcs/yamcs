@@ -10,8 +10,7 @@ import java.util.Arrays;
  *
  */
 public class FloatArray {
-  
-    public static int DEFAULT_CAPACITY = 10;
+    public static final int DEFAULT_CAPACITY = 10;
     private float[] a;
     private int length;
     

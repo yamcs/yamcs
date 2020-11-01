@@ -47,10 +47,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
-    static public String REC_STREAM_NAME = "xtce_tm_recorder_stream";
-
-    static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
-    static public String DUMP_TM_STREAM_NAME = "tm_dump";
+    static public final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
     static public final String TABLE_NAME = "tm";
     static public final String PNAME_COLUMN = "pname";
 

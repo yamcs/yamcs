@@ -62,7 +62,7 @@ public abstract class TimePartitionSchema {
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc = TimeEncoding.toUtc(instant);
-            return getPartitionInfo(dtc.year, dtc.doy);
+            return getPartitionInfo(dtc.getYear(), dtc.getDoy());
         }
 
         @Override
@@ -104,7 +104,7 @@ public abstract class TimePartitionSchema {
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc = TimeEncoding.toUtc(instant);
-            return getPartitionInfo(dtc.year, dtc.month);
+            return getPartitionInfo(dtc.getYear(), dtc.getMonth());
         }
 
         @Override
@@ -144,7 +144,7 @@ public abstract class TimePartitionSchema {
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc = TimeEncoding.toUtc(instant);
-            return getPartitionInfo(dtc.year);
+            return getPartitionInfo(dtc.getYear());
         }
 
         @Override

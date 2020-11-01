@@ -403,14 +403,14 @@ public class TaiUtcConverter {
     }
 
     public static class DateTimeComponents {
-        public int year;
-        public int month; // month starting with 1
-        public int day;
-        public int hour;
-        public int minute;
-        public int second;
-        public int millisec;
-        public int doy;
+        int year;
+        int month; // month starting with 1
+        int day;
+        int hour;
+        int minute;
+        int second;
+        int millisec;
+        int doy;
 
         /**
          * Constructs a new DateTimeComponents
@@ -454,6 +454,18 @@ public class TaiUtcConverter {
                 this.day = doy - PREVIOUS_MONTH_END_DAY[this.month];
             }
 
+        }
+
+        public int getYear() {
+            return year;
+        }
+
+        public int getDoy() {
+            return doy;
+        }
+
+        public int getMonth() {
+            return month;
         }
 
         @Override

@@ -13,8 +13,7 @@ import java.util.stream.IntStream;
  *
  */
 public class IntArray {
-
-    public static int DEFAULT_CAPACITY = 10;
+    public static final int DEFAULT_CAPACITY = 10;
     private int[] a;
     private int length;
 

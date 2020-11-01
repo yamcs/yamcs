@@ -7,6 +7,11 @@ package org.yamcs.utils;
  *
  */
 public class GpsCcsdsTime {
-    public int coarseTime = 0;
-    public byte fineTime = 0;
+    public final int coarseTime;
+    public final byte fineTime;
+    
+    public GpsCcsdsTime(int coarseTime, byte fineTime) {
+        this.coarseTime = coarseTime;
+        this.fineTime = fineTime;
+    }
 }

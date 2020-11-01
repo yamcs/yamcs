@@ -15,19 +15,22 @@ public class YamcsVersion {
      * Previously we generated the java class itself, but that caused
      * Maven to _always_ recompile yamcs-core even without cleaning.
      */
-
+    public static final String VERSION;
+    public static final String REVISION;
+    
     static {
+        String ver = null;
+        String rev = null;
         try (InputStream resourceIn = YamcsVersion.class.getResourceAsStream("/org.yamcs.core.properties")) {
             Properties props = new Properties();
             props.load(resourceIn);
-            VERSION = props.getProperty("version");
-            REVISION = props.getProperty("revision");
-        } catch (IOException e) {
-            VERSION = null;
-            REVISION = null;
+            ver = props.getProperty("version");
+            rev = props.getProperty("revision");
+        } catch (IOException e) {//ignore errors
         }
+        VERSION = ver;
+        REVISION = rev;
     }
 
-    public static String VERSION;
-    public static String REVISION;
+   
 }
