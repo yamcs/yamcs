@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
@@ -34,9 +32,6 @@ import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends CfdpTransfer {
-
-    private static final Logger log = LoggerFactory.getLogger(CfdpIncomingTransfer.class);
-
     private enum IncomingTransferState {
         START, METADATA_RECEIVED, FILEDATA_RECEIVED, EOF_RECEIVED, RESENDING, FINISHED_SENT, FINISHED_ACK_RECEIVED
     }
