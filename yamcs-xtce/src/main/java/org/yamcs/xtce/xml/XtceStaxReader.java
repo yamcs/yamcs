@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.xml.XMLConstants;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
@@ -3944,6 +3945,12 @@ public class XtceStaxReader {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         // Merge multiple character data blocks into a single event (e.g. algorithm text)
         factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+
+        //Sonarqube suggestion to protect Java XML Parsers from XXE attack
+        //see https://rules.sonarsource.com/java/RSPEC-2755
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
         return factory.createXMLEventReader(in);
     }
 
