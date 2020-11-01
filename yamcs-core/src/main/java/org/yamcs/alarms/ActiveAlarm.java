@@ -49,31 +49,31 @@ public class ActiveAlarm<T> {
      */
     boolean acknowledged = true;
 
-    public long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
+    private long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
 
-    public long clearTime = TimeEncoding.INVALID_INSTANT;
+    private long clearTime = TimeEncoding.INVALID_INSTANT;
 
     // the value that triggered the alarm
-    public T triggerValue;
+    private T triggerValue;
 
     // most severe value
-    public T mostSevereValue;
+    private T mostSevereValue;
 
     // current value of the parameter
-    public T currentValue;
+    private T currentValue;
 
     // message provided at acknowledge time
     private String acknowledgeMessage;
 
     // message provided at clear time
-    public String clearMessage;
+    private String clearMessage;
 
-    public int violations = 1;
-    public int valueCount = 1;
+    private int violations = 1;
+    private int valueCount = 1;
 
-    public String usernameThatAcknowledged;
+    private String usernameThatAcknowledged;
 
-    public String usernameThatCleared;
+    private String usernameThatCleared;
 
     boolean shelved;
     private String usernameThatShelved;
@@ -86,7 +86,7 @@ public class ActiveAlarm<T> {
         this.autoAcknowledge = autoAck;
         this.latching = latching;
 
-        this.triggerValue = this.currentValue = this.mostSevereValue = pv;
+        this.triggerValue = this.currentValue = this.setMostSevereValue(pv);
         id = counter.getAndIncrement();
     }
 
@@ -283,18 +283,64 @@ public class ActiveAlarm<T> {
     public String getUsernameThatCleared() {
         return usernameThatCleared;
     }
+    public String getUsernameThatAcknowledged() {
+        return usernameThatAcknowledged;
+    }
+    
+
+    public T getTriggerValue() {
+        return triggerValue;
+    }
+
+    public T getCurrentValue() {
+        return currentValue;
+    }
+    public void setCurrentValue(T value) {
+        this.currentValue = value;
+    }
+
+    public T getMostSevereValue() {
+        return mostSevereValue;
+    }
+
+    public long getAcknowledgeTime() {
+        return acknowledgeTime;
+    }
+
+    public void incrementValueCount() {
+        valueCount++;
+    }
+
+    public int getValueCount() {
+        return valueCount;
+    }
+    
+    public void incrementViolations() {
+        violations++;
+    }
+    public int getViolations() {
+        return violations;
+    }
 
     @Override
     public String toString() {
         return "ActiveAlarm [autoAcknowledge=" + autoAcknowledge + ", latching=" + latching + ", id=" + id
                 + ", processOK=" + processOK + ", triggered=" + triggered + ", acknowledged=" + acknowledged
                 + ", acknowledgeTime=" + acknowledgeTime + ", clearTime=" + clearTime + ", triggerValue=" + triggerValue
-                + ", mostSevereValue=" + mostSevereValue + ", currentValue=" + currentValue + ", acknowledgeMessage="
+                + ", mostSevereValue=" + getMostSevereValue() + ", currentValue=" + currentValue + ", acknowledgeMessage="
                 + acknowledgeMessage + ", clearMessage=" + clearMessage + ", violations=" + violations + ", valueCount="
                 + valueCount + ", usernameThatAcknowledged=" + usernameThatAcknowledged + ", usernameThatCleared="
                 + usernameThatCleared + ", shelved=" + shelved + ", usernameThatShelved=" + usernameThatShelved
                 + ", shelveTime=" + shelveTime + ", shelveMessage=" + shelveMessage + ", shelveDuration="
                 + shelveDuration + "]";
     }
-    
+
+    public T setMostSevereValue(T mostSevereValue) {
+        this.mostSevereValue = mostSevereValue;
+        return mostSevereValue;
+    }
+
+   
+
+
 }

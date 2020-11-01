@@ -21,9 +21,9 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
         ArrayList<Object> al = new ArrayList<>(7);
 
         // triggerTime
-        al.add(activeAlarm.triggerValue.getGenerationTime());
+        al.add(activeAlarm.getTriggerValue().getGenerationTime());
         // parameter
-        al.add(activeAlarm.triggerValue.getParameter().getQualifiedName());
+        al.add(activeAlarm.getTriggerValue().getParameter().getQualifiedName());
         // seqNum
         al.add(activeAlarm.getId());
         // event

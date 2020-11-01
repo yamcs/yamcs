@@ -121,7 +121,7 @@ public class AlarmServer<S, T> extends AbstractService {
         alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm));
 
         if (alarm.isNormal()) {
-            S subject = getSubject(alarm.triggerValue);
+            S subject = getSubject(alarm.getTriggerValue());
             activeAlarms.remove(subject);
             alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
         }
@@ -165,7 +165,7 @@ public class AlarmServer<S, T> extends AbstractService {
         }
         alarm.clear(username, clearTime, message);
 
-        S subject = getSubject(alarm.triggerValue);
+        S subject = getSubject(alarm.getTriggerValue());
         activeAlarms.remove(subject);
         alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
 
@@ -254,8 +254,8 @@ public class AlarmServer<S, T> extends AbstractService {
             }
             boolean updated = activeAlarm.processRTN();
 
-            activeAlarm.currentValue = value;
-            activeAlarm.valueCount++;
+            activeAlarm.setCurrentValue(value);
+            activeAlarm.incrementValueCount();
             for (AlarmListener<T> l : alarmListeners) {
                 l.notifyValueUpdate(activeAlarm);
             }
@@ -280,12 +280,12 @@ public class AlarmServer<S, T> extends AbstractService {
                 activeAlarms.put(alarmId, activeAlarm);
                 newAlarm = true;
             } else {
-                activeAlarm.currentValue = value;
-                activeAlarm.violations++;
-                activeAlarm.valueCount++;
+                activeAlarm.setCurrentValue(value);
+                activeAlarm.incrementViolations();
+                activeAlarm.incrementValueCount();
                 newAlarm = false;
             }
-            if (activeAlarm.violations < minViolations) {
+            if (activeAlarm.getViolations() < minViolations) {
                 return;
             }
             activeAlarm.trigger();
@@ -296,8 +296,8 @@ public class AlarmServer<S, T> extends AbstractService {
                     l.notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
                 }
             } else {
-                if (moreSevere(value, activeAlarm.mostSevereValue)) {
-                    activeAlarm.mostSevereValue = value;
+                if (moreSevere(value, activeAlarm.getMostSevereValue())) {
+                    activeAlarm.setMostSevereValue(value);
                     for (AlarmListener<T> l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);
                     }

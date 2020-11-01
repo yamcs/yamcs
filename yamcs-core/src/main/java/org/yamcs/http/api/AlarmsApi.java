@@ -251,9 +251,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         AlarmServer alarmServer;
 
         try {
-            if (activeAlarm.triggerValue instanceof ParameterValue) {
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
                 alarmServer = verifyParameterAlarmServer(processor);
-            } else if (activeAlarm.triggerValue instanceof Db.Event) {
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
                 alarmServer = verifyEventAlarmServer(processor);
             } else {
                 throw new InternalServerErrorException("Can't find alarm server for alarm instance");
@@ -449,14 +449,14 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     }
 
     private static final ParameterAlarmData toParameterAlarmData(ActiveAlarm<ParameterValue> activeAlarm) {
-        Parameter parameter = activeAlarm.triggerValue.getParameter();
+        Parameter parameter = activeAlarm.getTriggerValue().getParameter();
         NamedObjectId parameterId = NamedObjectId.newBuilder()
                 .setName(parameter.getQualifiedName())
                 .build();
         ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
-        alarmb.setTriggerValue(activeAlarm.triggerValue.toGpb(parameterId));
-        alarmb.setMostSevereValue(activeAlarm.mostSevereValue.toGpb(parameterId));
-        alarmb.setCurrentValue(activeAlarm.currentValue.toGpb(parameterId));
+        alarmb.setTriggerValue(activeAlarm.getTriggerValue().toGpb(parameterId));
+        alarmb.setMostSevereValue(activeAlarm.getMostSevereValue().toGpb(parameterId));
+        alarmb.setCurrentValue(activeAlarm.getCurrentValue().toGpb(parameterId));
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.SUMMARY);
         alarmb.setParameter(pinfo);
@@ -466,9 +466,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     private static final EventAlarmData toEventAlarmData(ActiveAlarm<Db.Event> activeAlarm) {
         EventAlarmData.Builder alarmb = EventAlarmData.newBuilder();
-        alarmb.setTriggerEvent(EventsApi.fromDbEvent(activeAlarm.triggerValue));
-        alarmb.setMostSevereEvent(EventsApi.fromDbEvent(activeAlarm.mostSevereValue));
-        alarmb.setCurrentEvent(EventsApi.fromDbEvent(activeAlarm.currentValue));
+        alarmb.setTriggerEvent(EventsApi.fromDbEvent(activeAlarm.getTriggerValue()));
+        alarmb.setMostSevereEvent(EventsApi.fromDbEvent(activeAlarm.getMostSevereValue()));
+        alarmb.setCurrentEvent(EventsApi.fromDbEvent(activeAlarm.getCurrentValue()));
 
         return alarmb.build();
     }
@@ -484,15 +484,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         alarmb.setProcessOK(activeAlarm.isProcessOK());
         alarmb.setTriggered(activeAlarm.isTriggered());
 
-        alarmb.setViolations(activeAlarm.violations);
-        alarmb.setCount(activeAlarm.valueCount);
+        alarmb.setViolations(activeAlarm.getViolations());
+        alarmb.setCount(activeAlarm.getValueCount());
 
-        if (activeAlarm.mostSevereValue instanceof ParameterValue) {
+        if (activeAlarm.getMostSevereValue() instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);
-            ParameterValue pv = (ParameterValue) activeAlarm.mostSevereValue;
+            ParameterValue pv = (ParameterValue) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(pv));
             alarmb.setSeverity(getParameterAlarmSeverity(pv.getMonitoringResult()));
-            ParameterValue triggerPv = (ParameterValue) activeAlarm.triggerValue;
+            ParameterValue triggerPv = (ParameterValue) activeAlarm.getTriggerValue();
             Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(triggerPv.getGenerationTime());
             alarmb.setTriggerTime(triggerTime);
             if (detail) {
@@ -501,9 +501,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                         (ActiveAlarm<ParameterValue>) activeAlarm);
                 alarmb.setParameterDetail(parameterDetail);
             }
-        } else if (activeAlarm.mostSevereValue instanceof Db.Event) {
+        } else if (activeAlarm.getMostSevereValue() instanceof Db.Event) {
             alarmb.setType(AlarmType.EVENT);
-            Db.Event ev = (Db.Event) activeAlarm.mostSevereValue;
+            Db.Event ev = (Db.Event) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(ev));
             alarmb.setSeverity(getEventAlarmSeverity(ev.getSeverity()));
             Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(ev.getGenerationTime());
@@ -532,7 +532,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         } else {
             if (activeAlarm.isAcknowledged()) {
                 AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
-                String username = activeAlarm.usernameThatAcknowledged;
+                String username = activeAlarm.getUsernameThatAcknowledged();
                 if (activeAlarm.isAutoAcknowledge()) {
                     username = "autoAcknowledged";
                 }
@@ -541,7 +541,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                 if (activeAlarm.getAckMessage() != null) {
                     acknowledgeb.setAcknowledgeMessage(activeAlarm.getAckMessage());
                 }
-                acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
+                acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getAcknowledgeTime()));
                 alarmb.setAcknowledgeInfo(acknowledgeb.build());
             }
 

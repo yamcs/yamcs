@@ -54,26 +54,26 @@ public class AlarmServerTest {
         alarmServer.update(pv1_0, 1);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
-        assertEquals(pv1_0, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_0, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.WARNING);
         alarmServer.update(pv1_1, 1);
         assertTrue(l.triggered.isEmpty());
         aa = l.valueUpdates.remove();
-        assertEquals(pv1_1, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_1, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         ParameterValue pv1_2 = getParameterValue(p1, MonitoringResult.CRITICAL);
         alarmServer.update(pv1_2, 1);
         assertTrue(l.triggered.isEmpty());
         assertFalse(l.valueUpdates.isEmpty());
         aa = l.severityIncreased.remove();
-        assertEquals(pv1_2, aa.currentValue);
-        assertEquals(pv1_2, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_2, aa.getCurrentValue());
+        assertEquals(pv1_2, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         long ackTime = 123L;
         alarmServer.acknowledge(aa, "test1", ackTime, "bla");
@@ -85,11 +85,11 @@ public class AlarmServerTest {
         ParameterValue pv1_3 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
         alarmServer.update(pv1_3, 1);
         aa = l.cleared.remove();
-        assertEquals(pv1_3, aa.currentValue);
-        assertEquals(pv1_2, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
-        assertEquals("test1", aa.usernameThatAcknowledged);
-        assertEquals(ackTime, aa.acknowledgeTime);
+        assertEquals(pv1_3, aa.getCurrentValue());
+        assertEquals(pv1_2, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
+        assertEquals("test1", aa.getUsernameThatAcknowledged());
+        assertEquals(ackTime, aa.getAcknowledgeTime());
         assertEquals("bla", aa.getAckMessage());
     }
 
@@ -101,17 +101,17 @@ public class AlarmServerTest {
         alarmServer.update(pv1_0, 1);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
-        assertEquals(pv1_0, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_0, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
         alarmServer.update(pv1_1, 1);
         assertTrue(l.cleared.isEmpty());
         aa = l.valueUpdates.remove();
-        assertEquals(pv1_1, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_1, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         assertEquals(1, l.rtn.size());
 
@@ -119,11 +119,11 @@ public class AlarmServerTest {
         alarmServer.acknowledge(aa, "test2", ackTime, "bla");
 
         aa = l.cleared.remove();
-        assertEquals(pv1_1, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
-        assertEquals("test2", aa.usernameThatAcknowledged);
-        assertEquals(ackTime, aa.acknowledgeTime);
+        assertEquals(pv1_1, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
+        assertEquals("test2", aa.getUsernameThatAcknowledged());
+        assertEquals(ackTime, aa.getAcknowledgeTime());
         assertEquals("bla", aa.getAckMessage());
     }
 
@@ -135,9 +135,9 @@ public class AlarmServerTest {
         alarmServer.update(pv1_0, 1);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
-        assertEquals(pv1_0, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_0, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         long shelvetime = TimeEncoding.getWallclockTime();
 
@@ -165,17 +165,17 @@ public class AlarmServerTest {
         alarmServer.update(pv1_0, 1, true, false);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
-        assertEquals(pv1_0, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_0, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
         alarmServer.update(pv1_1, 1, true, false);
 
         aa = l.cleared.remove();
-        assertEquals(pv1_1, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_1, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
     }
 
     @Test
@@ -195,9 +195,9 @@ public class AlarmServerTest {
         alarmServer.update(pv1_0, 1, true, false);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
-        assertEquals(pv1_0, aa.currentValue);
-        assertEquals(pv1_0, aa.mostSevereValue);
-        assertEquals(pv1_0, aa.triggerValue);
+        assertEquals(pv1_0, aa.getCurrentValue());
+        assertEquals(pv1_0, aa.getMostSevereValue());
+        assertEquals(pv1_0, aa.getTriggerValue());
 
         alarmServer.getActiveAlarm(p1, 123 /* wrong id */);
     }

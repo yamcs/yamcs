@@ -36,7 +36,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.SEVERITY_INCREASED);
 
         tdef.addColumn(getColNameSeverityIncreased(), dataType);
-        al.add(getYarchValue(activeAlarm.mostSevereValue));
+        al.add(getYarchValue(activeAlarm.getMostSevereValue()));
 
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
@@ -55,11 +55,11 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
         switch (notificationType) {
         case TRIGGERED:
             tdef.addColumn(getColNameTrigger(), dataType);
-            al.add(getYarchValue(activeAlarm.triggerValue));
+            al.add(getYarchValue(activeAlarm.getTriggerValue()));
             break;
         case ACKNOWLEDGED:
             tdef.addColumn(CNAME_ACK_BY, DataType.STRING);
-            String username = activeAlarm.usernameThatAcknowledged;
+            String username = activeAlarm.getUsernameThatAcknowledged();
             if (activeAlarm.isAutoAcknowledge()) {
                 username = "autoAcknowledged";
             }
@@ -71,24 +71,24 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
             }
 
             tdef.addColumn(CNAME_ACK_TIME, DataType.TIMESTAMP);
-            al.add(activeAlarm.acknowledgeTime);
+            al.add(activeAlarm.getAcknowledgeTime());
 
             break;
         case CLEARED:
             tdef.addColumn(getColNameClear(), dataType);
-            al.add(getYarchValue(activeAlarm.currentValue));
+            al.add(getYarchValue(activeAlarm.getCurrentValue()));
 
-            if (activeAlarm.usernameThatCleared != null) {
+            if (activeAlarm.getUsernameThatCleared() != null) {
                 tdef.addColumn(CNAME_CLEARED_BY, DataType.STRING);
-                al.add(activeAlarm.usernameThatCleared);
+                al.add(activeAlarm.getUsernameThatCleared());
             }
-            if (activeAlarm.clearMessage != null) {
+            if (activeAlarm.getClearMessage() != null) {
                 tdef.addColumn(CNAME_CLEAR_MSG, DataType.STRING);
-                al.add(activeAlarm.clearMessage);
+                al.add(activeAlarm.getClearMessage());
             }
 
             tdef.addColumn(CNAME_CLEARED_TIME, DataType.TIMESTAMP);
-            al.add(activeAlarm.clearTime);
+            al.add(activeAlarm.getClearTime());
             break;
         case SHELVED:
             tdef.addColumn(CNAME_SHELVED_BY, DataType.STRING);

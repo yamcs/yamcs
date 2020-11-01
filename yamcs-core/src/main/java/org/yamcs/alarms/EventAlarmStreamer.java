@@ -27,7 +27,7 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
 
     protected ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm, AlarmNotificationType e) {
         ArrayList<Object> al = new ArrayList<>(7);
-        Event triggerValue = activeAlarm.triggerValue;
+        Event triggerValue = activeAlarm.getTriggerValue();
 
         // triggerTime
         al.add(triggerValue.getGenerationTime());
