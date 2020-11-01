@@ -11,8 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
@@ -43,7 +41,6 @@ public class LocalParameterManager extends AbstractProcessorService implements S
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
 
     Set<Parameter> subscribedParams = new HashSet<>();
-    private static final Logger log = LoggerFactory.getLogger(LocalParameterManager.class);
     String yamcsInstance;
     Processor proc;
     LastValueCache lvc;
