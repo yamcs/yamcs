@@ -222,7 +222,7 @@ public class YamcsClient {
 
             if (i + 1 < connectionAttempts) {
                 try {
-                    Thread.sleep(retryDelay);
+                    this.wait(retryDelay);
                 } catch (InterruptedException e1) {
                     Thread.currentThread().interrupt();
                 }

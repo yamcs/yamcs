@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Stream;
 
 /**
  * Finds a list of files according to a glob pattern.
@@ -75,14 +76,13 @@ public class GlobFileFinder {
 
         if (isPattern(patterns)) {
             PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + patterns);
-            try {
-                Files.list(current)
-                        .filter(p -> incrIoCount())
-                        .map(p -> p.getFileName())
-                        .filter(p -> matcher.matches(p))
-                        .map(p -> current.resolve(p))
-                        .filter(p -> Files.isDirectory(p) == pitr.hasNext())
-                        .forEach(p -> findMatchingFiles(p, pitr));
+            try (Stream<Path> files =Files.list(current)){
+                        files.filter(p -> incrIoCount())
+                            .map(p -> p.getFileName())
+                            .filter(p -> matcher.matches(p))
+                            .map(p -> current.resolve(p))
+                            .filter(p -> Files.isDirectory(p) == pitr.hasNext())
+                            .forEach(p -> findMatchingFiles(p, pitr));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

@@ -105,9 +105,7 @@ public class TmPacket {
     }
 
     public void setInvalid(boolean invalid) {
-        if (invalid) {
-            status = invalid ? status | STATUS_MASK_INVALID : status & ~STATUS_MASK_INVALID;
-        }
+        status = invalid ? status | STATUS_MASK_INVALID : status & ~STATUS_MASK_INVALID;
     }
 
     public boolean isInvalid() {

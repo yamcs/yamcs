@@ -310,7 +310,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         }
 
         sqlb.descend(desc);
-        sqlb.limit(pos, limit + 1); // one more to detect hasMore
+        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {

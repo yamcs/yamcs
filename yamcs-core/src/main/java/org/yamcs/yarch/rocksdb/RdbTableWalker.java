@@ -248,7 +248,7 @@ public class RdbTableWalker extends AbstractTableWalker {
 
         // all partitions will have the same database, just use the same one
         RdbPartition p1 = (RdbPartition) partitions.get(0);
-        FlushOptions flushOptions = new FlushOptions();
+
         YRDB rdb;
         try {
             rdb = tablespace.getRdb(p1.dir, false);
@@ -257,14 +257,11 @@ public class RdbTableWalker extends AbstractTableWalker {
             throw new YarchException(e);
         }
 
-        try {
+        try(FlushOptions flushOptions = new FlushOptions()) {
             for (Partition p : partitions) {
                 RdbPartition rp = (RdbPartition) p;
-
                 DbRange dbRange = getDeleteDbRange(rp.tbsIndex, tableRange);
                 rdb.getDb().deleteRange(dbRange.rangeStart, dbRange.rangeEnd);
-                
-               // rdb.getDb().compactRange(dbRange.rangeStart, ByteArrayUtils.plusOne(dbRange.rangeEnd));
             }
             
             rdb.getDb().flush(flushOptions);
@@ -272,7 +269,6 @@ public class RdbTableWalker extends AbstractTableWalker {
         } catch (RocksDBException e) {
             throw new YarchException(e);
         } finally {
-            flushOptions.close();
             tablespace.dispose(rdb);
         }
         return false;

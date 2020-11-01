@@ -61,6 +61,7 @@
       **/org/yamcs/protobuf/**,
       **/org/yamcs/yarch/streamsql/StreamSqlParser*,
       **/org/yamcs/ui/packetviewer/FilterParser*
+      **/org/yamcs/examples/**
     </sonar.exclusions>
   </properties>
 

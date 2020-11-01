@@ -335,10 +335,10 @@ public class XtceStaxReader {
     public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException {
         this.fileName = fileName;
         log.info("Parsing XTCE file {}", fileName);
-        xmlEventReader = initEventReader(fileName);
         xmlEvent = null;
         SpaceSystem spaceSystem = null;
-        try {
+        try (InputStream in = new FileInputStream(new File(fileName))){
+            xmlEventReader = initEventReader(in);
             while (true) {
                 xmlEvent = xmlEventReader.nextEvent();
                 int eventType = xmlEvent.getEventType();
@@ -3940,8 +3940,7 @@ public class XtceStaxReader {
      * @throws FileNotFoundException
      * @throws XMLStreamException
      */
-    private XMLEventReader initEventReader(String filename) throws FileNotFoundException, XMLStreamException {
-        InputStream in = new FileInputStream(new File(filename));
+    private XMLEventReader initEventReader(InputStream in) throws XMLStreamException {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         // Merge multiple character data blocks into a single event (e.g. algorithm text)
         factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);

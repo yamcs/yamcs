@@ -175,9 +175,10 @@ public class CfdpReceiver {
     private void saveFile() {
         try {
             File f = File.createTempFile("cfdp", "");
-            FileOutputStream fw = new FileOutputStream(f);
-            fw.write(cfdpDataFile.getData());
-            fw.close();
+            try (FileOutputStream fw = new FileOutputStream(f)) {
+                fw.write(cfdpDataFile.getData());
+                log.info("CFDP file saved in {}", f.getAbsolutePath());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
