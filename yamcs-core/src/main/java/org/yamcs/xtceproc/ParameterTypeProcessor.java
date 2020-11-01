@@ -327,6 +327,7 @@ public class ParameterTypeProcessor {
             break;
         case SINT64:
             offsetMillisec =  computeTime(ptype, rawValue.getSint64Value());
+            break;
         case UINT32:
             offsetMillisec =  computeTime(ptype, rawValue.getUint32Value() & 0xFFFFFFFFL);
             break;
