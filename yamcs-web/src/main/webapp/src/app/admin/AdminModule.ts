@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { AdminPage } from './AdminPage';
-import { AdminPageTemplate } from './AdminPageTemplate';
 import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
-import { AdminToolbar } from './AdminToolbar';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
@@ -17,6 +14,7 @@ import { MessageNamePipe } from './routes/MessageNamePipe';
 import { RouteDetail } from './routes/RouteDetail';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
+import { AdminSharedModule } from './shared/AdminSharedModule';
 import { ThreadsTable } from './threads/ThreadsTable';
 import { TraceElement } from './threads/TraceElement';
 
@@ -27,6 +25,7 @@ const pipes = [
 @NgModule({
   imports: [
     SharedModule,
+    AdminSharedModule,
     AdminRoutingModule,
   ],
   declarations: [
@@ -34,9 +33,6 @@ const pipes = [
     pipes,
     AddMembersDialog,
     AddRolesDialog,
-    AdminPage,
-    AdminPageTemplate,
-    AdminToolbar,
     ApplicationCredentialsDialog,
     ChangeUserPasswordDialog,
     CreateBucketDialog,

@@ -70,6 +70,18 @@ export interface ListClearancesResponse {
   clearances: Clearance[];
 }
 
+export interface Database {
+  name: string;
+  tablespace: string;
+  path: string;
+  tables: string[];
+  streams: string[];
+}
+
+export interface ListDatabasesResponse {
+  databases: Database[];
+}
+
 export interface Route {
   service: string;
   method: string;

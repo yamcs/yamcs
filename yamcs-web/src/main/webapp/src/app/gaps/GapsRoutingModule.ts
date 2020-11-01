@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
-import { ArchiveBrowserPage } from './ArchiveBrowserPage';
+import { GapsPage } from './GapsPage';
 
 const routes: Routes = [
   {
@@ -16,8 +16,8 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        component: ArchiveBrowserPage,
-      }
+        component: GapsPage,
+      },
     ]
   }
 ];
@@ -26,8 +26,8 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ArchiveRoutingModule { }
+export class GapsRoutingModule { }
 
 export const routingComponents = [
-  ArchiveBrowserPage,
+  GapsPage,
 ];

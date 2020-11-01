@@ -75,6 +75,10 @@ const routes: Routes = [
         loadChildren: () => import('src/app/events/EventsModule').then(m => m.EventsModule),
         canActivate: [AuthGuard],
       }, {
+        path: 'gaps',
+        loadChildren: () => import('src/app/gaps/GapsModule').then(m => m.GapsModule),
+        canActivate: [AuthGuard],
+      }, {
         path: 'instance',
         loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
         canActivate: [AuthGuard],

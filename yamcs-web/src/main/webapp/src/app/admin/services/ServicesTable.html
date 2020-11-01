@@ -1,5 +1,10 @@
-<table mat-table [dataSource]="dataSource" class="ya-data-table" matSort matSortActive="name" matSortDirection="asc"
-  matSortDisableClear>
+<table mat-table
+       [dataSource]="dataSource"
+       class="ya-data-table"
+       matSort
+       matSortActive="name"
+       matSortDirection="asc"
+       matSortDisableClear>
 
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Name</th>
@@ -22,10 +27,14 @@
     <th mat-header-cell *matHeaderCellDef></th>
     <td mat-cell *matCellDef="let service" style="text-align: right">
       <mat-menu #serviceMenu="matMenu" overlapTrigger="false" class="ya-menu">
-        <button mat-menu-item (click)="startService.emit(service.name)" [disabled]="service.state !== 'TERMINATED' && service.state !== 'NEW'">
+        <button mat-menu-item
+                (click)="startService.emit(service.name)"
+                [disabled]="service.state !== 'TERMINATED' && service.state !== 'NEW'">
           Start service
         </button>
-        <button mat-menu-item (click)="stopService.emit(service.name)" [disabled]="service.state !== 'RUNNING'">
+        <button mat-menu-item
+                (click)="stopService.emit(service.name)"
+                [disabled]="service.state !== 'RUNNING'">
           Stop service
         </button>
       </mat-menu>
