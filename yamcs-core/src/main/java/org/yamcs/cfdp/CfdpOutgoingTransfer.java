@@ -73,7 +73,6 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     private PutRequest request;
     private ScheduledFuture<?> scheduledFuture;
-    long startTime;
     FinishedPacket finishedPacket;
 
     public CfdpOutgoingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, PutRequest request,
@@ -134,7 +133,6 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     private void step() {
         switch (outgoingTransferState) {
         case START:
-            this.startTime = System.currentTimeMillis();
             sendPacket(getMetadataPacket());
             this.outgoingTransferState = OutgoingTransferState.METADATA_SENT;
             break;

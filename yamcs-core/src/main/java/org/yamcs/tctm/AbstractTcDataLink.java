@@ -11,7 +11,6 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -29,8 +28,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected volatile long dataCount;
 
     protected String sv_linkStatus_id, sp_dataCount_id;
-
-    TimeService timeService;
 
     protected CommandPostprocessor cmdPostProcessor;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);

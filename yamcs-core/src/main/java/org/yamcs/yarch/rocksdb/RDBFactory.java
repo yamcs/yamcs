@@ -251,13 +251,16 @@ public class RDBFactory implements Runnable {
             YRDB db = null;
             try {
                 BackupUtils.verifyBackupDirectory(backupDir, false);
-                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            } catch (IOException e) {
+                log.warn("Invalid backup directory: {} ", e.getMessage());
+                cf.completeExceptionally(e);
+                return;
+            }
+            try( BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+               ) {
                 db = getRdb(relativePath, false);
                 backupEngine.createNewBackup(db.getDb());
-
-                backupEngine.close();
-                opt.close();
                 cf.complete(null);
             } catch (Exception e) {
                 log.warn("Got error when creating the backup: {} ", e.getMessage());
@@ -275,16 +278,13 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         scheduler.execute(() -> {
-            try {
-                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try( BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 RestoreOptions restoreOpt = new RestoreOptions(false);
+                ) {
                 String absolutePath = getAbsolutePath(relativePath);
                 backupEngine.restoreDbFromLatestBackup(absolutePath, absolutePath, restoreOpt);
 
-                backupEngine.close();
-                opt.close();
-                restoreOpt.close();
                 cf.complete(null);
             } catch (Exception e) {
                 cf.completeExceptionally(e);
@@ -302,10 +302,10 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         scheduler.execute(() -> {
-            try {
-                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-                RestoreOptions restoreOpt = new RestoreOptions(false);
+                RestoreOptions restoreOpt = new RestoreOptions(false)) {
+                
                 String absolutePath = getAbsolutePath(relativePath);
                 if (backupId == -1) {
                     backupEngine.restoreDbFromLatestBackup(absolutePath, absolutePath, restoreOpt);
@@ -313,9 +313,6 @@ public class RDBFactory implements Runnable {
                     backupEngine.restoreDbFromBackup(backupId, absolutePath, absolutePath, restoreOpt);
                 }
 
-                backupEngine.close();
-                opt.close();
-                restoreOpt.close();
                 cf.complete(null);
             } catch (Exception e) {
                 cf.completeExceptionally(e);
