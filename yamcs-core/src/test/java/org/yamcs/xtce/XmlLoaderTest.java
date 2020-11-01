@@ -10,6 +10,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.junit.Test;
 import org.yamcs.xtce.FloatDataEncoding.Encoding;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtceproc.CalibratorProc;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
@@ -212,6 +213,15 @@ public class XmlLoaderTest {
         
         FloatParameterType ftype = (FloatParameterType) db.getParameterType("/BogusSAT/LittleEndianFloat1");
         assertEquals(ByteOrder.LITTLE_ENDIAN, ftype.getEncoding().getByteOrder());
+    }
+    
+    @Test
+    public void testXtceCommandSignificance() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = db.getMetaCommand("/RefXtce/vital_command");
+        Significance significance = mc.getDefaultSignificance();
+        assertEquals("no particular reason", significance.getReasonForWarning());
+        assertEquals(Levels.distress, significance.getConsequenceLevel());
     }
     
     @Test

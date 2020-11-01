@@ -107,6 +107,17 @@
 					</xtce:EntryList>
 				</xtce:CommandContainer>
 			</xtce:MetaCommand>
+			<xtce:MetaCommand name="vital_command">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="vital_command">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:DefaultSignificance reasonForWarning="no particular reason" consequenceLevel="vital"/>
+			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>
 </xtce:SpaceSystem>

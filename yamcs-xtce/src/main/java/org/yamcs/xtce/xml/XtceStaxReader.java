@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -3816,10 +3817,11 @@ public class XtceStaxReader {
         String conseq = readMandatoryAttribute("consequenceLevel", xmlEvent.asStartElement());
         Levels clevel;
         try {
-            clevel = Levels.valueOf(conseq.toLowerCase());
+            clevel = Levels.fromString(conseq.toLowerCase());
         } catch (IllegalArgumentException e) {
+            String allowedValues = Arrays.stream(Levels.values()).map(l->l.xtceAlias()).collect(Collectors.joining(", "));
             throw new XMLStreamException(
-                    "Invalid consiequence level '" + conseq + "'; allowed values: " + Arrays.toString(Levels.values()));
+                    "Invalid consequence level '" + conseq + "'; allowed values: [" + allowedValues +"]");
         }
 
         while (true) {
