@@ -126,7 +126,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
                     TablespaceRecord.newBuilder().setType(Type.CCSDS_TM_INDEX));
             // add a record at the beginnign and at the end to mkae sure the cursor doesn't run out
             YRDB db = tablespace.getRdb();
-            byte[] v = new byte[Record.__val_size];
+            byte[] v = new byte[Record.VAL_SIZE];
             db.put(Record.key(tbr.getTbsIndex(), (short) 0, (long) 0, (short) 0), v);
             db.put(Record.key(tbr.getTbsIndex(), Short.MAX_VALUE, Long.MAX_VALUE, Short.MAX_VALUE), v);
 
@@ -563,8 +563,8 @@ class Record {
     short apid;
     short seqFirst, seqLast;
     int numPackets;
-    static final int __key_size = 16;
-    static final int __val_size = 14;
+    static final int KEY_SIZE = 16;
+    static final int VAL_SIZE = 14;
 
     public Record(byte[] key, byte[] val) {
         ByteBuffer keyb = ByteBuffer.wrap(key);
@@ -589,7 +589,7 @@ class Record {
     }
 
     static byte[] key(int tbsIndex, short apid, long start, short seqFirst) {
-        ByteBuffer bbk = ByteBuffer.allocate(__key_size);
+        ByteBuffer bbk = ByteBuffer.allocate(KEY_SIZE);
         bbk.putInt(tbsIndex);
         bbk.putShort(apid);
         bbk.putLong(start);
@@ -623,7 +623,7 @@ class Record {
     }
 
     byte[] val() {
-        ByteBuffer bbv = ByteBuffer.allocate(__val_size);
+        ByteBuffer bbv = ByteBuffer.allocate(VAL_SIZE);
         bbv.putLong(lastTime);
         bbv.putShort(seqLast);
         bbv.putInt(numPackets);

@@ -75,7 +75,6 @@ public class StreamInitializer {
                 throw new IllegalArgumentException("Unknown stream type " + sce.type);
             }
         }
-
     }
 
     private void createStream(String streamName, TupleDefinition tdef) throws StreamSqlException, ParseException {
@@ -83,6 +82,7 @@ public class StreamInitializer {
         ydb.execute(stmt, new ResultListener() {
             @Override
             public void next(Tuple tuple) {
+                //normally create stream does not produce any tuple
             }
 
             @Override

@@ -45,6 +45,7 @@ public class StreamEventProducer extends AbstractEventProducer {
 
     @Override
     public void close() {
+        //no resource to release
     }
 
     @Override

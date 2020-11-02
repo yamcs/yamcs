@@ -112,7 +112,7 @@ public class CfdpReceiver {
                 packet.getHeader().getSequenceNumber());
         AckPacket EofAck = new AckPacket(
                 FileDirectiveCode.EOF,
-                FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
+                FileDirectiveSubtypeCode.FINISHED_BY_WAYPOINT_OR_OTHER,
                 ConditionCode.NO_ERROR,
                 TransactionStatus.ACTIVE,
                 header);

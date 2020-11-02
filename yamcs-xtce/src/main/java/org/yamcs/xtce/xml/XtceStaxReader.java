@@ -318,12 +318,6 @@ public class XtceStaxReader {
     String fileName;
 
     /**
-     * Constructor
-     */
-    public XtceStaxReader() {
-    }
-
-    /**
      * Reading of the XML XTCE file
      * 
      * @param fileName
@@ -1259,7 +1253,7 @@ public class XtceStaxReader {
         IntegerValidRange ivr = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName("ValidRange")) {
+            if (isStartElementWithName(XTCE_VALID_RANGE)) {
                 if (ivr != null) {
                     throw new XMLStreamException("Only one ValidRange supported. ", xmlEvent.getLocation());
                 }

@@ -109,7 +109,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
 
     @Override
     public void setCommandHistory(CommandHistoryPublisher commandHistoryPublisher) {
-
+        //not interested in publishing anything to the command history
     }
 
     @Override

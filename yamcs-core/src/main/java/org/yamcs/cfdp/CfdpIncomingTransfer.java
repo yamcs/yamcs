@@ -183,7 +183,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     private void sendAckEofPacket(CfdpPacket packet) {
         sendPacket(new AckPacket(
                 FileDirectiveCode.EOF,
-                FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
+                FileDirectiveSubtypeCode.FINISHED_BY_WAYPOINT_OR_OTHER,
                 ConditionCode.NO_ERROR,
                 TransactionStatus.ACTIVE,
                 getHeader(packet)));

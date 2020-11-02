@@ -45,7 +45,7 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     }
 
     public enum FileDirectiveSubtypeCode {
-        FinishedByWaypointOrOther((byte) 0x00), FinishedByEndSystem((byte) 0x01);
+        FINISHED_BY_WAYPOINT_OR_OTHER((byte) 0x00), FINISHED_BY_END_SYSTEM((byte) 0x01);
 
         private byte code;
 

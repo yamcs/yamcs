@@ -327,7 +327,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
 
     @Override
     public void addedCommand(PreparedCommand pc) {
-    } // this will not be called because we subscribe to only one command
+        // this will not be called because we subscribe to only one command
+    } 
 
     // called from the command history when things are added in the stream
     @Override

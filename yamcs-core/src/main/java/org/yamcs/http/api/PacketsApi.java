@@ -1,5 +1,6 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -107,10 +108,10 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (!nameSet.isEmpty()) {
@@ -200,10 +201,10 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (request.getNameCount() > 0) {
@@ -236,10 +237,10 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (request.getNameCount() > 0) {
@@ -285,7 +286,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-                long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+                long genTime = (Long) tuple.getColumn(GENTIME_COLUMN);
                 long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
                 int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                 TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))

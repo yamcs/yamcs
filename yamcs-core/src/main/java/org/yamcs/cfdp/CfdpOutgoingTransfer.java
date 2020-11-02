@@ -303,7 +303,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
         return new AckPacket(
                 FileDirectiveCode.FINISHED,
-                FileDirectiveSubtypeCode.FinishedByEndSystem,
+                FileDirectiveSubtypeCode.FINISHED_BY_END_SYSTEM,
                 ConditionCode.NO_ERROR,
                 TransactionStatus.TERMINATED,
                 header);
@@ -369,7 +369,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case ACK:
                 if (outgoingTransferState == OutgoingTransferState.EOF_SENT && ((AckPacket) packet)
-                        .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FinishedByWaypointOrOther) {
+                        .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FINISHED_BY_WAYPOINT_OR_OTHER) {
                     outgoingTransferState = OutgoingTransferState.EOF_ACK_RECEIVED;
                 } else {
                     log.info("Received ACK packet while in {} state", outgoingTransferState);

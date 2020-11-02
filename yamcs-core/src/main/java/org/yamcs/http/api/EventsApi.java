@@ -1,5 +1,8 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
+import static org.yamcs.StandardTupleDefinitions.SOURCE_COLUMN;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -80,14 +83,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (request.getSourceCount() > 0) {
-            sqlb.whereColIn("source", request.getSourceList());
+            sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
         switch (severity) {
         case "INFO":
@@ -229,7 +232,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         ListEventSourcesResponse.Builder responseb = ListEventSourcesResponse.newBuilder();
         TableDefinition tableDefinition = ydb.getTable(EventRecorder.TABLE_NAME);
-        BiMap<String, Short> enumValues = tableDefinition.getEnumValues("source");
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues(SOURCE_COLUMN);
         if (enumValues != null) {
             List<String> unsortedSources = new ArrayList<>();
             for (Entry<String, Short> entry : enumValues.entrySet()) {
@@ -274,14 +277,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (request.getSourceCount() > 0) {
-            sqlb.whereColIn("source", request.getSourceList());
+            sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
         String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
@@ -336,14 +339,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
 
         if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+            sqlb.whereColAfterOrEqual(GENTIME_COLUMN, request.getStart());
         }
         if (request.hasStop()) {
-            sqlb.whereColBefore("gentime", request.getStop());
+            sqlb.whereColBefore(GENTIME_COLUMN, request.getStop());
         }
 
         if (request.getSourceCount() > 0) {
-            sqlb.whereColIn("source", request.getSourceList());
+            sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
         String severity = "INFO";

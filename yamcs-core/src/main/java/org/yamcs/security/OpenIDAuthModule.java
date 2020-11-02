@@ -128,7 +128,7 @@ public class OpenIDAuthModule implements AuthModule {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
 
                 String idToken = response.get("id_token").getAsString();
@@ -136,7 +136,7 @@ public class OpenIDAuthModule implements AuthModule {
                 JsonObject claims = JwtHelper.decodeUnverified(idToken);
                 return createAuthenticationInfo(idToken, accessToken, claims);
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
                 throw new AuthenticationException(response.toString());
             }
@@ -201,11 +201,11 @@ public class OpenIDAuthModule implements AuthModule {
                 if (postData.length() != 0) {
                     postData.append('&');
                 }
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                postData.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8.name()));
                 postData.append('=');
-                postData.append(URLEncoder.encode(param.getValue(), "UTF-8"));
+                postData.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8.name()));
             }
-            return postData.toString().getBytes("UTF-8");
+            return postData.toString().getBytes(StandardCharsets.UTF_8);
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }

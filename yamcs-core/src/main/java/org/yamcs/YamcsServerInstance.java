@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static org.yamcs.YamcsServer.CFG_CRASH_HANDLER_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
-
+    
     private String name;
     Log log;
     TimeService timeService;
@@ -232,13 +233,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     private void loadCrashHandler() throws IOException {
-        if (config.containsKey("crashHandler")) {
-            if (config.containsKey("crashHandler", "args")) {
-                crashHandler = YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
-                        config.getSubMap("crashHandler", "args"));
-            } else {
-                crashHandler = YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
-            }
+        if (config.containsKey(CFG_CRASH_HANDLER_KEY)) {
+            crashHandler = YamcsServer.loadCrashHandler(config);
         } else {
             crashHandler = YamcsServer.getServer().getGlobalCrashHandler();
         }

@@ -79,9 +79,12 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public class YamcsServer {
 
-    private static final String SERVER_ID_KEY = "serverId";
-    private static final String SECRET_KEY = "secretKey";
+    private static final String CFG_SERVER_ID_KEY = "serverId";
+    private static final String CFG_SECRET_KEY = "secretKey";
+    public static final String CFG_CRASH_HANDLER_KEY = "crashHandler";
+    
     public static final String GLOBAL_INSTANCE = "_global";
+    
     private static final Log LOG = new Log(YamcsServer.class);
 
     private static final Pattern INSTANCE_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml(.offline)?");
@@ -636,8 +639,8 @@ public class YamcsServer {
     private String deriveServerId() {
         try {
             String id;
-            if (config.containsKey(SERVER_ID_KEY)) {
-                id = config.getString(SERVER_ID_KEY);
+            if (config.containsKey(CFG_SERVER_ID_KEY)) {
+                id = config.getString(CFG_SERVER_ID_KEY);
             } else {
                 id = InetAddress.getLocalHost().getHostName();
             }
@@ -654,9 +657,9 @@ public class YamcsServer {
     }
 
     private void deriveSecretKey() {
-        if (config.containsKey(SECRET_KEY)) {
+        if (config.containsKey(CFG_SECRET_KEY)) {
             // Should maybe only allow base64 encoded secret keys
-            secretKey = config.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
+            secretKey = config.getString(CFG_SECRET_KEY).getBytes(StandardCharsets.UTF_8);
         } else {
             LOG.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
@@ -1116,8 +1119,8 @@ public class YamcsServer {
         spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
         spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
         spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
-        spec.addOption("serverId", OptionType.STRING);
-        spec.addOption("secretKey", OptionType.STRING).withSecret(true);
+        spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
+        spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {
@@ -1219,7 +1222,7 @@ public class YamcsServer {
         deriveSecretKey();
 
         if (config.containsKey("crashHandler")) {
-            globalCrashHandler = loadCrashHandler();
+            globalCrashHandler = loadCrashHandler(config);
         } else {
             globalCrashHandler = new LogCrashHandler();
         }
@@ -1300,7 +1303,7 @@ public class YamcsServer {
         }
     }
 
-    private CrashHandler loadCrashHandler() throws IOException {
+    static CrashHandler loadCrashHandler(YConfiguration config) throws IOException {
         if (config.containsKey("crashHandler", "args")) {
             return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
                     config.getSubMap("crashHandler", "args"));

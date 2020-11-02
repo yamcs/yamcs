@@ -1,9 +1,7 @@
 package org.yamcs.cmdhistory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
@@ -66,6 +64,7 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
 
     @Override
     public void streamClosed(Stream stream) {
+        notifyFailed(new Exception("Stream "+ stream.getName()+" closed"));
     }
 
     @Override

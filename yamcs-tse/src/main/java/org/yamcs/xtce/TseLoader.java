@@ -69,8 +69,8 @@ public class TseLoader implements SpaceSystemLoader {
         command.setCommandContainer(container);
         command.setAbstract(true);
 
-        Argument typeArgument = new Argument("type");
-        IntegerArgumentType.Builder typeArgumentTypeBuilder = new IntegerArgumentType.Builder().setName("type");
+        Argument typeArgument = new Argument(ARG_TYPE);
+        IntegerArgumentType.Builder typeArgumentTypeBuilder = new IntegerArgumentType.Builder().setName(ARG_TYPE);
         IntegerDataEncoding.Builder typeArgumentEncoding = new IntegerDataEncoding.Builder().setSizeInBits(8);
         typeArgumentTypeBuilder.setEncoding(typeArgumentEncoding);
         typeArgumentTypeBuilder.setSizeInBits(8);
@@ -82,8 +82,8 @@ public class TseLoader implements SpaceSystemLoader {
                 typeArgument);
         container.addEntry(typeArgumentEntry);
 
-        Argument commandArgument = new Argument("command");
-        StringArgumentType.Builder commandArgumentType = new StringArgumentType.Builder().setName("command");
+        Argument commandArgument = new Argument(ARG_COMMAND);
+        StringArgumentType.Builder commandArgumentType = new StringArgumentType.Builder().setName(ARG_COMMAND);
         StringDataEncoding.Builder commandArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
         commandArgumentEncoding.setTerminationChar((byte) 0x00);
         commandArgumentType.setEncoding(commandArgumentEncoding);
@@ -98,28 +98,28 @@ public class TseLoader implements SpaceSystemLoader {
     }
 
     private MetaCommand createCOMMAND() {
-        CommandContainer container = new CommandContainer("COMMAND");
-        MetaCommand command = new MetaCommand("COMMAND");
+        CommandContainer container = new CommandContainer(CMD_COMMAND);
+        MetaCommand command = new MetaCommand(CMD_COMMAND);
         command.setCommandContainer(container);
         command.setAbstract(true);
 
-        ArgumentAssignment assignment = new ArgumentAssignment("type", "0");
+        ArgumentAssignment assignment = new ArgumentAssignment(ARG_TYPE, "0");
         command.addArgumentAssignment(assignment);
 
         return command;
     }
 
     private MetaCommand createQUERY() {
-        CommandContainer container = new CommandContainer("QUERY");
-        MetaCommand command = new MetaCommand("QUERY");
+        CommandContainer container = new CommandContainer(CMD_QUERY);
+        MetaCommand command = new MetaCommand(CMD_QUERY);
         command.setCommandContainer(container);
         command.setAbstract(true);
 
-        ArgumentAssignment assignment = new ArgumentAssignment("type", "1");
+        ArgumentAssignment assignment = new ArgumentAssignment(ARG_TYPE, "1");
         command.addArgumentAssignment(assignment);
 
-        Argument responseArgument = new Argument("response");
-        StringArgumentType.Builder responseArgumentType = new StringArgumentType.Builder().setName("response");
+        Argument responseArgument = new Argument(ARG_RESPONSE);
+        StringArgumentType.Builder responseArgumentType = new StringArgumentType.Builder().setName(ARG_RESPONSE);
         StringDataEncoding.Builder responseArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
         responseArgumentEncoding.setTerminationChar((byte) 0x00);
         responseArgumentType.setEncoding(responseArgumentEncoding);
