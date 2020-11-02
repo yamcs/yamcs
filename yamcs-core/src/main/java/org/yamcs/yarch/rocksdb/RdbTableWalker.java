@@ -157,11 +157,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
             
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            if (writeBatch == null) {
-                executeAction(rdb, action, dbKey);
-            } else {
-                executeAction(rdb, action, dbKey);
-            }
+            executeAction(rdb, action, dbKey);
 
             if (!isRunning()) {
                 return false;
@@ -182,11 +178,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
             
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            if (writeBatch == null) {
-                executeAction(rdb, action, dbKey);
-            } else {
-                executeAction(rdb, action, dbKey);
-            }
+            executeAction(rdb, action, dbKey);
 
             if (!isRunning()) {
                 return false;
