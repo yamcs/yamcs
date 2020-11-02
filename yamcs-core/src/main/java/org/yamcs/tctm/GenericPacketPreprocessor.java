@@ -77,7 +77,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
                 int n = packet.length;
                 computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
                 int packetCheckword = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeShort(packet, n - 2)
-                        : ByteArrayUtils.decodeShort(packet, n - 2);
+                        : ByteArrayUtils.decodeShortLE(packet, n - 2);
 
                 if (packetCheckword != computedCheckword) {
                     eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET,
