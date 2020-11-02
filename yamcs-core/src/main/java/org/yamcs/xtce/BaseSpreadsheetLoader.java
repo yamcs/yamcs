@@ -222,10 +222,10 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     }
 
     /**
-     * Temporary value holder for the enumeration definition (because enumerations are read before parameters, and
+     * Temporary value holder for the enumeration definition; needed because enumerations are read before parameters, and
      * reading sharing the same EPT among all parameters is not a good approach (think different alarm definitions)
      */
-    protected static class EnumerationDefinition {
+    public static class EnumerationDefinition {
         public final LinkedHashMap<Long, String> valueMap = new LinkedHashMap<>();
     }
 
