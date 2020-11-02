@@ -251,9 +251,9 @@ public class DataEncodingDecoder {
                 }
             } else {
                 if (ide.getEncoding() == Encoding.UNSIGNED) {
-                    return Type.UINT32;
+                    return Type.UINT64;
                 } else {
-                    return Type.SINT32;
+                    return Type.SINT64;
                 }
             }
         } else if (encoding instanceof FloatDataEncoding) {
