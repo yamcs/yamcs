@@ -42,6 +42,7 @@ public class TseLoader implements SpaceSystemLoader {
 
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
+        //we want to load all the time the file as fresh so no consistency date
     }
 
     @Override

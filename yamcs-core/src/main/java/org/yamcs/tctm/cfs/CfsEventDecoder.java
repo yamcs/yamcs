@@ -194,6 +194,11 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
 
     @Override
     public void streamClosed(Stream stream) {
+        log.debug("Stream {} closed", stream.getName());
+        streams.remove(stream);
+        if(streams.isEmpty()) {
+            notifyFailed(new Exception("All connected streams have been closed"));
+        }
     }
 
 }

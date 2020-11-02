@@ -144,6 +144,7 @@ public class SyslogHandler extends Handler {
 
     @Override
     public void flush() {
+        //no flush necessary, messages are sent immediately
     }
 
     @Override

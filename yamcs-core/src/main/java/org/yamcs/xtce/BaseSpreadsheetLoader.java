@@ -226,9 +226,6 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
      * reading sharing the same EPT among all parameters is not a good approach (think different alarm definitions)
      */
     protected static class EnumerationDefinition {
-        public EnumerationDefinition() {
-        }
-
         public final LinkedHashMap<Long, String> valueMap = new LinkedHashMap<>();
     }
 

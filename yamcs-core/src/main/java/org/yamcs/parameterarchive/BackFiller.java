@@ -255,5 +255,6 @@ public class BackFiller implements StreamSubscriber {
 
     @Override
     public void streamClosed(Stream stream) {
+        log.debug("Stream {} closed", stream.getName());
     }
 }

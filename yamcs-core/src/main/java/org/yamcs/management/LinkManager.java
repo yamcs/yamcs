@@ -516,6 +516,7 @@ public class LinkManager {
 
         @Override
         public void streamClosed(Stream s) {
+            log.debug("Stream {} closed", s.getName());
         }
     }
 

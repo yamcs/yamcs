@@ -151,7 +151,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
 
     @Override
     public void stopProviding(Parameter paramDef) {
-
+        //not implemented, this always provides all parameter
     }
 
     @Override
@@ -180,9 +180,11 @@ public class StreamParameterProvider extends AbstractProcessorService implements
 
     @Override
     public void startProviding(Parameter paramDef) {
+        //not implemented, this always provides all parameter
     }
 
     @Override
     public void startProvidingAll() {
+        //not implemented, this always provides all parameter
     }
 }

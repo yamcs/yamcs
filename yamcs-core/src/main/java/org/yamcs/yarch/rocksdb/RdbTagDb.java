@@ -205,5 +205,6 @@ public class RdbTagDb implements TagDb {
 
     @Override
     public void close() {
+        //no resource to close
     }
 }

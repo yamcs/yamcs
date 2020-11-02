@@ -17,6 +17,7 @@ public class DirectoryAuthModule implements AuthModule {
 
     @Override
     public void init(YConfiguration args) throws InitException {
+        //no config for this module
     }
 
     @Override

@@ -55,6 +55,7 @@ public class InsertStatement extends SimpleStreamSqlStatement {
             inputStream.addSubscriber(new StreamSubscriber() {
                 @Override
                 public void streamClosed(Stream stream) {
+                    log.debug("InputStream {} closed", stream.getName());
                 }
 
                 @Override

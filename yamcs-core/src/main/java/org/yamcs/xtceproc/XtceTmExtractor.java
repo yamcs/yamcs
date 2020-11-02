@@ -97,6 +97,7 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(Parameter param) {
+        //not implemented; very unlikely to be called
     }
 
     /**
@@ -154,6 +155,7 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(SequenceContainer sequenceContainer) {
+        //not implemented; very unlikely to be called
     }
 
     public ParameterValueList getParameterResult() {

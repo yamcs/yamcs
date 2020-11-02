@@ -36,6 +36,7 @@ public class StreamSqlResultList implements StreamSqlResult {
 
     @Override
     public void close() {
+        //no resource to release (the list will be garbage collected)
     }
     
 }

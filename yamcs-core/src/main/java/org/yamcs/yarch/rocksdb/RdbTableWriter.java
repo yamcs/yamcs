@@ -257,6 +257,7 @@ public class RdbTableWriter extends TableWriter {
 
     @Override
     public void streamClosed(Stream stream) {
+        log.debug("Stream {} closed", stream.getName());
     }
 
     protected synchronized void addHistogram(YRDB rdb, Tuple t) throws IOException, RocksDBException {

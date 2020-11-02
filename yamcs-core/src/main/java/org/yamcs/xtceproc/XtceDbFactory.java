@@ -570,6 +570,7 @@ public class XtceDbFactory {
 
         @Override
         public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
+            //no consistency needed since we are always "up2date"
         }
 
         @Override
