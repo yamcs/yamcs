@@ -187,42 +187,44 @@ public class YamcsClient {
     /**
      * Polls the server, to see if it is ready.
      */
-    public synchronized void pollServer() throws ClientException {
+    public void pollServer() throws ClientException {
         for (int i = 0; i < connectionAttempts; i++) {
-            try {
-                // Use an endpoint that does not require auth
-                baseClient.doBaseRequest("/auth", HttpMethod.GET, null).get(5, TimeUnit.SECONDS);
-                return; // Server up!
-            } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof UnauthorizedException) {
-                    for (ConnectionListener cl : connectionListeners) {
-                        cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
-                        cl.connectionFailed((UnauthorizedException) cause);
+            synchronized (this) {
+                try {
+                    // Use an endpoint that does not require auth
+                    baseClient.doBaseRequest("/auth", HttpMethod.GET, null).get(5, TimeUnit.SECONDS);
+                    return; // Server up!
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof UnauthorizedException) {
+                        for (ConnectionListener cl : connectionListeners) {
+                            cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                            cl.connectionFailed((UnauthorizedException) cause);
+                        }
+                        log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
+                        throw (UnauthorizedException) cause; // Jump out
+                    } else {
+                        for (ConnectionListener cl : connectionListeners) {
+                            cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                        }
+                        log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
                     }
-                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
-                    throw (UnauthorizedException) cause; // Jump out
-                } else {
+                } catch (TimeoutException e) {
                     for (ConnectionListener cl : connectionListeners) {
-                        cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                        cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
                     }
-                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
-                }
-            } catch (TimeoutException e) {
-                for (ConnectionListener cl : connectionListeners) {
-                    cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
-                }
-                log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                for (ConnectionListener cl : connectionListeners) {
-                    cl.connectionFailed(new ClientException("Thread interrupted", e));
+                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    for (ConnectionListener cl : connectionListeners) {
+                        cl.connectionFailed(new ClientException("Thread interrupted", e));
+                    }
                 }
             }
 
             if (i + 1 < connectionAttempts) {
                 try {
-                    this.wait(retryDelay);
+                    Thread.sleep(retryDelay);
                 } catch (InterruptedException e1) {
                     Thread.currentThread().interrupt();
                 }
