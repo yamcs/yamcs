@@ -509,7 +509,7 @@ public class TableDefinition {
                     "Cannot only create histogram on tables with the first column of the primary key of type TIMESTAMP");
 
         for (String hc : histoColumns) {
-            if (keyDef.getColumn(0).equals(hc))
+            if (keyDef.getColumnIndex(hc) == 0)
                 throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
                         "Cannot create histogram on the first column of the primary key");
             if (!tupleDef.hasColumn(hc))
