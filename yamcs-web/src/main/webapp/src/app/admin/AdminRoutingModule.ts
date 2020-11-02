@@ -84,8 +84,8 @@ const routes: Routes = [
         component: ServicesPage,
       },
       {
-        path: 'db',
-        loadChildren: () => import('src/app/db/DBModule').then(m => m.DBModule),
+        path: 'databases',
+        loadChildren: () => import('src/app/admin/databases/DatabasesModule').then(m => m.DatabasesModule),
       },
       {
         path: 'rocksdb',

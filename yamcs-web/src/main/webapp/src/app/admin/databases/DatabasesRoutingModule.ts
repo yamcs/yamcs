@@ -85,7 +85,7 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class DBRoutingModule { }
+export class DatabasesRoutingModule { }
 
 export const routingComponents = [
   DatabasesPage,

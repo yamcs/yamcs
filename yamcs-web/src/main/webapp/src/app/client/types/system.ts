@@ -174,6 +174,11 @@ export interface ClientConnectionInfo {
   httpRequest: HttpRequestInfo;
 }
 
+export interface ResultSet {
+  columns: any;
+  rows: any;
+}
+
 export interface HttpRequestInfo {
   protocol: string;
   method: string;

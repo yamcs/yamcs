@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Record, Table } from '../../../client';
+import { Record, Table } from '../../../../client';
 
 @Component({
   selector: 'app-record',

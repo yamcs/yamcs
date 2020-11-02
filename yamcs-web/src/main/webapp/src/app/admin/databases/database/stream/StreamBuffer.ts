@@ -1,4 +1,4 @@
-import { StreamData } from '../../../client';
+import { StreamData } from '../../../../client';
 
 export class StreamBuffer {
 

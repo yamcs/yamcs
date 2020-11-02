@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { StreamData } from '../../../client';
+import { StreamData } from '../../../../client';
 
 @Component({
   selector: 'app-stream-data',

@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ColumnData, Value } from '../../client';
+import { ColumnData, Value } from '../../../client';
 
 @Pipe({ name: 'columnValue' })
 export class ColumnValuePipe implements PipeTransform {

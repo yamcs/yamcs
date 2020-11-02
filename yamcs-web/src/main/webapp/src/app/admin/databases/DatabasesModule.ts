@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
-import { AdminSharedModule } from '../admin/shared/AdminSharedModule';
-import { SharedModule } from '../shared/SharedModule';
+import { SharedModule } from '../../shared/SharedModule';
+import { AdminSharedModule } from '../shared/AdminSharedModule';
 import { StreamDataComponent } from './database/stream/StreamDataComponent';
 import { RecordComponent } from './database/table/RecordComponent';
 import { ShowEnumDialog } from './database/table/ShowEnumDialog';
-import { DBRoutingModule, routingComponents } from './DBRoutingModule';
+import { DatabasesRoutingModule, routingComponents } from './DatabasesRoutingModule';
 import { ColumnValuePipe } from './pipes/ColumnValuePipe';
+import { Shell } from './shell/Shell';
 
 const pipes = [
   ColumnValuePipe,
@@ -15,15 +16,16 @@ const pipes = [
   imports: [
     SharedModule,
     AdminSharedModule,
-    DBRoutingModule,
+    DatabasesRoutingModule,
   ],
   declarations: [
     pipes,
     routingComponents,
     RecordComponent,
+    Shell,
     ShowEnumDialog,
     StreamDataComponent,
   ],
 })
-export class DBModule {
+export class DatabasesModule {
 }

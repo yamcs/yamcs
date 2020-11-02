@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Stream } from '../../../client';
-import { YamcsService } from '../../../core/services/YamcsService';
+import { Stream } from '../../../../client';
+import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({
   templateUrl: './StreamColumnsTab.html',

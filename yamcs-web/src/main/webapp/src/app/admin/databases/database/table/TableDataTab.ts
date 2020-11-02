@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Record, Table } from '../../../client';
-import { YamcsService } from '../../../core/services/YamcsService';
+import { Record, Table } from '../../../../client';
+import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({
   templateUrl: './TableDataTab.html',

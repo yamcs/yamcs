@@ -1,8 +1,8 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { StreamData, StreamSubscription } from '../../../client';
-import { Synchronizer } from '../../../core/services/Synchronizer';
-import { YamcsService } from '../../../core/services/YamcsService';
+import { StreamData, StreamSubscription } from '../../../../client';
+import { Synchronizer } from '../../../../core/services/Synchronizer';
+import { YamcsService } from '../../../../core/services/YamcsService';
 import { StreamBuffer } from './StreamBuffer';
 
 export interface AnimatableStreamData extends StreamData {

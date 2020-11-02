@@ -3,8 +3,8 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Database } from '../../client';
-import { YamcsService } from '../../core/services/YamcsService';
+import { Database } from '../../../client';
+import { YamcsService } from '../../../core/services/YamcsService';
 
 interface DatabaseObject {
   type: 'table' | 'stream';

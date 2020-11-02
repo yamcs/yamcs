@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Table } from '../../../client';
-import { YamcsService } from '../../../core/services/YamcsService';
+import { Table } from '../../../../client';
+import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({
   templateUrl: './TablePage.html',

@@ -2,10 +2,10 @@ import { CdkColumnDef } from '@angular/cdk/table';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { rowAnimation } from '../../../animations';
-import { StreamData } from '../../../client';
-import { Synchronizer } from '../../../core/services/Synchronizer';
-import { YamcsService } from '../../../core/services/YamcsService';
+import { rowAnimation } from '../../../../animations';
+import { StreamData } from '../../../../client';
+import { Synchronizer } from '../../../../core/services/Synchronizer';
+import { YamcsService } from '../../../../core/services/YamcsService';
 import { StreamDataDataSource } from './StreamDataDataSource';
 
 @Component({
