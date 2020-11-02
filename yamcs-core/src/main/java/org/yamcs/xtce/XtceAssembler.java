@@ -839,7 +839,7 @@ public class XtceAssembler {
         } else if (calibrator instanceof MathOperationCalibrator) {
             doc.writeStartElement("MathOperationCalibrator");
             for (MathOperation.Element me : ((MathOperationCalibrator) calibrator).getElementList()) {
-                doc.writeStartElement(me.getType().name());
+                doc.writeStartElement(me.getType().xtceName());
                 doc.writeCharacters(me.toString());
                 doc.writeEndElement();
             }
@@ -1082,10 +1082,10 @@ public class XtceAssembler {
             log.error("Unknown sequence entry type " + entry.getClass() + " used for " + entry);
             return;
         }
-        if (entry.getReferenceLocation() != ReferenceLocationType.previousEntry
+        if (entry.getReferenceLocation() != ReferenceLocationType.PREVIOUS_ENTRY
                 || entry.getLocationInContainerInBits() != 0) {
             doc.writeStartElement("LocationInContainerInBits");
-            doc.writeAttribute("referenceLocation", entry.getReferenceLocation().name());
+            doc.writeAttribute("referenceLocation", entry.getReferenceLocation().xtceName());
             doc.writeStartElement("FixedValue");
             doc.writeCharacters(Integer.toString(entry.getLocationInContainerInBits()));
             doc.writeEndElement();// FixedValue

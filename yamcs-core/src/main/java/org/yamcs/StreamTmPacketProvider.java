@@ -57,7 +57,7 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
             streams.addAll(config.getList("streams"));
         }
 
-        for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.tm)) {
+        for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.TM)) {
             if (procName.equals(sce.getProcessor())) {
                 streams.add(sce.getName());
             }

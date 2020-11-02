@@ -53,23 +53,23 @@ public class StreamInitializer {
     public void createStreams() throws StreamSqlException, ParseException, IOException {
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         for (StreamConfigEntry sce : sc.getEntries()) {
-            if (sce.type == StreamConfig.StandardStreamType.cmdHist) {
+            if (sce.type == StreamConfig.StandardStreamType.CMD_HIST) {
                 createStream(sce.name, StandardTupleDefinitions.TC);
-            } else if (sce.type == StreamConfig.StandardStreamType.tm) {
+            } else if (sce.type == StreamConfig.StandardStreamType.TM) {
                 createStream(sce.name, StandardTupleDefinitions.TM);
-            } else if (sce.type == StreamConfig.StandardStreamType.param) {
+            } else if (sce.type == StreamConfig.StandardStreamType.PARAM) {
                 createStream(sce.name, StandardTupleDefinitions.PARAMETER);
-            } else if (sce.type == StreamConfig.StandardStreamType.tc) {
+            } else if (sce.type == StreamConfig.StandardStreamType.TC) {
                 createStream(sce.name, StandardTupleDefinitions.TC);
-            } else if (sce.type == StreamConfig.StandardStreamType.event) {
+            } else if (sce.type == StreamConfig.StandardStreamType.EVENT) {
                 createStream(sce.name, StandardTupleDefinitions.EVENT);
-            } else if (sce.type == StreamConfig.StandardStreamType.parameterAlarm) {
+            } else if (sce.type == StreamConfig.StandardStreamType.PARAMETER_ALARM) {
                 createStream(sce.name, StandardTupleDefinitions.PARAMETER_ALARM);
-            } else if (sce.type == StreamConfig.StandardStreamType.eventAlarm) {
+            } else if (sce.type == StreamConfig.StandardStreamType.EVENT_ALARM) {
                 createStream(sce.name, StandardTupleDefinitions.EVENT_ALARM);
-            } else if (sce.type == StreamConfig.StandardStreamType.invalidTm) {
+            } else if (sce.type == StreamConfig.StandardStreamType.INVALID_TM) {
                 createStream(sce.name, StandardTupleDefinitions.INVALID_TM);
-            } else if (sce.type == StreamConfig.StandardStreamType.sqlFile) {
+            } else if (sce.type == StreamConfig.StandardStreamType.SQL_FILE) {
                 loadSqlFile(sce.name); // filename in fact
             } else {
                 throw new IllegalArgumentException("Unknown stream type " + sce.type);
@@ -109,17 +109,21 @@ public class StreamInitializer {
             StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;
             while ((stmt = parser.StreamSqlStatement()) != null) {
-                stmt.execute(context, new ResultListener() {
+                StreamSqlStatement stmt1 = stmt;
+                stmt1.execute(context, new ResultListener() {
                     @Override
                     public void next(Tuple tuple) {
+                        //swallow result
                     }
 
                     @Override
                     public void completeExceptionally(Throwable t) {
+                        log.error("Query {} eneded in error: ",stmt1, t);
                     }
 
                     @Override
                     public void complete() {
+                        log.debug("Query {} finished", stmt1);
                     }
                 });
             }

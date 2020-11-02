@@ -61,7 +61,7 @@ public class MathOperationCalibratorFactory {
         Stack<String> stack = new Stack<>();
         for (MathOperation.Element e : operation.getElementList()) {
             ElementType type = e.getType();
-            if (type == ElementType.Operator) {
+            if (type == ElementType.OPERATOR) {
                 MathOperator mo = e.getOperator();
                 if (mo == MathOperator.SWAP) {
                     String x1 = stack.pop();
@@ -90,11 +90,11 @@ public class MathOperationCalibratorFactory {
                         throw new IllegalStateException("Only arity 1 and 2 supported");
                     }
                 }
-            } else if(type == ElementType.ThisParameterOperand) {
+            } else if(type == ElementType.THIS_PARAMETER_OPERAND) {
                 stack.push("v");
-            } else if(type == ElementType.ValueOperand) {
+            } else if(type == ElementType.VALUE_OPERAND) {
                 stack.push(e.toString());
-            }  else if(type == ElementType.ParameterInstanceRefOperand) {
+            }  else if(type == ElementType.PARAMETER_INSTANCE_REF_OPERAND) {
                 if(inputParams==null) {
                     throw new IllegalArgumentException("Reference to parameter encountered but no input list was provided");
                 }

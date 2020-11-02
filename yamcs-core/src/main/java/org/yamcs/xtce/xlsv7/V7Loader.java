@@ -1290,10 +1290,10 @@ public class V7Loader extends V7LoaderBase {
         if (absoluteoffset != -1) {
             absoluteoffset += relpos;
             pos = absoluteoffset;
-            location = ReferenceLocationType.containerStart;
+            location = ReferenceLocationType.CONTAINER_START;
         } else {
             pos = relpos;
-            location = ReferenceLocationType.previousEntry;
+            location = ReferenceLocationType.PREVIOUS_ENTRY;
         }
         // the repeat string will contain the number of times a measurement (or container) should be
         // repeated. It is a String because at this point it can be either a number or a reference to another
@@ -1529,11 +1529,11 @@ public class V7Loader extends V7LoaderBase {
                     byte[] binaryValue = StringConverter.hexStringToArray(hexValue);
                     FixedValueEntry fve;
                     if (pos.relative) {
-                        fve = new FixedValueEntry(pos.pos, ReferenceLocationType.previousEntry, argname, binaryValue,
+                        fve = new FixedValueEntry(pos.pos, ReferenceLocationType.PREVIOUS_ENTRY, argname, binaryValue,
                                 sizeInBits);
                     } else {
                         fve = new FixedValueEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
-                                ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
+                                ReferenceLocationType.CONTAINER_START, argname, binaryValue, sizeInBits);
                     }
                     container.addEntry(fve);
                 } else {
@@ -1661,10 +1661,10 @@ public class V7Loader extends V7LoaderBase {
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or container that had as a
         // result that the absoluteoffset could not be determined anymore; hence, a relative position is added
         if (pos.relative) {
-            ae = new ArgumentEntry(pos.pos, ReferenceLocationType.previousEntry, arg);
+            ae = new ArgumentEntry(pos.pos, ReferenceLocationType.PREVIOUS_ENTRY, arg);
         } else {
             ae = new ArgumentEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
-                    ReferenceLocationType.containerStart, arg);
+                    ReferenceLocationType.CONTAINER_START, arg);
         }
 
         container.addEntry(ae);

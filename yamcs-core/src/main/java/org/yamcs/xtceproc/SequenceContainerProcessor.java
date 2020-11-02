@@ -49,10 +49,10 @@ public class SequenceContainerProcessor {
                     }
 
                     switch (se.getReferenceLocation()) {
-                    case previousEntry:
+                    case PREVIOUS_ENTRY:
                         buf.setPosition(buf.getPosition() + se.getLocationInContainerInBits());
                         break;
-                    case containerStart:
+                    case CONTAINER_START:
                         buf.setPosition(se.getLocationInContainerInBits());
                     }
 

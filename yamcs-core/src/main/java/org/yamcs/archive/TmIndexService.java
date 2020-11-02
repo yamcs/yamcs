@@ -1,6 +1,5 @@
 package org.yamcs.archive;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.yamcs.yarch.StreamSubscriber;
@@ -15,8 +14,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  *
  */
 public interface TmIndexService extends StreamSubscriber, YamcsService {
-
-    public abstract void close() throws IOException;
 
     public abstract void deleteRecords(long start, long stop);
     

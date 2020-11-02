@@ -52,7 +52,7 @@ public class XtceAssemblerTest {
         m2.put("spec", f.getAbsolutePath());
         List<YConfiguration> mdbConfigs2 = Arrays.asList(YConfiguration.wrap(m2));
         XtceDb db2 = XtceDbFactory.createInstance(mdbConfigs2, false, false);
-        f.delete();
+      //  f.delete();
 
         compareDatabases(db1, db2);
     }

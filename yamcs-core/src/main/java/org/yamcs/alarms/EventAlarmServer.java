@@ -58,6 +58,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
 
             @Override
             public void streamClosed(Stream stream) {
+                notifyFailed(new Exception("Stream "+stream.getName()+" closed"));
             }
         };
         eventStream.addSubscriber(eventStreamSubscriber);

@@ -35,10 +35,17 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
      * or relative to the end of the previous entry (previousEntry)
      */
     public enum ReferenceLocationType {
-        containerStart, previousEntry
+        CONTAINER_START("containerStart"), PREVIOUS_ENTRY("previousEntry");
+        final String xtceName;
+        ReferenceLocationType(String xtceName) {
+            this.xtceName = xtceName;
+        }
+        String xtceName() {
+            return xtceName;
+        }
     };
 
-    ReferenceLocationType referenceLocation = ReferenceLocationType.previousEntry;
+    ReferenceLocationType referenceLocation = ReferenceLocationType.PREVIOUS_ENTRY;
     /**
      * May be used when this entry repeats itself in the sequence container.
      * If null, the entry does not repeat.

@@ -43,8 +43,4 @@ public class EventReplayHandler implements ReplayHandler {
     public MessageLite transform(Tuple t) {
         return (Event) t.getColumn("body");
     }
-
-    @Override
-    public void reset() {
-    }
 }

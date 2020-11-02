@@ -122,10 +122,6 @@ public class XtceTmReplayHandler implements ReplayHandler {
         }
     }
 
-    @Override
-    public void reset() {
-    }
-
     public static class ReplayPacket {
         final String pname;
         final long recTime;

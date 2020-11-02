@@ -100,7 +100,7 @@ public class Subscription {
         addContainer2Entry(se.getSequenceContainer(), se);
         SequenceContainer sctmp = se.getSequenceContainer();
         // if this entry's location is relative to the previous one, then we have to add also that one in the list
-        if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.previousEntry) {
+        if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY) {
             if (se.getIndex() > 0) {
                 addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
             } else { // continue with the basecontainer if we are at the first entry

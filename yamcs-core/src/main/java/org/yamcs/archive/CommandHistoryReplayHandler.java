@@ -69,11 +69,6 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         return GPBHelper.tupleToCommandHistoryEntry(t);
     }
 
-    @Override
-    public void reset() {
-        // TODO Auto-generated method stub
-    }
-
     static void appendTimeClause(StringBuilder sb, ReplayOptions request) {
         if (request.hasStart() || (request.hasStop())) {
             sb.append(" where ");

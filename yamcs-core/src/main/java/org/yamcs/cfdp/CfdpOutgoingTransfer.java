@@ -305,7 +305,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 FileDirectiveCode.FINISHED,
                 FileDirectiveSubtypeCode.FinishedByEndSystem,
                 ConditionCode.NO_ERROR,
-                TransactionStatus.Terminated,
+                TransactionStatus.TERMINATED,
                 header);
     }
 

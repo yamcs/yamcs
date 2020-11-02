@@ -37,7 +37,7 @@ public class AlarmRecorder extends AbstractYamcsService {
                         + ", primary key("+CNAME_TRIGGER_TIME+", parameter, seqNum)) table_format=compressed";
                 ydb.execute(query);
             }
-            setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.parameterAlarm);
+            setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.PARAMETER_ALARM);
 
             if (ydb.getTable(EVENT_ALARM_TABLE_NAME) == null) {
                 String cols = StandardTupleDefinitions.EVENT_ALARM.getStringDefinition1();
@@ -46,7 +46,7 @@ public class AlarmRecorder extends AbstractYamcsService {
                 ydb.execute(query);
             }
 
-            setupRecording(yamcsInstance, EVENT_ALARM_TABLE_NAME, StandardStreamType.eventAlarm);
+            setupRecording(yamcsInstance, EVENT_ALARM_TABLE_NAME, StandardStreamType.EVENT_ALARM);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }

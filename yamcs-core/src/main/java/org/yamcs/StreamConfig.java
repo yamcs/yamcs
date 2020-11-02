@@ -24,7 +24,16 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class StreamConfig {
     public enum StandardStreamType {
-        cmdHist, tm, param, tc, event, parameterAlarm, eventAlarm, sqlFile, invalidTm;
+        CMD_HIST, TM, PARAM, TC, EVENT, PARAMETER_ALARM, EVENT_ALARM, SQL_FILE, INVALID_TM;
+        
+        public static StandardStreamType fromString(String s) {
+            for(StandardStreamType v: values()) {
+                if(v.name().replace("_", "").equals(s.toUpperCase())) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("No stream type by this name");
+        }
     }
 
     List<StreamConfigEntry> entries = new ArrayList<>();
@@ -54,7 +63,7 @@ public class StreamConfig {
             }
             StandardStreamType type = null;
             try {
-                type = StandardStreamType.valueOf(streamType);
+                type = StandardStreamType.fromString(streamType);
             } catch (IllegalArgumentException e) {
                 throw new ConfigurationException("Unknown stream type '" + streamType + "'");
             }
@@ -81,9 +90,9 @@ public class StreamConfig {
 
     private void addEntry(StandardStreamType type, String streamName) {
         StreamConfigEntry entry;
-        if (type == StandardStreamType.tm) {
+        if (type == StandardStreamType.TM) {
             entry = new TmStreamConfigEntry(streamName);
-        } else if (type == StandardStreamType.tc) {
+        } else if (type == StandardStreamType.TC) {
             entry = new TcStreamConfigEntry(streamName, null, null);
         } else {
             entry = new StreamConfigEntry(type, streamName, null);
@@ -103,7 +112,7 @@ public class StreamConfig {
 
         String processor = streamConf.getString("processor", null);
 
-        if (type == StandardStreamType.tm) {
+        if (type == StandardStreamType.TM) {
             if (streamConf.containsKey("rootContainer")) {
                 String containerName = (String) streamConf.get("rootContainer");
                 rootContainer = xtceDb.getSequenceContainer(containerName);
@@ -112,7 +121,7 @@ public class StreamConfig {
                 }
             }
             entry = new TmStreamConfigEntry(streamName, processor, rootContainer, async);
-        } else if (type == StandardStreamType.tc) {
+        } else if (type == StandardStreamType.TC) {
             if (streamConf.containsKey("tcPatterns")) {
                 List<String> patterns =  streamConf.getList("tcPatterns");
                 List<Pattern> patterns1 = patterns.stream().map(s -> Pattern.compile(s)).collect(Collectors.toList());
@@ -215,7 +224,7 @@ public class StreamConfig {
     }
 
     public TmStreamConfigEntry getTmEntry(String streamName) {
-        StreamConfigEntry sce = getEntry(StandardStreamType.tm, streamName);
+        StreamConfigEntry sce = getEntry(StandardStreamType.TM, streamName);
         return (TmStreamConfigEntry) sce;
     }
 
@@ -226,7 +235,7 @@ public class StreamConfig {
     }
     
     public TcStreamConfigEntry getTcEntry(String streamName) {
-        StreamConfigEntry sce = getEntry(StandardStreamType.tc, streamName);
+        StreamConfigEntry sce = getEntry(StandardStreamType.TC, streamName);
         return (TcStreamConfigEntry) sce;
     }
 
@@ -244,7 +253,7 @@ public class StreamConfig {
 
         public TmStreamConfigEntry(String name, String processor,
                 SequenceContainer rootContainer, boolean async) {
-            super(StandardStreamType.tm, name, processor);
+            super(StandardStreamType.TM, name, processor);
             this.rootContainer = rootContainer;
             this.async = async;
         }
@@ -269,7 +278,7 @@ public class StreamConfig {
         List<Pattern> tcPatterns;
 
         public TcStreamConfigEntry(String name, String processor, List<Pattern> tcPatterns) {
-            super(StandardStreamType.tc, name, processor);
+            super(StandardStreamType.TC, name, processor);
             this.tcPatterns = tcPatterns;
         }
 

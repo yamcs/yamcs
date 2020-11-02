@@ -241,6 +241,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     @Override
     public void streamClosed(Stream stream) {
+        log.warn("Stream {} closed", stream.getName());
+        notifyFailed(new Exception("Stream "+stream.getName()+" cloased"));
     }
 
     public CfdpOutgoingTransfer upload(String objName, String target, boolean overwrite, boolean acknowledged,

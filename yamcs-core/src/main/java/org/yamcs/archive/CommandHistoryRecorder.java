@@ -52,7 +52,7 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
                 streamNames = config.getList("streams");
             } else {
                 streamNames = StreamConfig.getInstance(yamcsInstance)
-                    .getEntries(StandardStreamType.cmdHist).stream().map(sce -> sce.getName()).collect(Collectors.toList());
+                    .getEntries(StandardStreamType.CMD_HIST).stream().map(sce -> sce.getName()).collect(Collectors.toList());
             }
             if (streamNames.isEmpty()) {
                 notifyFailed(new ConfigurationException(
@@ -82,7 +82,7 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
     protected void doStop() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Utils.closeTableWriters(ydb, StreamConfig.getInstance(yamcsInstance)
-                .getEntries(StandardStreamType.cmdHist).stream().map(sce -> sce.getName())
+                .getEntries(StandardStreamType.CMD_HIST).stream().map(sce -> sce.getName())
                 .collect(Collectors.toList()));
         notifyStopped();
     }

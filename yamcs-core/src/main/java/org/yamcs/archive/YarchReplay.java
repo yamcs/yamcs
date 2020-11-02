@@ -333,10 +333,6 @@ public class YarchReplay implements StreamSubscriber {
 
     @Override
     public synchronized void streamClosed(Stream stream) {
-        for (ReplayHandler rh : handlers.values()) {
-            rh.reset();
-        }
-
         if (ignoreClose) { // this happens when we close the stream to reopen
                            // another one
             ignoreClose = false;

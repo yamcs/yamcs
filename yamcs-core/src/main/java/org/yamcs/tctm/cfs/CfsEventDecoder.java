@@ -74,7 +74,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
             StreamConfig sconf = StreamConfig.getInstance(yamcsInstance);
 
             for (StreamConfigEntry sce : sconf.getEntries()) {
-                if (sce.getType() == StandardStreamType.tm) {
+                if (sce.getType() == StandardStreamType.TM) {
                     streamNames.add(sce.getName());
                 }
             }

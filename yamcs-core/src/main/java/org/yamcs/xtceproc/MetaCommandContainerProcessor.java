@@ -41,10 +41,10 @@ public class MetaCommandContainerProcessor {
             int size = 0;
             BitBuffer bitbuf = pcontext.bitbuf;
             switch (se.getReferenceLocation()) {
-            case previousEntry:
+            case PREVIOUS_ENTRY:
                 bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
                 break;
-            case containerStart:
+            case CONTAINER_START:
                 bitbuf.setPosition(se.getLocationInContainerInBits());
             }
             if (se instanceof ArgumentEntry) {
@@ -72,10 +72,10 @@ public class MetaCommandContainerProcessor {
             int size = 0;
             BitBuffer bitbuf = pcontext.bitbuf;
             switch (se.getReferenceLocation()) {
-            case previousEntry:
+            case PREVIOUS_ENTRY:
                 bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
                 break;
-            case containerStart:
+            case CONTAINER_START:
                 bitbuf.setPosition(se.getLocationInContainerInBits());
             }
             if (se instanceof ArgumentEntry) {

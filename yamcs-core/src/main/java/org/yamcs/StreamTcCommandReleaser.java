@@ -51,7 +51,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
 
         Set<String> streams = new LinkedHashSet<>();
 
-        for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.tc)) {
+        for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.TC)) {
             if (procName.equals(sce.getProcessor())) {
                 streams.add(sce.getName());
             }

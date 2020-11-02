@@ -2522,7 +2522,7 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         String refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY; // default
         ArrayParameterEntry parameterEntry = new ArrayParameterEntry(0, locationType);
 
         final ArrayParameterEntry finalpe = parameterEntry;
@@ -2614,7 +2614,7 @@ public class XtceStaxReader {
 
         String refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY; // default
         ParameterEntry parameterEntry = new ParameterEntry(0, locationType);
         final ParameterEntry finalpe = parameterEntry;
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
@@ -2648,7 +2648,7 @@ public class XtceStaxReader {
 
         String refName = readMandatoryAttribute("containerRef", xmlEvent.asStartElement());
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY; // default
         SequenceContainer container = spaceSystem.getSequenceContainer(refName);
         ContainerEntry containerEntry = null;
         if (container != null) {
@@ -2769,9 +2769,9 @@ public class XtceStaxReader {
         ReferenceLocationType location;
         String value = readAttribute("referenceLocation", xmlEvent.asStartElement(), "previousEntry");
         if (value.equalsIgnoreCase("previousEntry")) {
-            location = ReferenceLocationType.previousEntry;
+            location = ReferenceLocationType.PREVIOUS_ENTRY;
         } else if (value.equalsIgnoreCase("containerStart")) {
-            location = ReferenceLocationType.containerStart;
+            location = ReferenceLocationType.CONTAINER_START;
         } else {
             throw new XMLStreamException("Currently unsupported reference location: " + value);
         }

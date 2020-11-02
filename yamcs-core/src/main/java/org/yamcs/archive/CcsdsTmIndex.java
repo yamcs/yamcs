@@ -76,7 +76,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             streamNames = config.getList("streams");
         } else {
             streamNames = StreamConfig.getInstance(yamcsInstance)
-                    .getEntries(StandardStreamType.tm)
+                    .getEntries(StandardStreamType.TM)
                     .stream()
                     .map(sce -> sce.getName())
                     .collect(Collectors.toList());
@@ -273,10 +273,6 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
                 return 0x3FFF;
             }
         }
-    }
-
-    @Override
-    public synchronized void close() throws IOException {
     }
 
     /*
@@ -483,6 +479,13 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
 
     @Override
     public void streamClosed(Stream stream) {
+        log.warn("Stream {} closed", stream.getName());
+        streamNames.remove(stream.getName());
+        if(streamNames.isEmpty()) {
+            //if all the streams we are subscribed to are closed we fail the service
+            log.warn("No stream left");
+            notifyFailed(new Exception("stream clsed"));
+        }
     }
 
     public synchronized CompletableFuture<Void> rebuild(TimeInterval interval) throws YarchException {

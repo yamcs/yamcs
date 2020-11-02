@@ -84,7 +84,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         instanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
-        tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.Server);
+        tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.SERVER);
         port = config.getInt("port", -1);
         expiration = (long) (config.getDouble("expirationDays", 7.0) * 24 * 3600 * 1000);
         streamNames = config.getList("streams");
@@ -105,7 +105,7 @@ public class ReplicationMaster extends AbstractYamcsService {
         YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> deleteExpiredFiles(), fileCloseTime,
                 fileCloseTime, TimeUnit.MILLISECONDS);
 
-        if (tcpRole == TcpRole.Server) {
+        if (tcpRole == TcpRole.SERVER) {
             List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
             if (servers.isEmpty()) {
                 throw new InitException(
@@ -191,7 +191,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             }
             translators.add(new StreamToFile(s, i));
         }
-        if (tcpRole == TcpRole.Client) {
+        if (tcpRole == TcpRole.CLIENT) {
             // connect to all slaves
             for (SlaveServer sa : slaves) {
                 sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port,
@@ -216,7 +216,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 rf.rf.close();
             }
         }
-        if (tcpRole == TcpRole.Client) {
+        if (tcpRole == TcpRole.CLIENT) {
             for (SlaveServer sa : slaves) {
                 sa.client.stop();
             }

@@ -119,8 +119,8 @@ public class BackFiller implements StreamSubscriber {
         } else {
             StreamConfig sc = StreamConfig.getInstance(parchive.getYamcsInstance());
             monitoredStreams = new ArrayList<>();
-            sc.getEntries(StandardStreamType.tm).forEach(sce -> monitoredStreams.add(sce.getName()));
-            sc.getEntries(StandardStreamType.param).forEach(sce -> monitoredStreams.add(sce.getName()));
+            sc.getEntries(StandardStreamType.TM).forEach(sce -> monitoredStreams.add(sce.getName()));
+            sc.getEntries(StandardStreamType.PARAM).forEach(sce -> monitoredStreams.add(sce.getName()));
         }
         if (!monitoredStreams.isEmpty()) {
             streamUpdates = new HashSet<>();

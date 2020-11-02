@@ -18,7 +18,7 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     private TransactionStatus transactionStatus;
 
     public enum TransactionStatus {
-        Undefined((byte) 0x00), Active((byte) 0x01), Terminated((byte) 0x02), Unrecognized((byte) 0x03);
+        UNDEFINED((byte) 0x00), ACTIVE((byte) 0x01), TERMINATED((byte) 0x02), URECOGNIZED((byte) 0x03);
 
         private byte status;
 

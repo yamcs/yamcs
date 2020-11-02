@@ -64,7 +64,7 @@ public class ParameterRecorder extends AbstractYamcsService {
 
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             if (!config.containsKey("streams")) {
-                List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.param);
+                List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.PARAM);
                 for (StreamConfigEntry sce : sceList) {
                     streams.add(sce.getName());
                     ydb.execute("insert_append into " + TABLE_NAME + " select * from " + sce.getName());
@@ -72,7 +72,7 @@ public class ParameterRecorder extends AbstractYamcsService {
             } else if (config.containsKey("streams")) {
                 List<String> streamNames = config.getList("streams");
                 for (String sn : streamNames) {
-                    StreamConfigEntry sce = sc.getEntry(StandardStreamType.param, sn);
+                    StreamConfigEntry sce = sc.getEntry(StandardStreamType.PARAM, sn);
                     if (sce == null) {
                         throw new ConfigurationException("No stream config found for '" + sn + "'");
                     }

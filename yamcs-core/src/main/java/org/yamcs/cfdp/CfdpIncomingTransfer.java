@@ -185,7 +185,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                 FileDirectiveCode.EOF,
                 FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
                 ConditionCode.NO_ERROR,
-                TransactionStatus.Active,
+                TransactionStatus.ACTIVE,
                 getHeader(packet)));
     }
 

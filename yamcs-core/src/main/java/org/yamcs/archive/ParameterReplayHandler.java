@@ -138,8 +138,4 @@ public class ParameterReplayHandler implements ReplayHandler {
         }
         return pvlist;
     }
-
-    @Override
-    public void reset() {
-    }
 }

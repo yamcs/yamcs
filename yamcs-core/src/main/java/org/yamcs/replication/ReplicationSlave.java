@@ -66,8 +66,8 @@ public class ReplicationSlave extends AbstractYamcsService {
         super.init(yamcsInstance, config);
         this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
         streamNames = config.getList("streams");
-        tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.Client);
-        if (tcpRole == TcpRole.Client) {
+        tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.CLIENT);
+        if (tcpRole == TcpRole.CLIENT) {
             host = config.getString("masterHost");
             port = config.getInt("masterPort");
             reconnectionInterval = 1000 * config.getLong("reconnectionIntervalSec", 30);
@@ -123,7 +123,7 @@ public class ReplicationSlave extends AbstractYamcsService {
 
     @Override
     protected void doStart() {
-        if (tcpRole == TcpRole.Client) {
+        if (tcpRole == TcpRole.CLIENT) {
             tcpClient = new ReplicationClient(yamcsInstance, host, port, sslCtx, reconnectionInterval, () -> {
                 return new SlaveChannelHandler(this);
             });
@@ -298,7 +298,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         @Override
         public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
             super.handlerAdded(ctx);
-            if (tcpRole == TcpRole.Client) {
+            if (tcpRole == TcpRole.CLIENT) {
                 return;
             }
             this.channelHandlerContext = ctx;

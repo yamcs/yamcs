@@ -83,7 +83,7 @@ public class PerfMdbLoader implements SpaceSystemLoader {
             for (int i = 0; i < numParam; i++) {
                 Parameter p = new Parameter("p_" + pktId + "_"+ptype.getName()+"_" + i);
                 p.setParameterType(ptype);
-                ParameterEntry pe = new ParameterEntry(128 + paramSizeInBits * i, ReferenceLocationType.containerStart, p);
+                ParameterEntry pe = new ParameterEntry(128 + paramSizeInBits * i, ReferenceLocationType.CONTAINER_START, p);
                 sc.addEntry(pe);
                 ss.addParameter(p);
             }

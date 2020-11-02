@@ -114,7 +114,7 @@ public class CfdpReceiver {
                 FileDirectiveCode.EOF,
                 FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
                 ConditionCode.NO_ERROR,
-                TransactionStatus.Active,
+                TransactionStatus.ACTIVE,
                 header);
         transmitCfdp(EofAck);
 

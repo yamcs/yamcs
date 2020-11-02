@@ -64,7 +64,7 @@ import com.google.protobuf.util.JsonFormat;
  */
 public class ReplayService extends AbstractProcessorService
         implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
-    static final long timeout = 10000;
+    static final long TIMEOUT = 10000;
 
     EndAction endAction;
 

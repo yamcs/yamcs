@@ -211,10 +211,10 @@ public class XtceToGpbAssembler {
         b.setLocationInBits(e.getLocationInContainerInBits());
 
         switch (e.getReferenceLocation()) {
-        case containerStart:
+        case CONTAINER_START:
             b.setReferenceLocation(SequenceEntryInfo.ReferenceLocationType.CONTAINER_START);
             break;
-        case previousEntry:
+        case PREVIOUS_ENTRY:
             b.setReferenceLocation(SequenceEntryInfo.ReferenceLocationType.PREVIOUS_ENTRY);
             break;
         default:

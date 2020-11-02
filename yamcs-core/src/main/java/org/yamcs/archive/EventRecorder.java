@@ -39,7 +39,7 @@ public class EventRecorder extends AbstractYamcsService {
 
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             for (StreamConfigEntry sce : sc.getEntries()) {
-                if (sce.getType() == StreamConfig.StandardStreamType.event) {
+                if (sce.getType() == StreamConfig.StandardStreamType.EVENT) {
                     ydb.execute("insert into " + TABLE_NAME + " select * from " + sce.getName());
                 }
             }

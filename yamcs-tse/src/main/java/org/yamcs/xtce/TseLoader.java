@@ -78,7 +78,7 @@ public class TseLoader implements SpaceSystemLoader {
         typeArgument.setArgumentType(typeArgumentTypeBuilder.build());
         command.addArgument(typeArgument);
 
-        ArgumentEntry typeArgumentEntry = new ArgumentEntry(0, ReferenceLocationType.containerStart,
+        ArgumentEntry typeArgumentEntry = new ArgumentEntry(0, ReferenceLocationType.CONTAINER_START,
                 typeArgument);
         container.addEntry(typeArgumentEntry);
 
@@ -90,7 +90,7 @@ public class TseLoader implements SpaceSystemLoader {
         commandArgument.setArgumentType(commandArgumentType.build());
         command.addArgument(commandArgument);
 
-        ArgumentEntry commandArgumentEntry = new ArgumentEntry(8, ReferenceLocationType.containerStart,
+        ArgumentEntry commandArgumentEntry = new ArgumentEntry(8, ReferenceLocationType.CONTAINER_START,
                 commandArgument);
         container.addEntry(commandArgumentEntry);
 
