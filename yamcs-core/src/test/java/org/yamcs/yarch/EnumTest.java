@@ -109,4 +109,18 @@ public class EnumTest extends YarchTestCase {
             assertEquals("pn1", (String)t.getColumn(1));
         }
     }
+
+    @Test
+    public void test5() throws Exception {
+        populate("testenum5");
+        ydb.execute("create stream testenum_out as select * from testenum5 limit 3");
+        final List<Tuple> tuples= fetchAll("testenum_out");
+
+        assertEquals(3, tuples.size());
+        for(int i=0;i<3;i++) {
+            Tuple t=tuples.get(i);
+            assertEquals(i*1000l, (long)(Long)t.getColumn(0));
+            assertEquals("pn"+(i%10), (String)t.getColumn(1));
+        }
+    }
 }

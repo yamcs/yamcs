@@ -42,8 +42,7 @@ public class LimitedStream extends Stream implements StreamSubscriber {
         if (inputDataCount < offset + 1) {
             return;
         }
-
-        if (getDataCount() <= limit) {
+        if (getDataCount() < limit) {
             emitTuple(tuple);
         } else {
             input.close();
