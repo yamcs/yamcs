@@ -48,10 +48,6 @@ public class TagApi extends AbstractTagApi<Context> {
                 public void onTag(ArchiveTag tag) {
                     responseb.addTag(enrichTag(tag));
                 }
-
-                @Override
-                public void finished() {
-                }
             });
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);

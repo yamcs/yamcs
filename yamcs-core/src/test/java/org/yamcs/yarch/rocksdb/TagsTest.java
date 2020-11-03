@@ -142,10 +142,6 @@ public class TagsTest extends YarchTestCase {
             public void onTag(ArchiveTag tag) {
                 actual.add(tag);
             }
-
-            @Override
-            public void finished() {
-            }
         });
         List<ArchiveTag> expected = new ArrayList<>();
 
