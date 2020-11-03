@@ -299,6 +299,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
             @Override
             public void streamClosed(Stream stream) {
+                observer.complete();
             }
         };
         observer.setCancelHandler(() -> stream.removeSubscriber(streamSubscriber));

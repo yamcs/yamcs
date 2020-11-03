@@ -85,7 +85,7 @@ public class RdbTagDb implements TagDb {
      * {@link TagReceiver}.
      */
     @Override
-    public void getTags(TimeInterval intv, TagReceiver callback) throws IOException {
+    public void getTags(TimeInterval intv, TagReceiver receiver) throws IOException {
         log.debug("processing request: {}", intv);
         YRDB db = tablespace.getRdb();
         byte[] rangeStart = headerKey();
@@ -108,13 +108,12 @@ public class RdbTagDb implements TagDb {
                     it.next();
                     continue;
                 }
-                callback.onTag(tag);
+                receiver.onTag(tag);
                 it.next();
             }
         } catch (RocksDBException e) {
             throw new IOException(e);
         }
-        callback.finished();
     }
 
     /**

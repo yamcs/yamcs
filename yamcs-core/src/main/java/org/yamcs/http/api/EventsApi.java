@@ -263,6 +263,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
             @Override
             public void streamClosed(Stream stream) {
+                observer.complete();
             }
         };
         observer.setCancelHandler(() -> stream.removeSubscriber(listener));

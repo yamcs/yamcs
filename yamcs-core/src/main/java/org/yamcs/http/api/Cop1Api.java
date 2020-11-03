@@ -188,10 +188,12 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
         @Override
         public void suspended(int suspendState) {
+            //the stateChanged will be called with the new state
         }
 
         @Override
         public void alert(AlertType alert) {
+            //TODO add a subscription for alerts
         }
 
         @Override
