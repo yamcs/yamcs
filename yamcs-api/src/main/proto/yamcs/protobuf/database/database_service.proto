@@ -1,0 +1,44 @@
+syntax="proto2";
+
+package yamcs.protobuf.archive;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "DbServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+service DatabaseApi {
+
+  // List databases
+  rpc ListDatabases(google.protobuf.Empty) returns (ListDatabasesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/databases"
+    };
+  }
+  
+  // Get database
+  rpc GetDatabase(GetDatabaseRequest) returns (DatabaseInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/databases/{name}"
+    };
+  }
+}
+
+message ListDatabasesResponse {
+  repeated DatabaseInfo databases = 1;
+}
+
+message GetDatabaseRequest {
+  optional string name = 1;
+}
+
+message DatabaseInfo {
+  optional string name = 1;
+  optional string path = 2;
+  optional string tablespace = 3;
+  repeated string tables = 4;
+  repeated string streams = 5;
+}

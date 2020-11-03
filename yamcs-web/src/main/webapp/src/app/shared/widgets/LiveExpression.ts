@@ -27,7 +27,7 @@ export class LiveExpression implements OnInit, OnDestroy {
 
   ngOnInit() {
     const compiler = new FormulaCompiler();
-    const script = compiler.compile(`='/YSS/SIMULATOR/AllowCriticalTC1' == true`);
+    const script = compiler.compile('=' + this.expression);
 
     const parameters = script.getPVNames();
     if (parameters.length) {

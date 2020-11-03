@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
@@ -68,7 +67,6 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -84,8 +82,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void listStreams(Context ctx, ListStreamsRequest request, Observer<ListStreamsResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         List<Stream> streams = new ArrayList<>(ydb.getStreams());
@@ -102,8 +99,7 @@ public class TableApi extends AbstractTableApi<Context> {
     @Override
     public void subscribeStreamStatistics(Context ctx, SubscribeStreamStatisticsRequest request,
             Observer<StreamEvent> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         for (Stream stream : ydb.getStreams()) {
             observer.next(StreamEvent.newBuilder()
@@ -116,7 +112,7 @@ public class TableApi extends AbstractTableApi<Context> {
         TableStreamListener listener = new TableStreamListener() {
             @Override
             public void streamRegistered(String streamInstance, Stream stream) {
-                if (streamInstance.equals(instance)) {
+                if (streamInstance.equals(ydb.getName())) {
                     observer.next(StreamEvent.newBuilder()
                             .setType(StreamEvent.Type.CREATED)
                             .setName(stream.getName())
@@ -127,7 +123,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
             @Override
             public void streamUpdated(String streamInstance, StreamInfo stream) {
-                if (streamInstance.equals(instance)) {
+                if (streamInstance.equals(ydb.getName())) {
                     observer.next(StreamEvent.newBuilder()
                             .setType(StreamEvent.Type.UPDATED)
                             .setName(stream.getName())
@@ -138,7 +134,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
             @Override
             public void streamUnregistered(String streamInstance, String name) {
-                if (streamInstance.equals(instance)) {
+                if (streamInstance.equals(ydb.getName())) {
                     observer.next(StreamEvent.newBuilder()
                             .setType(StreamEvent.Type.DELETED)
                             .setName(name)
@@ -152,8 +148,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getStream(Context ctx, GetStreamRequest request, Observer<StreamInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         Stream stream = verifyStream(ctx, ydb, request.getName());
 
         StreamInfo response = toStreamInfo(stream);
@@ -162,8 +157,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void subscribeStream(Context ctx, SubscribeStreamRequest request, Observer<StreamData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         Stream stream = verifyStream(ctx, ydb, request.getStream());
 
         StreamSubscriber listener = new StreamSubscriber() {
@@ -182,15 +176,13 @@ public class TableApi extends AbstractTableApi<Context> {
         };
         observer.setCancelHandler(() -> stream.removeSubscriber(listener));
         stream.addSubscriber(listener);
-
     }
 
     @Override
     public void listTables(Context ctx, ListTablesRequest request, Observer<ListTablesResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         List<TableDefinition> defs = new ArrayList<>(ydb.getTableDefinitions());
@@ -205,8 +197,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void getTable(Context ctx, GetTableRequest request, Observer<TableInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
 
         TableInfo response = toTableInfo(table);
@@ -217,8 +208,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void getTableData(Context ctx, GetTableDataRequest request, Observer<TableData> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
 
         long pos = request.hasPos() ? request.getPos() : 0;
@@ -239,7 +229,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        StreamFactory.stream(instance, sql, args, new StreamSubscriber() {
+        StreamFactory.stream(ydb.getName(), sql, args, new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -257,9 +247,8 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void readRows(Context ctx, ReadRowsRequest request, Observer<Row> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         TableDefinition table = verifyTable(ydb, request.getTable());
 
@@ -267,7 +256,7 @@ public class TableApi extends AbstractTableApi<Context> {
         request.getColsList().forEach(col -> sqlb.select(col));
         String sql = sqlb.toString();
 
-        StreamFactory.stream(instance, sql, new RowReader(observer));
+        StreamFactory.stream(ydb.getName(), sql, new RowReader(observer));
     }
 
     @Override
@@ -288,19 +277,15 @@ public class TableApi extends AbstractTableApi<Context> {
             @Override
             public void next(WriteRowsRequest request) {
                 if (count == 0) {
-                    String instance = request.getInstance();
-                    if (!YamcsServer.hasInstance(instance)) {
-                        throw new NotFoundException("No instance named '" + instance + "'");
-                    }
-                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+                    YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
                     String tableName = request.getTable();
                     TableDefinition table = ydb.getTable(tableName);
                     if (table == null) {
                         throw new NotFoundException(
-                                "No table named '" + tableName + "' (instance: '" + instance + "')");
+                                "No table named '" + tableName + "' (database: '" + ydb.getName() + "')");
                     }
-                    inputStream = StreamFactory.insertStream(instance, table);
+                    inputStream = StreamFactory.insertStream(ydb.getName(), table);
                 }
 
                 try {
@@ -397,8 +382,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         if (request.hasStatement()) {
             try {
@@ -444,8 +428,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void executeStreamingSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         if (request.hasStatement()) {
             try {

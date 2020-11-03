@@ -1,0 +1,14 @@
+.outlet-wrapper {
+  overflow: auto;
+  position: absolute;
+  top: 49px;
+  /* size of tabs + border */
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.sep {
+  margin-left: 10px;
+  margin-right: 10px;
+}

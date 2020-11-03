@@ -180,7 +180,7 @@ public class StaticFileHandler {
             }
         });
 
-        log.info("{} {} 200", req.method(), req.uri());
+        log.debug("{} {} 200", req.method(), req.uri());
         if (!HttpUtil.isKeepAlive(req)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
@@ -224,7 +224,7 @@ public class StaticFileHandler {
     private static void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
         setDateHeader(response);
-        log.info("{} {} 304", req.method(), req.uri());
+        log.debug("{} {} 304", req.method(), req.uri());
         // Close the connection as soon as the error message is sent.
         ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
