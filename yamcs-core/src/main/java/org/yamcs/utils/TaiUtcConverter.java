@@ -397,7 +397,6 @@ public class TaiUtcConverter {
         return t + ls * 1000;
     }
 
-
     public static boolean isLeap(final int year) {
         return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
     }
@@ -466,6 +465,26 @@ public class TaiUtcConverter {
 
         public int getMonth() {
             return month;
+        }
+
+        public int getDay() {
+            return day;
+        }
+
+        public int getHour() {
+            return hour;
+        }
+
+        public int getMinute() {
+            return minute;
+        }
+
+        public int getSecond() {
+            return second;
+        }
+
+        public int getMillisec() {
+            return millisec;
         }
 
         @Override
