@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { AdminPage } from './AdminPage';
 import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
@@ -24,10 +23,11 @@ import { UsersPage } from './iam/UsersPage';
 import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ProcessorTypesPage } from './processor-types/ProcessorTypesPage';
-import { DatabasePage } from './rocksdb/DatabasePage';
-import { DatabasesPage } from './rocksdb/DatabasesPage';
+import { RocksDbDatabasePage } from './rocksdb/RocksDbDatabasePage';
+import { RocksDbDatabasesPage } from './rocksdb/RocksDbDatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
+import { AdminPage } from './shared/AdminPage';
 import { ThreadPage } from './threads/ThreadPage';
 import { ThreadsPage } from './threads/ThreadsPage';
 
@@ -84,6 +84,10 @@ const routes: Routes = [
         component: ServicesPage,
       },
       {
+        path: 'databases',
+        loadChildren: () => import('src/app/admin/databases/DatabasesModule').then(m => m.DatabasesModule),
+      },
+      {
         path: 'rocksdb',
         runGuardsAndResolvers: 'always',
         children: [
@@ -95,14 +99,14 @@ const routes: Routes = [
           {
             path: 'databases',
             pathMatch: 'full',
-            component: DatabasesPage,
+            component: RocksDbDatabasesPage,
           },
           {
             path: 'databases/:tablespace',
             children: [
               {
                 path: '**',
-                component: DatabasePage,
+                component: RocksDbDatabasePage,
               }
             ]
           },
@@ -195,8 +199,6 @@ export const routingComponents = [
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
-  DatabasesPage,
-  DatabasePage,
   EditGroupPage,
   EditUserPage,
   GroupsPage,
@@ -204,6 +206,8 @@ export const routingComponents = [
   LeapSecondsPage,
   PluginsPage,
   ProcessorTypesPage,
+  RocksDbDatabasesPage,
+  RocksDbDatabasePage,
   RolesPage,
   RolePage,
   RoutesPage,

@@ -9,6 +9,7 @@
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
     <select [formControlName]="controlName">
+      <option hidden disabled selected value> -- select an option -- </option>
       <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
         {{ enumValue.label }}</option>
     </select>

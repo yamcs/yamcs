@@ -318,8 +318,9 @@ export class StackFilePage implements OnDestroy {
         const entry: StackEntry = {
           name: result.command.qualifiedName,
           arguments: result.assignments,
-          command: result.command,
+          comment: result.comment,
           extra: result.extra,
+          command: result.command,
         };
 
         const relto = this.selectedEntry$.value;

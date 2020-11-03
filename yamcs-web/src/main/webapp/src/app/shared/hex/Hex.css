@@ -10,21 +10,21 @@
   white-space: pre;
 }
 
-::ng-deep .cnt {
+::ng-deep .line .cnt {
   color: #777;
 }
 
-::ng-deep .hl, ::ng-deep .hl.selected {
-  background-color: purple;
-  color: yellow;
+::ng-deep .line .hl, ::ng-deep .line .hl.selected {
+  background-color: #aec5d9;
+  color: #000000;
 }
 
-::ng-deep .selected {
-  background-color: blue;
+::ng-deep .line .selected {
+  background-color: #5787b1;
   color: white;
 }
 
-::ng-deep .ascii {
+::ng-deep .line .ascii {
   color: #777;
   margin-left: 0.5em;
 }

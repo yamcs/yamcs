@@ -32,13 +32,11 @@ export class InstancePage implements OnInit, OnDestroy {
   commandingExpanded = false;
   mdbActive = false;
   mdbExpanded = false;
-  archiveActive = false;
-  archiveExpanded = false;
 
   telemetryItems: NavItem[] = [];
   commandingItems: NavItem[] = [];
   mdbItems: NavItem[] = [];
-  archiveItems: NavItem[] = [];
+  extraItems: NavItem[] = [];
 
   private routerSubscription: Subscription;
 
@@ -101,22 +99,13 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
-    if (this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
-      this.archiveItems.push({ path: 'overview', label: 'Overview' });
-    }
     if (this.config.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
-      this.archiveItems.push({ path: 'gaps', label: 'Gaps' });
+      this.extraItems.push({ path: 'gaps', label: 'Gaps' });
     }
     for (const item of configService.getExtraNavItems('archive')) {
       if (item.condition && item.condition(this.user)) {
-        this.archiveItems.push(item);
+        this.extraItems.push(item);
       }
-    }
-    if (this.user.hasSystemPrivilege('ReadTables')) {
-      this.archiveItems.push({ path: 'tables', label: 'Tables' });
-    }
-    if (this.user.hasAnyObjectPrivilegeOfType('Stream')) {
-      this.archiveItems.push({ path: 'streams', label: 'Streams' });
     }
 
     this.sidebar$ = preferenceStore.sidebar$;
@@ -127,7 +116,6 @@ export class InstancePage implements OnInit, OnDestroy {
       const url = evt.url as string;
       this.mdbActive = false;
       this.commandingActive = false;
-      this.archiveActive = false;
       this.telemetryActive = false;
       this.collapseAllGroups();
       if (url.match(/\/mdb.*/)) {
@@ -136,9 +124,6 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/commanding.*/)) {
         this.commandingActive = true;
         this.commandingExpanded = true;
-      } else if (url.match(/\/archive.*/)) {
-        this.archiveActive = true;
-        this.archiveExpanded = true;
       } else if (url.match(/\/telemetry.*/)) {
         this.telemetryActive = true;
         this.telemetryExpanded = true;
@@ -171,7 +156,6 @@ export class InstancePage implements OnInit, OnDestroy {
     this.telemetryExpanded = false;
     this.commandingExpanded = false;
     this.mdbExpanded = false;
-    this.archiveExpanded = false;
   }
 
   toggleTelemetryGroup() {
@@ -192,12 +176,6 @@ export class InstancePage implements OnInit, OnDestroy {
     this.mdbExpanded = !expanded;
   }
 
-  toggleArchiveGroup() {
-    const expanded = this.archiveExpanded;
-    this.collapseAllGroups();
-    this.archiveExpanded = !expanded;
-  }
-
   showLinksItem() {
     return this.user.hasSystemPrivilege('ReadLinks');
   }
@@ -208,6 +186,10 @@ export class InstancePage implements OnInit, OnDestroy {
 
   showAlarmsItem() {
     return this.user.hasSystemPrivilege('ReadAlarms');
+  }
+
+  showArchiveBrowserItem() {
+    return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }
 
   ngOnDestroy() {

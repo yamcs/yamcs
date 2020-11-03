@@ -665,8 +665,9 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
         return serviceb.build();
     }
-    
-    public static ServiceInfo toServiceInfo(ProcessorServiceWithConfig serviceWithConfig, String instance, String processor) {
+
+    public static ServiceInfo toServiceInfo(ProcessorServiceWithConfig serviceWithConfig, String instance,
+            String processor) {
         ServiceInfo.Builder serviceb = ServiceInfo.newBuilder()
                 .setName(serviceWithConfig.getName())
                 .setClassName(serviceWithConfig.getServiceClass())
@@ -721,14 +722,14 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         if (allowGlobal && YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             return instance;
         }
-        return verifyInstance(instance);
-    }
-
-    public static String verifyInstance(String instance) {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException("No instance named '" + instance + "'");
         }
         return instance;
+    }
+
+    public static String verifyInstance(String instance) {
+        return verifyInstance(instance, false);
     }
 
     public static YamcsServerInstance verifyInstanceObj(String instance) {

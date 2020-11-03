@@ -37,7 +37,7 @@ export class StartReplayDialog {
       start: [utils.toISOString(initialStart), [
         Validators.required,
       ]],
-      stop: [utils.toISOString(initialStop)],
+      stop: [initialStop ? utils.toISOString(initialStop) : ''],
     });
   }
 
