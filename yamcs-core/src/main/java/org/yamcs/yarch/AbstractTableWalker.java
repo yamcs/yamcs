@@ -54,6 +54,7 @@ public abstract class AbstractTableWalker implements TableWalker {
         if(visitor == null) {
             throw new NullPointerException("visitor cannot be null");
         }
+        log.debug("Starting to walk ascending: {}, rangeIndexFilter: {}", ascending, rangeIndexFilter);
         this.visitor = visitor;
         running = true;
         Iterator<List<Partition>> partitionIterator = getPartitionIterator();
