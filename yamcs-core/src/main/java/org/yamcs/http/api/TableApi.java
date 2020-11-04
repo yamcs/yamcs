@@ -342,14 +342,8 @@ public class TableApi extends AbstractTableApi<Context> {
                     String ctype = cinfo.getType();
                     DataType type = DataType.byName(ctype);
                     ColumnDefinition cd = new ColumnDefinition(cname, type);
-                    ColumnSerializer<?> cs;
-                    if (type.val == DataType._type.PROTOBUF) {
-                        cs = ColumnSerializerFactory.getProtobufSerializer(cd);
-                    } else if (type.val == DataType._type.ENUM) {
-                        cs = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
-                    } else {
-                        cs = ColumnSerializerFactory.getBasicColumnSerializer(type);
-                    }
+                    ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializerForReplication(cd);
+
                     serializers.put(colId, cs);
                     colDefinitions.put(colId, cd);
                     if (serializers.size() > MAX_COLUMNS) {
@@ -542,16 +536,7 @@ public class TableApi extends AbstractTableApi<Context> {
                     rowb.addColumns(Row.ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
                             .setType(cd.getType().toString()).build());
                 }
-                DataType type = cd.getType();
-
-                ColumnSerializer cs;
-                if (type.val == DataType._type.ENUM) {
-                    cs = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
-                } else if (type.val == DataType._type.PROTOBUF) {
-                    cs = ColumnSerializerFactory.getProtobufSerializer(cd);
-                } else {
-                    cs = ColumnSerializerFactory.getBasicColumnSerializer(cd.getType());
-                }
+                ColumnSerializer cs = ColumnSerializerFactory.getColumnSerializerForReplication(cd);
                 rowb.addCells(Cell.newBuilder()
                         .setColumnId(colId)
                         .setData(ByteString.copyFrom(cs.toByteArray(v)))

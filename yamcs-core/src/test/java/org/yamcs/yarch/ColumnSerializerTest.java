@@ -34,7 +34,7 @@ public class ColumnSerializerTest {
         assertEquals(ev, ev1);
         
         ColumnDefinition cd1 = new ColumnDefinition("/test/abc", DataType.PARAMETER_VALUE);
-        ColumnSerializer<ParameterValue> cs1 = ColumnSerializerFactory.getBasicColumnSerializer(cd1.type);
+        ColumnSerializer<ParameterValue> cs1 = ColumnSerializerFactory.getBasicColumnSerializerV3(cd1.type);
         ParameterValue pv = new ParameterValue("/test/abc");
         pv.setRawValue(ValueUtility.getUint32Value(1));
         pv.setEngineeringValue(ValueUtility.getDoubleValue(3.14));

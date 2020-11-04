@@ -134,7 +134,7 @@ class TableDefinitionSerializer {
             valueDef.addColumn(cdef);
         }
 
-        TableDefinition tdef = new TableDefinition(keyDef, valueDef, enumValues);
+        TableDefinition tdef = new TableDefinition(protodef.getFormatVersion(), keyDef, valueDef, enumValues);
 
         try {
             if (protodef.getHistogramColumnCount() > 0) {
@@ -148,7 +148,6 @@ class TableDefinitionSerializer {
         } catch (StreamSqlException e) {
             throw new DatabaseCorruptionException(e);
         }
-        tdef.setCompressed(protodef.getCompressed());
         tdef.setCompressed(protodef.getCompressed());
         tdef.setStorageEngineName(protodef.getStorageEngine());
 

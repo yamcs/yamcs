@@ -391,7 +391,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 if (cidx >= valueSerializers.length) {
                     valueSerializers = Arrays.copyOf(valueSerializers, cidx + 1);
                 }
-                valueSerializers[cidx] = ColumnSerializerFactory.getColumnSerializer(cd);
+                valueSerializers[cidx] = ColumnSerializerFactory.getColumnSerializerForReplication(cd);
             }
 
             if (addedColumns) {

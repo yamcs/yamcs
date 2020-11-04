@@ -122,6 +122,11 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static byte[] encodeInt(int x) {
+        byte[] toReturn = new byte[4];
+        return encodeInt(x, toReturn, 0);
+    }
+
     /**
      * write an long into a byte array at offset and returns the array
      */

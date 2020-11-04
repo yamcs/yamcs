@@ -62,8 +62,8 @@ import com.google.protobuf.Message;
 
 public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
-    private ColumnSerializer<Integer> csint = ColumnSerializerFactory.getBasicColumnSerializer(DataType.INT);
-    private ColumnSerializer<String> csstr = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
+    private ColumnSerializer<Integer> csint = ColumnSerializerFactory.getBasicColumnSerializerV2(DataType.INT);
+    private ColumnSerializer<String> csstr = ColumnSerializerFactory.getBasicColumnSerializerV2(DataType.STRING);
 
     private ArchiveClient archiveClient;
     private ProcessorClient realtime;

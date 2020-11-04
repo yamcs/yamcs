@@ -54,7 +54,7 @@ public class TableDefinition {
      * To switch to the latest version, use the bin/yamcs archive upgrade command
      */
     public static final int CURRENT_FORMAT_VERSION = 2;
-    private int formatVersion = CURRENT_FORMAT_VERSION;
+    private final int  formatVersion;
 
     private final TupleDefinition keyDef;
 
@@ -100,6 +100,8 @@ public class TableDefinition {
     public TableDefinition(String name, TupleDefinition tdef, List<String> primaryKey) throws StreamSqlException {
         keyDef = new TupleDefinition();
         this.name = name;
+        this.formatVersion = CURRENT_FORMAT_VERSION;
+        
         for (String s : primaryKey) {
             ColumnDefinition c = tdef.getColumn(s);
             if (c == null) {
@@ -125,10 +127,12 @@ public class TableDefinition {
      * @param valueDef
      * @param enumValues
      */
-    public TableDefinition(TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String, Short>> enumValues) {
+    public TableDefinition(int formatVersion, TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String, Short>> enumValues) {
         this.valueDef = valueDef;
         this.serializedValueDef = valueDef;
         this.keyDef = keyDef;
+        this.formatVersion = formatVersion;
+        
         computeTupleDef();
         this.enumValues = enumValues;
         this.serializedEmumValues = enumValues;
@@ -561,10 +565,6 @@ public class TableDefinition {
         return formatVersion;
     }
 
-    void setFormatVersion(int formatVersion) {
-        this.formatVersion = formatVersion;
-    }
-    
     /**
      * Returns the value definition to be serialized on disk.
      * <p>
@@ -597,5 +597,9 @@ public class TableDefinition {
         sb.append(name).append("(").append(keyDef.toString()).append(", ").append(valueDef.toString())
                 .append(", primaryKey(").append(keyDef).append("))");
         return sb.toString();
+    }
+
+    public Map<String, BiMap<String, Short>> getEnumValuesDefinitions() {
+        return enumValues;
     }
 }
