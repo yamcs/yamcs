@@ -147,6 +147,8 @@ public class DataType {
             return "Integer";
         case PARAMETER_VALUE:
             return "ParameterValue";
+       case HRES_TIMESTAMP:
+            return "org.yamcs.time.Instant";
         default:
             throw new IllegalStateException("no java type available for " + this);
         }
