@@ -11,6 +11,7 @@ import { CommandForm } from './command-sender/CommandForm';
 import { CommandFormArgument } from './command-sender/CommandFormArgument';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
+import { CommandDownloadLinkPipe } from './pipes/CommandDownloadLinkPipe';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
 import { QueuesTable } from './queues/QueuesTable';
 import { AddCommandDialog } from './stacks/AddCommandDialog';
@@ -20,6 +21,10 @@ import { RenameStackDialog } from './stacks/RenameStackDialog';
 import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
+const pipes = [
+  CommandDownloadLinkPipe,
+];
+
 @NgModule({
   imports: [
     SharedModule,
@@ -27,6 +32,7 @@ import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
   ],
   declarations: [
     routingComponents,
+    pipes,
     AcknowledgmentIcon,
     AddCommandDialog,
     ChangeLevelDialog,

@@ -26,10 +26,12 @@ import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
+import { PacketDownloadLinkPipe } from './pipes/PacketDownloadLinkPipe';
 import { routingComponents, TelemetryRoutingModule } from './TelemetryRoutingModule';
 
 const pipes = [
   DisplayTypePipe,
+  PacketDownloadLinkPipe,
 ];
 
 const directives = [

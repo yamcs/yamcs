@@ -1,5 +1,8 @@
 package org.yamcs.http.api;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -11,6 +14,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
@@ -26,12 +30,14 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.ExportCommandRequest;
 import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
@@ -368,8 +374,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
-                commands.add(che);
+                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                commands.add(command);
             }
 
             @Override
@@ -379,9 +385,65 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 } else if (commands.size() > 1) {
                     observer.completeExceptionally(new InternalServerErrorException("Too many results"));
                 } else {
-                    CommandHistoryEntry entry = commands.get(0);
-                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, entry.getCommandName());
-                    observer.complete(commands.get(0));
+                    CommandHistoryEntry command = commands.get(0);
+                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, command.getCommandName());
+                    observer.complete(command);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void exportCommand(Context ctx, ExportCommandRequest request, Observer<HttpBody> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+
+        Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
+        if (!matcher.matches()) {
+            throw new BadRequestException("Invalid command id");
+        }
+
+        long gentime = Long.parseLong(matcher.group(1));
+        String origin = matcher.group(3) != null ? matcher.group(3) : "";
+        int seqNum = Integer.parseInt(matcher.group(4));
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME)
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum)
+                .where("origin = ?", origin);
+
+        List<CommandHistoryEntry> commands = new ArrayList<>();
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                commands.add(command);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (commands.isEmpty()) {
+                    observer.completeExceptionally(new NotFoundException());
+                } else if (commands.size() > 1) {
+                    observer.completeExceptionally(new InternalServerErrorException("Too many results"));
+                } else {
+                    CommandHistoryEntry command = commands.get(0);
+                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, command.getCommandName());
+
+                    String timestamp = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()
+                            .truncatedTo(ChronoUnit.MILLIS))
+                            .replace("-", "")
+                            .replace(":", "")
+                            .replace(".", "");
+                    HttpBody.Builder responseb = HttpBody.newBuilder()
+                            .setFilename("command-" + timestamp + "-" + seqNum + ".raw")
+                            .setContentType(MediaType.OCTET_STREAM.toString());
+                    for (CommandHistoryAttribute attr : command.getAttrList()) {
+                        if (attr.getName().equals(PreparedCommand.CNAME_BINARY)) {
+                            responseb.setData(attr.getValue().getBinaryValue());
+                        }
+                    }
+                    observer.complete(responseb.build());
                 }
             }
         });

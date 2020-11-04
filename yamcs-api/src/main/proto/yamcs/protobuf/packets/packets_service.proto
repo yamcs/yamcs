@@ -44,6 +44,13 @@ service PacketsApi {
     };
   }
   
+  // Export a raw packet
+  rpc ExportPacket(ExportPacketRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:export"
+    };
+  }
+  
   // Export raw packets
   rpc ExportPackets(ExportPacketsRequest) returns (stream yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
@@ -114,8 +121,8 @@ message GetPacketRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // an exact match of the packet's generation time in
-  // ISO 8601 format. Example: 2015-10-20T06:47:02.000
+  // An exact match of the packet's generation time in
+  // ISO 8601 format.
   optional google.protobuf.Timestamp gentime = 2;
 
   // Yamcs-specific archive distinguisher
@@ -128,6 +135,18 @@ message StreamPacketsRequest {
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated string name = 4;
+}
+
+message ExportPacketRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // An exact match of the packet's generation time in
+  // ISO 8601 format.
+  optional google.protobuf.Timestamp gentime = 2;
+
+  // Yamcs-specific archive distinguisher
+  optional int32 seqnum = 3;
 }
 
 message ExportPacketsRequest {
