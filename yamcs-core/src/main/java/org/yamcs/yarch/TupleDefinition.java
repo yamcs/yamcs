@@ -1,12 +1,10 @@
 package org.yamcs.yarch;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class TupleDefinition implements Serializable {
-    private static final long serialVersionUID = 200805301445L;
+public class TupleDefinition {
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
     private HashMap<String, Integer> columnNameIndex = new HashMap<String, Integer>();
     public static final int MAX_COLS = 32000;
