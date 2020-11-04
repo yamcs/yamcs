@@ -99,4 +99,13 @@ public interface StorageEngine {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Creates (if not already existing) and returns a sequence with the given name.
+     * 
+     * @param name
+     * @return
+     * @throws YarchException 
+     */
+    public Sequence getSequence(YarchDatabaseInstance ydb, String name) throws YarchException;
+
 }

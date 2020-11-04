@@ -18,6 +18,7 @@ import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
+import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
@@ -343,6 +344,15 @@ public class RdbStorageEngine implements StorageEngine {
         Tablespace tablespace = getTablespace(ydb);
         try {
             tablespace.saveTableDefinition(ydb.getYamcsInstance(), tblDef, keyColumns, valueColumns);
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    @Override
+    public Sequence getSequence(YarchDatabaseInstance ydb, String name) throws YarchException {
+        try {
+            return getTablespace(ydb).getSequence(name);
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }

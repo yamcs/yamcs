@@ -533,4 +533,8 @@ public class YarchDatabaseInstance {
             bucketDatabase.deleteBucket(bucketName);
         }
     }
+    
+    public Sequence getSequence(String name) throws YarchException {
+        return YarchDatabase.getDefaultStorageEngine().getSequence(this, name);
+    }
 }

@@ -29,10 +29,12 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.TableColumnDefinition;
+import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.protobuf.Db;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
@@ -94,9 +96,11 @@ public class Tablespace {
     private static final byte METADATA_VERSION = 2;
 
     private static final byte[] METADATA_KEY_MAX_TBS_VERSION = new byte[] { 1 };
-    private static final byte METADATA_TR = 2; // first byte of metadata records
-                                               // keys that contain tablespace
-                                               // records
+    static final byte METADATA_FB_TR = 2; // first byte of metadata records
+                                          // keys that contain tablespace
+                                          // records
+
+    static final byte METADATA_FB_SEQ = 3;// first byte of metadata records keys that contain sequences
 
     YRDB db;
     ColumnFamilyHandle cfMetadata;
@@ -113,6 +117,7 @@ public class Tablespace {
 
     Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
     final ScheduledThreadPoolExecutor executor;
+    Map<String, RdbSequence> sequences = new HashMap<>();
 
     public Tablespace(String name) {
         this.name = name;
@@ -197,7 +202,7 @@ public class Tablespace {
     public List<TablespaceRecord> filter(Type type, String instanceName, Predicate<TablespaceRecord.Builder> p)
             throws RocksDBException, DatabaseCorruptionException {
         List<TablespaceRecord> r = new ArrayList<>();
-        byte[] rangeStart = new byte[] { METADATA_TR, (byte) type.getNumber() };
+        byte[] rangeStart = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
 
         try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart, false,
                 rangeStart, false)) {
@@ -417,7 +422,7 @@ public class Tablespace {
      */
     private byte[] getMetadataKey(Type type, int tbsIndex) {
         byte[] key = new byte[6];
-        key[0] = METADATA_TR;
+        key[0] = METADATA_FB_TR;
         key[1] = (byte) type.getNumber();
         encodeInt(tbsIndex, key, 2);
         return key;
@@ -601,6 +606,17 @@ public class Tablespace {
             rrs.close();
         }
         rdbFactory.shutdown();
+    }
+
+    public Sequence getSequence(String name) throws YarchException, RocksDBException {
+        synchronized(sequences) {
+            RdbSequence seq = sequences.get(name);
+            if(seq == null) {
+                seq = new RdbSequence(name, db, cfMetadata);
+                sequences.put(name, seq);
+            }
+            return seq;
+        }
     }
 
     ScheduledThreadPoolExecutor getExecutor() {
