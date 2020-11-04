@@ -53,7 +53,7 @@ public class TableDefinition {
      * 
      * To switch to the latest version, use the bin/yamcs archive upgrade command
      */
-    public static final int CURRENT_FORMAT_VERSION = 2;
+    public static final int CURRENT_FORMAT_VERSION = 3;
     private final int  formatVersion;
 
     private final TupleDefinition keyDef;
@@ -256,14 +256,19 @@ public class TableDefinition {
     public byte[] serializeKey(Tuple t) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             DataOutputStream dos = new DataOutputStream(baos);
-            for (int i = 0; i < keyDef.size(); i++) {
-                ColumnSerializer cs = keySerializers.get(i);
-                String colName = keyDef.getColumn(i).getName();
-                Object v = t.getColumn(colName);
-                if (v == null) {
+            for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
+                ColumnDefinition tableCd = keyDef.getColumn(keyIdx);
+                String colName = keyDef.getColumn(keyIdx).getName();
+                int tIdx = t.getColumnIndex(colName);
+                if (tIdx < 0) {
                     throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
                 }
-                cs.serialize(dos, v);
+                ColumnDefinition tupleCd = t.getColumnDefinition(tIdx);
+                Object v = t.getColumn(tIdx);
+                Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
+
+                ColumnSerializer cs = keySerializers.get(keyIdx);
+                cs.serialize(dos, v1);
             }
             return baos.toByteArray();
         } catch (IOException e) {
