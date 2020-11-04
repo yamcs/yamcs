@@ -12,6 +12,7 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -152,6 +153,7 @@ public class RdbTableWriter extends TableWriter {
         if (rdb.get(k) != null) {
             updated = true;
         }
+        System.out.println("writing to db " + t + " key: " + StringConverter.arrayToHexString(k));
         writeToDb(rdb, partition, k, v, row);
 
         if (histoWriter != null) {

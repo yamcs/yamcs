@@ -1,0 +1,471 @@
+syntax="proto2";
+
+package yamcs.protobuf.timeline;
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "TimelineProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+//Methods related to the Timeline Service.
+service TimelineApi {
+
+  // Add item. The item must not have the uuid set, otherwise an error will be thrown.
+  rpc AddItem(AddItemRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      post: "/api/timeline/{instance}/items"
+    };
+  }
+
+
+  // Get an item
+  rpc GetItem(GetItemRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/items/{uuid}"
+    };
+  }
+  
+  // Update a item
+  rpc UpdateItem(UpdateItemRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      patch: "/api/timeline/{instance}/items/{uuid}"
+      body: "*"
+    };
+  }
+
+  // List items
+  rpc ListItems(ListItemsRequest) returns (ListItemsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/items"
+      body: "*"
+    };
+  }
+
+  // Delete an item
+  rpc DeleteItem(DeleteItemRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      delete: "/api/timeline/{instance}/items/{uuid}"
+    };
+  }
+
+  // Delete a group
+  rpc DeleteTimelineGroup(DeleteTimelineGroupRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      delete: "/api/timeline/{instance}/groups/{uuid}"
+    };
+  }
+
+  // List timeline sources
+  //
+  // Usually there is a source named 'rdb' which provides items from an internal RocksDB database.
+  // Other external sources may be created by adding plugins (e.g. a shift planner)
+  rpc ListSources(ListSourcesRequest) returns (ListSourcesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/sources"
+    };
+  }
+  
+  // List all tags available for a source
+  //
+  // Note that currently the 'rdb' source does not discard unused tags
+  // (e.g. if all item using one tag have been deleted, the tag will still be returned by this call)
+  rpc ListTags(ListTimelineTagsRequest) returns (ListTimelineTagsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/tags"
+    };
+  }
+  
+  // Add a band. The band must not have the uuid set.
+  rpc AddBand(AddBandRequest) returns (TimelineBand) {
+      option (yamcs.api.route) = {
+        post: "/api/timeline/{instance}/bands"
+        body: "*"
+      };
+  }
+
+  // Get a band
+  rpc GetBand(GetBandRequest) returns (TimelineBand) {
+       option (yamcs.api.route) = {
+         get: "/api/timeline/{instance}/bands/{uuid}"
+       };
+  }
+
+  // List all bands
+  rpc ListBands(ListBandsRequest) returns (ListBandsResponse) {
+      option (yamcs.api.route) = {
+        get: "/api/timeline/{instance}/bands"
+      };
+   }
+
+
+  // Delete a band
+  rpc DeleteBand(DeleteBandRequest) returns (TimelineBand) {
+      option (yamcs.api.route) = {
+        delete: "/api/timeline/{instance}/bands/{uuid}"
+      };
+  }
+
+   // Add a view. The view must not have the uuid set.
+    rpc AddView(AddViewRequest) returns (TimelineView) {
+        option (yamcs.api.route) = {
+          post: "/api/timeline/{instance}/views"
+          body: "*"
+        };
+    }
+
+    // Get a view
+    rpc GetView(GetViewRequest) returns (TimelineView) {
+         option (yamcs.api.route) = {
+           get: "/api/timeline/{instance}/views/{uuid}"
+         };
+    }
+
+    // List all views
+    rpc ListViews(ListViewsRequest) returns (ListViewsResponse) {
+        option (yamcs.api.route) = {
+          get: "/api/timeline/{instance}/views"
+        };
+     }
+
+   // Delete a view
+   rpc DeleteView(DeleteViewRequest) returns (TimelineView) {
+          option (yamcs.api.route) = {
+            delete: "/api/timeline/{instance}/views/{uuid}"
+        };
+    }
+}
+
+message RelativeTime {
+	optional string uuid = 1;
+	optional google.protobuf.Duration relativeStart = 2;
+}
+
+enum TimelineItemType {
+    //events are the most generic timeline items.
+	EVENT = 1;
+	
+	//unlike events, activities have an execution status
+	//manual activity's execution status is controlled by an operator
+	MANUAL_ACTIVITY = 2;
+	
+	//activity which is automatically executed on the server (the status changes automatically)
+	AUTO_ACTIVITY = 3;
+
+	//a grouping of other items (events and/or activities)
+	ITEM_GROUP = 4;
+	
+	//a grouping of activities - unlike the ITEM_GROUP, this group in itself is an automated activity
+	ACTIVITY_GROUP = 5;
+  }
+  
+message TimelineItem {
+  optional string uuid = 1;
+  optional TimelineItemType type = 2;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Duration duration = 4;
+  repeated string tags = 5;
+  //if this item is part of a group, this is the group UUID
+  optional string groupUuid = 6;
+    
+  //if this item time specification is relative to another item, relativeTime contains a reference
+  // to that item as well as the relative start (the duration is the same as given by the duration above)
+  //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
+  optional RelativeTime relativeTime = 7;
+}
+
+enum TimelineBandType {
+  BANDEVENT = 1;
+  MILESTONE = 2;
+  TIME = 3;
+  SPACER = 4;
+}
+
+message TimelineBand {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  //unique identifier (uuid) for the band
+  optional string uuid = 2;
+
+  // band name
+  optional string name = 3;
+
+  //user who has created the band
+  optional string username = 4;
+
+  //if true, all users have access to this band, otherwise only the user who has created it
+  optional bool shared = 5;
+
+  //the band contains only items from this source
+  optional string source = 6;
+
+  //the band contains only items with these tags; if the list is empty, then all items from the given source are part of the band
+  repeated string tags = 7;
+
+  //a query filter which can be used to limit additionally the items which are part of the band
+//  optional string filter = 8;
+
+  // type
+  optional TimelineBandType type = 9;
+
+  // description
+  optional string description = 10;
+
+  //other properties used by yamcs-web to render the item on this band
+  map<string, string> properties = 11;
+}
+
+message TimelineView {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  //unique identifier (uuid) for the view
+  optional string uuid = 2;
+
+  // view name
+  optional string name = 3;
+
+  // view description
+  optional string description = 4;
+
+  // array of bands
+  repeated TimelineBand bands = 5;
+}
+
+/******************* Items ***********************/
+message AddItemRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+  
+  //item source
+  optional string source = 2;
+  
+  //item type
+  optional TimelineItemType type = 3;
+
+  //item start. The start and the relativeTime (below) are mutually exclusive
+  optional google.protobuf.Timestamp start = 4;
+  
+  //item duration. Applies also if the relativeTime is specified
+  optional google.protobuf.Duration duration = 5;
+  
+  //tags
+  repeated string tags = 6;
+  
+  //if this item is part of a group, this is the group UUID
+  optional string groupUuid = 7;
+    
+  //if this item time specification is relative to another item, relativeTime contains a reference
+  // to that item as well as the relative start (the duration is the same as given by the duration above)
+  optional RelativeTime relativeTime = 8;
+}
+
+message GetItemRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+  //item source
+  optional string source = 2;
+  //item id
+  optional string uuid = 3;
+}
+
+message UpdateItemRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  //item source
+  optional string source = 2;
+
+  //item id
+  optional string uuid = 3;
+
+  //new start time
+  optional google.protobuf.Timestamp start = 4;
+
+  //new duration
+  optional google.protobuf.Duration duration = 5;
+
+  //new tags
+  repeated string tags = 6;
+
+  //new group UUID
+  optional string groupUuid = 7;
+
+  //new relative time
+  optional RelativeTime relativeTime = 8;
+}
+
+message ListItemsRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+  //item source
+  optional string source = 2;
+      
+  optional int32 limit = 3;
+  //retrieve the next page
+  optional string next = 4;
+  
+  optional google.protobuf.Timestamp start = 5;
+  optional google.protobuf.Timestamp stop = 6;
+  
+  optional TimelineBand band = 7;
+}
+
+
+message DeleteItemRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  //item source
+  optional string source = 2;
+
+  //item id
+  optional string uuid = 3;
+}
+
+message DeleteTimelineGroupRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  //item source
+  optional string source = 2;
+
+  //group id
+  optional string uuid = 3;
+}
+
+message ListItemsResponse {
+  repeated TimelineItem items = 1;
+  optional string continuationToken = 2;
+}
+
+message TimelineSourceCapabilities {
+	optional bool readOnly = 1;
+	optional bool hasManualActivities = 2;
+	optional bool hasAutomatedActivities = 3;
+	optional bool hasEventGroups = 4;
+	optional bool hasActivityGroups = 5;
+}
+
+message ListSourcesRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+}
+
+message ListSourcesResponse {
+  map<string, TimelineSourceCapabilities> sources = 1;
+}
+
+message ListTimelineTagsRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  optional string source = 2;
+}
+
+message ListTimelineTagsResponse {
+  repeated string tags = 1;
+}
+/******************* End Items ***********************/
+
+
+/******************* Bands ***********************/
+message AddBandRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  // band name
+  optional string name = 2;
+
+  //if true, all users have access to this band, otherwise only the user who has created it 
+  optional bool shared = 3;
+  
+  //the band contains only items from this source
+  optional string source = 4;
+
+  //the items containing these tags will be part of the timeline
+  repeated string tags = 5;
+  
+  //a query filter which can be used to limit additionally the items which are part of the band
+//  optional string filter = 6;
+  
+  // type
+  optional TimelineBandType type = 7;
+
+  // description
+  optional string description = 8;
+
+
+  //other properties used by yamcs-web to render the item on this band
+  map<string, string> properties = 9;
+}
+
+message GetBandRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+  //item id
+  optional string uuid = 3;
+}
+
+message ListBandsRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+}
+
+message DeleteBandRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  //item id
+  optional string uuid = 3;
+}
+
+message ListBandsResponse {
+  repeated TimelineBand bands = 1;
+}
+/******************* End Bands ***********************/
+
+/******************* Views ***********************/
+message AddViewRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+
+  // view name
+  optional string name = 2;
+
+  // view description
+  optional string description = 3;
+
+  //the bands from this view
+  repeated TimelineBand bands = 4;
+}
+
+message GetViewRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+  //item id
+  optional string uuid = 3;
+}
+
+message ListViewsRequest {
+  //Yamcs instance name
+  optional string instance = 1;
+}
+
+message DeleteViewRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  //item id
+  optional string uuid = 3;
+}
+
+message ListViewsResponse {
+  repeated TimelineView views = 1;
+}
+/******************* End Views ***********************/
+
+

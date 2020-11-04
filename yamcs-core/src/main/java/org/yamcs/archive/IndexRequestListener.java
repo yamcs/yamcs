@@ -26,6 +26,4 @@ public interface IndexRequestListener {
      * If a paged request has been performed, the token can be used to retrieve the next chunk
      */
     void finished(String token, boolean success);
-
-    
 }
