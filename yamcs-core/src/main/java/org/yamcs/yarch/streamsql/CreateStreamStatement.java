@@ -30,7 +30,7 @@ public class CreateStreamStatement extends SimpleStreamSqlStatement {
         YarchDatabaseInstance db = context.getDb();
         synchronized (db) {
             if (db.streamOrTableExists(streamName)) {
-                throw new StreamAlreadyExistsException(streamName);
+                throw new ResourceAlreadyExistsException(streamName);
             }
 
             Stream stream;

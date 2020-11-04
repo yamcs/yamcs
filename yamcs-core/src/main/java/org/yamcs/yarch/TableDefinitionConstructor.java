@@ -50,9 +50,14 @@ public class TableDefinitionConstructor  extends Constructor {
                     enumValues.put(e.getKey(), b);
                 }
             }
-            TableDefinition tdef=new TableDefinition(keyDef, valueDef, enumValues);
+            int formatVersion = 0;
+            if(m.containsKey(K_FORMAT_VERSION)) {
+                formatVersion = (Integer)m.get(K_FORMAT_VERSION);
+            }
+
+            TableDefinition tdef = new TableDefinition(formatVersion, keyDef, valueDef, enumValues);
             if(m.containsKey(K_HISTOGRAM)) {
-                List<String> h=(List<String>)m.get(K_HISTOGRAM);
+                List<String> h = (List<String>)m.get(K_HISTOGRAM);
                 try {
                     tdef.setHistogramColumns(h);
                 } catch (StreamSqlException e) {
@@ -72,13 +77,6 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey(K_COMPRESSED)) {
                 tdef.setCompressed((Boolean)m.get(K_COMPRESSED));
             }
-            
-            if(m.containsKey(K_FORMAT_VERSION)) {
-                tdef.setFormatVersion((Integer)m.get(K_FORMAT_VERSION));
-            } else {
-                tdef.setFormatVersion(0);
-            }
-            
             if(m.containsKey(K_STORAGE_ENGINE)) {
                 tdef.setStorageEngineName((String)m.get(K_STORAGE_ENGINE));
             } else {//before the storageEngine has been invented, we only had TokyoCabinet, so assume that if it's not set then TokyoCabine is used

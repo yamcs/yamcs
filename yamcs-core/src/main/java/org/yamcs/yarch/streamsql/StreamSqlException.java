@@ -39,8 +39,8 @@ public class StreamSqlException extends Exception {
 }
 
 @SuppressWarnings("serial")
-class StreamAlreadyExistsException extends StreamSqlException {
-    public StreamAlreadyExistsException(String name) {
+class ResourceAlreadyExistsException extends StreamSqlException {
+    public ResourceAlreadyExistsException(String name) {
         super(ErrCode.RESOURCE_EXISTS, "There is already a table or stream with the name '" + name + "'");
     }
 }

@@ -56,6 +56,16 @@ public class CreateTableStatement  extends SimpleStreamSqlStatement  {
     protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
         YarchDatabaseInstance ydb = context.getDb();
         synchronized (ydb) {
+            if(ydb.getStream(tableName) !=null ) {
+                throw new ResourceAlreadyExistsException(tableName);
+            }
+            if(ydb.getTable(tableName) != null) {
+                if(ifNotExists) {
+                    return;
+                } else {
+                    throw new ResourceAlreadyExistsException(tableName);
+                }
+            }
             TableDefinition tableDefinition = new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
 
@@ -76,9 +86,7 @@ public class CreateTableStatement  extends SimpleStreamSqlStatement  {
             }
 
             try {
-                if (!ifNotExists || ydb.getTable(tableName) == null) {
-                    ydb.createTable(tableDefinition);
-                }
+                ydb.createTable(tableDefinition);
             } catch (YarchException e) {
                 throw new GenericStreamSqlException("Cannot create table: " + e.getMessage());
             }

@@ -35,13 +35,23 @@ public class ColumnSerializerFactory {
 
     static final BooleanColumnSerializer BOOLEAN_CS = new BooleanColumnSerializer();
     static final ByteColumnSerializer BYTE_CS = new ByteColumnSerializer();
-    static final ShortColumnSerializer SHORT_CS = new ShortColumnSerializer();
-    static final IntegerColumnSerializer INT_CS = new IntegerColumnSerializer();
-    static final LongColumnSerializer LONG_CS = new LongColumnSerializer();
-    static final DoubleColumnSerializer DOUBLE_CS = new DoubleColumnSerializer();
+    static final ColumnSerializer<Short> SHORT_CS_V2 = new ColumnSerializerV2.ShortColumnSerializer();
+    static final ColumnSerializer<Integer> INT_CS_V2 = new ColumnSerializerV2.IntegerColumnSerializer();
+    static final ColumnSerializer<Long> LONG_CS_V2 = new ColumnSerializerV2.LongColumnSerializer();
+
+    static final ColumnSerializer<Short> SHORT_CS_V3 = new ColumnSerializerV3.ShortColumnSerializer();
+    static final ColumnSerializer<Integer> INT_CS_V3 = new ColumnSerializerV3.IntegerColumnSerializer();
+    static final ColumnSerializer<Long> LONG_CS_V3 = new ColumnSerializerV3.LongColumnSerializer();
+
+    static final ColumnSerializer<Double> DOUBLE_CS_V3 = new ColumnSerializerV3.DoubleColumnSerializer();
+    static final ColumnSerializer<Double> DOUBLE_CS_V2 = new ColumnSerializerV2.DoubleColumnSerializer();
+
     static final StringColumnSerializer STRING_CS = new StringColumnSerializer();
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
-    static final HresTimestampColumnSerializer HRES_TIMESTAMP_CS = new HresTimestampColumnSerializer();
+
+    static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V2 = new ColumnSerializerV2.HresTimestampColumnSerializer();
+    static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V3 = new ColumnSerializerV3.HresTimestampColumnSerializer();
+
     static final ParameterValueColumnSerializer PARAMETER_VALUE_CS = new ParameterValueColumnSerializer();
 
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>();
@@ -61,18 +71,29 @@ public class ColumnSerializerFactory {
         } else if (type.val == _type.PROTOBUF) {
             return (ColumnSerializer<T>) getProtobufSerializer(cd);
         } else {
-            return (ColumnSerializer<T>) getBasicColumnSerializer(cd.getType());
+            if(tblDef.getFormatVersion() < 3) {
+                return getBasicColumnSerializerV2(cd.getType());
+            } else {
+                return  getBasicColumnSerializerV3(cd.getType());
+            }
         }
     }
 
-    public static ColumnSerializer<?> getColumnSerializer(ColumnDefinition cd) {
+    /**
+     * Returns the V2 serializers with the enumerations serialzied as strings (so they don't need a decoding table on the other end)
+     * @param cd
+     * @return
+     */
+    public static ColumnSerializer<?> getColumnSerializerForReplication(ColumnDefinition cd) {
         DataType type = cd.getType();
         if (type.val == _type.ENUM) {
             return STRING_CS;
         } else if (type.val == _type.PROTOBUF) {
             return getProtobufSerializer(cd);
         } else {
-            return getBasicColumnSerializer(cd.getType());
+            //V2 is fine for replication as the serialized values are not used for sorting
+            //should upgrade to V3 at some point but it will break compatibility with old replicated data
+            return getBasicColumnSerializerV2(cd.getType());
         }
     }
 
@@ -83,21 +104,21 @@ public class ColumnSerializerFactory {
      * @return
      */
     @SuppressWarnings({ "incomplete-switch", "unchecked" })
-    public static <T> ColumnSerializer<T> getBasicColumnSerializer(DataType type) {
+    public static <T> ColumnSerializer<T> getBasicColumnSerializerV3(DataType type) {
         switch (type.val) {
         case BOOLEAN:
             return (ColumnSerializer<T>) BOOLEAN_CS;
         case BYTE:
             return (ColumnSerializer<T>) BYTE_CS;
         case SHORT:
-            return (ColumnSerializer<T>) SHORT_CS;
+            return (ColumnSerializer<T>) SHORT_CS_V3;
         case INT:
-            return (ColumnSerializer<T>) INT_CS;
+            return (ColumnSerializer<T>) INT_CS_V3;
         case DOUBLE:
-            return (ColumnSerializer<T>) DOUBLE_CS;
+            return (ColumnSerializer<T>) DOUBLE_CS_V3;
         case TIMESTAMP:
         case LONG: // intentional fall through
-            return (ColumnSerializer<T>) LONG_CS;
+            return (ColumnSerializer<T>) LONG_CS_V3;
         case STRING:
             return (ColumnSerializer<T>) STRING_CS;
         case BINARY:
@@ -105,7 +126,46 @@ public class ColumnSerializerFactory {
         case PARAMETER_VALUE:
             return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
         case HRES_TIMESTAMP:
-            return (ColumnSerializer<T>) HRES_TIMESTAMP_CS;
+            return (ColumnSerializer<T>) HRES_TIMESTAMP_CS_V3;
+        case LIST:
+        case TUPLE:
+            // TODO
+            throw new UnsupportedOperationException("List and Tuple not implemented");
+        }
+        throw new IllegalArgumentException("' " + type + " is not a basic type");
+    }
+
+
+    /**
+     * returns a column serializer for basic types
+     * 
+     * @param type
+     * @return
+     */
+    @SuppressWarnings({ "incomplete-switch", "unchecked" })
+    public static <T> ColumnSerializer<T> getBasicColumnSerializerV2(DataType type) {
+        switch (type.val) {
+        case BOOLEAN:
+            return (ColumnSerializer<T>) BOOLEAN_CS;
+        case BYTE:
+            return (ColumnSerializer<T>) BYTE_CS;
+        case SHORT:
+            return (ColumnSerializer<T>) SHORT_CS_V2;
+        case INT:
+            return (ColumnSerializer<T>) INT_CS_V2;
+        case DOUBLE:
+            return (ColumnSerializer<T>) DOUBLE_CS_V2;
+        case TIMESTAMP:
+        case LONG: // intentional fall through
+            return (ColumnSerializer<T>) LONG_CS_V2;
+        case STRING:
+            return (ColumnSerializer<T>) STRING_CS;
+        case BINARY:
+            return (ColumnSerializer<T>) BINARY_CS;
+        case PARAMETER_VALUE:
+            return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
+        case HRES_TIMESTAMP:
+            return (ColumnSerializer<T>) HRES_TIMESTAMP_CS_V2;
         case LIST:
         case TUPLE:
             // TODO
@@ -232,184 +292,6 @@ public class ColumnSerializerFactory {
         }
     }
 
-    static class ShortColumnSerializer implements ColumnSerializer<Short> {
-        @Override
-        public Short deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readShort();
-        }
-
-        @Override
-        public Short deserialize(ByteBuffer buf, ColumnDefinition cd) {
-            return buf.getShort();
-        }
-
-        @Override
-        public void serialize(DataOutputStream stream, Short v) throws IOException {
-            stream.writeShort((Short) v);
-        }
-
-        @Override
-        public void serialize(ByteBuffer byteBuf, Short v) {
-            byteBuf.putShort((Short) v);
-        }
-
-        @Override
-        public byte[] toByteArray(Short v) {
-            short s = v;
-            return new byte[] { (byte) ((s >> 8) & 0xFF), (byte) (s & 0xFF) };
-        }
-
-        @Override
-        public Short fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return (short) (((b[0] & 0xFF) << 8) + (b[1] & 0xFF));
-        }
-    }
-
-    static class IntegerColumnSerializer implements ColumnSerializer<Integer> {
-        @Override
-        public Integer deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readInt();
-        }
-
-        @Override
-        public void serialize(DataOutputStream stream, Integer v) throws IOException {
-            stream.writeInt((Integer) v);
-        }
-
-        @Override
-        public Integer deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
-            return byteBuf.getInt();
-        }
-
-        @Override
-        public void serialize(ByteBuffer byteBuf, Integer v) {
-            byteBuf.putInt((Integer) v);
-        }
-
-        @Override
-        public byte[] toByteArray(Integer v) {
-            int x = v;
-            return new byte[] { (byte) ((x >> 24) & 0xFF), (byte) ((x >> 16) & 0xFF), (byte) ((x >> 8) & 0xFF),
-                    (byte) (x & 0xFF) };
-        }
-
-        @Override
-        public Integer fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3];
-        }
-
-    }
-
-    static class DoubleColumnSerializer extends AbstractColumnSerializer<Double> {
-        public DoubleColumnSerializer() {
-            super(8);
-        }
-
-        @Override
-        public Double deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readDouble();
-        }
-
-        @Override
-        public Double deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
-            return byteBuf.getDouble();
-        }
-
-        @Override
-        public void serialize(DataOutputStream stream, Double v) throws IOException {
-            stream.writeDouble(v);
-        }
-
-        @Override
-        public void serialize(ByteBuffer byteBuf, Double v) {
-            byteBuf.putDouble(v);
-        }
-    }
-
-    static class LongColumnSerializer extends AbstractColumnSerializer<Long> {
-        public LongColumnSerializer() {
-            super(8);
-        }
-
-        @Override
-        public Long deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readLong();
-        }
-
-        @Override
-        public Long deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
-            return byteBuf.getLong();
-        }
-
-        @Override
-        public void serialize(DataOutputStream stream, Long v) throws IOException {
-            stream.writeLong(v);
-        }
-
-        @Override
-        public void serialize(ByteBuffer byteBuf, Long v) {
-            byteBuf.putLong(v);
-        }
-
-        @Override
-        public byte[] toByteArray(Long v) {
-            return ByteArrayUtils.encodeLong(v);
-        }
-
-        @Override
-        public Long fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return ByteArrayUtils.decodeLong(b, 0);
-        }
-    }
-
-    
-    static class HresTimestampColumnSerializer extends AbstractColumnSerializer<Instant> {
-        public HresTimestampColumnSerializer() {
-            super(12);
-        }
-
-        @Override
-        public Instant deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            long millis = stream.readLong();
-            int picos = stream.readInt();
-            return Instant.get(millis, picos);
-        }
-
-        @Override
-        public Instant deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
-            long millis = byteBuf.getLong();
-            int picos = byteBuf.getInt();
-            return Instant.get(millis, picos);
-        }
-
-        @Override
-        public void serialize(DataOutputStream stream, Instant v) throws IOException {
-            stream.writeLong(v.getMillis());
-            stream.writeInt(v.getPicos());
-        }
-
-        @Override
-        public void serialize(ByteBuffer byteBuf, Instant v) {
-            byteBuf.putLong(v.getMillis());
-            byteBuf.putInt(v.getPicos());
-        }
-
-        @Override
-        public byte[] toByteArray(Instant v) {
-            byte[] b= new byte[12];
-            ByteArrayUtils.encodeLong(v.getMillis(), b, 0);
-            ByteArrayUtils.encodeInt(v.getPicos(), b, 8);
-            return b;
-        }
-
-        @Override
-        public Instant fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            long millis = ByteArrayUtils.decodeLong(b, 0);
-            int picos = ByteArrayUtils.decodeInt(b, 8);
-            return Instant.get(millis, picos);
-        }
-    }
-    
     
     static class StringColumnSerializer extends AbstractColumnSerializer<String> {
         public StringColumnSerializer() {

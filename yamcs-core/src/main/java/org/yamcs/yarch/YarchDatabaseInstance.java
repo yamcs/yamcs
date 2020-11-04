@@ -251,16 +251,11 @@ public class YarchDatabaseInstance {
         tblDef.setName(tblName);
         tblDef.setDb(this);
 
-        if (tblDef.getFormatVersion() != TableDefinition.CURRENT_FORMAT_VERSION) {
-            // temporary upgrade to version 2 from version 1 - should be removed in a future version
-            if (tblDef.getFormatVersion() == 1) {
-                log.info("Converting {} from format version 1 to format version 2", tblDef.getName());
-                if ("pp".equals(tblDef.getName())) {
-                    changeParaValueType(tblDef);
-                }
-                tblDef.setFormatVersion(2);
-                saveTableDefinition(tblDef);
-                return deserializeTableDefinition(f);
+        // temporary upgrade to version 2 from version 1 - should be removed in a future version
+        if (tblDef.getFormatVersion() == 1) {
+            log.info("Converting {} from format version 1 to format version 2", tblDef.getName());
+            if ("pp".equals(tblDef.getName())) {
+                tblDef = changeParaValueType(tblDef);
             }
         }
 
@@ -268,7 +263,7 @@ public class YarchDatabaseInstance {
         return tblDef;
     }
 
-    static void changeParaValueType(TableDefinition tblDef) {
+    static TableDefinition changeParaValueType(TableDefinition tblDef) {
         TupleDefinition valueDef = tblDef.getValueDefinition();
         List<ColumnDefinition> l = valueDef.getColumnDefinitions();
         for (int i = 0; i < l.size(); i++) {
@@ -278,6 +273,7 @@ public class YarchDatabaseInstance {
                 l.set(i, cd1);
             }
         }
+        return new TableDefinition(2, tblDef.getKeyDefinition(), valueDef, tblDef.getEnumValuesDefinitions());
     }
 
     /**

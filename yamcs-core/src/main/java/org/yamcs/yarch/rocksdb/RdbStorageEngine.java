@@ -233,7 +233,7 @@ public class RdbStorageEngine implements StorageEngine {
             return;
         }
 
-        if (tblDef.getFormatVersion() != TableDefinition.CURRENT_FORMAT_VERSION) {
+        if (tblDef.getFormatVersion() < 2) {
             throw new IllegalStateException("Table " + ydb.getName() + "/" + tblDef.getName() + " format version is "
                     + tblDef.getFormatVersion() + " instead of " + TableDefinition.CURRENT_FORMAT_VERSION
                     + ", please upgrade (use the \"yamcs archive upgrade\" command).");

@@ -35,7 +35,7 @@ public class CreateOutputStreamStatement extends SimpleStreamSqlStatement {
         OutputStream os = null;
         synchronized (ydb) {
             if (ydb.streamOrTableExists(streamName)) {
-                throw new StreamAlreadyExistsException(streamName);
+                throw new ResourceAlreadyExistsException(streamName);
             }
             try {
                 os = new OutputStream(ydb, streamName, s.getDefinition());

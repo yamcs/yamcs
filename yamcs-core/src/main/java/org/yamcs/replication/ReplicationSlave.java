@@ -360,7 +360,7 @@ public class ReplicationSlave extends AbstractYamcsService {
                     DataType type = DataType.byName(ctype);
                     ColumnDefinition cd = new ColumnDefinition(cname, type);
                     completeTuple.addColumn(cd);
-                    serializers[i] = ColumnSerializerFactory.getColumnSerializer(cd);
+                    serializers[i] = ColumnSerializerFactory.getColumnSerializerForReplication(cd);
                 }
             }
 
