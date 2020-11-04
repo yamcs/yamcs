@@ -119,10 +119,10 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         }
         if (nextToken != null) {
             if (desc) {
-                sqlb.where("(gentime < ? or (gentime = ? and seqNum < ?))",
+                sqlb.where("(gentime <= ? and (gentime < ? or seqNum < ?))",
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);
             } else {
-                sqlb.where("(gentime > ? or (gentime = ? and seqNum > ?))",
+                sqlb.where("(gentime >= ? and (gentime > ? or seqNum > ?))",
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);
             }
         }
