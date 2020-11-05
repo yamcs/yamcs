@@ -1,7 +1,7 @@
 package org.yamcs.utils;
 
 /**
- * Provide some of the operations that are required for XTCE MathOperation but are not part of standard java Math.
+ * Provides some of the operations that are required for XTCE MathOperation but are not part of standard java Math.
  * 
  * @author nm
  *
