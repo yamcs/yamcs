@@ -51,7 +51,7 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
     }
 
     private void describeTable(TableDefinition tdef, Consumer<Tuple> consumer) {
-        for (ColumnDefinition cdef : tdef.getKeyDefinition().getColumnDefinitions()) {
+        for (ColumnDefinition cdef : tdef.getKeyDefinition()) {
             Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
@@ -59,7 +59,7 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
             });
             consumer.accept(tuple);
         }
-        for (ColumnDefinition cdef : tdef.getValueDefinition().getColumnDefinitions()) {
+        for (ColumnDefinition cdef : tdef.getValueDefinition()) {
             Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),

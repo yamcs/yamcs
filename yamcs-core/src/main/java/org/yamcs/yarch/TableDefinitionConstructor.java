@@ -18,7 +18,6 @@ import org.yaml.snakeyaml.nodes.Tag;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import static org.yamcs.yarch.TableDefinitionRepresenter.*;
 
 /**
  * Constructs {@link org.yamcs.yarch.TableDefinition} from .def yaml files.
@@ -26,6 +25,20 @@ import static org.yamcs.yarch.TableDefinitionRepresenter.*;
  *
  */
 public class TableDefinitionConstructor  extends Constructor {
+    public static final String K_COMPRESSED = "compressed";
+    public static final String K_KEY_DEF = "keyDef";
+    public static final String K_VALUE_DEF = "valueDef";
+    public static final String K_DATA_DIR = "dataDir";
+    public static final String K_HISTOGRAM = "histogram";
+    public static final String K_ENUM_VALUE = "enumValues";
+    public static final String K_PARTITIONING_SPEC = "partitioningSpec";
+    public static final String K_TIME_COLUMN = "timeColumn";
+    public static final String K_VALUE_COLUMN = "valueColumn";
+    public static final String K_TIME_PARTITIONING_SCHEMA = "timePartitioningSchema";
+    public static final String K_STORAGE_ENGINE = "storageEngine";
+    public static final String K_PARTITION_STORAGE = "partitionStorage";
+    public static final String K_FORMAT_VERSION = "formatVersion";
+    
     public TableDefinitionConstructor() {
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
         this.yamlConstructors.put(new Tag("TupleDefinition"), new ConstructTupleDefinition());
@@ -37,13 +50,14 @@ public class TableDefinitionConstructor  extends Constructor {
         @Override
         public Object construct(Node node) {
             Map<String, Object> m = (Map) constructMapping((MappingNode)node);
-            TupleDefinition keyDef=(TupleDefinition) m.get(K_KEY_DEF);
-            TupleDefinition valueDef=(TupleDefinition) m.get(K_VALUE_DEF);
+            TupleDefinition tkeyDef=(TupleDefinition) m.get(K_KEY_DEF);
+            TupleDefinition tvalueDef=(TupleDefinition) m.get(K_VALUE_DEF);
+            
             Map<String, BiMap<String,Short>> enumValues=new HashMap<>();
             if(m.containsKey(K_ENUM_VALUE)) {
                 Map<String, Map<String, Integer>> t=(Map)m.get(K_ENUM_VALUE);
                 for(Entry<String, Map<String, Integer>> e:t.entrySet()) {
-                    BiMap<String, Short> b=HashBiMap.create();
+                    BiMap<String, Short> b = HashBiMap.create();
                     for(Entry<String,Integer> e1:e.getValue().entrySet()) {
                         b.put(e1.getKey(), (short)(int)e1.getValue());
                     }
@@ -54,8 +68,22 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey(K_FORMAT_VERSION)) {
                 formatVersion = (Integer)m.get(K_FORMAT_VERSION);
             }
+            List<TableColumnDefinition> keyDef = new ArrayList<>();
+            for(ColumnDefinition cd: tkeyDef.getColumnDefinitions()) {
+                TableColumnDefinition tcd = new TableColumnDefinition(cd);
+                tcd.setEnumValues(enumValues.get(cd.getName()));
+                keyDef.add(tcd);
+            }
+            
+            List<TableColumnDefinition> valueDef = new ArrayList<>();
+            for(ColumnDefinition cd: tvalueDef.getColumnDefinitions()) {
+                TableColumnDefinition tcd = new TableColumnDefinition(cd);
+                tcd.setEnumValues(enumValues.get(cd.getName()));
+                valueDef.add(tcd);
+            }
+            
 
-            TableDefinition tdef = new TableDefinition(formatVersion, keyDef, valueDef, enumValues);
+            TableDefinition tdef = new TableDefinition(formatVersion, keyDef, valueDef);
             if(m.containsKey(K_HISTOGRAM)) {
                 List<String> h = (List<String>)m.get(K_HISTOGRAM);
                 try {

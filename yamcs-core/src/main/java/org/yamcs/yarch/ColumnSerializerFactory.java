@@ -20,7 +20,6 @@ import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.DataType._type;
 
-import com.google.common.collect.BiMap;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
@@ -57,14 +56,14 @@ public class ColumnSerializerFactory {
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>();
 
     static {
-        config = YConfiguration.getConfiguration("yamcs");
+        config = YConfiguration.getConfiguration("yamcs").getConfigOrEmpty("archive");
         if (config.containsKey("maxBinaryLength")) {
             maxBinaryLength = config.getInt("maxBinaryLength");
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
+    public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, TableColumnDefinition cd) {
         DataType type = cd.getType();
         if (type.val == _type.ENUM) {
             return (ColumnSerializer<T>) new EnumColumnSerializer(tblDef, cd);
@@ -291,7 +290,6 @@ public class ColumnSerializerFactory {
             return b[0];
         }
     }
-
     
     static class StringColumnSerializer extends AbstractColumnSerializer<String> {
         public StringColumnSerializer() {
@@ -512,52 +510,52 @@ public class ColumnSerializerFactory {
 
     static class EnumColumnSerializer extends AbstractColumnSerializer<String> {
         private final TableDefinition tblDef;
-        // for columns of type ENUM
-        private volatile BiMap<String, Short> enumValues;
-        private final String columnName;
+        TableColumnDefinition colDef;
+        String columnName;
 
-        public EnumColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
+        public EnumColumnSerializer(TableDefinition tblDef, TableColumnDefinition colDef) {
             super(2);
             this.tblDef = tblDef;
-            this.columnName = cd.getName();
+            this.columnName = colDef.getName();
+            this.colDef = colDef;
+        }
+
+        String getValue(short x) {
+            String v = colDef.getEnumValue(x);
+            if(v == null) { //probably the column definition has changed
+                colDef = tblDef.getColumnDefinition(columnName);
+                v = colDef.getEnumValue(x);
+            }
+            return v;
+        }
+
+        short getIndex(String value) {
+            Short idx = colDef.getEnumIndex(value);
+            if(idx == null) {
+                idx = tblDef.addAndGetEnumValue(columnName, value);
+                colDef = tblDef.getColumnDefinition(columnName);
+            }
+            return idx;
         }
 
         @Override
         public String deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            short x = stream.readShort();
-            return enumValues.inverse().get(x);
+            return getValue(stream.readShort());
         }
 
         @Override
         public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
-            short x = byteBuf.getShort();
-            return enumValues.inverse().get(x);
+            return getValue(byteBuf.getShort());
         }
 
         @Override
-        public void serialize(DataOutputStream stream, String v) throws IOException {
-            Short v1;
-            if ((enumValues == null) || (v1 = enumValues.get(v)) == null) {
-                tblDef.addEnumValue(this, v);
-                serialize(stream, v);
-                return;
-            }
-            stream.writeShort(v1);
+        public void serialize(DataOutputStream stream, String value) throws IOException {
+            stream.writeShort(getIndex(value));
         }
 
         @Override
-        public void serialize(ByteBuffer byteBuf, String v) {
-            Short v1;
-            if ((enumValues == null) || (v1 = enumValues.get(v)) == null) {
-                tblDef.addEnumValue(this, v);
-                serialize(byteBuf, v);
-                return;
-            }
-            byteBuf.putShort(v1);
-        }
-
-        void setEnumValues(BiMap<String, Short> enumValues) {
-            this.enumValues = enumValues;
+        public void serialize(ByteBuffer byteBuf, String value) {
+            byteBuf.putShort(getIndex(value));
         }
 
         public String getColumnName() {

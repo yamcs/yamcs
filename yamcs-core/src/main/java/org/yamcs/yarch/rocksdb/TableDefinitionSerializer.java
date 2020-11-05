@@ -2,17 +2,14 @@ package org.yamcs.yarch.rocksdb;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.utils.DatabaseCorruptionException;
-import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo.PartitioningType;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
@@ -30,7 +27,7 @@ import com.google.common.collect.HashBiMap;
  */
 class TableDefinitionSerializer {
 
-    static ProtoTableDefinition toProtobuf(TableDefinition def) {
+    static ProtoTableDefinition toProtobuf(TableDefinition def, List<TableColumnDefinition> keyDef, List<TableColumnDefinition> valueDef) {
         ProtoTableDefinition.Builder infob = ProtoTableDefinition.newBuilder();
 
         infob.setCompressed(def.isCompressed());
@@ -43,11 +40,11 @@ class TableDefinitionSerializer {
             infob.setPartitioningInfo(toProtobuf(def.getPartitioningSpec()));
         }
 
-        for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
-            infob.addKeyColumn(toProtobuf(cdef, def));
+        for (TableColumnDefinition cdef : keyDef) {
+            infob.addKeyColumn(toProtobuf(cdef));
         }
-        for (ColumnDefinition cdef : def.getSerializedValueDefinition().getColumnDefinitions()) {
-            infob.addValueColumn(toProtobuf(cdef, def));
+        for (TableColumnDefinition cdef : valueDef) {
+            infob.addValueColumn(toProtobuf(cdef));
         }
         return infob.build();
     }
@@ -86,12 +83,12 @@ class TableDefinitionSerializer {
 
     }
 
-    private static TableColumnInfo toProtobuf(ColumnDefinition cdef, TableDefinition tableDefinition) {
+    private static TableColumnInfo toProtobuf(TableColumnDefinition cdef) {
         TableColumnInfo.Builder infob = TableColumnInfo.newBuilder();
         infob.setName(cdef.getName());
         infob.setType(cdef.getType().name());
-        if (tableDefinition != null && cdef.getType() == DataType.ENUM) {
-            BiMap<String, Short> enumValues = tableDefinition.getSerializedEnumValues(cdef.getName());
+        if (cdef.getType() == DataType.ENUM) {
+            BiMap<String, Short> enumValues = cdef.getEnumValues();
             if (enumValues != null) {
                 List<EnumValue> enumValueList = new ArrayList<>();
                 for (Entry<String, Short> entry : enumValues.entrySet()) {
@@ -105,36 +102,36 @@ class TableDefinitionSerializer {
         return infob.build();
     }
 
-    static ColumnDefinition fromProtobuf(TableColumnInfo tci, Map<String, BiMap<String, Short>> enumValues) {
+    static TableColumnDefinition fromProtobuf(TableColumnInfo tci) {
         String name = tci.getName();
         DataType type = DataType.byName(tci.getType());
+        TableColumnDefinition tcd = new TableColumnDefinition(name, type);
+
         if (type == DataType.ENUM) {
             BiMap<String, Short> m = HashBiMap.create();
             for (EnumValue val : tci.getEnumValueList()) {
                 m.put(val.getLabel(), (short) val.getValue());
             }
-            enumValues.put(name, m);
+            tcd.setEnumValues(m);
         }
-
-        return new ColumnDefinition(name, type);
+        return tcd;
     }
 
     public static TableDefinition fromProtobuf(ProtoTableDefinition protodef) {
-        TupleDefinition keyDef = new TupleDefinition();
-        TupleDefinition valueDef = new TupleDefinition();
+        List<TableColumnDefinition> keyDef = new ArrayList<>();
+        List<TableColumnDefinition> valueDef = new ArrayList<>();
 
-        Map<String, BiMap<String, Short>> enumValues = new HashMap<>();
         for (TableColumnInfo tci : protodef.getKeyColumnList()) {
-            ColumnDefinition cdef = fromProtobuf(tci, enumValues);
-            keyDef.addColumn(cdef);
+            TableColumnDefinition cdef = fromProtobuf(tci);
+            keyDef.add(cdef);
         }
 
         for (TableColumnInfo tci : protodef.getValueColumnList()) {
-            ColumnDefinition cdef = fromProtobuf(tci, enumValues);
-            valueDef.addColumn(cdef);
+            TableColumnDefinition cdef = fromProtobuf(tci);
+            valueDef.add(cdef);
         }
 
-        TableDefinition tdef = new TableDefinition(protodef.getFormatVersion(), keyDef, valueDef, enumValues);
+        TableDefinition tdef = new TableDefinition(protodef.getFormatVersion(), keyDef, valueDef);
 
         try {
             if (protodef.getHistogramColumnCount() > 0) {

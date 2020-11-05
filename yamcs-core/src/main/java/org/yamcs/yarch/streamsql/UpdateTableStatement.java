@@ -111,7 +111,7 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     ui.compiledExpr = ui.value.compile();
                 }
             } else {
-                if (tableDefinition.getKeyDefinition().getColumn(ui.colName) != null) {
+                if (tableDefinition.hasKey(ui.colName)) {
                     throw new NotSupportedException("Column '" + ui.colName + "' is part of the primary key");
                 }
 

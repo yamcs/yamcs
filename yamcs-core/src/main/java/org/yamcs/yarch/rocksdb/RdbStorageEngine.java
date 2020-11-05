@@ -19,6 +19,7 @@ import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.StorageEngine;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.TableWriter.InsertMode;
@@ -80,7 +81,6 @@ public class RdbStorageEngine implements StorageEngine {
         }
     }
 
-
     @Override
     public void dropTable(YarchDatabaseInstance ydb, TableDefinition tbl) throws YarchException {
         Tablespace tablespace = getTablespace(ydb, tbl);
@@ -129,7 +129,8 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending, boolean follow) {
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
+            boolean follow) {
         Tablespace tblsp = getTablespace(ydb, tbl);
 
         return tblsp.newTableIterator(ydb, tbl, ascending, follow);
@@ -316,12 +317,12 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public  List<TableDefinition> loadTables(YarchDatabaseInstance ydb) throws YarchException {
+    public List<TableDefinition> loadTables(YarchDatabaseInstance ydb) throws YarchException {
         Tablespace tablespace = getTablespace(ydb);
         try {
             return tablespace.loadTables(ydb.getYamcsInstance());
         } catch (RocksDBException | IOException e) {
-           throw new YarchException(e);
+            throw new YarchException(e);
         }
     }
 
@@ -335,10 +336,12 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public void saveTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
+    public void saveTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            List<TableColumnDefinition> keyColumns,
+            List<TableColumnDefinition> valueColumns) throws YarchException {
         Tablespace tablespace = getTablespace(ydb);
         try {
-            tablespace.saveTableDefinition(ydb.getYamcsInstance(), tblDef);
+            tablespace.saveTableDefinition(ydb.getYamcsInstance(), tblDef, keyColumns, valueColumns);
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }

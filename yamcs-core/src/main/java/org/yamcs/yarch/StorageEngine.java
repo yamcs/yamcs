@@ -15,7 +15,7 @@ public interface StorageEngine {
      * @param ydb
      * @throws YarchException
      */
-    public  List<TableDefinition>  loadTables(YarchDatabaseInstance ydb) throws YarchException;
+    public List<TableDefinition> loadTables(YarchDatabaseInstance ydb) throws YarchException;
 
     /**
      * Create a new table based on definition.
@@ -29,11 +29,19 @@ public interface StorageEngine {
     /**
      * Persist the table definition to diks (called when the table definition modifies)
      * 
+     * <p>
+     * The general table properties should be read from the tblDef argument but the column properties should be read
+     * from the extra arguments
+     * This is because the method is called with modified column content which is not reflected in the
+     * table definition until the data is saved in the database.
+     * 
      * @param ydb
      * @param tblDef
-     * @throws YarchException 
+     * @throws YarchException
      */
-    public void saveTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException;
+    public void saveTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            List<TableColumnDefinition> keyColumns,
+            List<TableColumnDefinition> valueColumns) throws YarchException;
 
     /**
      * Drop the table (removing all data)
@@ -64,7 +72,8 @@ public interface StorageEngine {
      * @param ydb
      * @param tblDef
      */
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending, boolean follow);
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending,
+            boolean follow);
 
     public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 

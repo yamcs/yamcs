@@ -255,7 +255,7 @@ public class YarchDatabaseInstance {
         if (tblDef.getFormatVersion() == 1) {
             log.info("Converting {} from format version 1 to format version 2", tblDef.getName());
             if ("pp".equals(tblDef.getName())) {
-                tblDef = changeParaValueType(tblDef);
+                changeParaValueType(tblDef);
             }
         }
 
@@ -263,27 +263,32 @@ public class YarchDatabaseInstance {
         return tblDef;
     }
 
-    static TableDefinition changeParaValueType(TableDefinition tblDef) {
-        TupleDefinition valueDef = tblDef.getValueDefinition();
-        List<ColumnDefinition> l = valueDef.getColumnDefinitions();
+    static void changeParaValueType(TableDefinition tblDef) {
+        List<TableColumnDefinition> l = tblDef.getValueDefinition();
         for (int i = 0; i < l.size(); i++) {
             ColumnDefinition cd = l.get(i);
             if ("PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue)".equals(cd.getType().name())) {
-                ColumnDefinition cd1 = new ColumnDefinition(cd.getName(), DataType.PARAMETER_VALUE);
-                l.set(i, cd1);
+                tblDef.changeDataType(cd.getName(), DataType.PARAMETER_VALUE);
             }
         }
-        return new TableDefinition(2, tblDef.getKeyDefinition(), valueDef, tblDef.getEnumValuesDefinitions());
     }
 
     /**
      * saves the table definition (called after it changes)
+     * <p>
+     * All the properties should be read from the table, but for the columns properties the lists passed as arguments
+     * should be used. This is because the method is called with modified column content which is not reflected in the
+     * table definition until the data is saved in the database.
+     * 
+     * @param valueColumns
+     * @param keyColumns
      * 
      * @param algorithmDef
      */
-    void saveTableDefinition(TableDefinition tblDef) {
+    void saveTableDefinition(TableDefinition tblDef, List<TableColumnDefinition> keyColumns,
+            List<TableColumnDefinition> valueColumns) {
         try {
-            getStorageEngine(tblDef).saveTableDefinition(this, tblDef);
+            getStorageEngine(tblDef).saveTableDefinition(this, tblDef, keyColumns, valueColumns);
         } catch (Exception e) {
             YamcsServer.getServer().getCrashHandler(instanceName).handleCrash("Archive",
                     "Cannot save table definition for" + tblDef.getName() + " :" + e);
@@ -318,7 +323,7 @@ public class YarchDatabaseInstance {
 
         tables.put(tbldef.getName(), tbldef);
         tbldef.setDb(this);
-        saveTableDefinition(tbldef);
+        saveTableDefinition(tbldef, tbldef.getKeyDefinition(), tbldef.getValueDefinition());
         if (managementService != null) {
             managementService.registerTable(instanceName, tbldef);
         }
@@ -422,7 +427,7 @@ public class YarchDatabaseInstance {
     /**
      * Executes a query and returns a result.
      * <p>
-     * If the result contains streaming data (select from table or stream) you have to close the result 
+     * If the result contains streaming data (select from table or stream) you have to close the result
      * 
      * @param query
      * @param args
@@ -434,7 +439,7 @@ public class YarchDatabaseInstance {
         StreamSqlStatement stmt = createStatement(query, args);
         return execute(stmt);
     }
-    
+
     public void executeDiscardingResult(String query, Object... args) throws StreamSqlException, ParseException {
         StreamSqlStatement stmt = createStatement(query, args);
         execute(stmt, new ResultListener() { // Discards everything

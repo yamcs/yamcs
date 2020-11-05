@@ -25,13 +25,12 @@ import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
-import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.protobuf.Db;
@@ -106,7 +105,7 @@ public class Tablespace {
 
     Map<TableDefinition, RdbPartitionManager> partitionManagers = new ConcurrentHashMap<>();
     static final Object DUMMY = new Object();
-    
+
     Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
 
     public Tablespace(String name) {
@@ -449,7 +448,8 @@ public class Tablespace {
 
     public void createTable(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
         synchronized (partitionManagers) {
-            ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+            ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef, tblDef.getKeyDefinition(),
+                    tblDef.getValueDefinition());
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
             trb.setType(Type.TABLE_DEFINITION);
             trb.setTableDefinition(rtd);
@@ -463,13 +463,15 @@ public class Tablespace {
         }
     }
 
-    void saveTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+    void saveTableDefinition(String yamcsInstance, TableDefinition tblDef,
+            List<TableColumnDefinition> keyDef,
+            List<TableColumnDefinition> valueDef) throws RocksDBException {
         RdbPartitionManager pm = partitionManagers.get(tblDef);
         if (pm == null) {
             throw new IllegalArgumentException("This is not a table definition I know");
         }
 
-        ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef);
+        ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef, keyDef, valueDef);
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
         trb.setType(Type.TABLE_DEFINITION);
         trb.setTableDefinition(rtd);
@@ -484,40 +486,28 @@ public class Tablespace {
      */
     void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
         if ("alarms".equals(tblDef.getName())) {
-            TupleDefinition tdef = tblDef.getValueDefinition();
-            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_TRIGGER);
-            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_CLEAR);
-            changePvColumnType(tdef, ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            changePvColumnType(tblDef, ParameterAlarmStreamer.CNAME_TRIGGER);
+            changePvColumnType(tblDef, ParameterAlarmStreamer.CNAME_CLEAR);
+            changePvColumnType(tblDef, ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
         } else if (EventRecorder.TABLE_NAME.equals(tblDef.getName())) {
-            TupleDefinition tdef = tblDef.getValueDefinition();
-            changeEventColumnType(tdef, "body");
+            changeEventColumnType(tblDef, "body");
         } else if ("event_alarms".equals(tblDef.getName())) {
-            TupleDefinition tdef = tblDef.getValueDefinition();
-            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_TRIGGER);
-            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_CLEAR);
-            changeEventColumnType(tdef, EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            changeEventColumnType(tblDef, EventAlarmStreamer.CNAME_TRIGGER);
+            changeEventColumnType(tblDef, EventAlarmStreamer.CNAME_CLEAR);
+            changeEventColumnType(tblDef, EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
         }
         createTable(yamcsInstance, tblDef);
     }
 
-    private void changePvColumnType(TupleDefinition tdef, String cname) {
+    private void changePvColumnType(TableDefinition tblDef, String cname) {
 
-        int idx = tdef.getColumnIndex(cname);
-
-        if (idx > 0) {
-            log.info("Chaning data type of column {} to {}", cname, DataType.PARAMETER_VALUE);
-            ColumnDefinition cd = new ColumnDefinition(cname, DataType.PARAMETER_VALUE);
-            tdef.getColumnDefinitions().set(idx, cd);
-        }
+        log.info("Changing data type of column {} to {}", cname, DataType.PARAMETER_VALUE);
+        tblDef.changeDataType(cname, DataType.PARAMETER_VALUE);
     }
 
-    private void changeEventColumnType(TupleDefinition tdef, String cname) {
-        int idx = tdef.getColumnIndex(cname);
-        if (idx >= 0) {
-            log.info("Chaning data type of column {} to {}", cname, Db.Event.class.getName());
-            ColumnDefinition cd = new ColumnDefinition(cname, DataType.protobuf(Db.Event.class.getName()));
-            tdef.getColumnDefinitions().set(idx, cd);
-        }
+    private void changeEventColumnType(TableDefinition tblDef, String cname) {
+        log.info("Changing data type of column {} to {}", cname, Db.Event.class.getName());
+        tblDef.changeDataType(cname, DataType.protobuf(Db.Event.class.getName()));
     }
 
     void dropTable(TableDefinition tbl) throws RocksDBException, IOException {
@@ -571,7 +561,7 @@ public class Tablespace {
         log.info("Tablespace {}: loaded {} tables for instance {}", name, list.size(), yamcsInstance);
         return list;
     }
-    
+
     public TableWalker newTableIterator(YarchDatabaseInstance ydb, TableDefinition tblDef,
             boolean ascending, boolean follow) {
         PartitionManager pmgr = partitionManagers.get(tblDef);
@@ -584,10 +574,10 @@ public class Tablespace {
     }
 
     public void close() {
-            for (RdbTableWalker rrs : iterators.keySet()) {
-                rrs.close();
-            }
-            rdbFactory.shutdown();
+        for (RdbTableWalker rrs : iterators.keySet()) {
+            rrs.close();
+        }
+        rdbFactory.shutdown();
     }
 
 }

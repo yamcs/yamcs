@@ -618,10 +618,10 @@ public class TableApi extends AbstractTableApi<Context> {
             scriptb.append(" table_format=compressed");
         }
         infob.setScript(scriptb.toString());
-        for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
+        for (ColumnDefinition cdef : def.getKeyDefinition()) {
             infob.addKeyColumn(toColumnInfo(cdef, def));
         }
-        for (ColumnDefinition cdef : def.getValueDefinition().getColumnDefinitions()) {
+        for (ColumnDefinition cdef : def.getValueDefinition()) {
             infob.addValueColumn(toColumnInfo(cdef, def));
         }
         return infob.build();

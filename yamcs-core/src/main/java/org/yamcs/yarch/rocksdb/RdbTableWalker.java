@@ -294,7 +294,7 @@ public class RdbTableWalker extends AbstractTableWalker {
     private DbRange getTableRange(IndexFilter filter) {
         DbRange tableRange = new DbRange();
         if (filter != null) {
-            ColumnDefinition cd = tableDefinition.getKeyDefinition().getColumn(0);
+            ColumnDefinition cd = tableDefinition.getKeyDefinition().get(0);
             ColumnSerializer cs = tableDefinition.getColumnSerializer(cd.getName());
             if (filter.keyStart != null) {
                 tableRange.strictStart = filter.strictStart;

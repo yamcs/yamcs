@@ -7,15 +7,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.DatabaseCorruptionException;
+import org.yamcs.utils.IndexedList;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.yarch.ColumnSerializerFactory.EnumColumnSerializer;
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
@@ -24,7 +22,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 /**
  * A table definition consists of a (key,value) pair of tuple definitions. A
@@ -50,22 +47,17 @@ public class TableDefinition {
      * 1: - the histogram were stored in a separate rocksdb database.
      * - pp table contained a column ppgroup instead of group
      * 2: - the PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue) is replaced by PARAMETER_VALUE in the pp table
+     * 3: November 2020 (Yamcs 5.3)
+     * changed serialization to preserve order of negative values in the key
      * 
-     * To switch to the latest version, use the bin/yamcs archive upgrade command
+     * 
      */
     public static final int CURRENT_FORMAT_VERSION = 3;
-    private final int  formatVersion;
+    private final int formatVersion;
 
-    private final TupleDefinition keyDef;
-
-    // the definition of all the value columns that the table can have. A
-    // particular row can have less columns
-    // We have two references, one that is written to disk as part of the
-    // serialization and the other one that is actually used
-    // we do this in order to prevent that a column is used before the
-    // serialization has been flushed to disk
-    TupleDefinition serializedValueDef = new TupleDefinition();
-    private volatile TupleDefinition valueDef = serializedValueDef;
+    // the definition of keys and values columns
+    private volatile IndexedList<String, TableColumnDefinition> keyDef;
+    private volatile IndexedList<String, TableColumnDefinition> valueDef;
 
     // keyDef+valueDef
     private volatile TupleDefinition tupleDef;
@@ -77,20 +69,11 @@ public class TableDefinition {
 
     private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
 
-    transient private String name; // we make this transient such that tables
-                                   // names can be changed by changing the
-                                   // filename
+    private String name;
     private List<String> histoColumns;
 
-    private List<ColumnSerializer<?>> keySerializers = new ArrayList<ColumnSerializer<?>>();
-    private List<ColumnSerializer<?>> valueSerializers = new ArrayList<ColumnSerializer<?>>();
-
-    // mapping from String to short for the columns of type enum
-    Map<String, BiMap<String, Short>> serializedEmumValues;
-    private volatile Map<String, BiMap<String, Short>> enumValues;
-
     /**
-     * Used when creating an "empty"(i.e. no enum values) table via sql.
+     * Used when creating an empty table via sql.
      * 
      * @param name
      * @param tdef
@@ -98,59 +81,50 @@ public class TableDefinition {
      * @throws StreamSqlException
      */
     public TableDefinition(String name, TupleDefinition tdef, List<String> primaryKey) throws StreamSqlException {
-        keyDef = new TupleDefinition();
         this.name = name;
         this.formatVersion = CURRENT_FORMAT_VERSION;
-        
+
+        keyDef = new IndexedList<>();
         for (String s : primaryKey) {
-            ColumnDefinition c = tdef.getColumn(s);
-            if (c == null) {
+            ColumnDefinition cd = tdef.getColumn(s);
+            if (cd == null) {
                 throw new ColumnNotFoundException(s);
             }
-            keyDef.addColumn(c);
-            keySerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
+            TableColumnDefinition tcd = new TableColumnDefinition(cd);
+            keyDef.add(cd.getName(), tcd);
+            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
         }
+
+        valueDef = new IndexedList<>(tdef.size()- keyDef.size());
         for (ColumnDefinition cd : tdef.getColumnDefinitions()) {
-            if (keyDef.getColumn(cd.getName()) == null) {
-                valueDef.addColumn(cd);
-                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
+            if (!keyDef.hasKey(cd.getName())) {
+                TableColumnDefinition tcd = new TableColumnDefinition(cd);
+                valueDef.add(cd.getName(), tcd);
+                tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
             }
         }
-        this.serializedValueDef = valueDef;
         computeTupleDef();
     }
 
     /**
      * Used when creating the table from the serialized data on disk
      * 
-     * @param keyDef
-     * @param valueDef
-     * @param enumValues
      */
-    public TableDefinition(int formatVersion, TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String, Short>> enumValues) {
-        this.valueDef = valueDef;
-        this.serializedValueDef = valueDef;
-        this.keyDef = keyDef;
+    public TableDefinition(int formatVersion, List<TableColumnDefinition> key, List<TableColumnDefinition> value) {
+       
+        this.keyDef = new IndexedList<>(key.size());
         this.formatVersion = formatVersion;
+        for (TableColumnDefinition tcd : key) {
+            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+            keyDef.add(tcd.getName(), tcd);
+        }
         
+        this.valueDef = new IndexedList<>(key.size());
+        for (TableColumnDefinition tcd : value) {
+            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+            valueDef.add(tcd.getName(), tcd);
+        }
         computeTupleDef();
-        this.enumValues = enumValues;
-        this.serializedEmumValues = enumValues;
-
-        for (ColumnDefinition cd : keyDef.getColumnDefinitions()) {
-            ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
-            keySerializers.add(cs);
-            if ((cd.getType() == DataType.ENUM) && enumValues.containsKey(cd.getName())) {
-                ((EnumColumnSerializer) cs).setEnumValues(enumValues.get(cd.getName()));
-            }
-        }
-        for (ColumnDefinition cd : valueDef.getColumnDefinitions()) {
-            ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
-            valueSerializers.add(cs);
-            if ((cd.getType() == DataType.ENUM) && enumValues.containsKey(cd.getName())) {
-                ((EnumColumnSerializer) cs).setEnumValues(enumValues.get(cd.getName()));
-            }
-        }
     }
 
     public void setDb(YarchDatabaseInstance ydb) {
@@ -166,7 +140,7 @@ public class TableDefinition {
      */
     public void setPartitioningSpec(PartitioningSpec pspec) throws StreamSqlException {
         if ((pspec.type == PartitioningSpec._type.TIME) || (pspec.type == PartitioningSpec._type.TIME_AND_VALUE)) {
-            ColumnDefinition cd = keyDef.getColumn(pspec.timeColumn);
+            ColumnDefinition cd = keyDef.get(pspec.timeColumn);
             if (cd == null) {
                 throw new GenericStreamSqlException(
                         "time partition specified on a column not part of the primary key: '" + pspec.timeColumn + "'");
@@ -174,20 +148,15 @@ public class TableDefinition {
             if (cd.getType() != DataType.TIMESTAMP) {
                 throw new GenericStreamSqlException("time partition specified on a column of type " + cd.getType());
             }
-            if (!keyDef.getColumn(0).getName().equals(pspec.timeColumn)) {
+            if (!keyDef.get(0).getName().equals(pspec.timeColumn)) {
                 throw new GenericStreamSqlException(
                         "time partition supported only on the first column of the primary key");
             }
         }
 
         if ((pspec.type == PartitioningSpec._type.VALUE) || (pspec.type == PartitioningSpec._type.TIME_AND_VALUE)) {
-            ColumnDefinition c;
-
-            if (keyDef.hasColumn(pspec.valueColumn)) {
-                c = keyDef.getColumn(pspec.valueColumn);
-            } else if (valueDef.hasColumn(pspec.valueColumn)) {
-                c = valueDef.getColumn(pspec.valueColumn);
-            } else {
+            ColumnDefinition c = getColumnDefinition(pspec.valueColumn);
+            if (c == null) {
                 throw new ColumnNotFoundException(pspec.valueColumn);
             }
             pspec.setValueColumnType(c.getType());
@@ -198,20 +167,20 @@ public class TableDefinition {
 
     private void computeTupleDef() {
         tupleDef = new TupleDefinition();
-        for (ColumnDefinition cd : keyDef.getColumnDefinitions()) {
+        for (ColumnDefinition cd : keyDef) {
             tupleDef.addColumn(cd);
         }
-        for (ColumnDefinition cd : valueDef.getColumnDefinitions()) {
+        for (ColumnDefinition cd : valueDef) {
             tupleDef.addColumn(cd);
         }
     }
 
-    public TupleDefinition getKeyDefinition() {
-        return keyDef;
+    public List<TableColumnDefinition> getKeyDefinition() {
+        return keyDef.getList();
     }
 
-    public TupleDefinition getValueDefinition() {
-        return valueDef;
+    public List<TableColumnDefinition> getValueDefinition() {
+        return valueDef.getList();
     }
 
     public String getName() {
@@ -234,8 +203,8 @@ public class TableDefinition {
      * @throws StreamSqlException
      */
     public void validate() throws StreamSqlException {
-        for (int i = 0; i < keyDef.getColumnDefinitions().size() - 1; i++) {
-            ColumnDefinition cd = keyDef.getColumnDefinitions().get(i);
+        for (int i = 0; i < keyDef.size() - 1; i++) {
+            ColumnDefinition cd = keyDef.get(i);
             if (cd.getType() == DataType.BINARY) {
                 throw new NotSupportedException(
                         "Primary key of type binary except the last in the list (otherwise the binary sorting does not work properly)");
@@ -257,8 +226,8 @@ public class TableDefinition {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             DataOutputStream dos = new DataOutputStream(baos);
             for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
-                ColumnDefinition tableCd = keyDef.getColumn(keyIdx);
-                String colName = keyDef.getColumn(keyIdx).getName();
+                TableColumnDefinition tableCd = keyDef.get(keyIdx);
+                String colName = tableCd.getName();
                 int tIdx = t.getColumnIndex(colName);
                 if (tIdx < 0) {
                     throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
@@ -267,8 +236,7 @@ public class TableDefinition {
                 Object v = t.getColumn(tIdx);
                 Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
 
-                ColumnSerializer cs = keySerializers.get(keyIdx);
-                cs.serialize(dos, v1);
+                tableCd.serialize(dos, v1);
             }
             return baos.toByteArray();
         } catch (IOException e) {
@@ -281,21 +249,23 @@ public class TableDefinition {
      * disk
      */
     private synchronized void addMissingValueColumns(TupleDefinition tdef) {
-        serializedValueDef = valueDef.copy();
+        IndexedList<String, TableColumnDefinition> valueDef1 = new IndexedList<>(valueDef);
+
         for (int i = 0; i < tdef.size(); i++) {
             ColumnDefinition cd = tdef.getColumn(i);
-            if (keyDef.hasColumn(cd.getName())) {
+            if (keyDef.hasKey(cd.getName())) {
                 continue;
             }
-            int cidx = valueDef.getColumnIndex(cd.getName());
+            int cidx = valueDef.getIndex(cd.getName());
             if (cidx == -1) {
-                serializedValueDef.addColumn(cd);
-                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
+                TableColumnDefinition tcd = new TableColumnDefinition(cd);
+                tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+                valueDef1.add(tcd.name, tcd);
             }
         }
 
-        ydb.saveTableDefinition(this);
-        valueDef = serializedValueDef;
+        ydb.saveTableDefinition(this, keyDef.getList(), valueDef1.getList());
+        valueDef = valueDef1;
         computeTupleDef();
     }
 
@@ -311,10 +281,10 @@ public class TableDefinition {
      *            - new name of the column
      */
     public synchronized void renameColumn(String oldName, String newName) {
-        if (keyDef.hasColumn(oldName)) {
-            keyDef.renameColumn(oldName, newName);
-        } else if (valueDef.hasColumn(oldName)) {
-            valueDef.renameColumn(oldName, newName);
+        if (keyDef.hasKey(oldName)) {
+            keyDef.changeKey(oldName, newName);
+        } else if (valueDef.hasKey(oldName)) {
+            valueDef.changeKey(oldName, newName);
         } else {
             throw new IllegalArgumentException("no column named '" + oldName + "'");
         }
@@ -335,45 +305,38 @@ public class TableDefinition {
         if (idx != -1) {
             histoColumns.set(idx, newName);
         }
-
-        if ((enumValues != null) && (enumValues.containsKey(oldName))) {
-            BiMap<String, Short> b = enumValues.remove(oldName);
-            serializedEmumValues.put(newName, b);
-        }
-        ydb.saveTableDefinition(this);
-        enumValues = serializedEmumValues;
+        ydb.saveTableDefinition(this, keyDef.getList(), valueDef.getList());
     }
 
     /**
-     * Adds a value to a enum and writes the table definition to disk we first
-     * modify the serializedEnumValues to make sure that nobody else sees the
-     * new enum id before the serialization is finished (i.e. flushed on disk)
+     * Adds a value to a enum and writes the table definition to disk
      * 
      */
-    synchronized void addEnumValue(EnumColumnSerializer cs, String v) {
-        String columnName = cs.getColumnName();
-        BiMap<String, Short> b;
+    synchronized private Short addEnumValue(String columnName, String value) {
+        TableColumnDefinition tdef = getColumnDefinition(columnName);
 
-        // first check if it's not already in the map
-        if ((enumValues != null) && ((b = enumValues.get(columnName)) != null) && b.containsKey(v)) {
-            return;
-        }
+        TableColumnDefinition tdef1 = new TableColumnDefinition(tdef);
+        short x = tdef1.addEnumValue(value);
 
-        log.debug("Adding enum value {} for {}.{}", v, name, columnName);
-        serializedEmumValues = new HashMap<>();
-        if (enumValues != null) {
-            serializedEmumValues.putAll(enumValues);
+        IndexedList<String, TableColumnDefinition> keyDef1 = keyDef;
+        IndexedList<String, TableColumnDefinition> valueDef1 = valueDef;
+        
+        int idx = keyDef.getIndex(columnName);
+        if (idx >= 0) {
+            keyDef1 = new IndexedList<>(keyDef);
+            keyDef1.set(idx, tdef1);
+        } else {
+            idx = valueDef.getIndex(columnName);
+            assert (idx >= 0);
+            valueDef1 = new IndexedList<>(valueDef);
+            valueDef1.set(idx, tdef1);
         }
-        b = serializedEmumValues.remove(columnName);
-        BiMap<String, Short> b2 = HashBiMap.create();
-        if (b != null) {
-            b2.putAll(b);
-        }
-        b2.put(v, (short) b2.size());
-        serializedEmumValues.put(columnName, b2);
-        ydb.saveTableDefinition(this);
-        enumValues = serializedEmumValues;
-        cs.setEnumValues(b2);
+        
+        ydb.saveTableDefinition(this, keyDef1.getList(), valueDef1.getList());
+        keyDef = keyDef1;
+        valueDef = valueDef1;
+
+        return x;
     }
 
     /**
@@ -383,15 +346,14 @@ public class TableDefinition {
      * @return
      */
     public Short addAndGetEnumValue(String columnName, String value) {
-        Short enumValue;
-        Short v1;
-        BiMap<String, Short> b;
-        if ((enumValues == null) || ((b = enumValues.get(columnName)) == null) || (v1 = b.get(value)) == null) {
-            EnumColumnSerializer cs = (EnumColumnSerializer) getColumnSerializer(columnName);
-            addEnumValue(cs, value);
-            enumValue = enumValues.get(columnName).get(value);
-        } else {
-            enumValue = v1;
+        TableColumnDefinition tdef = getColumnDefinition(columnName);
+        if (tdef == null) {
+            throw new IllegalArgumentException("No column named '" + columnName + "'");
+        }
+
+        Short enumValue = tdef.getEnumIndex(value);
+        if (enumValue == null) {
+            enumValue = addEnumValue(columnName, value);
         }
         return enumValue;
     }
@@ -411,21 +373,20 @@ public class TableDefinition {
             DataOutputStream dos = new DataOutputStream(baos);
             for (int i = 0; i < tdef.size(); i++) {
                 ColumnDefinition tupleCd = tdef.getColumn(i);
-                if (keyDef.hasColumn(tupleCd.getName())) {
+                if (keyDef.hasKey(tupleCd.getName())) {
                     continue;
                 }
-                int cidx = valueDef.getColumnIndex(tupleCd.getName());
+                int cidx = valueDef.getIndex(tupleCd.getName());
                 if (cidx == -1) { // call again this function after adding the
                                   // missing columns to the table
                     addMissingValueColumns(tdef);
                     return serializeValue(t);
                 }
-                ColumnDefinition tableCd = valueDef.getColumn(cidx);
+                TableColumnDefinition tableCd = valueDef.get(cidx);
                 Object v = t.getColumn(i);
                 Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
-                ColumnSerializer tcs = valueSerializers.get(cidx);
                 dos.writeInt(cidx);
-                tcs.serialize(dos, v1);
+                tableCd.serialize(dos, v1);
             }
             // add a final -1 eof marker
             dos.writeInt(-1);
@@ -436,16 +397,14 @@ public class TableDefinition {
     }
 
     public Tuple deserialize(byte[] k, byte[] v) {
-        TupleDefinition tdef = keyDef.copy();
+        TupleDefinition tdef = new TupleDefinition();
         ArrayList<Object> cols = new ArrayList<>();
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(k));
         try {
             // deserialize the key
-            for (int i = 0; i < keyDef.size(); i++) {
-                ColumnDefinition cd = keyDef.getColumn(i);
-                ColumnSerializer<?> cs = keySerializers.get(i);
-                Object o = cs.deserialize(dis, cd);
-                cols.add(o);
+            for (TableColumnDefinition tcd : keyDef) {
+                tdef.addColumn(tcd);
+                cols.add(tcd.deserialize(dis));
             }
 
             // deserialize the value
@@ -456,15 +415,14 @@ public class TableDefinition {
                     break;
                 }
                 if (cidx >= valueDef.size()) {
-                    throw new IllegalArgumentException(
+                    throw new DatabaseCorruptionException(
                             "Reference to index " + cidx + " found but the table definition does not have this column");
                 }
 
-                ColumnDefinition cd = valueDef.getColumn(cidx);
-                ColumnSerializer<?> cs = valueSerializers.get(cidx);
+                TableColumnDefinition tcd = valueDef.get(cidx);
 
-                Object o = cs.deserialize(dis, cd);
-                tdef.addColumn(cd);
+                Object o = tcd.deserialize(dis);
+                tdef.addColumn(tcd);
                 cols.add(o);
             }
         } catch (IOException e) {
@@ -487,17 +445,15 @@ public class TableDefinition {
      * @return true if cname is the first column of the key
      */
     public boolean isIndexedByKey(String cname) {
-        return keyDef.getColumnIndex(cname) == 0;
+        return keyDef.getIndex(cname) == 0;
     }
 
-    public ColumnDefinition getColumnDefinition(String cname) {
-        if (keyDef.hasColumn(cname)) {
-            return keyDef.getColumn(cname);
+    public TableColumnDefinition getColumnDefinition(String colName) {
+        TableColumnDefinition tcd = keyDef.get(colName);
+        if (tcd != null) {
+            return tcd;
         }
-        if (valueDef.hasColumn(cname)) {
-            return valueDef.getColumn(cname);
-        }
-        return null;
+        return valueDef.get(colName);
     }
 
     public boolean hasPartitioning() {
@@ -513,12 +469,12 @@ public class TableDefinition {
     }
 
     public void setHistogramColumns(List<String> histoColumns) throws StreamSqlException {
-        if (keyDef.getColumn(0).getType() != DataType.TIMESTAMP)
+        if (keyDef.get(0).getType() != DataType.TIMESTAMP)
             throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
                     "Cannot only create histogram on tables with the first column of the primary key of type TIMESTAMP");
 
         for (String hc : histoColumns) {
-            if (keyDef.getColumnIndex(hc) == 0)
+            if (keyDef.getIndex(hc) == 0)
                 throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
                         "Cannot create histogram on the first column of the primary key");
             if (!tupleDef.hasColumn(hc))
@@ -533,28 +489,23 @@ public class TableDefinition {
     }
 
     public BiMap<String, Short> getEnumValues(String columnName) {
-        if (enumValues == null) {
+        TableColumnDefinition tcd = getColumnDefinition(columnName);
+        if(tcd==null) {
             return null;
         }
-        return enumValues.get(columnName);
+        return tcd.getEnumValues();
     }
 
     public List<String> getHistogramColumns() {
         return histoColumns;
     }
 
-   
-
-    public ColumnSerializer getColumnSerializer(String columnName) {
-        if (keyDef.hasColumn(columnName)) {
-            int idx = keyDef.getColumnIndex(columnName);
-            return keySerializers.get(idx);
-        } else if (valueDef.hasColumn(columnName)) {
-            int idx = valueDef.getColumnIndex(columnName);
-            return valueSerializers.get(idx);
-        } else {
-            throw new IllegalArgumentException("Cannot find a serializer for invalid column " + columnName);
+    public <T extends Object> ColumnSerializer<T> getColumnSerializer(String columnName) {
+        TableColumnDefinition tcd = getColumnDefinition(columnName);
+        if (tcd == null) {
+            throw new IllegalArgumentException("Invalid column " + columnName);
         }
+        return tcd.getSerializer();
     }
 
     public String getStorageEngineName() {
@@ -565,37 +516,11 @@ public class TableDefinition {
         this.storageEngineName = storageEngineName;
     }
 
-    
     public int getFormatVersion() {
         return formatVersion;
     }
 
-    /**
-     * Returns the value definition to be serialized on disk.
-     * <p>
-     * This should only be used from the storage engine.
-     * <p>
-     * TODO: refactor to hide this method.
-     */
-    public TupleDefinition getSerializedValueDefinition() {
-        return serializedValueDef;
-    }
-    
-    /**
-     * Returns the enumerations to be serialized on disk.
-     * <p>
-     * This should only be used from the storage engine.
-     * <p>
-     * TODO: refactor to hide this method. 
-     */
-    public BiMap<String, Short> getSerializedEnumValues(String columnName) {
-        if(serializedEmumValues == null) {
-            return null;
-        }
-        return serializedEmumValues.get(columnName);
-    }
 
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -604,7 +529,33 @@ public class TableDefinition {
         return sb.toString();
     }
 
-    public Map<String, BiMap<String, Short>> getEnumValuesDefinitions() {
-        return enumValues;
+    /**
+     * this method is used during table migration between two versions
+     * <p>
+     * It should not be used for other things.
+     */
+    public void changeDataType(String cname, DataType dataType) {
+        int idx = keyDef.getIndex(cname);
+        if (idx >= 0) {
+            TableColumnDefinition tcd = keyDef.get(idx);
+            keyDef.set(idx, new TableColumnDefinition(tcd, dataType));
+        } else {
+            idx = valueDef.getIndex(cname);
+            if (idx >= 0) {
+                TableColumnDefinition tcd = valueDef.get(idx);
+                valueDef.set(idx, new TableColumnDefinition(tcd, dataType));
+            } else {
+                throw new IllegalArgumentException("No column named " + cname);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param colName
+     * @return true if the column is part of the primary key
+     */
+    public boolean hasKey(String colName) {
+        return keyDef.hasKey(colName);
     }
 }
