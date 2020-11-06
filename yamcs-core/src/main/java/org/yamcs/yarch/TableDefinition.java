@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.LimitExceededException;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IndexedList;
 import org.yamcs.utils.StringConverter;
@@ -40,7 +41,7 @@ import com.google.common.collect.BiMap;
  */
 public class TableDefinition {
     static Logger log = LoggerFactory.getLogger(TableDefinition.class.getName());
-
+    static final int MAX_NUM_COLS = 0x00FFFFFF;
     /*
      * table version history
      * 0: yamcs version < 3.0
@@ -48,8 +49,8 @@ public class TableDefinition {
      * - pp table contained a column ppgroup instead of group
      * 2: - the PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue) is replaced by PARAMETER_VALUE in the pp table
      * 3: November 2020 (Yamcs 5.3)
-     * changed serialization to preserve order of negative values in the key
-     * 
+     * - changed serialization to preserve order of negative values in the key
+     * - first of the 4 bytes column index preceding the value is the datatype
      * 
      */
     public static final int CURRENT_FORMAT_VERSION = 3;
@@ -95,7 +96,7 @@ public class TableDefinition {
             tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
         }
 
-        valueDef = new IndexedList<>(tdef.size()- keyDef.size());
+        valueDef = new IndexedList<>(tdef.size() - keyDef.size());
         for (ColumnDefinition cd : tdef.getColumnDefinitions()) {
             if (!keyDef.hasKey(cd.getName())) {
                 TableColumnDefinition tcd = new TableColumnDefinition(cd);
@@ -111,14 +112,14 @@ public class TableDefinition {
      * 
      */
     public TableDefinition(int formatVersion, List<TableColumnDefinition> key, List<TableColumnDefinition> value) {
-       
+
         this.keyDef = new IndexedList<>(key.size());
         this.formatVersion = formatVersion;
         for (TableColumnDefinition tcd : key) {
             tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
             keyDef.add(tcd.getName(), tcd);
         }
-        
+
         this.valueDef = new IndexedList<>(key.size());
         for (TableColumnDefinition tcd : value) {
             tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
@@ -250,6 +251,10 @@ public class TableDefinition {
      */
     private synchronized void addMissingValueColumns(TupleDefinition tdef) {
         IndexedList<String, TableColumnDefinition> valueDef1 = new IndexedList<>(valueDef);
+        if (valueDef.size() >= MAX_NUM_COLS) {
+            throw new LimitExceededException(
+                    "The number of value columns in table " + name + " has reached the maximum " + MAX_NUM_COLS);
+        }
 
         for (int i = 0; i < tdef.size(); i++) {
             ColumnDefinition cd = tdef.getColumn(i);
@@ -320,7 +325,7 @@ public class TableDefinition {
 
         IndexedList<String, TableColumnDefinition> keyDef1 = keyDef;
         IndexedList<String, TableColumnDefinition> valueDef1 = valueDef;
-        
+
         int idx = keyDef.getIndex(columnName);
         if (idx >= 0) {
             keyDef1 = new IndexedList<>(keyDef);
@@ -331,7 +336,7 @@ public class TableDefinition {
             valueDef1 = new IndexedList<>(valueDef);
             valueDef1.set(idx, tdef1);
         }
-        
+
         ydb.saveTableDefinition(this, keyDef1.getList(), valueDef1.getList());
         keyDef = keyDef1;
         valueDef = valueDef1;
@@ -385,6 +390,7 @@ public class TableDefinition {
                 TableColumnDefinition tableCd = valueDef.get(cidx);
                 Object v = t.getColumn(i);
                 Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
+                cidx = (tableCd.type.getTypeId() << 24) | cidx;
                 dos.writeInt(cidx);
                 tableCd.serialize(dos, v1);
             }
@@ -414,12 +420,19 @@ public class TableDefinition {
                 if (cidx == -1) {
                     break;
                 }
+                byte dt = (byte) (cidx >>> 24);
+                cidx &= 0xFFFFFF;
                 if (cidx >= valueDef.size()) {
                     throw new DatabaseCorruptionException(
                             "Reference to index " + cidx + " found but the table definition does not have this column");
                 }
 
                 TableColumnDefinition tcd = valueDef.get(cidx);
+                if (tcd.getType().getTypeId() != dt) {
+                    throw new DatabaseCorruptionException(String.format(
+                            "Data type for table %s, column %s (id: %d) does not match the data read: expected %d, read: %d", 
+                            name, tcd.getName(), cidx, tcd.getType().getTypeId(), dt));
+                }
 
                 Object o = tcd.deserialize(dis);
                 tdef.addColumn(tcd);
@@ -490,7 +503,7 @@ public class TableDefinition {
 
     public BiMap<String, Short> getEnumValues(String columnName) {
         TableColumnDefinition tcd = getColumnDefinition(columnName);
-        if(tcd==null) {
+        if (tcd == null) {
             return null;
         }
         return tcd.getEnumValues();
@@ -519,7 +532,6 @@ public class TableDefinition {
     public int getFormatVersion() {
         return formatVersion;
     }
-
 
     @Override
     public String toString() {

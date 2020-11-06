@@ -44,7 +44,7 @@ public class DataType {
 
     public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15);
 
-    // the id has been added in Yamcs 4.11 - it will be stored on disk as
+    //since yamcs 5.3 the it is stored on disk before the column index, see TableDefinition
     private final byte id;
 
     protected DataType(_type t, byte id) {
