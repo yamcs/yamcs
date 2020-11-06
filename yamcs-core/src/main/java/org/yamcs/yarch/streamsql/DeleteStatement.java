@@ -115,7 +115,7 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
         }
         Tuple tuple;
         if (bulkDelete) {
-            tuple = new Tuple(TDEF, new Object[] { 0, -1 });
+            tuple = new Tuple(TDEF, new Object[] { 0l, -1l });
             consumer.accept(tuple);
         } else {
             tuple = new Tuple(TDEF, new Object[] { inspected.get(), deleted.get() });
