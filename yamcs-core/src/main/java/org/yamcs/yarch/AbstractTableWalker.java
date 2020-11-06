@@ -18,40 +18,41 @@ import com.google.common.collect.BiMap;
  * Iterator through a table.
  * <p>
  * Takes care of iterating through partitions, and also utilises the indices
+ * 
  * @author nm
  *
  */
 public abstract class AbstractTableWalker implements TableWalker {
     protected TableDefinition tableDefinition;
-    
+
     // if not null, the iterate should run in this range
     private IndexFilter rangeIndexFilter;
-    
-    //// if not null,  only includes data from these partitions 
+
+    //// if not null, only includes data from these partitions
     // - if the table is partitioned on a non index column
     private Set<Object> partitionValueFilter;
     final protected PartitionManager partitionManager;
     final protected boolean ascending;
     final protected boolean follow;
-    
+
     protected Log log;
-    
+
     volatile boolean running = false;
-    
-    
+
     protected TableVisitor visitor;
-    
-    protected AbstractTableWalker(YarchDatabaseInstance ydb, PartitionManager partitionManager, boolean ascending, boolean follow) {
+
+    protected AbstractTableWalker(YarchDatabaseInstance ydb, PartitionManager partitionManager, boolean ascending,
+            boolean follow) {
         this.tableDefinition = partitionManager.getTableDefinition();
         this.partitionManager = partitionManager;
         this.ascending = ascending;
         this.follow = follow;
         log = new Log(getClass(), ydb.getName());
     }
-    
+
     @Override
     public void walk(TableVisitor visitor) {
-        if(visitor == null) {
+        if (visitor == null) {
             throw new NullPointerException("visitor cannot be null");
         }
         log.debug("Starting to walk ascending: {}, rangeIndexFilter: {}", ascending, rangeIndexFilter);
@@ -72,8 +73,6 @@ public abstract class AbstractTableWalker implements TableWalker {
             close();
         }
     }
-    
-    
 
     @Override
     public void bulkDelete() {
@@ -93,8 +92,7 @@ public abstract class AbstractTableWalker implements TableWalker {
             close();
         }
     }
-    
-    
+
     private Iterator<List<Partition>> getPartitionIterator() {
         Iterator<List<Partition>> partitionIterator;
 
@@ -122,7 +120,7 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
         return partitionIterator;
     }
-    
+
     protected boolean iAscendingFinished(byte[] key, byte[] value, byte[] rangeEnd, boolean strictEnd) {
         boolean finished = false;
         if (rangeEnd != null) { // check if we have reached the end
@@ -150,8 +148,7 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
         return finished;
     }
-    
-    
+
     /**
      * Runs the partitions sending data only that conform with the start and end filters. returns true if the stop
      * condition is met
@@ -161,9 +158,10 @@ public abstract class AbstractTableWalker implements TableWalker {
      * @return returns true if the end condition has been reached.
      */
     protected abstract boolean walkPartitions(List<Partition> partitions, IndexFilter range) throws YarchException;
-    
-    protected abstract boolean bulkDeleteFromPartitions(List<Partition> partitions, IndexFilter range) throws YarchException;
-    
+
+    protected abstract boolean bulkDeleteFromPartitions(List<Partition> partitions, IndexFilter range)
+            throws YarchException;
+
     @Override
     public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
         if (tableDefinition.isIndexedByKey(cexpr.getName())) {
@@ -219,8 +217,7 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
         return false;
     }
-    
-    
+
     /**
      * currently adds only filters on value based partitions
      */
@@ -258,10 +255,9 @@ public abstract class AbstractTableWalker implements TableWalker {
         return true;
     }
 
-    
     // if the value partitioning column is of type Enum, we have to convert all
-    // the values
-    // from String to Short - the values that do not have an enum are eliminated
+    // the values (used in the query for filtering) from String to Short 
+    // the values that do not have an enum are eliminated (because they cannot be possibly matching the query)
 
     // if partitioning value is not an enum, return it unchanged
     private Set<Object> transformEnums(Set<Object> values) {
@@ -286,11 +282,11 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
         return values;
     }
-    
+
     protected boolean isRunning() {
         return running;
     }
-    
+
     @Override
     public void close() {
         running = false;
