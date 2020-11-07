@@ -3,8 +3,11 @@ package org.yamcs.yarch;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompiledAggregateList implements CompiledAggregateExpression {
+import org.yamcs.LimitExceededException;
 
+public class CompiledAggregateList implements CompiledAggregateExpression {
+    final static int MAX_LENGTH = 1000;
+    
     List<Tuple> list=new ArrayList<Tuple>();
     @Override
     public void clear() {
@@ -18,6 +21,9 @@ public class CompiledAggregateList implements CompiledAggregateExpression {
 
     @Override
     public void newData(Tuple tuple) {
+        if(list.size()>=MAX_LENGTH) {
+            throw new LimitExceededException("To many elements in the aggregate list");
+        }
         list.add(tuple);
     }
 

@@ -1,44 +1,42 @@
-package org.yamcs.yarch.streamsql;
+package org.yamcs.yarch.streamsql.funct;
 
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.streamsql.CompilableAggregateExpression;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-public class SumExpression extends CompilableAggregateExpression {
+public class CountExpression extends CompilableAggregateExpression {
 
-    public SumExpression(Expression[] args, boolean star) throws ParseException {
+    public CountExpression(Expression[] args, boolean star) throws ParseException {
         super(args, star);
     }
 
     @Override
     protected void doBind() throws StreamSqlException {
-        type = children[0].type;// TODO Auto-generated method stub
-
+        type = DataType.LONG;
     }
 
     @Override
     protected void aggregateFillCode_Declarations(StringBuilder code) {
-        code.append("\t" + getType().primitiveJavaType() + " sum;\n");
+        code.append("\tlong count;\n");
 
     }
 
     @Override
     protected void aggregateFillCode_clear(StringBuilder code) {
-        code.append("\t\tsum=0;\n");
+        code.append("\t\tcount=0;\n");
     }
 
     @Override
     protected void aggregateFillCode_getValue(StringBuilder code) {
-        code.append("\t\treturn sum;\n");
+        code.append("\t\treturn count;\n");
 
     }
 
     @Override
     protected void aggregateFillCode_newData(StringBuilder code) throws StreamSqlException {
-        fillCode_AllInputDefVars(code);
-        // code.append("\t\tsum+=col"+children[0].getColName()+".get"+children[0].getType().capitalized()+"()");
-        code.append("\t\tsum+=col" + children[0].getColumnName());
+        code.append("\t\tcount++");
         code.append(";\n");
     }
 }

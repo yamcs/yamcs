@@ -158,8 +158,7 @@ public class SelectExpression implements StreamExpression {
         // bind aggregates
         if (!aggList.isEmpty()) {
             if (windowSpec == null) {
-                throw new StreamSqlException(ErrCode.AGGREGATE_WITHOUT_WINDOW,
-                        "Cannot use aggregates unless windows are also used");
+                windowSpec = WindowSpecification.INFINITE_WINDOW;
             }
 
             // build aggInput

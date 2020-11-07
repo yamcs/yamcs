@@ -9,11 +9,11 @@ import org.yamcs.yarch.streamsql.AggregateListExpression;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.FirstValExpression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.SumExpression;
 
 public class FunctionExpressionFactory {
     static Map<String, FunctConfig> functions = new HashMap<>();
     static {
+        addFunction("count", CountExpression.class);
         addFunction("sum", SumExpression.class);
         addFunction("aggregatelist",AggregateListExpression.class);
         addFunction("firstval",FirstValExpression.class);

@@ -92,7 +92,6 @@ public class SelectStream extends Stream implements StreamSubscriber {
         for (Tuple t : windowProc.newData(tuple)) {
             processSelectList(t);
         }
-
     }
 
     private void processSelectList(Tuple tuple) {
@@ -119,6 +118,11 @@ public class SelectStream extends Stream implements StreamSubscriber {
 
     @Override
     public void streamClosed(Stream stream) {
+        if (windowProc != null) {
+            for (Tuple t : windowProc.streamClosed()) {
+                processSelectList(t);
+            }
+        }
         close();
     }
 
@@ -129,6 +133,6 @@ public class SelectStream extends Stream implements StreamSubscriber {
 
     @Override
     protected void doClose() {
-        input.close(); // TODO replace with removeSubscriber
+        input.close();
     }
 }
