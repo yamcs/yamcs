@@ -2,7 +2,6 @@ package org.yamcs.yarch.rocksdb;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -51,15 +50,11 @@ public class RdbConfig {
     private RdbConfig() {
         YConfiguration config = YConfiguration.getConfiguration("yamcs");
         if (config.containsKey(KEY_RDB_CONFIG)) {
-            Map<String, Object> rdbOptions = config.getMap(KEY_RDB_CONFIG);
+            YConfiguration rdbOptions = config.getConfig(KEY_RDB_CONFIG);
             if (rdbOptions.containsKey(KEY_TABLESPACE_CONFIG)) {
-                List<Object> tableConfigs = YConfiguration.getList(rdbOptions, KEY_TABLESPACE_CONFIG);
-                for (Object o : tableConfigs) {
-                    if (!(o instanceof Map)) {
-                        throw new ConfigurationException(
-                                "Error in rdbConfig -> tableConfig in yamcs.yaml: the entries of tableConfig have to be maps");
-                    }
-                    TablespaceConfig tblConf = new TablespaceConfig((Map<String, Object>) o);
+                List<YConfiguration> tableConfigs = rdbOptions.getConfigList(KEY_TABLESPACE_CONFIG);
+                for (YConfiguration tableConfig : tableConfigs) {
+                    TablespaceConfig tblConf = new TablespaceConfig(tableConfig);
                     tblConfigList.add(tblConf);
                 }
             }
@@ -70,12 +65,12 @@ public class RdbConfig {
 
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
         tableFormatConfig.setBlockSize(256l * 1024);// 256KB
-        tableFormatConfig.setBlockCacheSize(100l * 1024 * 1024);// 50MB
+        tableFormatConfig.setBlockCacheSize(10l * 1024 * 1024);// 1MB
         tableFormatConfig.setFilter(new BloomFilter());
-        tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
+        // tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
         defaultOptions = new Options();
-        defaultOptions.setWriteBufferSize(50l * 1024 * 1024);// 50MB
+        defaultOptions.setWriteBufferSize(128l * 1024 * 1024);// 50MB
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
         defaultOptions.setTableFormatConfig(tableFormatConfig);
@@ -120,13 +115,13 @@ public class RdbConfig {
 
     /**
      * 
-     * @param tableName
-     * @return the first table config that matches the table name or null if no config matches
+     * @param tablespaceName
+     * @return the first table config that matches the tablespace name or null if no config matches
      * 
      */
-    public TablespaceConfig getTablespaceConfig(String tableName) {
+    public TablespaceConfig getTablespaceConfig(String tablespaceName) {
         for (TablespaceConfig tc : tblConfigList) {
-            if (tc.tableNamePattern.matcher(tableName).matches()) {
+            if (tc.tablespaceNamePattern.matcher(tablespaceName).matches()) {
                 return tc;
             }
         }
@@ -134,7 +129,7 @@ public class RdbConfig {
     }
 
     public static class TablespaceConfig {
-        Pattern tableNamePattern;
+        Pattern tablespaceNamePattern;
         ColumnFamilyOptions cfOptions = new ColumnFamilyOptions();
         // these options are used for the default column family when the database is open
         // for some strange reason we cannot use the cfOptions for that
@@ -143,68 +138,66 @@ public class RdbConfig {
 
         long targetFileSizeBase;
 
-        TablespaceConfig(Map<String, Object> m) throws ConfigurationException {
-            String s = YConfiguration.getString(m, KEY_TABLESPACE_NAME_PATTERN);
+        TablespaceConfig(YConfiguration tblspConfig) throws ConfigurationException {
+            String s = tblspConfig.getString(KEY_TABLESPACE_NAME_PATTERN);
             try {
-                tableNamePattern = Pattern.compile(s);
+                tablespaceNamePattern = Pattern.compile(s);
             } catch (PatternSyntaxException e) {
                 throw new ConfigurationException("Cannot parse regexp " + e);
             }
             options.setCreateIfMissing(true);
-            int maxOpenFiles = YConfiguration.getInt(m, "maxOpenFiles", DEFAULT_MAX_OPEN_FILES);
+            int maxOpenFiles = tblspConfig.getInt("maxOpenFiles", DEFAULT_MAX_OPEN_FILES);
             if (maxOpenFiles < 20) {
-                throw new ConfigurationException("Exception when reading table configuration for '" + tableNamePattern
-                        + "': maxOpenFiles has to be at least 20");
+                throw new ConfigurationException(
+                        "Exception when reading table configuration for '" + tablespaceNamePattern
+                                + "': maxOpenFiles has to be at least 20");
             }
             options.setMaxOpenFiles(maxOpenFiles);
             dboptions.setMaxOpenFiles(maxOpenFiles);
 
-            if (m.containsKey(KEY_OPTIONS)) {
-                Map<String, Object> cm = YConfiguration.getMap(m, KEY_OPTIONS);
-                if (cm.containsKey("targetFileSizeBase")) {
-                    options.setTargetFileSizeBase(1024 * YConfiguration.getLong(cm, "targetFileSizeBase"));
-                }
-                if (cm.containsKey("targetFileSizeMultiplier")) {
-                    options.setTargetFileSizeMultiplier(YConfiguration.getInt(cm, "targetFileSizeMultiplier"));
-                }
-                if (cm.containsKey("maxBytesForLevelBase")) {
-                    options.setMaxBytesForLevelBase(1024 * YConfiguration.getLong(cm, "maxBytesForLevelBase"));
-                }
-                if (cm.containsKey("writeBufferSize")) {
-                    options.setWriteBufferSize(1024 * YConfiguration.getLong(cm, "writeBufferSize"));
-                }
-                if (cm.containsKey("maxBytesForLevelMultiplier")) {
-                    options.setMaxBytesForLevelMultiplier(YConfiguration.getInt(cm, "maxBytesForLevelMultiplier"));
-                }
-                if (cm.containsKey("maxWriteBufferNumber")) {
-                    options.setMaxWriteBufferNumber(YConfiguration.getInt(cm, "maxWriteBufferNumber"));
-                }
-                if (cm.containsKey("minWriteBufferNumberToMerge")) {
-                    options.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
-                }
-
-                if (m.containsKey(KEY_TF_CONFIG)) {
-                    Map<String, Object> tfc = YConfiguration.getMap(m, KEY_TF_CONFIG);
-                    BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
-                    if (tfc.containsKey("blockSize")) {
-                        tableFormatConfig.setBlockSize(1024L * YConfiguration.getLong(tfc, "blockSize"));
-                    }
-                    if (tfc.containsKey("blockCacheSize")) {
-                        tableFormatConfig.setBlockCacheSize(1024L * YConfiguration.getLong(tfc, "blockCacheSize"));
-                    }
-                    if (tfc.containsKey("noBlockCache")) {
-                        tableFormatConfig.setNoBlockCache(YConfiguration.getBoolean(tfc, "noBlockCache"));
-                    }
-
-                    boolean partitionedIndex = YConfiguration.getBoolean(tfc, "partitionedIndex", true);
-                    tableFormatConfig
-                            .setIndexType(partitionedIndex ? IndexType.kTwoLevelIndexSearch : IndexType.kBinarySearch);
-
-                    options.setTableFormatConfig(tableFormatConfig);
-
-                }
-                options.useFixedLengthPrefixExtractor(4);
+            if (tblspConfig.containsKey("targetFileSizeBase")) {
+                options.setTargetFileSizeBase(1024 * tblspConfig.getLong("targetFileSizeBase"));
             }
+            if (tblspConfig.containsKey("targetFileSizeMultiplier")) {
+                options.setTargetFileSizeMultiplier(tblspConfig.getInt("targetFileSizeMultiplier"));
+            }
+            if (tblspConfig.containsKey("maxBytesForLevelBase")) {
+                options.setMaxBytesForLevelBase(1024 * tblspConfig.getLong("maxBytesForLevelBase"));
+            }
+            if (tblspConfig.containsKey("writeBufferSize")) {
+                options.setWriteBufferSize(1024 * tblspConfig.getLong("writeBufferSize"));
+            }
+            if (tblspConfig.containsKey("maxBytesForLevelMultiplier")) {
+                options.setMaxBytesForLevelMultiplier(tblspConfig.getInt("maxBytesForLevelMultiplier"));
+            }
+            if (tblspConfig.containsKey("maxWriteBufferNumber")) {
+                options.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+            }
+            if (tblspConfig.containsKey("minWriteBufferNumberToMerge")) {
+                options.setMinWriteBufferNumberToMerge(tblspConfig.getInt("minWriteBufferNumberToMerge"));
+            }
+
+            if (tblspConfig.containsKey(KEY_TF_CONFIG)) {
+                YConfiguration tfc = tblspConfig.getConfig(KEY_TF_CONFIG);
+                BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+                if (tfc.containsKey("blockSize")) {
+                    tableFormatConfig.setBlockSize(1024L * tfc.getLong("blockSize"));
+                }
+                if (tfc.containsKey("blockCacheSize")) {
+                    tableFormatConfig.setBlockCacheSize(1024L * tfc.getLong("blockCacheSize"));
+                }
+                if (tfc.containsKey("noBlockCache")) {
+                    tableFormatConfig.setNoBlockCache(tfc.getBoolean("noBlockCache"));
+                }
+
+                boolean partitionedIndex = tfc.getBoolean("partitionedIndex", true);
+                tableFormatConfig
+                        .setIndexType(partitionedIndex ? IndexType.kTwoLevelIndexSearch : IndexType.kBinarySearch);
+
+                options.setTableFormatConfig(tableFormatConfig);
+
+            }
+            options.useFixedLengthPrefixExtractor(4);
         }
 
         public ColumnFamilyOptions getColumnFamilyOptions() {
