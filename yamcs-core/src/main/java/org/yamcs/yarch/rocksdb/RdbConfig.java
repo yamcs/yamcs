@@ -1,13 +1,17 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyOptions;
+import org.rocksdb.CompressionOptions;
+import org.rocksdb.CompressionType;
 import org.rocksdb.DBOptions;
 import org.rocksdb.Env;
 import org.rocksdb.IndexType;
@@ -24,13 +28,26 @@ import org.yamcs.YConfiguration;
  *
  */
 public class RdbConfig {
-    static private RdbConfig instance = new RdbConfig();
     public static final String KEY_RDB_CONFIG = "rdbConfig";
     public static final String KEY_TABLESPACE_CONFIG = "tablespaceConfig";
     public static final String KEY_OPTIONS = "options";
     public static final String KEY_TABLESPACE_NAME_PATTERN = "tablespaceNamePattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
     public static final int DEFAULT_MAX_OPEN_FILES = 1000;
+
+    static final Map<String, CompressionType> COMP_TYPES = new HashMap<>();
+    static {
+        COMP_TYPES.put("none", CompressionType.DISABLE_COMPRESSION_OPTION);
+        COMP_TYPES.put("bzlib2", CompressionType.BZLIB2_COMPRESSION);
+        COMP_TYPES.put("lz4", CompressionType.LZ4_COMPRESSION);
+        COMP_TYPES.put("lz4hc", CompressionType.LZ4HC_COMPRESSION);
+        COMP_TYPES.put("snappy", CompressionType.SNAPPY_COMPRESSION);
+        COMP_TYPES.put("xpress", CompressionType.XPRESS_COMPRESSION);
+        COMP_TYPES.put("zlib", CompressionType.ZLIB_COMPRESSION);
+        COMP_TYPES.put("zstd", CompressionType.ZSTD_COMPRESSION);
+    }
+
+    static final private RdbConfig INSTANTCE = new RdbConfig();
 
     private List<TablespaceConfig> tblConfigList = new ArrayList<>();
     final Env env;
@@ -43,7 +60,7 @@ public class RdbConfig {
      * @return the singleton instance
      */
     public static RdbConfig getInstance() {
-        return instance;
+        return INSTANTCE;
     }
 
     @SuppressWarnings("unchecked")
@@ -67,20 +84,25 @@ public class RdbConfig {
         tableFormatConfig.setBlockSize(256l * 1024);// 256KB
         tableFormatConfig.setBlockCacheSize(10l * 1024 * 1024);// 1MB
         tableFormatConfig.setFilter(new BloomFilter());
-        // tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
+        tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
         defaultOptions = new Options();
-        defaultOptions.setWriteBufferSize(128l * 1024 * 1024);// 50MB
+        defaultOptions.setWriteBufferSize(50l * 1024 * 1024);// 50MB
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
         defaultOptions.setTableFormatConfig(tableFormatConfig);
         defaultOptions.useFixedLengthPrefixExtractor(4);
+        defaultOptions.setBottommostCompressionType(CompressionType.ZSTD_COMPRESSION);
+        defaultOptions.setTargetFileSizeMultiplier(2);
 
         defaultColumnFamilyOptions.setTableFormatConfig(tableFormatConfig);
+        defaultColumnFamilyOptions.useFixedLengthPrefixExtractor(4);
+        defaultColumnFamilyOptions.setWriteBufferSize(defaultOptions.writeBufferSize());
+        defaultColumnFamilyOptions.setBottommostCompressionType(defaultOptions.bottommostCompressionType());
+        defaultColumnFamilyOptions.setTargetFileSizeMultiplier(defaultOptions.targetFileSizeMultiplier());
 
         defaultDBOptions = new DBOptions();
         defaultDBOptions.setCreateIfMissing(true);
-
     }
 
     /**
@@ -155,28 +177,67 @@ public class RdbConfig {
             options.setMaxOpenFiles(maxOpenFiles);
             dboptions.setMaxOpenFiles(maxOpenFiles);
 
+            if (tblspConfig.containsKey("numLevels")) {
+                options.setNumLevels(tblspConfig.getInt("numLevels"));
+                cfOptions.setNumLevels(tblspConfig.getInt("numLevels"));
+            }
             if (tblspConfig.containsKey("targetFileSizeBase")) {
                 options.setTargetFileSizeBase(1024 * tblspConfig.getLong("targetFileSizeBase"));
+                cfOptions.setTargetFileSizeBase(1024 * tblspConfig.getLong("targetFileSizeBase"));
             }
             if (tblspConfig.containsKey("targetFileSizeMultiplier")) {
                 options.setTargetFileSizeMultiplier(tblspConfig.getInt("targetFileSizeMultiplier"));
+                cfOptions.setTargetFileSizeMultiplier(tblspConfig.getInt("targetFileSizeMultiplier"));
             }
             if (tblspConfig.containsKey("maxBytesForLevelBase")) {
                 options.setMaxBytesForLevelBase(1024 * tblspConfig.getLong("maxBytesForLevelBase"));
+                cfOptions.setMaxBytesForLevelBase(1024 * tblspConfig.getLong("maxBytesForLevelBase"));
             }
             if (tblspConfig.containsKey("writeBufferSize")) {
+                options.setWriteBufferSize(1024 * tblspConfig.getLong("writeBufferSize"));
                 options.setWriteBufferSize(1024 * tblspConfig.getLong("writeBufferSize"));
             }
             if (tblspConfig.containsKey("maxBytesForLevelMultiplier")) {
                 options.setMaxBytesForLevelMultiplier(tblspConfig.getInt("maxBytesForLevelMultiplier"));
+                cfOptions.setMaxBytesForLevelMultiplier(tblspConfig.getInt("maxBytesForLevelMultiplier"));
             }
             if (tblspConfig.containsKey("maxWriteBufferNumber")) {
                 options.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+                cfOptions.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+            }
+            if (tblspConfig.containsKey("maxBackgroundFlushes")) {
+                options.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+                cfOptions.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+            }
+            if (tblspConfig.containsKey("allowConcurrentMemtableWrite")) {
+                options.setAllowConcurrentMemtableWrite(tblspConfig.getBoolean("allowConcurrentMemtableWrite"));
+                dboptions.setAllowConcurrentMemtableWrite(tblspConfig.getBoolean("allowConcurrentMemtableWrite"));
             }
             if (tblspConfig.containsKey("minWriteBufferNumberToMerge")) {
                 options.setMinWriteBufferNumberToMerge(tblspConfig.getInt("minWriteBufferNumberToMerge"));
+                cfOptions.setMinWriteBufferNumberToMerge(tblspConfig.getInt("minWriteBufferNumberToMerge"));
             }
-
+            if (tblspConfig.containsKey("level0FileNumCompactionTrigger")) {
+                options.setLevel0FileNumCompactionTrigger(tblspConfig.getInt("level0FileNumCompactionTrigger"));
+                cfOptions.setLevel0FileNumCompactionTrigger(tblspConfig.getInt("level0FileNumCompactionTrigger"));
+            }
+            if (tblspConfig.containsKey("level0SlowdownWritesTrigger")) {
+                options.setLevel0SlowdownWritesTrigger(tblspConfig.getInt("level0SlowdownWritesTrigger"));
+                cfOptions.setLevel0SlowdownWritesTrigger(tblspConfig.getInt("level0SlowdownWritesTrigger"));
+            }
+            if (tblspConfig.containsKey("level0StopWritesTrigger")) {
+                options.setLevel0StopWritesTrigger(tblspConfig.getInt("level0StopWritesTrigger"));
+                cfOptions.setLevel0StopWritesTrigger(tblspConfig.getInt("level0StopWritesTrigger"));
+            }
+            if (tblspConfig.containsKey("compressionType")) {
+                options.setCompressionType(getCompressionType(tblspConfig.getString("compressionType")));
+                cfOptions.setCompressionType(getCompressionType(tblspConfig.getString("compressionType")));
+            }
+            if (tblspConfig.containsKey("bottommostCompressionType")) {
+                options.setBottommostCompressionType(getCompressionType(tblspConfig.getString("bottommostCompressionType")));
+                cfOptions.setBottommostCompressionType(getCompressionType(tblspConfig.getString("bottommostCompressionType")));
+            }
+            
             if (tblspConfig.containsKey(KEY_TF_CONFIG)) {
                 YConfiguration tfc = tblspConfig.getConfig(KEY_TF_CONFIG);
                 BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
@@ -195,9 +256,11 @@ public class RdbConfig {
                         .setIndexType(partitionedIndex ? IndexType.kTwoLevelIndexSearch : IndexType.kBinarySearch);
 
                 options.setTableFormatConfig(tableFormatConfig);
+                cfOptions.useFixedLengthPrefixExtractor(4);
 
             }
             options.useFixedLengthPrefixExtractor(4);
+            cfOptions.useFixedLengthPrefixExtractor(4);
         }
 
         public ColumnFamilyOptions getColumnFamilyOptions() {
@@ -211,5 +274,13 @@ public class RdbConfig {
         public DBOptions getDBOptions() {
             return dboptions;
         }
+    }
+
+    static CompressionType getCompressionType(String compr) {
+        CompressionType ct = COMP_TYPES.get(compr);
+        if(ct == null) {
+            throw new ConfigurationException("Unknown compression type '"+compr+"'. Allowed types: "+COMP_TYPES.keySet());
+        }
+        return ct;
     }
 }

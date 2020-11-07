@@ -41,8 +41,8 @@ services:
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
-#instances:
-#  - simulator
+instances:
+  - simulator
 
 #the location of the data and the incoming files
 # inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
@@ -57,20 +57,29 @@ maxBinaryLength: 1048576
 
 #rocksdb table configuration
 rdbConfig:
-  tableConfig:
+  tablespaceConfig:
     # config for the "simulation" tablespace. Any regular expression can be used to match the table name
     # see https://github.com/facebook/rocksdb/blob/master/include/rocksdb/options.h for an explanation on the various options
-    - tablespaceNamePattern: "simulation"
+    - tablespaceNamePattern: ".*"
+      numLevels: 7
       maxOpenFiles: 1000
       targetFileSizeBase: 10240     #KB
-      targetFileSizeMultiplier: 10
+      targetFileSizeMultiplier: 2
       maxBytesForLevelBase: 102400  #KB
       maxBytesForLevelMultiplier: 10
       writeBufferSize: 50240        #KB
       maxWriteBufferNumber: 2
+      maxBackgroundFlushes: 2
+      allowConcurrentMemtableWrite: false
+      minWriteBufferNumberToMerge: 1
+      level0FileNumCompactionTrigger: 4
+      level0SlowdownWritesTrigger: 20
+      level0StopWritesTrigger: 36
+      compressionType: snappy
+      bottommostCompressionType: zstd
       tableFormatConfig:
-        blockSize: 64 #KB
-        noBlockCache: true
+           blockSize: 64 #KB
+           noBlockCache: true
               
 # Secret key unique to a particular Yamcs installation.
 # This is used to provide cryptographic signing.
