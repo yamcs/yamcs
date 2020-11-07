@@ -144,6 +144,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_KEY:"KEY">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
+|   <K_LOAD:"LOAD">
 |   <K_LONG:"LONG">
 |   <K_MERGE:"MERGE">
 |   <K_MOD:"MOD">
@@ -278,6 +279,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     statement=UpsertStatement()
     |
     statement=UpsertAppendStatement()
+    |
+    statement=LoadStatement()
     |
     statement=CloseStreamStatement()
     |
@@ -564,6 +567,17 @@ InsertStatement UpsertAppendStatement() throws StreamSqlException: {
        return new InsertStatement(name, expression, InsertMode.UPSERT_APPEND);
     }
 }
+
+InsertStatement LoadStatement() throws StreamSqlException: {
+    String name;
+    StreamExpression expression;
+} {
+    "LOAD" "INTO" name=ObjectName() expression=StreamExpression()
+    {
+       return new InsertStatement(name, expression, InsertMode.LOAD);
+    }
+}
+
 
 MergeExpression MergeExpression() throws StreamSqlException: {
     MergeExpression mergeExpr=new MergeExpression();

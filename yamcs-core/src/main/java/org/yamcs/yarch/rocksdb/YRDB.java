@@ -21,6 +21,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.rocksdb.RdbConfig.TablespaceConfig;
@@ -189,6 +190,10 @@ public class YRDB {
 
     public void put(byte[] k, byte[] v) throws RocksDBException {
         db.put(k, v);
+    }
+
+    public void put(WriteOptions writeOpt, byte[] k, byte[] v) throws RocksDBException {
+        db.put(writeOpt, k, v);
     }
 
     public List<byte[]> getColumnFamilies() {

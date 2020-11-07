@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.rocksdb.RocksDBException;
+import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
@@ -41,6 +42,7 @@ public class RdbTableWriter extends TableWriter {
     static final byte[] zerobytes = new byte[0];
     Tablespace tablespace;
     volatile boolean closed = false;
+    WriteOptions wopt;
 
     public RdbTableWriter(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             InsertMode mode) {
@@ -48,6 +50,12 @@ public class RdbTableWriter extends TableWriter {
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
         this.partitionManager = tablespace.getPartitionManager(tableDefinition);
         this.tablespace = tablespace;
+
+        wopt = new WriteOptions();
+        if(mode == InsertMode.LOAD) {
+            wopt.setSync(false);
+            wopt.setDisableWAL(true);
+        }
     }
 
     @Override
@@ -88,10 +96,10 @@ public class RdbTableWriter extends TableWriter {
                 updated = !inserted;
                 break;
             case LOAD:
-                inserted = load(rdb, partition, t);
+                load(rdb, partition, t);
             }
 
-            if (inserted && tableDefinition.hasHistogram()) {
+            if (inserted && tableDefinition.hasHistogram() && mode != InsertMode.LOAD) {
                 addHistogram(rdb, t);
             }
             if (updated && tableDefinition.hasHistogram()) {
@@ -109,8 +117,7 @@ public class RdbTableWriter extends TableWriter {
     private boolean load(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
-
-        db.put(k, v);
+        db.put(wopt, k, v);
         return true;
     }
 

@@ -285,7 +285,7 @@ public class TableApi extends AbstractTableApi<Context> {
                         throw new NotFoundException(
                                 "No table named '" + tableName + "' (database: '" + ydb.getName() + "')");
                     }
-                    inputStream = StreamFactory.insertStream(ydb.getName(), table);
+                    inputStream = StreamFactory.loadStream(ydb.getName(), table);
                 }
 
                 try {

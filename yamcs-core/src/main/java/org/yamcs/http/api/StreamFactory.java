@@ -67,4 +67,25 @@ public class StreamFactory {
 
         return ydb.getStream(streamName);
     }
+
+    public static Stream loadStream(String instance, TableDefinition table) {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        String streamName = "http_stream" + streamCounter.incrementAndGet();
+        String sql = new StringBuilder("create stream ")
+                .append(streamName)
+                .append(" ")
+                .append(table.getTupleDefinition().getStringDefinition())
+                .toString();
+
+        log.debug("Executing: {}", sql);
+        try {
+            ydb.executeDiscardingResult(sql);
+            ydb.executeDiscardingResult(String.format("load into %s select * from %s", table.getName(), streamName));
+        } catch (StreamSqlException | ParseException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        return ydb.getStream(streamName);
+    }
 }
