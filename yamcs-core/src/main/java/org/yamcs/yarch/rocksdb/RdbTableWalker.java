@@ -77,15 +77,19 @@ public class RdbTableWalker extends AbstractTableWalker {
         DbIterator iterator = null;
 
         RdbPartition p1 = (RdbPartition) partitions.get(0);
-        String dbDir = p1.dir;
-        log.debug("opening database {}", dbDir);
         YRDB rdb;
-        try {
-            rdb = tablespace.getRdb(p1.dir, false);
-        } catch (IOException e) {
-            log.error("Failed to open database", e);
-            return false;
+        if (p1.dir != null) {
+            try {
+                log.debug("opening database {}", p1.dir);
+                rdb = tablespace.getRdb(p1.dir, false);
+            } catch (IOException e) {
+                log.error("Failed to open database", e);
+                return false;
+            }
+        } else {
+            rdb = tablespace.getRdb();
         }
+
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         Snapshot snapshot = null;
@@ -155,7 +159,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             if (iAscendingFinished(key, value, rangeEnd, strictEnd)) {
                 return true;
             }
-            
+
             TableVisitor.Action action = visitor.visit(key, iterator.value());
             executeAction(rdb, action, dbKey);
 
@@ -176,7 +180,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             if (isDescendingFinished(key, iterator.value(), rangeStart, strictStart)) {
                 return true;
             }
-            
+
             TableVisitor.Action action = visitor.visit(key, iterator.value());
             executeAction(rdb, action, dbKey);
 
@@ -249,15 +253,15 @@ public class RdbTableWalker extends AbstractTableWalker {
             throw new YarchException(e);
         }
 
-        try(FlushOptions flushOptions = new FlushOptions()) {
+        try (FlushOptions flushOptions = new FlushOptions()) {
             for (Partition p : partitions) {
                 RdbPartition rp = (RdbPartition) p;
                 DbRange dbRange = getDeleteDbRange(rp.tbsIndex, tableRange);
                 rdb.getDb().deleteRange(dbRange.rangeStart, dbRange.rangeEnd);
             }
-            
+
             rdb.getDb().flush(flushOptions);
-            
+
         } catch (RocksDBException e) {
             throw new YarchException(e);
         } finally {
