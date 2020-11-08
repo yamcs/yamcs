@@ -77,7 +77,7 @@ public class AlgorithmManager extends AbstractProcessorService
     ParameterRequestManager parameterRequestManager;
 
     // For scheduling OnPeriodicRate algorithms
-    ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
+    ScheduledExecutorService timer;
     AlgorithmExecutionContext globalCtx;
 
     EventProducer eventProducer;
@@ -114,7 +114,8 @@ public class AlgorithmManager extends AbstractProcessorService
         this.parameterRequestManager = processor.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
         xtcedb = processor.getXtceDb();
-
+        timer = processor.getTimer();
+        
         globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData());
         subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 

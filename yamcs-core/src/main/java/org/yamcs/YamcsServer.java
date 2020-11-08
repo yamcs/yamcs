@@ -67,6 +67,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.converters.PathConverter;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -82,16 +83,17 @@ public class YamcsServer {
     private static final String CFG_SERVER_ID_KEY = "serverId";
     private static final String CFG_SECRET_KEY = "secretKey";
     public static final String CFG_CRASH_HANDLER_KEY = "crashHandler";
-    
+
     public static final String GLOBAL_INSTANCE = "_global";
-    
+
     private static final Log LOG = new Log(YamcsServer.class);
 
     private static final Pattern INSTANCE_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml(.offline)?");
     private static final YamcsServer YAMCS = new YamcsServer();
 
     // used to schedule various tasks throughout the yamcs server (to avoid each service creating its own)
-    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1,
+            new ThreadFactoryBuilder().setNameFormat("YamcsServer-general-executor").build());
 
     /**
      * During shutdown, allow services this number of seconds for stopping
@@ -447,7 +449,7 @@ public class YamcsServer {
         Path f = instanceDefDir.resolve(configFileName(instanceName));
         if (Files.exists(f)) {
             LOG.debug("Renaming {} to {}.offline", f.toAbsolutePath(), f.getFileName());
-            Files.move(f, f.resolveSibling(configFileName(instanceName)+".offline"));
+            Files.move(f, f.resolveSibling(configFileName(instanceName) + ".offline"));
         }
 
         return ysi;
@@ -456,7 +458,7 @@ public class YamcsServer {
     public void removeInstance(String instanceName) throws IOException {
         stopInstance(instanceName);
         Files.deleteIfExists(instanceDefDir.resolve(configFileName(instanceName)));
-        Files.deleteIfExists(instanceDefDir.resolve(configFileName(instanceName)+".offline"));
+        Files.deleteIfExists(instanceDefDir.resolve(configFileName(instanceName) + ".offline"));
         instances.remove(instanceName);
     }
 
@@ -489,7 +491,7 @@ public class YamcsServer {
         }
 
         if (ysi.state() == InstanceState.OFFLINE) {
-            Path f = instanceDefDir.resolve(configFileName(instanceName)+".offline");
+            Path f = instanceDefDir.resolve(configFileName(instanceName) + ".offline");
             if (Files.exists(f)) {
                 Files.move(f, instanceDefDir.resolve(configFileName(instanceName)));
             }
@@ -1373,8 +1375,8 @@ public class YamcsServer {
     public ScheduledThreadPoolExecutor getThreadPoolExecutor() {
         return timer;
     }
-    
+
     static String configFileName(String yamcsInstance) {
-        return "yamcs."+yamcsInstance+".yaml";
+        return "yamcs." + yamcsInstance + ".yaml";
     }
 }

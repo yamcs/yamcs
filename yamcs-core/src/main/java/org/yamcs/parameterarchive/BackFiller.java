@@ -28,6 +28,8 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 /**
  * Back-fills the parameter archive by triggering replays: - either regularly scheduled replays - or monitor data
  * streams (tm, param) and keep track of which segments have to be rebuild
@@ -41,13 +43,13 @@ public class BackFiller implements StreamSubscriber {
     long t0;
     int runCount;
 
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     final ParameterArchive parchive;
 
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
     private final Log log;
+    final ScheduledThreadPoolExecutor executor;
 
     // set of segments that have to be rebuilt following monitoring of streams
     private Set<Long> streamUpdates;
@@ -60,11 +62,15 @@ public class BackFiller implements StreamSubscriber {
 
     BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
+        this.log = new Log(BackFiller.class, parchive.getYamcsInstance());
+     //   YamcsServer.getServer().getThreadPoolExecutor()
         if (config != null) {
             parseConfig(config);
         }
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
-        log = new Log(BackFiller.class, parchive.getYamcsInstance());
+        executor = new ScheduledThreadPoolExecutor(1,
+                new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-"+parchive.getYamcsInstance()).build());
+
     }
 
     void start() {

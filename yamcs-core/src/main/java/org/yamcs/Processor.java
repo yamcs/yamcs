@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
@@ -43,6 +41,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * 
@@ -94,11 +93,7 @@ public class Processor extends AbstractService {
 
     XtceTmProcessor tmProcessor;
 
-    // unless very good performance reasons, we should try to serialize all the processing in this thread
-    private final ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-    private final ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-
+    private final ScheduledThreadPoolExecutor timer;
     TimeService timeService;
 
     ProcessorData processorData;
@@ -120,6 +115,8 @@ public class Processor extends AbstractService {
         log = new Log(Processor.class, yamcsInstance);
         log.info("Creating new processor '{}' of type '{}'", name, type);
         log.setContext(name);
+        timer = new ScheduledThreadPoolExecutor(1, 
+                new ThreadFactoryBuilder().setNameFormat("Processor-"+yamcsInstance+"."+name).build());
     }
 
     /**
@@ -215,10 +212,6 @@ public class Processor extends AbstractService {
         commandHistoryProvider = chp;
         commandHistoryRequestManager = new CommandHistoryRequestManager(this);
         commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
-    }
-
-    public ExecutorService getExecutor() {
-        return executor;
     }
 
     public CommandHistoryPublisher getCommandHistoryPublisher() {

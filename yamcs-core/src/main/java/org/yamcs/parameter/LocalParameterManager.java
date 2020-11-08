@@ -37,7 +37,7 @@ import org.yamcs.xtceproc.ParameterTypeUtils;
  */
 public class LocalParameterManager extends AbstractProcessorService implements SoftwareParameterManager, ParameterProvider {
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    ExecutorService executor;
     private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
 
@@ -51,6 +51,7 @@ public class LocalParameterManager extends AbstractProcessorService implements S
     void init(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
+        executor = Executors.newFixedThreadPool(1);
     }
 
     @Override
@@ -59,7 +60,8 @@ public class LocalParameterManager extends AbstractProcessorService implements S
         init(proc.getXtceDb());
         this.proc = proc;
         this.lvc = proc.getLastValueCache();
-
+        this.executor = proc.getTimer();
+                
         ParameterRequestManager prm = proc.getParameterRequestManager();
         prm.addParameterProvider(this);
         prm.addSoftwareParameterManager(DataSource.LOCAL, this);
