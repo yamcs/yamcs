@@ -23,6 +23,13 @@ public class TimeInterval {
     public TimeInterval() {
     }
 
+    public TimeInterval(TimeInterval other) {
+        this.start = other.start;
+        this.end = other.end;
+        this.hasStart = other.hasStart;
+        this.hasEnd = other.hasEnd;
+    }
+
     /**
      * creates a TimeInterval with no start but with an end
      */

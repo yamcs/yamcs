@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,7 +51,7 @@ public class RDBFactoryTest {
     @Test
     public void testDispose() throws Exception {
         YRDB[] dbs = new YRDB[RDBFactory.maxOpenDbs * 2];
-        RDBFactory rdbf = new RDBFactory("testDispose");
+        RDBFactory rdbf = new RDBFactory("testDispose", new ScheduledThreadPoolExecutor(1));
 
         for (int i = 0; i < RDBFactory.maxOpenDbs; i++) {
             dbs[i] = rdbf.getRdb("/tmp/rdbfactorytest" + i, false);
@@ -80,7 +82,7 @@ public class RDBFactoryTest {
     public void testBackup() throws Exception {
         String dir = "/tmp/rdb_backup_test/";
         FileUtils.deleteRecursivelyIfExists(Paths.get(dir));
-        RDBFactory rdbf = new RDBFactory(dir.toString());
+        RDBFactory rdbf = new RDBFactory(dir.toString(), new ScheduledThreadPoolExecutor(1));
 
         YRDB db1 = rdbf.getRdb("db1", false);
         ColumnFamilyHandle cfh = db1.createColumnFamily("c1");

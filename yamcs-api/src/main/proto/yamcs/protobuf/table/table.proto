@@ -5,6 +5,7 @@ package yamcs.protobuf.table;
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+import "google/protobuf/timestamp.proto";
 
 option java_package = "org.yamcs.protobuf";
 
@@ -119,10 +120,28 @@ service TableApi {
   // One possible error could be that the table has defined a (primary)
   // key and one of the loaded rows contains no value for one of the
   // columns of the key.
+  //
+  // The table load will overwrite any data existing in the table with the 
+  // same key as the imported row.
+  //
+  // The table load will not update the historgrams so a histogram rebuild
+  // is required after the load.  
   rpc WriteRows(stream WriteRowsRequest) returns (WriteRowsResponse) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tables/{table}:writeRows"
       body: "row"
+    };
+  }
+  
+  // Rebulds histograms - this is required after a table load.
+  //
+  // Turrently the time interval passed in the request will be used to select the 
+  // partitions which will be rebuild - any partition overlapping with the interval will be rebuilt.
+  // If the table is not partitioned by time,  the histogram for the entire table will be rebuild.
+  rpc RebuildHistogram(RebuildHistogramRequest) returns (RebuildHistogramResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/tables/{table}:rebuildHistogram"
+      body: "*"
     };
   }
 }
@@ -320,4 +339,25 @@ message StreamInfo {
   repeated ColumnInfo column = 2;
   optional string script = 3;
   optional int64 dataCount = 4;
+}
+
+
+message RebuildHistogramRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Table name.
+  optional string table = 2;
+  
+  // Specify a date string in ISO 8601 format. The histogram data for all partitions overlapping with the [start, stop] interval will be recreated.
+  //If not specified, it is assumed as the start of the archive.
+  optional google.protobuf.Timestamp start = 3;
+  
+  // Specify a date string in ISO 8601 format. The histogram data for all partitions overlapping with the [start, stop] interval will be recreated.
+  //If not specified, it is assumed as the end of of the archive.
+  optional google.protobuf.Timestamp stop = 4;
+  
+}
+
+message RebuildHistogramResponse {
 }

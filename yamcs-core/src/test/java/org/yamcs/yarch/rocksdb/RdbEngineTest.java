@@ -22,7 +22,7 @@ public class RdbEngineTest extends YarchTestCase {
 
     @Test
     public void testCreateDrop() throws Exception {
-        RdbStorageEngine rse = new RdbStorageEngine();
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
 
         TupleDefinition tdef = new TupleDefinition();
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));

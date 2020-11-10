@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 
 /* 
  * keeps all the records in a {@value #GROUPING_FACTOR} millisec interval
@@ -13,7 +14,7 @@ public class HistogramSegment {
     byte[] columnv;
     long sstart; // segment start
     ArrayList<HistogramSegment.SegRecord> pps;
-    public static final long GROUPING_FACTOR = 3600 * 1000; // has to be less than 2^16 *1000
+    public static final long GROUPING_FACTOR = 3600 * 1000;
     static final int REC_SIZE = 10; // 4 bytes for start and stop, 2 bytes for num
     static final int MAX_INTERVAL = 120000; // make two records if the time between packets is more than 2 minutes
                                             // (because the packets are not very related)
@@ -58,10 +59,6 @@ public class HistogramSegment {
         return ByteBuffer.wrap(key).getLong(0);
     }
 
-    public byte[] key() {
-        return key(sstart, columnv);
-    }
-
     public static byte[] key(long sstart, byte[] columnv) {
         byte[] b = ByteArrayUtils.encodeLong(sstart, new byte[8 + columnv.length], 0);
         System.arraycopy(columnv, 0, b, 8, columnv.length);
@@ -73,7 +70,7 @@ public class HistogramSegment {
         for (HistogramSegment.SegRecord p : pps) {
             bbv.putInt(p.dstart);
             bbv.putInt(p.dstop);
-            bbv.putShort(p.num);
+            bbv.putShort((short)p.num); //TODO fix overflow int->short (should convert all histograms to int)
         }
         return bbv.array();
     }
@@ -83,17 +80,8 @@ public class HistogramSegment {
     }
 
     // used for merging
-    // actions
-    private boolean mergeLeft = false;
-    private boolean mergeRight = false;
-    // results
-    boolean duplicate = false;
-    boolean leftUpdated = false;
-    boolean centerAdded = false;
-    boolean rightUpdated = false;
-    boolean rightDeleted = false;
+    private boolean mergeLeft, mergeRight;
 
-    int leftIndex = -1, rightIndex = -1;
     HistogramSegment.SegRecord left, right;
     int dtime;
 
@@ -102,12 +90,16 @@ public class HistogramSegment {
      *            delta time from segment start in milliseconds
      */
     public void merge(int dtime1) {
+        mergeLeft = mergeRight = false;
+        int leftIndex = -1;
+        int rightIndex = -1;
+
         this.dtime = dtime1;
         for (int i = 0; i < pps.size(); i++) {
             HistogramSegment.SegRecord r = pps.get(i);
             if (dtime >= r.dstart) {
                 if (dtime <= r.dstop) { // inside left
-                    duplicate = true;
+                    r.num++;
                     return;
                 }
                 left = r;
@@ -132,23 +124,18 @@ public class HistogramSegment {
         if (mergeLeft && mergeRight) {
             selectBestMerge();
         }
-
         // based on the information collected above, compute the new records
         if (mergeLeft && mergeRight) {
-            pps.set(leftIndex, new SegRecord(left.dstart, right.dstop, (short) (left.num + right.num + 1)));
+            pps.set(leftIndex, new SegRecord(left.dstart, right.dstop, left.num + right.num + 1));
             pps.remove(rightIndex);
-            leftUpdated = true;
-            rightDeleted = true;
         } else if (mergeLeft) {
             left.dstop = dtime;
             left.num++;
-            leftUpdated = true;
         } else if (mergeRight) {
             right.dstart = dtime;
             right.num++;
-            rightUpdated = true;
         } else { // add a new record
-            HistogramSegment.SegRecord center = new SegRecord(dtime, dtime, (short) 1);
+            HistogramSegment.SegRecord center = new SegRecord(dtime, dtime, 1);
             if (leftIndex != -1) {
                 pps.add(leftIndex + 1, center);
             } else if (rightIndex != -1) {
@@ -156,8 +143,6 @@ public class HistogramSegment {
             } else {
                 pps.add(center);
             }
-
-            centerAdded = true;
         }
     }
 
@@ -203,21 +188,29 @@ public class HistogramSegment {
     }
 
     // add a new record to the segment (to be used for testing only
-    void add(int dstart, int dstop, short num) {
+    void add(int dstart, int dstop, int num) {
         pps.add(new SegRecord(dstart, dstop, num));
 
     }
 
+    public int size() {
+        return pps.size();
+    }
+    
+    public long getSegmentStart() {
+        return sstart;
+    }
+    
     @Override
     public String toString() {
-        return "start: " + sstart + ", columnv: " + new String(columnv) + " recs:" + pps;
+        return "start: " + sstart + ", columnv: " + StringConverter.arrayToHexString(columnv) + " recs:" + pps;
     }
 
     static class SegRecord {
         int dstart, dstop; // deltas from the segment start in milliseconds
-        short num;
+        int num;
 
-        public SegRecord(int dstart, int dstop, short num) {
+        public SegRecord(int dstart, int dstop, int num) {
             this.dstart = dstart;
             this.dstop = dstop;
             this.num = num;
@@ -228,4 +221,6 @@ public class HistogramSegment {
             return String.format("time:(%d,%d), nump: %d", dstart, dstop, num);
         }
     }
+
+    
 }

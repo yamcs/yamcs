@@ -84,6 +84,8 @@ public interface StorageEngine {
 
     public ProtobufDatabase getProtobufDatabase(YarchDatabaseInstance ydb) throws YarchException;
 
+    public PartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef);
+    
     /**
      * In Yamcs version 4 the table definitions were stored in yaml serialized format (in the
      * /storage/yamcs-data/<instance-name>/<table-name>.def)

@@ -8,10 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.function.Predicate;
 
 import org.rocksdb.ColumnFamilyHandle;
@@ -27,7 +28,6 @@ import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
-import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
@@ -38,6 +38,7 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 
@@ -103,18 +104,25 @@ public class Tablespace {
 
     RDBFactory rdbFactory;
 
-    Map<TableDefinition, RdbPartitionManager> partitionManagers = new ConcurrentHashMap<>();
+    // these two maps are only modified when a table is created and removed and are both synchronized on the
+    // partitionManagers object
+    Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
+    Map<TableDefinition, HistogramWriter> histogramWriters = new HashMap<>();
+
     static final Object DUMMY = new Object();
 
     Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
+    final ScheduledThreadPoolExecutor executor;
 
     public Tablespace(String name) {
         this.name = name;
+        this.executor = new ScheduledThreadPoolExecutor(1,
+                new ThreadFactoryBuilder().setNameFormat("Tablespace-" + name).build());
     }
 
     public void loadDb(boolean readonly) throws IOException {
         String dbDir = getDataDir();
-        rdbFactory = RDBFactory.getInstance(dbDir);
+        rdbFactory = new RDBFactory(dbDir, executor);
         File f = new File(dbDir + "/CURRENT");
         try {
             if (f.exists()) {
@@ -460,9 +468,17 @@ public class Tablespace {
             RdbPartitionManager pm = new RdbPartitionManager(this, yamcsInstance, tblDef, tr.getTbsIndex());
             partitionManagers.put(tblDef, pm);
 
+            addHistoWriter(tblDef);
         }
     }
 
+    private void addHistoWriter(TableDefinition tblDef) {
+        HistogramWriter histoWriter = HistogramWriter.newWriter(this, tblDef);
+        if(histoWriter!=null) {
+            histogramWriters.put(tblDef, histoWriter);
+        }
+    }
+    
     void saveTableDefinition(String yamcsInstance, TableDefinition tblDef,
             List<TableColumnDefinition> keyDef,
             List<TableColumnDefinition> valueDef) throws RocksDBException {
@@ -510,23 +526,25 @@ public class Tablespace {
         tblDef.changeDataType(cname, DataType.protobuf(Db.Event.class.getName()));
     }
 
-    void dropTable(TableDefinition tbl) throws RocksDBException, IOException {
-        RdbPartitionManager pm = partitionManagers.remove(tbl);
-        if (pm == null) {
-            log.error("No partition manager for {}", tbl);
-            return;
+    void dropTable(TableDefinition tblDef) throws RocksDBException, IOException {
+        synchronized (partitionManagers) {
+            RdbPartitionManager pm = partitionManagers.remove(tblDef);
+            if (pm == null) {
+                log.error("No partition manager for {}", tblDef);
+                return;
+            }
+
+            for (Partition p : pm.getPartitions()) {
+                RdbPartition rdbp = (RdbPartition) p;
+
+                int tbsIndex = rdbp.tbsIndex;
+                log.debug("Removing tbsIndex {}", tbsIndex);
+                YRDB db = getRdb(rdbp.dir, false);
+                db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
+                removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
+            }
+            histogramWriters.remove(tblDef);
         }
-
-        for (Partition p : pm.getPartitions()) {
-            RdbPartition rdbp = (RdbPartition) p;
-
-            int tbsIndex = rdbp.tbsIndex;
-            log.debug("Removing tbsIndex {}", tbsIndex);
-            YRDB db = getRdb(rdbp.dir, false);
-            db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
-            removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
-        }
-
     }
 
     /**
@@ -539,6 +557,9 @@ public class Tablespace {
         return partitionManagers.get(tblDef);
     }
 
+    /**
+     * Called at instance start to load all tables for the instance
+     */
     List<TableDefinition> loadTables(String yamcsInstance) throws RocksDBException, IOException {
         List<TableDefinition> list = new ArrayList<>();
 
@@ -555,6 +576,8 @@ public class Tablespace {
             partitionManagers.put(tblDef, pm);
             pm.readPartitions();
 
+            addHistoWriter(tblDef);
+
             list.add(tblDef);
             log.debug("Loaded table {}", tblDef);
         }
@@ -562,13 +585,13 @@ public class Tablespace {
         return list;
     }
 
-    public TableWalker newTableIterator(YarchDatabaseInstance ydb, TableDefinition tblDef,
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef,
             boolean ascending, boolean follow) {
-        PartitionManager pmgr = partitionManagers.get(tblDef);
-        if (pmgr == null) {
+        if(!partitionManagers.containsKey(tblDef)) {
             throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
         }
-        RdbTableWalker rrs = new RdbTableWalker(this, ydb, pmgr, ascending, follow);
+        
+        RdbTableWalker rrs = new RdbTableWalker(this, ydb, tblDef, ascending, follow);
         iterators.put(rrs, DUMMY);
         return rrs;
     }
@@ -580,4 +603,17 @@ public class Tablespace {
         rdbFactory.shutdown();
     }
 
+    ScheduledThreadPoolExecutor getExecutor() {
+        return executor;
+    }
+
+    /**
+     * Return the histogram writer for this table or null if the table has no histograms
+     * 
+     * @param tableDefinition
+     * @return
+     */
+    public HistogramWriter getHistogramWriter(TableDefinition tableDefinition) {
+        return histogramWriters.get(tableDefinition);
+    }
 }

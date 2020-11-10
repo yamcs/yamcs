@@ -129,11 +129,11 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
-            boolean follow) {
+    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl,
+            boolean ascending, boolean follow) {
         Tablespace tblsp = getTablespace(ydb, tbl);
 
-        return tblsp.newTableIterator(ydb, tbl, ascending, follow);
+        return tblsp.newTableWalker(ydb, tbl, ascending, follow);
     }
 
     @Override
@@ -210,6 +210,7 @@ public class RdbStorageEngine implements StorageEngine {
         try {
             t.loadDb(false);
         } catch (IOException e) {
+            e.printStackTrace();
             log.error("Cannot load tablespace {}", tablespaceName, e);
             YamcsServer.getServer().getGlobalCrashHandler().handleCrash("RdbStorageEngine",
                     "Error creating or loading tablespace:" + e);

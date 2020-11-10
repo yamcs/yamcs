@@ -27,6 +27,7 @@ import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -34,7 +35,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
-import org.yamcs.yarch.rocksdb.HistogramRebuilder;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.rocksdb.YRDB;
@@ -510,7 +510,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             ydb.execute("create stream " + streamName + " as select * from tm "
-                    + HistogramRebuilder.getWhereCondition(timeColumnName, interval));
+                    + getWhereCondition(timeColumnName, interval));
         } catch (StreamSqlException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -556,6 +556,28 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             }
         }
     }
+    
+    public static String getWhereCondition(String timeColumnName, TimeInterval interval) {
+        if (!interval.hasStart() && !interval.hasEnd()) {
+            return "";
+        }
+        StringBuilder whereCnd = new StringBuilder();
+        whereCnd.append(" where ");
+        if (interval.hasStart()) {
+            long start = HistogramSegment.GROUPING_FACTOR * (interval.getStart() / HistogramSegment.GROUPING_FACTOR);
+            whereCnd.append(timeColumnName + " >= " + start);
+            if (interval.hasEnd()) {
+                whereCnd.append(" and ");
+            }
+        }
+        if (interval.hasEnd()) {
+            long stop = HistogramSegment.GROUPING_FACTOR * (1 + interval.getEnd() / HistogramSegment.GROUPING_FACTOR);
+            whereCnd.append(timeColumnName + " < " + stop);
+        }
+
+        return whereCnd.toString();
+    }
+
 }
 
 class Record {

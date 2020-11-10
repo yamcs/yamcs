@@ -18,6 +18,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
+import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
@@ -98,15 +99,16 @@ public class RdbPartitionManagerTest {
         Set<Object> filter = new HashSet<>();
         filter.add(1);
         filter.add(3);
-        Iterator<List<Partition>> it = pm.iterator(TimeEncoding.parse("2011-02-01T00:00:00"), filter);
+        Iterator<PartitionManager.Interval> it = pm.iterator(TimeEncoding.parse("2011-02-01T00:00:00"), filter);
         assertTrue(it.hasNext());
-        List<Partition> parts = it.next();
+        PartitionManager.Interval parts = it.next();
         assertEquals(1, parts.size());
 
         assertTrue(it.hasNext());
         parts = it.next();
-        assertEquals("2011/060", ((RdbPartition) parts.get(0)).dir);
-        assertEquals("2011/060", ((RdbPartition) parts.get(1)).dir);
+        Iterator<Partition> pit = parts.iterator();
+        assertEquals("2011/060", ((RdbPartition) pit.next()).dir);
+        assertEquals("2011/060", ((RdbPartition) pit.next()).dir);
 
         tablespace.close();
 

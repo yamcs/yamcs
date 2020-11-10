@@ -8,8 +8,8 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A list of sorted, non overlapping {@link TimeInterval} The composing
  * time intervals are considered closed at start and open at end [start, end)
- * 
- * It is implemented as a copy on write array and its thread safe.
+ * <p>
+ * It is implemented as a copy on write array and it is thread safe.
  * 
  * @author nm
  *
@@ -107,7 +107,7 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
             lock.unlock();
         }
     }
-    
+
     /**
      * Inserts an interval in the list if it doesn't overlap with an existing one.
      * 
@@ -116,10 +116,10 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
     public T insert(T timeInterval) {
         return insert(timeInterval, 0);
     }
-    
+
     private T insertFirst(TimeInterval[] tmp, T x, long tolerance) {
         TimeInterval t0 = tmp[0];
-        if(!t0.hasStart()) {
+        if (!t0.hasStart()) {
             return null;
         }
         if (x.getEnd() - tolerance <= t0.getStart()) {
@@ -138,7 +138,7 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
 
     private T insertLast(TimeInterval[] tmp, T x, long tolerance) {
         TimeInterval tn = tmp[tmp.length - 1];
-        if(!tn.hasEnd()) {
+        if (!tn.hasEnd()) {
             return null;
         }
         if (tn.getEnd() - tolerance <= x.getStart()) {
@@ -153,8 +153,6 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
             return null;
         }
     }
-
-    
 
     /**
      * Creates an iterator that iterates over all the timeintervals overlapping
@@ -199,7 +197,7 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
         if (low == 0) {
             return null;
         }
-        TimeInterval ti = tmp[low-1];
+        TimeInterval ti = tmp[low - 1];
         if (ti.hasEnd() && ti.getEnd() <= t) {
             return null;
         } else {

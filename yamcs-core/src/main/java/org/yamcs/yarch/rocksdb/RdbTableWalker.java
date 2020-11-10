@@ -21,8 +21,8 @@ import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.IndexFilter;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
-import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
@@ -35,32 +35,31 @@ import org.yamcs.yarch.YarchException;
  */
 public class RdbTableWalker extends AbstractTableWalker {
     static AtomicInteger count = new AtomicInteger(0);
-    final PartitioningSpec partitioningSpec;
     private long numRecordsRead = 0;
     private final Tablespace tablespace;
     boolean batchUpdates = false;
-
-    protected RdbTableWalker(Tablespace tablespace, YarchDatabaseInstance ydb, PartitionManager pmgr,
+    Snapshot snapshot = null;
+    protected TableVisitor visitor;
+    
+    protected RdbTableWalker(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             boolean ascending, boolean follow) {
-        super(ydb, pmgr, ascending, follow);
+        super(ydb, tableDefinition, ascending, follow);
 
         this.tablespace = tablespace;
-        partitioningSpec = pmgr.getPartitioningSpec();
     }
 
     /**
-     * reads a file, sending data only that conform with the start and end filters.
-     * returns true if the stop condition is met
      * 
      * All the partitions are from the same time interval and thus from one single RocksDB database
      * 
      */
     @Override
-    protected boolean walkPartitions(List<Partition> partitions, IndexFilter filter) throws YarchException {
+    protected boolean walkInterval(PartitionManager.Interval partitions, IndexFilter filter, TableVisitor visitor) throws YarchException {
+        this.visitor = visitor;
+        running = true;
         DbRange tableRange = getTableRange(filter);
-
         try {
-            return walkValuePartitions(partitions, tableRange);
+            return doWalkInterval(partitions, tableRange);
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }
@@ -73,10 +72,11 @@ public class RdbTableWalker extends AbstractTableWalker {
      * @return true if the end condition has been reached
      * @throws RocksDBException
      */
-    private boolean walkValuePartitions(List<Partition> partitions, DbRange tableRange) throws RocksDBException {
+    private boolean doWalkInterval(PartitionManager.Interval partitions, DbRange tableRange) throws RocksDBException {
         DbIterator iterator = null;
 
-        RdbPartition p1 = (RdbPartition) partitions.get(0);
+        
+        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
         YRDB rdb;
         if (p1.dir != null) {
             try {
@@ -92,9 +92,10 @@ public class RdbTableWalker extends AbstractTableWalker {
 
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
-        Snapshot snapshot = null;
         if (!follow) {
-            snapshot = rdb.getDb().getSnapshot();
+            if (snapshot == null) {
+                snapshot = rdb.getDb().getSnapshot();
+            }
             readOptions.setSnapshot(snapshot);
         }
         WriteBatch writeBatch = batchUpdates ? new WriteBatch() : null;
@@ -113,6 +114,7 @@ public class RdbTableWalker extends AbstractTableWalker {
                     it.close();
                 }
             }
+            
             if (itList.size() == 0) {
                 return false;
             } else if (itList.size() == 1) {
@@ -139,6 +141,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
             if (snapshot != null) {
                 snapshot.close();
+                snapshot = null;
             }
             readOptions.close();
             tablespace.dispose(rdb);
@@ -149,9 +152,21 @@ public class RdbTableWalker extends AbstractTableWalker {
         }
     }
 
+    /**
+     * If set, the snapshot will be used to iterate the database but only if the follow = false
+     * <p>
+     * The snapshot will be release at the end 
+     * 
+     * @param snapshot
+     */
+    public void setSnapshot(Snapshot snapshot) {
+        this.snapshot = snapshot;
+    }
+
     // return true if the end condition has been reached
     boolean runAscending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeEnd, boolean strictEnd)
             throws RocksDBException {
+        
         while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
@@ -159,7 +174,6 @@ public class RdbTableWalker extends AbstractTableWalker {
             if (iAscendingFinished(key, value, rangeEnd, strictEnd)) {
                 return true;
             }
-
             TableVisitor.Action action = visitor.visit(key, iterator.value());
             executeAction(rdb, action, dbKey);
 
@@ -239,11 +253,11 @@ public class RdbTableWalker extends AbstractTableWalker {
     }
 
     @Override
-    protected boolean bulkDeleteFromPartitions(List<Partition> partitions, IndexFilter filter) throws YarchException {
+    protected boolean bulkDeleteFromInterval(PartitionManager.Interval partitions, IndexFilter filter) throws YarchException {
         DbRange tableRange = getTableRange(filter);
 
         // all partitions will have the same database, just use the same one
-        RdbPartition p1 = (RdbPartition) partitions.get(0);
+        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
 
         YRDB rdb;
         try {

@@ -5,85 +5,75 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.HistogramSegment.SegRecord;
 
 
 public class HistogramSegmentTest {
     byte[] grp1="aaaaaaa".getBytes();
     byte[] grp2="b".getBytes();
     
-    private void assertSegEquals(int dstart, int dstop, short num, HistogramSegment.SegRecord p) {
-        assertEquals(dstart, p.dstart);
-        assertEquals(dstop, p.dstop);
-        assertEquals(num, p.num);
-    }
-
+   
     @Before
     public void setUp() {
         TimeEncoding.setUp();
     }
 
     @Test
-    public void testDuplicate1() {
+    public void testUnordered() {
         HistogramSegment segment=new HistogramSegment("g1".getBytes(), 0);
-        segment.add((short)1, (short)10, (short)10);
+        segment.merge(1000);
+        segment.merge(2000);
+        assertEquals(1, segment.size());
+        
+        segment.merge(1);
+        
+        assertEquals(1, segment.size());
+        assertSegEquals(1, 2000, 3, segment.pps.get(0));
+        
+        
+    }
+    
+    @Test
+    public void testInside1() {
+        HistogramSegment segment=new HistogramSegment("g1".getBytes(), 0);
+        segment.add(1, 10, (short)10);
 
         segment.merge((short)10);
-
-        assertTrue(segment.duplicate);
-        assertFalse(segment.leftUpdated);
-
-        assertFalse(segment.centerAdded);
-
-        assertFalse(segment.rightDeleted);
-        assertFalse(segment.rightUpdated);
+        assertEquals(1, segment.size());
+        assertSegEquals(1, 10, 11, segment.pps.get(0));
     }
 
+   
+
     @Test
-    public void testDuplicate2() {
+    public void testInside2() {
         HistogramSegment segment=new HistogramSegment("g2".getBytes(), 0);
         segment.add((short)1, (short)10, (short)10);
         segment.merge((short)1);
 
-        assertTrue(segment.duplicate);
-        assertFalse(segment.leftUpdated);
-
-        assertFalse(segment.centerAdded);
-
-        assertFalse(segment.rightDeleted);
-        assertFalse(segment.rightUpdated);
+        assertEquals(1, segment.size());
+        assertSegEquals(1, 10, 11, segment.pps.get(0));
     }
 
     @Test
-    public void testInsideLeft() {
+    public void testInside3() {
         HistogramSegment segment = new HistogramSegment("g3".getBytes(), 0);
         segment.add((short)1, (short)10, (short)2);
 
         segment.merge((short)9);
-        assertTrue(segment.duplicate);
-        assertFalse(segment.leftUpdated);
-
-        assertFalse(segment.centerAdded);
-
-        assertFalse(segment.rightDeleted);
-        assertFalse(segment.rightUpdated);
+        
+        assertEquals(1, segment.size());
+        assertSegEquals(1, 10, 3, segment.pps.get(0));
     }
 
     @Test
     public void testMergeLeft1() {
         HistogramSegment segment = new HistogramSegment("g4".getBytes(), 0);
         segment.add((short)1, (short)1, (short)1);
-
         segment.merge((short)2);
-
-        assertFalse(segment.duplicate);
-        assertTrue(segment.leftUpdated);
-
-        assertSegEquals((short)1, (short)2, (short)2, segment.pps.get(0));
-
-        assertFalse(segment.centerAdded);
-
-        assertFalse(segment.rightUpdated);
-        assertFalse(segment.rightDeleted);
+        
+        assertEquals(1, segment.size());
+        assertSegEquals(1, 2, 2, segment.pps.get(0));
     }
 
     @Test
@@ -91,14 +81,9 @@ public class HistogramSegmentTest {
         HistogramSegment segment = new HistogramSegment("g5".getBytes(), 0);
         segment.add((short)1, (short)10, (short)10);
         segment.merge((short)11);
-        assertFalse(segment.duplicate);
-        assertTrue(segment.leftUpdated);
-
+        
+        assertEquals(1, segment.size());
         assertSegEquals((short)1, (short)11, (short)11, segment.pps.get(0));
-        assertFalse(segment.centerAdded);
-
-        assertFalse(segment.rightUpdated);
-        assertFalse(segment.rightDeleted);
     }
 
     @Test
@@ -107,18 +92,9 @@ public class HistogramSegmentTest {
         segment.add((short)7, (short)8, (short)2);
 
         segment.merge((short)6);
-
-        assertFalse(segment.duplicate);
-
-        assertFalse(segment.leftUpdated);
-
-        assertFalse(segment.centerAdded);
-
-
-        assertTrue(segment.rightUpdated);
-
+        
+        assertEquals(1, segment.size());
         assertSegEquals((short)6,(short)8, (short)3, segment.pps.get(0));
-        assertFalse(segment.rightDeleted);
     }
 
     @Test
@@ -128,15 +104,9 @@ public class HistogramSegmentTest {
         segment.add((short)7, (short)8, (short)2);
 
         segment.merge((short)6);
-
-        assertFalse(segment.duplicate);
-
-        assertTrue(segment.leftUpdated);
+        
+        assertEquals(1, segment.size());
         assertSegEquals((short)1, (short) 8, (short)5, segment.pps.get(0));
-
-        assertFalse(segment.centerAdded);
-
-        assertTrue(segment.rightDeleted);
     }
 
     @Test
@@ -144,16 +114,8 @@ public class HistogramSegmentTest {
         HistogramSegment segment = new HistogramSegment("g8".getBytes(), 0);
         segment.merge((short)11);
 
-        assertFalse(segment.duplicate);
-
-        assertFalse(segment.leftUpdated);
-
-
-        assertTrue(segment.centerAdded);
+        assertEquals(1, segment.size());
         assertSegEquals((short)11, (short)11,(short)1, segment.pps.get(0));
-
-        assertFalse(segment.rightUpdated);
-        assertFalse(segment.rightDeleted);
     }
 
     @Test
@@ -165,17 +127,11 @@ public class HistogramSegmentTest {
 
         segment.merge(11000);
 
-        assertFalse(segment.duplicate);
-
-        assertFalse(segment.leftUpdated);
+        assertEquals(3, segment.size());
+        
         assertSegEquals(1000, 5000, (short)2, segment.pps.get(0));
-
-        assertTrue(segment.centerAdded);
         assertSegEquals(11000, 11000, (short)1, segment.pps.get(1));
-
-        assertFalse(segment.rightUpdated);
         assertSegEquals(17000, 18000, (short)2, segment.pps.get(2));
-        assertFalse(segment.rightDeleted);
     }
 
     @Test
@@ -187,14 +143,32 @@ public class HistogramSegmentTest {
 
         segment.merge(6000);
 
-        assertFalse(segment.duplicate);
-
-        assertFalse(segment.leftUpdated);
-
-        assertFalse(segment.centerAdded);
-
-        assertTrue(segment.rightUpdated);
+        assertEquals(2, segment.size());
+        
+        assertSegEquals(1000, 4000, (short)4, segment.pps.get(0));
         assertSegEquals(6000, 8000, (short)3, segment.pps.get(1));
-        assertFalse(segment.rightDeleted);
-    }    
+    }
+    
+    
+    @Test
+    public void testSelectBestMerge1() {
+        HistogramSegment segment = new HistogramSegment("g10".getBytes(), 0);
+
+        segment.add(1000, 4000, (short)4);
+        segment.add(7000, 8000,(short)2);
+
+        segment.merge(4000);
+
+        assertEquals(2, segment.size());
+        
+        assertSegEquals(1000, 4000, (short)5, segment.pps.get(0));
+        assertSegEquals(7000, 8000, (short)2, segment.pps.get(1));
+    }
+    
+    private void assertSegEquals(int dstart, int dstop, int num, SegRecord p) {
+        assertEquals(dstart, p.dstart);
+        assertEquals(dstop, p.dstop);
+        assertEquals(num, p.num);
+    }
+
 }

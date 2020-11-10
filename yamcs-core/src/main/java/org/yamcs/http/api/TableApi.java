@@ -36,6 +36,8 @@ import org.yamcs.protobuf.Table.ListValue;
 import org.yamcs.protobuf.Table.PartitioningInfo;
 import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
+import org.yamcs.protobuf.Table.RebuildHistogramRequest;
+import org.yamcs.protobuf.Table.RebuildHistogramResponse;
 import org.yamcs.protobuf.Table.ResultSet;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
@@ -55,6 +57,7 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.ColumnDefinition;
@@ -68,6 +71,10 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.rocksdb.HistogramRebuilder;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
+import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -758,5 +765,39 @@ public class TableApi extends AbstractTableApi<Context> {
             i++;
         }
         return result;
+    }
+
+    @Override
+    public void rebuildHistogram(Context ctx, RebuildHistogramRequest request,
+            Observer<RebuildHistogramResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        TableDefinition table = verifyTable(ydb, request.getTable());
+        RdbStorageEngine rse = (RdbStorageEngine) ydb.getStorageEngine(table);
+
+        Tablespace tablespace = rse.getTablespace(ydb.getName());
+        HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb, table.getName());
+        TimeInterval interval = new TimeInterval();
+        if(request.hasStart()) {
+            interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+        }
+        if(request.hasStop()) {
+            interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+        }
+        
+        try {
+            rebuilder.rebuild(interval).whenComplete((v, e) -> {
+                if (e != null) {
+                    observer.completeExceptionally(e);
+                } else {
+                    observer.complete(RebuildHistogramResponse.newBuilder().build());
+                }
+            });
+        } catch (YarchException e) {
+            log.warn("Error when executing rebuild request", e);
+            observer.completeExceptionally(e);
+        }
+
     }
 }

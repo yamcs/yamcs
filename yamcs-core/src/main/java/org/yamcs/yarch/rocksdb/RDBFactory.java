@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.BackupEngine;
@@ -37,14 +36,10 @@ public class RDBFactory implements Runnable {
     static Logger log = LoggerFactory.getLogger(RDBFactory.class.getName());
     static HashMap<String, RDBFactory> instances = new HashMap<>();
     static int maxOpenDbs = 200;
-    ScheduledThreadPoolExecutor scheduler;
+    ScheduledThreadPoolExecutor executor;
     final String dataDir;
     public static FlushOptions flushOptions = new FlushOptions();
     static boolean registerShutdownHooks = true;
-
-    public static synchronized RDBFactory getInstance(String dataDir) {
-        return instances.computeIfAbsent(dataDir, k -> new RDBFactory(k));
-    }
 
     /**
      * Opens or create a database at a given relative path
@@ -70,17 +65,14 @@ public class RDBFactory implements Runnable {
 
     /**
      * use default visibility to be able to create a separate one from the unit test
+     * @param executor 
      */
-    RDBFactory(String dataDir) {
+    RDBFactory(String dataDir, ScheduledThreadPoolExecutor executor) {
         this.dataDir = dataDir;
+        this.executor = executor;
         flushOptions.setWaitForFlush(false);
-        scheduler = new ScheduledThreadPoolExecutor(1, (ThreadFactory) r -> {
-            Thread t = new Thread(r);
-            t.setDaemon(true);
-            t.setName("RDBFactory-sync");
-            return t;
-        });
-        scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
+        
+        executor.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
         if (registerShutdownHooks) {
             Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
         }
@@ -247,7 +239,7 @@ public class RDBFactory implements Runnable {
      */
     public CompletableFuture<Void> doBackup(String relativePath, String backupDir) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
-        scheduler.execute(() -> {
+        executor.execute(() -> {
             YRDB db = null;
             try {
                 BackupUtils.verifyBackupDirectory(backupDir, false);
@@ -277,7 +269,7 @@ public class RDBFactory implements Runnable {
 
     public CompletableFuture<Void> restoreBackup(String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
-        scheduler.execute(() -> {
+        executor.execute(() -> {
             try( BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 RestoreOptions restoreOpt = new RestoreOptions(false);
@@ -301,7 +293,7 @@ public class RDBFactory implements Runnable {
 
     public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
-        scheduler.execute(() -> {
+        executor.execute(() -> {
             try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 RestoreOptions restoreOpt = new RestoreOptions(false)) {

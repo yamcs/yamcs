@@ -2,7 +2,6 @@ package org.yamcs.yarch;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.yamcs.logging.Log;
@@ -31,20 +30,19 @@ public abstract class AbstractTableWalker implements TableWalker {
     //// if not null, only includes data from these partitions
     // - if the table is partitioned on a non index column
     private Set<Object> partitionValueFilter;
-    final protected PartitionManager partitionManager;
     final protected boolean ascending;
     final protected boolean follow;
 
     protected Log log;
 
-    volatile boolean running = false;
+    volatile protected boolean running = false;
 
-    protected TableVisitor visitor;
+    YarchDatabaseInstance ydb;
 
-    protected AbstractTableWalker(YarchDatabaseInstance ydb, PartitionManager partitionManager, boolean ascending,
+    protected AbstractTableWalker(YarchDatabaseInstance ydb, TableDefinition tableDefinition, boolean ascending,
             boolean follow) {
-        this.tableDefinition = partitionManager.getTableDefinition();
-        this.partitionManager = partitionManager;
+        this.tableDefinition = tableDefinition;
+        this.ydb = ydb;
         this.ascending = ascending;
         this.follow = follow;
         log = new Log(getClass(), ydb.getName());
@@ -55,14 +53,14 @@ public abstract class AbstractTableWalker implements TableWalker {
         if (visitor == null) {
             throw new NullPointerException("visitor cannot be null");
         }
-        log.debug("Starting to walk ascending: {}, rangeIndexFilter: {}", ascending, rangeIndexFilter);
-        this.visitor = visitor;
+        log.debug("Starting to walk ascending: {}, rangeIndexFilter: {}", ascending, rangeIndexFilter, visitor);
+
         running = true;
-        Iterator<List<Partition>> partitionIterator = getPartitionIterator();
+        Iterator<PartitionManager.Interval> partitionIterator = getIntervalIterator();
         try {
             while (isRunning() && partitionIterator.hasNext()) {
-                List<Partition> partitions = partitionIterator.next();
-                boolean endReached = walkPartitions(partitions, rangeIndexFilter);
+                PartitionManager.Interval partitions = partitionIterator.next();
+                boolean endReached = walkInterval(partitions, rangeIndexFilter, visitor);
                 if (endReached) {
                     break;
                 }
@@ -77,11 +75,11 @@ public abstract class AbstractTableWalker implements TableWalker {
     @Override
     public void bulkDelete() {
         running = true;
-        Iterator<List<Partition>> partitionIterator = getPartitionIterator();
+        Iterator<PartitionManager.Interval> partitionIterator = getIntervalIterator();
         try {
             while (isRunning() && partitionIterator.hasNext()) {
-                List<Partition> partitions = partitionIterator.next();
-                boolean endReached = bulkDeleteFromPartitions(partitions, rangeIndexFilter);
+                PartitionManager.Interval interval = partitionIterator.next();
+                boolean endReached = bulkDeleteFromInterval(interval, rangeIndexFilter);
                 if (endReached) {
                     break;
                 }
@@ -93,8 +91,10 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
     }
 
-    private Iterator<List<Partition>> getPartitionIterator() {
-        Iterator<List<Partition>> partitionIterator;
+    private Iterator<PartitionManager.Interval> getIntervalIterator() {
+
+        PartitionManager partitionManager = ydb.getPartitionManager(tableDefinition);
+        Iterator<PartitionManager.Interval> partitionIterator;
 
         PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
         if (pspec.valueColumn != null) {
@@ -150,16 +150,15 @@ public abstract class AbstractTableWalker implements TableWalker {
     }
 
     /**
-     * Runs the partitions sending data only that conform with the start and end filters. returns true if the stop
-     * condition is met
-     * 
-     * All the partitions are from the same time interval
+     * Runs the data in a time interval (corresponding to a time partition) sending data only that conform with the
+     * start and end filters. Returns true if the stop condition is met
      * 
      * @return returns true if the end condition has been reached.
      */
-    protected abstract boolean walkPartitions(List<Partition> partitions, IndexFilter range) throws YarchException;
+    protected abstract boolean walkInterval(PartitionManager.Interval interval, IndexFilter range, TableVisitor visitor)
+            throws YarchException;
 
-    protected abstract boolean bulkDeleteFromPartitions(List<Partition> partitions, IndexFilter range)
+    protected abstract boolean bulkDeleteFromInterval(PartitionManager.Interval interval, IndexFilter range)
             throws YarchException;
 
     @Override
@@ -256,7 +255,7 @@ public abstract class AbstractTableWalker implements TableWalker {
     }
 
     // if the value partitioning column is of type Enum, we have to convert all
-    // the values (used in the query for filtering) from String to Short 
+    // the values (used in the query for filtering) from String to Short
     // the values that do not have an enum are eliminated (because they cannot be possibly matching the query)
 
     // if partitioning value is not an enum, return it unchanged

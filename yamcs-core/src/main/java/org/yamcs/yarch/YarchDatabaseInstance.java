@@ -151,6 +151,11 @@ public class YarchDatabaseInstance {
         }
     }
 
+    public PartitionManager getPartitionManager(TableDefinition tblDef) {
+        return getStorageEngine(tblDef).getPartitionManager(this, tblDef);
+    }
+    
+    
     /**
      * Tablespaces are used by {@link RdbStorageEngine} to store data. Returns the default tablespace name that is used
      * by all tables and also the parameter archive of this yamcs instance

@@ -78,7 +78,8 @@ public class YRDB {
             }
         }
         RdbConfig rdbConfig = RdbConfig.getInstance();
-        TablespaceConfig tc = rdbConfig.getTablespaceConfig(f.getName());
+        String tblSpaceName = f.getName().replace(".rdb", "");
+        TablespaceConfig tc = rdbConfig.getTablespaceConfig(tblSpaceName);
         cfoptions = (tc == null) ? rdbConfig.getDefaultColumnFamilyOptions() : tc.getColumnFamilyOptions();
         Options opt = (tc == null) ? rdbConfig.getDefaultOptions() : tc.getOptions();
         dbOptions = (tc == null) ? rdbConfig.getDefaultDBOptions() : tc.getDBOptions();

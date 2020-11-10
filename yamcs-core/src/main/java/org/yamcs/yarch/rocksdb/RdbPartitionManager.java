@@ -189,6 +189,9 @@ public class RdbPartitionManager extends PartitionManager {
 
     }
 
+    /**
+     * For time partitioned tables: creates a tablespace record for the histogram for the given column name 
+     */
     @Override
     protected HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName) throws IOException {
         try {
@@ -205,6 +208,9 @@ public class RdbPartitionManager extends PartitionManager {
         }
     }
 
+    /**
+     * For non time partitioned tables - create a tablespace record for the histogram for the given column name
+     */
     @Override
     protected HistogramInfo createHistogram(String columnName) throws IOException {
         try {

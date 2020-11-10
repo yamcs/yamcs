@@ -1,13 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
-import static org.yamcs.yarch.HistogramSegment.segmentStart;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteOptions;
@@ -16,9 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -30,7 +25,17 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;;
 
 /**
- * table writer that prepends the partition binary value in front of the key
+ * table writer for the rocksdb2 engine.
+ * <p>
+ * See {@link Tablespace} for a description of the data format.
+ * 
+ * <p>
+ * There might be multiple objects of this class writing in the same table. We perform locking at record level using the
+ * {@link YRDB#lock(byte[])} function.
+ * 
+ * <p>
+ * The histograms are written by the {@link HistogramWriter}.
+ *
  * 
  * @author nm
  *
@@ -43,6 +48,7 @@ public class RdbTableWriter extends TableWriter {
     Tablespace tablespace;
     volatile boolean closed = false;
     WriteOptions wopt;
+    final HistogramWriter histoWriter;
 
     public RdbTableWriter(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             InsertMode mode) {
@@ -52,10 +58,11 @@ public class RdbTableWriter extends TableWriter {
         this.tablespace = tablespace;
 
         wopt = new WriteOptions();
-        if(mode == InsertMode.LOAD) {
+        if (mode == InsertMode.LOAD) {
             wopt.setSync(false);
             wopt.setDisableWAL(true);
         }
+        histoWriter = tablespace.getHistogramWriter(tableDefinition);
     }
 
     @Override
@@ -99,10 +106,10 @@ public class RdbTableWriter extends TableWriter {
                 load(rdb, partition, t);
             }
 
-            if (inserted && tableDefinition.hasHistogram() && mode != InsertMode.LOAD) {
-                addHistogram(rdb, t);
+            if (inserted && histoWriter != null && mode != InsertMode.LOAD) {
+                histoWriter.addHistogram(t);
             }
-            if (updated && tableDefinition.hasHistogram()) {
+            if (updated && histoWriter != null) {
                 // TODO updateHistogram(t);
             }
             tablespace.dispose(rdb);
@@ -259,44 +266,15 @@ public class RdbTableWriter extends TableWriter {
     }
 
     protected void doClose() {
+        if (closed) {
+            return;
+        }
         closed = true;
     }
 
     @Override
     public void streamClosed(Stream stream) {
         log.debug("Stream {} closed", stream.getName());
+        close();
     }
-
-    protected synchronized void addHistogram(YRDB rdb, Tuple t) throws IOException, RocksDBException {
-        List<String> histoColumns = tableDefinition.getHistogramColumns();
-        for (String columnName : histoColumns) {
-            if (!t.hasColumn(columnName)) {
-                continue;
-            }
-            long time = (Long) t.getColumn(0);
-            RdbHistogramInfo histo = (RdbHistogramInfo) partitionManager.createAndGetHistogram(time, columnName);
-            ColumnSerializer cs = tableDefinition.getColumnSerializer(columnName);
-            byte[] v = cs.toByteArray(t.getColumn(columnName));
-            addHistogramForColumn(rdb, histo.tbsIndex, v, time);
-        }
-    }
-
-    private void addHistogramForColumn(YRDB rdb, int histoTbsIndex, byte[] columnv, long time) throws RocksDBException {
-        long sstart = segmentStart(time);
-
-        int dtime = (int) (time % HistogramSegment.GROUPING_FACTOR);
-
-        HistogramSegment segment;
-        byte[] histoDbKey = histoDbKey(histoTbsIndex, sstart, columnv);
-        byte[] val = rdb.get(histoDbKey);
-        if (val == null) {
-            segment = new HistogramSegment(columnv, sstart);
-        } else {
-            segment = new HistogramSegment(columnv, sstart, val);
-        }
-
-        segment.merge(dtime);
-        rdb.put(histoDbKey, segment.val());
-    }
-
 }

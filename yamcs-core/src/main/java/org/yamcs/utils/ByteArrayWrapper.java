@@ -30,4 +30,9 @@ public class ByteArrayWrapper {
     public int hashCode() {
         return Arrays.hashCode(data);
     }
+    
+    @Override
+    public String toString() {
+        return StringConverter.arrayToHexString(data);
+    }
 }
