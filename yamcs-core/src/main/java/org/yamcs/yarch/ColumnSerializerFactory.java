@@ -284,14 +284,14 @@ public class ColumnSerializerFactory {
 
         @Override
         public byte[] toByteArray(Integer v) {
-            int x = v;
-            return new byte[] { (byte) ((x >> 24) & 0xFF), (byte) ((x >> 16) & 0xFF), (byte) ((x >> 8) & 0xFF),
-                    (byte) (x & 0xFF) };
+            byte[] buf = new byte[4];
+            ByteArrayUtils.encodeInt(v, buf, 0);
+            return buf;
         }
 
         @Override
         public Integer fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3];
+            return ByteArrayUtils.decodeInt(b, 0);
         }
 
     }
