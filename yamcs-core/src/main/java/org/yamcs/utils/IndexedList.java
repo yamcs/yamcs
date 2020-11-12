@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.yamcs.yarch.TableColumnDefinition;
-
 /**
  * List which is indexed by a key in addition to its natural integer index
  * <p>
@@ -121,9 +119,7 @@ public class IndexedList<K, V> implements Iterable<V> {
         values.set(idx, value);
     }
 
-    
-    public IndexedList<String, TableColumnDefinition> copy() {
-        // TODO Auto-generated method stub
-        return null;
+    public String toString() {
+        return values.toString();
     }
 }

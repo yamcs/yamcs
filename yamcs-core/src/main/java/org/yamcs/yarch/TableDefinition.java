@@ -73,6 +73,9 @@ public class TableDefinition {
     private String name;
     private List<String> histoColumns;
 
+    // these are the value columns which are autoincrement.
+    private List<TableColumnDefinition> autoIncrementValues;
+
     /**
      * Used when creating an empty table via sql.
      * 
@@ -91,7 +94,8 @@ public class TableDefinition {
             if (cd == null) {
                 throw new ColumnNotFoundException(s);
             }
-            TableColumnDefinition tcd = new TableColumnDefinition(cd);
+
+            TableColumnDefinition tcd = getTcd(cd);
             keyDef.add(cd.getName(), tcd);
             tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
         }
@@ -99,12 +103,21 @@ public class TableDefinition {
         valueDef = new IndexedList<>(tdef.size() - keyDef.size());
         for (ColumnDefinition cd : tdef.getColumnDefinitions()) {
             if (!keyDef.hasKey(cd.getName())) {
-                TableColumnDefinition tcd = new TableColumnDefinition(cd);
+                TableColumnDefinition tcd = getTcd(cd);
                 valueDef.add(cd.getName(), tcd);
                 tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
             }
         }
         computeTupleDef();
+        computeAutoincrValues();
+    }
+
+    private TableColumnDefinition getTcd(ColumnDefinition cd) {
+        if (cd instanceof TableColumnDefinition) {
+            return (TableColumnDefinition) cd;
+        } else {
+            return new TableColumnDefinition(cd);
+        }
     }
 
     /**
@@ -126,10 +139,22 @@ public class TableDefinition {
             valueDef.add(tcd.getName(), tcd);
         }
         computeTupleDef();
+        computeAutoincrValues();
     }
 
     public void setDb(YarchDatabaseInstance ydb) {
         this.ydb = ydb;
+    }
+
+    private void computeAutoincrValues() {
+        for (TableColumnDefinition tcd : valueDef) {
+            if (tcd.isAutoIncrement()) {
+                if (autoIncrementValues == null) {
+                    autoIncrementValues = new ArrayList<TableColumnDefinition>();
+                }
+                autoIncrementValues.add(tcd);
+            }
+        }
     }
 
     /**
@@ -205,13 +230,24 @@ public class TableDefinition {
      */
     public void validate() throws StreamSqlException {
         for (int i = 0; i < keyDef.size() - 1; i++) {
-            ColumnDefinition cd = keyDef.get(i);
+            TableColumnDefinition cd = keyDef.get(i);
             if (cd.getType() == DataType.BINARY) {
                 throw new NotSupportedException(
                         "Primary key of type binary except the last in the list (otherwise the binary sorting does not work properly)");
             }
         }
 
+        for (TableColumnDefinition tcd : keyDef) {
+            if (tcd.isAutoIncrement() && tcd.getType() != DataType.LONG) {
+                throw new NotSupportedException("AUTO_INCREMENT is only supported for columns of type long.");
+            }
+        }
+
+        for (TableColumnDefinition tcd : valueDef) {
+            if (tcd.isAutoIncrement() && tcd.getType() != DataType.LONG) {
+                throw new NotSupportedException("AUTO_INCREMENT is only supported for columns of type long.");
+            }
+        }
     }
 
     /**
@@ -222,22 +258,28 @@ public class TableDefinition {
      * 
      * @param t
      * @return serialized key value
+     * @throws YarchException
      */
-    public byte[] serializeKey(Tuple t) {
+    public byte[] serializeKey(Tuple t) throws YarchException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             DataOutputStream dos = new DataOutputStream(baos);
             for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
                 TableColumnDefinition tableCd = keyDef.get(keyIdx);
                 String colName = tableCd.getName();
                 int tIdx = t.getColumnIndex(colName);
+                Object value;
                 if (tIdx < 0) {
-                    throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
+                    if (tableCd.isAutoIncrement()) {
+                        value = tableCd.getSequence().next();
+                    } else {
+                        throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
+                    }
+                } else {
+                    ColumnDefinition tupleCd = t.getColumnDefinition(tIdx);
+                    Object v = t.getColumn(tIdx);
+                    value = DataType.castAs(tupleCd.type, tableCd.type, v);
                 }
-                ColumnDefinition tupleCd = t.getColumnDefinition(tIdx);
-                Object v = t.getColumn(tIdx);
-                Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
-
-                tableCd.serialize(dos, v1);
+                tableCd.serialize(dos, value);
             }
             return baos.toByteArray();
         } catch (IOException e) {
@@ -371,11 +413,13 @@ public class TableDefinition {
      * 
      * @param t
      * @return the serialized version of the value part of the tuple
+     * @throws YarchException
      */
-    public byte[] serializeValue(Tuple t) {
+    public byte[] serializeValue(Tuple t) throws YarchException {
         TupleDefinition tdef = t.getDefinition();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             DataOutputStream dos = new DataOutputStream(baos);
+
             for (int i = 0; i < tdef.size(); i++) {
                 ColumnDefinition tupleCd = tdef.getColumn(i);
                 if (keyDef.hasKey(tupleCd.getName())) {
@@ -394,6 +438,19 @@ public class TableDefinition {
                 dos.writeInt(cidx);
                 tableCd.serialize(dos, v1);
             }
+
+            // add values for all the autoincrements which are not part of the tuple
+            if (autoIncrementValues != null) {
+                for (TableColumnDefinition tcd : autoIncrementValues) {
+                    if (!t.hasColumn(tcd.getName())) {
+                        long v = tcd.getSequence().next();
+                        int cidx = (tcd.type.getTypeId() << 24) | valueDef.getIndex(tcd.getName());
+                        dos.writeInt(cidx);
+                        tcd.serialize(dos, v);
+                    }
+                }
+            }
+
             // add a final -1 eof marker
             dos.writeInt(-1);
             return baos.toByteArray();

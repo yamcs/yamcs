@@ -35,6 +35,7 @@ import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.protobuf.Db;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
@@ -117,8 +118,12 @@ public class Tablespace {
 
     Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
     final ScheduledThreadPoolExecutor executor;
+    
+    Map<TableDefinition, List<RdbTableWriter>> tableWriters = new HashMap<>();
+    
     Map<String, RdbSequence> sequences = new HashMap<>();
 
+    
     public Tablespace(String name) {
         this.name = name;
         this.executor = new ScheduledThreadPoolExecutor(1,
@@ -152,8 +157,7 @@ public class Tablespace {
                 }
                 maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
                 log.info("Opened tablespace database {}, num records:{}, num metadata records: {}, maxTbsIndex: {}",
-                        dbDir,
-                        db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
+                        dbDir, db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
             } else {
                 if (readonly) {
                     throw new IllegalStateException("Cannot create a new db when readonly is set to true");
@@ -459,7 +463,7 @@ public class Tablespace {
         }
     }
 
-    public void createTable(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+    public void createTable(String yamcsInstance, TableDefinition tblDef) throws YarchException, RocksDBException {
         synchronized (partitionManagers) {
             ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef, tblDef.getKeyDefinition(),
                     tblDef.getValueDefinition());
@@ -474,9 +478,28 @@ public class Tablespace {
             partitionManagers.put(tblDef, pm);
 
             addHistoWriter(tblDef);
+            configureAutoincrementSequences(yamcsInstance, tblDef);
         }
     }
 
+    private void configureAutoincrementSequences(String yamcsInstance, TableDefinition tblDef) throws YarchException, RocksDBException {
+        for(TableColumnDefinition tcd: tblDef.getKeyDefinition()) {
+            if(tcd.isAutoIncrement()) {
+                tcd.setSequence(autoincrementSequence(yamcsInstance, tblDef.getName(), tcd.getName()));
+            }
+        }
+        for(TableColumnDefinition tcd: tblDef.getValueDefinition()) {
+            if(tcd.isAutoIncrement()) {
+                tcd.setSequence(autoincrementSequence(yamcsInstance, tblDef.getName(), tcd.getName()));
+            }
+        }
+    }
+
+    
+    private Sequence autoincrementSequence(String yamcsInstance, String tableName, String columnName) throws YarchException, RocksDBException {
+        return getSequence("autoincrement:"+yamcsInstance+"."+tableName+"."+columnName);
+    }
+    
     private void addHistoWriter(TableDefinition tblDef) {
         HistogramWriter histoWriter = HistogramWriter.newWriter(this, tblDef);
         if(histoWriter!=null) {
@@ -503,9 +526,10 @@ public class Tablespace {
     }
 
     /**
+     * @throws YarchException 
      * 
      */
-    void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException {
+    void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException, YarchException {
         if ("alarms".equals(tblDef.getName())) {
             changePvColumnType(tblDef, ParameterAlarmStreamer.CNAME_TRIGGER);
             changePvColumnType(tblDef, ParameterAlarmStreamer.CNAME_CLEAR);
@@ -532,6 +556,18 @@ public class Tablespace {
     }
 
     void dropTable(TableDefinition tblDef) throws RocksDBException, IOException {
+        
+        List<RdbTableWriter> l = null;
+        synchronized (tableWriters) {
+            l = tableWriters.remove(tblDef);
+        }
+
+        if (l != null) {
+            for (RdbTableWriter w : l) {
+                w.close();
+            }
+        }
+        
         synchronized (partitionManagers) {
             RdbPartitionManager pm = partitionManagers.remove(tblDef);
             if (pm == null) {
@@ -564,8 +600,9 @@ public class Tablespace {
 
     /**
      * Called at instance start to load all tables for the instance
+     * @throws YarchException 
      */
-    List<TableDefinition> loadTables(String yamcsInstance) throws RocksDBException, IOException {
+    List<TableDefinition> loadTables(String yamcsInstance) throws RocksDBException, IOException, YarchException {
         List<TableDefinition> list = new ArrayList<>();
 
         for (TablespaceRecord tr : filter(Type.TABLE_DEFINITION, yamcsInstance, tr -> true)) {
@@ -582,6 +619,7 @@ public class Tablespace {
             pm.readPartitions();
 
             addHistoWriter(tblDef);
+            configureAutoincrementSequences(yamcsInstance, tblDef);
 
             list.add(tblDef);
             log.debug("Loaded table {}", tblDef);
@@ -601,6 +639,31 @@ public class Tablespace {
         return rrs;
     }
 
+    
+    public RdbTableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
+        if(!partitionManagers.containsKey(tblDef)) {
+            throw new IllegalStateException("This is not a table I know something of");
+        }
+        
+        RdbTableWriter writer = new RdbTableWriter(this, ydb, tblDef, insertMode);
+        synchronized (tableWriters) {
+            List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
+            l.add(writer);
+        }
+        writer.closeFuture().thenAccept(v -> writerClosed(tblDef, writer));
+        return writer;
+    }
+
+    private void writerClosed(TableDefinition tblDef, RdbTableWriter writer) {
+        synchronized (tableWriters) {
+            List<RdbTableWriter> l = tableWriters.get(tblDef);
+            if (l != null) {
+                l.remove(writer);
+            }
+        }
+    }
+    
+    
     public void close() {
         for (RdbTableWalker rrs : iterators.keySet()) {
             rrs.close();

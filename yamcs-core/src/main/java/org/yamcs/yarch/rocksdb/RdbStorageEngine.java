@@ -3,7 +3,6 @@ package org.yamcs.yarch.rocksdb;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,7 @@ public class RdbStorageEngine implements StorageEngine {
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
-    Map<TableDefinition, List<RdbTableWriter>> tableWriters = new HashMap<>();
+ 
 
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
@@ -86,16 +85,6 @@ public class RdbStorageEngine implements StorageEngine {
     public void dropTable(YarchDatabaseInstance ydb, TableDefinition tbl) throws YarchException {
         Tablespace tablespace = getTablespace(ydb, tbl);
 
-        List<RdbTableWriter> l = null;
-        synchronized (tableWriters) {
-            l = tableWriters.remove(tbl);
-        }
-
-        if (l != null) {
-            for (RdbTableWriter w : l) {
-                w.close();
-            }
-        }
 
         log.info("Dropping table {}.{}", ydb.getName(), tbl.getName());
         try {
@@ -107,27 +96,11 @@ public class RdbStorageEngine implements StorageEngine {
 
     @Override
     public RdbTableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
-
         checkFormatVersion(ydb, tblDef);
         Tablespace tablespace = getTablespace(ydb, tblDef);
-
-        RdbTableWriter writer = new RdbTableWriter(tablespace, ydb, tblDef, insertMode);
-        synchronized (tableWriters) {
-            List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
-            l.add(writer);
-        }
-        writer.closeFuture().thenAccept(v -> writerClosed(tblDef, writer));
-        return writer;
+        return tablespace.newTableWriter(ydb, tblDef, insertMode);
     }
 
-    private void writerClosed(TableDefinition tblDef, RdbTableWriter writer) {
-        synchronized (tableWriters) {
-            List<RdbTableWriter> l = tableWriters.get(tblDef);
-            if (l != null) {
-                l.remove(writer);
-            }
-        }
-    }
 
     @Override
     public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl,

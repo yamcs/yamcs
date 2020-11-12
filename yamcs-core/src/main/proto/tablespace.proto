@@ -124,9 +124,8 @@ message TableColumnInfo {
   	optional string name = 1;
   	optional string type = 2;
   	repeated EnumValue enumValue = 3;
+  	optional bool autoincrement = 4;
 }
-
-
 
 message PartitioningInfo {
   	enum PartitioningType {

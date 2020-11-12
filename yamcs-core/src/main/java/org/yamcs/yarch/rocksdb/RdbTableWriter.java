@@ -21,6 +21,7 @@ import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
 
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;;
 
@@ -113,7 +114,7 @@ public class RdbTableWriter extends TableWriter {
                 // TODO updateHistogram(t);
             }
             tablespace.dispose(rdb);
-        } catch (IOException | RocksDBException e) {
+        } catch (IOException | RocksDBException | YarchException e) {
             log.error("failed to insert a record: ", e);
             YamcsServer.getServer().getCrashHandler(ydb.getYamcsInstance()).handleCrash("Archive",
                     "failed to insert a record in " + tableDefinition.getName() + ": " + e);
@@ -121,14 +122,14 @@ public class RdbTableWriter extends TableWriter {
 
     }
 
-    private boolean load(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
+    private boolean load(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException, YarchException {
         byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
         db.put(wopt, k, v);
         return true;
     }
 
-    private boolean insert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
+    private boolean insert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException, YarchException {
         byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
 
@@ -140,7 +141,7 @@ public class RdbTableWriter extends TableWriter {
         }
     }
 
-    private boolean upsert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
+    private boolean upsert(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException, YarchException {
         byte[] k = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
 
@@ -159,8 +160,9 @@ public class RdbTableWriter extends TableWriter {
      * 
      * @param partition
      * @throws RocksDBException
+     * @throws YarchException 
      */
-    private boolean insertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
+    private boolean insertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException, YarchException {
         byte[] dbKey = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         rdb.lock(dbKey);
         try {
@@ -197,7 +199,7 @@ public class RdbTableWriter extends TableWriter {
         }
     }
 
-    private boolean upsertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException {
+    private boolean upsertAppend(YRDB rdb, RdbPartition partition, Tuple t) throws RocksDBException, YarchException {
         byte[] dbKey = dbKey(partition.tbsIndex, tableDefinition.serializeKey(t));
         rdb.lock(dbKey);
         try {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import org.yamcs.logging.Log;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
@@ -16,6 +17,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 public class UpdateTableStatement extends SimpleStreamSqlStatement {
+    final Log log = new Log(UpdateTableStatement.class);
     private static final TupleDefinition TDEF = new TupleDefinition();
     static {
         TDEF.addColumn("inspected", DataType.LONG);
@@ -29,6 +31,7 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
 
     CompiledExpression cwhere = null;
     TableDefinition tableDefinition;
+    
 
     public UpdateTableStatement(String tableName, List<UpdateItem> updateList, Expression whereClause, long limit) {
         this.tableName = tableName;
@@ -78,7 +81,13 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     }
                     long c = updated.incrementAndGet();
                     boolean stop = (limit > 0 && c >= limit);
-                    byte[] svalue = tableDefinition.serializeValue(tuple);
+                    byte[] svalue;
+                    try {
+                        svalue = tableDefinition.serializeValue(tuple);
+                    } catch (YarchException e) {
+                        log.error("Error serializing value", e);
+                        return ACTION_STOP;
+                    }
 
                     return Action.updateAction(svalue, stop);
                 }

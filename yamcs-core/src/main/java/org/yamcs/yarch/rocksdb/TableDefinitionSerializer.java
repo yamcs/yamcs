@@ -99,6 +99,9 @@ class TableDefinitionSerializer {
                 infob.addAllEnumValue(enumValueList);
             }
         }
+        if(cdef.isAutoIncrement()) {
+            infob.setAutoincrement(true);
+        }
         return infob.build();
     }
 
@@ -113,6 +116,9 @@ class TableDefinitionSerializer {
                 m.put(val.getLabel(), (short) val.getValue());
             }
             tcd.setEnumValues(m);
+        }
+        if(tci.hasAutoincrement()) {
+            tcd.setAutoIncrement(tci.getAutoincrement());
         }
         return tcd;
     }

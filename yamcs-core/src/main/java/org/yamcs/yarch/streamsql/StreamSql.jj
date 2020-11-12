@@ -102,6 +102,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_ANY: "ANY">
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
+|   <K_AUTO_INCREMENT: "AUTO_INCREMENT">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BOOLEAN:"BOOLEAN">
 |   <K_BY:"BY">
@@ -317,15 +318,16 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition=new TupleDefinition();
     ArrayList<String> primaryKey=new ArrayList<String>();
     ArrayList<String> partitions=new ArrayList<String>();
-    String tableName, columnName, pk, partitionColumn ;
+    String tableName, pk, partitionColumn ;
     boolean ifNotExists=false;
+    boolean autoincrement = false;
     
+    TableColumnDefinition tcd;
     
-    DataType columnType;
     CreateTableStatement cts;
 } {
     <K_CREATE> <K_TABLE> [<K_IF> <K_NOT> <K_EXISTS> {ifNotExists=true;}] tableName=ObjectName()
-    "(" (columnName=ObjectName() columnType=DataTypeDefinition() "," {tupleDefinition.addColumn(columnName,columnType);} )+
+    "(" (tcd = TableColumnDefinition() "," {tupleDefinition.addColumn(tcd);} )+
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
      ")"
      {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey);}
@@ -334,6 +336,18 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     {
 	return cts;
     }
+}
+
+TableColumnDefinition TableColumnDefinition() throws StreamSqlException: {
+   TableColumnDefinition tcd;
+   String columnName;
+   DataType columnType;
+} {
+   columnName=ObjectName() columnType=DataTypeDefinition() {tcd = new TableColumnDefinition(columnName,columnType);}
+   [<K_AUTO_INCREMENT> {tcd.setAutoIncrement(true);}]
+   {
+   return tcd;
+   }
 }
 
 void TableOption(CreateTableStatement cts) throws StreamSqlException: {
