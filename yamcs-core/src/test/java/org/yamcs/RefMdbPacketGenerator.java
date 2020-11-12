@@ -618,7 +618,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     // ########################### PKT8
     public final int para_pkt8_count = 150;
-    public final int pkt8Length = headerLength + 1 + 7 * para_pkt8_count;
+    public final int pkt8Length = headerLength + 1 + 7 * para_pkt8_count+9*4;
 
     public byte[] generate_PKT8() {
         ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
@@ -631,6 +631,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
             bb.putFloat(i / 2.0f);
         }
 
+        //3x3 matrix
+        for (int i = 0; i < 9; i++) {
+            bb.putFloat(i);
+        }
         sendToTmProcessor(bb);
         return bb.array();
     }

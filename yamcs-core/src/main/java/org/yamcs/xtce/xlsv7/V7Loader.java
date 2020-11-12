@@ -186,7 +186,7 @@ public class V7Loader extends V7LoaderBase {
 
     final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
     final static Pattern REF_PATTERN = Pattern.compile("ref\\(\\s*([^,]+),\\s*(.+)?\\s*\\)");
-    final static Pattern ARRAY_PATTERN = Pattern.compile("(\\w+)(\\[[\\w\\d]+\\])+");
+    final static Pattern ARRAY_PATTERN = Pattern.compile("(\\w+)((\\[[\\w\\d]+\\])+)");
 
     protected SpaceSystem rootSpaceSystem;
 
