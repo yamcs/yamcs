@@ -1,0 +1,138 @@
+syntax="proto2";
+
+package yamcs.protobuf.tco;
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "TcoProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+//Methods related to the Time Correlation Service.
+service TcoApi {
+
+  // Get the TCO coefficients
+  rpc GetCoefficients(GetCoefficientsRequest) returns (TcoCoefficients) {
+    option (yamcs.api.route) = {
+      get: "/api/tco/{instance}/{clock}:coefficients"
+    };
+  }
+
+  // Set the TCO coefficients
+  rpc SetCoefficients(SetCoefficientsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}:coefficients"
+      body: "*"
+    };
+  }
+  
+  //Reset the time correlation.
+  rpc Reset(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}:reset"
+      body: "*"
+    };
+  }
+  
+//Set the configuration for the time of flight calculation.
+//It includes a default delay and a list of intervals with polynomial coefficients associated.
+rpc SetTofConfig(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/tofConfig"
+      body: "*"
+    };
+  }
+  
+// Add coefficients for the time of flight calculation
+rpc AddTofInterpolationPoints(AddTofCalibrationPointsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/tofConfig"
+      body: "*"
+    };
+}
+  
+  
+  //Get the configuration for the tof
+  rpc SetTofConfig(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/tofConfig"
+      body: "*"
+    };
+  }
+  
+}
+  
+message GetCoefficientsRequest {
+  	// Yamcs instance name.
+  	optional string instance = 1;
+
+  	// Clock name.
+  	optional string clock = 2;
+  }
+  
+message SetCoefficientsRequest {
+  	// Yamcs instance name.
+  	optional string instance = 1;
+
+  	// Clock name.
+  	optional string clock = 2;
+  
+  	//Time correlation coefficients	
+  	optional TcoCoefficients coefficients = 3;
+  }
+
+
+message SetTofConfigRequest {
+	// Yamcs instance name.
+  	optional string instance = 1;
+
+  	// Clock name.
+  	optional string clock = 2;
+  	
+    //time of flight configuration
+   	optional TofConfig config = 3;
+}
+
+message AddTofInterpolationPointsRequest {
+	// Yamcs instance name.
+  	optional string instance = 1;
+
+  	// Clock name.
+  	optional string clock = 2;
+  	
+  	//interpolation points for time of flight calculation
+  	repeated TofInterval interpolationPoints = 3;
+}
+
+message TcoCoefficients {
+  	optional google.protobuf.Timestamp utc = 1;
+  	optional uint64 obt = 2;
+  	optional double gradient = 3;
+  	optional double offset = 4;
+}
+
+//Sample association between UTC and Onboard time.
+//This is computed by the TCO service after adjusting for internal
+//delays and time of flight. 
+message TcoSample {
+	optional google.protobuf.Timestamp utc = 1;
+  	optional uint64 obt = 2;
+}
+
+message TofConfig {
+   	optional double defaultTof = 1;
+	repeated TofInterval interpolationPoints = 2;
+}
+
+//The formula used for calculating the time of flight for a frame/packet received
+// at ert (Earth Reception Time) in the [ertStart, ertStop) interval is
+// delta = ert-ertStart
+// tof = polCoef[0] + polCoef[1]*delta + polCoef[2]*delta^2 + ...
+message TofInterval {
+	optional google.protobuf.Timestamp ertStart = 1;
+    optional google.protobuf.Timestamp ertStop = 2;
+    repeated double polCoef = 3;
+}
+  
+  

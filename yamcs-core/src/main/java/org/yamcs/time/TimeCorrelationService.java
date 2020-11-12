@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Semaphore;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.cfdp.CfdpService;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.external.SimpleRegression;
@@ -23,7 +21,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -382,12 +379,6 @@ public class TimeCorrelationService extends AbstractYamcsService {
     }
 
     static class TcoCoefficients {
-        @Override
-        public String toString() {
-            return "TcoCoefficients [obi0=" + obi0 + ", obt0=" + obt0 + ", gradient=" + gradient + ", offset=" + offset
-                    + "]";
-        }
-
         Instant obi0;
         long obt0;
         double gradient;
@@ -416,6 +407,12 @@ public class TimeCorrelationService extends AbstractYamcsService {
             c.offset = (Double) t.getColumn("offset");
 
             return c;
+        }
+        
+        @Override
+        public String toString() {
+            return "TcoCoefficients [obi0=" + obi0 + ", obt0=" + obt0 + ", gradient=" + gradient + ", offset=" + offset
+                    + "]";
         }
     }
 
