@@ -12,8 +12,8 @@ import "google/protobuf/timestamp.proto";
 
 // Methods for virtual channel TC links that have ``useCop1: true``.
 // This service contains methods for setting/getting the configuration and
-// performing various operations in addition a websocket subscription is
-// available that will allow receiving periodically the status.
+// performing various operations.
+// In addition, a websocket subscription is available that will allow receiving periodically the status.
 service Cop1Api {
 
   // Initialize COP-1 in case state is UNITIALIZED
