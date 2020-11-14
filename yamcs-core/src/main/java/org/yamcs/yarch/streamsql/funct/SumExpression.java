@@ -2,6 +2,7 @@ package org.yamcs.yarch.streamsql.funct;
 
 import org.yamcs.yarch.streamsql.CompilableAggregateExpression;
 import org.yamcs.yarch.streamsql.Expression;
+
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -35,8 +36,8 @@ public class SumExpression extends CompilableAggregateExpression {
 
     @Override
     protected void aggregateFillCode_newData(StringBuilder code) throws StreamSqlException {
-        fillCode_AllInputDefVars(code);
-        // code.append("\t\tsum+=col"+children[0].getColName()+".get"+children[0].getType().capitalized()+"()");
+        fillCode_InputDefVars(inputDef.getColumnDefinitions(), code);
+        
         code.append("\t\tsum+=col" + children[0].getColumnName());
         code.append(";\n");
     }

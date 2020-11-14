@@ -21,17 +21,7 @@ import org.yamcs.yarch.YarchException;
  * </pre>
  * 
  * The query returns a tuple containing the number of inspected and deleted rows.
- * <p>
- * If the removal operation could be performed directly using rocksdb range delete operation, then the number of deleted
- * rows will be returned as -1. This is because we do not know how many rows were in the deleted range.
- * 
- * <p>
- * The delete using roksdb range delete happens when deleting without any condition or when deleting with a condition
- * involving only the primary key. The range delete operation is much faster than the other delete which has to
- * retrieve and inspect row by row.
- * <p>
- * If a limit is specified, the slow row by row deletion is always used.
- * 
+ *
  * <p>
  * Note that rocksdb does not remove the data from the disk immediately. The freeing of the space will only happen when
  * a compact operation will be executed on the files which have removed data inside. See
@@ -74,15 +64,17 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
         AtomicLong deleted = new AtomicLong();
         AtomicLong inspected = new AtomicLong();
         try {
-            TableWalker tblIt = ydb.getStorageEngine(tblDef).newTableWalker(ydb, tblDef, true, false);
-
+            TableWalkerBuilder twb = new TableWalkerBuilder(ydb, tblDef);
             if (whereClause != null) {
-                whereClause = whereClause.addFilter(tblIt);
+                whereClause.addFilter(twb);
             }
+            TableWalker tblIt = twb.build();
+           /* TODO: add  back bulk delete
             if (whereClause == null && limit < 0) {
                 bulkDelete = true;
                 tblIt.bulkDelete();
-            } else {
+            } else {*/
+            
                 if (whereClause != null) {
                     cwhere = whereClause.compile();
                 }
@@ -108,7 +100,6 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
                         }
                     }
                 });
-            }
 
         } catch (YarchException e) {
             throw new GenericStreamSqlException(e.getMessage());
@@ -123,3 +114,50 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
         }
     }
 }
+
+/*
+ * 
+ *     public void bulkDelete() {
+        running = true;
+        Iterator<PartitionManager.Interval> partitionIterator = getIntervalIterator();
+        try {
+            while (isRunning() && partitionIterator.hasNext()) {
+                PartitionManager.Interval interval = partitionIterator.next();
+                boolean endReached = bulkDeleteFromInterval(interval, range);
+                if (endReached) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.error("got exception ", e);
+        } finally {
+            close();
+        }
+    }
+    
+     @Override
+    protected boolean bulkDeleteFromInterval(PartitionManager.Interval partitions,  DbRange tableRange ) {
+
+        // all partitions will have the same database, just use the same one
+        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
+
+        YRDB rdb;
+        rdb = tablespace.getRdb(p1.dir, false);
+
+        try (FlushOptions flushOptions = new FlushOptions()) {
+            for (Partition p : partitions) {
+                RdbPartition rp = (RdbPartition) p;
+                DbRange dbRange = getDeleteDbRange(rp.tbsIndex, tableRange);
+                rdb.getDb().deleteRange(dbRange.rangeStart, dbRange.rangeEnd);
+            }
+
+            rdb.getDb().flush(flushOptions);
+
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        } finally {
+            tablespace.dispose(rdb);
+        }
+        return false;
+    }
+*/

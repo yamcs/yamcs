@@ -13,6 +13,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.PartitioningInfo.PartitioningType;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.SecondaryIndex;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TableColumnInfo;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TableColumnInfo.EnumValue;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -27,7 +28,8 @@ import com.google.common.collect.HashBiMap;
  */
 class TableDefinitionSerializer {
 
-    static ProtoTableDefinition toProtobuf(TableDefinition def, List<TableColumnDefinition> keyDef, List<TableColumnDefinition> valueDef) {
+    static ProtoTableDefinition toProtobuf(TableDefinition def, List<TableColumnDefinition> keyDef,
+            List<TableColumnDefinition> valueDef) {
         ProtoTableDefinition.Builder infob = ProtoTableDefinition.newBuilder();
 
         infob.setCompressed(def.isCompressed());
@@ -45,6 +47,11 @@ class TableDefinitionSerializer {
         }
         for (TableColumnDefinition cdef : valueDef) {
             infob.addValueColumn(toProtobuf(cdef));
+        }
+
+        List<String> scndIdx = def.getSecondaryIndex();
+        if (scndIdx != null) {
+            infob.addSecondaryIndex(SecondaryIndex.newBuilder().addAllColumnName(scndIdx).build());
         }
         return infob.build();
     }
@@ -99,7 +106,7 @@ class TableDefinitionSerializer {
                 infob.addAllEnumValue(enumValueList);
             }
         }
-        if(cdef.isAutoIncrement()) {
+        if (cdef.isAutoIncrement()) {
             infob.setAutoincrement(true);
         }
         return infob.build();
@@ -117,7 +124,7 @@ class TableDefinitionSerializer {
             }
             tcd.setEnumValues(m);
         }
-        if(tci.hasAutoincrement()) {
+        if (tci.hasAutoincrement()) {
             tcd.setAutoIncrement(tci.getAutoincrement());
         }
         return tcd;
@@ -147,6 +154,11 @@ class TableDefinitionSerializer {
                 tdef.setPartitioningSpec(fromProtobuf(protodef.getPartitioningInfo()));
             } else {
                 tdef.setPartitioningSpec(PartitioningSpec.noneSpec());
+            }
+
+            if (protodef.getSecondaryIndexCount() > 0) {
+                SecondaryIndex sidx = protodef.getSecondaryIndex(0);
+                tdef.setSecondaryIndex(new ArrayList<String>(sidx.getColumnNameList()));
             }
         } catch (StreamSqlException e) {
             throw new DatabaseCorruptionException(e);

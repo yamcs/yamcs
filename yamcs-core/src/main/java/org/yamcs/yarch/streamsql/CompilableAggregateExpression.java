@@ -1,8 +1,10 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codehaus.janino.SimpleCompiler;
+import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
@@ -19,6 +21,11 @@ public abstract class CompilableAggregateExpression extends AggregateExpression 
 
     private static AtomicInteger counter = new AtomicInteger();
 
+    
+    public void collectRequiredInputs(Set<ColumnDefinition> inputs) {
+        inputs.add(cdef);
+    }
+    
     @Override
     public CompiledAggregateExpression getCompiledAggregate() throws StreamSqlException {
         String className = "AggregateExpression" + counter.incrementAndGet();

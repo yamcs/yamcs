@@ -17,6 +17,7 @@ import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnSerializer;
+import org.yamcs.yarch.DbRange;
 import org.yamcs.yarch.HistogramInfo;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitionManager;
@@ -70,7 +71,7 @@ public class HistogramRebuilder {
         }
         CompletableFuture<Void> startCf = new CompletableFuture<Void>();
 
-        PartitionManager partitionManager = tablespace.getPartitionManager(tableDefinition);
+        PartitionManager partitionManager = tablespace.getTable(tableDefinition).getPartitionManager();
 
         // an Interval is a collection of value based partitions for the same time interval
         // in the rocksdb2 engine all these partitions share the same rocksdb database
@@ -91,7 +92,7 @@ public class HistogramRebuilder {
     }
 
     private void rebuildHistogramsForInterval(Interval interval, CompletableFuture<Void> cf) {
-        HistogramWriter histoWriter = tablespace.getHistogramWriter(tableDefinition);
+        HistogramWriter histoWriter = tablespace.getTable(tableDefinition).getHistogramWriter();
         RdbPartition p0 = (RdbPartition) interval.iterator().next();
         try (Snapshot snapshot = histoWriter.startQueueing(p0.dir).get()) {
             if (!deleteHistograms(interval, cf)) {
@@ -102,7 +103,7 @@ public class HistogramRebuilder {
             tw.setSnapshot(snapshot);
             try {
                 MyTableVisitor visitor = new MyTableVisitor(interval, cf);
-                tw.walkInterval(interval, null, visitor);
+                tw.walkInterval(interval, new DbRange(), visitor);
                 visitor.flush();
             } catch (YarchException | IOException | RocksDBException e1) {
                 cf.completeExceptionally(e1);

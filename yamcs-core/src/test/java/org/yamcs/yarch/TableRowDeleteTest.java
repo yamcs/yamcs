@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class TableRowDeleteTest extends YarchTestCase {
     Random random = new Random();
@@ -92,7 +93,9 @@ public class TableRowDeleteTest extends YarchTestCase {
     @Test
     public void testDeleteWithIndexCondition2() throws Exception {
         populate("tm3", 0, 1000, 1, 1000);
-        execute("delete from tm3 where \"time\" > 100000");
+        StreamSqlResult result = ydb.execute("delete from tm3 where \"time\" >= 100000");
+        Tuple t = result.next();
+        assertEquals(900l, t.getColumn("deleted"));
         
         verify("select * from tm3",
                 (i, time, apidSeqCount, pname) -> {

@@ -1,13 +1,11 @@
 package org.yamcs.yarch;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.yamcs.time.Instant;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.yarch.ColumnSerializerFactory.AbstractColumnSerializer;
 
 public class ColumnSerializerV3 {
     static class ShortColumnSerializer implements ColumnSerializer<Short> {
@@ -16,8 +14,8 @@ public class ColumnSerializerV3 {
         }
 
         @Override
-        public Short deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return invertSign(stream.readShort());
+        public Short deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return invertSign(byteArray.getShort());
         }
 
         @Override
@@ -26,8 +24,8 @@ public class ColumnSerializerV3 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Short v) throws IOException {
-            stream.writeShort(invertSign((Short) v));
+        public void serialize(ByteArray byteArray, Short v) {
+            byteArray.addShort(invertSign((Short) v));
         }
 
         @Override
@@ -53,13 +51,13 @@ public class ColumnSerializerV3 {
         }
         
         @Override
-        public Integer deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return invertSign(stream.readInt());
+        public Integer deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return invertSign(byteArray.getInt());
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Integer v) throws IOException {
-            stream.writeInt(invertSign(v));
+        public void serialize(ByteArray byteArray, Integer v) {
+            byteArray.addInt(invertSign(v));
         }
 
         @Override
@@ -71,32 +69,18 @@ public class ColumnSerializerV3 {
         public void serialize(ByteBuffer byteBuf, Integer v) {
             byteBuf.putInt(invertSign(v));
         }
-
-        @Override
-        public byte[] toByteArray(Integer v) {
-            return ByteArrayUtils.encodeInt(invertSign(v));
-        }
-
-        @Override
-        public Integer fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return invertSign(ByteArrayUtils.decodeInt(b, 0));
-        }
-
     }
 
     
-    static class LongColumnSerializer extends AbstractColumnSerializer<Long> {
+    static class LongColumnSerializer implements ColumnSerializer<Long> {
         static long invertSign(long x) {
             return x ^ Long.MIN_VALUE;
         }
         
-        public LongColumnSerializer() {
-            super(8);
-        }
 
         @Override
-        public Long deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return invertSign(stream.readLong());
+        public Long deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return invertSign(byteArray.getLong());
         }
 
         @Override
@@ -105,27 +89,17 @@ public class ColumnSerializerV3 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Long v) throws IOException {
-            stream.writeLong(invertSign(v));
+        public void serialize(ByteArray byteArray, Long v) {
+            byteArray.addLong(invertSign(v));
         }
 
         @Override
         public void serialize(ByteBuffer byteBuf, Long v) {
             byteBuf.putLong(invertSign(v));
         }
-
-        @Override
-        public byte[] toByteArray(Long v) {
-            return ByteArrayUtils.encodeLong(invertSign(v));
-        }
-
-        @Override
-        public Long fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return invertSign(ByteArrayUtils.decodeLong(b, 0));
-        }
     }
 
-    static class DoubleColumnSerializer extends AbstractColumnSerializer<Double> {
+    static class DoubleColumnSerializer implements ColumnSerializer<Double> {
         
         static long doubleToLong(double x) {
             long v = Double.doubleToLongBits(x);
@@ -141,14 +115,9 @@ public class ColumnSerializerV3 {
             return Double.longBitsToDouble(x);
         }
 
-        
-        public DoubleColumnSerializer() {
-            super(8);
-        }
-
         @Override
-        public Double deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return longToDouble(stream.readLong());
+        public Double deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return longToDouble(byteArray.getLong());
         }
 
         @Override
@@ -157,8 +126,8 @@ public class ColumnSerializerV3 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Double v) throws IOException {
-            stream.writeLong(doubleToLong(v));
+        public void serialize(ByteArray byteArray, Double v) {
+            byteArray.addLong(doubleToLong(v));
         }
 
         @Override
@@ -168,19 +137,15 @@ public class ColumnSerializerV3 {
     }
 
     
-    static class HresTimestampColumnSerializer extends AbstractColumnSerializer<Instant> {
+    static class HresTimestampColumnSerializer implements ColumnSerializer<Instant> {
         static long invertSign(long x) {
             return x ^ Long.MIN_VALUE;
         }
         
-        public HresTimestampColumnSerializer() {
-            super(12);
-        }
-
         @Override
-        public Instant deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            long millis = invertSign(stream.readLong());
-            int picos = stream.readInt();
+        public Instant deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            long millis = invertSign(byteArray.getLong());
+            int picos = byteArray.getInt();
             return Instant.get(millis, picos);
         }
 
@@ -192,9 +157,9 @@ public class ColumnSerializerV3 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Instant v) throws IOException {
-            stream.writeLong(invertSign(v.getMillis()));
-            stream.writeInt(v.getPicos());
+        public void serialize(ByteArray byteArray, Instant v) {
+            byteArray.addLong(invertSign(v.getMillis()));
+            byteArray.addInt(v.getPicos());
         }
 
         @Override

@@ -79,8 +79,9 @@ public class RdbPartitionManagerTest {
         tablespace.loadDb(false);
 
         TableDefinition tblDef = getTableDefTimeAndValue();
+        RdbTable table = new RdbTable("test", tablespace, tblDef, 1);
 
-        RdbPartitionManager pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
+        RdbPartitionManager pm = table.getPartitionManager();
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
         assertEquals("2011/001", part.dir);
 
@@ -116,8 +117,9 @@ public class RdbPartitionManagerTest {
         tablespace.setCustomDataDir(tmpdir);
 
         tablespace.loadDb(true);
-
-        pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
+        
+        table = new RdbTable("test", tablespace, tblDef, 1);
+        pm = table.getPartitionManager();
         pm.readPartitions();
         List<Partition> plist = pm.getPartitions();
         assertEquals(5, plist.size());
@@ -137,7 +139,9 @@ public class RdbPartitionManagerTest {
 
         TableDefinition tblDef = getTableDefTimeAndValue();
 
-        RdbPartitionManager pm = new RdbPartitionManager(tablespace, "test", tblDef, 1);
+        RdbTable table = new RdbTable("test", tablespace, tblDef, 1);
+        
+        RdbPartitionManager pm = table.getPartitionManager();
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("0001-01-01T00:00:00"), 1);
         assertEquals("0001/001", part.dir);
     }

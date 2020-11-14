@@ -14,8 +14,9 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.Snapshot;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.yarch.HistogramSegment;
+import org.yamcs.yarch.Row;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchException;
 
 /**
  * Writes histograms for one table.
@@ -34,18 +35,17 @@ public abstract class HistogramWriter {
     static final int CLEANUP_Interval = 60_000;
     final protected Tablespace tablespace;
     final protected TableDefinition tableDefinition;
-    final protected RdbPartitionManager partitionManager;
-
+    final protected RdbTable table;
     final protected List<ColumnHistogramWriter> columnWriters = new ArrayList<>();
 
-    public HistogramWriter(Tablespace tablespace, TableDefinition tableDefinition) {
-        this.tableDefinition = tableDefinition;
-        this.tablespace = tablespace;
-        this.partitionManager = tablespace.getPartitionManager(tableDefinition);
+    public HistogramWriter(RdbTable table) {
+        this.table = table;
+        this.tableDefinition =  table.getDefinition();
+        this.tablespace = table.getTablespace();
 
     }
 
-    public abstract void addHistogram(Tuple tuple) throws IOException, RocksDBException;
+    public abstract void addHistogram(Row sertuple) throws IOException, RocksDBException;
 
     /**
      * called from the histogram rebuilder to start queueing all new data while the builder rebuilds a (part) of the.
@@ -67,13 +67,14 @@ public abstract class HistogramWriter {
     public abstract void stopQueueing(String partitionDir);
 
     
-    public static HistogramWriter newWriter(Tablespace tablespace, TableDefinition tblDef) {
+    public static HistogramWriter newWriter(RdbTable table) {
+        TableDefinition tblDef = table.getDefinition();
         List<String> histoColumns = tblDef.getHistogramColumns();
         if (histoColumns == null || histoColumns.isEmpty()) {
             return null;
         }
         if (histoColumns.size() == 1) {
-            return new SingleColumnHistogramWriter(tablespace, tblDef, histoColumns.get(0));
+            return new SingleColumnHistogramWriter(table, histoColumns.get(0));
         } else {
             throw new UnsupportedOperationException("multi column histograms not implemented yet");
         }
@@ -101,7 +102,7 @@ public abstract class HistogramWriter {
         void addHistogram(long time, byte[] value) {
             RdbHistogramInfo histo;
             try {
-                histo = (RdbHistogramInfo) partitionManager.createAndGetHistogram(time, columnName);
+                histo = (RdbHistogramInfo) table.createAndGetHistogram(time, columnName);
                 YRDB rdb = tablespace.getRdb(histo.partitionDir, false);
 
                 long sstart = segmentStart(time);
@@ -122,8 +123,8 @@ public abstract class HistogramWriter {
                 rdb.put(histoDbKey, segment.val());
 
                 segments.put(hmkey, segment);
-            } catch (IOException | RocksDBException e) {
-                e.printStackTrace();
+            } catch (RocksDBException e) {
+                throw new YarchException(e);
             }
         }
 

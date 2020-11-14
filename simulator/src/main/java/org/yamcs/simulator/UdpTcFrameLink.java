@@ -69,7 +69,7 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
             log.warn("Invalid CLTU, length {} (expected at least 10)", length);
             return;
         }
-        int ss = ByteArrayUtils.decodeShort(data, offset);
+        int ss = ByteArrayUtils.decodeUnsignedShort(data, offset);
         if (ss != 0xEB90) {
             log.warn("Invalid BCH start sequence 0x" + Integer.toHexString(ss)+" expected 0xEB90");
             return;

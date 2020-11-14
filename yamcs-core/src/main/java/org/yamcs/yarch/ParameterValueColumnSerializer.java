@@ -1,9 +1,6 @@
 package org.yamcs.yarch;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -11,36 +8,23 @@ import java.nio.ByteBuffer;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.yarch.ColumnSerializerFactory.AbstractColumnSerializer;
 
 import org.yamcs.yarch.protobuf.Db;
 
-import com.google.common.io.ByteStreams;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 
-public class ParameterValueColumnSerializer extends AbstractColumnSerializer<ParameterValue> {
-
-    public ParameterValueColumnSerializer() {
-        super(16);
-    }
+public class ParameterValueColumnSerializer implements ColumnSerializer<ParameterValue> {
 
     @Override
-    public ParameterValue deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-        int size = stream.readInt();
-        if (size > ColumnSerializerFactory.maxBinaryLength) {
-            throw new IOException("serialized size too big " + size + ">" + ColumnSerializerFactory.maxBinaryLength);
-        }
-
+    public ParameterValue deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder();
-
-        try (InputStream limitedInput = ByteStreams.limit(stream, size)) {
-            gpvb.mergeFrom(limitedInput);
-            return fromProto(cd.getName(), gpvb.build());
-        }
+        byteArray.getSizePrefixedProto(gpvb);
+        return fromProto(cd.getName(), gpvb.build());
     }
 
     @Override
@@ -62,11 +46,8 @@ public class ParameterValueColumnSerializer extends AbstractColumnSerializer<Par
     }
 
     @Override
-    public void serialize(DataOutputStream stream, ParameterValue pv) throws IOException {
-        Db.ParameterValue gpv = toProto(pv);
-        int size = gpv.getSerializedSize();
-        stream.writeInt(size);
-        gpv.writeTo(stream);
+    public void serialize(ByteArray byteArray, ParameterValue pv) {
+        byteArray.addSizePrefixedProto(toProto(pv));
     }
 
     @Override

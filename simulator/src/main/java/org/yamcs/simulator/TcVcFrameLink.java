@@ -46,8 +46,8 @@ public class TcVcFrameLink {
 
         boolean controlCommand = ((d0 >> 4) & 1) == 1;
 
-        int spacecraftId = ByteArrayUtils.decodeShort(data, offset) & 0x3FF;
-        int d23 = ByteArrayUtils.decodeShort(data, offset+2);
+        int spacecraftId = ByteArrayUtils.decodeUnsignedShort(data, offset) & 0x3FF;
+        int d23 = ByteArrayUtils.decodeUnsignedShort(data, offset+2);
         int virtualChannelId = d23 >> 10;
         int frameLength = 1+(d23 & 0x3FF);
 

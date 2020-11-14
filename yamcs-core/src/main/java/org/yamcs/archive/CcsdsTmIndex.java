@@ -407,7 +407,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             if (rangeIt != null) {
                 rangeIt.close();
             }
-            rangeIt = new AscendingRangeIterator(tablespace.getRdb().newIterator(), kstart, false, kend, false);
+            rangeIt = new AscendingRangeIterator(tablespace.getRdb().newIterator(), kstart, kend);
             return rangeIt.isValid();
         }
 

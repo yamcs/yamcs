@@ -1,6 +1,5 @@
 package org.yamcs.yarch.streamsql;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.yarch.DataType;
@@ -13,21 +12,10 @@ public class AndExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
-        ArrayList<Expression> new_expressions = new ArrayList<>();
+    public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
         for (Expression expr : children) {
-            Expression new_expr = expr.addFilter(tableStream);
-            if (new_expr != null) {
-                new_expressions.add(new_expr);
-            }
+            expr.addFilter(tableStream);
         }
-        if (new_expressions.size() == 0) {
-            return null;
-        } else if (new_expressions.size() == 1) {
-            return new_expressions.get(0);
-        }
-        children = new_expressions.toArray(new Expression[0]);
-        return this;
     }
 
     @Override

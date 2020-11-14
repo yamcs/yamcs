@@ -26,20 +26,17 @@ public abstract class TableWriter implements StreamSubscriber {
         LOAD,
     }
     
-    final protected TableDefinition tableDefinition;
+    final protected Table table;
     final protected InsertMode mode;
     final protected YarchDatabaseInstance ydb;
     final private CompletableFuture<Void> closeFuture = new CompletableFuture<Void>();
     
-    public TableWriter(YarchDatabaseInstance ydb, TableDefinition tableDefinition, InsertMode mode) {
-        this.tableDefinition = tableDefinition;
+    public TableWriter(YarchDatabaseInstance ydb, Table table, InsertMode mode) {
+        this.table = table;
         this.mode = mode;
         this.ydb = ydb;
     }
     
-    public TableDefinition getTableDefinition() {
-        return tableDefinition;
-    }
     /**
      * future which will be called (completed) when the writer is closed.
      * 

@@ -89,7 +89,6 @@ public class RdbTagDb implements TagDb {
         log.debug("processing request: {}", intv);
         YRDB db = tablespace.getRdb();
         byte[] rangeStart = headerKey();
-        boolean strictStart = true;
         
         byte[] rangeStop;
         if(intv.hasEnd()) {
@@ -100,8 +99,9 @@ public class RdbTagDb implements TagDb {
             rangeStop = new byte[TBS_INDEX_SIZE];
             encodeInt(tbsIndex, rangeStop, 0);
         }
-        boolean strictStop = false;
-        try(AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), rangeStart, strictStart, rangeStop, strictStop)) {
+
+        try(AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), rangeStart, rangeStop)) {
+            it.next();//skip the header
             while (it.isValid()) {
                 ArchiveTag tag = ArchiveTag.parseFrom(it.value());
                 if (intv.hasStart() && tag.hasStop() && tag.getStop() < intv.getStart()) {

@@ -37,7 +37,7 @@ public class CfdpPacketInputStream implements PacketInputStream {
         // specified by bits 29-31 of the packet
         byte[] b = new byte[4];
         dataInputStream.readFully(b);
-        int PDUDataFieldLength = ByteArrayUtils.decodeShort(b, 1);
+        int PDUDataFieldLength = ByteArrayUtils.decodeUnsignedShort(b, 1);
         int entityIdLength = ((b[3] >> 4) & 0x07) + 1;
         int sequenceNumberLength = (b[3] & 0x07) + 1;
         int fixedPacketHeaderLength = 4;

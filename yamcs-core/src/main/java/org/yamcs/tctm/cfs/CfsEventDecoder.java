@@ -128,7 +128,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     public void onTuple(Stream stream, Tuple t) {
         byte[] packet = (byte[]) t.getColumn("packet");
 
-        int msgId = ByteArrayUtils.decodeShort(packet, 0);
+        int msgId = ByteArrayUtils.decodeUnsignedShort(packet, 0);
 
         if (msgIds.contains(msgId)) {
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);

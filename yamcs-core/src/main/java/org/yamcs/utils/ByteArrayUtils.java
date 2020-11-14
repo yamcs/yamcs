@@ -265,9 +265,16 @@ public class ByteArrayUtils {
 
     }
 
-    public static int decodeShort(byte[] a, int offset) {
-        return ((a[offset] & 0xFF) << 8) +
+    public static short decodeShort(byte[] a, int offset) {
+        int x  = ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
+        return (short) x;
+    }
+
+    public static int decodeUnsignedShort(byte[] a, int offset) {
+        int x  = ((a[offset] & 0xFF) << 8) +
+                ((a[offset + 1] & 0xFF));
+        return x;
     }
 
     /**
@@ -278,6 +285,11 @@ public class ByteArrayUtils {
      * @return
      */
     public static int decodeShortLE(byte[] a, int offset) {
+        return ((a[offset + 1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
+    
+    public static int decodeUnsignedShortLE(byte[] a, int offset) {
         return ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
     }

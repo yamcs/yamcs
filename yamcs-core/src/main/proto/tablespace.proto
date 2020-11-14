@@ -51,8 +51,11 @@ message TablespaceRecord {
     	//used to store small named protobuf messages
     	PROTOBUF = 10;
   
-  		//used to store table definitions  
+  		//used to store table definitions
     	TABLE_DEFINITION = 11;
+    	
+    	//secondary index records
+    	SECONDARY_INDEX = 12;
  	 }
   
   	optional uint32 tbsIndex = 1;
@@ -91,6 +94,9 @@ message TablespaceRecord {
   
   	//used for TABLE_DEFINITION
   	optional ProtoTableDefinition tableDefinition = 12;
+  	
+  	//used for SECONDARY_INDEX
+  	optional SecondaryIndex secondaryIndex = 13;
 }
 
 //associated to each bucket
@@ -140,6 +146,12 @@ message PartitioningInfo {
   	optional string valueColumnType = 5;
 }
 
+//to allow future extensions we define multi-column secondary indices for each table
+//as of now only a single index on one column is supported
+message SecondaryIndex {
+	repeated string columnName = 1;
+}
+
 message ProtoTableDefinition {
   	repeated TableColumnInfo keyColumn = 2;
   	repeated TableColumnInfo valueColumn = 3;
@@ -149,5 +161,6 @@ message ProtoTableDefinition {
   	optional string tablespace = 8;
   	optional bool compressed = 9;
   	optional PartitioningInfo partitioningInfo = 10;
+  	repeated SecondaryIndex secondaryIndex = 11;
 }
 

@@ -1,11 +1,10 @@
 package org.yamcs.yarch.streamsql;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
+import org.yamcs.logging.Log;
+import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.HistogramReaderStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -28,10 +27,16 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-public class TupleSourceExpression {
+public class TupleSourceExpression implements FilterableTarget {
+    static Log log = new Log(TupleSourceExpression.class);
+
     String objectName = null;
     StreamExpression streamExpression = null;
     BigDecimal histogramMergeTime = null;
+
+    enum Type {
+        STREAM_EXPRESSION, STREAM, TABLE, TABLE_HISTOGRAM;
+    }
 
     // when histoColumn is set, the objectName must be a table having histograms on that column
     String histoColumn;
@@ -41,8 +46,10 @@ public class TupleSourceExpression {
 
     // after binding
     TupleDefinition definition;
+    TableWalkerBuilder tableWalkerBuilder;
+    HistogramStreamBuilder histogramStreamBuilder;
 
-    static Logger log = LoggerFactory.getLogger(TupleSourceExpression.class.getName());
+    Type type;
 
     public TupleSourceExpression(String name) {
         this.objectName = name;
@@ -60,27 +67,33 @@ public class TupleSourceExpression {
         if (streamExpression != null) {
             streamExpression.bind(c);
             definition = streamExpression.getOutputDefinition();
+            type = Type.STREAM_EXPRESSION;
         } else {
             YarchDatabaseInstance ydb = c.getDb();
-            TableDefinition tbl = ydb.getTable(objectName);
-            if (tbl != null) {
+            TableDefinition tableDefinition = ydb.getTable(objectName);
+            if (tableDefinition != null) {
                 if (histoColumn == null) {
-                    definition = tbl.getTupleDefinition();
+                    definition = tableDefinition.getTupleDefinition();
+                    type = Type.TABLE;
+                    tableWalkerBuilder = new TableWalkerBuilder(ydb, tableDefinition);
+                    tableWalkerBuilder.setAscending(ascending);
+                    tableWalkerBuilder.setFollow(follow);
                 } else {
-                    if (!tbl.hasHistogram()) {
+                    if (!tableDefinition.hasHistogram()) {
                         throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
-                                "No histogram configured for table " + tbl.getName());
+                                "No histogram configured for table " + tableDefinition.getName());
                     }
-                    if (!tbl.getHistogramColumns().contains(histoColumn)) {
+                    if (!tableDefinition.getHistogramColumns().contains(histoColumn)) {
                         throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
                                 "Histogram is not configured for column " + histoColumn);
                     }
 
-                    definition = new TupleDefinition();
-                    definition.addColumn(tbl.getColumnDefinition(histoColumn));
-                    definition.addColumn(new ColumnDefinition("first", DataType.TIMESTAMP));
-                    definition.addColumn(new ColumnDefinition("last", DataType.TIMESTAMP));
-                    definition.addColumn(new ColumnDefinition("num", DataType.INT));
+                    histogramStreamBuilder = new HistogramStreamBuilder(ydb, tableDefinition, histoColumn);
+                    definition = histogramStreamBuilder.getTupleDefinition();
+                    if (histogramMergeTime != null) {
+                        histogramStreamBuilder.setMergeTime(histogramMergeTime.longValue());
+                    }
+                    type = Type.TABLE_HISTOGRAM;
                 }
             } else {
                 Stream stream = ydb.getStream(objectName);
@@ -92,8 +105,71 @@ public class TupleSourceExpression {
                             "Cannot specify histogram option when selecting from a stream");
                 }
                 definition = stream.getDefinition();
+                type = Type.STREAM;
             }
         }
+    }
+
+    public void addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
+        switch (type) {
+        case STREAM:
+        case STREAM_EXPRESSION:
+            break;
+        case TABLE:
+            tableWalkerBuilder.addRelOpFilter(cexpr, relOp, value);
+            break;
+        case TABLE_HISTOGRAM:
+            histogramStreamBuilder.addRelOpFilterHistogram(cexpr, relOp, value);
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+    }
+
+    public void addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException {
+        switch (type) {
+        case STREAM:
+        case STREAM_EXPRESSION:
+            break;
+        case TABLE:
+            tableWalkerBuilder.addInFilter(cexpr, negation, values);
+            break;
+        case TABLE_HISTOGRAM:
+            histogramStreamBuilder.addInFilter(cexpr, negation, values);
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+    }
+
+    Stream execute(ExecutionContext c) throws StreamSqlException, YarchException {
+        Stream stream;
+        YarchDatabaseInstance ydb = c.getDb();
+
+        switch (type) {
+        case STREAM_EXPRESSION:
+            stream = streamExpression.execute(c);
+            break;
+        case STREAM:
+            stream = ydb.getStream(objectName);
+            if (stream == null) {
+                throw new ResourceNotFoundException(objectName);
+            }
+            break;
+        case TABLE:
+            TableWalker tblit = tableWalkerBuilder.build();
+            stream = new TableReaderStream(ydb, tableWalkerBuilder.getTableDefinition(), tblit);
+            break;
+        case TABLE_HISTOGRAM:
+            HistogramReaderStream histoStream = histogramStreamBuilder.build();
+
+            stream = histoStream;
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+
+        return stream;
     }
 
     public void setHistogramMergeTime(BigDecimal mergeTime) {
@@ -106,45 +182,6 @@ public class TupleSourceExpression {
 
     public void setFollow(boolean follow) {
         this.follow = follow;
-    }
-
-    Stream execute(ExecutionContext c) throws StreamSqlException {
-        Stream stream;
-        if (streamExpression != null) {
-            stream = streamExpression.execute(c);
-        } else if (objectName != null) {
-            YarchDatabaseInstance ydb = c.getDb();
-            if (!ascending) {
-                follow = false;
-            }
-            TableDefinition tbl = ydb.getTable(objectName);
-            if (tbl != null) {
-                if (histoColumn == null) {
-                    TableWalker tblit = ydb.getStorageEngine(tbl).newTableWalker(ydb, tbl, ascending, follow);
-                    stream = new TableReaderStream(ydb, tbl, tblit);
-                } else {
-                    HistogramReaderStream histoStream;
-                    try {
-                        histoStream = new HistogramReaderStream(ydb, tbl, histoColumn, definition);
-                    } catch (YarchException e) {
-                        throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
-                    }
-                    if (histogramMergeTime != null) {
-                        histoStream.setMergeTime(histogramMergeTime.longValue());
-                    }
-                    stream = histoStream;
-                }
-            } else {
-                stream = ydb.getStream(objectName);
-                if (stream == null) {
-                    throw new ResourceNotFoundException(objectName);
-                }
-            }
-        } else {
-            throw new NoneSpecifiedException();
-        }
-
-        return stream;
     }
 
     TupleDefinition getDefinition() {

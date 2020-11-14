@@ -87,7 +87,7 @@ public class ParameterGroupIdDb {
         byte[] range = new byte[TBS_INDEX_SIZE];
         ByteArrayUtils.encodeInt(tr.getTbsIndex(), range, 0);
 
-        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, false, range, false)) {
+        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, range)) {
             while (it.isValid()) {
                 byte[] key = it.key();
                 int pgid = ByteArrayUtils.decodeInt(key, TBS_INDEX_SIZE);

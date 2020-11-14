@@ -18,10 +18,10 @@ public class RdbHistogramInfo extends HistogramInfo {
     
     
     public static byte[] histoDbKey(int tbsIndex, long sstart, byte[] columnv) {
-        byte[] dbKey = new byte[4+8+columnv.length];
+        byte[] dbKey = new byte[TBS_INDEX_SIZE + 8 + columnv.length];
         ByteArrayUtils.encodeInt(tbsIndex, dbKey , 0);
         ByteArrayUtils.encodeLong(sstart, dbKey, TBS_INDEX_SIZE);
-        System.arraycopy(columnv, 0, dbKey, 12, columnv.length);
+        System.arraycopy(columnv, 0, dbKey, TBS_INDEX_SIZE + 8, columnv.length);
         
         return dbKey;
     }

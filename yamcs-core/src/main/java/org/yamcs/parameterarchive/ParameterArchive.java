@@ -171,7 +171,7 @@ public class ParameterArchive extends AbstractYamcsService {
         byte[] range = new byte[TBS_INDEX_SIZE];
         ByteArrayUtils.encodeInt(partitionTbsIndex, range, 0);
 
-        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, false, range, false)) {
+        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, range)) {
             while (it.isValid()) {
                 TimeBasedPartition tbp = TimeBasedPartition.parseFrom(it.value());
                 Partition p = new Partition(tbp.getPartitionStart(), tbp.getPartitionEnd(), tbp.getPartitionDir());

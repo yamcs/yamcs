@@ -2,6 +2,7 @@ package org.yamcs.yarch.rocksdb;
 
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.yarch.DbRange;
 
 /**
  * Wrapper around a rocksdb iterator that only supports prev() and is restricted to a range.
@@ -34,9 +35,7 @@ import org.yamcs.utils.ByteArrayUtils;
 public class DescendingRangeIterator implements DbIterator {
     final RocksIterator iterator;
     final byte[] rangeStart;
-    final boolean strictStart;
     final byte[] rangeEnd;
-    final boolean strictEnd;
     boolean valid = false;
     private byte[] curKey;
 
@@ -45,21 +44,16 @@ public class DescendingRangeIterator implements DbIterator {
      * 
      * @param it
      * @param rangeStart
-     * @param strictStart
      * @param rangeEnd
-     * @param strictEnd
      */
-    public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, boolean strictStart, byte[] rangeEnd,
-            boolean strictEnd) {
+    public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, byte[] rangeEnd) {
         this.iterator = it;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
-        this.strictStart = strictStart;
-        this.strictEnd = strictEnd;
         init();
     }
     public DescendingRangeIterator(RocksIterator it, DbRange range) {
-        this(it, range.rangeStart, range.strictStart, range.rangeEnd, range.strictEnd);
+        this(it, range.rangeStart, range.rangeEnd);
     }
 
     private void init() {
@@ -72,12 +66,12 @@ public class DescendingRangeIterator implements DbIterator {
                 endFound = true;
             }
         } else {
-            iterator.seek(rangeEnd); // seek moves cursor beyond the match but if strictEnd=false we have to move it
+            iterator.seek(rangeEnd); // seek moves cursor beyond the match but we have to move it
                                      // beyond any key which starts with rangeEnd
             while (iterator.isValid()) {
                 curKey = iterator.key();
 
-                if (!strictEnd && ByteArrayUtils.compare(curKey, rangeEnd) == 0) {
+                if (ByteArrayUtils.compare(curKey, rangeEnd) == 0) {
                     iterator.next();
                 } else {
                     break;
@@ -101,7 +95,7 @@ public class DescendingRangeIterator implements DbIterator {
             // check that it is not earlier than start
             if (rangeStart != null) {
                 int c = ByteArrayUtils.compare(rangeStart, curKey);
-                if ((strictStart && c < 0) || (!strictStart && c <= 0)) {
+                if (c <= 0) {
                     valid = true;
                 }
             } else {
@@ -127,7 +121,7 @@ public class DescendingRangeIterator implements DbIterator {
             if (rangeStart != null) {
                 valid = false;
                 int c = ByteArrayUtils.compare(rangeStart, curKey);
-                if ((strictStart && c < 0) || (c <= 0)) {
+                if (c <= 0) {
                     valid = true;
                 }
             }

@@ -318,7 +318,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         static void fillChecksums(byte[] data) {
             // first Reed-Solomon the header
-            int gvcid = ByteArrayUtils.decodeShort(data, 0);
+            int gvcid = ByteArrayUtils.decodeUnsignedShort(data, 0);
             int x = AosFrameHeaderErrorCorr.encode(gvcid, data[5]);
             ByteArrayUtils.encodeShort(x, data, 6);
 

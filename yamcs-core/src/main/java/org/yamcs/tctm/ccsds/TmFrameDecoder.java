@@ -45,7 +45,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         if (crc!=null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
-            int c2 = ByteArrayUtils.decodeShort(data, dataEnd);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
             if (c1 != c2) {
                 throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
             }

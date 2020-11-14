@@ -1,24 +1,19 @@
 package org.yamcs.yarch.rocksdb;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rocksdb.FlushOptions;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
-import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.AbstractTableWalker;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.ColumnSerializer;
-import org.yamcs.yarch.IndexFilter;
+import org.yamcs.yarch.DbRange;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.RawTuple;
@@ -27,17 +22,13 @@ import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-/**
- * reader for tables with PartitionStorage.IN_KEY (the partition is prepended in front of the key)
- * 
- * @author nm
- *
- */
 public class RdbTableWalker extends AbstractTableWalker {
-    static AtomicInteger count = new AtomicInteger(0);
-    private long numRecordsRead = 0;
-    private final Tablespace tablespace;
-    boolean batchUpdates = false;
+   private final Tablespace tablespace;
+  
+   static AtomicInteger count = new AtomicInteger(0);
+   
+  
+   boolean batchUpdates = false;
     Snapshot snapshot = null;
     protected TableVisitor visitor;
     
@@ -50,16 +41,18 @@ public class RdbTableWalker extends AbstractTableWalker {
 
     /**
      * 
-     * All the partitions are from the same time interval and thus from one single RocksDB database
-     * 
+     * Iterate data through the given interval taking into account also the tableRange.
+     * <p>
+     * tableRange has to be non-null but can be unbounded at one or both ends.
+     * <p
+     * Return true if the tableRange is bounded and the end has been reached.
      */
     @Override
-    protected boolean walkInterval(PartitionManager.Interval partitions, IndexFilter filter, TableVisitor visitor) throws YarchException {
+    protected boolean walkInterval(PartitionManager.Interval interval, DbRange tableRange, TableVisitor visitor) throws YarchException {
         this.visitor = visitor;
         running = true;
-        DbRange tableRange = getTableRange(filter);
         try {
-            return doWalkInterval(partitions, tableRange);
+            return doWalkInterval(interval, tableRange);
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }
@@ -72,24 +65,18 @@ public class RdbTableWalker extends AbstractTableWalker {
      * @return true if the end condition has been reached
      * @throws RocksDBException
      */
-    private boolean doWalkInterval(PartitionManager.Interval partitions, DbRange tableRange) throws RocksDBException {
+    private boolean doWalkInterval(PartitionManager.Interval interval, DbRange tableRange) throws RocksDBException {
         DbIterator iterator = null;
-
         
-        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
+        RdbPartition p1 = (RdbPartition) interval.iterator().next();
         YRDB rdb;
         if (p1.dir != null) {
-            try {
-                log.debug("opening database {}", p1.dir);
-                rdb = tablespace.getRdb(p1.dir, false);
-            } catch (IOException e) {
-                log.error("Failed to open database", e);
-                return false;
-            }
+            log.debug("opening database {}", p1.dir);
+            rdb = tablespace.getRdb(p1.dir, false);
         } else {
             rdb = tablespace.getRdb();
         }
-
+        
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         if (!follow) {
@@ -101,13 +88,12 @@ public class RdbTableWalker extends AbstractTableWalker {
         WriteBatch writeBatch = batchUpdates ? new WriteBatch() : null;
 
         try {
-            List<DbIterator> itList = new ArrayList<>(partitions.size());
+            List<DbIterator> itList = new ArrayList<>(interval.size());
             // create an iterator for each partitions
-            for (Partition p : partitions) {
+            for (Partition p : interval) {
                 p1 = (RdbPartition) p;
                 RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
                 DbIterator it = getPartitionIterator(rocksIt, p1.tbsIndex, ascending, tableRange);
-
                 if (it.isValid()) {
                     itList.add(it);
                 } else {
@@ -125,9 +111,9 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
             boolean endReached;
             if (ascending) {
-                endReached = runAscending(rdb, iterator, writeBatch, tableRange.rangeEnd, tableRange.strictEnd);
+                endReached = runAscending(rdb, iterator, writeBatch, tableRange.rangeEnd);
             } else {
-                endReached = runDescending(rdb, iterator, writeBatch, tableRange.rangeStart, tableRange.strictStart);
+                endReached = runDescending(rdb, iterator, writeBatch, tableRange.rangeStart);
             }
             if (writeBatch != null) {
                 WriteOptions wo = new WriteOptions();
@@ -164,14 +150,16 @@ public class RdbTableWalker extends AbstractTableWalker {
     }
 
     // return true if the end condition has been reached
-    boolean runAscending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeEnd, boolean strictEnd)
+    boolean runAscending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeEnd)
             throws RocksDBException {
         
         while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
             byte[] value = iterator.value();
-            if (iAscendingFinished(key, value, rangeEnd, strictEnd)) {
+            numRecordsRead++;
+            
+            if (iAscendingFinished(key, value, rangeEnd)) {
                 return true;
             }
             TableVisitor.Action action = visitor.visit(key, iterator.value());
@@ -186,12 +174,14 @@ public class RdbTableWalker extends AbstractTableWalker {
         return false;
     }
 
-    boolean runDescending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeStart, boolean strictStart)
+    boolean runDescending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeStart)
             throws RocksDBException {
         while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
-            if (isDescendingFinished(key, iterator.value(), rangeStart, strictStart)) {
+            numRecordsRead++;
+            
+            if (isDescendingFinished(key, iterator.value(), rangeStart)) {
                 return true;
             }
 
@@ -252,37 +242,7 @@ public class RdbTableWalker extends AbstractTableWalker {
         return numRecordsRead;
     }
 
-    @Override
-    protected boolean bulkDeleteFromInterval(PartitionManager.Interval partitions, IndexFilter filter) throws YarchException {
-        DbRange tableRange = getTableRange(filter);
-
-        // all partitions will have the same database, just use the same one
-        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
-
-        YRDB rdb;
-        try {
-            rdb = tablespace.getRdb(p1.dir, false);
-        } catch (IOException e) {
-            log.error("Failed to open database", e);
-            throw new YarchException(e);
-        }
-
-        try (FlushOptions flushOptions = new FlushOptions()) {
-            for (Partition p : partitions) {
-                RdbPartition rp = (RdbPartition) p;
-                DbRange dbRange = getDeleteDbRange(rp.tbsIndex, tableRange);
-                rdb.getDb().deleteRange(dbRange.rangeStart, dbRange.rangeEnd);
-            }
-
-            rdb.getDb().flush(flushOptions);
-
-        } catch (RocksDBException e) {
-            throw new YarchException(e);
-        } finally {
-            tablespace.dispose(rdb);
-        }
-        return false;
-    }
+   
 
     class RdbRawTuple extends RawTuple {
         RocksIterator iterator;
@@ -309,67 +269,18 @@ public class RdbTableWalker extends AbstractTableWalker {
         }
     }
 
-    private DbRange getTableRange(IndexFilter filter) {
-        DbRange tableRange = new DbRange();
-        if (filter != null) {
-            ColumnDefinition cd = tableDefinition.getKeyDefinition().get(0);
-            ColumnSerializer cs = tableDefinition.getColumnSerializer(cd.getName());
-            if (filter.keyStart != null) {
-                tableRange.strictStart = filter.strictStart;
-                tableRange.rangeStart = cs.toByteArray(filter.keyStart);
-            }
-            if (filter.keyEnd != null) {
-                tableRange.strictEnd = filter.strictEnd;
-                tableRange.rangeEnd = cs.toByteArray(filter.keyEnd);
-            }
-        }
-        return tableRange;
-    }
-
-    DbRange getDbRange(int tbsIndex, DbRange tableRange) {
+   static  DbRange getDbRange(int tbsIndex, DbRange tableRange) {
         DbRange dbr = new DbRange();
-        if (tableRange.rangeStart != null) {
+        if (tableRange!=null && tableRange.rangeStart != null) {
             dbr.rangeStart = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeStart);
-            dbr.strictStart = tableRange.strictStart;
         } else {
             dbr.rangeStart = RdbStorageEngine.dbKey(tbsIndex);
-            dbr.strictStart = false;
         }
 
-        if (tableRange.rangeEnd != null) {
+        if (tableRange!=null && tableRange.rangeEnd != null) {
             dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeEnd);
-            dbr.strictEnd = tableRange.strictEnd;
         } else {
-            dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex + 1);
-            dbr.strictEnd = true;
-        }
-        return dbr;
-    }
-
-    // rocksdb delete range intervals are always [start, end) so we have to adapt our range
-    DbRange getDeleteDbRange(int tbsIndex, DbRange tableRange) {
-        DbRange dbr = new DbRange();
-        dbr.strictStart = false;
-        dbr.strictEnd = true;
-
-        if (tableRange.rangeStart == null) {
-            dbr.rangeStart = tableRange.strictStart ? RdbStorageEngine.dbKey(tbsIndex + 1)
-                    : RdbStorageEngine.dbKey(tbsIndex);
-        } else {
-            dbr.rangeStart = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeStart);
-            if (dbr.strictStart) {
-                dbr.rangeStart = ByteArrayUtils.plusOne(dbr.rangeStart);
-            }
-        }
-
-        if (tableRange.rangeEnd == null) {
-            dbr.rangeEnd = tableRange.strictEnd ? RdbStorageEngine.dbKey(tbsIndex)
-                    : RdbStorageEngine.dbKey(tbsIndex + 1);
-        } else {
-            dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeEnd);
-            if (!tableRange.strictEnd) {
-                dbr.rangeEnd = ByteArrayUtils.plusOne(dbr.rangeEnd);
-            }
+            dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex);
         }
         return dbr;
     }

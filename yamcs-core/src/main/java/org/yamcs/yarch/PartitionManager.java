@@ -173,7 +173,7 @@ public abstract class PartitionManager {
         return partition;
     }
 
-    public synchronized HistogramInfo createAndGetHistogram(long instant, String columnName) throws IOException {
+    public synchronized HistogramInfo createAndGetHistogram(long instant, String columnName) {
         HistogramInfo histo;
         Interval tmpInterval = pcache;
         if ((partitioningSpec.timeColumn != null) &&
@@ -257,14 +257,12 @@ public abstract class PartitionManager {
      * 
      * @param value
      * @return
-     * @throws IOException
      */
-    protected abstract Partition createPartition(Object value) throws IOException;
+    protected abstract Partition createPartition(Object value);
 
-    protected abstract HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName)
-            throws IOException;
+    protected abstract HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName);
 
-    protected abstract HistogramInfo createHistogram(String columnName) throws IOException;
+    protected abstract HistogramInfo createHistogram(String columnName);
 
     /**
      * Retrieves the existing partitions

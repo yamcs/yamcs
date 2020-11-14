@@ -28,7 +28,7 @@ public class RelationalExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
+    public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
         if ((children[1] instanceof ColumnExpression) && (children[0].isConstant())) {
             // swap left with right
             Expression tmp = children[1];
@@ -47,12 +47,7 @@ public class RelationalExpression extends Expression {
                 cvalue = compexpr.getValue(null);
             }
 
-            if (tableStream.addRelOpFilter(cexpr, relOp, cvalue))
-                return null;
-            else
-                return this;
-        } else {
-            return this;
+            tableStream.addRelOpFilter(cexpr, relOp, cvalue);
         }
     }
 

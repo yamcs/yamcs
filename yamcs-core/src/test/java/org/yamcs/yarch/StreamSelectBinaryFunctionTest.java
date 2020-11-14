@@ -59,7 +59,7 @@ public class StreamSelectBinaryFunctionTest extends YarchTestCase {
         assertEquals(n, l.size());
         for (int i = 0; i < n; i++) {
             Tuple t = l.get(i);
-            int x = (Integer) t.getColumn(0);
+            int x = (Short) t.getColumn(0);
             assertEquals(i, x);
         }
     }

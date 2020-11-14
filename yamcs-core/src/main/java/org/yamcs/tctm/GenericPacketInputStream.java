@@ -74,10 +74,10 @@ public class GenericPacketInputStream implements PacketInputStream {
             length = 0xFF & b[lengthFieldOffset];
             break;
         case 2:
-            length = ByteArrayUtils.decodeShort(b, lengthFieldOffset);
+            length = ByteArrayUtils.decodeUnsignedShort(b, lengthFieldOffset);
             break;
         case 3:
-            length = (ByteArrayUtils.decodeShort(b, lengthFieldOffset) << 16) + (0xFF & b[lengthFieldOffset + 2]);
+            length = ByteArrayUtils.decode3Bytes(b, lengthFieldOffset);
             break;
         case 4:
             length = ByteArrayUtils.decodeInt(b, lengthFieldOffset);

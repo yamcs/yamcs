@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class EnumTest2 extends YarchTestCase {
+public class Enum2Test extends YarchTestCase {
     int n = 20;
 
     private void populate(String tblname) throws Exception {
@@ -57,7 +57,6 @@ public class EnumTest2 extends YarchTestCase {
         execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid')");
 
         final List<Tuple> tuples = fetchAll("testenum2_out");
-        System.out.println("tuples: " + tuples);
         assertEquals((n + 9) / 10, tuples.size());
 
         int i = 1;
@@ -74,7 +73,6 @@ public class EnumTest2 extends YarchTestCase {
         execute("create stream testenum2_out as select * from testenum2 where  packetName in ('pn1', 'invalid')");
 
         final List<Tuple> tuples = fetchAll("testenum2_out");
-        System.out.println("tuples: " + tuples);
         assertEquals((n + 9) / 10, tuples.size());
 
         int i = 1;

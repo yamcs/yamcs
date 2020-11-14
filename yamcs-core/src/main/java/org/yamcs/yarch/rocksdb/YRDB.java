@@ -21,6 +21,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.utils.StringConverter;
@@ -143,16 +144,6 @@ public class YRDB {
 
     public RocksIterator newIterator(ColumnFamilyHandle cfh) throws RocksDBException {
         return db.newIterator(cfh);
-    }
-
-    public AscendingRangeIterator newAscendingRangeIterator(byte[] rangeStart, boolean strictStart, byte[] rangeStop,
-            boolean strictStop) {
-        return new AscendingRangeIterator(db.newIterator(), rangeStart, strictStart, rangeStop, strictStop);
-    }
-
-    public DescendingRangeIterator newDescendingRangeIterator(byte[] rangeStart, boolean strictStart, byte[] rangeStop,
-            boolean strictStop) {
-        return new DescendingRangeIterator(db.newIterator(), rangeStart, strictStart, rangeStop, strictStop);
     }
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(byte[] cfname) {
@@ -335,7 +326,7 @@ public class YRDB {
      * Returns an iterator that iterates over all elements with key starting with the prefix
      */
     public DbIterator newPrefixIterator(byte[] prefix) {
-        return newAscendingRangeIterator(prefix, false, prefix, false);
+        return new AscendingRangeIterator(db.newIterator(), prefix, prefix);
     }
 
     /**
@@ -375,5 +366,9 @@ public class YRDB {
             h = 31 * h + dbKey[i];
         }
         return locks[h & (NUM_LOCKS - 1)];
+    }
+
+    public void write(WriteOptions writeOpts, WriteBatch writeBatch) throws RocksDBException {
+        db.write(writeOpts, writeBatch);
     }
 }

@@ -1,11 +1,6 @@
 package org.yamcs.yarch;
 
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.yamcs.yarch.streamsql.ColumnExpression;
-import org.yamcs.yarch.streamsql.RelOp;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Implements skeleton for table streamer that uses PartitionManager to handle partitioning.
@@ -14,7 +9,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * @author nm
  *
  */
-public class TableReaderStream extends Stream implements Runnable, FilterableTarget, TableVisitor {
+public class TableReaderStream extends Stream implements Runnable, TableVisitor {
     static AtomicInteger count = new AtomicInteger(0);
     TableWalker tblIterator;
     
@@ -46,11 +41,6 @@ public class TableReaderStream extends Stream implements Runnable, FilterableTar
         }
     }
 
-    @Override
-    public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
-        return tblIterator.addRelOpFilter(cexpr, relOp, value);
-    }
-    
 
     @Override
     public Action visit(byte[] key, byte[] value) {
@@ -61,14 +51,6 @@ public class TableReaderStream extends Stream implements Runnable, FilterableTar
 
     protected Tuple dataToTuple(byte[] k, byte[] v) {
         return tableDefinition.deserialize(k, v);
-    }
-
-    /**
-     * currently adds only filters on value based partitions
-     */
-    @Override
-    public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException {
-        return tblIterator.addInFilter(cexpr, negation, values);
     }
 
     @Override
@@ -96,9 +78,4 @@ public class TableReaderStream extends Stream implements Runnable, FilterableTar
         }
         return 0;
     }
-
-
-
-
- 
 }

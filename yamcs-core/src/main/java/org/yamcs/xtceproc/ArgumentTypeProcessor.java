@@ -253,7 +253,6 @@ public class ArgumentTypeProcessor {
     
     
     private Value decalibrateAggregate(AggregateArgumentType atype, AggregateValue v) {
-        System.out.println("v: "+v);
         AggregateValue rv = new AggregateValue(atype.getMemberNames());
         for(Member aggm: atype.getMemberList()) {
             Value mv = decalibrate((ArgumentType)aggm.getType(), v.getMemberValue(aggm.getName()));

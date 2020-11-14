@@ -1,17 +1,28 @@
 package org.yamcs.yarch;
 
+import java.util.Set;
+
+import org.yamcs.utils.TimeInterval;
+
 /**
  * Walks over one yarch table providing operations for select, udpdate, delete
  *
  * @author nm
  *
  */
-public interface TableWalker extends FilterableTarget {
-    void walk(TableVisitor visitor) throws YarchException;
+public interface TableWalker {
+
+    default void setPartitionFilter(TimeInterval partitionTimeFilter, Set<Object> partitionValueFilter) {
+        throw new UnsupportedOperationException();
+    }
+
+    void setPrimaryIndexRange(DbRange tableRange);
+
+    default void setSecondaryIndexRange(DbRange skRange) {
+        throw new UnsupportedOperationException();
+    }
     
-    void close() throws YarchException;
-    /**
-     * Delete all rows matching the filters added with {@link FilterableTarget} method
-     */
-    void bulkDelete();
+    void walk(TableVisitor visitor);
+
+    void close();
 }

@@ -127,7 +127,7 @@ public class RdbStorageEngine implements StorageEngine {
 
     public RdbPartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         Tablespace tblsp = getTablespace(ydb, tblDef);
-        return tblsp.getPartitionManager(tblDef);
+        return tblsp.getTable(tblDef).getPartitionManager();
     }
 
     @Override
@@ -329,5 +329,13 @@ public class RdbStorageEngine implements StorageEngine {
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }
+    }
+
+    @Override
+    public TableWalker newSecondaryIndexTableWalker(YarchDatabaseInstance ydb, TableDefinition tableDefinition,
+            boolean ascending, boolean follow) {
+        Tablespace tblsp = getTablespace(ydb, tableDefinition);
+
+        return tblsp.newSecondaryIndexTableWalker(ydb, tableDefinition, ascending, follow);
     }
 }

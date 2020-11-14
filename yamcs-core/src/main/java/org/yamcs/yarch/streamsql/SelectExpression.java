@@ -9,7 +9,6 @@ import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
@@ -56,7 +55,7 @@ public class SelectExpression implements StreamExpression {
     List<AggregateExpression> aggList = null;
     List<Expression> aggInputList = null;
     boolean ascending = true; // only for table-selects
-    boolean follow = true; // only for table-selects
+    boolean follow = false; // only for table-selects
     private boolean selectStar; // in case of select *
     BigDecimal offset;
     BigDecimal limit;
@@ -99,7 +98,7 @@ public class SelectExpression implements StreamExpression {
         inputDef = tupleSourceExpression.getDefinition();
         if (whereClause != null) {
             whereClause.bind(inputDef);
-            if(whereClause.getType()!=DataType.BOOLEAN) {
+            if (whereClause.getType() != DataType.BOOLEAN) {
                 throw new GenericStreamSqlException("Invalid where clause, should return a boolean");
             }
         }
@@ -111,22 +110,23 @@ public class SelectExpression implements StreamExpression {
             selectStar = true;
         }
 
-        /*expand the * if together with something else
-        	if(!selectStar) {
-        		for(int i=0;i<selectList.size();i++) {
-        			if(selectList.get(i)==SelectItem.STAR) {
-        			    selectList.remove(i);
-        			    for(ColumnDefinition cd:inputDef.getColumnDefinitions()) {
-        			        try {
-                            selectList.add(i, new SelectItem(new ColumnExpression(cd.getName())));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-        			        i++;
-        			    }
-        			}
-        		}
-        	}
+        /*
+         * expand the * if together with something else
+         * if(!selectStar) {
+         * for(int i=0;i<selectList.size();i++) {
+         * if(selectList.get(i)==SelectItem.STAR) {
+         * selectList.remove(i);
+         * for(ColumnDefinition cd:inputDef.getColumnDefinitions()) {
+         * try {
+         * selectList.add(i, new SelectItem(new ColumnExpression(cd.getName())));
+         * } catch (ParseException e) {
+         * e.printStackTrace();
+         * }
+         * i++;
+         * }
+         * }
+         * }
+         * }
          */
         // bind the other expressions
         if (selectStar) {
@@ -229,12 +229,11 @@ public class SelectExpression implements StreamExpression {
 
     @Override
     public Stream execute(ExecutionContext c) throws StreamSqlException {
-        Stream stream = tupleSourceExpression.execute(c);
-
-        if ((stream instanceof FilterableTarget) && (whereClause != null)) {
-            FilterableTarget dbStream = (FilterableTarget) stream;
-            whereClause = whereClause.addFilter(dbStream);
+        if (whereClause != null) {
+            whereClause.addFilter(tupleSourceExpression);
         }
+
+        Stream stream = tupleSourceExpression.execute(c);
         CompiledExpression cWhereClause = (whereClause == null) ? null : whereClause.compile();
 
         List<CompiledExpression> caggInputList = null;
@@ -259,8 +258,9 @@ public class SelectExpression implements StreamExpression {
             for (SelectItem item : selectList) {
                 if (item != SelectItem.STAR) {
                     Expression expr = item.expr;
-                    if(expr.isConstant()) {
-                        cselectList.add(new ConstantValueCompiledExpression(expr.getConstantValue(), new ColumnDefinition(expr.getColumnName(), expr.getType())));
+                    if (expr.isConstant()) {
+                        cselectList.add(new ConstantValueCompiledExpression(expr.getConstantValue(),
+                                new ColumnDefinition(expr.getColumnName(), expr.getType())));
                     } else {
                         cselectList.add(item.expr.compile());
                     }

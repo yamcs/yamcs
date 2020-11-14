@@ -128,15 +128,13 @@ public class HistogramStreamTest extends YarchTestCase {
     public void test4() throws Exception {
         int m = 2;
         int n = 1;
-        populate("test1",m , n, true);
+        populate("test1", m , n, true);
         String query = "create stream test1_out as select * from test1 histogram(name) where first>" + (n * 3000)
-                + " and last<100000000";
+                + " and last<=100000000";
         execute(query);
         final List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(1, tuples.size());
         Tuple t = tuples.get(0);
-        // tuples should contain (name String, start TIMESTAMP, stop TIMESTAMP,
-        // num int)
 
         t = tuples.get(0);
         assertEquals("histotest1m", (String) t.getColumn(0));

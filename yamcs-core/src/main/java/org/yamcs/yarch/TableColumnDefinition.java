@@ -1,10 +1,9 @@
 package org.yamcs.yarch;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.yamcs.LimitExceededException;
+import org.yamcs.utils.ByteArray;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -16,7 +15,7 @@ import com.google.common.collect.HashBiMap;
  *
  */
 public class TableColumnDefinition extends ColumnDefinition {
-    ColumnSerializer<Object> serializer;
+    private ColumnSerializer<Object> serializer;
     BiMap<String, Short> enumValues;
     boolean autoincrement;
 
@@ -56,12 +55,12 @@ public class TableColumnDefinition extends ColumnDefinition {
         this.autoincrement = b;
     }
 
-    public <T extends Object> void serialize(DataOutputStream dos, T v) throws IOException {
-        serializer.serialize(dos, v);
+    public <T extends Object> void serializeValue(ByteArray byteArray, T v) {
+        serializer.serialize(byteArray, v);
     }
 
-    public Object deserialize(DataInputStream dis) throws IOException {
-        return serializer.deserialize(dis, this);
+    public Object deserializeValue(ByteArray byteArray) throws IOException {
+        return serializer.deserialize(byteArray, this);
     }
 
     public void setEnumValues(BiMap<String, Short> enumValues) {
@@ -113,6 +112,10 @@ public class TableColumnDefinition extends ColumnDefinition {
         return autoincrement;
     }
     
+    /**
+     * Set sequence used for auto-increment
+     * @param sequence
+     */
     public void setSequence(Sequence sequence) {
         this.sequence = sequence;
     }
@@ -122,5 +125,7 @@ public class TableColumnDefinition extends ColumnDefinition {
         return String.format("%s %s %s",name, type, autoincrement?"auto_increment":"");
     }
 
-   
+    public void setSerializer(ColumnSerializer<Object> columnSerializer) {
+        this.serializer = columnSerializer;
+    }
 }

@@ -10,8 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.Snapshot;
 import org.yamcs.yarch.ColumnSerializer;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.Row;
 
 /**
  * Histogram writer for the tables having one column histogram (which is actually all standard tables from Yamcs)
@@ -25,26 +24,25 @@ public class SingleColumnHistogramWriter extends HistogramWriter {
     final Map<String, WhileRebuild> wrs = new HashMap<>();
     long lastCleanupTime;
 
-    public SingleColumnHistogramWriter(Tablespace tablespace, TableDefinition tableDefinition, String histoColumn) {
-        super(tablespace, tableDefinition);
+    public SingleColumnHistogramWriter(RdbTable table, String histoColumn) {
+        super(table);
         this.colHistoWriter = new ColumnHistogramWriter(histoColumn);
     }
 
     boolean printed = false;
 
     @Override
-    public synchronized void addHistogram(Tuple tuple) throws IOException, RocksDBException {
+    public synchronized void addHistogram(Row row) throws IOException, RocksDBException {
         String columnName = colHistoWriter.columnName;
-        Object colValue = tuple.getColumn(columnName);
+        Object colValue = row.get(columnName);
         if (colValue == null) {
             return;
         }
 
-        long time = (Long) tuple.getColumn(0);
+        long time = (Long) row.get(0);
         ColumnSerializer cs = tableDefinition.getColumnSerializer(columnName);
-        byte[] v = cs.toByteArray(tuple.getColumn(columnName));
-
-        RdbHistogramInfo histo = (RdbHistogramInfo) partitionManager.createAndGetHistogram(time, columnName);
+        byte[] v = cs.toByteArray(row.get(columnName));
+        RdbHistogramInfo histo = table.createAndGetHistogram(time, columnName);
         WhileRebuild wr = wrs.get(histo.partitionDir);
         if (wr == null) {
             colHistoWriter.addHistogram(time, v);

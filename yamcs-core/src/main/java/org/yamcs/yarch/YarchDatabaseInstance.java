@@ -371,7 +371,7 @@ public class YarchDatabaseInstance {
         return streams.get(name);
     }
 
-    public void dropTable(String tblName) throws YarchException {
+    public void dropTable(String tblName) {
         log.info("Dropping table {}", tblName);
         TableDefinition tbl = tables.remove(tblName);
         if (tbl == null) {

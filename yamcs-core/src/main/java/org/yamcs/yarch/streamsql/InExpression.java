@@ -36,14 +36,14 @@ public class InExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
+    public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
         if (!(children[0] instanceof ColumnExpression)) {
-            return this;
+            return;
         }
 
         for (int i = 1; i < children.length; i++) {
             if (!children[1].isConstant())
-                return this;
+                return;
         }
 
         ColumnExpression cexpr = (ColumnExpression) children[0];
@@ -58,10 +58,7 @@ public class InExpression extends Expression {
             }
             values.add(cvalue);
         }
-        if (tableStream.addInFilter(cexpr,  negation, values))
-            return null;
-        else
-            return this;
+        tableStream.addInFilter(cexpr,  negation, values);
     }
 
     @Override

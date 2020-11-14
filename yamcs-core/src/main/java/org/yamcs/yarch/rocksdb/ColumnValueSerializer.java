@@ -84,26 +84,4 @@ public class ColumnValueSerializer {
         }
     }
 
-    /**
-     * return the size in bytes of the encoded data type if it can be encoded on fixed size, or -1 if not.
-     * @param dt
-     * @return
-     */
-    public static int getSerializedSize(DataType dt) {
-        switch(dt.val) {
-        case INT:
-            return 4;
-        case SHORT:
-        case ENUM: //intentional fall-through
-            return 2;             
-        case BYTE:
-        case BOOLEAN: //intentional fall-through
-            return 1;
-        case DOUBLE:
-        case TIMESTAMP: //intentional fall-through
-            return 8;
-        default:
-            return -1;
-        }
-    }
 }

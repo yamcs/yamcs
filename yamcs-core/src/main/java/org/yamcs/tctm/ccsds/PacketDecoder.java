@@ -122,7 +122,7 @@ public class PacketDecoder {
         int pv = b0 >>> 5;
 
         if (pv == PACKET_VERSION_CCSDS) {
-            return ((ByteArrayUtils.decodeShort(header, 0) & 0x7FF) == 0x7FF);
+            return ((ByteArrayUtils.decodeUnsignedShort(header, 0) & 0x7FF) == 0x7FF);
         } else {
             return ((b0 & 0x1C) == 0);
         }
@@ -187,7 +187,7 @@ public class PacketDecoder {
         int h0 = header[0] & 0xFF;
         int pv = h0 >>> 5;
         if (pv == PACKET_VERSION_CCSDS) {
-            return 7 + ByteArrayUtils.decodeShort(header, 4);
+            return 7 + ByteArrayUtils.decodeUnsignedShort(header, 4);
         } else if (pv == PACKET_VERSION_ENCAPSULATION) {
             int l = h0 & 3;
             if (l == 0) {
@@ -195,7 +195,7 @@ public class PacketDecoder {
             } else if (l == 1) {
                 return header[1] & 0xFF;
             } else if (l == 2) {
-                return ByteArrayUtils.decodeShort(header, 2);
+                return ByteArrayUtils.decodeUnsignedShort(header, 2);
             } else {
                 return ByteArrayUtils.decodeInt(header, 4);
             }

@@ -2,7 +2,10 @@ package org.yamcs.yarch.streamsql;
 
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codehaus.janino.SimpleCompiler;
@@ -49,15 +52,13 @@ public abstract class Expression {
     }
 
     /**
-     * add a filter to the table if applicable and returns an expression where the condition is removed.
+     * add a filter to the table if applicable.
      * 
      * @param tableStream
-     * @return the expression left after the conditions has been added on the target or null if all the conditions have been added
      * @throws StreamSqlException
      */
-    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
+    public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
         // by default do nothing
-        return this;
     }
 
     public void collectAggregates(List<AggregateExpression> list) {
@@ -97,9 +98,9 @@ public abstract class Expression {
         if (constantValue != null && constantValue instanceof byte[]) {
             byte[] v = (byte[]) constantValue;
             code.append("\tbyte[] const_").append(getColumnName()).append(" = ")
-            .append("org.yamcs.utils.StringConverter.hexStringToArray(\"")
-            .append(StringConverter.arrayToHexString(v))
-            .append("\");\n");
+                    .append("org.yamcs.utils.StringConverter.hexStringToArray(\"")
+                    .append(StringConverter.arrayToHexString(v))
+                    .append("\");\n");
         }
     }
 
@@ -111,20 +112,20 @@ public abstract class Expression {
         }
     }
 
-    protected void fillCode_AllInputDefVars(StringBuilder code) {
-        for (ColumnDefinition cd : inputDef.getColumnDefinitions()) {
-            // if (cd.getType().val != DataType._type.PROTOBUF) {
-            String javaColIdentifier = "col" + cd.getName().replace("-", "_");
-            code.append("\t\t" + cd.getType().javaType() + " " + javaColIdentifier + " = null;\n")
-                    .append("\t\tif (tuple.hasColumn(\"" + cd.getName() + "\")) {\n")
-                    .append("\t\t\t" + javaColIdentifier + " = (" + cd.getType().javaType() + ")tuple.getColumn(\""
-                            + cd.getName() + "\");\n")
-                    .append("\t\t}\n");
-            /*
-             * } else {
-             * throw new UnsupportedOperationException(cd.getName()+ " not supported");
-             * }
-             */
+    public void collectRequiredInputs(Set<ColumnDefinition> inputs) {
+        if (children != null) {
+            for (Expression c : children) {
+                c.collectRequiredInputs(inputs);
+            }
+        }
+    }
+
+    protected void fillCode_InputDefVars( Collection<ColumnDefinition> inputs, StringBuilder code) {
+        for (ColumnDefinition cd : inputs) {
+            String javaColIdentifier = "col" + sanitizeName(cd.getName());
+            code.append("\t\t" + cd.getType().javaType() + " " + javaColIdentifier + 
+                    " =  (" + cd.getType().javaType() + ")tuple.getColumn(\""
+                    + cd.getName() + "\");\n");
         }
     }
 
@@ -151,7 +152,10 @@ public abstract class Expression {
 
         source.append("\tpublic Object getValue(Tuple tuple) {\n");
         if (!isConstant()) {
-            fillCode_AllInputDefVars(source);
+            Set<ColumnDefinition> inputs = new HashSet<ColumnDefinition>();
+            collectRequiredInputs(inputs);
+
+            fillCode_InputDefVars(inputs, source);
         }
         fillCode_getValueBody(source);
 
@@ -164,7 +168,7 @@ public abstract class Expression {
                 .append("\t\treturn cdef;\n")
                 .append("\t}\n")
                 .append("}\n");
-        
+     //   System.out.println("source: " + source);
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));
@@ -195,5 +199,9 @@ public abstract class Expression {
 
     public Object getConstantValue() {
         return constantValue;
+    }
+
+    static String sanitizeName(String s) {
+        return s.replace("/", "_").replace("-", "_");
     }
 }

@@ -1,9 +1,5 @@
 package org.yamcs.yarch;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -12,13 +8,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.LimitExceededException;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IndexedList;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.NotSupportedException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
@@ -30,9 +26,11 @@ import com.google.common.collect.BiMap;
  * few of the columns from the value (basically it's a sparse table).
  * 
  * <p>
- * The key is encoded as a bytestream of all the columns in order The value is
- * encoded as a bytestream of all the columns prceded by their index.
- * 
+ * The key is encoded as a byte array of all the columns in order. The value is
+ * encoded as a byte array of all the columns preceded by the id of their data type (1 byte) and their index (3 bytes).
+ * <p>
+ * The secondary index key is encoded as a byte array of all the columns in order preceded by the id of their data type
+ * with the first bit set to 1 for the columns present and 0 for the column not present (i.e. null).
  * <p>
  * A table can also be partitioned according to the partitioningSpec.
  * 
@@ -60,6 +58,9 @@ public class TableDefinition {
     private volatile IndexedList<String, TableColumnDefinition> keyDef;
     private volatile IndexedList<String, TableColumnDefinition> valueDef;
 
+    // these are all columns used in histograms or secondary indices
+    private volatile IndexedList<String, TableColumnDefinition> histoIdx;
+
     // keyDef+valueDef
     private volatile TupleDefinition tupleDef;
 
@@ -72,6 +73,7 @@ public class TableDefinition {
 
     private String name;
     private List<String> histoColumns;
+    private List<String> secondaryIndex;
 
     // these are the value columns which are autoincrement.
     private List<TableColumnDefinition> autoIncrementValues;
@@ -97,7 +99,7 @@ public class TableDefinition {
 
             TableColumnDefinition tcd = getTcd(cd);
             keyDef.add(cd.getName(), tcd);
-            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+            tcd.setSerializer(ColumnSerializerFactory.getColumnSerializer(this, tcd));
         }
 
         valueDef = new IndexedList<>(tdef.size() - keyDef.size());
@@ -105,11 +107,12 @@ public class TableDefinition {
             if (!keyDef.hasKey(cd.getName())) {
                 TableColumnDefinition tcd = getTcd(cd);
                 valueDef.add(cd.getName(), tcd);
-                tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+                tcd.setSerializer(ColumnSerializerFactory.getColumnSerializer(this, tcd));
             }
         }
         computeTupleDef();
         computeAutoincrValues();
+        computeHistoIdx();
     }
 
     private TableColumnDefinition getTcd(ColumnDefinition cd) {
@@ -129,17 +132,18 @@ public class TableDefinition {
         this.keyDef = new IndexedList<>(key.size());
         this.formatVersion = formatVersion;
         for (TableColumnDefinition tcd : key) {
-            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+            tcd.setSerializer(ColumnSerializerFactory.getColumnSerializer(this, tcd));
             keyDef.add(tcd.getName(), tcd);
         }
 
         this.valueDef = new IndexedList<>(key.size());
         for (TableColumnDefinition tcd : value) {
-            tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+            tcd.setSerializer(ColumnSerializerFactory.getColumnSerializer(this, tcd));
             valueDef.add(tcd.getName(), tcd);
         }
         computeTupleDef();
         computeAutoincrValues();
+        computeHistoIdx();
     }
 
     public void setDb(YarchDatabaseInstance ydb) {
@@ -192,13 +196,37 @@ public class TableDefinition {
     }
 
     private void computeTupleDef() {
-        tupleDef = new TupleDefinition();
+        TupleDefinition tmp = new TupleDefinition();
         for (ColumnDefinition cd : keyDef) {
-            tupleDef.addColumn(cd);
+            tmp.addColumn(cd);
         }
         for (ColumnDefinition cd : valueDef) {
-            tupleDef.addColumn(cd);
+            tmp.addColumn(cd);
         }
+        tupleDef = tmp;
+    }
+
+    private void computeHistoIdx() {
+        IndexedList<String, TableColumnDefinition> tmp = new IndexedList<>();
+        TableColumnDefinition tcd = keyDef.get(0);
+        if (histoColumns != null) {
+            tmp.add(tcd.getName(), tcd);
+
+            for (String s : histoColumns) {
+                if (!tmp.hasKey(s)) {
+                    tmp.add(s, getColumnDefinition(s));
+                }
+            }
+        }
+        if (secondaryIndex != null) {
+            for (String s : secondaryIndex) {
+                if (!tmp.hasKey(s)) {
+                    tmp.add(s, getColumnDefinition(s));
+                }
+            }
+        }
+
+        histoIdx = tmp;
     }
 
     public List<TableColumnDefinition> getKeyDefinition() {
@@ -229,62 +257,58 @@ public class TableDefinition {
      * @throws StreamSqlException
      */
     public void validate() throws StreamSqlException {
-        for (int i = 0; i < keyDef.size() - 1; i++) {
-            TableColumnDefinition cd = keyDef.get(i);
-            if (cd.getType() == DataType.BINARY) {
-                throw new NotSupportedException(
-                        "Primary key of type binary except the last in the list (otherwise the binary sorting does not work properly)");
-            }
-        }
-
         for (TableColumnDefinition tcd : keyDef) {
             if (tcd.isAutoIncrement() && tcd.getType() != DataType.LONG) {
-                throw new NotSupportedException("AUTO_INCREMENT is only supported for columns of type long.");
+                throw new StreamSqlException(ErrCode.NOT_SUPPORTED,
+                        "AUTO_INCREMENT is only supported for columns of type long.");
             }
         }
 
         for (TableColumnDefinition tcd : valueDef) {
             if (tcd.isAutoIncrement() && tcd.getType() != DataType.LONG) {
-                throw new NotSupportedException("AUTO_INCREMENT is only supported for columns of type long.");
+                throw new StreamSqlException(ErrCode.NOT_SUPPORTED,
+                        "AUTO_INCREMENT is only supported for columns of type long.");
             }
         }
+
     }
 
     /**
-     * Transforms the key part of the tuple into a byte array to be written to
+     * Generate a new table row by transforming the key part of the tuple into a byte array to be written to
      * disk. The tuple must contain each column from the key and they are
      * written in order (such that sorting is according to the definition of the
      * primary key).
+     * <p>
+     * In addition, it stores into the returned row all the values for the columns used in histograms or indices
      * 
      * @param t
-     * @return serialized key value
+     * @return a tuple containing the histogram and secondary index values as well as the generated key
      * @throws YarchException
      */
-    public byte[] serializeKey(Tuple t) throws YarchException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            DataOutputStream dos = new DataOutputStream(baos);
-            for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
-                TableColumnDefinition tableCd = keyDef.get(keyIdx);
-                String colName = tableCd.getName();
-                int tIdx = t.getColumnIndex(colName);
-                Object value;
-                if (tIdx < 0) {
-                    if (tableCd.isAutoIncrement()) {
-                        value = tableCd.getSequence().next();
-                    } else {
-                        throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
-                    }
+    public Row generateRow(Tuple t) throws YarchException {
+        Row tableTuple = new Row(histoIdx);
+        ByteArray byteArray = new ByteArray();
+        for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
+            TableColumnDefinition tableCd = keyDef.get(keyIdx);
+            String colName = tableCd.getName();
+            int tIdx = t.getColumnIndex(colName);
+            Object value;
+            if (tIdx < 0) {
+                if (tableCd.isAutoIncrement()) {
+                    value = tableCd.getSequence().next();
                 } else {
-                    ColumnDefinition tupleCd = t.getColumnDefinition(tIdx);
-                    Object v = t.getColumn(tIdx);
-                    value = DataType.castAs(tupleCd.type, tableCd.type, v);
+                    throw new IllegalArgumentException("Tuple does not have mandatory column '" + colName + "'");
                 }
-                tableCd.serialize(dos, value);
+            } else {
+                ColumnDefinition tupleCd = t.getColumnDefinition(tIdx);
+                Object v = t.getColumn(tIdx);
+                value = DataType.castAs(tupleCd.type, tableCd.type, v);
             }
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot serialize key from tuple " + t + ": ", e);
+            tableCd.serializeValue(byteArray, value);
+            setSertupleValue(tableTuple, colName, value);
         }
+        tableTuple.setKey(byteArray.toArray());
+        return tableTuple;
     }
 
     /**
@@ -306,7 +330,7 @@ public class TableDefinition {
             int cidx = valueDef.getIndex(cd.getName());
             if (cidx == -1) {
                 TableColumnDefinition tcd = new TableColumnDefinition(cd);
-                tcd.serializer = ColumnSerializerFactory.getColumnSerializer(this, tcd);
+                tcd.setSerializer(ColumnSerializerFactory.getColumnSerializer(this, tcd));
                 valueDef1.add(tcd.name, tcd);
             }
         }
@@ -314,52 +338,57 @@ public class TableDefinition {
         ydb.saveTableDefinition(this, keyDef.getList(), valueDef1.getList());
         valueDef = valueDef1;
         computeTupleDef();
+
     }
 
     /**
      * Renames column and serializes the table definition to disk.
      * 
-     * Should not be used when the table is in used (e.g. by a table writer or
-     * reader).
+     * Commented out because not safe (can only be used when nobody is using the table)
      * 
      * @param oldName
      *            - old name of the column
      * @param newName
      *            - new name of the column
+     * 
+     *            public synchronized void renameColumn(String oldName, String newName) {
+     *            if (keyDef.hasKey(oldName)) {
+     *            keyDef.changeKey(oldName, newName);
+     *            } else if (valueDef.hasKey(oldName)) {
+     *            valueDef.changeKey(oldName, newName);
+     *            } else {
+     *            throw new IllegalArgumentException("no column named '" + oldName + "'");
+     *            }
+     * 
+     *            if(secondaryIndexDef.hasKey(oldName)) {
+     *            keyDef.changeKey(oldName, newName);
+     *            }
+     * 
+     *            if (oldName.equals(partitioningSpec.timeColumn)) {
+     *            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, newName,
+     *            partitioningSpec.valueColumn);
+     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
+     *            partitioningSpec = newSpec;
+     *            } else if (oldName.equals(partitioningSpec.valueColumn)) {
+     *            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, partitioningSpec.timeColumn,
+     *            newName);
+     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
+     *            partitioningSpec = newSpec;
+     *            }
+     * 
+     *            int idx = histoColumns.indexOf(oldName);
+     *            if (idx != -1) {
+     *            histoColumns.set(idx, newName);
+     *            }
+     *            ydb.saveTableDefinition(this, keyDef.getList(), valueDef.getList());
+     *            }
      */
-    public synchronized void renameColumn(String oldName, String newName) {
-        if (keyDef.hasKey(oldName)) {
-            keyDef.changeKey(oldName, newName);
-        } else if (valueDef.hasKey(oldName)) {
-            valueDef.changeKey(oldName, newName);
-        } else {
-            throw new IllegalArgumentException("no column named '" + oldName + "'");
-        }
-
-        if (oldName.equals(partitioningSpec.timeColumn)) {
-            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, newName,
-                    partitioningSpec.valueColumn);
-            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
-            partitioningSpec = newSpec;
-        } else if (oldName.equals(partitioningSpec.valueColumn)) {
-            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, partitioningSpec.timeColumn,
-                    newName);
-            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
-            partitioningSpec = newSpec;
-        }
-
-        int idx = histoColumns.indexOf(oldName);
-        if (idx != -1) {
-            histoColumns.set(idx, newName);
-        }
-        ydb.saveTableDefinition(this, keyDef.getList(), valueDef.getList());
-    }
 
     /**
      * Adds a value to a enum and writes the table definition to disk
      * 
      */
-    synchronized private Short addEnumValue(String columnName, String value) {
+    private synchronized Short addEnumValue(String columnName, String value) {
         TableColumnDefinition tdef = getColumnDefinition(columnName);
 
         TableColumnDefinition tdef1 = new TableColumnDefinition(tdef);
@@ -367,6 +396,7 @@ public class TableDefinition {
 
         IndexedList<String, TableColumnDefinition> keyDef1 = keyDef;
         IndexedList<String, TableColumnDefinition> valueDef1 = valueDef;
+        IndexedList<String, TableColumnDefinition> histoIdx1 = histoIdx;
 
         int idx = keyDef.getIndex(columnName);
         if (idx >= 0) {
@@ -378,10 +408,18 @@ public class TableDefinition {
             valueDef1 = new IndexedList<>(valueDef);
             valueDef1.set(idx, tdef1);
         }
-
         ydb.saveTableDefinition(this, keyDef1.getList(), valueDef1.getList());
+
+        idx = histoIdx.getIndex(columnName);
+        if (idx >= 0) {
+            histoIdx1 = new IndexedList<>(histoIdx);
+            histoIdx1.set(idx, tdef1);
+        }
         keyDef = keyDef1;
         valueDef = valueDef1;
+        histoIdx = histoIdx1;
+
+        computeTupleDef();
 
         return x;
     }
@@ -406,74 +444,101 @@ public class TableDefinition {
     }
 
     /**
+     * Same as {@link #serializeValue(Tuple, Row)} but encodes the output in user provided byte array
+     * 
+     * @param tuple
+     * @param sertuple
+     * @param byteArray
+     */
+    public void serializeValue(Tuple tuple, Row sertuple, ByteArray byteArray) {
+        TupleDefinition tdef = tuple.getDefinition();
+        int length = byteArray.size();
+
+        for (int i = 0; i < tdef.size(); i++) {
+            ColumnDefinition tupleCd = tdef.getColumn(i);
+            if (keyDef.hasKey(tupleCd.getName())) {
+                continue;
+            }
+            int cidx = valueDef.getIndex(tupleCd.getName());
+            if (cidx == -1) { // call again this function after adding the
+                              // missing columns to the table
+                addMissingValueColumns(tdef);
+                byteArray.reset(length);
+                serializeValue(tuple, sertuple, byteArray);
+                return;
+            }
+            TableColumnDefinition tableCd = valueDef.get(cidx);
+            Object v = tuple.getColumn(i);
+            Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
+            cidx = (tableCd.type.getTypeId() << 24) | cidx;
+            byteArray.addInt(cidx);
+            tableCd.serializeValue(byteArray, v1);
+
+            setSertupleValue(sertuple, tupleCd.getName(), v1);
+        }
+
+        // add values for all the autoincrements which are not part of the tuple
+        if (autoIncrementValues != null) {
+            for (TableColumnDefinition tcd : autoIncrementValues) {
+                if (!tuple.hasColumn(tcd.getName())) {
+                    long v = tcd.getSequence().next();
+                    int cidx = (tcd.type.getTypeId() << 24) | valueDef.getIndex(tcd.getName());
+                    byteArray.addInt(cidx);
+                    tcd.serializeValue(byteArray, v);
+                    setSertupleValue(sertuple, tcd.getName(), v);
+                }
+            }
+        }
+
+        // add a final -1 eof marker
+        byteArray.addInt(-1);
+
+    }
+
+    /**
      * Transform the value part of the tuple into a byte array to be written on
      * disk. Each column is preceded by a tag (the column index). If there are
      * columns in the tuple which are not in the valueDef, they are added and
      * the TableDefinition is serialized on disk.
      * 
-     * @param t
+     * @param tuple
+     * @param sertuple
+     *            - if not null, store all the values of the columns to this tuple as written to the database (possibly
+     *            after some data casting)
      * @return the serialized version of the value part of the tuple
-     * @throws YarchException
+     * 
      */
-    public byte[] serializeValue(Tuple t) throws YarchException {
-        TupleDefinition tdef = t.getDefinition();
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            DataOutputStream dos = new DataOutputStream(baos);
+    public byte[] serializeValue(Tuple tuple, Row sertuple) {
+        ByteArray byteArray = new ByteArray();
+        serializeValue(tuple, sertuple, byteArray);
+        return byteArray.toArray();
+    }
 
-            for (int i = 0; i < tdef.size(); i++) {
-                ColumnDefinition tupleCd = tdef.getColumn(i);
-                if (keyDef.hasKey(tupleCd.getName())) {
-                    continue;
-                }
-                int cidx = valueDef.getIndex(tupleCd.getName());
-                if (cidx == -1) { // call again this function after adding the
-                                  // missing columns to the table
-                    addMissingValueColumns(tdef);
-                    return serializeValue(t);
-                }
-                TableColumnDefinition tableCd = valueDef.get(cidx);
-                Object v = t.getColumn(i);
-                Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
-                cidx = (tableCd.type.getTypeId() << 24) | cidx;
-                dos.writeInt(cidx);
-                tableCd.serialize(dos, v1);
+    private void setSertupleValue(Row sertuple, String colName, Object value) {
+        if (sertuple != null) {
+            int idx = sertuple.getIndex(colName);
+            if (idx >= 0) {
+                sertuple.set(idx, value);
             }
-
-            // add values for all the autoincrements which are not part of the tuple
-            if (autoIncrementValues != null) {
-                for (TableColumnDefinition tcd : autoIncrementValues) {
-                    if (!t.hasColumn(tcd.getName())) {
-                        long v = tcd.getSequence().next();
-                        int cidx = (tcd.type.getTypeId() << 24) | valueDef.getIndex(tcd.getName());
-                        dos.writeInt(cidx);
-                        tcd.serialize(dos, v);
-                    }
-                }
-            }
-
-            // add a final -1 eof marker
-            dos.writeInt(-1);
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot serialize column tuple " + t + ": ", e);
         }
     }
 
     public Tuple deserialize(byte[] k, byte[] v) {
         TupleDefinition tdef = new TupleDefinition();
         ArrayList<Object> cols = new ArrayList<>();
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(k));
+        ByteArray byteArray = ByteArray.wrap(k);
+        
         try {
             // deserialize the key
             for (TableColumnDefinition tcd : keyDef) {
                 tdef.addColumn(tcd);
-                cols.add(tcd.deserialize(dis));
+                cols.add(tcd.deserializeValue(byteArray));
             }
 
             // deserialize the value
-            dis = new DataInputStream(new ByteArrayInputStream(v));
+            byteArray = ByteArray.wrap(v);
             while (true) {
-                int cidx = dis.readInt(); // column index
+                int cidx = byteArray.getInt(); // column index
                 if (cidx == -1) {
                     break;
                 }
@@ -491,14 +556,15 @@ public class TableDefinition {
                             name, tcd.getName(), cidx, tcd.getType().getTypeId(), dt));
                 }
 
-                Object o = tcd.deserialize(dis);
+                Object o = tcd.deserializeValue(byteArray);
                 tdef.addColumn(tcd);
                 cols.add(o);
             }
         } catch (IOException e) {
             throw new DatabaseCorruptionException(
-                    "cannot deserialize (" + StringConverter.byteBufferToHexString(ByteBuffer.wrap(k)) + ","
-                            + StringConverter.byteBufferToHexString(ByteBuffer.wrap(v)) + ")",
+                    "cannot deserialize row from " + name + " "
+                            + "(key:" + StringConverter.byteBufferToHexString(ByteBuffer.wrap(k))
+                            + ", value: " + StringConverter.byteBufferToHexString(ByteBuffer.wrap(v)) + ")",
                     e);
         }
 
@@ -552,6 +618,35 @@ public class TableDefinition {
                         "Invalid column specified for histogram: " + hc);
         }
         this.histoColumns = histoColumns;
+        computeHistoIdx();
+    }
+
+    public void setSecondaryIndex(List<String> index) throws StreamSqlException {
+        if (index.isEmpty()) {
+            return;
+        }
+
+        for (String col : index) {
+            if (!tupleDef.hasColumn(col))
+                throw new StreamSqlException(ErrCode.INVALID_INDEX_COLUMN,
+                        "Invalid column specified for index: " + col);
+
+            TableColumnDefinition tcd = keyDef.get(col);
+            if (tcd == null) {
+                tcd = valueDef.get(col);
+            }
+        }
+        for (int i = 0; i < index.size() - 1; i++) {
+            String columnName = index.get(i);
+            ColumnDefinition cd = tupleDef.getColumn(columnName);
+            if (DataType.getSerializedSize(cd.getType()) < 0) {
+                throw new GenericStreamSqlException(
+                        "Secondary index on column " + columnName + " of type " + cd.getType()
+                                + " not supported except on the last position");
+            }
+        }
+        secondaryIndex = index;
+        computeHistoIdx();
     }
 
     public boolean hasHistogram() {
@@ -568,6 +663,10 @@ public class TableDefinition {
 
     public List<String> getHistogramColumns() {
         return histoColumns;
+    }
+
+    public List<String> getSecondaryIndex() {
+        return secondaryIndex;
     }
 
     public <T extends Object> ColumnSerializer<T> getColumnSerializer(String columnName) {
@@ -631,4 +730,13 @@ public class TableDefinition {
     public boolean isPartitionedByTime() {
         return partitioningSpec.timeColumn != null;
     }
+
+    public IndexedList<String, TableColumnDefinition> getHistoIdx() {
+        return histoIdx;
+    }
+
+    public boolean hasSecondaryIndex() {
+        return secondaryIndex != null;
+    }
+
 }

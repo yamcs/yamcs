@@ -1,14 +1,11 @@
 package org.yamcs.yarch;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.time.Instant;
-import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.yarch.DataType._type;
 
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.MessageLite.Builder;
 
@@ -45,7 +41,9 @@ public class ColumnSerializerFactory {
     static final ColumnSerializer<Double> DOUBLE_CS_V3 = new ColumnSerializerV3.DoubleColumnSerializer();
     static final ColumnSerializer<Double> DOUBLE_CS_V2 = new ColumnSerializerV2.DoubleColumnSerializer();
 
-    static final StringColumnSerializer STRING_CS = new StringColumnSerializer();
+    static final SizePrefixedtringColumnSerializer STRING_CS_V2 = new SizePrefixedtringColumnSerializer();
+    static final NullTerminatedStringColumnSerializer STRING_CS_V3 = new NullTerminatedStringColumnSerializer();
+
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
 
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V2 = new ColumnSerializerV2.HresTimestampColumnSerializer();
@@ -62,6 +60,7 @@ public class ColumnSerializerFactory {
         }
     }
 
+
     @SuppressWarnings("unchecked")
     public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, TableColumnDefinition cd) {
         DataType type = cd.getType();
@@ -70,28 +69,30 @@ public class ColumnSerializerFactory {
         } else if (type.val == _type.PROTOBUF) {
             return (ColumnSerializer<T>) getProtobufSerializer(cd);
         } else {
-            if(tblDef.getFormatVersion() < 3) {
+            if (tblDef.getFormatVersion() < 3) {
                 return getBasicColumnSerializerV2(cd.getType());
             } else {
-                return  getBasicColumnSerializerV3(cd.getType());
+                return getBasicColumnSerializerV3(cd.getType());
             }
         }
     }
 
     /**
-     * Returns the V2 serializers with the enumerations serialzied as strings (so they don't need a decoding table on the other end)
+     * Returns the V2 serializers with the enumerations serialzied as strings (so they don't need a decoding table on
+     * the other end)
+     * 
      * @param cd
      * @return
      */
     public static ColumnSerializer<?> getColumnSerializerForReplication(ColumnDefinition cd) {
         DataType type = cd.getType();
         if (type.val == _type.ENUM) {
-            return STRING_CS;
+            return STRING_CS_V2;
         } else if (type.val == _type.PROTOBUF) {
             return getProtobufSerializer(cd);
         } else {
-            //V2 is fine for replication as the serialized values are not used for sorting
-            //should upgrade to V3 at some point but it will break compatibility with old replicated data
+            // V2 is fine for replication as the serialized values are not used for sorting
+            // should upgrade to V3 at some point but it will break compatibility with old replicated data
             return getBasicColumnSerializerV2(cd.getType());
         }
     }
@@ -119,7 +120,7 @@ public class ColumnSerializerFactory {
         case LONG: // intentional fall through
             return (ColumnSerializer<T>) LONG_CS_V3;
         case STRING:
-            return (ColumnSerializer<T>) STRING_CS;
+            return (ColumnSerializer<T>) STRING_CS_V3;
         case BINARY:
             return (ColumnSerializer<T>) BINARY_CS;
         case PARAMETER_VALUE:
@@ -133,7 +134,6 @@ public class ColumnSerializerFactory {
         }
         throw new IllegalArgumentException("' " + type + " is not a basic type");
     }
-
 
     /**
      * returns a column serializer for basic types
@@ -158,7 +158,7 @@ public class ColumnSerializerFactory {
         case LONG: // intentional fall through
             return (ColumnSerializer<T>) LONG_CS_V2;
         case STRING:
-            return (ColumnSerializer<T>) STRING_CS;
+            return (ColumnSerializer<T>) STRING_CS_V2;
         case BINARY:
             return (ColumnSerializer<T>) BINARY_CS;
         case PARAMETER_VALUE:
@@ -200,36 +200,10 @@ public class ColumnSerializerFactory {
         }
     }
 
-    static abstract class AbstractColumnSerializer<T> implements ColumnSerializer<T> {
-        int size;
-
-        public AbstractColumnSerializer(int size) {
-            this.size = size;
-        }
-
-        @Override
-        public T fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            DataInputStream dos = new DataInputStream(new ByteArrayInputStream(b));
-            return deserialize(dos, cd);
-        }
-
-        @Override
-        public byte[] toByteArray(T v) {
-            try (ByteArrayOutputStream baos = new ByteArrayOutputStream(size)) {
-                DataOutputStream dos = new DataOutputStream(baos);
-                serialize(dos, v);
-                return baos.toByteArray();
-            } catch (IOException e) {
-                throw new UncheckedIOException("cannot serialize in memory?", e);
-            }
-
-        }
-    }
-
     static class BooleanColumnSerializer implements ColumnSerializer<Boolean> {
         @Override
-        public Boolean deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readBoolean();
+        public Boolean deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.get() != 0;
         }
 
         @Override
@@ -238,8 +212,8 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Boolean v) throws IOException {
-            stream.writeBoolean(v);
+        public void serialize(ByteArray ba, Boolean v) {
+            ba.add(v ? (byte) 1 : (byte) 0);
         }
 
         @Override
@@ -247,22 +221,12 @@ public class ColumnSerializerFactory {
             byteBuf.put(v ? (byte) 1 : (byte) 0);
         }
 
-        @Override
-        public byte[] toByteArray(Boolean v) {
-            boolean b = (Boolean) v;
-            return new byte[] { (byte) (b ? 1 : 0) };
-        }
-
-        @Override
-        public Boolean fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return b[0] != 0;
-        }
     }
 
     static class ByteColumnSerializer implements ColumnSerializer<Byte> {
         @Override
-        public Byte deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readByte();
+        public Byte deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.get();
         }
 
         @Override
@@ -271,118 +235,141 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Byte v) throws IOException {
-            stream.writeByte((Byte) v);
+        public void serialize(ByteArray ba, Byte v) {
+            ba.add(v);
         }
 
         @Override
         public void serialize(ByteBuffer byteBuf, Byte v) {
             byteBuf.put(v);
         }
+    }
 
+    static class NullTerminatedStringColumnSerializer implements ColumnSerializer<String> {
         @Override
-        public byte[] toByteArray(Byte v) {
-            return new byte[] { v };
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getNullTerminatedUTF();
         }
 
         @Override
-        public Byte fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return b[0];
+        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+            return decodeUTF(byteBuf, true);
+        }
+
+        @Override
+        public void serialize(ByteArray byteArray, String v) {
+            byteArray.addNullTerminatedUTF(v);
+        }
+
+        @Override
+        public void serialize(ByteBuffer byteBuf, String v) {
+            encodeUTF(byteBuf, v);
+            byteBuf.put((byte) 0);
         }
     }
-    
-    static class StringColumnSerializer extends AbstractColumnSerializer<String> {
-        public StringColumnSerializer() {
-            super(32);
-        }
+
+    static class SizePrefixedtringColumnSerializer implements ColumnSerializer<String> {
 
         @Override
-        public String deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readUTF();
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getSizePrefixedUTF();
         }
 
         @Override
         public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
             int len = byteBuf.getShort();
-
-            char[] ca = new char[len];
-
-            int k = 0;
-
-            for (int i = 0; i < len; i++) {
-                int char2, char3;
-                int c = byteBuf.get() & 0xFF;
-                int c4 = c >> 4;
-                if (c4 <= 7) {
-                    ca[k++] = (char) c;
-                } else if (c4 == 12 || c4 == 13) {
-                    char2 = byteBuf.get() & 0xFF;
-                    ca[k++] = (char) (((c & 0x1F) << 6) |
-                            (char2 & 0x3F));
-                } else if (c4 == 14) {
-                    char2 = byteBuf.get() & 0xFF;
-                    char3 = byteBuf.get() & 0xFF;
-                    ca[k++] = (char) (((c & 0x0F) << 12) |
-                            ((char2 & 0x3F) << 6) |
-                            ((char3 & 0x3F) << 0));
-                } else {
-                    throw new IOException("invalid UTF8 string at byte" + i);
-                }
+            if (len > byteBuf.remaining()) {
+                throw new BufferUnderflowException();
             }
-            // The number of chars produced may be less than utflen
-            return new String(ca, 0, k);
+            int oldlimit = byteBuf.limit();
+            byteBuf.limit(byteBuf.position() + len);
+            String s = decodeUTF(byteBuf, false);
+            byteBuf.limit(oldlimit);
+            return s;
         }
 
         @Override
-        public void serialize(DataOutputStream stream, String v) throws IOException {
-            stream.writeUTF(v);
+        public void serialize(ByteArray byteArray, String v) {
+            byteArray.addSizePrefixedUTF(v);
         }
 
         @Override
         public void serialize(ByteBuffer byteBuf, String v) {
-            int strlen = v.length();
-            int len = 0;
-            int c;
-
             int pos = byteBuf.position();
             byteBuf.putShort((short) 0);
-
-            for (int i = 0; i < strlen; i++) {
-                c = v.charAt(i);
-                if ((c > 0) && (c < 0x80)) {
-                    byteBuf.put((byte) c);
-                    len++;
-                } else if (c < 0x0800) {// this cover also the null characters (c=0)
-                    byteBuf.put((byte) (0xC0 | ((c >> 6) & 0x1F)));
-                    byteBuf.put((byte) (0x80 | ((c >> 0) & 0x3F)));
-                    len += 2;
-                } else {
-                    byteBuf.put((byte) (0xE0 | ((c >> 12) & 0x0F)));
-                    byteBuf.put((byte) (0x80 | ((c >> 6) & 0x3F)));
-                    byteBuf.put((byte) (0x80 | ((c >> 0) & 0x3F)));
-                    len += 3;
-                }
-            }
-
-            if (len > 0xFFFF) {
-                throw new BufferOverflowException();
-            }
-
-            byteBuf.putShort(pos, (short) len);
+            encodeUTF(byteBuf, v);
+            byteBuf.putShort(pos, (short) (byteBuf.position() - pos));
         }
+    }
+
+    static private void encodeUTF(ByteBuffer byteBuf, String v) {
+        int strlen = v.length();
+        int c;
+        int len = 0;
+        for (int i = 0; i < strlen; i++) {
+            c = v.charAt(i);
+            if ((c > 0) && (c < 0x80)) {
+                byteBuf.put((byte) c);
+                len++;
+            } else if (c < 0x0800) {// this cover also the null characters (c=0)
+                byteBuf.put((byte) (0xC0 | ((c >> 6) & 0x1F)));
+                byteBuf.put((byte) (0x80 | ((c >> 0) & 0x3F)));
+                len += 2;
+            } else {
+                byteBuf.put((byte) (0xE0 | ((c >> 12) & 0x0F)));
+                byteBuf.put((byte) (0x80 | ((c >> 6) & 0x3F)));
+                byteBuf.put((byte) (0x80 | ((c >> 0) & 0x3F)));
+                len += 3;
+            }
+        }
+
+        if (len > 0xFFFF) {
+            throw new BufferOverflowException();
+        }
+    }
+
+    static private String decodeUTF(ByteBuffer byteBuf, boolean nullTerminated) throws IOException {
+        char[] ca = new char[byteBuf.remaining()];
+        int k = 0;
+
+        while (byteBuf.hasRemaining()) {
+            int c = byteBuf.get() & 0xFF;
+            if (nullTerminated && c == 0) {
+                break;
+            }
+
+            int char2, char3;
+            int c4 = c >> 4;
+            if (c4 <= 7) {
+                ca[k++] = (char) c;
+            } else if (c4 == 12 || c4 == 13) {
+                char2 = byteBuf.get() & 0xFF;
+                ca[k++] = (char) (((c & 0x1F) << 6) |
+                        (char2 & 0x3F));
+            } else if (c4 == 14) {
+                char2 = byteBuf.get() & 0xFF;
+                char3 = byteBuf.get() & 0xFF;
+                ca[k++] = (char) (((c & 0x0F) << 12) |
+                        ((char2 & 0x3F) << 6) |
+                        ((char3 & 0x3F) << 0));
+            } else {
+                throw new IOException("invalid UTF8 string at byte" + byteBuf.position());
+            }
+        }
+        return new String(ca, 0, k);
     }
 
     static class BinaryColumnSerializer implements ColumnSerializer<byte[]> {
         @Override
-        public byte[] deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            int length = stream.readInt();
+        public byte[] deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            int length = byteArray.getInt();
             if (length > maxBinaryLength) {
                 log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length,
                         maxBinaryLength);
                 return null;
             }
             byte[] bp = new byte[length];
-            stream.readFully(bp);
+            byteArray.get(bp);
             return bp;
         }
 
@@ -399,9 +386,9 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, byte[] v) throws IOException {
-            stream.writeInt(v.length);
-            stream.write(v);
+        public void serialize(ByteArray byteArray, byte[] v) {
+            byteArray.addInt(v.length);
+            byteArray.add(v);
         }
 
         @Override
@@ -409,44 +396,25 @@ public class ColumnSerializerFactory {
             byteBuf.putInt(v.length);
             byteBuf.put(v);
         }
-
-        @Override
-        public byte[] toByteArray(byte[] v) {
-            byte[] r = new byte[4 + v.length];
-            ByteArrayUtils.encodeInt(v.length, r, 0);
-            System.arraycopy(v, 0, r, 4, v.length);
-            return r;
-        }
-
-        @Override
-        public byte[] fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            byte[] r = new byte[b.length - 4];
-            System.arraycopy(b, 4, r, 0, r.length);
-            return r;
-        }
-
     }
 
-    static class ProtobufColumnSerializer extends AbstractColumnSerializer<MessageLite> {
+    static class ProtobufColumnSerializer implements ColumnSerializer<MessageLite> {
         // for columns of type PROTOBUF
         private final Method newBuilderMethod;
 
         public ProtobufColumnSerializer(Method newBuilderMethod) {
-            super(32);
             this.newBuilderMethod = newBuilderMethod;
         }
 
         @Override
-        public MessageLite deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            int length = stream.readInt();
-            if (length > maxBinaryLength) {
-                log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length,
-                        maxBinaryLength);
-                throw new IOException("binary length greater than maxBinaryLength");
+        public MessageLite deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            try {
+                Builder b = (Builder) newBuilderMethod.invoke(null);
+                byteArray.getSizePrefixedProto(b);
+                return b.build();
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new IllegalStateException(e);
             }
-            byte[] bp = new byte[length];
-            stream.readFully(bp);
-            return readProtobufMessage(bp);
         }
 
         @Override
@@ -471,10 +439,8 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, MessageLite v) throws IOException {
-            byte[] b = v.toByteArray();
-            stream.writeInt(b.length);
-            stream.write(b);
+        public void serialize(ByteArray byteArray, MessageLite v) {
+            byteArray.addSizePrefixedProto(v);
         }
 
         @Override
@@ -495,26 +461,14 @@ public class ColumnSerializerFactory {
                 }
             }
         }
-
-        private MessageLite readProtobufMessage(byte[] bp) throws InvalidProtocolBufferException {
-            try {
-                Builder b = (Builder) newBuilderMethod.invoke(null);
-                b.mergeFrom(bp);
-                return b.build();
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
     }
 
-    static class EnumColumnSerializer extends AbstractColumnSerializer<String> {
+    static class EnumColumnSerializer implements ColumnSerializer<String> {
         private final TableDefinition tblDef;
         TableColumnDefinition colDef;
         String columnName;
 
         public EnumColumnSerializer(TableDefinition tblDef, TableColumnDefinition colDef) {
-            super(2);
             this.tblDef = tblDef;
             this.columnName = colDef.getName();
             this.colDef = colDef;
@@ -522,7 +476,7 @@ public class ColumnSerializerFactory {
 
         String getValue(short x) {
             String v = colDef.getEnumValue(x);
-            if(v == null) { //probably the column definition has changed
+            if (v == null) { // probably the column definition has changed
                 colDef = tblDef.getColumnDefinition(columnName);
                 v = colDef.getEnumValue(x);
             }
@@ -531,7 +485,7 @@ public class ColumnSerializerFactory {
 
         short getIndex(String value) {
             Short idx = colDef.getEnumIndex(value);
-            if(idx == null) {
+            if (idx == null) {
                 idx = tblDef.addAndGetEnumValue(columnName, value);
                 colDef = tblDef.getColumnDefinition(columnName);
             }
@@ -539,8 +493,8 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public String deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return getValue(stream.readShort());
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return getValue(byteArray.getShort());
         }
 
         @Override
@@ -549,8 +503,8 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, String value) throws IOException {
-            stream.writeShort(getIndex(value));
+        public void serialize(ByteArray byteArray, String value) {
+            byteArray.addShort(getIndex(value));
         }
 
         @Override
@@ -561,6 +515,5 @@ public class ColumnSerializerFactory {
         public String getColumnName() {
             return columnName;
         }
-
     }
 }

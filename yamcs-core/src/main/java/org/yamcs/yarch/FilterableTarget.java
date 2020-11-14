@@ -12,24 +12,20 @@ public interface FilterableTarget {
      * Tries to add a restriction for the rows to be selected/updated/deleted. This will implement optimisations to avoid scanning the table row by row.
      * <p>
      * Typically it works if the condition refers to the primary key.
-     * <p>
-     * return true if the condition could be added.
      * 
      * @param cexpr
      * @param relOp
      * @param value
-     * @return
      * @throws StreamSqlException
      */
-    public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException;
+    public void addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException;
     /**
      * same as {@link #addRelOpFilter(ColumnExpression, RelOp, Object)} but adds a restrictions for a set of values resulted from a where x in (a,b,c) condition
      * 
      * @param cexpr
      * @param negation
      * @param values
-     * @return
      * @throws StreamSqlException
      */
-    public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException;
+    public void addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException;
 }

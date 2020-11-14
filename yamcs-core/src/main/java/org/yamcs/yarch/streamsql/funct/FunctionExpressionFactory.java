@@ -18,12 +18,11 @@ public class FunctionExpressionFactory {
         addFunction("aggregatelist",AggregateListExpression.class);
         addFunction("firstval",FirstValExpression.class);
         addFunction("substring",SubstringExpression.class);
-        functions.put("extract_short", new FunctConfig(ExtractNumberExpression.class, 
-                int.class, 2, boolean.class, false));
-        functions.put("extract_int", new FunctConfig(ExtractNumberExpression.class, 
-                int.class, 4, boolean.class, false));
-        functions.put("extract_3bytes", new FunctConfig(ExtractNumberExpression.class, 
-                int.class, 3, boolean.class, false));
+        functions.put("extract_short", new FunctConfig(ExtractNumberExpression.class, String.class, "decodeShort"));
+        functions.put("extract_ushort", new FunctConfig(ExtractNumberExpression.class, String.class, "decodeUnsignedShort"));
+        functions.put("extract_int", new FunctConfig(ExtractNumberExpression.class, String.class, "decodeInt"));
+        functions.put("extract_3bytes", new FunctConfig(ExtractNumberExpression.class, String.class, "decode3Bytes"));
+                
         addFunction("unhex",UnhexExpression.class);
         
     }

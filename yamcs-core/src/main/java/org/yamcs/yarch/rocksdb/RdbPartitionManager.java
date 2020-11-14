@@ -16,22 +16,21 @@ import com.google.protobuf.ByteString;
 
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TimePartitionInfo;
+import org.yamcs.yarch.YarchException;
 
 /**
  * Handles partitions for one table. All partitions are stored as records in the tablespace.
  * 
  */
 public class RdbPartitionManager extends PartitionManager {
-    final Tablespace tablespace;
     static Logger log = LoggerFactory.getLogger(RdbPartitionManager.class.getName());
     String yamcsInstance;
-    int tblTbsIndex;
+    final RdbTable table;
 
-    public RdbPartitionManager(Tablespace tablespace, String yamcsInstance, TableDefinition tableDefinition, int tblTbsIndex) {
+    public RdbPartitionManager(RdbTable table, String yamcsInstance, TableDefinition tableDefinition) {
         super(tableDefinition);
-        this.tablespace = tablespace;
+        this.table = table;
         this.yamcsInstance = yamcsInstance;
-        this.tblTbsIndex = tblTbsIndex;
     }
 
     /**
@@ -42,6 +41,7 @@ public class RdbPartitionManager extends PartitionManager {
      */
     public void readPartitions() throws RocksDBException, IOException {
         ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+        Tablespace tablespace = table.getTablespace();
         for (TablespaceRecord tr : tablespace.getTablePartitions(yamcsInstance, tableDefinition.getName())) {
             if (tr.hasPartitionValue()) {
                 if (tr.hasPartition()) {
@@ -159,7 +159,7 @@ public class RdbPartitionManager extends PartitionManager {
             trb.setPartitionValue(ByteString.copyFrom(bvalue));
         }
         try {
-            TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+            TablespaceRecord tr = table.getTablespace().createMetadataRecord(yamcsInstance, trb);
             return new RdbPartition(tr.getTbsIndex(), pinfo.getStart(), pinfo.getEnd(), value, pinfo.getDir());
         } catch (RocksDBException e) {
             throw new IOException(e);
@@ -168,7 +168,7 @@ public class RdbPartitionManager extends PartitionManager {
     }
 
     @Override
-    protected Partition createPartition(Object value) throws IOException {
+    protected Partition createPartition(Object value) {
         String tblName = tableDefinition.getName();
         byte[] bvalue = null;
         if (value != null) {
@@ -181,10 +181,10 @@ public class RdbPartitionManager extends PartitionManager {
             trb.setPartitionValue(ByteString.copyFrom(bvalue));
         }
         try {
-            TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+            TablespaceRecord tr = table.getTablespace().createMetadataRecord(yamcsInstance, trb);
             return new RdbPartition(tr.getTbsIndex(), Long.MIN_VALUE, Long.MAX_VALUE, value, null);
         } catch (RocksDBException e) {
-            throw new IOException(e);
+            throw new YarchException(e);
         }
 
     }
@@ -193,7 +193,7 @@ public class RdbPartitionManager extends PartitionManager {
      * For time partitioned tables: creates a tablespace record for the histogram for the given column name 
      */
     @Override
-    protected HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName) throws IOException {
+    protected HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName) {
         try {
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.HISTOGRAM)
                     .setTableName(tableDefinition.getName())
@@ -201,10 +201,10 @@ public class RdbPartitionManager extends PartitionManager {
                     .setPartition(TimeBasedPartition.newBuilder().setPartitionDir(pinfo.getDir())
                             .setPartitionStart(pinfo.getStart()).setPartitionEnd(pinfo.getEnd()).build());
 
-            TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+            TablespaceRecord tr = table.getTablespace().createMetadataRecord(yamcsInstance, trb);
             return new RdbHistogramInfo(tr.getTbsIndex(), columnName, pinfo.getDir());
         } catch (RocksDBException e) {
-            throw new IOException(e);
+            throw new YarchException(e);
         }
     }
 
@@ -212,15 +212,15 @@ public class RdbPartitionManager extends PartitionManager {
      * For non time partitioned tables - create a tablespace record for the histogram for the given column name
      */
     @Override
-    protected HistogramInfo createHistogram(String columnName) throws IOException {
+    protected HistogramInfo createHistogram(String columnName) {
         try {
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.HISTOGRAM)
                     .setTableName(tableDefinition.getName())
                     .setHistogramColumnName(columnName);
-            TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+            TablespaceRecord tr = table.getTablespace().createMetadataRecord(yamcsInstance, trb);
             return new RdbHistogramInfo(tr.getTbsIndex(), columnName, null);
         } catch (RocksDBException e) {
-            throw new IOException(e);
+            throw new YarchException(e);
         }
     }
 }

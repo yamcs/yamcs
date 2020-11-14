@@ -24,7 +24,6 @@ import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
@@ -33,7 +32,6 @@ import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.utils.ValueHelper;
 
 public class CommandIntegrationTest extends AbstractIntegrationTest {

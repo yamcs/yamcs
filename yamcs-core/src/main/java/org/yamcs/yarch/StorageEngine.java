@@ -108,4 +108,7 @@ public interface StorageEngine {
      */
     public Sequence getSequence(YarchDatabaseInstance ydb, String name) throws YarchException;
 
+    public TableWalker newSecondaryIndexTableWalker(YarchDatabaseInstance ydb, TableDefinition tableDefinition,
+            boolean ascending, boolean follow);
+
 }

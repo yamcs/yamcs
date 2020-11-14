@@ -11,8 +11,8 @@ public class OrExpression extends Expression {
     }
 
     @Override
-    public Expression addFilter(FilterableTarget tableStream) throws StreamSqlException {
-        return this;
+    public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
+        //cannot apply or condition to filter
     }
 
     @Override

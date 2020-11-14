@@ -1,14 +1,9 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.utils.TimeInterval;
-import org.yamcs.yarch.streamsql.ColumnExpression;
-import org.yamcs.yarch.streamsql.RelOp;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
  * Sends histogram data to a stream.
@@ -18,14 +13,14 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-public class HistogramReaderStream extends Stream implements Runnable, FilterableTarget {
+public class HistogramReaderStream extends Stream implements Runnable {
     // this is the table and the column on which we run the histogram
     final private ColumnSerializer<?> histoColumnSerializer;
     HistogramIterator iter;
     final TableDefinition tblDef;
     final String histoColumnName;
     // filter conditions
-    TimeInterval interval = new TimeInterval();
+    TimeInterval timeInterval = new TimeInterval();
 
     long mergeTime = 2000;
 
@@ -50,11 +45,11 @@ public class HistogramReaderStream extends Stream implements Runnable, Filterabl
     @Override
     public void run() {
         if (log.isDebugEnabled()) {
-            log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval.toStringEncoded(),
+            log.debug("starting a histogram stream for interval {}, mergeTime: {})", timeInterval.toStringEncoded(),
                     mergeTime);
         }
         try {
-            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, histoColumnName, interval);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, histoColumnName, timeInterval);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();
@@ -75,45 +70,16 @@ public class HistogramReaderStream extends Stream implements Runnable, Filterabl
         emitTuple(t);
     }
 
-    /* puts conditions on the first or last. doesn't work properly yet TODO*/
-    @Override
-    public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
-        String cname = cexpr.getName();
-        if ("first".equals(cname) || "last".equals(cname)) {
-            long time;
-            try {
-                time = (Long) DataType.castAs(DataType.TIMESTAMP, value);
-            } catch (IllegalArgumentException e) {
-                throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
-            }
-            switch (relOp) {
-            case GREATER:
-            case GREATER_OR_EQUAL:
-                interval.setStart(time);
-                return true;
-            case LESS:
-            case LESS_OR_EQUAL:
-                interval.setEnd(time);
-                return true;
-            case EQUAL:
-                interval.setStart(time);
-                interval.setEnd(time);
-                return true;
-            case NOT_EQUAL:
-                // TODO - two ranges have to be created
-            }
-        }
-        return false;
-    }
 
     /**
-     * could filter on the histoColumn values, not done for the moment
+     * Retrieve only the histograms overlapping with this interval.
+     * 
+     * @param filter
      */
-    @Override
-    public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) {
-        return false;
+    public void setTimeInterval(TimeInterval filter) {
+        this.timeInterval = filter;
     }
-
+    
     public void setMergeTime(long mergeTime) {
         this.mergeTime = mergeTime;
     }

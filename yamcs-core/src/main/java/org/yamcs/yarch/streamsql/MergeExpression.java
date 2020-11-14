@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.MergeStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 class MergeExpression implements StreamExpression {

@@ -109,10 +109,10 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
         if (byteOrder == ByteOrder.BIG_ENDIAN) {
             sec = ByteArrayUtils.decodeInt(packet, 6) & 0xFFFFFFFFL;
-            subsecs = ByteArrayUtils.decodeShort(packet, 10);
+            subsecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
         } else {
             sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
-            subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
+            subsecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
         }
         return shiftFromEpoch(1000 * sec + subsecs * 1000 / 65536);
     }

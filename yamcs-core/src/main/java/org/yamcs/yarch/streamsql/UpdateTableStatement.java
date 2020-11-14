@@ -48,13 +48,14 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
         AtomicLong updated = new AtomicLong();
         AtomicLong inspected = new AtomicLong();
         try {
-            TableWalker tblIt = ydb.getStorageEngine(tableDefinition).newTableWalker(ydb, tableDefinition, true, false);
-
+            TableWalkerBuilder twb = new TableWalkerBuilder(ydb, tableDefinition);
             if (whereClause != null) {
-                whereClause = whereClause.addFilter(tblIt);
-                if (whereClause != null) {
-                    cwhere = whereClause.compile();
-                }
+                whereClause.addFilter(twb);
+            }
+            TableWalker tblIt = twb.build();
+            
+            if (whereClause != null) {
+                cwhere = whereClause.compile();
             }
 
             tblIt.walk(new TableVisitor() {
@@ -83,7 +84,7 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     boolean stop = (limit > 0 && c >= limit);
                     byte[] svalue;
                     try {
-                        svalue = tableDefinition.serializeValue(tuple);
+                        svalue = tableDefinition.serializeValue(tuple, null);
                     } catch (YarchException e) {
                         log.error("Error serializing value", e);
                         return ACTION_STOP;

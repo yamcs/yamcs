@@ -1,7 +1,7 @@
 package org.yamcs.yarch;
 
 
-public class YarchException extends Exception {
+public class YarchException extends RuntimeException {
     public YarchException(String string) {
         super(string);
     }

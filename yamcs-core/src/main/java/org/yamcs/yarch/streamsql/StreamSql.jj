@@ -318,19 +318,22 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition=new TupleDefinition();
     ArrayList<String> primaryKey=new ArrayList<String>();
     ArrayList<String> partitions=new ArrayList<String>();
-    String tableName, pk, partitionColumn ;
+ 	ArrayList<String> index=new ArrayList<String>();
+    String tableName, pk, partitionColumn, indexColumn ;
     boolean ifNotExists=false;
     boolean autoincrement = false;
     
     TableColumnDefinition tcd;
     
     CreateTableStatement cts;
+    
 } {
     <K_CREATE> <K_TABLE> [<K_IF> <K_NOT> <K_EXISTS> {ifNotExists=true;}] tableName=ObjectName()
     "(" (tcd = TableColumnDefinition() "," {tupleDefinition.addColumn(tcd);} )+
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
+     [","<K_INDEX> "(" indexColumn=ObjectName() {index.add(indexColumn);} ("," indexColumn=ObjectName(){index.add(indexColumn);})* ")"]
      ")"
-     {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey);}
+     {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey, index);}
      (TableOption(cts))*	
 	
     {

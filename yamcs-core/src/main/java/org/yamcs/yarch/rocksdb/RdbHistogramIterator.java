@@ -52,10 +52,7 @@ public class RdbHistogramIterator implements HistogramIterator {
         this.colName = colName;
         this.tablespace = tablespace;
 
-        partMgr = tablespace.getPartitionManager(tblDef);
-        if(partMgr == null) {
-            throw new IllegalArgumentException("Unknown table definition for '"+tblDef.getName()+"'");
-        }
+        partMgr = tablespace.getTable(tblDef).getPartitionManager();
         partitionIterator = partMgr.intervalIterator(interval);
         log = new Log(getClass(), yamcsInstance);
         log.setContext(partMgr.getTableName());
@@ -94,15 +91,15 @@ public class RdbHistogramIterator implements HistogramIterator {
             long segStop = segmentStart(interval.getEnd());
             ByteArrayUtils.encodeLong(segStop, dbKeyStop, TBS_INDEX_SIZE);
         } else {
-            dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex + 1, new byte[12], 0);
-            strictEnd = true;
+            dbKeyStop = RdbStorageEngine.dbKey(hist.tbsIndex);
+            strictEnd = false;
         }
         if (segmentIterator != null) {
             segmentIterator.close();
         }
 
         try {
-            segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, false, dbKeyStop, strictEnd);
+            segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, dbKeyStop);
         } catch (RocksDBException e) {
             throw new IOException(e);
         }
@@ -204,25 +201,21 @@ public class RdbHistogramIterator implements HistogramIterator {
             }
 
             rdb = tablespace.getRdb(hist.partitionDir, false);
-
             long segStart = segmentStart(time);
             byte[] dbKeyStart = histoDbKey(hist.tbsIndex, segStart, columnValue);
 
-            boolean strictEnd;
             byte[] dbKeyStop;
             if (interval.hasEnd()) {
-                strictEnd = false;
                 dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex, new byte[12], 0);
                 long segStop = segmentStart(interval.getEnd());
                 ByteArrayUtils.encodeLong(segStop, dbKeyStop, TBS_INDEX_SIZE);
             } else {
-                dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex + 1, new byte[12], 0);
-                strictEnd = true;
+                dbKeyStop = RdbStorageEngine.dbKey(hist.tbsIndex);
             }
             if (segmentIterator != null) {
                 segmentIterator.close();
             }
-            segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, false, dbKeyStop, strictEnd);
+            segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, dbKeyStop);
             if (!segmentIterator.isValid()) {
                 readNextPartition();
                 return;

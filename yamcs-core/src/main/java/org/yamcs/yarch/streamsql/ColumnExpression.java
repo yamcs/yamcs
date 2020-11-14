@@ -7,6 +7,9 @@ import org.yamcs.yarch.FieldReturnCompiledExpression;
 import org.yamcs.yarch.ProtobufDataType;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
+
+import java.util.Set;
+
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -118,13 +121,22 @@ public class ColumnExpression extends Expression {
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
+        String sname = sanitizeName(name);
         if (fieldName == null) {
-            code.append("col" + name);
+            code.append("col" + sname);
         } else {
             code.append("col" + className + ".get" + capitalizeFirstLetter(fieldName) + "()");
             if (fieldDescriptor.getType() == Type.ENUM) {
                 code.append(".name()");
             }
+        }
+    }
+    
+    public void collectRequiredInputs(Set<ColumnDefinition> inputs) {
+        if(className ==null) {
+            inputs.add(inputDef.getColumn(colName));
+        } else {
+            inputs.add(inputDef.getColumn(className));
         }
     }
 

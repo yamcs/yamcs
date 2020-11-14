@@ -38,6 +38,7 @@ import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.protobuf.Db;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.SecondaryIndex;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
@@ -111,19 +112,17 @@ public class Tablespace {
 
     // these two maps are only modified when a table is created and removed and are both synchronized on the
     // partitionManagers object
-    Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
-    Map<TableDefinition, HistogramWriter> histogramWriters = new HashMap<>();
+    Map<TableDefinition, RdbTable> tables = new HashMap<>();
 
     static final Object DUMMY = new Object();
 
-    Map<RdbTableWalker, Object> iterators = Collections.synchronizedMap(new WeakHashMap<RdbTableWalker, Object>());
+    Map<TableWalker, Object> walkers = Collections.synchronizedMap(new WeakHashMap<TableWalker, Object>());
     final ScheduledThreadPoolExecutor executor;
-    
+
     Map<TableDefinition, List<RdbTableWriter>> tableWriters = new HashMap<>();
-    
+
     Map<String, RdbSequence> sequences = new HashMap<>();
 
-    
     public Tablespace(String name) {
         this.name = name;
         this.executor = new ScheduledThreadPoolExecutor(1,
@@ -204,12 +203,12 @@ public class Tablespace {
     }
 
     public List<TablespaceRecord> filter(Type type, String instanceName, Predicate<TablespaceRecord.Builder> p)
-            throws RocksDBException, DatabaseCorruptionException {
+            throws YarchException, DatabaseCorruptionException {
         List<TablespaceRecord> r = new ArrayList<>();
         byte[] rangeStart = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
 
-        try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart, false,
-                rangeStart, false)) {
+        try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart,
+                rangeStart)) {
             while (arit.isValid()) {
 
                 TablespaceRecord.Builder tr;
@@ -232,6 +231,8 @@ public class Tablespace {
                 }
                 arit.next();
             }
+        } catch (RocksDBException e1) {
+           throw new YarchException(e1);
         }
         return r;
     }
@@ -331,17 +332,20 @@ public class Tablespace {
      * 
      * @param partitionDir
      * @param readOnly
-     * @throws IOException
      */
-    public YRDB getRdb(String partitionDir, boolean readOnly) throws IOException {
+    public YRDB getRdb(String partitionDir, boolean readOnly) {
         if (partitionDir == null) {
             return db;
         } else {
-            return rdbFactory.getRdb(partitionDir, readOnly);
+            try {
+                return rdbFactory.getRdb(partitionDir, readOnly);
+            } catch (IOException e) {
+                throw new YarchException(e);
+            }
         }
     }
 
-    public YRDB getRdb(String relativePath) throws IOException {
+    public YRDB getRdb(String relativePath) {
         return getRdb(relativePath, false);
     }
 
@@ -464,7 +468,7 @@ public class Tablespace {
     }
 
     public void createTable(String yamcsInstance, TableDefinition tblDef) throws YarchException, RocksDBException {
-        synchronized (partitionManagers) {
+        synchronized (tables) {
             ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef, tblDef.getKeyDefinition(),
                     tblDef.getValueDefinition());
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder();
@@ -472,47 +476,49 @@ public class Tablespace {
             trb.setTableDefinition(rtd);
             trb.setTableName(tblDef.getName());
 
-            TablespaceRecord tr = createMetadataRecord(yamcsInstance, trb);
+            createMetadataRecord(yamcsInstance, trb);
 
-            RdbPartitionManager pm = new RdbPartitionManager(this, yamcsInstance, tblDef, tr.getTbsIndex());
-            partitionManagers.put(tblDef, pm);
+            for(SecondaryIndex sidx: rtd.getSecondaryIndexList()) {
+                TablespaceRecord.Builder trbsidx = TablespaceRecord.newBuilder();
+                trbsidx.setType(Type.SECONDARY_INDEX);
+                trbsidx.setSecondaryIndex(sidx);//only one secondary index supported for now
+                trbsidx.setTableName(tblDef.getName());
+                createMetadataRecord(yamcsInstance, trbsidx);
+            }
 
-            addHistoWriter(tblDef);
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex());
+
+            tables.put(tblDef, table);
+
             configureAutoincrementSequences(yamcsInstance, tblDef);
         }
     }
 
-    private void configureAutoincrementSequences(String yamcsInstance, TableDefinition tblDef) throws YarchException, RocksDBException {
-        for(TableColumnDefinition tcd: tblDef.getKeyDefinition()) {
-            if(tcd.isAutoIncrement()) {
+    private void configureAutoincrementSequences(String yamcsInstance, TableDefinition tblDef)
+            throws YarchException, RocksDBException {
+        for (TableColumnDefinition tcd : tblDef.getKeyDefinition()) {
+            if (tcd.isAutoIncrement()) {
                 tcd.setSequence(autoincrementSequence(yamcsInstance, tblDef.getName(), tcd.getName()));
             }
         }
-        for(TableColumnDefinition tcd: tblDef.getValueDefinition()) {
-            if(tcd.isAutoIncrement()) {
+        for (TableColumnDefinition tcd : tblDef.getValueDefinition()) {
+            if (tcd.isAutoIncrement()) {
                 tcd.setSequence(autoincrementSequence(yamcsInstance, tblDef.getName(), tcd.getName()));
             }
         }
     }
 
-    
-    private Sequence autoincrementSequence(String yamcsInstance, String tableName, String columnName) throws YarchException, RocksDBException {
-        return getSequence("autoincrement:"+yamcsInstance+"."+tableName+"."+columnName);
+    private Sequence autoincrementSequence(String yamcsInstance, String tableName, String columnName)
+            throws YarchException, RocksDBException {
+        return getSequence("autoincrement:" + yamcsInstance + "." + tableName + "." + columnName);
     }
-    
-    private void addHistoWriter(TableDefinition tblDef) {
-        HistogramWriter histoWriter = HistogramWriter.newWriter(this, tblDef);
-        if(histoWriter!=null) {
-            histogramWriters.put(tblDef, histoWriter);
-        }
-    }
-    
+
     void saveTableDefinition(String yamcsInstance, TableDefinition tblDef,
             List<TableColumnDefinition> keyDef,
             List<TableColumnDefinition> valueDef) throws RocksDBException {
-        RdbPartitionManager pm = partitionManagers.get(tblDef);
-        if (pm == null) {
-            throw new IllegalArgumentException("This is not a table definition I know");
+        RdbTable table = tables.get(tblDef);
+        if (table == null) {
+            throw new IllegalArgumentException("This is not a table I know");
         }
 
         ProtoTableDefinition rtd = TableDefinitionSerializer.toProtobuf(tblDef, keyDef, valueDef);
@@ -521,12 +527,12 @@ public class Tablespace {
         trb.setTableDefinition(rtd);
         trb.setTableName(tblDef.getName());
 
-        trb.setTbsIndex(pm.tblTbsIndex);
+        trb.setTbsIndex(table.tbsIndex);
         updateRecord(yamcsInstance, trb);
     }
 
     /**
-     * @throws YarchException 
+     * @throws YarchException
      * 
      */
     void migrateTableDefinition(String yamcsInstance, TableDefinition tblDef) throws RocksDBException, YarchException {
@@ -556,7 +562,7 @@ public class Tablespace {
     }
 
     void dropTable(TableDefinition tblDef) throws RocksDBException, IOException {
-        
+
         List<RdbTableWriter> l = null;
         synchronized (tableWriters) {
             l = tableWriters.remove(tblDef);
@@ -567,15 +573,14 @@ public class Tablespace {
                 w.close();
             }
         }
-        
-        synchronized (partitionManagers) {
-            RdbPartitionManager pm = partitionManagers.remove(tblDef);
-            if (pm == null) {
-                log.error("No partition manager for {}", tblDef);
-                return;
+
+        synchronized (tables) {
+            RdbTable table = tables.remove(tblDef);
+            if (table == null) {
+                throw new IllegalArgumentException("Unknown table " + tblDef.getName());
             }
 
-            for (Partition p : pm.getPartitions()) {
+            for (Partition p : table.partitionManager.getPartitions()) {
                 RdbPartition rdbp = (RdbPartition) p;
 
                 int tbsIndex = rdbp.tbsIndex;
@@ -584,23 +589,23 @@ public class Tablespace {
                 db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
                 removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
             }
-            histogramWriters.remove(tblDef);
         }
     }
 
     /**
-     * returns the partition manager associated to the table or null if this table is not known.
+     * returns the table associated to this definition or null if this table is not known.
      * 
      * @param tblDef
      * @return
      */
-    public RdbPartitionManager getPartitionManager(TableDefinition tblDef) {
-        return partitionManagers.get(tblDef);
+    public RdbTable getTable(TableDefinition tblDef) {
+        return tables.get(tblDef);
     }
 
     /**
      * Called at instance start to load all tables for the instance
-     * @throws YarchException 
+     * 
+     * @throws YarchException
      */
     List<TableDefinition> loadTables(String yamcsInstance) throws RocksDBException, IOException, YarchException {
         List<TableDefinition> list = new ArrayList<>();
@@ -614,11 +619,10 @@ public class Tablespace {
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
             tblDef.setName(tr.getTableName());
 
-            RdbPartitionManager pm = new RdbPartitionManager(this, yamcsInstance, tblDef, tr.getTbsIndex());
-            partitionManagers.put(tblDef, pm);
-            pm.readPartitions();
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex());
+            tables.put(tblDef, table);
+            table.readPartitions();
 
-            addHistoWriter(tblDef);
             configureAutoincrementSequences(yamcsInstance, tblDef);
 
             list.add(tblDef);
@@ -630,28 +634,31 @@ public class Tablespace {
 
     public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef,
             boolean ascending, boolean follow) {
-        if(!partitionManagers.containsKey(tblDef)) {
-            throw new IllegalArgumentException("Unknown table definition for '" + tblDef.getName() + "'");
+        if (!tables.containsKey(tblDef)) {
+            throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
         }
-        
+
         RdbTableWalker rrs = new RdbTableWalker(this, ydb, tblDef, ascending, follow);
-        iterators.put(rrs, DUMMY);
+        walkers.put(rrs, DUMMY);
         return rrs;
     }
 
-    
     public RdbTableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tblDef, InsertMode insertMode) {
-        if(!partitionManagers.containsKey(tblDef)) {
-            throw new IllegalStateException("This is not a table I know something of");
+        synchronized (tables) {
+            RdbTable table = tables.get(tblDef);
+
+            if (table == null) {
+                throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
+            }
+
+            RdbTableWriter writer = new RdbTableWriter(ydb, table, insertMode);
+            synchronized (tableWriters) {
+                List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
+                l.add(writer);
+            }
+            writer.closeFuture().thenAccept(v -> writerClosed(tblDef, writer));
+            return writer;
         }
-        
-        RdbTableWriter writer = new RdbTableWriter(this, ydb, tblDef, insertMode);
-        synchronized (tableWriters) {
-            List<RdbTableWriter> l = tableWriters.computeIfAbsent(tblDef, t -> new ArrayList<>());
-            l.add(writer);
-        }
-        writer.closeFuture().thenAccept(v -> writerClosed(tblDef, writer));
-        return writer;
     }
 
     private void writerClosed(TableDefinition tblDef, RdbTableWriter writer) {
@@ -662,19 +669,18 @@ public class Tablespace {
             }
         }
     }
-    
-    
+
     public void close() {
-        for (RdbTableWalker rrs : iterators.keySet()) {
+        for (TableWalker rrs : walkers.keySet()) {
             rrs.close();
         }
         rdbFactory.shutdown();
     }
 
     public Sequence getSequence(String name) throws YarchException, RocksDBException {
-        synchronized(sequences) {
+        synchronized (sequences) {
             RdbSequence seq = sequences.get(name);
-            if(seq == null) {
+            if (seq == null) {
                 seq = new RdbSequence(name, db, cfMetadata);
                 sequences.put(name, seq);
             }
@@ -686,13 +692,20 @@ public class Tablespace {
         return executor;
     }
 
-    /**
-     * Return the histogram writer for this table or null if the table has no histograms
-     * 
-     * @param tableDefinition
-     * @return
-     */
-    public HistogramWriter getHistogramWriter(TableDefinition tableDefinition) {
-        return histogramWriters.get(tableDefinition);
+    public TableWalker newSecondaryIndexTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            boolean ascending, boolean follow) {
+
+        TableWalker tw = new SecondaryIndexTableWalker(this, verifyTable(tblDef), ascending, follow);
+        walkers.put(tw, DUMMY);
+        return tw;
+    }
+
+    private RdbTable verifyTable(TableDefinition tblDef) {
+        RdbTable table = tables.get(tblDef);
+
+        if (table == null) {
+            throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
+        }
+        return table;
     }
 }

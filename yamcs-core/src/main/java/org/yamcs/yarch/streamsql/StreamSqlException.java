@@ -1,6 +1,15 @@
 package org.yamcs.yarch.streamsql;
 
-@SuppressWarnings("serial")
+import org.yamcs.yarch.YarchException;
+
+/**
+ * Exception thrown for errors in sql queries.
+ * <p>
+ * For errors related to the storage engine, the {@link YarchException} shall be used. 
+ * 
+ * @author nm
+ *
+ */
 public class StreamSqlException extends Exception {
 
     public enum ErrCode {
@@ -17,6 +26,7 @@ public class StreamSqlException extends Exception {
         RESOURCE_NOT_FOUND,
         AGGREGATE_WITHOUT_WINDOW,
         INVALID_HISTOGRAM_COLUMN,
+        INVALID_INDEX_COLUMN,
         WRONG_ARG_COUNT,
         BAD_ARG_TYPE;
     };

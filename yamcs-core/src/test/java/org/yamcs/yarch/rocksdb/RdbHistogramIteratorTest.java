@@ -3,8 +3,11 @@ package org.yamcs.yarch.rocksdb;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.yamcs.utils.ByteArray;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramIterator;
+import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
@@ -25,19 +28,28 @@ public class RdbHistogramIteratorTest  extends YarchTestCase {
         assertNumElementsEqual(iter, 3);
         assertFalse(iter.hasNext());
         iter.close();
-        
+
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
-        iter.seek("p1".getBytes(), t0+2000L);           
-        assertNumElementsEqual(iter, 2);
+        iter.seek(colValue("p1"), t0+3000L);
+        assertTrue(iter.hasNext());
+        HistogramRecord hr = iter.next();
+        assertArrayEquals(colValue("p1"), hr.getColumnv());
+        assertNumElementsEqual(iter, 1);
         iter.close();
         
         
         HistogramIterator iter1 = rse.getHistogramIterator(ydb, tblDef, "name", interval);
-        iter1.seek("p1".getBytes(), t1+1L);   
+        iter1.seek(colValue("p1"), t1+1L);
         
         assertNumElementsEqual(iter1, 0);
         iter1.close();
         
+    }
+
+    private byte[] colValue(String s) {
+        ByteArray ba = new ByteArray();
+        ba.addNullTerminatedUTF("p1");
+        return ba.toArray();
     }
     
     public TableDefinition populate() throws Exception {

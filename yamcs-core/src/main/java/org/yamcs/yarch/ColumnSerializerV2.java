@@ -1,13 +1,11 @@
 package org.yamcs.yarch;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.yamcs.time.Instant;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.yarch.ColumnSerializerFactory.AbstractColumnSerializer;
 
 /**
  * serializers for table format version <2 where the signed integers (and timestamps) are stored as they are and do not
@@ -17,8 +15,8 @@ import org.yamcs.yarch.ColumnSerializerFactory.AbstractColumnSerializer;
 public class ColumnSerializerV2 {
     static class ShortColumnSerializer implements ColumnSerializer<Short> {
         @Override
-        public Short deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readShort();
+        public Short deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getShort();
         }
 
         @Override
@@ -27,36 +25,25 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Short v) throws IOException {
-            stream.writeShort((Short) v);
+        public void serialize(ByteArray byteArray, Short v) {
+            byteArray.addShort(v);
         }
 
         @Override
         public void serialize(ByteBuffer byteBuf, Short v) {
-            byteBuf.putShort((Short) v);
-        }
-
-        @Override
-        public byte[] toByteArray(Short v) {
-            short s = v;
-            return new byte[] { (byte) ((s >> 8) & 0xFF), (byte) (s & 0xFF) };
-        }
-
-        @Override
-        public Short fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return (short) (((b[0] & 0xFF) << 8) + (b[1] & 0xFF));
+            byteBuf.putShort(v);
         }
     }
 
     static class IntegerColumnSerializer implements ColumnSerializer<Integer> {
         @Override
-        public Integer deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readInt();
+        public Integer deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getInt();
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Integer v) throws IOException {
-            stream.writeInt((Integer) v);
+        public void serialize(ByteArray byteArray, Integer v) {
+            byteArray.addInt(v);
         }
 
         @Override
@@ -68,28 +55,12 @@ public class ColumnSerializerV2 {
         public void serialize(ByteBuffer byteBuf, Integer v) {
             byteBuf.putInt((Integer) v);
         }
-
-        @Override
-        public byte[] toByteArray(Integer v) {
-            int x = v;
-            return ByteArrayUtils.encodeInt(x);
-        }
-
-        @Override
-        public Integer fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return ByteArrayUtils.decodeInt(b, 0);
-        }
-
     }
 
-    static class LongColumnSerializer extends AbstractColumnSerializer<Long> {
-        public LongColumnSerializer() {
-            super(8);
-        }
-
+    static class LongColumnSerializer implements ColumnSerializer<Long> {
         @Override
-        public Long deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readLong();
+        public Long deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getLong();
         }
 
         @Override
@@ -98,8 +69,8 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Long v) throws IOException {
-            stream.writeLong(v);
+        public void serialize(ByteArray byteArray, Long v) {
+            byteArray.addLong(v);
         }
 
         @Override
@@ -119,15 +90,12 @@ public class ColumnSerializerV2 {
     }
 
 
-    static class HresTimestampColumnSerializer extends AbstractColumnSerializer<Instant> {
-        public HresTimestampColumnSerializer() {
-            super(12);
-        }
+    static class HresTimestampColumnSerializer implements ColumnSerializer<Instant> {
 
         @Override
-        public Instant deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            long millis = stream.readLong();
-            int picos = stream.readInt();
+        public Instant deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            long millis = byteArray.getLong();
+            int picos = byteArray.getInt();
             return Instant.get(millis, picos);
         }
 
@@ -139,9 +107,9 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Instant v) throws IOException {
-            stream.writeLong(v.getMillis());
-            stream.writeInt(v.getPicos());
+        public void serialize(ByteArray byteArray, Instant v) {
+            byteArray.addLong(v.getMillis());
+            byteArray.addInt(v.getPicos());
         }
 
         @Override
@@ -165,14 +133,11 @@ public class ColumnSerializerV2 {
             return Instant.get(millis, picos);
         }
     }
-    static class DoubleColumnSerializer extends AbstractColumnSerializer<Double> {
-        public DoubleColumnSerializer() {
-            super(8);
-        }
+    static class DoubleColumnSerializer implements ColumnSerializer<Double> {
 
         @Override
-        public Double deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
-            return stream.readDouble();
+        public Double deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            return byteArray.getDouble();
         }
 
         @Override
@@ -181,8 +146,8 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public void serialize(DataOutputStream stream, Double v) throws IOException {
-            stream.writeDouble(v);
+        public void serialize(ByteArray byteArray, Double v) {
+            byteArray.addDouble(v);
         }
 
         @Override

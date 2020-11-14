@@ -44,9 +44,9 @@ public class PartitionIterator {
                 (byte) 0).encode();
         byte[] rangeStop = new SegmentKey(parameterId, parameterGroupId, stop, Byte.MAX_VALUE).encode();
         if (ascending) {
-            dbIterator = new AscendingRangeIterator(iterator, rangeStart, false, rangeStop, false);
+            dbIterator = new AscendingRangeIterator(iterator, rangeStart, rangeStop);
         } else {
-            dbIterator = new DescendingRangeIterator(iterator, rangeStart, false, rangeStop, false);
+            dbIterator = new DescendingRangeIterator(iterator, rangeStart, rangeStop);
         }
         next();
     }

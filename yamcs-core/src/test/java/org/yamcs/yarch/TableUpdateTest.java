@@ -85,7 +85,7 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl12 set d = 'bubu'+b where a>1");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(800l, t.getColumn("inspected"));
+        assertEquals(900l, t.getColumn("inspected"));
         assertEquals(800l, t.getColumn("updated"));
         
         

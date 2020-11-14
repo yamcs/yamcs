@@ -1,11 +1,11 @@
 package org.yamcs.yarch;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+
+import org.yamcs.utils.ByteArray;
 
 /**
  * Serializes column values to byte arrays (used as part of tables) and back
@@ -21,15 +21,15 @@ public interface ColumnSerializer<T> {
      * The enums are deserialized as shorts
      * (it is converted to the actual type in the {@link TableDefinition#deserialize(byte[], byte[])})
      * 
-     * @param stream
-     *            - data stream used for the input
+     * @param array
+     *            - array used for the input
      * @param cd
      *            the column definition for the involved column (can be used to look up column name or other properties
      *            to help in deserialization)
      * @return the deserialized value
      * @throws IOException
      */
-    T deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException;
+    T deserialize(ByteArray array, ColumnDefinition cd) throws IOException;
 
     /**
      * Same as above but read the data from a ByteBuffer.
@@ -44,11 +44,10 @@ public interface ColumnSerializer<T> {
     T deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException;
 
     /**
-     * @param stream
+     * @param array
      * @param v
-     * @throws IOException
      */
-    public void serialize(DataOutputStream stream, T v) throws IOException;
+    public void serialize(ByteArray array, T v);
 
     /**
      * Same as above but serialize into a bytebuffer. If the ByteBuffer is not large enough, a
@@ -66,7 +65,11 @@ public interface ColumnSerializer<T> {
      * @param v
      * @return the resulting byte array
      */
-    public byte[] toByteArray(T v);
+    public default byte[] toByteArray(T v) {
+        ByteArray ba = new ByteArray();
+        serialize(ba, v);
+        return ba.toArray();
+    }
 
     /**
      * this method deserializes the value from a byte array
@@ -79,6 +82,9 @@ public interface ColumnSerializer<T> {
      * @return the deserialized value
      * @throws IOException
      */
-    public T fromByteArray(byte[] b, ColumnDefinition cd) throws IOException;
+    public default T fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+        ByteArray ba = ByteArray.wrap(b);
+        return deserialize(ba, cd);
+    }
 
 }

@@ -28,7 +28,7 @@ public class CcsdsPacket {
     }
 
     public static int getSequenceCount(byte[] packet) {
-        return ByteArrayUtils.decodeShort(packet, 2) & 0x3FFF;
+        return ByteArrayUtils.decodeUnsignedShort(packet, 2) & 0x3FFF;
     }
 
     public void setSequenceCount(short seqCount) {
@@ -162,7 +162,7 @@ public class CcsdsPacket {
     }
 
     public static short getAPID(byte[] packet) {
-        return (short) (ByteArrayUtils.decodeShort(packet, 0) & 0x07FF);
+        return (short) (ByteArrayUtils.decodeUnsignedShort(packet, 0) & 0x07FF);
     }
 
     public static int getCccsdsPacketLength(byte[] buf) {

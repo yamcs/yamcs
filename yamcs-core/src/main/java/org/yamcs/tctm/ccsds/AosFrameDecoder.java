@@ -48,7 +48,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
-            int c2 = ByteArrayUtils.decodeShort(data, dataEnd);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
             if (c1 != c2) {
                 throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
             }
@@ -58,15 +58,15 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
         if (aosParams.frameHeaderErrorControlPresent) {
             try {
-                DecoderResult dr = AosFrameHeaderErrorCorr.decode(ByteArrayUtils.decodeShort(data, offset),
-                        data[offset + 5], ByteArrayUtils.decodeShort(data, offset + 6));
+                DecoderResult dr = AosFrameHeaderErrorCorr.decode(ByteArrayUtils.decodeUnsignedShort(data, offset),
+                        data[offset + 5], ByteArrayUtils.decodeUnsignedShort(data, offset + 6));
                 gvcid = dr.gvcid;
             } catch (ReedSolomonException e) {
                 throw new CorruptedFrameException("Failed to Reed-Solomon verify/correct the AOS frame header fields");
             }
             dataOffset += 2;
         } else {
-            gvcid = ByteArrayUtils.decodeShort(data, offset);
+            gvcid = ByteArrayUtils.decodeUnsignedShort(data, offset);
         }
 
         int vn = gvcid >> 14;
@@ -97,7 +97,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         }
 
         if (vmp.service == ServiceType.PACKET) {
-            int fhp = ByteArrayUtils.decodeShort(data, dataOffset) & 0x7FF;
+            int fhp = ByteArrayUtils.decodeUnsignedShort(data, dataOffset) & 0x7FF;
             dataOffset += 2;
             if (fhp == 0x7FF) {
                 fhp = -1;

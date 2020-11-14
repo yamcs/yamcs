@@ -1,6 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.yamcs.yarch.PartitioningSpec;
@@ -11,13 +12,14 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CreateTableStatement  extends SimpleStreamSqlStatement  {
+public class CreateTableStatement extends SimpleStreamSqlStatement {
 
     boolean ifNotExists;
     String tableName;
     TupleDefinition tupleDefinition;
-    ArrayList<String> primaryKey;
+    List<String> primaryKey;
     ArrayList<String> histoColumns;
+    List<String> index;
     PartitioningSpec partitioningSpec;
     String tablespace;
     String engine;
@@ -25,11 +27,12 @@ public class CreateTableStatement  extends SimpleStreamSqlStatement  {
     private boolean compressed = false;
 
     public CreateTableStatement(boolean ifNotExists, String tableName, TupleDefinition tupleDefinition,
-            ArrayList<String> primaryKey) {
+            List<String> primaryKey, List<String> index) {
         this.ifNotExists = ifNotExists;
         this.tableName = tableName;
         this.tupleDefinition = tupleDefinition;
         this.primaryKey = primaryKey;
+        this.index = index;
     }
 
     public void setTablespace(String tablespace) {
@@ -56,11 +59,11 @@ public class CreateTableStatement  extends SimpleStreamSqlStatement  {
     protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
         YarchDatabaseInstance ydb = context.getDb();
         synchronized (ydb) {
-            if(ydb.getStream(tableName) !=null ) {
+            if (ydb.getStream(tableName) != null) {
                 throw new ResourceAlreadyExistsException(tableName);
             }
-            if(ydb.getTable(tableName) != null) {
-                if(ifNotExists) {
+            if (ydb.getTable(tableName) != null) {
+                if (ifNotExists) {
                     return;
                 } else {
                     throw new ResourceAlreadyExistsException(tableName);
@@ -85,6 +88,9 @@ public class CreateTableStatement  extends SimpleStreamSqlStatement  {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
 
+            if (index != null) {
+                tableDefinition.setSecondaryIndex(index);
+            }
             try {
                 ydb.createTable(tableDefinition);
             } catch (YarchException e) {
