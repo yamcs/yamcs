@@ -47,6 +47,12 @@ public class SecurityStore {
     private boolean blockUnknownUsers;
 
     /**
+     * The maximum time that an access token can be used. When expired (or better: before being expired), a new token
+     * may be requested, typically with a refresh token.
+     */
+    private int accessTokenLifespan;
+
+    /**
      * Establish the identity of a user (authentication) and can attribute additional user roles (authorization). These
      * are only used during the login process.
      */
@@ -69,7 +75,8 @@ public class SecurityStore {
         generatePredefinedPrivileges();
 
         directory = new Directory();
-        blockUnknownUsers = config.getBoolean("blockUnknownUsers", false);
+        blockUnknownUsers = config.getBoolean("blockUnknownUsers");
+        accessTokenLifespan = config.getInt("accessTokenLifespan");
 
         if (directory.getUsers().isEmpty()) {
             try {
@@ -233,6 +240,7 @@ public class SecurityStore {
         spec.addOption("guest", OptionType.MAP).withSpec(guestSpec)
                 .withAliases("unauthenticatedUser") // Legacy, remove some day
                 .withApplySpecDefaults(true);
+        spec.addOption("accessTokenLifespan", OptionType.INTEGER).withDefault(500_000); // Just over 8 minutes
 
         YConfiguration yconf = YConfiguration.emptyConfig();
         if (YConfiguration.isDefined("security")) {
@@ -266,6 +274,13 @@ public class SecurityStore {
 
     public Set<ObjectPrivilegeType> getObjectPrivilegeTypes() {
         return objectPrivilegeTypes;
+    }
+
+    /**
+     * Returns the lifespan of access tokens (in milliseconds)
+     */
+    public int getAccessTokenLifespan() {
+        return accessTokenLifespan;
     }
 
     /**
