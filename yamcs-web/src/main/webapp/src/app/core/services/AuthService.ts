@@ -1,10 +1,11 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '../../client';
 import { User } from '../../shared/User';
 import { ConfigService } from './ConfigService';
+import { Synchronizer } from './Synchronizer';
 import { YamcsService } from './YamcsService';
 
 export interface Claims {
@@ -17,10 +18,13 @@ export interface Claims {
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
 
   private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
+
+  private syncSubscription: Subscription;
+  private nextRefresh: Date | null;
 
   // Optional logout page where to redirect the browser after logging out of Yamcs
   // If unset, defaults to a local login page.
@@ -31,6 +35,7 @@ export class AuthService {
     configService: ConfigService,
     private router: Router,
     @Inject(APP_BASE_HREF) private baseHref: string,
+    synchronizer: Synchronizer,
   ) {
     this.authInfo = configService.getAuthInfo();
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
@@ -70,6 +75,26 @@ export class AuthService {
 
       return response;
     });
+
+    const accessToken = this.getCookie('access_token');
+    if (accessToken) {
+      // User visited the page with a prior established access token. We don't
+      // know its exact expiration, but start the refresh cycle shortly after
+      // page load.
+      this.nextRefresh = new Date();
+      this.nextRefresh.setTime(this.nextRefresh.getTime() + 10000);
+    }
+
+    // Proactively extends a login session when it's close to being expired.
+    this.syncSubscription = synchronizer.syncSlow(() => {
+      if (this.nextRefresh) {
+        const now = new Date().getTime();
+        if (now >= this.nextRefresh.getTime()) {
+          this.nextRefresh = null;
+          this.loginAutomatically(true /* refresh */);
+        }
+      }
+    });
   }
 
   /**
@@ -101,7 +126,7 @@ export class AuthService {
    *
    * The promise will be rejected when the automatic login failed.
    */
-  public async loginAutomatically(): Promise<any> {
+  public async loginAutomatically(refresh = false): Promise<any> {
     if (!this.authInfo.requireAuthentication) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
@@ -114,7 +139,7 @@ export class AuthService {
     // Use already available tokens when we can
     const accessToken = this.getCookie('access_token');
     const refreshToken = this.getCookie('refresh_token');
-    if (accessToken) {
+    if (accessToken && !refresh) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const headers = new Headers();
@@ -153,7 +178,11 @@ export class AuthService {
     // This is done before any other auth attempts, because it does not
     // require user intervention when successful.
     if (this.authInfo.spnego) {
-      return await this.loginWithSpnego();
+      try {
+        return await this.loginWithSpnego();
+      } catch {
+        // Ignore
+      }
     }
 
     this.logout(false);
@@ -166,7 +195,7 @@ export class AuthService {
    */
   public login(username: string, password: string) {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithPassword(username, password).then(loginInfo => {
-      this.updateLoginCookies(loginInfo);
+      this.updateLoginState(loginInfo);
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
@@ -174,7 +203,7 @@ export class AuthService {
 
   public loginWithAuthorizationCode(authorizationCode: string) {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
-      this.updateLoginCookies(loginInfo);
+      this.updateLoginState(loginInfo);
 
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
@@ -197,7 +226,7 @@ export class AuthService {
     // Store in cookie so that the token survives browser refreshes
     // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithRefreshToken(refreshToken).then(loginInfo => {
-      this.updateLoginCookies(loginInfo);
+      this.updateLoginState(loginInfo);
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
@@ -207,7 +236,7 @@ export class AuthService {
    * Store in cookie so that the token survives browser refreshes and so it
    * is added to the header of a websocket request.
    */
-  private updateLoginCookies(tokenResponse: TokenResponse) {
+  private updateLoginState(tokenResponse: TokenResponse) {
     const expireMillis = tokenResponse.expires_in * 1000;
     const cookieExpiration = new Date();
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
@@ -217,20 +246,32 @@ export class AuthService {
     document.cookie = cookie;
 
     // Store refresh token in a Session Cookie (bound to browser, not tab)
-    cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-    cookie += '; path=/';
-    document.cookie = cookie;
+    if (tokenResponse.refresh_token) {
+      cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
+      cookie += '; path=/';
+      document.cookie = cookie;
+    }
+
+    // Schedule a refresh before the new access token expires.
+    // Do this even when there is no refresh token
+    // (SPNEGO is an alternative way of refreshing)
+    this.nextRefresh = new Date(cookieExpiration.getTime() - 20000);
   }
 
   /**
    * Clear all data from a previous login session
    */
   logout(navigateToLoginPage: boolean) {
+    this.nextRefresh = null;
     this.clearCookie('access_token');
     this.clearCookie('refresh_token');
 
     this.yamcsService.clearContext(); // TODO needed here?
     this.user$.next(null);
+
+    // TODO should be closed from server side
+    // (once it better supports OIDC-like sessions)
+    this.yamcsService.yamcsClient.closeWebSocketClient();
 
     if (navigateToLoginPage) {
       if (this.logoutRedirectUrl) {
@@ -262,5 +303,11 @@ export class AuthService {
 
   private clearCookie(name: string) {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+  }
+
+  ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
   }
 }

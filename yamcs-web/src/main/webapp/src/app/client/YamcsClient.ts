@@ -1046,6 +1046,13 @@ export default class YamcsClient implements HttpHandler {
     }
   }
 
+  closeWebSocketClient() {
+    if (this.webSocketClient) {
+      this.webSocketClient.close();
+      this.webSocketClient = undefined;
+    }
+  }
+
   private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
