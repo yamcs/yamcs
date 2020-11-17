@@ -1,6 +1,10 @@
 package org.yamcs.http.api;
 
 import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -20,6 +24,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractPacketsApi;
+import org.yamcs.protobuf.ExportPacketRequest;
 import org.yamcs.protobuf.ExportPacketsRequest;
 import org.yamcs.protobuf.GetPacketRequest;
 import org.yamcs.protobuf.ListPacketNamesRequest;
@@ -223,6 +228,49 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             @Override
             public void streamClosed(Stream stream) {
                 observer.complete();
+            }
+        });
+    }
+
+    @Override
+    public void exportPacket(Context ctx, ExportPacketRequest request, Observer<HttpBody> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
+        int seqNum = request.getSeqnum();
+
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum);
+
+        List<TmPacketData> packets = new ArrayList<>();
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
+                    packets.add(pdata);
+                }
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (packets.isEmpty()) {
+                    observer.completeExceptionally(
+                            new NotFoundException("No packet for id (" + gentime + ", " + seqNum + ")"));
+                } else if (packets.size() > 1) {
+                    observer.completeExceptionally(new InternalServerErrorException("Too many results"));
+                } else {
+                    String timestamp = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()
+                            .truncatedTo(ChronoUnit.MILLIS))
+                            .replace("-", "")
+                            .replace(":", "")
+                            .replace(".", "");
+                    observer.complete(HttpBody.newBuilder()
+                            .setFilename("packet-" + timestamp + "-" + seqNum + ".raw")
+                            .setContentType(MediaType.OCTET_STREAM.toString())
+                            .setData(packets.get(0).getPacket())
+                            .build());
+                }
             }
         });
     }

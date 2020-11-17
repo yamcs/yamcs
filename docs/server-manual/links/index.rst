@@ -62,5 +62,6 @@ Other options are link-specific and documented in their respective sections.
     tcp-tm-data-link
     tse-data-link
     udp-parameter-data-link
+    udp-tc-data-link
     udp-tm-data-link
     ccsds-frame-processing

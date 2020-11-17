@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -64,6 +65,7 @@ export class CommandHistoryPage {
     { id: 'sent', label: 'Sent', visible: true },
     { id: 'acknowledgments', label: 'Extra acknowledgments', visible: true },
     { id: 'completion', label: 'Completion', visible: true },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   intervalOptions: Option[] = [
@@ -91,6 +93,7 @@ export class CommandHistoryPage {
     private printService: PrintService,
     title: Title,
     synchronizer: Synchronizer,
+    private clipboard: Clipboard,
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
@@ -208,7 +211,7 @@ export class CommandHistoryPage {
       options.q = this.filter;
     }
 
-    this.dataSource.loadMoreData({});
+    this.dataSource.loadMoreData(options);
   }
 
   showResend() {
@@ -230,6 +233,16 @@ export class CommandHistoryPage {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  copyHex(command: CommandHistoryRecord) {
+    const hex = utils.convertBase64ToHex(command.binary);
+    this.clipboard.copy(hex);
+  }
+
+  copyBinary(command: CommandHistoryRecord) {
+    const raw = atob(command.binary);
+    this.clipboard.copy(raw);
   }
 
   selectRecord(rec: CommandHistoryRecord) {

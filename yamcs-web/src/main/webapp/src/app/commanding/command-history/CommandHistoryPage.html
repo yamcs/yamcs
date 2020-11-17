@@ -211,6 +211,37 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let item" style="text-align: right">
+            <mat-menu #itemMenu="matMenu" overlapTrigger="false" class="ya-menu">
+              <ng-container *ngIf="showResend()">
+                <button mat-menu-item
+                        [routerLink]="['/commanding/send', item.commandName]"
+                        [queryParams]="{c: yamcs.context, template: item.id}">
+                  Resend
+                </button>
+                <mat-divider></mat-divider>
+              </ng-container>
+              <button mat-menu-item (click)="copyHex(item)">
+                Copy Hex
+              </button>
+              <button mat-menu-item (click)="copyBinary(item)">
+                Copy Binary
+              </button>
+              <ng-container *ngIf="showCommandExports()">
+                <mat-divider></mat-divider>
+                <app-download-menu-item [link]="item | commandDownloadLink">
+                  Download
+                </app-download-menu-item>
+              </ng-container>
+            </mat-menu>
+            <button mat-button [matMenuTriggerFor]="itemMenu" class="icon">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
         <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="selectRecord(row)"

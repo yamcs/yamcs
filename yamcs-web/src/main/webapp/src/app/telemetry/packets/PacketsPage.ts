@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -28,6 +29,7 @@ export class PacketsPage {
     'receptionTime',
     'data',
     'size',
+    'actions',
   ];
 
   @ViewChild('intervalSelect')
@@ -76,6 +78,7 @@ export class PacketsPage {
     private route: ActivatedRoute,
     title: Title,
     synchronizer: Synchronizer,
+    private clipboard: Clipboard,
   ) {
     title.setTitle('Packets');
 
@@ -216,7 +219,17 @@ export class PacketsPage {
       options.name = this.name;
     }
 
-    this.dataSource.loadMoreData({});
+    this.dataSource.loadMoreData(options);
+  }
+
+  copyHex(packet: Packet) {
+    const hex = utils.convertBase64ToHex(packet.packet);
+    this.clipboard.copy(hex);
+  }
+
+  copyBinary(packet: Packet) {
+    const raw = atob(packet.packet);
+    this.clipboard.copy(raw);
   }
 
   private updateURL() {

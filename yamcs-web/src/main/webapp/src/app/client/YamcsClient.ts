@@ -630,6 +630,10 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as CommandHistoryEntry;
   }
 
+  getCommandDownloadURL(instance: string, id: string) {
+    return `${this.apiUrl}/archive/${instance}/commands/${id}:export`;
+  }
+
   async getCommandHistoryEntries(instance: string, options: GetCommandHistoryOptions = {}): Promise<CommandHistoryPage> {
     const url = `${this.apiUrl}/archive/${instance}/commands`;
     const response = await this.doFetch(url + this.queryString(options));
@@ -791,6 +795,10 @@ export default class YamcsClient implements HttpHandler {
   getPacketsDownloadURL(instance: string, options: DownloadPacketsOptions = {}) {
     const url = `${this.apiUrl}/archive/${instance}:exportPackets`;
     return url + this.queryString(options);
+  }
+
+  getPacketDownloadURL(instance: string, gentime: string, seqnum: number) {
+    return `${this.apiUrl}/archive/${instance}/packets/${gentime}/${seqnum}:export`;
   }
 
   async getRootSpaceSystems(instance: string) {
@@ -1035,6 +1043,13 @@ export default class YamcsClient implements HttpHandler {
       this.webSocketClient.connected$.subscribe(connected => {
         this.connected$.next(connected);
       });
+    }
+  }
+
+  closeWebSocketClient() {
+    if (this.webSocketClient) {
+      this.webSocketClient.close();
+      this.webSocketClient = undefined;
     }
   }
 

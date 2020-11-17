@@ -15,7 +15,7 @@ export class ResultSetPrinter {
   add(row: any) {
     const printedRow: string[] = [];
     for (let i = 0; i < row.values.length; i++) {
-      const stringValue = utils.printValue(row.values[i]);
+      const stringValue = utils.printValue(row.values[i]) || '';
       printedRow.push(stringValue);
       this.widths[i] = Math.max(stringValue.length, this.widths[i]);
     }

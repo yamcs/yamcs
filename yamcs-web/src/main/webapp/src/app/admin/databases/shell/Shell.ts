@@ -155,7 +155,7 @@ export class Shell implements AfterViewInit {
       }
     }
     if (!cursorMatch) {
-      html += '<span class="cursor">&nbsp;</span>';
+      html += '<span class="cursor"> </span>';
     }
     this.commandLineHTML$.next(this.sanitizer.bypassSecurityTrustHtml(html));
   }
