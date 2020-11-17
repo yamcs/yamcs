@@ -103,9 +103,12 @@ public class Subscription {
         if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY) {
             if (se.getIndex() > 0) {
                 addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
-            } else { // continue with the basecontainer if we are at the first entry
-                sctmp = sctmp.getBaseContainer();
-                if (sctmp != null && sctmp.getEntryList().size() > 0) {
+            } else { // continue with the basecontainer if we are at the first entry and go up in hierarchy skipping all containers with no entry
+                do {
+                    sctmp = sctmp.getBaseContainer();
+                } while (sctmp != null && sctmp.getEntryList().size() == 0);
+
+                if (sctmp != null) {
                     addSequenceEntry(sctmp.getEntryList().get(sctmp.getEntryList().size() - 1));
                 }
             }
