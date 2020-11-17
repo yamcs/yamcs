@@ -485,7 +485,7 @@ public class TableDefinition {
                 }
 
                 TableColumnDefinition tcd = valueDef.get(cidx);
-                if (tcd.getType().getTypeId() != dt) {
+                if (formatVersion >= 3 && tcd.getType().getTypeId() != dt) {
                     throw new DatabaseCorruptionException(String.format(
                             "Data type for table %s, column %s (id: %d) does not match the data read: expected %d, read: %d",
                             name, tcd.getName(), cidx, tcd.getType().getTypeId(), dt));
