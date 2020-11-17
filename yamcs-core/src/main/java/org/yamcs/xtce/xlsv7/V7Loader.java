@@ -701,7 +701,7 @@ public class V7Loader extends V7LoaderBase {
         } else if (PARAM_ENGTYPE_BINARY.equalsIgnoreCase(engtype)) {
             ptype = param ? new BinaryParameterType.Builder() : new BinaryArgumentType.Builder();
         } else if (PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-            ptype = param? new AbsoluteTimeParameterType.Builder() :new AbsoluteTimeArgumentType.Builder();
+            ptype = param ? new AbsoluteTimeParameterType.Builder() : new AbsoluteTimeArgumentType.Builder();
         } else if (engtype.startsWith("{")) {
             if (!engtype.endsWith("}")) {
                 throw new SpreadsheetLoadException(ctx, "Missing ending { from the aggregate");
@@ -1627,7 +1627,7 @@ public class V7Loader extends V7LoaderBase {
                     ((IntegerArgumentType.Builder) atypeb).setValidRange(range);
                 } else {
                     long minInclusive = 0;
-                    long maxInclusive = ~0;
+                    long maxInclusive = Long.MAX_VALUE;
                     if (hasColumn(cells, CN_CMD_RANGELOW)) {
                         minInclusive = UnsignedLongs.decode(getContent(cells, CN_CMD_RANGELOW));
                     }

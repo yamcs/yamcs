@@ -810,8 +810,12 @@ public class XtceToGpbAssembler {
         if (argumentType instanceof IntegerArgumentType) {
             IntegerArgumentType iat = (IntegerArgumentType) argumentType;
             if (iat.getValidRange() != null) {
-                infob.setRangeMin(iat.getValidRange().getMinInclusive());
-                infob.setRangeMax(iat.getValidRange().getMaxInclusive());
+                if (iat.getValidRange().getMinInclusive() != Long.MIN_VALUE) {
+                    infob.setRangeMin(iat.getValidRange().getMinInclusive());
+                }
+                if (iat.getValidRange().getMaxInclusive() != Long.MAX_VALUE) {
+                    infob.setRangeMax(iat.getValidRange().getMaxInclusive());
+                }
             }
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
