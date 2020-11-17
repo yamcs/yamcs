@@ -46,18 +46,12 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
 
         addResource(new AlarmResource(this));
         addResource(new CommandHistoryResource(this));
-        addResource(new CommandQueueResource(this));
         addResource(new EventResource(this));
-        addResource(new InstanceResource(this));
         addResource(new LinkResource(this));
-        addResource(new ManagementResource(this));
         addResource(new PacketResource(this));
         addResource(new ParameterResource(this));
-        addResource(new ProcessorResource(this));
         addResource(new StreamResource(this));
-        addResource(new StreamsResource(this));
         addResource(new TimeResource(this));
-        addResource(new Cop1Resource(this));
     }
 
     @Override

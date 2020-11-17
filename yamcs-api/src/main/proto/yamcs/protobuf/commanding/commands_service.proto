@@ -10,6 +10,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/yamcs.proto";
 
@@ -60,6 +61,13 @@ service CommandsApi {
   rpc SubscribeCommands(SubscribeCommandsRequest) returns (stream CommandHistoryEntry) {
     option (yamcs.api.websocket) = {
       topic: "commands"
+    };
+  }
+  
+  // Export a raw command
+  rpc ExportCommand(ExportCommandRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/commands/{id}:export"
     };
   }
 }
@@ -184,6 +192,11 @@ message ListCommandsResponse {
 }
 
 message GetCommandRequest {
+  optional string instance = 1;
+  optional string id = 2;
+}
+
+message ExportCommandRequest {
   optional string instance = 1;
   optional string id = 2;
 }

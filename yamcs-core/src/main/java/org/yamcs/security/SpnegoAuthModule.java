@@ -146,7 +146,14 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
 
     @Override
     public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
-        // TODO check expiration
+        // The lifetime of the client's TGT cannot be verified based on
+        // SPNEGO ticket alone, and checking the same ticket multiple times
+        // result in a replay error.
+        //
+        // Returning true here means that we accept requests as long as the
+        // access token is valid. SPNEGO logins don't get a refresh token, so
+        // they will be forced to request a new authorization token whenever
+        // necessary.
         return true;
     }
 
@@ -194,7 +201,7 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
                             return;
                         }
                         String userPrincipal = yamcsContext.getSrcName().toString();
-                        log.debug("Got GSS Src Name {}", userPrincipal);
+                        log.debug("GSS context initiator {}", userPrincipal);
 
                         if (!userPrincipal.endsWith("@" + realm)) {
                             log.warn("User {} does not match realm {}", userPrincipal, realm);

@@ -182,7 +182,7 @@ public class AuthHandler extends Handler {
             HttpPostRequestDecoder formDecoder) throws IOException {
         String username = getStringFromForm(formDecoder, "username");
         String password = getStringFromForm(formDecoder, "password");
-        if(password == null) {
+        if (password == null) {
             password = "";
         }
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
@@ -215,7 +215,14 @@ public class AuthHandler extends Handler {
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode))
                     .get();
-            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+
+            // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
+            // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
+            // using the /auth/spnego route (= alternative refresh).
+            String refreshToken = null;
+            if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
+                refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+            }
             sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -320,7 +327,7 @@ public class AuthHandler extends Handler {
      */
     private TokenResponse generateTokenResponse(User user, String refreshToken)
             throws InvalidKeyException, NoSuchAlgorithmException {
-        int ttl = 500; // in seconds
+        int ttl = getSecurityStore().getAccessTokenLifespan() / 1000; // convert to seconds
         String jwt = JwtHelper.generateHS256Token("Yamcs", user.getName(), YamcsServer.getServer().getSecretKey(), ttl);
 
         TokenResponse.Builder responseb = TokenResponse.newBuilder();

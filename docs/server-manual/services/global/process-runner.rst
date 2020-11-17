@@ -1,5 +1,5 @@
-Process Process
-===============
+Process Runner
+==============
 
 Runs an external process. If this process goes down, a new process instance is started.
 
