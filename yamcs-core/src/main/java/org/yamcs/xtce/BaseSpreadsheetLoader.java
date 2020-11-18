@@ -202,7 +202,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         if (!hasColumn(cells, x)) {
             throw new SpreadsheetLoadException(ctx, "No value provided in column '" + colName + "'");
         }
-        return cells[x].getContents();
+        return cells[x].getContents().trim();
     }
 
     protected String getContent(Cell[] cells, String colName, String defaultValue) {
