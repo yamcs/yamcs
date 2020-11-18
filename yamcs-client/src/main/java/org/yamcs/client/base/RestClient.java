@@ -58,6 +58,10 @@ public class RestClient {
         httpClient.loginWithAuthorizationCode(tokenUrl, authorizationCode);
     }
 
+    public synchronized String authorizeKerberos(SpnegoInfo info) throws ClientException {
+        return httpClient.authorizeKerberos(info);
+    }
+
     /**
      * Performs a request with an empty body. Works using protobuf
      * 

@@ -1,4 +1,4 @@
-package org.yamcs.client;
+package org.yamcs.client.base;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,17 +38,13 @@ public final class SpnegoUtils {
         }
     }
 
-    public static synchronized String fetchAuthenticationCode(String host, int port, boolean tls)
-            throws SpnegoException {
-        return fetchAuthenticationCode(host, port, tls, System.getProperty("user.name"));
-    }
-
-    public static synchronized String fetchAuthenticationCode(String host, int port, boolean tls, String principal)
+    public static synchronized String fetchAuthenticationCode(SpnegoInfo info)
             throws SpnegoException {
         try {
-            byte[] token = createToken(host, principal);
+            byte[] token = createToken(info.getHost(), info.getPrincipal());
 
-            URL url = new URL((tls ? "https://" : "http://") + host + ":" + port + "/auth/spnego");
+            URL url = new URL(
+                    (info.isTLS() ? "https://" : "http://") + info.getHost() + ":" + info.getPort() + "/auth/spnego");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("Authorization", "Negotiate " + new String(token));
             conn.connect();

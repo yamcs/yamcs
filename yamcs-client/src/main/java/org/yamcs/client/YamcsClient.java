@@ -16,11 +16,11 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
 
 import org.yamcs.api.MethodHandler;
-import org.yamcs.client.SpnegoUtils.SpnegoException;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.base.HttpMethodHandler;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.base.RestClient;
+import org.yamcs.client.base.SpnegoInfo;
 import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.base.WebSocketClientCallback;
 import org.yamcs.client.mdb.MissionDatabaseClient;
@@ -145,16 +145,25 @@ public class YamcsClient {
     }
 
     public synchronized void connectWithKerberos() throws ClientException {
+        connectWithKerberos(System.getProperty("user.name"));
+    }
+
+    public synchronized void connectWithKerberos(String principal) throws ClientException {
         pollServer();
+        SpnegoInfo spnegoInfo = new SpnegoInfo(host, port, tls, principal);
+        String authorizationCode;
         try {
-            String authorizationCode = SpnegoUtils.fetchAuthenticationCode(host, port, tls);
-            baseClient.loginWithAuthorizationCode(authorizationCode);
-        } catch (SpnegoException e) {
+            authorizationCode = baseClient.authorizeKerberos(spnegoInfo);
+        } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
             }
             log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw new UnauthorizedException();
+        }
+
+        try {
+            baseClient.loginWithAuthorizationCode(authorizationCode);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
@@ -162,7 +171,9 @@ public class YamcsClient {
             log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw e;
         }
-        String accessToken = baseClient.getCredentials().getAccessToken();
+        Credentials creds = baseClient.getCredentials();
+        creds.setSpnegoInfo(spnegoInfo); // Can get reused when the access token expires
+        String accessToken = creds.getAccessToken();
         connect(accessToken, true);
     }
 

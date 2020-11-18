@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.yamcs.client.base.SpnegoInfo;
+
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 
@@ -26,6 +28,10 @@ public class Credentials {
     private String refreshToken;
     private Date expiry;
 
+    // We keep this around for when we need to acquire a new access token
+    // (SPNEGO connections do not get refreshed using oauth, so that the TGT can be reconfirmed)
+    private SpnegoInfo spnegoInfo;
+
     public Credentials(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -44,6 +50,14 @@ public class Credentials {
 
     public String getRefreshToken() {
         return refreshToken;
+    }
+
+    public SpnegoInfo getSpnegoInfo() {
+        return spnegoInfo;
+    }
+
+    public void setSpnegoInfo(SpnegoInfo spnegoInfo) {
+        this.spnegoInfo = spnegoInfo;
     }
 
     public boolean isExpired() {
