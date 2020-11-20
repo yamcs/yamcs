@@ -5,6 +5,7 @@
      (focusout)="onFocusOut()"
      tabindex="0"
      contenteditable="true"
+     spellcheck="false"
      (paste)="onPaste($event)">
   <div #top class="top"></div>
   <app-dots *ngIf="!(ready$ | async)" color="#3f0"></app-dots>

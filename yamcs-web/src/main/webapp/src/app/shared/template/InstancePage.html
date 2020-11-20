@@ -37,7 +37,7 @@
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
       </app-sidebar-nav-item>
-      <app-sidebar-nav-group *ngIf="telemetryItems"
+      <app-sidebar-nav-group *ngIf="telemetryItems.length"
                              label="Telemetry" icon="speed"
                              [active]="telemetryActive"
                              [expanded]="telemetryExpanded"
@@ -65,7 +65,7 @@
         Alarms
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-group *ngIf="commandingItems"
+      <app-sidebar-nav-group *ngIf="commandingItems.length"
                              label="Commanding" icon="rss_feed"
                              [active]="commandingActive"
                              [expanded]="commandingExpanded"
@@ -86,7 +86,7 @@
         CFDP File Transfer
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-group *ngIf="mdbItems"
+      <app-sidebar-nav-group *ngIf="mdbItems.length"
                              label="Mission Database" icon="style"
                              [active]="mdbActive"
                              [expanded]="mdbExpanded"
