@@ -14,6 +14,8 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.yamcs.time.Instant;
+
 import com.google.protobuf.Timestamp;
 
 /**
@@ -222,12 +224,14 @@ public class TaiUtcConverter {
      * @param t
      * @return
      */
-    Timestamp instantToProtobuf(long t) {
+    Timestamp instantToProtobuf(Instant instant) {
         Timestamp.Builder timestamp = Timestamp.newBuilder();
+        long millis = instant.getMillis();
+        int picos = instant.getPicos();
 
-        long u = t / 1000;
+        long u = millis / 1000;
         int ls = diffTaiUtc;
-        int nanosec = (int) (1_000_000 * (t - 1000 * u));
+        int nanosec = (int) (1_000_000 * (millis - 1000 * u) + picos / 1000);
 
         int i;
         for (i = timesecs.length - 1; i >= 0; i--) {
@@ -261,6 +265,10 @@ public class TaiUtcConverter {
     }
 
     long protobufToInstant(Timestamp ts) {
+        return protobufToHresInstant(ts).getMillis();
+    }
+
+    Instant protobufToHresInstant(Timestamp ts) {
         int nanosec = ts.getNanos();
         long u = ts.getSeconds() + diffTaiUtc;
         int i;
@@ -278,7 +286,8 @@ public class TaiUtcConverter {
             long d = 43200 + u - timesecs[i + 1];
             nanosec += (d * OE9 + nanosec) / 86400;
         }
-        return u * 1000 + nanosec / OE6;
+
+        return Instant.get(u * 1000, nanosec * 1000l);
     }
 
     DateTimeComponents instantToUtc(long t) {
@@ -396,7 +405,6 @@ public class TaiUtcConverter {
         }
         return t + ls * 1000;
     }
-
 
     public static boolean isLeap(final int year) {
         return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));

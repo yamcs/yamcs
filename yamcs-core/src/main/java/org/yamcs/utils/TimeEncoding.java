@@ -37,11 +37,11 @@ public class TimeEncoding {
             .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})\\d{0,9})?Z?");
     static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})\\d{0,9})?Z?");
 
-    
     static Pattern iso8601PatternHres = Pattern
             .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})(\\d{0,9}))?Z?");
-    static Pattern doyPatternHres = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})(\\d{0,9}))?Z?");
-    
+    static Pattern doyPatternHres = Pattern
+            .compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3})(\\d{0,9}))?Z?");
+
     public static void setUp() {
         try {
             taiUtcConverter = new TaiUtcConverter();
@@ -329,14 +329,13 @@ public class TimeEncoding {
         }
         return taiUtcConverter.utcToInstant(dtc);
     }
-    
-    
+
     public static Instant parseHres(String s) {
-        
+
         TaiUtcConverter.DateTimeComponents dtc;
         Matcher m = iso8601PatternHres.matcher(s);
         int picos = 0;
-        
+
         if (m.matches()) {
 
             int year = Integer.parseInt(m.group(1));
@@ -346,12 +345,12 @@ public class TimeEncoding {
             int minute = Integer.parseInt(m.group(5));
             int second = Integer.parseInt(m.group(6));
             int millisec = 0;
-            
+
             if (m.group(7) != null) {
                 millisec = Integer.parseInt(m.group(8));
                 picos = getPicos(m.group(9));
             }
-            
+
             dtc = new TaiUtcConverter.DateTimeComponents(year, month, day, hour, minute, second, millisec);
         } else {
             m = doyPatternHres.matcher(s);
@@ -374,22 +373,23 @@ public class TimeEncoding {
                         "Cannot parse '" + s + "' with the pattern '" + iso8601Pattern + " or " + doyPattern);
             }
         }
-        long millis =  taiUtcConverter.utcToInstant(dtc);
+        long millis = taiUtcConverter.utcToInstant(dtc);
         return Instant.get(millis, picos);
     }
-    
-    //get the number of picoseconds from a max to 9 digits number aligned at left
+
+    // get the number of picoseconds from a max to 9 digits number aligned at left
     static private int getPicos(String ps) {
-        if(ps.length()==0) {
+        if (ps.length() == 0) {
             return 0;
         }
         int r = Integer.parseInt(ps);
-        
-        for(int i=ps.length(); i<9; i++) {
-            r*=10;
+
+        for (int i = ps.length(); i < 9; i++) {
+            r *= 10;
         }
         return r;
     }
+
     /**
      * Transforms UNIX time (milliseconds since 1970) to instant
      * 
@@ -512,7 +512,7 @@ public class TimeEncoding {
     /**
      * Transforms protobuf Timestamp to instant. The conversion will do the "unsmearing" around the leap seconds and
      * will also lose precision (nanoseconds to milliseconds).
-     * 
+     *
      * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
      * 
      * @param ts
@@ -524,15 +524,42 @@ public class TimeEncoding {
     }
 
     /**
+     * Transforms protobuf Timestamp to high resolution instant. The conversion will do the "unsmearing" around the leap
+     * seconds.
+     *
+     * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
+     *
+     * @param ts
+     *            - the timestamp to be converted
+     * @return
+     */
+    public static Instant fromProtobufHresTimestamp(Timestamp ts) {
+        return taiUtcConverter.protobufToHresInstant(ts);
+    }
+
+    /**
      * Transforms the instant to protobuf timestamp performing the smearing around the leap seconds.
      * 
      * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
-     * 
+     *
      * @param instant
      *            - the instant to be converted
      * @return
      */
     public static Timestamp toProtobufTimestamp(long instant) {
+        return taiUtcConverter.instantToProtobuf(Instant.get(instant));
+    }
+
+    /**
+     * Transforms the instant to protobuf timestamp performing the smearing around the leap seconds.
+     *
+     * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
+     *
+     * @param instant
+     *            - the instant to be converted
+     * @return
+     */
+    public static Timestamp toProtobufTimestamp(Instant instant) {
         return taiUtcConverter.instantToProtobuf(instant);
     }
 }

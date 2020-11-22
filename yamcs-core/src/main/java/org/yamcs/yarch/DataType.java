@@ -206,6 +206,8 @@ public class DataType {
             return BINARY;
         } else if (v instanceof ParameterValue) {
             return PARAMETER_VALUE;
+        } else if (v instanceof Instant) {
+            return HRES_TIMESTAMP;
         } else {
             throw new IllegalArgumentException("invalid or unsupported object of type of " + v.getClass());
         }

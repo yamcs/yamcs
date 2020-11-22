@@ -51,6 +51,7 @@ import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TagApi;
 import org.yamcs.http.api.TimeApi;
+import org.yamcs.http.api.TimeCorrelationApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.CancelOptions;
@@ -300,6 +301,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new TableApi());
         addApi(new TagApi());
         addApi(new TimeApi());
+        addApi(new TimeCorrelationApi());
 
         AuthHandler authHandler = new AuthHandler(tokenStore, contextPath);
         addHandler("auth", () -> authHandler);
