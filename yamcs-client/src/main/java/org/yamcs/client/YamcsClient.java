@@ -76,6 +76,7 @@ public class YamcsClient {
     private final String host;
     private final int port;
     private boolean tls;
+    private boolean verifyTls;
     private String context;
 
     private int connectionAttempts;
@@ -98,10 +99,12 @@ public class YamcsClient {
     private IamApiClient iamService;
     private ServerApiClient serverService;
 
-    private YamcsClient(String host, int port, boolean tls, String context, int connectionAttempts, long retryDelay) {
+    private YamcsClient(String host, int port, boolean tls, boolean verifyTls, String context, int connectionAttempts,
+            long retryDelay) {
         this.host = host;
         this.port = port;
         this.tls = tls;
+        this.verifyTls = verifyTls;
         this.context = context;
         this.connectionAttempts = connectionAttempts;
         this.retryDelay = retryDelay;
@@ -150,7 +153,7 @@ public class YamcsClient {
 
     public synchronized void connectWithKerberos(String principal) throws ClientException {
         pollServer();
-        SpnegoInfo spnegoInfo = new SpnegoInfo(host, port, tls, principal);
+        SpnegoInfo spnegoInfo = new SpnegoInfo(host, port, tls, verifyTls, principal);
         String authorizationCode;
         try {
             authorizationCode = baseClient.authorizeKerberos(spnegoInfo);
@@ -588,7 +591,7 @@ public class YamcsClient {
         private String host;
         private int port;
         private boolean tls;
-        private boolean verifyTls;
+        private boolean verifyTls = true;
         private Path caCertFile;
         private String userAgent;
         private String context;
@@ -637,7 +640,7 @@ public class YamcsClient {
         }
 
         public YamcsClient build() {
-            YamcsClient client = new YamcsClient(host, port, tls, context, connectionAttempts, retryDelay);
+            YamcsClient client = new YamcsClient(host, port, tls, verifyTls, context, connectionAttempts, retryDelay);
             client.baseClient.setInsecureTls(!verifyTls);
             client.websocketClient.setInsecureTls(!verifyTls);
             if (caCertFile != null) {

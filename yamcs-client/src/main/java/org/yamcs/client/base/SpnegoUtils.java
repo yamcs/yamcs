@@ -5,12 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.Subject;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
@@ -38,8 +47,25 @@ public final class SpnegoUtils {
         }
     }
 
-    public static synchronized String fetchAuthenticationCode(SpnegoInfo info)
-            throws SpnegoException {
+    private static final HostnameVerifier NO_HOSTNAME_VERIFICATION = (hostname, session) -> true;
+    private static final TrustManager[] TRUST_ALL_CERTS = new TrustManager[] { new X509TrustManager() {
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            // Ignore
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            // Ignore
+        }
+    } };
+
+    public static synchronized String fetchAuthenticationCode(SpnegoInfo info) throws SpnegoException {
         try {
             byte[] token = createToken(info.getHost(), info.getPrincipal());
 
@@ -47,6 +73,18 @@ public final class SpnegoUtils {
                     (info.isTLS() ? "https://" : "http://") + info.getHost() + ":" + info.getPort() + "/auth/spnego");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("Authorization", "Negotiate " + new String(token));
+
+            if (info.isTLS() && !info.isVerifyTLS()) {
+                try {
+                    SSLContext ctx = SSLContext.getInstance("TLS");
+                    ctx.init(null, TRUST_ALL_CERTS, new java.security.SecureRandom());
+                    ((HttpsURLConnection) conn).setSSLSocketFactory(ctx.getSocketFactory());
+                    ((HttpsURLConnection) conn).setHostnameVerifier(NO_HOSTNAME_VERIFICATION);
+                } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                    throw new SpnegoException(e);
+                }
+            }
+
             conn.connect();
 
             if (conn.getResponseCode() == 200) {

@@ -8,6 +8,7 @@
   background-color: #24292e;
   overflow: auto;
   outline: none;
+  caret-color: transparent;
 }
 
 .top, .bottom {
