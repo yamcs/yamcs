@@ -3,19 +3,29 @@ package org.yamcs.time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Semaphore;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.cfdp.CfdpService;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.external.SimpleRegression;
+import org.yamcs.parameter.ParameterStatus;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.TcoConfig;
+import org.yamcs.protobuf.TcoSample;
+import org.yamcs.protobuf.TcoStatus;
+import org.yamcs.utils.DoubleRange;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -23,7 +33,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -45,10 +54,12 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * <ul>
  * <li>onboardDelay - configurable in the service configuration. It covers any delay happening on-board (sampling time,
  * radiation time)
- * <li>tof - time of flight - the time it takes for the signal to reach the ground. This is computed by the
- * {@link TimeOfFlightEstimator} and can be fixed or dynamically interpolated from data provided by a flight
- * dynamics system.</li>
+ * <li>tof - time of flight - the time it takes for the signal to reach the ground.</li>
  * </ul>
+ * 
+ * The time of flight can be fixed or computed by the {@link TimeOfFlightEstimator} by dynamically interpolating from
+ * data provided by a flight
+ * dynamics system.
  * <p>
  * Computes {@code m} = gradient and {@code c} = offset such that
  * <p>
@@ -63,12 +74,14 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * between the OBT computed using the coefficients and the OBT which is part of the sample (after adjusting for
  * delays). The deviation is compared with the accuracy and validity parameters:
  * <p>
- * If the deviation is greater than {@code accuracy} but smaller than {@code validity}, then a recalculation of the
- * coefficients is performed based on the last received samples.
+ * <ul>
+ * <li>If the deviation is greater than {@code accuracy} but smaller than {@code validity}, then a recalculation of the
+ * coefficients is performed based on the last received samples.</li>
  * <p>
- * If the deviation is greater than {@code validity} then the coefficients are declared as invalid and all the samples
- * from the buffer except the last one are dropped. The time returned by {@link #getTime(long)} will be invalid until
- * the required number of new samples is received and the next recalculation is performed
+ * <li>If the deviation is greater than {@code validity} then the coefficients are declared as invalid and all the
+ * samples from the buffer except the last one are dropped. The time returned by {@link #getTime(long)} will be invalid
+ * until
+ * the required number of new samples is received and the next recalculation is performed</li>
  * 
  * <h2>Historical coefficients</h2>
  * The service keeps track of multiple intervals corresponding to different on-board time resets. At Yamcs startup
@@ -77,6 +90,17 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * If using the historical recording to insert some old data into the Yamcs, in order to get the correct coefficients
  * one has to know the approximate time when the data has been generated.
  *
+ * <h2>Verify Only Mode</h2>
+ * If the on-board clock is synchronized via a different method, this service can still be used to verify the
+ * synchronization.
+ *
+ * <p>
+ * The method {@link #verify} will check the difference between the packet generation time and the expected generation
+ * time (using ert - delays) and in case the difference is greater than the validity, the packet will be changed with
+ * the local computed time and the flag {@link TmPacket#setLocalGenTime()} will also be set.
+ * 
+ * <h2>Usage</h2>
+ * 
  * <p>
  * To use this service there will be typically one component which adds samples using the
  * {@link #addSample(long, Instant)} each time it
@@ -95,14 +119,13 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * @author nm
  *
  */
-public class TimeCorrelationService extends AbstractYamcsService {
-    static public final String TABLE_NAME = "tco";
+public class TimeCorrelationService extends AbstractYamcsService implements SystemParametersProducer {
+    static public final String TABLE_NAME = "tco_";
     static public final String DEFAULT_CLOCK_NAME = "clk0";
     static public final int MAX_HISTCOEF = 1000;
 
     public static final TupleDefinition TDEF = new TupleDefinition();
     static {
-        TDEF.addColumn("obclk", DataType.ENUM);
         TDEF.addColumn("obi0", DataType.HRES_TIMESTAMP);
         TDEF.addColumn("obt0", DataType.LONG);
         TDEF.addColumn("gradient", DataType.DOUBLE);
@@ -116,6 +139,8 @@ public class TimeCorrelationService extends AbstractYamcsService {
     SimpleRegression sg;
 
     ArrayDeque<Sample> sampleQueue;
+    TimeService timeService;
+    ParameterStatus nominalStatus, watchStatus, warningStatus;
 
     /**
      * how long (in seconds) it takes to sample the clock on-board, pack the data in the frame, etc.
@@ -130,6 +155,10 @@ public class TimeCorrelationService extends AbstractYamcsService {
     int numSamples;
 
     /**
+     * default time of flight, used if cannot be obtained from the tofEstimator
+     */
+    double defaultTof;
+    /**
      * Name of the on-board clock.
      * <p>
      * In case there are multiple clocks, we can have multiple instances of this service,
@@ -137,9 +166,25 @@ public class TimeCorrelationService extends AbstractYamcsService {
      */
     String clockName;
 
+    /**
+     * last computed deviation
+     */
+    volatile double lastDeviation = Double.NaN;
+
+    /**
+     * Last time when the coefficients have been computed
+     */
+    long coefficientsTime = TimeEncoding.INVALID_INSTANT;
+
     Stream tcoStream;
     EventProducer eventProducer;
+    private String spDeviationId;
+    private ParameterValue deviationPv;
+    String tableName;
 
+    public TimeCorrelationService() {
+        System.out.println("constructor of TimeCorrelationService-----------");
+    }
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         onboardDelay = config.getDouble("onboardDelay", 0) * 0.001;
@@ -149,17 +194,21 @@ public class TimeCorrelationService extends AbstractYamcsService {
         accuracy = config.getDouble("accuracy", 100) * 0.001;
         validity = config.getDouble("validity", 200) * 0.001;
 
-        YConfiguration tofConfig = config.getConfigOrEmpty("tof");
-        tofEstimator = new TimeOfFlightEstimator(tofConfig);
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
+        boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
 
+        tofEstimator = new TimeOfFlightEstimator(yamcsInstance, clockName, saveTofPolynomials);
+
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
         if (saveCoefficients) {
-            String streamName = TABLE_NAME + "_" + clockName;
+            tableName = TABLE_NAME + clockName;
+
+            String streamName = tableName + "_in";
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             try {
-                if (ydb.getTable(TABLE_NAME) == null) {
-                    String query = "create table " + TABLE_NAME + "(" + TDEF.getStringDefinition1()
-                            + ", primary key(obclk, obi0))";
+                if (ydb.getTable(tableName) == null) {
+                    String query = "create table " + tableName + "(" + TDEF.getStringDefinition1()
+                            + ", primary key(obi0))";
                     ydb.execute(query);
                 } else {
                     retrieveArchivedCoefficients(ydb);
@@ -167,7 +216,7 @@ public class TimeCorrelationService extends AbstractYamcsService {
                 if (ydb.getStream(streamName) == null) {
                     ydb.execute("create stream " + streamName + TDEF.getStringDefinition());
                 }
-                ydb.execute("insert into " + TABLE_NAME + " select * from " + streamName);
+                ydb.execute("insert into " + tableName + " select * from " + streamName);
             } catch (ParseException | StreamSqlException e) {
                 throw new InitException(e);
             }
@@ -176,6 +225,8 @@ public class TimeCorrelationService extends AbstractYamcsService {
             tcoStream = null;
         }
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getName(), 10000);
+
+        setupSystemParameters();
     }
 
     private void retrieveArchivedCoefficients(YarchDatabaseInstance ydb) throws InitException {
@@ -183,11 +234,11 @@ public class TimeCorrelationService extends AbstractYamcsService {
             // we add them to a temporary list because CopyOnWriteArrayList is not very efficient at adding one by one
             List<TcoCoefficients> tmpl = new ArrayList<>();
             StreamSqlStatement stmt = ydb.createStatement(
-                    "select * from " + TABLE_NAME + " where obclk=? order desc limit " + MAX_HISTCOEF,
+                    "select * from " + tableName + " order desc limit " + MAX_HISTCOEF,
                     clockName);
-            
+
             StreamSqlResult res = ydb.execute(stmt);
-            while(res.hasNext()) {
+            while (res.hasNext()) {
                 tmpl.add(TcoCoefficients.fromTuple(res.next()));
             }
 
@@ -216,6 +267,8 @@ public class TimeCorrelationService extends AbstractYamcsService {
             throw new IllegalArgumentException("Invalid Yamcs instance '" + yamcsInstance + "'");
         }
         
+        System.out.println("bubub: "+ ysi.getServices(TimeCorrelationService.class));
+
         return ysi.getServices(TimeCorrelationService.class).stream()
                 .filter(tcs -> tcs.getClockName().equals(clockName)).findFirst().orElse(null);
     }
@@ -272,7 +325,8 @@ public class TimeCorrelationService extends AbstractYamcsService {
             sampleQueue.addLast(s);
             // verify accuracy
             Instant obi1 = curCoefficients.getInstant(obt);
-            double dev = Math.abs(obi1.deltaFrom(obi));
+            double deviation = obi1.deltaFrom(obi);
+            double dev = Math.abs(deviation);
             if (dev > validity) {
                 eventProducer.sendWarning(String.format("Deviation %f (ms) "
                         + "greater than the allowed validity %f (ms), reseting correlation", dev * 1000,
@@ -286,6 +340,7 @@ public class TimeCorrelationService extends AbstractYamcsService {
                         accuracy * 1000));
                 computeCoefficients();
             }
+            publishDeviation(deviation);
         }
     }
 
@@ -297,6 +352,7 @@ public class TimeCorrelationService extends AbstractYamcsService {
     public synchronized void reset() {
         curCoefficients = null;
         sampleQueue.clear();
+        lastDeviation = Double.NaN;
     }
 
     /**
@@ -310,11 +366,89 @@ public class TimeCorrelationService extends AbstractYamcsService {
      */
     public Instant getTime(long obt) {
         TcoCoefficients c = curCoefficients;
+
         if (c == null) {
             return Instant.INVALID_INSTANT;
         } else {
             return c.getInstant(obt);
         }
+    }
+
+    /**
+     * Set the generation time of the packet based on the computed coefficients.
+     * <p>
+     * If the coefficients are not valid, set the generation time to gentime = ert-delays and also set the flag
+     * {@link TmPacket#setLocalGenTime()}
+     * 
+     * <p>
+     * The packet has to have the ert set, otherwise an exception is thrown
+     * 
+     * @param obt
+     * @param pkt
+     * @throws IllegalArgumentException
+     *             if the packet has no ert set
+     */
+    public void timestamp(long obt, TmPacket pkt) {
+        Instant ert = pkt.getEarthReceptionTime();
+
+        if (ert == null) {
+            throw new IllegalArgumentException("no ert available");
+        }
+
+        TcoCoefficients c = curCoefficients;
+        if (c == null) {
+            double delay = tofEstimator.getTof(ert) + onboardDelay;
+            Instant genTime = ert.plus(-delay);
+            pkt.setGenerationTime(genTime.getMillis());
+            pkt.setLocalGenTime();
+        } else {
+            Instant genTime = c.getInstant(obt);
+            pkt.setGenerationTime(genTime.getMillis());
+        }
+    }
+
+    double getTof(Instant ert) {
+        if (tofEstimator == null) {
+            return defaultTof;
+        }
+        double d = tofEstimator.getTof(ert);
+        if (Double.isNaN(d)) {
+            return defaultTof;
+        } else {
+            return d;
+        }
+    }
+
+    /**
+     * Verify the time synchronization of the packet. This assumes that the packet generation time has already been
+     * computed (by a packet pre-processor).
+     * <p>
+     * If the deviation between the provided generation time and the expected generation time (computed based on the ert
+     * - delays) is greater than the validity threshold, the generation time is changed to the expected time and the
+     * {@link TmPacket#setLocalGenTime()} is also set.
+     * <p>
+     * The computed deviation is also published as a processed parameter.
+     * 
+     * @param pkt
+     * @throws IllegalArgumentException
+     *             if the packet has no ert set
+     */
+    public void verify(TmPacket pkt) {
+        Instant ert = pkt.getEarthReceptionTime();
+
+        if (ert == null || ert == Instant.INVALID_INSTANT) {
+            throw new IllegalArgumentException("no ert available");
+        }
+        double delay = tofEstimator.getTof(ert) + onboardDelay;
+        Instant expectedGenTime = ert.plus(-delay);
+
+        double deviation = expectedGenTime.deltaFrom(Instant.get(pkt.getGenerationTime()));
+        if (Math.abs(deviation) > validity) {
+            pkt.setGenerationTime(expectedGenTime.getMillis());
+            pkt.setLocalGenTime();
+        }
+
+        publishDeviation(deviation);
     }
 
     /**
@@ -334,6 +468,27 @@ public class TimeCorrelationService extends AbstractYamcsService {
             }
         }
         return Instant.INVALID_INSTANT;
+    }
+
+    private void publishDeviation(double deviation) {
+        
+        System.out.println("deviation: "+deviation);
+        lastDeviation = deviation;
+
+        if (spDeviationId == null) {
+            return;// no system parameter collector configured
+        }
+        long time = timeService.getMissionTime();
+        double dabs = Math.abs(deviation);
+        ParameterValue pv = SystemParametersCollector.getPV(spDeviationId, time, deviation);
+        if (dabs > validity) {
+            pv.setStatus(warningStatus);
+        } else if (dabs > accuracy) {
+            pv.setStatus(watchStatus);
+        } else {
+            pv.setStatus(nominalStatus);
+        }
+        deviationPv = pv;
     }
 
     /**
@@ -358,6 +513,10 @@ public class TimeCorrelationService extends AbstractYamcsService {
         notifyStopped();
     }
 
+    public TimeOfFlightEstimator getTofEstimator() {
+        return tofEstimator;
+    }
+
     private void computeCoefficients() {
         TcoCoefficients c = new TcoCoefficients();
         Sample s0 = sampleQueue.getFirst();
@@ -370,7 +529,7 @@ public class TimeCorrelationService extends AbstractYamcsService {
         c.gradient = sr.getSlope();
         c.offset = sr.getIntercept();
         if (tcoStream != null) {
-            tcoStream.emitTuple(c.toTuple(clockName));
+            tcoStream.emitTuple(c.toTuple());
         }
         curCoefficients = c;
         coefHist.add(0, c);
@@ -381,13 +540,69 @@ public class TimeCorrelationService extends AbstractYamcsService {
         eventProducer.sendInfo("Computed new coefficients: " + c);
     }
 
-    static class TcoCoefficients {
-        @Override
-        public String toString() {
-            return "TcoCoefficients [obi0=" + obi0 + ", obt0=" + obt0 + ", gradient=" + gradient + ", offset=" + offset
-                    + "]";
+    void setupSystemParameters() {
+        SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
+        if (collector != null) {
+            makeParameterStatus();
+            spDeviationId = collector.getNamespace() + "/" + clockName + "/deviation";
+            collector.registerProducer(this);
         }
+    }
 
+    @Override
+    public List<ParameterValue> getSystemParameters() {
+        System.out.println("deviationPv: "+deviationPv);
+        if (deviationPv != null) {
+            return Arrays.asList(deviationPv);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private void makeParameterStatus() {
+        nominalStatus = getParaStatus();
+        nominalStatus.setMonitoringResult(MonitoringResult.IN_LIMITS);
+        watchStatus = getParaStatus();
+        watchStatus.setMonitoringResult(MonitoringResult.WATCH);
+        warningStatus = getParaStatus();
+        warningStatus.setMonitoringResult(MonitoringResult.WARNING);
+    }
+
+    private ParameterStatus getParaStatus() {
+        ParameterStatus status = new ParameterStatus();
+        status.setWatchRange(new DoubleRange(-accuracy, accuracy));
+        status.setWarningRange(new DoubleRange(-validity, validity));
+
+        return status;
+    }
+
+    public synchronized void setAccuracy(double accuracy) {
+        this.accuracy = accuracy;
+    }
+
+    public synchronized void setValidity(double validity) {
+        this.validity = validity;
+    }
+
+    public synchronized void setOnboardDelay(double onboardDelay) {
+        this.onboardDelay = onboardDelay;
+    }
+
+    public synchronized void setDefaultTof(double defaultTof) {
+        this.defaultTof = defaultTof;
+    }
+
+    public synchronized void forceCoefficients(Instant obi, long obt, double offset, double gradient) {
+        TcoCoefficients tcoef = new TcoCoefficients();
+        tcoef.obt0 = obt;
+        tcoef.obi0 = obi;
+        tcoef.offset = offset;
+        tcoef.gradient = gradient;
+        curCoefficients = tcoef;
+        coefficientsTime = timeService.getMissionTime();
+    }
+
+    static class TcoCoefficients {
         Instant obi0;
         long obt0;
         double gradient;
@@ -403,8 +618,8 @@ public class TimeCorrelationService extends AbstractYamcsService {
             return obi0.plus(gradient * (obt - obt0) + offset);
         }
 
-        Tuple toTuple(String clockName) {
-            Tuple t = new Tuple(TDEF, Arrays.asList(clockName, obi0, obt0, gradient, offset));
+        Tuple toTuple() {
+            Tuple t = new Tuple(TDEF, Arrays.asList(obi0, obt0, gradient, offset));
             return t;
         }
 
@@ -417,6 +632,16 @@ public class TimeCorrelationService extends AbstractYamcsService {
 
             return c;
         }
+
+        @Override
+        public String toString() {
+            return "TcoCoefficients [obi0=" + obi0 + ", obt0=" + obt0 + ", gradient=" + gradient + ", offset=" + offset
+                    + "]";
+        }
+
+        public double getOffset() {
+            return offset;
+        }
     }
 
     static class Sample {
@@ -428,4 +653,46 @@ public class TimeCorrelationService extends AbstractYamcsService {
             this.obi = obi;
         }
     }
+
+    public synchronized TcoConfig getTcoConfig() {
+        TcoConfig.Builder tcb = TcoConfig.newBuilder();
+        tcb.setAccuracy(accuracy).setValidity(validity).setOnboardDelay(onboardDelay).setDefaultTof(defaultTof);
+        return tcb.build();
+    }
+
+    public synchronized TcoStatus getStatus() {
+        TcoStatus.Builder status = TcoStatus.newBuilder();
+        double d = lastDeviation;
+        if (!Double.isNaN(d)) {
+            status.setDeviation(d);
+        }
+
+        TcoCoefficients c = curCoefficients;
+        if (c != null) {
+            status.setCoefficients(toProto(c));
+        }
+
+        long ct = coefficientsTime;
+        if (ct != TimeEncoding.INVALID_INSTANT) {
+            status.setCoefficientsTime(TimeEncoding.toProtobufTimestamp(ct));
+        }
+
+        for (Sample sample : sampleQueue) {
+            status.addSamples(toProto(sample));
+        }
+        return status.build();
+    }
+
+    private TcoSample toProto(Sample sample) {
+        return TcoSample.newBuilder().setObt(sample.obt).setUtc(TimeEncoding.toProtobufTimestamp(sample.obi)).build();
+    }
+
+    private org.yamcs.protobuf.TcoCoefficients toProto(TcoCoefficients c) {
+        org.yamcs.protobuf.TcoCoefficients.Builder tcb = org.yamcs.protobuf.TcoCoefficients.newBuilder();
+        tcb.setOffset(c.offset).setGradient(c.gradient)
+                .setUtc(TimeEncoding.toProtobufTimestamp(c.obi0)).setObt(c.obt0);
+
+        return tcb.build();
+    }
+
 }

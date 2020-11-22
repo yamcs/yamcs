@@ -15,7 +15,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class TimeCorrelationServiceTest {
     static String yamcsInstance = "ots-test";   
-    
+    static String tableName = TimeCorrelationService.TABLE_NAME+TimeCorrelationService.DEFAULT_CLOCK_NAME;
     @BeforeClass
     public static void beforeClass() {
         TimeEncoding.setUp();
@@ -25,8 +25,8 @@ public class TimeCorrelationServiceTest {
     private TimeCorrelationService createAndStart(boolean dropTable) throws Exception {
         if(dropTable) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-            if(ydb.getTable(TimeCorrelationService.TABLE_NAME) != null) {
-                ydb.dropTable(TimeCorrelationService.TABLE_NAME);
+            if(ydb.getTable(tableName) != null) {
+                ydb.dropTable(tableName);
             }
         }
         TimeCorrelationService ots = new TimeCorrelationService();

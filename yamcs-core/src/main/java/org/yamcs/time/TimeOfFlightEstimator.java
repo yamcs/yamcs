@@ -1,55 +1,156 @@
 package org.yamcs.time;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.yamcs.YConfiguration;
+import org.yamcs.InitException;
+import org.yamcs.YamcsServer;
+import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
+import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 /**
- * Time of flight estimator. Can return a fixed value {@link #defaultTof} or an interpolated value based on a table.
+ * Time of flight estimator.
+ * <p>
+ * It returns time of flight between a spacecraft and a ground antenna by interpolating using user defined spline
+ * polynomials.
  * <p>
  * 
  * @author nm
  *
  */
 public class TimeOfFlightEstimator {
-    double defaultTof;
-    List<TofInterval> calibPoints = new CopyOnWriteArrayList<>();
+    // currently we only support one antenna, in the future we may have one object of this class for each antenna
+    final static String DEFAULT_ANTENNA = "gs1";
+    final static String TABLE_NAME = "tof_";
 
-    public TimeOfFlightEstimator(YConfiguration config) {
-        defaultTof = config.getDouble("defaultTof", 0.0);
+    public static final TupleDefinition TDEF = new TupleDefinition();
+    static {
+        TDEF.addColumn("ertStart", DataType.HRES_TIMESTAMP);
+        TDEF.addColumn("ertStop", DataType.HRES_TIMESTAMP);
+        TDEF.addColumn("polCoef", DataType.BINARY);
+    }
+
+    CopyOnWriteArrayList<TofInterval> calibPoints = new CopyOnWriteArrayList<>();
+    final String clockName;
+    final String antenna = DEFAULT_ANTENNA;
+    final boolean savePolynomials;
+    final String yamcsInstance;
+    final Stream tofStream;
+    String tableName;
+
+    public TimeOfFlightEstimator(String yamcsInstance, String clockName, boolean savePolynomials) throws InitException {
+        this.clockName = clockName;
+        this.savePolynomials = savePolynomials;
+        this.yamcsInstance = yamcsInstance;
+
+        if (savePolynomials) {
+            tableName = TABLE_NAME + clockName;
+
+            String streamName = tableName + "_in";
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            try {
+                if (ydb.getTable(tableName) == null) {
+                    String query = "create table " + tableName + "(" + TDEF.getStringDefinition1()
+                            + ", primary key(ertStart, ertStop))";
+                    ydb.execute(query);
+                } else {
+                    retrieveArchivedCoefficients(ydb);
+                }
+                if (ydb.getStream(streamName) == null) {
+                    ydb.execute("create stream " + streamName + TDEF.getStringDefinition());
+                }
+                ydb.execute("insert into " + tableName + " select * from " + streamName);
+            } catch (ParseException | StreamSqlException e) {
+                throw new InitException(e);
+            }
+            tofStream = ydb.getStream(streamName);
+        } else {
+            tofStream = null;
+        }
+
+    }
+
+    private void retrieveArchivedCoefficients(YarchDatabaseInstance ydb) throws InitException {
+        TimeService timeService = YamcsServer.getTimeService(ydb.getName());
+        long now = timeService.getMissionTime();
+        try {
+            List<TofInterval> tmpl = new ArrayList<>();
+            StreamSqlStatement stmt = ydb.createStatement(
+                    "select * from " + tableName + " where ertStart>? order desc ", now);
+
+            StreamSqlResult res = ydb.execute(stmt);
+            while (res.hasNext()) {
+                tmpl.add(TofInterval.fromTuple(res.next()));
+            }
+
+            calibPoints.addAll(tmpl);
+        } catch (Exception e) {
+            throw new InitException(e);
+        }
     }
 
     /**
      * Returns time of flight of the signal received at ert at the ground station
      * 
      * @param ert
-     * @return time of flight in seconds
+     * @return time of flight in seconds or NaN if it cannot be computed
      */
-    double getTof(Instant ert) {
+    public double getTof(Instant ert) {
         // this iteration assumes that it is more likely to find the wanted ert in front of the list
-        for (TofInterval tdp : calibPoints) {
-            if (tdp.ertStart.compareTo(ert) <= 0 && tdp.ertStop.compareTo(ert) > 0) {
-                return tdp.getTof(ert);
+        for (TofInterval ti : calibPoints) {
+            if (ti.ertStart.compareTo(ert) <= 0 && ti.ertStop.compareTo(ert) > 0) {
+                return ti.getTof(ert);
             }
         }
 
-        return defaultTof;
+        return Double.NaN;
     }
 
-    void addDataPoint(Instant ertStart, Instant ertStop, double[] polCoefficients) {
-        calibPoints.add(0, new TofInterval(ertStart, ertStop, polCoefficients));
+    public void addDataPoint(Instant ertStart, Instant ertStop, double[] polCoefficients) {
+        calibPoints.add(new TofInterval(ertStart, ertStop, polCoefficients));
+        calibPoints.sort((p1, p2) -> p2.ertStart.compareTo(p1.ertStart));
     }
 
-    void addDataPoints(Collection<TofInterval> points) {
-        // sort the list in reverse order on ertStart
-        List<TofInterval> l = new ArrayList<>(points);
-        Collections.sort(l, (p1, p2) -> p2.ertStart.compareTo(p1.ertStart));
+    public void addSplineIntervals(Collection<TofInterval> points) {
+        calibPoints.addAll(points);
+        calibPoints.sort(new IntervalComparator());
+    }
 
-        calibPoints.addAll(0, l);
+    class IntervalComparator implements Comparator<TofInterval> {
+
+        @Override
+        public int compare(TofInterval p1, TofInterval p2) {
+            int c = p2.ertStart.compareTo(p1.ertStart);
+            if(c == 0) {//in case of intervals with the same start, we put the shorter one in front
+                return p1.ertStop.compareTo(p2.ertStop);
+            } else {
+                return c;
+            }
+        }
+    }
+
+    public void deleteSplineIntervals(Instant start, Instant stop) {
+        List<TofInterval> tiList = new ArrayList<>();
+        for (TofInterval ti : calibPoints) {
+            Instant d = ti.ertStart;
+            if (d.compareTo(start) >= 0 && d.compareTo(stop) <= 0) {
+                tiList.add(ti);
+            }
+        }
+        calibPoints.removeAll(tiList);
     }
 
     /**
@@ -90,5 +191,33 @@ public class TimeOfFlightEstimator {
             }
             return r;
         }
+
+        public static TofInterval fromTuple(Tuple tuple) {
+            return new TofInterval((Instant) tuple.getColumn("ertStart"),
+                    (Instant) tuple.getColumn("ertStop"),
+                    decodeCoefficients((byte[]) tuple.getColumn("polCoef")));
+        }
+
+        Tuple toTuple() {
+            return new Tuple(TDEF, Arrays.asList(ertStart, ertStop, encodeCoefficients(polCoef)));
+        }
+
+    }
+
+    static double[] decodeCoefficients(byte[] data) {
+        double[] d = new double[data.length / 8];
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        for (int i = 0; i < d.length; i++) {
+            d[i] = bb.getDouble();
+        }
+        return d;
+    }
+
+    static byte[] encodeCoefficients(double[] polCoef) {
+        ByteBuffer bb = ByteBuffer.allocate(polCoef.length * 8);
+        for (double d : polCoef) {
+            bb.putDouble(d);
+        }
+        return bb.array();
     }
 }

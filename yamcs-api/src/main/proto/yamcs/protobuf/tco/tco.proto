@@ -1,0 +1,218 @@
+syntax="proto2";
+
+package yamcs.protobuf.tco;
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "TcoProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+//Methods related to the Time Correlation Service.
+service TimeCorrelationApi {
+
+
+  // Get the TCO config
+  //
+  // Returns the TCO configuration comprising the accuracy, validity and the fixed delays.
+  rpc GetConfig(GetTcoConfigRequest) returns (TcoConfig) {
+    option (yamcs.api.route) = {
+      get: "/api/tco/{instance}/{clock}/config"
+    };
+  }
+  
+  
+  // Set the TCO config
+  //
+  // Set the TCO configuration. The configuration is not persisted on disk.
+  rpc SetConfig(SetTcoConfigRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/config"
+      body: "config"
+    };
+  }
+  
+  // Get the TCO status
+  //
+  // Returns the TCO status comprising the currently used coefficients, the last computed deviation
+  // and the last received samples.
+  rpc GetStatus(GetTcoStatusRequest) returns (TcoStatus) {
+    option (yamcs.api.route) = {
+      get: "/api/tco/{instance}/{clock}/status"
+    };
+  }
+
+
+  // Set the TCO coefficients
+  //
+  //Manually set the coefficients to be used for time correlation. These will overwrite 
+  // the automatic computed coefficients.
+  rpc SetCoefficients(SetCoefficientsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/coefficients"
+      body: "coefficients"
+    };
+  }
+
+  //Reset the time correlation.
+  //
+  //The current used TCO coefficients are removed together with all collected samples.
+  rpc Reset(TcoResetRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}:reset"
+    };
+  }
+  
+  // Add intervals for the time of flight calculation.
+  //
+  // Each [start, stop) interval contains a polynomial function used to compute the time of flight for the given ert.
+  // The intervals can overlap and are sorted in descending order of the start time.
+  // The first (highest start time) interval where the requested ert fits, will be used for the calculation. 
+  rpc AddTimeOfFlightIntervals(AddTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/tof:addIntervals"
+      body: "*"
+    };
+  }
+  
+  // Delete intervals for the time of flight calculation.
+  //
+  // All the intervals with the start time
+  // falling in the requested [start, stop] interval will be removed. 
+  rpc DeleteTimeOfFlightIntervals(DeleteTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/tco/{instance}/{clock}/tof:deleteIntervals"
+      body: "*"
+    };
+  }
+  
+}
+
+message GetTcoConfigRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+}
+
+
+message SetTcoConfigRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+ 
+  //configuration to set
+  optional TcoConfig config = 3;
+}
+
+message TcoResetRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+}
+
+
+message TcoConfig {
+  optional double accuracy = 1;
+  optional double validity = 2;
+  optional double onboardDelay = 3;
+  optional double defaultTof = 4;
+	
+}
+  
+message GetTcoStatusRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+}
+  
+message SetCoefficientsRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+  
+  //Time correlation coefficients	
+  optional TcoCoefficients coefficients = 3;
+}
+ 
+message AddTimeOfFlightIntervalsRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+  	
+  //intervals for time of flight calculation
+  repeated TofInterval intervals = 3;
+}
+//Delete all the TofIntervals having
+// start <= tofInterval.ertStart <= stop
+message DeleteTimeOfFlightIntervalsRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Clock name.
+  optional string clock = 2;
+  	
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp stop = 4;	
+}
+
+message TcoCoefficients {
+  optional google.protobuf.Timestamp utc = 1;
+  optional uint64 obt = 2;
+  optional double gradient = 3;
+  optional double offset = 4;
+}
+
+//Current status of the Time Correlation
+
+//If the TCO is used only for verifying the synchronization, the message will 
+// contain only the validity, accuracy and deviation.
+message TcoStatus {
+
+  //Currently used coefficients.
+  // If not present, the synchronization is not estabilished
+  optional TcoCoefficients coefficients = 1;
+  
+  //The time when the coefficients have been computed
+  optional google.protobuf.Timestamp coefficientsTime = 2;
+  
+  //The last computed deviation
+  optional double deviation = 3;
+  
+  //The last accumulated samples
+  //These are not necessary those from which the coefficients 
+  //have been calculated because the coefficients will only 
+  //be recalculated when the deviation is higher than the accuracy settings
+  repeated TcoSample samples = 4;
+  
+}
+
+//Sample association between UTC and Onboard time.
+//This is computed by the TCO service after adjusting for internal
+//delays and time of flight. 
+message TcoSample {
+  optional google.protobuf.Timestamp utc = 1;
+  optional uint64 obt = 2;
+}
+
+//The formula used for calculating the time of flight for a frame/packet received
+// at ert (Earth Reception Time) in the [ertStart, ertStop) interval is:
+// delta = ert-ertStart
+// tof = polCoef[0] + polCoef[1]*delta + polCoef[2]*delta^2 + ...
+message TofInterval {
+  optional google.protobuf.Timestamp ertStart = 1;
+  optional google.protobuf.Timestamp ertStop = 2;
+  repeated double polCoef = 3;
+}

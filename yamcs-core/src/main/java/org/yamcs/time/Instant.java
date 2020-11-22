@@ -13,7 +13,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class Instant implements Comparable<Instant> {
     public static final Instant INVALID_INSTANT = new Instant(TimeEncoding.INVALID_INSTANT);
-    static final int PICOS_PER_MILLIS = 1000_000_000;
+    static final long PICOS_PER_MILLIS = 1000_000_000;
 
     public static final long MIN_INSTANT = Long.MIN_VALUE + 1;
     public static final long MAX_INSTANT = 185539080470435999L;
@@ -31,15 +31,26 @@ public class Instant implements Comparable<Instant> {
         this(millis, 0);
     }
 
-    public static Instant get(long millis, int picos) {
+    /**
+     * Create a new instant given the number of milliseconds and the number of picoseconds
+     * 
+     * @param millis
+     * @param picos
+     * @return
+     */
+    public static Instant get(long millis, long picos) {
+        int picos1;
+
         if (picos >= PICOS_PER_MILLIS || picos < 0) {
             millis = Math.addExact(millis, Math.floorDiv(picos, PICOS_PER_MILLIS));
-            picos = (int) Math.floorMod(picos, PICOS_PER_MILLIS);
+            picos1 = (int) Math.floorMod(picos, PICOS_PER_MILLIS);
+        } else {
+            picos1 = (int) picos;
         }
         if (millis > MAX_INSTANT || millis < MIN_INSTANT) {
             throw new IllegalArgumentException("instant exceeds the limit");
         }
-        return new Instant(millis, picos);
+        return new Instant(millis, picos1);
     }
 
     /**

@@ -91,6 +91,11 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ChangeMissionDatabase = new SystemPrivilege("ChangeMissionDatabase");
 
+    /**
+     * Allows to control time correlation
+     */
+    public static final SystemPrivilege ControlTimeCorrelation = new SystemPrivilege("ControlTimeCorrelation");
+
     private String name;
 
     public SystemPrivilege(String name) {
