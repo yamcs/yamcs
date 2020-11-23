@@ -4,7 +4,7 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
-
+import org.yamcs.time.Instant;
 import org.yamcs.utils.parser.ParseException;
 
 /**
@@ -64,6 +64,10 @@ public class ValueExpression extends Expression {
             code.append('"');
             escapeJavaString((String) constantValue, code);
             code.append('"');
+        } else if (constantValue instanceof Instant) {
+            Instant t = (Instant) constantValue;
+            code.append(Instant.class.getName()).append(".get(").append(t.getMillis())
+            .append("l, ").append(t.getPicos()).append(")");
         } else {
             throw new NotImplementedException(constantValue.getClass() + " not usable in constants");
         }

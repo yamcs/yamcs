@@ -44,7 +44,7 @@ public class DataType {
 
     public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15);
 
-    //since yamcs 5.3 the it is stored on disk before the column index, see TableDefinition
+    // since yamcs 5.3 the it is stored on disk before the column index, see TableDefinition
     private final byte id;
 
     protected DataType(_type t, byte id) {
@@ -124,22 +124,23 @@ public class DataType {
 
     /**
      * return the size in bytes of the encoded data type if it can be encoded on fixed size, or -1 if not.
+     * 
      * @param dt
      * @return
      */
     public static int getSerializedSize(DataType dt) {
-        switch(dt.val) {
+        switch (dt.val) {
         case INT:
             return 4;
         case SHORT:
-        case ENUM: //intentional fall-through
-            return 2;             
+        case ENUM: // intentional fall-through
+            return 2;
         case BYTE:
-        case BOOLEAN: //intentional fall-through
+        case BOOLEAN: // intentional fall-through
             return 1;
         case LONG:
         case DOUBLE:
-        case TIMESTAMP: //intentional fall-through
+        case TIMESTAMP: // intentional fall-through
             return 8;
         case HRES_TIMESTAMP:
             return 12;
@@ -147,6 +148,7 @@ public class DataType {
             return -1;
         }
     }
+
     /* returns Int, Short, etc suitable to use as getInt(), getShort() on the Object */
     public static String capitalized(String s) {
         String t = s.toString();
@@ -172,7 +174,7 @@ public class DataType {
             return "Integer";
         case PARAMETER_VALUE:
             return "ParameterValue";
-       case HRES_TIMESTAMP:
+        case HRES_TIMESTAMP:
             return "org.yamcs.time.Instant";
         default:
             throw new IllegalStateException("no java type available for " + this);
@@ -367,6 +369,16 @@ public class DataType {
         }
     }
 
+    public static boolean isComparable(DataType dt) {
+        switch (dt.val) {
+        case HRES_TIMESTAMP:
+        case STRING:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     public static boolean compatible(DataType dt1, DataType dt2) {
         if (dt1 == dt2) {
             return true;
@@ -385,4 +397,5 @@ public class DataType {
     public byte getTypeId() {
         return id;
     }
+
 }

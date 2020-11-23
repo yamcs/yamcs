@@ -212,6 +212,10 @@ public class TaiUtcConverter {
         return d;
     }
 
+    Timestamp instantToProtobuf(long t) {
+        return instantToProtobuf(Instant.get(t));
+    }
+
     /**
      * Converts instant to protobuf timestamp by smearing 24 hours around leap seconds.
      * 

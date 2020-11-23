@@ -182,9 +182,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     private ParameterValue deviationPv;
     String tableName;
 
-    public TimeCorrelationService() {
-        System.out.println("constructor of TimeCorrelationService-----------");
-    }
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         onboardDelay = config.getDouble("onboardDelay", 0) * 0.001;
@@ -266,9 +263,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         if (ysi == null) {
             throw new IllegalArgumentException("Invalid Yamcs instance '" + yamcsInstance + "'");
         }
-        
-        System.out.println("bubub: "+ ysi.getServices(TimeCorrelationService.class));
-
         return ysi.getServices(TimeCorrelationService.class).stream()
                 .filter(tcs -> tcs.getClockName().equals(clockName)).findFirst().orElse(null);
     }
@@ -471,8 +465,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     }
 
     private void publishDeviation(double deviation) {
-        
-        System.out.println("deviation: "+deviation);
         lastDeviation = deviation;
 
         if (spDeviationId == null) {
@@ -551,7 +543,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
     @Override
     public List<ParameterValue> getSystemParameters() {
-        System.out.println("deviationPv: "+deviationPv);
         if (deviationPv != null) {
             return Arrays.asList(deviationPv);
         } else {

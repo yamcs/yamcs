@@ -2,9 +2,6 @@ package org.yamcs.utils;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;

@@ -46,7 +46,6 @@ public class HttpTranscoder {
             if ("*".equals(body)) {
                 requestb = ctx.getBodyAsMessage(requestb);
             } else {
-                System.out.println("requestPrototype: "+requestPrototype);
                 FieldDescriptor field = requestPrototype.getDescriptorForType().findFieldByName(body);
                 if (field.getMessageType().equals(HttpBody.getDescriptor())) {
                     HttpBody httpBody = toHttpBody(ctx);

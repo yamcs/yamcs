@@ -94,20 +94,22 @@ public class RelationalExpression extends Expression {
             children[0].fillCode_getValueReturn(code);
             code.append(relOp.getSign());
             children[1].fillCode_getValueReturn(code);
+        } else if (DataType.isComparable(ch0dt)) {
+            children[0].fillCode_getValueReturn(code);
+            code.append(".compareTo(");
+            children[1].fillCode_getValueReturn(code);
+            code.append(") ");
+            code.append(relOp.getSign());
+            code.append(" 0");
         } else {
             switch (relOp) {
             case NOT_EQUAL:
                 code.append("!");
             case EQUAL: // intentional fall through
                 children[0].fillCode_getValueReturn(code);
-                if (DataType.isNumber(ch0dt)) {
-                    code.append(" == ");
-                    children[1].fillCode_getValueReturn(code);
-                } else {
-                    code.append(".equals(");
+                code.append(".equals(");
                     children[1].fillCode_getValueReturn(code);
                     code.append(")");
-                }
                 break;
             default:
                 throw new StreamSqlException(ErrCode.COMPILE_ERROR,
