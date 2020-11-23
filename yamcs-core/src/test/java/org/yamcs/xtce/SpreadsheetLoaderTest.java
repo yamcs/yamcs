@@ -151,5 +151,10 @@ public class SpreadsheetLoaderTest {
     }
     
     
- 
+    @Test
+    public void testEnumerationDescription() throws Exception {
+        EnumeratedParameterType ept = (EnumeratedParameterType) db.getParameterType("/REFMDB/SUBSYS1/enum1");
+        ValueEnumeration ve = ept.enumValue("one_why not");
+        assertEquals("testing the description of the enumeration label", ve.getDescription());
+    }
 }

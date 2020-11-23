@@ -10,6 +10,7 @@ public class ValueEnumerationRange implements Serializable {
     boolean isMinInclusive = true;
     boolean isMaxInclusive = true;
     String label;
+    private String description;
     
     public ValueEnumerationRange(double min, double max, boolean isMinInclusive, boolean isMaxInclusive, String label) {
         assert(min < max);
@@ -26,5 +27,13 @@ public class ValueEnumerationRange implements Serializable {
     
     public String getLabel() {
         return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -375,7 +374,7 @@ public class V6Loader extends V6LoaderBase {
                     if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                         try {
                             long raw = Integer.decode(getContent(cells, CN_CALIB_CALIB1));
-                            enumeration.valueMap.put(raw, getContent(cells, CN_CALIB_CALIB2));
+                            enumeration.add(raw, getContent(cells, CN_CALIB_CALIB2));
                         } catch (NumberFormatException e) {
                             throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"
                                     + getContent(cells, CN_CALIB_CALIB1) + "'");
@@ -500,8 +499,8 @@ public class V6Loader extends V6LoaderBase {
                             + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
                 }
                 ptypeb = new EnumeratedParameterType.Builder();
-                for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                    ((EnumeratedParameterType.Builder) ptypeb).addEnumerationValue(entry.getKey(), entry.getValue());
+                for (ValueEnumeration ve: enumeration.values) {
+                    ((EnumeratedParameterType.Builder) ptypeb).addEnumerationValue(ve);
                 }
             } else if (PARAM_ENGTYPE_STRING.equalsIgnoreCase(engtype)) {
                 ptypeb = new StringParameterType.Builder();
@@ -1684,8 +1683,8 @@ public class V6Loader extends V6LoaderBase {
                         + calib + "' but the enumeration does not exist");
             }
             atype = new EnumeratedArgumentType.Builder();
-            for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                ((EnumeratedArgumentType.Builder) atype).addEnumerationValue(entry.getKey(), entry.getValue());
+            for (ValueEnumeration ve : enumeration.values) {
+                ((EnumeratedArgumentType.Builder) atype).addEnumerationValue(ve);
             }
         } else if ("string".equalsIgnoreCase(engType)) {
             atype = new StringArgumentType.Builder();

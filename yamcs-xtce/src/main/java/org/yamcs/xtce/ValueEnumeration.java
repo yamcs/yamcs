@@ -7,6 +7,7 @@ public class ValueEnumeration implements Serializable {
     long value;
 
     String label;
+    String description;
 
     public ValueEnumeration(long value, String label) {
         this.value = value;
@@ -19,6 +20,14 @@ public class ValueEnumeration implements Serializable {
 
     public String getLabel() {
         return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

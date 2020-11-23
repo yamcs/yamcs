@@ -132,6 +132,7 @@ import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.TriggeredMathOperation;
 import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.HexUtils;
@@ -2143,12 +2144,17 @@ public class XtceStaxReader {
 
         long longValue = readLongAttribute("value", element);
         String label = readMandatoryAttribute("label", element);
+        String description = readAttribute("shortDescription", element, null);
         String maxValue = readAttribute("maxValue", element, null);
         if (maxValue != null) {
             double mvd = Double.parseDouble(maxValue);
-            enumDataType.addEnumerationRange(new ValueEnumerationRange(longValue, mvd, true, true, label));
+            ValueEnumerationRange ver = new ValueEnumerationRange(longValue, mvd, true, true, label);
+            ver.setDescription(description);
+            enumDataType.addEnumerationRange(ver);
         } else {
-            enumDataType.addEnumerationValue(longValue, label);
+            ValueEnumeration ve = new ValueEnumeration(longValue, label);
+            ve.setDescription(description);
+            enumDataType.addEnumerationValue(ve);
         }
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

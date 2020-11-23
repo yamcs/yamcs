@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -55,6 +54,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     protected static final String CN_CALIB_TYPE = "type";
     protected static final String CN_CALIB_CALIB1 = "calib1";
     protected static final String CN_CALIB_CALIB2 = "calib2";
+    protected static final String CN_CALIB_DESCRIPTION = "description";
 
     protected static final String CALIB_TYPE_ENUMERATION = "enumeration";
     protected static final String CALIB_TYPE_POLYNOMIAL = "polynomial";
@@ -226,7 +226,11 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
      * reading sharing the same EPT among all parameters is not a good approach (think different alarm definitions)
      */
     public static class EnumerationDefinition {
-        public final LinkedHashMap<Long, String> valueMap = new LinkedHashMap<>();
+        public final List<ValueEnumeration> values = new ArrayList<>();
+
+        public void add(long value, String label) {
+            values.add(new ValueEnumeration(value, label));
+        }
     }
 
     /*

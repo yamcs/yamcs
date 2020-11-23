@@ -19,7 +19,9 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AncillaryData;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
 public class BogusSat2Test {
@@ -171,5 +173,12 @@ public class BogusSat2Test {
         AncillaryData ad = l.get(0);
         assertEquals("TEST_ANC_DATA", ad.getName());
         assertEquals("1", ad.getValue());
+    }
+
+    @Test
+    public void testEnumDescription() {
+        EnumeratedParameterType ept = (EnumeratedParameterType) db.getParameterType("/BogusSAT/LOG_MSGS/ERRORCODE_Type");
+        ValueEnumeration ve = ept.enumValue(123l);
+        assertEquals("Detailed description of error case A", ve.getDescription());
     }
 }

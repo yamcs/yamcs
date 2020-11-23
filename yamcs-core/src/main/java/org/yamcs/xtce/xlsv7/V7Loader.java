@@ -429,7 +429,9 @@ public class V7Loader extends V7LoaderBase {
                     if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                         try {
                             long raw = Integer.decode(getContent(cells, CN_CALIB_CALIB1));
-                            enumeration.valueMap.put(raw, getContent(cells, CN_CALIB_CALIB2));
+                            ValueEnumeration ve = new ValueEnumeration(raw, getContent(cells, CN_CALIB_CALIB2));
+                            ve.setDescription(getContent(cells, CN_CALIB_DESCRIPTION, null));
+                            enumeration.values.add(ve);
                         } catch (NumberFormatException e) {
                             throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"
                                     + getContent(cells, CN_CALIB_CALIB1) + "'");
@@ -589,8 +591,8 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Data type " + name
                         + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
             }
-            for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-                edtype.addEnumerationValue(entry.getKey(), entry.getValue());
+            for (ValueEnumeration ve: enumeration.values) {
+                edtype.addEnumerationValue(ve);
             }
         } else if (dtypeb instanceof AbsoluteTimeDataType.Builder<?>) {
             ((AbsoluteTimeDataType.Builder<?>) dtypeb).setEncoding(encoding);
