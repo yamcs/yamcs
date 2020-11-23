@@ -5,30 +5,17 @@ package org.yamcs.client.base;
  */
 public class SpnegoInfo {
 
-    private String host;
-    private int port;
-    private boolean tls;
+    private ServerURL serverURL;
     private boolean verifyTls;
     private String principal;
 
-    public SpnegoInfo(String host, int port, boolean tls, boolean verifyTls, String principal) {
-        this.host = host;
-        this.port = port;
-        this.tls = tls;
+    public SpnegoInfo(ServerURL serverURL, boolean verifyTls, String principal) {
         this.verifyTls = verifyTls;
         this.principal = principal;
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public boolean isTLS() {
-        return tls;
+    public ServerURL getServerURL() {
+        return serverURL;
     }
 
     public boolean isVerifyTLS() {

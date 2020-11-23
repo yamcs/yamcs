@@ -67,14 +67,13 @@ public final class SpnegoUtils {
 
     public static synchronized String fetchAuthenticationCode(SpnegoInfo info) throws SpnegoException {
         try {
-            byte[] token = createToken(info.getHost(), info.getPrincipal());
+            byte[] token = createToken(info.getServerURL().getHost(), info.getPrincipal());
 
-            URL url = new URL(
-                    (info.isTLS() ? "https://" : "http://") + info.getHost() + ":" + info.getPort() + "/auth/spnego");
+            URL url = new URL(info.getServerURL() + "/auth/spnego");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("Authorization", "Negotiate " + new String(token));
 
-            if (info.isTLS() && !info.isVerifyTLS()) {
+            if (info.getServerURL().isTLS() && !info.isVerifyTLS()) {
                 try {
                     SSLContext ctx = SSLContext.getInstance("TLS");
                     ctx.init(null, TRUST_ALL_CERTS, new java.security.SecureRandom());

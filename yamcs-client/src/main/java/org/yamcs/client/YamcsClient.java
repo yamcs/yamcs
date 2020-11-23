@@ -20,6 +20,7 @@ import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.base.HttpMethodHandler;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.base.RestClient;
+import org.yamcs.client.base.ServerURL;
 import org.yamcs.client.base.SpnegoInfo;
 import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.base.WebSocketClientCallback;
@@ -73,12 +74,8 @@ public class YamcsClient {
     private static final int MAX_FRAME_PAYLOAD_LENGTH = 10 * 1024 * 1024;
     private static final Logger log = Logger.getLogger(YamcsClient.class.getName());
 
-    private final String host;
-    private final int port;
-    private boolean tls;
+    private final ServerURL serverURL;
     private boolean verifyTls;
-    private String context;
-
     private int connectionAttempts;
     private long retryDelay;
 
@@ -99,24 +96,20 @@ public class YamcsClient {
     private IamApiClient iamService;
     private ServerApiClient serverService;
 
-    private YamcsClient(String host, int port, boolean tls, boolean verifyTls, String context, int connectionAttempts,
-            long retryDelay) {
-        this.host = host;
-        this.port = port;
-        this.tls = tls;
+    private YamcsClient(ServerURL serverURL, boolean verifyTls, int connectionAttempts, long retryDelay) {
+        this.serverURL = serverURL;
         this.verifyTls = verifyTls;
-        this.context = context;
         this.connectionAttempts = connectionAttempts;
         this.retryDelay = retryDelay;
 
-        baseClient = new RestClient(host, port, tls, context);
+        baseClient = new RestClient(serverURL);
         baseClient.setAutoclose(false);
 
-        websocketClient = new WebSocketClient(host, port, tls, context, new WebSocketClientCallback() {
+        websocketClient = new WebSocketClient(serverURL, new WebSocketClientCallback() {
             @Override
             public void disconnected() {
                 if (!closed) {
-                    String msg = String.format("Connection to %s:%s lost", host, port);
+                    String msg = String.format("Connection to %s lost", serverURL);
                     connectionListeners.forEach(l -> l.log(msg));
                     log.warning(msg);
                 }
@@ -136,8 +129,12 @@ public class YamcsClient {
         serverService = new ServerApiClient(methodHandler);
     }
 
+    public static Builder newBuilder(String serverUrl) {
+        return new Builder(ServerURL.parse(serverUrl));
+    }
+
     public static Builder newBuilder(String host, int port) {
-        return new Builder(host, port);
+        return new Builder(ServerURL.parse("http://" + host + ":" + port));
     }
 
     /**
@@ -153,15 +150,15 @@ public class YamcsClient {
 
     public synchronized void connectWithKerberos(String principal) throws ClientException {
         pollServer();
-        SpnegoInfo spnegoInfo = new SpnegoInfo(host, port, tls, verifyTls, principal);
+        SpnegoInfo spnegoInfo = new SpnegoInfo(serverURL, verifyTls, principal);
         String authorizationCode;
         try {
             authorizationCode = baseClient.authorizeKerberos(spnegoInfo);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
             }
-            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
             throw new UnauthorizedException();
         }
 
@@ -169,9 +166,9 @@ public class YamcsClient {
             baseClient.loginWithAuthorizationCode(authorizationCode);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
             }
-            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
             throw e;
         }
         Credentials creds = baseClient.getCredentials();
@@ -189,9 +186,9 @@ public class YamcsClient {
             baseClient.login(username, password);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
             }
-            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
             throw e;
         }
         String accessToken = baseClient.getCredentials().getAccessToken();
@@ -212,22 +209,22 @@ public class YamcsClient {
                     Throwable cause = e.getCause();
                     if (cause instanceof UnauthorizedException) {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
                             cl.connectionFailed((UnauthorizedException) cause);
                         }
-                        log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
+                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
                         throw (UnauthorizedException) cause; // Jump out
                     } else {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
                         }
-                        log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
+                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
                     }
                 } catch (TimeoutException e) {
                     for (ConnectionListener cl : connectionListeners) {
-                        cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                        cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
                     }
-                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+                    log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     for (ConnectionListener cl : connectionListeners) {
@@ -281,16 +278,16 @@ public class YamcsClient {
             return;
         } catch (SSLException | GeneralSecurityException | TimeoutException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
             }
-            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
             throw new ClientException("Cannot connect WebSocket client", e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
             }
-            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
             if (cause instanceof WebSocketHandshakeException && cause.getMessage().contains("401")) {
                 throw new UnauthorizedException();
             } else if (cause instanceof ClientException) {
@@ -495,15 +492,23 @@ public class YamcsClient {
     }
 
     public String getHost() {
-        return host;
+        return serverURL.getHost();
     }
 
     public int getPort() {
-        return port;
+        return serverURL.getPort();
+    }
+
+    public boolean isTLS() {
+        return serverURL.isTLS();
     }
 
     public String getContext() {
-        return context;
+        return serverURL.getContext();
+    }
+
+    public boolean isVerifyTLS() {
+        return verifyTls;
     }
 
     public void addConnectionListener(ConnectionListener connectionListener) {
@@ -523,11 +528,7 @@ public class YamcsClient {
     }
 
     public String getUrl() {
-        if (tls) {
-            return String.format("https://%s:%s", host, port);
-        } else {
-            return String.format("http://%s:%s", host, port);
-        }
+        return serverURL.toString();
     }
 
     public TimeSubscription createTimeSubscription() {
@@ -588,29 +589,25 @@ public class YamcsClient {
 
     public static class Builder {
 
-        private String host;
-        private int port;
-        private boolean tls;
+        private ServerURL serverURL;
         private boolean verifyTls = true;
         private Path caCertFile;
         private String userAgent;
-        private String context;
 
         private int connectionAttempts = 1;
         private long retryDelay = 5000;
 
-        private Builder(String host, int port) {
-            this.host = host;
-            this.port = port;
+        private Builder(ServerURL serverURL) {
+            this.serverURL = serverURL;
         }
 
         public Builder withContext(String context) {
-            this.context = context;
+            serverURL.setContext(context);
             return this;
         }
 
         public Builder withTls(boolean tls) {
-            this.tls = tls;
+            serverURL.setTLS(tls);
             return this;
         }
 
@@ -640,7 +637,7 @@ public class YamcsClient {
         }
 
         public YamcsClient build() {
-            YamcsClient client = new YamcsClient(host, port, tls, verifyTls, context, connectionAttempts, retryDelay);
+            YamcsClient client = new YamcsClient(serverURL, verifyTls, connectionAttempts, retryDelay);
             client.baseClient.setInsecureTls(!verifyTls);
             client.websocketClient.setInsecureTls(!verifyTls);
             if (caCertFile != null) {
