@@ -26,12 +26,13 @@ public class ParameterValueListTest {
 	ParameterValue pv2bis = new ParameterValue(params[2]);
 	pvalues.add(pv2bis);
 
-	
-	
-
 	//bulk create
 	ParameterValueList pvlist1 = new ParameterValueList(pvalues);
 	assertEquals(n+1, pvlist1.getSize());
+	
+	assertEquals(pvalues.get(n), pvlist1.getLast());
+	assertEquals(pvalues.get(0), pvlist1.getFirst());
+        
 
 	ParameterValue pv10 = pvlist1.getLastInserted(params[10]);
 	assertEquals(pvalues.get(10), pv10);

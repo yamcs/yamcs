@@ -11,10 +11,11 @@ import org.yamcs.xtce.Parameter;
 /**
  * 
  * Stores a collection of ParameterValue indexed on Parameter
- * 
- * It works like a LinkedHashMap&lt;Parameter, LinkedList&lt;ParameterValue&gt;&gt;
- *
- * 
+ * <p>
+ * it works like a LinkedHashMap&lt;Parameter, LinkedList&lt;ParameterValue&gt;&gt;
+ * <p>
+ * it also works like a LinkedList&lt;ParameterValue;&gt;
+ * <p>
  * Not thread safe
  * 
  * @author nm
@@ -159,6 +160,13 @@ public class ParameterValueList implements Collection<ParameterValue> {
         size++;
     }
 
+    public ParameterValue getFirst() {
+        return head.after.pv;
+    }
+
+    public ParameterValue getLast() {
+        return head.before.pv;
+    }
     private int getHash(Parameter p) {
         return p.hashCode();
     }
@@ -487,7 +495,5 @@ public class ParameterValueList implements Collection<ParameterValue> {
         public void remove() {
             throw new UnsupportedOperationException();
         }
-
     }
-
 }
