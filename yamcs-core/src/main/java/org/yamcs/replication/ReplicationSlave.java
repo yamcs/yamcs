@@ -368,7 +368,6 @@ public class ReplicationSlave extends AbstractYamcsService {
             public void processData(long txId, ByteBuffer niobuf) {
                 TupleDefinition tdef = new TupleDefinition();
                 ArrayList<Object> cols = new ArrayList<>();
-
                 // deserialize the value
                 try {
                     while (true) {
@@ -388,11 +387,10 @@ public class ReplicationSlave extends AbstractYamcsService {
                         int typeId = id >>> 24;
                         ColumnDefinition cd = completeTuple.getColumn(cidx);
                         ColumnSerializer cs = serializers[cidx];
-
                         if (cd.getType().getTypeId() != typeId) {
                             log.warn(
-                                    "TX{}: when deserializing data for stream {}: type id for index {} is {}; expected {}",
-                                    txId, stream.getName(), cidx, typeId, cd.getType().getTypeId());
+                                    "TX{}: when deserializing data for stream {}: type id for index {} (column {}) is {}; expected {}",
+                                    txId, stream.getName(), cidx, cd.getName(), typeId, cd.getType().getTypeId());
                             return;
                         }
                         Object o = cs.deserialize(niobuf, cd);

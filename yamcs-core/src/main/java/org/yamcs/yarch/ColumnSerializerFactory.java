@@ -298,7 +298,7 @@ public class ColumnSerializerFactory {
             int pos = byteBuf.position();
             byteBuf.putShort((short) 0);
             encodeUTF(byteBuf, v);
-            byteBuf.putShort(pos, (short) (byteBuf.position() - pos));
+            byteBuf.putShort(pos, (short) (byteBuf.position() - pos - 2));
         }
     }
 
