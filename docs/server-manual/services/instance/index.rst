@@ -15,5 +15,6 @@ Instance Services
     replay-server
     system-parameters-collector
     xtce-tm-recorder
+    time-correlation
     replication-master
     replication-slave

@@ -66,9 +66,19 @@ service TimeCorrelationApi {
   
   // Add intervals for the time of flight calculation.
   //
-  // Each [start, stop) interval contains a polynomial function used to compute the time of flight for the given ert.
+  // Each ``[ertStart, ertStop)`` interval contains a polynomial function used to compute the time of flight for the given ``ert``.
   // The intervals can overlap and are sorted in descending order of the start time.
   // The first (highest start time) interval where the requested ert fits, will be used for the calculation. 
+  // 
+  // The formula used for calculating the time of flight for a frame/packet received
+  // at ``ert`` in the ``[ertStart, ertStop)`` interval is:
+  // 
+  //     ``delta = ert - ertStart``
+  //
+  //     ``tof = polCoef[0] + polCoef[1] * delta + polCoef[2] * delta^2 + ...``
+  // 
+  // The result of the polynomial is the ``tof`` expressed in seconds.
+  //
   rpc AddTimeOfFlightIntervals(AddTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/tco/{instance}/{clock}/tof:addIntervals"
@@ -207,10 +217,7 @@ message TcoSample {
   optional uint64 obt = 2;
 }
 
-//The formula used for calculating the time of flight for a frame/packet received
-// at ert (Earth Reception Time) in the [ertStart, ertStop) interval is:
-// delta = ert-ertStart
-// tof = polCoef[0] + polCoef[1]*delta + polCoef[2]*delta^2 + ...
+
 message TofInterval {
   optional google.protobuf.Timestamp ertStart = 1;
   optional google.protobuf.Timestamp ertStop = 2;

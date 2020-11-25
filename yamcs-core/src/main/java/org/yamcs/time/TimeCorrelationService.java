@@ -184,12 +184,12 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
-        onboardDelay = config.getDouble("onboardDelay", 0) * 0.001;
-        numSamples = config.getInt("numSamples", 5);
+        onboardDelay = config.getDouble("onboardDelay", 0);
+        numSamples = config.getInt("numSamples", 3);
         sampleQueue = new ArrayDeque<>(numSamples);
         clockName = config.getString("clockName", DEFAULT_CLOCK_NAME);
-        accuracy = config.getDouble("accuracy", 100) * 0.001;
-        validity = config.getDouble("validity", 200) * 0.001;
+        accuracy = config.getDouble("accuracy", 0.001);
+        validity = config.getDouble("validity", 0.002);
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);

@@ -1,5 +1,8 @@
 package org.yamcs.http.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
@@ -48,21 +51,21 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         if (conf.hasValidity()) {
             tco.setValidity(verifyPositive("validity", conf.getValidity()));
         }
-        
+
         if (conf.hasDefaultTof()) {
             tco.setDefaultTof(verifyPositive("defaultTof", conf.getDefaultTof()));
         }
-        
+
         if (conf.hasOnboardDelay()) {
             tco.setOnboardDelay(verifyPositive("onboardDelay", conf.getOnboardDelay()));
         }
-        
+
         observer.complete();
     }
 
     private double verifyPositive(String name, double value) {
-        if(value<0 || !Double.isFinite(value)) {
-            throw new BadRequestException("Invalid "+name);
+        if (value < 0 || !Double.isFinite(value)) {
+            throw new BadRequestException("Invalid " + name);
         }
         return value;
     }
@@ -79,20 +82,20 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
     public void setCoefficients(Context ctx, SetCoefficientsRequest request, Observer<Empty> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getClock());
-        if(!request.hasCoefficients()) {
+        if (!request.hasCoefficients()) {
             throw new BadRequestException("no coefficients provided");
         }
-        
+
         org.yamcs.protobuf.TcoCoefficients pcoef = request.getCoefficients();
-        if(!pcoef.hasUtc()) {
+        if (!pcoef.hasUtc()) {
             throw new BadRequestException("no UTC provided");
         }
-        if(!pcoef.hasObt()) {
+        if (!pcoef.hasObt()) {
             throw new BadRequestException("no OBT provided");
         }
-        double gradient = pcoef.hasGradient()? pcoef.getGradient():0;
-        double offset = pcoef.hasOffset()? pcoef.getOffset():0;
-        
+        double gradient = pcoef.hasGradient() ? pcoef.getGradient() : 0;
+        double offset = pcoef.hasOffset() ? pcoef.getOffset() : 0;
+
         tco.forceCoefficients(TimeEncoding.fromProtobufHresTimestamp(pcoef.getUtc()), pcoef.getObt(), offset, gradient);
         observer.complete();
     }
@@ -111,22 +114,26 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getClock());
         TimeOfFlightEstimator tofEstimator = tco.getTofEstimator();
-        for(TofInterval ti: request.getIntervalsList()) {
+        List<TimeOfFlightEstimator.TofInterval> intervalList = new ArrayList<>();
+
+        for (TofInterval ti : request.getIntervalsList()) {
             Instant start = verifyInstant("ertStart", ti.getErtStart());
             Instant stop = verifyInstant("ertStop", ti.getErtStop());
 
-            if(ti.getPolCoefCount()==0) {
+            if (ti.getPolCoefCount() == 0) {
                 throw new BadRequestException("no polynomial coefficient has been specified");
             }
-            double[] coef =  ti.getPolCoefList().stream().mapToDouble(d->d).toArray();
-            tofEstimator.addDataPoint(start, stop, coef);    
+            double[] coef = ti.getPolCoefList().stream().mapToDouble(d -> d).toArray();
+            intervalList.add(new TimeOfFlightEstimator.TofInterval(start, stop, coef));
         }
+
+        tofEstimator.addIntervals(intervalList);
         observer.complete();
     }
 
     private Instant verifyInstant(String name, Timestamp value) {
-        if(value == null) {
-            throw new BadRequestException(name+" has not been provided");
+        if (value == null) {
+            throw new BadRequestException(name + " has not been provided");
         }
         return TimeEncoding.fromProtobufHresTimestamp(value);
     }
@@ -152,5 +159,4 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         }
         return tco;
     }
-
 }

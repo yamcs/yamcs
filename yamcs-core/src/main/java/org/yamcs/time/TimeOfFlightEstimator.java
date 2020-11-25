@@ -19,7 +19,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 /**
  * Time of flight estimator.
@@ -43,7 +42,7 @@ public class TimeOfFlightEstimator {
         TDEF.addColumn("polCoef", DataType.BINARY);
     }
 
-    CopyOnWriteArrayList<TofInterval> calibPoints = new CopyOnWriteArrayList<>();
+    CopyOnWriteArrayList<TofInterval> calibIntervals = new CopyOnWriteArrayList<>();
     final String clockName;
     final String antenna = DEFAULT_ANTENNA;
     final boolean savePolynomials;
@@ -88,15 +87,13 @@ public class TimeOfFlightEstimator {
         long now = timeService.getMissionTime();
         try {
             List<TofInterval> tmpl = new ArrayList<>();
-            StreamSqlStatement stmt = ydb.createStatement(
+            StreamSqlResult res = ydb.execute(
                     "select * from " + tableName + " where ertStart>? order desc ", now);
-
-            StreamSqlResult res = ydb.execute(stmt);
             while (res.hasNext()) {
                 tmpl.add(TofInterval.fromTuple(res.next()));
             }
 
-            calibPoints.addAll(tmpl);
+            calibIntervals.addAll(tmpl);
         } catch (Exception e) {
             throw new InitException(e);
         }
@@ -110,7 +107,7 @@ public class TimeOfFlightEstimator {
      */
     public double getTof(Instant ert) {
         // this iteration assumes that it is more likely to find the wanted ert in front of the list
-        for (TofInterval ti : calibPoints) {
+        for (TofInterval ti : calibIntervals) {
             if (ti.ertStart.compareTo(ert) <= 0 && ti.ertStop.compareTo(ert) > 0) {
                 return ti.getTof(ert);
             }
@@ -119,22 +116,30 @@ public class TimeOfFlightEstimator {
         return Double.NaN;
     }
 
-    public void addDataPoint(Instant ertStart, Instant ertStop, double[] polCoefficients) {
-        calibPoints.add(new TofInterval(ertStart, ertStop, polCoefficients));
-        calibPoints.sort((p1, p2) -> p2.ertStart.compareTo(p1.ertStart));
+    public void addInterval(Instant ertStart, Instant ertStop, double[] polCoefficients) {
+        TofInterval ti = new TofInterval(ertStart, ertStop, polCoefficients);
+        calibIntervals.add(ti);
+        calibIntervals.sort(new IntervalComparator());
+        if (tofStream != null) {
+            tofStream.emitTuple(ti.toTuple());
+        }
     }
 
-    public void addSplineIntervals(Collection<TofInterval> points) {
-        calibPoints.addAll(points);
-        calibPoints.sort(new IntervalComparator());
+    public void addIntervals(Collection<TofInterval> intervals) {
+        calibIntervals.addAll(intervals);
+        calibIntervals.sort(new IntervalComparator());
+        if (tofStream != null) {
+            for (TofInterval ti : intervals) {
+                tofStream.emitTuple(ti.toTuple());
+            }
+        }
     }
 
     class IntervalComparator implements Comparator<TofInterval> {
-
         @Override
         public int compare(TofInterval p1, TofInterval p2) {
             int c = p2.ertStart.compareTo(p1.ertStart);
-            if(c == 0) {//in case of intervals with the same start, we put the shorter one in front
+            if (c == 0) {// in case of intervals with the same start, we put the shorter one in front
                 return p1.ertStop.compareTo(p2.ertStop);
             } else {
                 return c;
@@ -144,13 +149,13 @@ public class TimeOfFlightEstimator {
 
     public void deleteSplineIntervals(Instant start, Instant stop) {
         List<TofInterval> tiList = new ArrayList<>();
-        for (TofInterval ti : calibPoints) {
+        for (TofInterval ti : calibIntervals) {
             Instant d = ti.ertStart;
             if (d.compareTo(start) >= 0 && d.compareTo(stop) <= 0) {
                 tiList.add(ti);
             }
         }
-        calibPoints.removeAll(tiList);
+        calibIntervals.removeAll(tiList);
     }
 
     /**

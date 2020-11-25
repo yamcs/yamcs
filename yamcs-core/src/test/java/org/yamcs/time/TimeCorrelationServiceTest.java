@@ -16,6 +16,8 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class TimeCorrelationServiceTest {
     static String yamcsInstance = "ots-test";   
     static String tableName = TimeCorrelationService.TABLE_NAME+TimeCorrelationService.DEFAULT_CLOCK_NAME;
+    
+    
     @BeforeClass
     public static void beforeClass() {
         TimeEncoding.setUp();
