@@ -1,3 +1,4 @@
+import { WebSocketCall } from '../WebSocketCall';
 import { Processor } from './processing';
 
 export interface AuthInfo {
@@ -157,7 +158,6 @@ export interface TemplateVariable {
 export interface ConnectionInfo {
   instance: string;
   processor?: Processor;
-  clearance?: string;
 }
 
 export interface ClientConnectionInfo {
@@ -290,6 +290,8 @@ export interface Clearance {
   issuedBy: string;
   issueTime: string;
 }
+
+export type ClearanceSubscription = WebSocketCall<void, Clearance>;
 
 export interface Service {
   instance: string;
