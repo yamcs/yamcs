@@ -7,6 +7,10 @@ public class UnauthorizedException extends ClientException {
         super("Unauthorized");
     }
 
+    public UnauthorizedException(String message) {
+        super("Unauthorized: " + message);
+    }
+
     public UnauthorizedException(ExceptionData restData) {
         super(restData);
     }
