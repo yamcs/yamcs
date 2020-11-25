@@ -89,11 +89,11 @@ public class WebSocketClient {
     // Calls by server-assigned id
     private Map<Integer, Call> confirmedCalls = new ConcurrentHashMap<>();
 
-    public WebSocketClient(String host, int port, boolean tls, String context, WebSocketClientCallback callback) {
-        this.host = host;
-        this.port = port;
-        this.tls = tls;
-        this.context = context;
+    public WebSocketClient(ServerURL serverURL, WebSocketClientCallback callback) {
+        this.host = serverURL.getHost();
+        this.port = serverURL.getPort();
+        this.tls = serverURL.isTLS();
+        this.context = serverURL.getContext();
         this.callback = callback;
     }
 

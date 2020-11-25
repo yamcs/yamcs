@@ -24,6 +24,7 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Credentials;
 import org.yamcs.client.UnauthorizedException;
+import org.yamcs.client.base.SpnegoUtils.SpnegoException;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -128,23 +129,40 @@ public class HttpClient {
         }
     }
 
-    public synchronized void refreshAccessToken() throws ClientException {
-        Map<String, String> attrs = new HashMap<>();
-        attrs.put("grant_type", "refresh_token");
-        attrs.put("refresh_token", credentials.getRefreshToken());
-
+    public synchronized String authorizeKerberos(SpnegoInfo info) throws ClientException {
         try {
-            credentials = requestTokens(tokenUrl, attrs).get();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof ClientException) {
-                throw (ClientException) e.getCause();
-            } else {
-                throw new ClientException(e.getCause());
-            }
-        } catch (IOException | GeneralSecurityException e) {
+            return SpnegoUtils.fetchAuthenticationCode(info);
+        } catch (SpnegoException e) {
             throw new ClientException(e);
+        }
+    }
+
+    public synchronized void refreshAccessToken() throws ClientException {
+        if (credentials.getRefreshToken() != null) {
+            Map<String, String> attrs = new HashMap<>();
+            attrs.put("grant_type", "refresh_token");
+            attrs.put("refresh_token", credentials.getRefreshToken());
+
+            try {
+                credentials = requestTokens(tokenUrl, attrs).get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof ClientException) {
+                    throw (ClientException) e.getCause();
+                } else {
+                    throw new ClientException(e.getCause());
+                }
+            } catch (IOException | GeneralSecurityException e) {
+                throw new ClientException(e);
+            }
+        } else if (credentials.getSpnegoInfo() != null) {
+            SpnegoInfo spnegoInfo = credentials.getSpnegoInfo();
+            String authorizationCode = authorizeKerberos(spnegoInfo);
+            loginWithAuthorizationCode(tokenUrl, authorizationCode);
+            credentials.setSpnegoInfo(spnegoInfo); // We have a new credentials object
+        } else {
+            throw new ClientException("No refresh token available");
         }
     }
 

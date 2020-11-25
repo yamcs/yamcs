@@ -22,7 +22,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
  */
 public class RestClient {
 
-    private String baseURL;
+    private ServerURL serverURL;
     private final HttpClient httpClient;
 
     /** maximum size of the responses - this is not applicable to bulk requests */
@@ -36,12 +36,8 @@ public class RestClient {
     /**
      * Creates a rest client that communications using protobuf
      */
-    public RestClient(String host, int port, boolean tls, String context) {
-        if (context == null) {
-            baseURL = (tls ? "https" : "http") + "://" + host + ":" + port;
-        } else {
-            baseURL = (tls ? "https" : "http") + "://" + host + ":" + port + "/" + context;
-        }
+    public RestClient(ServerURL serverURL) {
+        this.serverURL = serverURL;
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
         httpClient.setAcceptMediaType(HttpClient.MT_PROTOBUF);
@@ -49,13 +45,17 @@ public class RestClient {
     }
 
     public synchronized void login(String username, char[] password) throws ClientException {
-        String tokenUrl = baseURL + "/auth/token";
+        String tokenUrl = serverURL + "/auth/token";
         httpClient.login(tokenUrl, username, password);
     }
 
     public synchronized void loginWithAuthorizationCode(String authorizationCode) throws ClientException {
-        String tokenUrl = baseURL + "/auth/token";
+        String tokenUrl = serverURL + "/auth/token";
         httpClient.loginWithAuthorizationCode(tokenUrl, authorizationCode);
+    }
+
+    public synchronized String authorizeKerberos(SpnegoInfo info) throws ClientException {
+        return httpClient.authorizeKerberos(info);
     }
 
     /**
@@ -91,7 +91,7 @@ public class RestClient {
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(baseURL + "/api" + resource, method, body.getBytes());
+            cf = httpClient.doAsyncRequest(serverURL + "/api" + resource, method, body.getBytes());
         } catch (ClientException | IOException | GeneralSecurityException e) {
             // throw a RuntimeException instead since if the code is not buggy it's
             // unlikely to have this exception thrown
@@ -154,7 +154,7 @@ public class RestClient {
     public CompletableFuture<byte[]> doBaseRequest(String resource, HttpMethod method, byte[] body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(baseURL + resource, method, body);
+            cf = httpClient.doAsyncRequest(serverURL + resource, method, body);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
@@ -189,7 +189,7 @@ public class RestClient {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(baseURL + "/api" + resource, method,
+            cf = httpClient.doBulkReceiveRequest(serverURL + "/api" + resource, method,
                     body, splitter);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
@@ -320,7 +320,7 @@ public class RestClient {
 
     public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String resource, HttpMethod method) {
         try {
-            return httpClient.doBulkSendRequest(baseURL + "/api" + resource, method);
+            return httpClient.doBulkSendRequest(serverURL + "/api" + resource, method);
         } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }

@@ -78,6 +78,16 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
           if (data.mapping) {
             this.idMapping = data.mapping;
           }
+          for (const id of (data.invalid || [])) {
+            let pvName = id.name;
+            if (id.namespace === OPS_NAMESPACE) {
+              pvName = OPS_DATASOURCE + pvName;
+            }
+            const pv = this.display.getPV(pvName);
+            if (pv) {
+              pv.disconnected = true;
+            }
+          }
           if (data.values && data.values.length) {
             const samples = new Map<string, Sample>();
             for (const pval of data.values) {
@@ -186,7 +196,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   }
 
   canProvide(pvName: string): boolean {
-    return pvName.startsWith('/') || pvName.startsWith('ops://');
+    return true; // Try it all (we run after defaults)
   }
 
   startProviding(pvs: PV[]): void {
