@@ -188,8 +188,8 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         numSamples = config.getInt("numSamples", 3);
         sampleQueue = new ArrayDeque<>(numSamples);
         clockName = config.getString("clockName", DEFAULT_CLOCK_NAME);
-        accuracy = config.getDouble("accuracy", 0.001);
-        validity = config.getDouble("validity", 0.002);
+        accuracy = config.getDouble("accuracy", 0.1);
+        validity = config.getDouble("validity", 0.2);
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
@@ -321,6 +321,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             Instant obi1 = curCoefficients.getInstant(obt);
             double deviation = obi1.deltaFrom(obi);
             double dev = Math.abs(deviation);
+
             if (dev > validity) {
                 eventProducer.sendWarning(String.format("Deviation %f (ms) "
                         + "greater than the allowed validity %f (ms), reseting correlation", dev * 1000,
