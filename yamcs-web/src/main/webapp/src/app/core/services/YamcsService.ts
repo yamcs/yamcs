@@ -2,7 +2,7 @@ import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
+import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
 import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 
 /**
@@ -17,6 +17,8 @@ export class YamcsService {
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
 
+  readonly clearance$ = new BehaviorSubject<Clearance | null>(null);
+  private clearanceSubscription: ClearanceSubscription;
   readonly time$ = new BehaviorSubject<string | null>(null);
   private timeSubscription: TimeSubscription;
 
@@ -73,6 +75,10 @@ export class YamcsService {
           this.time$.next(time.value);
           resolve();
         });
+        this.clearanceSubscription = this.yamcsClient.createClearanceSubscription(clearance => {
+          this.clearance$.next(clearance);
+          resolve();
+        });
       }).catch(err => {
         reject(err);
       });
@@ -98,6 +104,10 @@ export class YamcsService {
           processor: processorId,
         }, time => {
           this.time$.next(time.value);
+          resolve();
+        });
+        this.clearanceSubscription = this.yamcsClient.createClearanceSubscription(clearance => {
+          this.clearance$.next(clearance);
           resolve();
         });
       }).catch(err => {
@@ -135,8 +145,12 @@ export class YamcsService {
   clearContext() {
     this.connectionInfo$.next(null);
     this.time$.next(null);
+    this.clearance$.next(null);
     if (this.timeSubscription) {
       this.timeSubscription.cancel();
+    }
+    if (this.clearanceSubscription) {
+      this.clearanceSubscription.cancel();
     }
   }
 

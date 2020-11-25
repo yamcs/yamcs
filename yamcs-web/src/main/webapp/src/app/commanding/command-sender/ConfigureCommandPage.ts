@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Command, CommandHistoryEntry, ConnectionInfo } from '../../client';
+import { Clearance, Command, CommandHistoryEntry } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -70,8 +70,8 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
       this.template$.next(template || null);
 
       if (this.config.commandClearances) {
-        this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
-          this.cleared$.next(this.isCleared(connectionInfo, command.significance?.consequenceLevel));
+        this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
+          this.cleared$.next(this.isCleared(clearance, command.significance?.consequenceLevel));
         });
       }
     });
@@ -119,12 +119,12 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     });
   }
 
-  private isCleared(connectionInfo: ConnectionInfo | null, level?: string) {
-    if (!connectionInfo || !connectionInfo.clearance) {
+  private isCleared(clearance: Clearance | null, level?: string) {
+    if (!clearance) {
       return false;
     }
 
-    switch (connectionInfo.clearance) {
+    switch (clearance.level) {
       case 'SEVERE':
         if (level === 'SEVERE') {
           return true;
