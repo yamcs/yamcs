@@ -210,7 +210,7 @@ public class Command implements Comparable<Command> {
             if (isAcknowledgmentStatusAttribute(name)) {
                 Acknowledgment ack = getAcknowledgment(name.substring(0, name.length() - 7));
                 if (ack != null) {
-                    acknowledgments.put(name, ack);
+                    acknowledgments.put(ack.getName(), ack);
                 }
             }
         }
