@@ -10,6 +10,7 @@ public class SpnegoInfo {
     private String principal;
 
     public SpnegoInfo(ServerURL serverURL, boolean verifyTls, String principal) {
+        this.serverURL = serverURL;
         this.verifyTls = verifyTls;
         this.principal = principal;
     }

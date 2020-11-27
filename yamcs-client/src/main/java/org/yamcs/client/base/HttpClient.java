@@ -376,7 +376,7 @@ public class HttpClient {
         String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
         int port = uri.getPort();
         if (port == -1) {
-            port = 80;
+            port = "https".equals(uri.getScheme()) ? 443 : 80;
         }
 
         if ("https".equalsIgnoreCase(scheme)) {
