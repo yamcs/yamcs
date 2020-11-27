@@ -15,10 +15,6 @@ options{
 PARSER_BEGIN(StreamSqlParser)
 package org.yamcs.yarch.streamsql;
 
-import java.io.Reader;
-import java.io.FileInputStream;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.math.BigDecimal;
@@ -34,8 +30,6 @@ import org.yamcs.yarch.TableWriter.InsertMode;
 
 
 public class StreamSqlParser {
-
-    private String lastObjectReference = null;
     private Object[] args = new Object[0];
     int argCount = 0;
 
@@ -71,6 +65,7 @@ public class StreamSqlParser {
         if("PARAMETER_VALUE".equalsIgnoreCase(type)) {return DataType.PARAMETER_VALUE;}
         if("BINARY".equalsIgnoreCase(type))  {return DataType.BINARY;}
         if("HRES_TIMESTAMP".equalsIgnoreCase(type)) {return DataType.HRES_TIMESTAMP;}
+    	if("UUID".equalsIgnoreCase(type)) {return DataType.UUID;}
     
         throw new ParseException("Unknown data type '"+type+"'");
     }

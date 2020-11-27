@@ -741,6 +741,12 @@ public class TableApi extends AbstractTableApi<Context> {
                     v.setBinaryValue(message.toByteString());
                 }
                 break;
+            case UUID:
+                v.setType(Type.STRING);
+                if (column != null) {
+                    v.setStringValue(((java.util.UUID) column).toString());
+                }
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Tuple column type " + cdef.getType().val + " is currently not supported");
@@ -779,13 +785,13 @@ public class TableApi extends AbstractTableApi<Context> {
         Tablespace tablespace = rse.getTablespace(ydb.getName());
         HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb, table.getName());
         TimeInterval interval = new TimeInterval();
-        if(request.hasStart()) {
+        if (request.hasStart()) {
             interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
-        if(request.hasStop()) {
+        if (request.hasStop()) {
             interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
-        
+
         try {
             rebuilder.rebuild(interval).whenComplete((v, e) -> {
                 if (e != null) {

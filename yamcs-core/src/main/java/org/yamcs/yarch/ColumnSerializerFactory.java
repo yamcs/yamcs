@@ -48,6 +48,7 @@ public class ColumnSerializerFactory {
 
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V2 = new ColumnSerializerV2.HresTimestampColumnSerializer();
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V3 = new ColumnSerializerV3.HresTimestampColumnSerializer();
+    static final ColumnSerializer<java.util.UUID> UUID_CS = new ColumnSerializerV3.UUIDColumnSerializer();
 
     static final ParameterValueColumnSerializer PARAMETER_VALUE_CS = new ParameterValueColumnSerializer();
 
@@ -127,6 +128,8 @@ public class ColumnSerializerFactory {
             return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
         case HRES_TIMESTAMP:
             return (ColumnSerializer<T>) HRES_TIMESTAMP_CS_V3;
+        case UUID:
+            return (ColumnSerializer<T>) UUID_CS;
         case LIST:
         case TUPLE:
             // TODO

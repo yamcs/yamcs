@@ -8,11 +8,17 @@ import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class ColumnSerializerV3 {
-    static class ShortColumnSerializer implements ColumnSerializer<Short> {
-        static short invertSign(short x) {
-            return (short) (x ^ Short.MIN_VALUE);
-        }
+    static short invertSign(short x) {
+        return (short) (x ^ Short.MIN_VALUE);
+    }
+    static int invertSign(int x) {
+        return x ^ Integer.MIN_VALUE;
+    }
+    static long invertSign(long x) {
+        return x ^ Long.MIN_VALUE;
+    } 
 
+    static class ShortColumnSerializer implements ColumnSerializer<Short> {
         @Override
         public Short deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
             return invertSign(byteArray.getShort());
@@ -46,10 +52,6 @@ public class ColumnSerializerV3 {
     }
 
     static class IntegerColumnSerializer implements ColumnSerializer<Integer> {
-        static int invertSign(int x) {
-            return x ^ Integer.MIN_VALUE;
-        }
-        
         @Override
         public Integer deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
             return invertSign(byteArray.getInt());
@@ -73,11 +75,6 @@ public class ColumnSerializerV3 {
 
     
     static class LongColumnSerializer implements ColumnSerializer<Long> {
-        static long invertSign(long x) {
-            return x ^ Long.MIN_VALUE;
-        }
-        
-
         @Override
         public Long deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
             return invertSign(byteArray.getLong());
@@ -100,7 +97,6 @@ public class ColumnSerializerV3 {
     }
 
     static class DoubleColumnSerializer implements ColumnSerializer<Double> {
-        
         static long doubleToLong(double x) {
             long v = Double.doubleToLongBits(x);
             
@@ -138,14 +134,11 @@ public class ColumnSerializerV3 {
 
     
     static class HresTimestampColumnSerializer implements ColumnSerializer<Instant> {
-        static long invertSign(long x) {
-            return x ^ Long.MIN_VALUE;
-        }
-        
+      //picos is always positive, no need to invert the sign
         @Override
         public Instant deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
             long millis = invertSign(byteArray.getLong());
-            int picos = byteArray.getInt();
+            int picos = byteArray.getInt(); 
             return Instant.get(millis, picos);
         }
 
@@ -181,6 +174,35 @@ public class ColumnSerializerV3 {
             long millis = invertSign(ByteArrayUtils.decodeLong(b, 0));
             int picos = ByteArrayUtils.decodeInt(b, 8);
             return Instant.get(millis, picos);
+        }
+    }
+
+    
+    static class UUIDColumnSerializer implements ColumnSerializer<java.util.UUID> {
+        @Override
+        public java.util.UUID deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+            long msb = invertSign(byteArray.getLong());
+            long lsb = invertSign(byteArray.getLong());
+            return new java.util.UUID(msb, lsb);
+        }
+
+        @Override
+        public java.util.UUID deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
+            long msb = invertSign(byteBuf.getLong());
+            long lsb = invertSign(byteBuf.getLong());
+            return new java.util.UUID(msb, lsb);
+        }
+
+        @Override
+        public void serialize(ByteArray byteArray, java.util.UUID v) {
+            byteArray.addLong(invertSign(v.getMostSignificantBits()));
+            byteArray.addLong(invertSign(v.getLeastSignificantBits()));
+        }
+
+        @Override
+        public void serialize(ByteBuffer byteBuf, java.util.UUID v) {
+            byteBuf.putLong(invertSign(v.getMostSignificantBits()));
+            byteBuf.putLong(invertSign(v.getLeastSignificantBits()));
         }
     }
 

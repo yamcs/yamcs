@@ -21,7 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 public class DataType {
 
     public enum _type {
-        BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST, HRES_TIMESTAMP
+        BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST, HRES_TIMESTAMP, UUID
     }
 
     public final _type val;
@@ -43,6 +43,7 @@ public class DataType {
     public static final byte LIST_ID = 14;
 
     public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15);
+    public static final DataType UUID = new DataType(_type.UUID, (byte) 16);
 
     // since yamcs 5.3 the it is stored on disk before the column index, see TableDefinition
     private final byte id;
@@ -76,42 +77,32 @@ public class DataType {
         if (name == null) {
             throw new NullPointerException();
         }
-        if ("BYTE".equals(name)) {
+        switch(name) {
+        case "BYTE":
             return BYTE;
-        }
-        if ("SHORT".equals(name)) {
+        case "SHORT":
             return SHORT;
-        }
-        if ("INT".equals(name)) {
+        case "INT":
             return INT;
-        }
-        if ("DOUBLE".equals(name)) {
+        case "DOUBLE":
             return DOUBLE;
-        }
-
-        if ("STRING".equals(name)) {
+        case"STRING":
             return STRING;
-        }
-        if ("BINARY".equals(name)) {
+        case "BINARY": 
             return BINARY;
-        }
-        if ("BOOLEAN".equals(name)) {
+        case "BOOLEAN": 
             return BOOLEAN;
-        }
-        if ("TIMESTAMP".equals(name)) {
+        case "TIMESTAMP":
             return TIMESTAMP;
-        }
-        if ("ENUM".equals(name)) {
+        case "ENUM": 
             return ENUM;
-        }
-        if ("LONG".equals(name)) {
+        case "LONG":
             return LONG;
-        }
-        if ("HRES_TIMESTAMP".equals(name)) {
+        case "HRES_TIMESTAMP":
             return HRES_TIMESTAMP;
-        }
-
-        if ("PARAMETER_VALUE".equals(name)) {
+        case "UUID":
+            return UUID;
+        case "PARAMETER_VALUE":
             return PARAMETER_VALUE;
         }
 
@@ -144,6 +135,8 @@ public class DataType {
             return 8;
         case HRES_TIMESTAMP:
             return 12;
+        case UUID:
+            return 16;
         default:
             return -1;
         }
@@ -176,6 +169,9 @@ public class DataType {
             return "ParameterValue";
         case HRES_TIMESTAMP:
             return "org.yamcs.time.Instant";
+        case UUID:
+            return "java.util.UUID";
+            
         default:
             throw new IllegalStateException("no java type available for " + this);
         }
@@ -235,6 +231,8 @@ public class DataType {
             return PARAMETER_VALUE;
         } else if (v instanceof Instant) {
             return HRES_TIMESTAMP;
+        } else if (v instanceof java.util.UUID) {
+            return UUID;
         } else {
             throw new IllegalArgumentException("invalid or unsupported object of type of " + v.getClass());
         }
@@ -311,6 +309,8 @@ public class DataType {
                 return TimeEncoding.parse(s);
             case HRES_TIMESTAMP:
                 return TimeEncoding.parseHres(s);
+            case UUID:
+                return java.util.UUID.fromString(s);
             case STRING:
             case ENUM:
                 return s;
@@ -373,6 +373,7 @@ public class DataType {
         switch (dt.val) {
         case HRES_TIMESTAMP:
         case STRING:
+        case UUID:
             return true;
         default:
             return false;
@@ -397,5 +398,4 @@ public class DataType {
     public byte getTypeId() {
         return id;
     }
-
 }

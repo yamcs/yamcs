@@ -1,8 +1,10 @@
 package org.yamcs.yarch;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -14,13 +16,14 @@ public class InsertSelectTest extends YarchTestCase {
         final TupleDefinition tpdef = new TupleDefinition();
         tpdef.addColumn("time", DataType.TIMESTAMP);
         tpdef.addColumn("id", DataType.INT);
+        tpdef.addColumn("id1", DataType.UUID);
 
         Stream s = (new Stream(ydb, "tm_in", tpdef) {
             @Override
             public void doStart() {
                 for (int i = 0; i < n; i++) {
                     Long time = (long) (i * 1000);
-                    Tuple t = new Tuple(tpdef, new Object[] { time, i });
+                    Tuple t = new Tuple(tpdef, new Object[] { time, i, UUID.randomUUID()});
                     emitTuple(t);
                 }
                 close();
@@ -44,10 +47,16 @@ public class InsertSelectTest extends YarchTestCase {
             int const_three = (Integer) tuple.getColumn(0);
             assertEquals(const_three, 3);
             assertEquals("cucu", tuple.getColumn("bau"));
+            
             long time = (Long) tuple.getColumn(2);
             assertEquals(1000 * k, time);
+            
             int i = (Integer) tuple.getColumn(3);
             assertEquals(k, i);
+            
+            UUID uuid = (UUID) tuple.getColumn(4);
+            assertNotNull(uuid);
+            
         }
     }
 }
