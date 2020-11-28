@@ -29,6 +29,9 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.transform.ParameterValueTransform;
+import org.yamcs.http.transform.TransformProfile;
+import org.yamcs.http.transform.TransformProfileFactory;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -239,7 +242,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
 
         List<NamedObjectId> ids = Arrays.asList(id);
-        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout);
+        TransformProfile trform = TransformProfileFactory.getProfile("yamcs-web");
+        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout, trform);
 
         ParameterValue pval;
         if (pvals.isEmpty()) {
@@ -340,8 +344,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         long timeout = request.hasTimeout() ? request.getTimeout() : 10000;
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
 
+        TransformProfile trform = TransformProfileFactory.getProfile("yamcs-web");
+        
         List<NamedObjectId> ids = request.getIdList();
-        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout);
+        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout, trform);
 
         BatchGetParameterValuesResponse.Builder responseb = BatchGetParameterValuesResponse.newBuilder();
         responseb.addAllValue(pvals);
@@ -412,10 +418,11 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
-            boolean fromCache, long timeout) throws HttpException {
+            boolean fromCache, long timeout, TransformProfile trform) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
+        ParameterValueTransform pvt = trform.getParameterValueTransform();
 
         ParameterRequestManager prm = processor.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
@@ -426,7 +433,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 List<ParameterValueWithId> l;
                 l = pwirh.getValuesFromCache(ids, user);
                 for (ParameterValueWithId pvwi : l) {
-                    pvals.add(pvwi.toGbpParameterValue());
+                    pvals.add(pvt.transform(pvwi));
                 }
             } else {
 

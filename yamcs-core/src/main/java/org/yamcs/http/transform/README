@@ -1,0 +1,5 @@
+Classes in this package are responsible for converting yamcs internal data to data used by external applications.
+
+This is done according to the profile. Currently the following profiles are defined:
+- yamcs-web
+- OpenMCT
