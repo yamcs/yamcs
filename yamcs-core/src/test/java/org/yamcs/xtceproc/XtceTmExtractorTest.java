@@ -747,7 +747,7 @@ public class XtceTmExtractorTest {
         }
         assertEquals(pv.getRawValue(), pv.getEngValue());
 
-        ParameterValue pv1 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/matrix_para"));
+        ParameterValue pv1 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/matrix-para"));
         ArrayValue arrv1 = (ArrayValue) pv1.getEngValue();
         assertArrayEquals(new int[] { 3, 3 }, arrv1.getDimensions());
         for (int i = 0; i < 3; i++) {

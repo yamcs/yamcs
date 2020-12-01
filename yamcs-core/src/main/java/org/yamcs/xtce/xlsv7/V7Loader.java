@@ -183,10 +183,10 @@ public class V7Loader extends V7LoaderBase {
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.0" };
     String fileFormatVersion;
-
+    final static String NAME_PATTERN = "[^./:\\[\\] ]+";
     final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
     final static Pattern REF_PATTERN = Pattern.compile("ref\\(\\s*([^,]+),\\s*(.+)?\\s*\\)");
-    final static Pattern ARRAY_PATTERN = Pattern.compile("(\\w+)((\\[[\\w\\d]+\\])+)");
+    final static Pattern ARRAY_PATTERN = Pattern.compile("("+NAME_PATTERN+")((\\["+NAME_PATTERN+"\\])+)");
 
     protected SpaceSystem rootSpaceSystem;
 
