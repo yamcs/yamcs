@@ -3,13 +3,16 @@ package org.yamcs.cfdp;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -18,21 +21,30 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
 import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
+import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.EofPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
+
+import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 /**
- * Implements CCSDS File Delivery Protocol  (CFDP) in Yamcs.
+ * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
  * <p>
  * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b4.pdf"> CCSDS 727.0-B-4 </a>
  * 
@@ -40,25 +52,57 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  *
  */
 public class CfdpService extends AbstractYamcsService implements StreamSubscriber, TransferMonitor {
+    public static final String DEFAULT_SRCDST = "default";
 
     static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
+    static final String ETYPE_TRANSFER_META = "TRANSFER_METADATA";
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
+    static final String ETYPE_TX_LIMIT_REACHED = "TX_LIMIT_REACHED";
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
+    static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
+    static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
+    
+    static final String TABLE_NAME = "cfdp";
+    static final String SEQUENCE_NAME = "cfdp";
 
-    Map<CfdpTransactionId, CfdpTransfer> pendingTransfers = new HashMap<>();
-    List<CfdpTransfer> completedTransfers = new ArrayList<>();
+    Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new HashMap<>();
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-
+    Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
+    Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
     Stream cfdpIn;
     Stream cfdpOut;
     Bucket incomingBucket;
-    long mySourceId;
-    long destinationId;
 
     EventProducer eventProducer;
 
     private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
+    private Map<String, Long> localIds = new LinkedHashMap<>();
+    private Map<String, Long> remoteIds = new LinkedHashMap<>();
+
+    boolean nakMetadata;
+    int maxNumPendingTransactions;
+    int archiveRetrievalLimit;
+    int pendingAfterCompletion;
+
+    private Stream dbStream;
+
+    Sequence idSeq;
+    static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
+    
+    static {
+        VALID_CODES.put("AckLimitReached", ConditionCode.ACK_LIMIT_REACHED);
+        VALID_CODES.put("KeepAliveLimitReached", ConditionCode.KEEP_ALIVE_LIMIT_REACHED);
+        VALID_CODES.put("InvalidTransmissionMode", ConditionCode.INVALID_TRANSMISSION_MODE);
+        VALID_CODES.put("FilestoreRejection", ConditionCode.FILESTORE_REJECTION);
+        VALID_CODES.put("FileChecksumFailure", ConditionCode.FILE_CHECKSUM_FAILURE);
+        VALID_CODES.put("FileSizeError", ConditionCode.FILE_SIZE_ERROR);
+        VALID_CODES.put("NakLimitReached", ConditionCode.NAK_LIMIT_REACHED);
+        VALID_CODES.put("InactivityDetected", ConditionCode.INACTIVITY_DETECTED);
+        VALID_CODES.put("InvalidFileStructure", ConditionCode.INVALID_FILE_STRUCTURE);
+        VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
+        VALID_CODES.put("UnsupportedChecksum", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+    }
 
     @Override
     public Spec getSpec() {
@@ -71,9 +115,20 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
-        spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(3000);
-        spec.addOption("maxEofResendAttempts", OptionType.INTEGER).withDefault(5);
+        spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(5000);
+        spec.addOption("eofAckLimit", OptionType.INTEGER).withDefault(5);
+        spec.addOption("finAckTimeout", OptionType.INTEGER).withDefault(5000);
+        spec.addOption("finAckLimit", OptionType.INTEGER).withDefault(5);
         spec.addOption("sleepBetweenPdus", OptionType.INTEGER).withDefault(500);
+        spec.addOption("localIds", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("remoteIds", OptionType.MAP);
+        spec.addOption("nakLimit", OptionType.INTEGER).withDefault(-1);
+        spec.addOption("nakTimeout", OptionType.INTEGER).withDefault(5000);
+        spec.addOption("immediateNak", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("archiveRetrievalLimit", OptionType.INTEGER).withDefault(100);
+        spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
+        
         return spec;
     }
 
@@ -83,9 +138,6 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
         String inStream = config.getString("inStream");
         String outStream = config.getString("outStream");
-
-        mySourceId = config.getLong("sourceId");
-        destinationId = config.getLong("destinationId");
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         cfdpIn = ydb.getStream(inStream);
@@ -109,30 +161,147 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         } catch (IOException e) {
             throw new InitException(e);
         }
+
+        maxNumPendingTransactions = config.getInt("maxNumPendingTransactions", 100);
+        archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
+        pendingAfterCompletion = config.getInt("ackAfterCompletion", 20000);
+
+        initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
+        idSeq = ydb.getSequence(SEQUENCE_NAME);
+        if(config.containsKey("senderFaultHandlers")) {
+            senderFaultHandlers = readFaultHandlers(config.getMap("senderFaultHandlers"));
+        } else {
+            senderFaultHandlers = Collections.emptyMap();
+        }
+        
+        if(config.containsKey("receiverFaultHandlers")) {
+            receiverFaultHandlers = readFaultHandlers(config.getMap("receiverFaultHandlers"));
+        } else {
+            receiverFaultHandlers = Collections.emptyMap();
+        }
+        setupRecording(ydb);
     }
 
-    public CfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
+    private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
+        Map<ConditionCode, FaultHandlingAction> m = new HashMap<>();
+        for (Map.Entry<String, String> me: map.entrySet()) {
+            ConditionCode code = VALID_CODES.get(me.getKey());
+            if(code == null) {
+                throw new ConfigurationException("Unknown condition code "+me.getKey()+". Valid codes: "+VALID_CODES.keySet());
+            }
+            FaultHandlingAction action = FaultHandlingAction.fromString(me.getValue());
+            if(action == null) {
+                throw new ConfigurationException("Unknown action "+me.getKey()+". Valid actions: "+FaultHandlingAction.actions());
+            }
+            m.put(code, action);
+        }
+        return m;
+    }
+
+    private void initSrcDst(YConfiguration config) throws InitException {
+        if (config.containsKey("sourceId")) {
+            localIds.put("default", config.getLong("sourceId"));
+        }
+
+        if (config.containsKey("destinationId")) {
+            remoteIds.put("default", config.getLong("destinationId"));
+        }
+        if (config.containsKey("localIds")) {
+            Map<String, Long> src = config.getMap("localIds");
+            addAll(localIds, src);
+        }
+        if (config.containsKey("remoteIds")) {
+            Map<String, Long> dst = config.getMap("remoteIds");
+            addAll(remoteIds, dst);
+        }
+
+        if (localIds.isEmpty()) {
+            throw new InitException("No source specified");
+        }
+        if (remoteIds.isEmpty()) {
+            throw new InitException("No destination specified");
+        }
+    }
+
+    private void setupRecording(YarchDatabaseInstance ydb) throws InitException {
+        try {
+            if (ydb.getTable(TABLE_NAME) == null) {
+                String query = "create table " + TABLE_NAME + "(" + TDEF.getStringDefinition1()
+                        + ", primary key(id, serverId))";
+                ydb.execute(query);
+            }
+            String streamName = TABLE_NAME + "table_in";
+            if (ydb.getStream(streamName) == null) {
+                ydb.execute("create stream " + streamName + TDEF.getStringDefinition());
+            }
+            ydb.execute("upsert_append into " + TABLE_NAME + " select * from " + streamName);
+            dbStream = ydb.getStream(streamName);
+        } catch (ParseException | StreamSqlException e) {
+            throw new InitException(e);
+        }
+    }
+
+    private void addAll(Map<String, Long> m1, Map<String, Long> m2) throws InitException {
+        for (Map.Entry<String, Long> me : m2.entrySet()) {
+            if (m1.containsKey(me.getKey())) {
+                throw new InitException("Duplicate name " + me.getKey());
+            }
+            Number n = (Number) me.getValue();
+            m1.put(me.getKey(), n.longValue());
+        }
+    }
+
+    public OngoingCfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
         return pendingTransfers.get(transferId);
     }
 
     public CfdpTransfer getCfdpTransfer(long id) {
-        Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny();
+        Optional<OngoingCfdpTransfer> r = pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny();
         if (r.isPresent()) {
             return r.get();
         } else {
-            return completedTransfers.stream().filter(c -> c.getId() == id).findAny().orElse(null);
+            return searchInArchive(id);
+        }
+    }
+
+    private CfdpTransfer searchInArchive(long id) {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        try {
+            StreamSqlResult res = ydb.execute("select * from " + TABLE_NAME + " where id=?", id);
+            CfdpTransfer r = null;
+            if (res.hasNext()) {
+                r = new CompletedTransfer(res.next());
+            }
+            res.close();
+            return r;
+
+        } catch (Exception e) {
+            log.error("Error executing query", e);
+            return null;
         }
     }
 
     public Collection<CfdpTransfer> getCfdpTransfers() {
         List<CfdpTransfer> r = new ArrayList<>();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         r.addAll(pendingTransfers.values());
-        r.addAll(completedTransfers);
+
+        try {
+            StreamSqlResult res = ydb.execute("select * from " + TABLE_NAME + " order desc limit " + archiveRetrievalLimit);
+            while (res.hasNext()) {
+                r.add(new CompletedTransfer(res.next()));
+            }
+            res.close();
+            return r;
+
+        } catch (Exception e) {
+            log.error("Error executing query", e);
+        }
         return r;
     }
 
-    public CfdpTransfer processRequest(CfdpRequest request) {
+    public OngoingCfdpTransfer processRequest(CfdpRequest request) {
         switch (request.getType()) {
         case PUT:
             return processPutRequest((PutRequest) request);
@@ -148,35 +317,35 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, idSeq.next(), executor, request,
+                cfdpOut, config,  eventProducer, this, senderFaultHandlers);
+        dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, executor, request, cfdpOut, config,
-                eventProducer, this);
         stateChanged(transfer);
-        
-        
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                 "Starting new CFDP upload (" + transfer.getTransactionId() + ")" + request.getObjectName() + " -> "
                         + request.getTargetPath());
         transfer.start();
+
         return transfer;
     }
 
-    private CfdpTransfer processPauseRequest(PauseRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
-        transfer.pause();
+    private OngoingCfdpTransfer processPauseRequest(PauseRequest request) {
+        OngoingCfdpTransfer transfer = request.getTransfer();
+        transfer.pauseTransfer();
         return transfer;
     }
 
-    private CfdpTransfer processResumeRequest(ResumeRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
+    private OngoingCfdpTransfer processResumeRequest(ResumeRequest request) {
+        OngoingCfdpTransfer transfer = request.getTransfer();
         transfer.resumeTransfer();
         return transfer;
     }
 
-    private CfdpTransfer processCancelRequest(CancelRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
+    private OngoingCfdpTransfer processCancelRequest(CancelRequest request) {
+        OngoingCfdpTransfer transfer = request.getTransfer();
         transfer.cancelTransfer();
         return transfer;
     }
@@ -185,14 +354,21 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     public void onTuple(Stream stream, Tuple tuple) {
         CfdpPacket packet = CfdpPacket.fromTuple(tuple);
         CfdpTransactionId id = packet.getTransactionId();
-        CfdpTransfer transaction = null;
+
+        OngoingCfdpTransfer transaction = null;
         if (pendingTransfers.containsKey(id)) {
             transaction = pendingTransfers.get(id);
         } else {
+
             // the communication partner has initiated a transfer
-            transaction = instantiateTransaction(packet);
-            if (transaction != null) {
-                pendingTransfers.put(transaction.getTransactionId(), transaction);
+            if (pendingTransfers.size() >= maxNumPendingTransactions) {
+                eventProducer.sendInfo(ETYPE_TX_LIMIT_REACHED, "Maximum number of pending transfers "
+                        + maxNumPendingTransactions + " reached. Dropping packet " + packet);
+            } else {
+                transaction = instantiateIncomingTransaction(packet);
+                if (transaction != null) {
+                    pendingTransfers.put(transaction.getTransactionId(), transaction);
+                }
             }
         }
 
@@ -201,23 +377,51 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    private CfdpTransfer instantiateTransaction(CfdpPacket packet) {
-        if (packet.getHeader().isFileDirective()
-                && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.METADATA) {
+    private OngoingCfdpTransfer instantiateIncomingTransaction(CfdpPacket packet) {
+        CfdpTransactionId txId = packet.getTransactionId();
+
+        if (packet instanceof MetadataPacket) {
             MetadataPacket mpkt = (MetadataPacket) packet;
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
+                    "Starting new CFDP downlink (" + txId + ")"
                             + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut,
-                    incomingBucket, eventProducer, this);
-            stateChanged(transfer);
-            return transfer;
+
+        } else if (packet instanceof FileDataPacket || packet instanceof EofPacket) {
+            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                    "Starting new CFDP downlink (" + txId
+                            + "); the metadata PDU has not yet been received");
+
         } else {
             eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
-                    "Unexpected CFDP packet received; " + packet);
+                    "Unexpected CFDP packet received; " + txId + ": " + packet);
             return null;
-            // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
+
+        if(packet.getHeader().isLargeFile()) {
+            eventProducer.sendInfo(ETYPE_NO_LARGE_FILE,
+                    "Large files not supported; " + txId + ": " + packet);
+            return null;
+        }
+        
+        String peer = getRemoteEntityName(txId.getInitiatorEntity());
+        if (peer == null) {
+            eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
+                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntity());
+            return null;
+        }
+
+        OngoingCfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), executor, config,
+                packet.getHeader(),  cfdpOut, incomingBucket, eventProducer, this, receiverFaultHandlers);
+        return transfer;
+    }
+
+    public String getRemoteEntityName(long entityId) {
+        return remoteIds.entrySet()
+                .stream()
+                .filter(me -> me.getValue() == entityId)
+                .map(me -> me.getKey())
+                .findAny()
+                .orElse(null);
     }
 
     public void addTransferListener(TransferMonitor listener) {
@@ -235,33 +439,46 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     @Override
     protected void doStop() {
+        for (OngoingCfdpTransfer trsf : pendingTransfers.values()) {
+            trsf.failTransfer("service shutdown");
+        }
         executor.shutdown();
         notifyStopped();
     }
 
     @Override
     public void streamClosed(Stream stream) {
-        log.warn("Stream {} closed", stream.getName());
-        notifyFailed(new Exception("Stream "+stream.getName()+" cloased"));
-    }
-
-    public CfdpOutgoingTransfer upload(String objName, String target, boolean overwrite, boolean acknowledged,
-            boolean createpath, Bucket b, byte[] objData) {
-
-        return processPutRequest(
-                new PutRequest(mySourceId, destinationId, objName, target, overwrite, acknowledged, createpath, b,
-                        objData));
+        if (isRunning()) {
+            log.debug("Stream {} closed", stream.getName());
+            notifyFailed(new Exception("Stream " + stream.getName() + " cloased"));
+        }
     }
 
     @Override
-    public void stateChanged(CfdpTransfer cfdpTransfer) {
+    public void stateChanged(OngoingCfdpTransfer cfdpTransfer) {
+        dbStream.emitTuple(CompletedTransfer.toUpdateTuple(cfdpTransfer));
         // Notify downstream listeners
         transferListeners.forEach(l -> l.stateChanged(cfdpTransfer));
 
         if (cfdpTransfer.getTransferState() == TransferState.COMPLETED
                 || cfdpTransfer.getTransferState() == TransferState.FAILED) {
-            pendingTransfers.remove(cfdpTransfer.getTransactionId());
-            completedTransfers.add(cfdpTransfer);
+
+            // keep it in pending for a while such that PDUs from remote entity can still be answered
+            executor.schedule(() -> {
+                pendingTransfers.remove(cfdpTransfer.getTransactionId());
+            }, pendingAfterCompletion, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public Map<String, Long> getSources() {
+        return localIds;
+    }
+
+    public Map<String, Long> getDestinations() {
+        return remoteIds;
+    }
+
+    public OngoingCfdpTransfer getOngoingCfdpTransfer(long id) {
+        return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
     }
 }

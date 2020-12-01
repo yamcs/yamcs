@@ -12,7 +12,6 @@ public class KeepAlivePacket extends CfdpPacket implements FileDirective {
     public KeepAlivePacket(long progress, CfdpHeader header) {
         super(header);
         this.progress = progress;
-        finishConstruction();
     }
 
     public KeepAlivePacket(ByteBuffer buffer, CfdpHeader header) {
@@ -28,7 +27,7 @@ public class KeepAlivePacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         return 5;
     }
 

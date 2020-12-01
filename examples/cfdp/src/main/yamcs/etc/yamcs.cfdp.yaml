@@ -29,6 +29,7 @@ services:
         tcPort: 10025
         losPort: 10115
   - class: org.yamcs.cfdp.CfdpService
+    name: cfdp0
     args:
      sourceId: 5
      destinationId: 24
@@ -36,12 +37,16 @@ services:
      maxPduSize: 512
      incomingBucket: "cfdpDown"
      eofAckTimeout: 3000
-     maxEofResendAttempts: 5
-     
+     eofAckLimit: 5
      #Note that the simulator does not process commands faster than 1/second.
      # Decreasign this number will make the packets queue up in the TCP queue
      # and the CFDP sender will timeout waiting for the EOF ACK
      sleepBetweenPdus: 1000
+     localIds:
+       id1: 11
+       id2: 12
+     senderFaultHandlers:
+       AckLimitReached: suspend
 
 dataLinks:
   - name: tm_realtime

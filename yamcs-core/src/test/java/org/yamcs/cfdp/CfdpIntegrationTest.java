@@ -20,11 +20,11 @@ import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.cfdp.CfdpClient;
 import org.yamcs.client.cfdp.CfdpClient.UploadOptions;
 import org.yamcs.client.storage.ObjectId;
+import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
@@ -62,12 +62,13 @@ public class CfdpIntegrationTest {
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
+       // org.yamcs.LoggingUtils.enableLogging(java.util.logging.Level.FINE);
     }
 
     @Before
     public void before() {
         client = YamcsClient.newBuilder("localhost", 9193).build();
-        cfdpClient = new CfdpClient(client, yamcsInstance);
+        cfdpClient = new CfdpClient(client, yamcsInstance, "CfdpService");
     }
 
     @After
@@ -81,8 +82,8 @@ public class CfdpIntegrationTest {
     @Test
     public void testClass1() throws Exception {
         byte[] data = createObject("randomfile1", 1000);
-        uploadAndCheck("randomfile1", data, false, Collections.emptyList(), TransferState.COMPLETED,
-                TransferState.COMPLETED);
+        uploadAndCheck("randomfile1", data, false, Collections.emptyList(),
+                TransferState.COMPLETED, TransferState.COMPLETED);
     }
 
     @Test
@@ -95,42 +96,84 @@ public class CfdpIntegrationTest {
     @Test
     public void testClass1WithPacketLoss() throws Exception {
         byte[] data = createObject("randomfile3", 1000);
+
+        YConfiguration rcvConfig = getConfig();
+        rcvConfig.toMap().put("inactivityTimeout", 10000);
+        rcvConfig.toMap().put("checkAckTimeout", 1000);
+        rcvConfig.toMap().put("checkAckLimit", 1);
+
         // this will lose the first data packet
-        uploadAndCheck("randomfile3", data, false, Arrays.asList(2), TransferState.COMPLETED, TransferState.FAILED);
+        uploadAndCheck(rcvConfig, "randomfile3", data, false, Arrays.asList(2), TransferState.COMPLETED,
+                TransferState.FAILED);
+
     }
 
     @Test
     public void testClass1WithPacketLoss2() throws Exception {
         byte[] data = createObject("randomfile4", 1000);
+
+        YConfiguration config = getConfig();
+        config.toMap().put("inactivityTimeout", 1000);
+
         // this will lose the first data packet and the EOF
-        uploadAndCheck("randomfile4", data, false, Arrays.asList(2, 5), TransferState.COMPLETED, TransferState.FAILED);
+        uploadAndCheck(config, "randomfile4", data, false, Arrays.asList(2, 5), TransferState.COMPLETED,
+                TransferState.FAILED);
     }
 
     @Test
     public void testClass2WithPacketLoss() throws Exception {
-        byte[] data = createObject("randomfile5", 1000);
+        byte[] data = createObject("randomfile51", 1000);
         // this will lose the first data packet
-        uploadAndCheck("randomfile5", data, true, Arrays.asList(2), TransferState.COMPLETED, TransferState.COMPLETED);
+        uploadAndCheck("randomfile51", data, true, Arrays.asList(2), TransferState.COMPLETED, TransferState.COMPLETED);
     }
 
     @Test
     public void testClass2WithPacketLoss2() throws Exception {
-        byte[] data = createObject("randomfile5", 1000);
+        byte[] data = createObject("randomfile52", 1000);
         // this will lose the first data packet and the first EOF
-        uploadAndCheck("randomfile5", data, true, Arrays.asList(2, 5), TransferState.COMPLETED,
+        YConfiguration config = getConfig();
+        config.getRoot().put("immediateNak", false);
+
+        uploadAndCheck(config, "randomfile52", data, true, Arrays.asList(2, 5), TransferState.COMPLETED,
                 TransferState.COMPLETED);
     }
 
     @Test
     public void testClass2WithPacketLoss3() throws Exception {
         byte[] data = createObject("randomfile6", 1000);
-        // this will lose the first data packet and all the EOF
-        uploadAndCheck("randomfile6", data, true, Arrays.asList(2, 5, 6), TransferState.FAILED, TransferState.FAILED);
+        YConfiguration config = getConfig();
+        config.getRoot().put("inactivityTimeout", 1000);
+
+        // this will lose the the 2 EOF
+        uploadAndCheck(config, "randomfile6", data, true, Arrays.asList(5, 6), TransferState.FAILED,
+                TransferState.FAILED);
     }
+
+    @Test
+    public void testClass2WithMetadtaLoss() throws Exception {
+        byte[] data = createObject("randomfile71", 1000);
+        uploadAndCheck("randomfile71", data, true, Arrays.asList(1), TransferState.COMPLETED, TransferState.COMPLETED);
+    }
+    
+    @Test
+    public void testClass2WithMetadtaAfterEof() throws Exception {
+        byte[] data = createObject("randomfile72", 1000);
+        YConfiguration config = getConfig();
+        config.getRoot().put("immediateNak", false);
+        uploadAndCheck(config, "randomfile72", data, true, Arrays.asList(1), TransferState.COMPLETED, TransferState.COMPLETED);
+    }
+    
 
     private void uploadAndCheck(String objName, byte[] data, boolean reliable, List<Integer> dropPackets,
             TransferState expectedSenderState, TransferState expectedReceiverState) throws Exception {
-        MyFileReceiver rec = new MyFileReceiver(dropPackets);
+        uploadAndCheck(getConfig(), objName, data, reliable, dropPackets, expectedSenderState, expectedReceiverState);
+
+    }
+
+    private void uploadAndCheck(YConfiguration config, String objName, byte[] data, boolean reliable,
+            List<Integer> dropPackets,
+            TransferState expectedSenderState, TransferState expectedReceiverState) throws Exception {
+        MyFileReceiver rec = new MyFileReceiver(dropPackets, config);
 
         ObjectId object = ObjectId.of(outgoingBucket.getName(), objName);
         TransferInfo tinf = cfdpClient.upload(object, UploadOptions.reliable(reliable)).get();
@@ -139,7 +182,7 @@ public class CfdpIntegrationTest {
         assertEquals(reliable, tinf.getReliable());
         TransferInfo tinfo1 = null;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread.sleep(1000);
             tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
             if (isFinished(tinfo1.getState()) && isFinished(rec.trsf.getTransferState())) {
@@ -170,7 +213,12 @@ public class CfdpIntegrationTest {
 
     private YConfiguration getConfig() {
         Map<String, Object> m = new HashMap<>();
-        m.put("inactivityTimeout", 1000);
+        m.put("inactivityTimeout", 10000);
+
+        m.put("finAckTimeout", 50);
+        m.put("finAckLimit", 2);
+        m.put("sleepBetweenPdus", 10);
+
         return YConfiguration.wrap(m);
     }
 
@@ -182,11 +230,13 @@ public class CfdpIntegrationTest {
         int tcount = 0;
         final List<Integer> dropPackets;
 
-        MyFileReceiver(List<Integer> dropPackets) {
+        MyFileReceiver(List<Integer> dropPackets, YConfiguration config) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream cfdpIn = ydb.getStream("cfdp_in");
             Stream cfdpOut = ydb.getStream("cfdp_out");
             this.dropPackets = dropPackets;
+            EventProducer eventProducer = EventProducerFactory.getEventProducer();
+            eventProducer.setSource("unit-test");
 
             cfdpOut.addSubscriber(new StreamSubscriber() {
                 @Override
@@ -197,25 +247,24 @@ public class CfdpIntegrationTest {
                 public void onTuple(Stream stream, Tuple tuple) {
                     tcount++;
                     CfdpPacket packet = CfdpPacket.fromTuple(tuple);
-                    // System.out.println("packet"+tcount+": "+packet);
+                      // System.out.println("packet"+tcount+": "+packet);
                     if (dropPackets.contains(tcount)) {
-                        // System.out.println("dropping packet"+tcount);
+                     //   System.out.println("dropping packet"+tcount);
                         return;
                     }
 
                     if (trsf == null) {
-                        MetadataPacket mdp = (MetadataPacket) packet;
-                        trsf = new CfdpIncomingTransfer("test", executor, getConfig(), (MetadataPacket) mdp, cfdpIn,
-                                incomingBucket, EventProducerFactory.getEventProducer(), MyFileReceiver.this);
-                    } else {
-                        trsf.processPacket(packet);
+                        trsf = new CfdpIncomingTransfer("test", 1, executor, config, packet.getHeader(), cfdpIn,
+                                incomingBucket, eventProducer, MyFileReceiver.this, Collections.emptyMap());
                     }
+                    // System.out.println("processing packet "+packet);
+                    trsf.processPacket(packet);
                 }
             });
         }
 
         @Override
-        public void stateChanged(CfdpTransfer cfdpTransfer) {
+        public void stateChanged(OngoingCfdpTransfer cfdpTransfer) {
         }
     }
 }

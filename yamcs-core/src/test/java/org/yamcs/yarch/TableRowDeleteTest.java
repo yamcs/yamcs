@@ -95,7 +95,7 @@ public class TableRowDeleteTest extends YarchTestCase {
         populate("tm3", 0, 1000, 1, 1000);
         StreamSqlResult result = ydb.execute("delete from tm3 where \"time\" >= 100000");
         Tuple t = result.next();
-        assertEquals(900l, t.getColumn("deleted"));
+        assertEquals(900l, t.getLongColumn("deleted"));
         
         verify("select * from tm3",
                 (i, time, apidSeqCount, pname) -> {

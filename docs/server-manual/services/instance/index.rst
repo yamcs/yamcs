@@ -18,3 +18,4 @@ Instance Services
     time-correlation
     replication-master
     replication-slave
+    cfdp

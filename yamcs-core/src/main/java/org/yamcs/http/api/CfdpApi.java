@@ -4,17 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CancelRequest;
-import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpService;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.CfdpTransfer;
+import org.yamcs.cfdp.OngoingCfdpTransfer;
 import org.yamcs.cfdp.PauseRequest;
+import org.yamcs.cfdp.PutRequest;
 import org.yamcs.cfdp.ResumeRequest;
 import org.yamcs.cfdp.TransferMonitor;
 import org.yamcs.http.BadRequestException;
@@ -25,7 +27,10 @@ import org.yamcs.protobuf.AbstractCfdpApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.GetTransferRequest;
+import org.yamcs.protobuf.ListEntitiesRequest;
+import org.yamcs.protobuf.ListEntitiesResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.PauseTransferRequest;
@@ -50,8 +55,9 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     @Override
     public void listTransfers(Context ctx, ListTransfersRequest request,
             Observer<ListTransfersResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
+
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
 
         List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers());
         Collections.sort(transfers, (a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
@@ -65,15 +71,16 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
         observer.complete(toTransferInfo(transaction));
     }
 
     @Override
     public void createTransfer(Context ctx, CreateTransferRequest request, Observer<TransferInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
 
         if (!request.hasDirection()) {
             throw new BadRequestException("Direction not specified");
@@ -113,6 +120,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
             boolean overwrite = true;
             boolean createPath = true;
             boolean reliable = false;
+            boolean closureRequested = false;
             if (request.hasUploadOptions()) {
                 UploadOptions opts = request.getUploadOptions();
                 if (opts.hasOverwrite()) {
@@ -124,11 +132,48 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 if (opts.hasReliable()) {
                     reliable = opts.getReliable();
                 }
+                if(opts.hasClosureRequested() ) {
+                    closureRequested = opts.getClosureRequested();
+                }
             }
 
+            if(reliable && closureRequested) {
+                throw new BadRequestException("Cannot set both reliable and closureRequested options");
+            }
             String target = request.getRemotePath();
-            CfdpOutgoingTransfer transfer = cfdpService.upload(objectName, target, overwrite,
-                    reliable, createPath, bucket, objData);
+
+            long sourceId, destinationId;
+            if (request.hasSource()) {
+                Long l = cfdpService.getSources().get(request.getSource());
+                if (l == null) {
+                    throw new BadRequestException("Invalid source '" + request.getSource());
+                }
+                sourceId = l;
+            } else {
+                Long l = cfdpService.getSources().get(CfdpService.DEFAULT_SRCDST);
+                if (l == null) {
+                    throw new BadRequestException("No source specified and no default either.");
+                }
+                sourceId = l;
+            }
+
+            if (request.hasDestination()) {
+                Long l = cfdpService.getDestinations().get(request.getDestination());
+                if (l == null) {
+                    throw new BadRequestException("Invalid destination '" + request.getDestination());
+                }
+                destinationId = l;
+            } else {
+                Long l = cfdpService.getDestinations().get(CfdpService.DEFAULT_SRCDST);
+                if (l == null) {
+                    throw new BadRequestException("No destination specified and no default either.");
+                }
+                destinationId = l;
+            }
+
+            PutRequest req = new PutRequest(sourceId, destinationId, objectName, target, overwrite, reliable,
+                    closureRequested, createPath, bucket, objData);
+            OngoingCfdpTransfer transfer = cfdpService.processRequest(req);
             observer.complete(toTransferInfo(transfer));
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             throw new BadRequestException("Download not yet implemented");
@@ -139,9 +184,10 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void pauseTransfer(Context ctx, PauseTransferRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+
+        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
         if (transaction.pausable()) {
             cfdpService.processRequest(new PauseRequest(transaction));
         } else {
@@ -152,9 +198,10 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void cancelTransfer(Context ctx, CancelTransferRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+
+        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
         if (transaction.cancellable()) {
             cfdpService.processRequest(new CancelRequest(transaction));
         } else {
@@ -165,9 +212,10 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void resumeTransfer(Context ctx, ResumeTransferRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
+
         if (transaction.pausable()) {
             cfdpService.processRequest(new ResumeRequest(transaction));
         } else {
@@ -178,8 +226,8 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void subscribeTransfers(Context ctx, SubscribeTransfersRequest request, Observer<TransferInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        CfdpService cfdpService = verifyCfdpService(instance);
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
         TransferMonitor listener = transfer -> {
             observer.next(toTransferInfo(transfer));
         };
@@ -191,8 +239,21 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         cfdpService.addTransferListener(listener);
     }
 
-    private CfdpTransfer verifyTransaction(String instance, long id) throws NotFoundException {
-        CfdpService cfdpService = verifyCfdpService(instance);
+    @Override
+    public void listEntities(Context ctx, ListEntitiesRequest request, Observer<ListEntitiesResponse> observer) {
+        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        ListEntitiesResponse.Builder resp = ListEntitiesResponse.newBuilder();
+        for (Map.Entry<String, Long> me : cfdpService.getSources().entrySet()) {
+            resp.addSources(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+        }
+        for (Map.Entry<String, Long> me : cfdpService.getDestinations().entrySet()) {
+            resp.addDestinations(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+        }
+        observer.complete(resp.build());
+    }
+
+    private CfdpTransfer verifyTransaction(CfdpService cfdpService, long id) throws NotFoundException {
         CfdpTransfer transaction = cfdpService.getCfdpTransfer(id);
         if (transaction == null) {
             throw new NotFoundException("No such transaction");
@@ -208,7 +269,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 .setId(transaction.getId())
                 .setStartTime(startTime)
                 .setState(transaction.getTransferState())
-                .setBucket(transaction.getBucket().getName())
+                .setBucket(transaction.getBucketName())
                 .setObjectName(transaction.getObjectName())
                 .setRemotePath(transaction.getRemotePath())
                 .setDirection(transaction.getDirection())
@@ -229,11 +290,27 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 .setSequenceNumber(id.getSequenceNumber()).build();
     }
 
-    private CfdpService verifyCfdpService(String instance) throws NotFoundException {
-        List<CfdpService> services = YamcsServer.getServer().getInstance(instance).getServices(CfdpService.class);
-        if (services.isEmpty()) {
-            throw new NotFoundException();
+    private CfdpService verifyCfdpService(String yamcsInstance, String serviceName) throws NotFoundException {
+        String instance = ManagementApi.verifyInstance(yamcsInstance);
+        CfdpService cfdpServ = null;
+        if (serviceName != null) {
+            cfdpServ = YamcsServer.getServer().getInstance(instance)
+                    .getService(CfdpService.class, serviceName);
+        } else {
+            List<CfdpService> cl = YamcsServer.getServer().getInstance(instance)
+                    .getServices(CfdpService.class);
+            if (cl.size() > 0) {
+                cfdpServ = cl.get(0);
+            }
         }
-        return services.get(0);
+        if (cfdpServ == null) {
+            if (serviceName == null) {
+                throw new NotFoundException("No CFDP service found");
+            } else {
+                throw new NotFoundException("CFDP service '" + serviceName + "' not found");
+            }
+        }
+        return cfdpServ;
     }
+
 }

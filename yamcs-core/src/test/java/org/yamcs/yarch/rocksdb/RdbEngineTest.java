@@ -1,8 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
@@ -19,7 +21,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
 
 public class RdbEngineTest extends YarchTestCase {
-
     @Test
     public void testCreateDrop() throws Exception {
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
@@ -61,6 +62,20 @@ public class RdbEngineTest extends YarchTestCase {
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
+    }
+
+    @Test
+    public void testOpenCloseWithTableDrop() throws Exception {
+        TableDefinition tblDef = populate();
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        org.yamcs.LoggingUtils.enableLogging(Level.ALL);
+        rse.dropTable(ydb, tblDef);
+
+        rse.shutdown();
+
+        rse.loadTablespaces(false);
+        List<TableDefinition> tblList = rse.loadTables(ydb);
+        assertTrue(tblList.isEmpty());
     }
 
     private void checkNoReaderStreamPossible(RdbStorageEngine rse, TableDefinition tblDef) {

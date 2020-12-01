@@ -13,7 +13,6 @@ public class PromptPacket extends CfdpPacket implements FileDirective {
     public PromptPacket(boolean responseRequired, CfdpHeader header) {
         super(header);
         this.responseRequired = responseRequired;
-        finishConstruction();
     }
 
     public PromptPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -29,7 +28,7 @@ public class PromptPacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         return 2;
     }
 

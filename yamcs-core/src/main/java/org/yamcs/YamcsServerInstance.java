@@ -42,7 +42,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
-    
+
     private String name;
     Log log;
     TimeService timeService;
@@ -266,7 +266,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Service> List<T> getServices(Class<T> serviceClass) {
+    public <T extends YamcsService> List<T> getServices(Class<T> serviceClass) {
         List<T> result = new ArrayList<>();
         if (services != null) {
             for (ServiceWithConfig swc : services) {
@@ -276,6 +276,29 @@ public class YamcsServerInstance extends YamcsInstanceService {
             }
         }
         return result;
+    }
+
+    /**
+     * Return the service of the given class and name or null if not existing.
+     * <p>
+     * If a service of the given name but a different class exists (or the other way around), this function returns
+     * null.
+     * 
+     * @param serviceClass
+     * @param serviceName
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends YamcsService> T getService(Class<T> serviceClass, String serviceName) {
+        if (services != null) {
+            for (ServiceWithConfig swc : services) {
+                YamcsService ys = swc.service;
+                if (serviceClass.isInstance(ys) && swc.getName().equals(serviceName)) {
+                    return (T) ys;
+                }
+            }
+        }
+        return null;
     }
 
     public TimeService getTimeService() {

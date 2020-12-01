@@ -232,7 +232,7 @@ DataType DataTypeDefinition():
 {
        "INT" {return DataType.INT;}
     |  "LONG" {return DataType.LONG;}
-    |  "BOOLEAN" {return DataType.BYTE;}
+    |  "BOOLEAN" {return DataType.BOOLEAN;}
     |  "BYTE" {return DataType.BYTE;}
     |  "SHORT" {return DataType.SHORT;}
     |  "DOUBLE" {return DataType.DOUBLE;}

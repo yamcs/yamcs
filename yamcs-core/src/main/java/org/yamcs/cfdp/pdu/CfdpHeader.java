@@ -6,7 +6,6 @@ import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.CfdpUtils;
 
 public class CfdpHeader {
-
     /*
      * Header (Variable size):
      * 3 bits = Version ('000')
@@ -14,7 +13,7 @@ public class CfdpHeader {
      * 1 bit = Direction (0 = towards receiver, 1 = towards sender)
      * 1 bit = Transmission mode (0 = acknowledged, 1 = unacknowledged)
      * 1 bit = CRC flag (0 = CRC not present, 1 = CRC present)
-     * 1 bit = reserved ('0')
+     * 1 bit = Large File (0=small file, 1 = Large file)
      * 16 bits = PDU data field length (in octets)
      * 1 bit = reserved ('0')
      * 3 bits = length of entity IDs (number of octets in entity ID minus 1)
@@ -26,8 +25,7 @@ public class CfdpHeader {
      */
 
     // header types
-    private boolean fileDirective, towardsSender, acknowledged, withCrc;
-    private int dataLength = -1;
+    private boolean fileDirective, towardsSender, acknowledged, withCrc, largeFile;
     private int entityIdLength, sequenceNumberLength;
     private long sourceId, destinationId, sequenceNr;
 
@@ -49,11 +47,6 @@ public class CfdpHeader {
             int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
         this(fileDirective, towardsSender, acknowledged, withCrc, entityIdLength, sequenceNumberLength, sourceId,
                 destinationId, sequenceNumber);
-        this.dataLength = datalength;
-    }
-
-    public void setDataLength(int datalength) {
-        this.dataLength = datalength;
     }
 
     public CfdpHeader(ByteBuffer buffer) {
@@ -96,6 +89,15 @@ public class CfdpHeader {
         return this.acknowledged;
     }
 
+
+    public boolean isLargeFile() {
+        return largeFile;
+    }
+
+    public void setLargeFile(boolean largeFile) {
+        this.largeFile = largeFile;
+    }
+
     /*
      * Reads the header of the incoming buffer, which is assumed to be a complete PDU
      * Afterwards puts the buffer position right after the header
@@ -106,7 +108,8 @@ public class CfdpHeader {
         towardsSender = CfdpUtils.isBitOfByteSet(tempByte, 4);
         acknowledged = !CfdpUtils.isBitOfByteSet(tempByte, 5);
         withCrc = CfdpUtils.isBitOfByteSet(tempByte, 6);
-        dataLength = CfdpUtils.getUnsignedShort(buffer);
+        setLargeFile(CfdpUtils.isBitOfByteSet(tempByte, 7));
+        CfdpUtils.getUnsignedShort(buffer); // datalength
         tempByte = buffer.get();
         entityIdLength = ((tempByte >> 4) & 0x07) + 1;
         sequenceNumberLength = (tempByte & 0x07) + 1;
@@ -115,10 +118,11 @@ public class CfdpHeader {
         destinationId = CfdpUtils.getUnsignedLongFromBuffer(buffer, entityIdLength);
     }
 
-    protected void writeToBuffer(ByteBuffer buffer) {
-        if (this.dataLength == -1) {
-            throw new IllegalStateException("CFDP header needs a valid 'PDU Data field length' value.");
-        }
+    public static int getDataLength(ByteBuffer buffer) {
+        return buffer.getShort(1) & 0xFFFF;
+    }
+
+    protected void writeToBuffer(ByteBuffer buffer, int dataLength) {
         byte b = (byte) ((CfdpUtils.boolToByte(!fileDirective) << 4) |
                 (CfdpUtils.boolToByte(towardsSender) << 3) |
                 (CfdpUtils.boolToByte(!acknowledged) << 2) |
@@ -136,13 +140,9 @@ public class CfdpHeader {
     @Override
     public String toString() {
         return "CfdpHeader [fileDirective=" + fileDirective + ", towardsSender=" + towardsSender + ", acknowledged="
-                + acknowledged + ", withCrc=" + withCrc + ", dataLength=" + dataLength + ", entityIdLength="
+                + acknowledged + ", withCrc=" + withCrc + ", entityIdLength="
                 + entityIdLength + ", sequenceNumberLength=" + sequenceNumberLength + ", sourceId=" + sourceId
                 + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + "]";
-    }
-
-    public int getDataLength() {
-        return dataLength;
     }
 
     /**

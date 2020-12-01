@@ -21,10 +21,12 @@ import org.yamcs.protobuf.TransferInfo;
 public class CfdpClient {
 
     private String instance;
+    private String serviceName;
     private CfdpApiClient cfdpService;
 
-    public CfdpClient(YamcsClient baseClient, String instance) {
+    public CfdpClient(YamcsClient baseClient, String instance, String serviceName) {
         this.instance = instance;
+        this.serviceName = serviceName;
         cfdpService = new CfdpApiClient(baseClient.getMethodHandler());
     }
 
@@ -34,7 +36,8 @@ public class CfdpClient {
 
     public CompletableFuture<List<TransferInfo>> listTransfers() {
         ListTransfersRequest.Builder requestb = ListTransfersRequest.newBuilder()
-                .setInstance(instance);
+                .setInstance(instance)
+                .setServiceName(serviceName);
         CompletableFuture<ListTransfersResponse> f = new CompletableFuture<>();
         cfdpService.listTransfers(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getTransfersList());
@@ -43,6 +46,7 @@ public class CfdpClient {
     public CompletableFuture<TransferInfo> getTransfer(long id) {
         GetTransferRequest.Builder requestb = GetTransferRequest.newBuilder()
                 .setInstance(instance)
+                .setServiceName(serviceName)
                 .setId(id);
         CompletableFuture<TransferInfo> f = new CompletableFuture<>();
         cfdpService.getTransfer(null, requestb.build(), new ResponseObserver<>(f));
@@ -52,6 +56,7 @@ public class CfdpClient {
     public CompletableFuture<TransferInfo> upload(ObjectId source, UploadOption... options) {
         CreateTransferRequest.Builder requestb = CreateTransferRequest.newBuilder()
                 .setInstance(instance)
+                .setServiceName(serviceName)
                 .setBucket(source.getBucket())
                 .setObjectName(source.getObjectName())
                 .setDirection(TransferDirection.UPLOAD);
@@ -76,6 +81,7 @@ public class CfdpClient {
     public CompletableFuture<TransferInfo> download(String remotePath, ObjectId target) {
         CreateTransferRequest.Builder requestb = CreateTransferRequest.newBuilder()
                 .setInstance(instance)
+                .setServiceName(serviceName)
                 .setRemotePath(remotePath)
                 .setDirection(TransferDirection.DOWNLOAD)
                 .setBucket(target.getBucket())

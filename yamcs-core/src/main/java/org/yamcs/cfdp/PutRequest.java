@@ -10,7 +10,6 @@ import org.yamcs.yarch.Bucket;
  */
 
 public class PutRequest extends CfdpRequest {
-
     private long sourceId;
     private long destinationId;
     private String targetPath;
@@ -21,9 +20,10 @@ public class PutRequest extends CfdpRequest {
     private boolean createpath;
     private long checksum;
     private boolean acknowledged;
+    private boolean closureRequested = false;
 
     public PutRequest(long sourceId, long destinationId, String objectName, String targetPath, boolean overwrite,
-            boolean acknowledged, boolean createpath, Bucket b, byte[] data) {
+            boolean acknowledged, boolean closureRequested, boolean createpath, Bucket b, byte[] data) {
         super(CfdpRequestType.PUT);
         this.sourceId = sourceId;
         this.destinationId = destinationId;
@@ -34,6 +34,7 @@ public class PutRequest extends CfdpRequest {
         this.bucket = b;
         this.fileData = data;
         this.acknowledged = acknowledged;
+        this.closureRequested = closureRequested;
         this.checksum = ChecksumCalculator.calculateChecksum(data);
     }
 
@@ -81,5 +82,11 @@ public class PutRequest extends CfdpRequest {
         return createpath;
     }
 
-  
+    public boolean isClosureRequested() {
+        return closureRequested;
+    }
+
+    public void setClosureRequested(boolean closureRequested) {
+        this.closureRequested = closureRequested;
+    }
 }

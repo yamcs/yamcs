@@ -49,8 +49,8 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl1 set d ='new value'");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(1000l, t.getColumn("inspected"));
-        assertEquals(1000l, t.getColumn("updated"));
+        assertEquals(1000l, t.getLongColumn("inspected"));
+        assertEquals(1000l, t.getLongColumn("updated"));
 
         verify("select * from tbl1",
                 (a, b, c, d, e) -> {
@@ -65,8 +65,8 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl12 set d ='new value' where a=1");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(100l, t.getColumn("inspected"));
-        assertEquals(100l, t.getColumn("updated"));
+        assertEquals(100l, t.getLongColumn("inspected"));
+        assertEquals(100l, t.getLongColumn("updated"));
 
         verify("select * from tbl12",
                 (a, b, c, d, e) -> {
@@ -85,8 +85,8 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl12 set d = 'bubu'+b where a>1");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(900l, t.getColumn("inspected"));
-        assertEquals(800l, t.getColumn("updated"));
+        assertEquals(900l, t.getLongColumn("inspected"));
+        assertEquals(800l, t.getLongColumn("updated"));
         
         
         verify("select * from tbl12",
@@ -107,8 +107,8 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl12 set d ='new value' where a=1 limit 2");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(2l, t.getColumn("inspected"));
-        assertEquals(2l, t.getColumn("updated"));
+        assertEquals(2l, t.getLongColumn("inspected"));
+        assertEquals(2l, t.getLongColumn("updated"));
 
         verify("select * from tbl12",
                 (a, b, c, d, e) -> {
@@ -127,8 +127,8 @@ public class TableUpdateTest extends YarchTestCase {
         StreamSqlResult r = ydb.execute("update tbl13 set e ='new value' where a=1 limit 2");
         assertTrue(r.hasNext());
         Tuple t = r.next();
-        assertEquals(2l, t.getColumn("inspected"));
-        assertEquals(2l, t.getColumn("updated"));
+        assertEquals(2l, t.getLongColumn("inspected"));
+        assertEquals(2l, t.getLongColumn("updated"));
 
         verify("select * from tbl13",
                 (a, b, c, d, e) -> {

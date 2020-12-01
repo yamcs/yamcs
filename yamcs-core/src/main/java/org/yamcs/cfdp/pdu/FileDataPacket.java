@@ -13,7 +13,6 @@ public class FileDataPacket extends CfdpPacket {
         super(header);
         this.offset = offset;
         this.filedata = data;
-        finishConstruction();
     }
 
     public FileDataPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -44,7 +43,7 @@ public class FileDataPacket extends CfdpPacket {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         return 4 + this.filedata.length;
     }
 

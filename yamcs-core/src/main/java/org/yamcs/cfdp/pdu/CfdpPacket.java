@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.cfdp.CfdpTransfer;
+import org.yamcs.cfdp.OngoingCfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -31,10 +31,6 @@ public abstract class CfdpPacket {
         this.header = null;
     }
 
-    protected final void finishConstruction() {
-        header.setDataLength(calculateDataFieldLength());
-    }
-
     protected CfdpPacket(CfdpHeader header) {
         this(null, header);
     }
@@ -48,13 +44,14 @@ public abstract class CfdpPacket {
         return this.header;
     }
 
-    protected abstract int calculateDataFieldLength();
+    public abstract int getDataFieldLength();
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
         CfdpHeader header = new CfdpHeader(buffer);
-        int limit = header.getLength()+header.getDataLength();
-        if(limit > buffer.limit()) {
-            throw new IllegalArgumentException("buffer too short, from header expected "+limit+" bytes, but only "+buffer.limit()+" bytes available");
+        int limit = header.getLength() + CfdpHeader.getDataLength(buffer);
+        if (limit > buffer.limit()) {
+            throw new IllegalArgumentException("buffer too short, from header expected " + limit + " bytes, but only "
+                    + buffer.limit() + " bytes available");
         }
         buffer.limit(limit);
         CfdpPacket toReturn = null;
@@ -96,9 +93,9 @@ public abstract class CfdpPacket {
     }
 
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + header.getDataLength());
-
-        getHeader().writeToBuffer(buffer);
+        int dataLength = getDataFieldLength();
+        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + dataLength);
+        getHeader().writeToBuffer(buffer, dataLength);
         writeCFDPPacket(buffer);
         if (getHeader().withCrc()) {
             calculateAndAddCrc(buffer);
@@ -106,21 +103,24 @@ public abstract class CfdpPacket {
 
         return buffer.array();
     }
+
     public void writeToBuffer(ByteBuffer buffer) {
-        header.writeToBuffer(buffer);
+        int dataLength = getDataFieldLength();
+        header.writeToBuffer(buffer, dataLength);
         writeCFDPPacket(buffer);
         if (header.withCrc()) {
             calculateAndAddCrc(buffer);
         }
     }
-    
-    
-    public Tuple toTuple(CfdpTransfer trans) {
-        CfdpTransactionId id = trans.getTransactionId();
-        
+
+    public Tuple toTuple(OngoingCfdpTransfer trans) {
+        return toTuple(trans.getTransactionId(), trans.getStartTime());
+    }
+
+    public Tuple toTuple(CfdpTransactionId id, long startTime) {
         TupleDefinition td = CFDP.copy();
         ArrayList<Object> al = new ArrayList<>();
-        al.add(trans.getStartTime());
+        al.add(startTime);
         al.add(id.getInitiatorEntity());
         al.add(id.getSequenceNumber());
         al.add(this.toByteArray());
@@ -128,10 +128,10 @@ public abstract class CfdpPacket {
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {
-        if(tuple.hasColumn("pdu")) {
+        if (tuple.hasColumn("pdu")) {
             return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("pdu"))));
         } else {
-           throw new IllegalStateException();
+            throw new IllegalStateException();
         }
     }
 

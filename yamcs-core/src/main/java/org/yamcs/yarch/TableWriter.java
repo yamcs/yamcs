@@ -21,6 +21,8 @@ public abstract class TableWriter implements StreamSubscriber {
          */
         UPSERT_APPEND,
         /**
+         * like INSERT but do not update histograms.
+         * <p>
          * used for bulk load when we know that the data cannot be in the table
          */
         LOAD,

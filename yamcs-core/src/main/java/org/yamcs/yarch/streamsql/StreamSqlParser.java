@@ -69,7 +69,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       break;
     case K_BOOLEAN:
       jj_consume_token(K_BOOLEAN);
-                  {if (true) return DataType.BYTE;}
+                  {if (true) return DataType.BOOLEAN;}
       break;
     case K_BYTE:
       jj_consume_token(K_BYTE);

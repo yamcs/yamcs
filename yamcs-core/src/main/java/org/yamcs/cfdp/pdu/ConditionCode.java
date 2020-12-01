@@ -10,7 +10,7 @@ public enum ConditionCode {
 
     NO_ERROR((byte) 0x00),
     ACK_LIMIT_REACHED((byte) 0x01),
-    KEEP_ALIVE_REACHED((byte) 0x02),
+    KEEP_ALIVE_LIMIT_REACHED((byte) 0x02),
     INVALID_TRANSMISSION_MODE((byte) 0x03),
     FILESTORE_REJECTION((byte) 0x04),
     FILE_CHECKSUM_FAILURE((byte) 0x05),
@@ -19,9 +19,10 @@ public enum ConditionCode {
     INACTIVITY_DETECTED((byte) 0x08),
     INVALID_FILE_STRUCTURE((byte) 0x09),
     CHECK_LIMIT_REACHED((byte) 0x0A),
+    UNSUPPORTED_CHECKSUM_TYPE((byte)0x0B),
     SUSPEND_REQUEST_RECEIVED((byte) 0x0E),
     CANCEL_REQUEST_RECEIVED((byte) 0x0F),
-    RESERVED((byte) 0x0B);
+    RESERVED((byte) 0x0C);
 
     private byte code;
 

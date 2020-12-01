@@ -89,7 +89,7 @@ public class TableRowDeleteTest2 extends YarchTestCase {
         
         assertTrue(res.hasNext());
         Tuple t = res.next();
-        assertEquals(200l, t.getColumn("deleted"));
+        assertEquals(200l, t.getLongColumn("deleted"));
         
         verify("select * from abcd3",
                 (a,b,c,d) -> {
@@ -108,8 +108,8 @@ public class TableRowDeleteTest2 extends YarchTestCase {
         StreamSqlResult res =  ydb.execute("delete from tdf4 where a = 3 and b < 2");
         
         Tuple t = res.next();
-        assertEquals(100l, t.getColumn("inspected"));
-        assertEquals(20l, t.getColumn("deleted"));
+        assertEquals(100l, t.getLongColumn("inspected"));
+        assertEquals(20l, t.getLongColumn("deleted"));
         
         verify("select * from tdf4",
                 (a,b,c,d) -> {

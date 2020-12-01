@@ -70,9 +70,9 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3, tuples.size());
         
         // Ordered ascending by key
-        assertEquals(1000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(2).getColumn("gentime"));
+        assertEquals(1000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(3000L, tuples.get(2).getLongColumn("gentime"));
     }
     
     @Test
@@ -84,9 +84,9 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3, tuples.size());
         
         // Ordered ascending by key
-        assertEquals(1000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(2).getColumn("gentime"));
+        assertEquals(1000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(3000L, tuples.get(2).getLongColumn("gentime"));
         
         // keywords ORDER ASC unneeded, but allowed 
         execute("create stream s2 as select * from RdbSelectTest order asc");
@@ -95,9 +95,9 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3, tuples.size());
         
         // Ordered ascending by key
-        assertEquals(1000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(2).getColumn("gentime"));
+        assertEquals(1000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(3000L, tuples.get(2).getLongColumn("gentime"));
     }
     
     @Test
@@ -109,9 +109,9 @@ public class RdbSelectTest extends YarchTestCase {
         
         // Ordered descending by key
         // Every tuple comes from a different partition
-        assertEquals(3000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(1000L, tuples.get(2).getColumn("gentime"));
+        assertEquals(3000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(1000L, tuples.get(2).getLongColumn("gentime"));
         
         // Mix it up a bit, by adding a tuple that is more than a month separated
         long t4 = TimeEncoding.getWallclockTime();
@@ -121,10 +121,10 @@ public class RdbSelectTest extends YarchTestCase {
         Stream s2 = ydb.getStream("s2");
         tuples = fetchTuples(s2);
         assertEquals(4, tuples.size());
-        assertEquals(t4, tuples.get(0).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(2).getColumn("gentime"));
-        assertEquals(1000L, tuples.get(3).getColumn("gentime"));
+        assertEquals(t4, tuples.get(0).getTimestampColumn("gentime"));
+        assertEquals(3000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(2).getLongColumn("gentime"));
+        assertEquals(1000L, tuples.get(3).getLongColumn("gentime"));
         
         // Filter with a strict range end
         execute("create stream s3 as select * from RdbSelectTest where gentime<3000 order desc");        
@@ -132,8 +132,8 @@ public class RdbSelectTest extends YarchTestCase {
         tuples = fetchTuples(s3);
         
         assertEquals(2, tuples.size());
-        assertEquals(2000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(1000L, tuples.get(1).getColumn("gentime"));
+        assertEquals(2000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(1000L, tuples.get(1).getLongColumn("gentime"));
         
         
         // Filter with a non-strict range end
@@ -141,24 +141,24 @@ public class RdbSelectTest extends YarchTestCase {
         Stream s4 = ydb.getStream("s4");
         tuples = fetchTuples(s4);
         assertEquals(2, tuples.size());
-        assertEquals(2000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(1000L, tuples.get(1).getColumn("gentime"));
+        assertEquals(2000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(1000L, tuples.get(1).getLongColumn("gentime"));
 
         // Filter with a strict range start
         execute("create stream s5 as select * from RdbSelectTest where gentime>2000 order desc");        
         Stream s5 = ydb.getStream("s5");
         tuples = fetchTuples(s5);
         assertEquals(2, tuples.size());
-        assertEquals(t4, tuples.get(0).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(1).getColumn("gentime"));
+        assertEquals(t4, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(3000L, tuples.get(1).getLongColumn("gentime"));
         
         // Filter with a non-strict range start
         execute("create stream s6 as select * from RdbSelectTest where gentime>=3000 order desc");        
         Stream s6 = ydb.getStream("s6");
         tuples = fetchTuples(s6);
         assertEquals(2, tuples.size());
-        assertEquals(t4, tuples.get(0).getColumn("gentime"));
-        assertEquals(3000L, tuples.get(1).getColumn("gentime"));
+        assertEquals(t4, tuples.get(0).getTimestampColumn("gentime"));
+        assertEquals(3000L, tuples.get(1).getLongColumn("gentime"));
     }
     
     @Test
@@ -172,9 +172,9 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3, tuples.size());
         
         // Ordered descending by gentime
-        assertEquals(3000L, tuples.get(0).getColumn("gentime"));
-        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
-        assertEquals(1000L, tuples.get(2).getColumn("gentime"));
+        assertEquals(3000L, tuples.get(0).getLongColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getLongColumn("gentime"));
+        assertEquals(1000L, tuples.get(2).getLongColumn("gentime"));
     }
     
     @Test(expected=ParseException.class)

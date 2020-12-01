@@ -56,7 +56,6 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         this.fileStatus = status;
         this.filestoreResponses = Collections.emptyList();
         this.faultLocation = faultLocation;
-        finishConstruction();
     }
 
     public FinishedPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -97,7 +96,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         int toReturn = 2; // condition code + some status bits
         for (FileStoreResponse fsr : this.filestoreResponses) {
             toReturn += 2 // first byte of the FileStoreResponse + 1 time a LV length

@@ -18,7 +18,6 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         this.scopeStart = scopeStart;
         this.scopeEnd = scopeEnd;
         this.segmentRequests = requests;
-        finishConstruction();
     }
 
     public NakPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -43,7 +42,7 @@ public class NakPacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         return 9 + 8 * segmentRequests.size();
     }
 

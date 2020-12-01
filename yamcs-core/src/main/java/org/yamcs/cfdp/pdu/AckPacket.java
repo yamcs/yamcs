@@ -9,9 +9,6 @@ import org.yamcs.cfdp.FileDirective;
 import com.google.common.collect.Maps;
 
 public class AckPacket extends CfdpPacket implements FileDirective {
-
-   
-
     private FileDirectiveCode directiveCode;
     private FileDirectiveSubtypeCode directiveSubtypeCode;
     private ConditionCode conditionCode;
@@ -77,7 +74,6 @@ public class AckPacket extends CfdpPacket implements FileDirective {
         this.directiveSubtypeCode = subcode;
         this.conditionCode = conditionCode;
         this.transactionStatus = status;
-        finishConstruction();
     }
 
     public AckPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -98,7 +94,7 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         return 3;
     }
 
@@ -114,7 +110,11 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     public FileDirectiveSubtypeCode getFileDirectiveSubtypeCode() {
         return directiveSubtypeCode;
     }
-    
+
+    public ConditionCode getConditionCode() {
+        return conditionCode;
+    }
+
     @Override
     public String toString() {
         return "AckPacket [directiveCode=" + directiveCode + ", directiveSubtypeCode=" + directiveSubtypeCode

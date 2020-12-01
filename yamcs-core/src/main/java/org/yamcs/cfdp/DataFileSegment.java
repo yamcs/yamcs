@@ -22,4 +22,7 @@ public class DataFileSegment {
         return data;
     }
 
+    public long getEndOffset() {
+        return offset + data.length;
+    }
 }

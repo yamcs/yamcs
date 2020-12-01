@@ -573,7 +573,7 @@ public class Tablespace {
                 w.close();
             }
         }
-
+        //TODO make atomic as much as possible
         synchronized (tables) {
             RdbTable table = tables.remove(tblDef);
             if (table == null) {
@@ -589,6 +589,7 @@ public class Tablespace {
                 db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
                 removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
             }
+            removeTbsIndex(Type.TABLE_DEFINITION, table.tbsIndex);
         }
     }
 

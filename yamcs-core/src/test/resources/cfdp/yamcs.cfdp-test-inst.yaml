@@ -7,7 +7,7 @@ services:
       destinationId: 15
       sleepBetweenPdus: 10
       eofAckTimeout: 30
-      maxEofResendAttempts: 2
+      eofAckLimit: 1
 
 mdb:
   - type: "emptyNode"

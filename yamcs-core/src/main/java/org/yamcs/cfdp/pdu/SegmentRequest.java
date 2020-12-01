@@ -9,7 +9,6 @@ public class SegmentRequest {
     private long segmentStart;
     private long segmentEnd;
 
-    
     public SegmentRequest(long start, long end) {
         this.segmentStart = start;
         this.segmentEnd = end;
@@ -21,6 +20,10 @@ public class SegmentRequest {
 
     public long getSegmentEnd() {
         return this.segmentEnd;
+    }
+
+    public boolean isMetadata() {
+        return segmentStart == 0 && segmentEnd == 0;
     }
 
     // returns true if a given value false within the range of this SegmentRequest, including the start but excluding
@@ -53,7 +56,7 @@ public class SegmentRequest {
     public int hashCode() {
         return Objects.hash(getSegmentStart(), getSegmentEnd());
     }
-    
+
     @Override
     public String toString() {
         return "SegmentRequest [segmentStart=" + segmentStart + ", segmentEnd=" + segmentEnd + "]";

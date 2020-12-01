@@ -94,11 +94,7 @@ public class CfdpReceiver {
 
     private void processEofPacket(EofPacket packet) {
         ConditionCode code = packet.getConditionCode();
-        if (code != ConditionCode.NO_ERROR) {
-            log.info("EOF CFDP packet received with error code {}; the transfer is aborted", code);
-            return;
-        }
-        log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
+        log.info("EOF CFDP packet received code={}, sending back ACK (EOF) packet", code);
 
         CfdpHeader header = new CfdpHeader(
                 true,
@@ -113,11 +109,13 @@ public class CfdpReceiver {
         AckPacket EofAck = new AckPacket(
                 FileDirectiveCode.EOF,
                 FileDirectiveSubtypeCode.FINISHED_BY_WAYPOINT_OR_OTHER,
-                ConditionCode.NO_ERROR,
+                code,
                 TransactionStatus.ACTIVE,
                 header);
         transmitCfdp(EofAck);
-
+        if (code != ConditionCode.NO_ERROR) {
+            return;
+        }
         log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
         try {
             Thread.sleep(2000);
@@ -229,7 +227,7 @@ public class CfdpReceiver {
     protected void transmitCfdp(CfdpPacket packet) {
         CfdpHeader header = packet.getHeader();
 
-        int length = 16 + header.getLength() + header.getDataLength();
+        int length = 16 + header.getLength() + packet.getDataFieldLength();
         ByteBuffer buffer = ByteBuffer.allocate(length);
         buffer.putShort((short) 0x17FD);
         buffer.putShort(4, (short) (length - 7));

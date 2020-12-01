@@ -8,8 +8,6 @@ import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.FileDirective;
 
 public class MetadataPacket extends CfdpPacket implements FileDirective {
-
-    private boolean segmentationControl;
     private long fileSize;
     private LV sourceFileName;
     private LV destinationFileName;
@@ -17,12 +15,13 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     private List<MessageToUser> messagesToUser = new ArrayList<MessageToUser>();
     private List<FaultHandlerOverride> faultHandlerOverrides = new ArrayList<FaultHandlerOverride>();
     private TLV flowLabel;
+    private boolean closureRequested;
+    private byte checksumType;
 
-    public MetadataPacket(boolean segmentationControl, int fileSize, String source, String destination,
-            List<FileStoreRequest> fsrs, List<MessageToUser> mtus, List<FaultHandlerOverride> fhos,
-            TLV flowLabel, CfdpHeader header) {
+    public MetadataPacket(boolean segmentationControl, boolean closureRequested, byte checksumType, int fileSize,
+            String source, String destination, List<FileStoreRequest> fsrs, List<MessageToUser> mtus, 
+            List<FaultHandlerOverride> fhos, TLV flowLabel, CfdpHeader header) {
         super(header);
-        this.segmentationControl = segmentationControl;
         if (fileSize == 0) {
             throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
@@ -33,14 +32,17 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         this.messagesToUser = mtus;
         this.faultHandlerOverrides = fhos;
         this.flowLabel = flowLabel;
-        finishConstruction();
+        this.closureRequested = closureRequested;
+        this.checksumType = checksumType;
     }
 
     public MetadataPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         byte temp = buffer.get();
-        this.segmentationControl = (temp & 0x01) == 1;
+        closureRequested = (temp & 0x40) == 0x40;
+        checksumType = (byte) (temp & 0x0F);
+
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
         if (this.fileSize == 0) {
             throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
@@ -73,7 +75,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     }
 
     @Override
-    protected int calculateDataFieldLength() {
+    public int getDataFieldLength() {
         int toReturn = 5 // first byte + File size
                 + this.sourceFileName.getValue().length
                 + this.destinationFileName.getValue().length;
@@ -98,10 +100,16 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         return toReturn;
     }
 
+    public boolean closureRequested() {
+        return closureRequested;
+    }
+
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put(getFileDirectiveCode().getCode());
-        buffer.put((byte) ((segmentationControl ? 0 : 1) << 7));
+        int tmp = ((closureRequested ? 1 : 0) << 6) + checksumType;
+        buffer.put((byte) tmp);
+
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
         destinationFileName.writeToBuffer(buffer);
@@ -121,17 +129,22 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     public String getSourceFilename() {
         return new String(sourceFileName.getValue());
     }
-    
+
     public String getDestinationFilename() {
         return new String(destinationFileName.getValue());
     }
 
     @Override
     public String toString() {
-        return "MetadataPacket [segmentationControl=" + segmentationControl + ", fileSize=" + fileSize
+        return "MetadataPacket [closureRequested=" + closureRequested + ", fileSize=" + fileSize
+                + ", checksumType=" + checksumType
                 + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName
                 + ", filestoreRequests=" + filestoreRequests + ", messagesToUser=" + messagesToUser
                 + ", faultHandlerOverrides=" + faultHandlerOverrides + ", flowLabel=" + flowLabel + "]";
     }
-    
+
+    public byte getChecksumType() {
+        return checksumType;
+    }
+
 }

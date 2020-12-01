@@ -469,6 +469,9 @@ public class TableDefinition {
             }
             TableColumnDefinition tableCd = valueDef.get(cidx);
             Object v = tuple.getColumn(i);
+            if (v == null) {
+                continue;
+            }
             Object v1 = DataType.castAs(tupleCd.type, tableCd.type, v);
             cidx = (tableCd.type.getTypeId() << 24) | cidx;
             byteArray.addInt(cidx);
@@ -497,9 +500,13 @@ public class TableDefinition {
 
     /**
      * Transform the value part of the tuple into a byte array to be written on
-     * disk. Each column is preceded by a tag (the column index). If there are
-     * columns in the tuple which are not in the valueDef, they are added and
+     * disk. Each column is preceded by a tag (the column index).
+     * <p>
+     * If there are columns in the tuple which are not in the valueDef, they are added and
      * the TableDefinition is serialized on disk.
+     * <p>
+     * Columns whose values are null are not serialized but their definition is still added to the table definition if not
+     * present already.
      * 
      * @param tuple
      * @param sertuple
@@ -527,7 +534,7 @@ public class TableDefinition {
         TupleDefinition tdef = new TupleDefinition();
         ArrayList<Object> cols = new ArrayList<>();
         ByteArray byteArray = ByteArray.wrap(k);
-        
+
         try {
             // deserialize the key
             for (TableColumnDefinition tcd : keyDef) {
