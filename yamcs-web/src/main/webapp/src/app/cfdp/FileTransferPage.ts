@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Transfer, TransferSubscription } from '../client';
+import { CfdpService, Transfer, TransferSubscription } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { UploadFileDialog } from './UploadFileDialog';
 
@@ -12,6 +13,9 @@ import { UploadFileDialog } from './UploadFileDialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileTransferPage implements OnDestroy {
+
+  services$ = new BehaviorSubject<CfdpService[]>([]);
+  service$ = new BehaviorSubject<CfdpService | null>(null);
 
   private ongoingTransfersById = new Map<number, Transfer>();
   private failedTransfersById = new Map<number, Transfer>();
@@ -27,39 +31,93 @@ export class FileTransferPage implements OnDestroy {
     readonly yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {
     title.setTitle('CFDP File Transfer');
 
-    this.transferSubscription = yamcs.yamcsClient.createTransferSubscription({ instance: yamcs.instance! }, transfer => {
-      switch (transfer.state) {
-        case 'RUNNING':
-        case 'PAUSED':
-          this.ongoingTransfersById.set(transfer.id, transfer);
-          break;
-        case 'FAILED':
-          this.ongoingTransfersById.delete(transfer.id);
-          this.failedTransfersById.set(transfer.id, transfer);
-          break;
-        case 'COMPLETED':
-          this.ongoingTransfersById.delete(transfer.id);
-          this.successfulTransfersById.set(transfer.id, transfer);
-          break;
-      }
+    const queryParams = route.snapshot.queryParamMap;
+    const requestedService = queryParams.get('service');
 
-      this.ongoingCount$.next(this.ongoingTransfersById.size);
-      this.failedCount$.next(this.failedTransfersById.size);
-      this.successfulCount$.next(this.successfulTransfersById.size);
+    yamcs.yamcsClient.getCfdpServices(yamcs.instance!).then(page => {
+      this.services$.next(page.services);
+
+      // Respect the requested service (from query param)
+      // But default to the first if unspecified.
+      let service = null;
+      for (const candidate of page.services) {
+        if (requestedService === candidate.name) {
+          service = candidate;
+          break;
+        }
+      }
+      if (!service && !requestedService) {
+        service = page.services.length ? page.services[0] : null;
+      }
+      if (service) {
+        this.switchService(service);
+      }
     });
   }
 
-  uploadFile() {
+  switchService(service: CfdpService | null) {
+    // Update URL
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        service: service?.name || null,
+      },
+      queryParamsHandling: 'merge',
+    });
+
+    // Clear state
+    this.ongoingCount$.next(0);
+    this.failedCount$.next(0);
+    this.successfulCount$.next(0);
+    this.ongoingTransfersById.clear();
+    this.failedTransfersById.clear();
+    this.successfulTransfersById.clear();
+    if (this.transferSubscription) {
+      this.transferSubscription.cancel();
+    }
+
+    this.service$.next(service);
+    if (service) {
+      this.transferSubscription = this.yamcs.yamcsClient.createTransferSubscription({
+        instance: this.yamcs.instance!,
+        serviceName: service.name,
+      }, transfer => {
+        switch (transfer.state) {
+          case 'RUNNING':
+          case 'PAUSED':
+            this.ongoingTransfersById.set(transfer.id, transfer);
+            break;
+          case 'FAILED':
+            this.ongoingTransfersById.delete(transfer.id);
+            this.failedTransfersById.set(transfer.id, transfer);
+            break;
+          case 'COMPLETED':
+            this.ongoingTransfersById.delete(transfer.id);
+            this.successfulTransfersById.set(transfer.id, transfer);
+            break;
+        }
+
+        this.ongoingCount$.next(this.ongoingTransfersById.size);
+        this.failedCount$.next(this.failedTransfersById.size);
+        this.successfulCount$.next(this.successfulTransfersById.size);
+      });
+    }
+  }
+
+  uploadFile(service: CfdpService) {
     const dialogRef = this.dialog.open(UploadFileDialog, {
       width: '70%',
       height: '100%',
       autoFocus: false,
       position: {
         right: '0',
-      }
+      },
+      data: { service, }
     });
   }
 

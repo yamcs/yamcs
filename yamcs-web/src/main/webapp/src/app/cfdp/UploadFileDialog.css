@@ -19,6 +19,7 @@ table.ya-data-table {
 .remote-selector {
   position: relative;
   height: calc(50% - 32px);
+  max-width: 600px;
 }
 
 .footer {

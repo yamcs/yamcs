@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpService;
@@ -24,13 +26,14 @@ import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractCfdpApi;
+import org.yamcs.protobuf.CFDPServiceInfo;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.GetTransferRequest;
-import org.yamcs.protobuf.ListEntitiesRequest;
-import org.yamcs.protobuf.ListEntitiesResponse;
+import org.yamcs.protobuf.ListCFDPServicesRequest;
+import org.yamcs.protobuf.ListCFDPServicesResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.PauseTransferRequest;
@@ -51,6 +54,19 @@ import com.google.protobuf.Timestamp;
 public class CfdpApi extends AbstractCfdpApi<Context> {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpApi.class);
+
+    @Override
+    public void listCFDPServices(Context ctx, ListCFDPServicesRequest request,
+            Observer<ListCFDPServicesResponse> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServer yamcs = YamcsServer.getServer();
+        ListCFDPServicesResponse.Builder responseb = ListCFDPServicesResponse.newBuilder();
+        YamcsServerInstance ysi = yamcs.getInstance(instance);
+        for (ServiceWithConfig service : ysi.getServicesWithConfig(CfdpService.class)) {
+            responseb.addServices(toCFDPServiceInfo(service.getName(), (CfdpService) service.getService()));
+        }
+        observer.complete(responseb.build());
+    }
 
     @Override
     public void listTransfers(Context ctx, ListTransfersRequest request,
@@ -132,12 +148,12 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 if (opts.hasReliable()) {
                     reliable = opts.getReliable();
                 }
-                if(opts.hasClosureRequested() ) {
+                if (opts.hasClosureRequested()) {
                     closureRequested = opts.getClosureRequested();
                 }
             }
 
-            if(reliable && closureRequested) {
+            if (reliable && closureRequested) {
                 throw new BadRequestException("Cannot set both reliable and closureRequested options");
             }
             String target = request.getRemotePath();
@@ -239,18 +255,17 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         cfdpService.addTransferListener(listener);
     }
 
-    @Override
-    public void listEntities(Context ctx, ListEntitiesRequest request, Observer<ListEntitiesResponse> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
-                request.hasServiceName() ? request.getServiceName() : null);
-        ListEntitiesResponse.Builder resp = ListEntitiesResponse.newBuilder();
-        for (Map.Entry<String, Long> me : cfdpService.getSources().entrySet()) {
-            resp.addSources(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+    private static CFDPServiceInfo toCFDPServiceInfo(String name, CfdpService service) {
+        CFDPServiceInfo.Builder infob = CFDPServiceInfo.newBuilder()
+                .setInstance(service.getYamcsInstance())
+                .setName(name);
+        for (Map.Entry<String, Long> me : service.getSources().entrySet()) {
+            infob.addSources(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
         }
-        for (Map.Entry<String, Long> me : cfdpService.getDestinations().entrySet()) {
-            resp.addDestinations(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+        for (Map.Entry<String, Long> me : service.getDestinations().entrySet()) {
+            infob.addDestinations(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
         }
-        observer.complete(resp.build());
+        return infob.build();
     }
 
     private CfdpTransfer verifyTransaction(CfdpService cfdpService, long id) throws NotFoundException {

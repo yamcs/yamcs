@@ -1,9 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, StorageClient } from '../client';
+import { Bucket, CfdpService, StorageClient } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
 
@@ -17,6 +17,7 @@ export class UploadFileDialog {
   localForm: FormGroup;
   remoteForm: FormGroup;
 
+  service: CfdpService;
   private storageClient: StorageClient;
   dataSource = new MatTableDataSource<Bucket>();
 
@@ -32,7 +33,12 @@ export class UploadFileDialog {
     private dialogRef: MatDialogRef<UploadFileDialog>,
     readonly yamcs: YamcsService,
     formBuilder: FormBuilder,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
+    this.service = data.service;
+    const firstSource = this.service.sources.length ? this.service.sources[0].name : '';
+    const firstDestination = this.service.destinations.length ? this.service.destinations[0].name : '';
+
     this.storageClient = yamcs.createStorageClient();
     this.storageClient.getBuckets('_global').then(buckets => {
       this.dataSource.data = buckets || [];
@@ -41,7 +47,9 @@ export class UploadFileDialog {
       object: ['', Validators.required],
     });
     this.remoteForm = formBuilder.group({
-      destination: ['', Validators.required],
+      remotePath: ['', Validators.required],
+      source: [firstSource, Validators.required],
+      destination: [firstDestination, Validators.required],
       reliable: [true, []],
     });
   }
@@ -51,11 +59,13 @@ export class UploadFileDialog {
   }
 
   startTransfer() {
-    this.yamcs.yamcsClient.createCfdpTransfer(this.yamcs.instance!, {
+    this.yamcs.yamcsClient.createCfdpTransfer(this.yamcs.instance!, this.service.name, {
       direction: 'UPLOAD',
       bucket: this.selectedBucket$.value!.name,
       objectName: this.localForm.value['object'],
-      remotePath: this.remoteForm.value['destination'],
+      remotePath: this.remoteForm.value['remotePath'],
+      source: this.remoteForm.value['source'],
+      destination: this.remoteForm.value['destination'],
       uploadOptions: {
         reliable: this.remoteForm.value['reliable']
       }
