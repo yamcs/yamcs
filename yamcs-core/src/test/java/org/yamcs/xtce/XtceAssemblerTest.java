@@ -33,9 +33,19 @@ public class XtceAssemblerTest {
 
     @Test
     public void test1() throws Exception {
+        verify("src/test/resources/xtce/BogusSAT-2.xml");
+    }
+    
+    
+    @Test
+    public void test2() throws Exception {
+        verify("src/test/resources/xtce/ref-xtce.xml");
+    }
+    
+    private void verify(String filename) throws Exception {
         Map<String, Object> m1 = new HashMap<>();
         m1.put("type", "xtce");
-        m1.put("spec", "src/test/resources/xtce/BogusSAT-2.xml");
+        m1.put("spec", filename);
 
         List<YConfiguration> mdbConfigs1 = Arrays.asList(YConfiguration.wrap(m1));
         XtceDb db1 = XtceDbFactory.createInstance(mdbConfigs1, false, false);
@@ -89,7 +99,14 @@ public class XtceAssemblerTest {
             compareObjects(mc1, mc2);
             compareContainer(mc1.getCommandContainer(), mc2.getCommandContainer());
         }
+
+        for (Algorithm algo1: ss1.getAlgorithms()) {
+            Algorithm algo2 = ss2.getAlgorithm(algo1.getName());
+            assertNotNull("Cannot find " + algo1.getQualifiedName() + " in ss2", algo2);
+            compareObjects(algo1, algo2);
+        }
     }
+
 
     private void compareContainer(Container sc1, Container sc2) throws Exception {
         assertEquals(name + ": " + sc1.getQualifiedName() + " has a different number of entries",

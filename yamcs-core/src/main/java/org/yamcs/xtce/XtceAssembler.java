@@ -25,6 +25,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
+import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
@@ -147,6 +148,17 @@ public class XtceAssembler {
             doc.writeStartElement("ContainerSet");
             for (SequenceContainer seq : spaceSystem.getSequenceContainers()) {
                 writeSequenceContainer(doc, seq);
+            }
+            doc.writeEndElement();
+        }
+        if (!spaceSystem.getAlgorithms().isEmpty()) {
+            doc.writeStartElement("AlgorithmSet");
+            for (Algorithm algo : spaceSystem.getAlgorithms()) {
+                if (algo instanceof MathAlgorithm) {
+                    writeMathAlgorithm(doc, (MathAlgorithm) algo);
+                } else {
+                    writeCustomAlgorithm(doc, (CustomAlgorithm) algo, "CustomAlgorithm");
+                }
             }
             doc.writeEndElement();
         }
@@ -542,6 +554,8 @@ public class XtceAssembler {
             writeAggregateArgumentType(doc, (AggregateArgumentType) atype);
         } else if (atype instanceof BinaryArgumentType) {
             writeBinaryArgumentType(doc, (BinaryArgumentType) atype);
+        } else if (atype instanceof AbsoluteTimeArgumentType) {
+            writeAbsoluteTimeArgumentType(doc, (AbsoluteTimeArgumentType) atype);
         } else {
             log.warn("Unexpected argument type " + atype.getClass());
         }
@@ -675,19 +689,44 @@ public class XtceAssembler {
         doc.writeEndElement();
     }
 
-    private void writeBinaryArgumentType(XMLStreamWriter doc, BinaryArgumentType ptype)
+    private void writeBinaryArgumentType(XMLStreamWriter doc, BinaryArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("BinaryArgumentType");
-        if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", StringConverter.arrayToHexString(ptype.getInitialValue()));
+        if (atype.getInitialValue() != null) {
+            doc.writeAttribute("initialValue", StringConverter.arrayToHexString(atype.getInitialValue()));
         }
-        writeNameDescription(doc, ptype);
-        writeUnitSet(doc, ptype.getUnitSet());
+        writeNameDescription(doc, atype);
+        writeUnitSet(doc, atype.getUnitSet());
 
-        DataEncoding encoding = ptype.getEncoding();
+        DataEncoding encoding = atype.getEncoding();
         writeDataEncoding(doc, encoding);
 
         doc.writeEndElement();
+    }
+
+    private void writeAbsoluteTimeArgumentType(XMLStreamWriter doc, AbsoluteTimeArgumentType atype)
+            throws XMLStreamException {
+        doc.writeStartElement("AbsoluteTimeArgumentType");
+        if (atype.getInitialValue() != null) {
+            doc.writeAttribute("initialValue", atype.getInitialValue());
+        }
+        writeNameDescription(doc, atype);
+
+        writeUnitSet(doc, atype.getUnitSet());
+
+        doc.writeStartElement("Encoding");
+        if (atype.getScale() != 1) {
+            doc.writeAttribute("scale", Double.toString(atype.getScale()));
+        }
+        if (atype.getOffset() != 0) {
+            doc.writeAttribute("offset", Double.toString(atype.getScale()));
+        }
+
+        writeDataEncoding(doc, atype.getEncoding());
+        doc.writeEndElement();// Encoding
+
+        writeReferenceTime(doc, atype.getReferenceTime());
+        doc.writeEndElement();// AbsoluteTimeArgumentType
     }
 
     private static void writeAggregateArgumentType(XMLStreamWriter doc, AggregateArgumentType atype)
@@ -819,7 +858,7 @@ public class XtceAssembler {
         }
     }
 
-    private static void writeCalibrator(XMLStreamWriter doc, Calibrator calibrator) throws XMLStreamException {
+    private void writeCalibrator(XMLStreamWriter doc, Calibrator calibrator) throws XMLStreamException {
         if (calibrator instanceof PolynomialCalibrator) {
             doc.writeStartElement("PolynomialCalibrator");
             double[] coefficients = ((PolynomialCalibrator) calibrator).getCoefficients();
@@ -842,14 +881,23 @@ public class XtceAssembler {
             doc.writeEndElement();
         } else if (calibrator instanceof MathOperationCalibrator) {
             doc.writeStartElement("MathOperationCalibrator");
-            for (MathOperation.Element me : ((MathOperationCalibrator) calibrator).getElementList()) {
-                doc.writeStartElement(me.getType().xtceName());
-                doc.writeCharacters(me.toString());
-                doc.writeEndElement();
-            }
+            writeMathOperation(doc, (MathOperationCalibrator) calibrator);
             doc.writeEndElement();// MathOperationCalibrator
         } else {
             log.error("Unsupported calibrator  type " + calibrator.getClass());
+        }
+    }
+
+    private void writeMathOperation(XMLStreamWriter doc, MathOperation mathOp) throws XMLStreamException {
+        for (MathOperation.Element me : mathOp.getElementList()) {
+            doc.writeStartElement(me.getType().xtceName());
+            if (me.getParameterInstanceRef() != null) {
+                doc.writeAttribute("parameterRef", getNameReference(me.getParameterInstanceRef()));
+            }
+            if (me.getType() == ElementType.OPERATOR || me.getType() == ElementType.VALUE_OPERAND) {
+                doc.writeCharacters(me.toString());
+            }
+            doc.writeEndElement();
         }
     }
 
@@ -896,18 +944,25 @@ public class XtceAssembler {
         doc.writeEndElement();// StringDataEncoding
     }
 
-    private static void writeBinaryDataEncoding(XMLStreamWriter doc, BinaryDataEncoding encoding)
+    private void writeBinaryDataEncoding(XMLStreamWriter doc, BinaryDataEncoding encoding)
             throws XMLStreamException {
         doc.writeStartElement("BinaryDataEncoding");
 
         doc.writeStartElement("SizeInBits");
-        if (encoding.getSizeInBits() > 0) {
-            doc.writeStartElement("FixedValue");
-            doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
-            doc.writeEndElement();
+        doc.writeStartElement("FixedValue");
+        doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
+        doc.writeEndElement();
+        doc.writeEndElement();// SizeInBits
+
+        if (encoding.fromBinaryTransformAlgorithm != null) {
+            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.fromBinaryTransformAlgorithm,
+                    "FromBinaryTransformAlgorithm");
+        }
+        if (encoding.toBinaryTransformAlgorithm != null) {
+            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.toBinaryTransformAlgorithm,
+                    "ToBinaryTransformAlgorithm");
         }
 
-        doc.writeEndElement();// SizeInBits
         doc.writeEndElement();// BinaryDataEncoding
     }
 
@@ -1000,6 +1055,16 @@ public class XtceAssembler {
         if (command.getCommandContainer() != null) {
             writeCommandContainer(doc, command.getCommandContainer());
         }
+        if (command.getDefaultSignificance() != null) {
+            writeSignificance(doc, command.getDefaultSignificance(), "DefaultSignificance");
+        }
+        doc.writeEndElement();//MetaCommand
+    }
+
+    private void writeSignificance(XMLStreamWriter doc, Significance significance, String elementName) throws XMLStreamException {
+        doc.writeStartElement(elementName);
+        doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
+        doc.writeAttribute("consequenceLevel", significance.getConsequenceLevel().xtceAlias());
         doc.writeEndElement();
     }
 
@@ -1044,6 +1109,78 @@ public class XtceAssembler {
         }
 
         doc.writeEndElement();// SequenceContainer
+    }
+
+    private void writeMathAlgorithm(XMLStreamWriter doc, MathAlgorithm algorithm)
+            throws XMLStreamException {
+        doc.writeStartElement("MathAlgorithm");
+        writeNameDescription(doc, algorithm);
+
+        doc.writeStartElement("MathOperation");
+        OutputParameter outp = algorithm.getOutputList().get(0);
+        doc.writeAttribute("outputParameterRef", getNameReference(outp.getParameter()));
+        writeMathOperation(doc, algorithm.getOperation());
+        if (algorithm.getTriggerSet() != null) {
+            doc.writeStartElement("TriggerSet");
+            writeTriggerSet(doc, algorithm.getTriggerSet());
+            doc.writeEndElement();// TriggerSet
+        }
+        doc.writeEndElement();// MathOperation
+        doc.writeEndElement();// MathAlgorithm
+    }
+
+    private void writeCustomAlgorithm(XMLStreamWriter doc, CustomAlgorithm algorithm, String elementName)
+            throws XMLStreamException {
+        doc.writeStartElement(elementName);
+        writeNameDescription(doc, algorithm);
+        if (algorithm.getAlgorithmText() != null) {
+            doc.writeStartElement("AlgorithmText");
+            doc.writeAttribute("language", algorithm.getLanguage());
+            doc.writeCharacters(algorithm.getAlgorithmText());
+            doc.writeEndElement();
+        }
+
+        if (!algorithm.getInputList().isEmpty()) {
+            doc.writeStartElement("InputSet");
+            for (InputParameter inp : algorithm.getInputList()) {
+                doc.writeStartElement("InputParameterInstanceRef");
+                doc.writeAttribute("parameterRef", getNameReference(inp.getParameterInstance()));
+                doc.writeAttribute("inputName", inp.getInputName());
+                doc.writeEndElement();
+            }
+            doc.writeEndElement();// InputSet
+        }
+        if (!algorithm.getOutputList().isEmpty()) {
+            doc.writeStartElement("OutputSet");
+            for (OutputParameter outp : algorithm.getOutputList()) {
+                doc.writeStartElement("OutputParameterRef");
+                doc.writeAttribute("parameterRef", getNameReference(outp.getParameter()));
+                doc.writeAttribute("outputName", outp.getOutputName());
+                doc.writeEndElement();
+            }
+            doc.writeEndElement();// OutputSet
+        }
+        if (algorithm.getTriggerSet() != null) {
+            doc.writeStartElement("TriggerSet");
+            writeTriggerSet(doc, algorithm.getTriggerSet());
+            doc.writeEndElement();// TriggerSet
+        }
+        doc.writeEndElement();// elementName
+    }
+
+    private void writeTriggerSet(XMLStreamWriter doc, TriggerSetType triggerSet) throws XMLStreamException {
+        doc.writeStartElement("TriggerSet");
+        for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
+            doc.writeStartElement("OnParameterUpdateTrigger");
+            doc.writeAttribute("parameterRef", getNameReference(trigger.getParameter()));
+            doc.writeEndElement();
+        }
+        for (OnPeriodicRateTrigger trigger : triggerSet.getOnPeriodicRateTriggers()) {
+            doc.writeStartElement("OnPeriodicRateTrigger");
+            doc.writeAttribute("fireRateInSeconds", Double.toString(trigger.getFireRate() / 1000.0));
+            doc.writeEndElement();
+        }
+        doc.writeEndElement();// TriggerSet
     }
 
     private static void writeAncillaryData(XMLStreamWriter doc, List<AncillaryData> l) throws XMLStreamException {

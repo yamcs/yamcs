@@ -29,36 +29,33 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
     Encoding encoding = Encoding.UNSIGNED;
     StringDataEncoding stringEncoding = null;
 
-    
     public IntegerDataEncoding(Builder builder) {
         super(builder, 8);
-        
-        if(builder.encoding != null) {
+
+        if (builder.encoding != null) {
             this.encoding = builder.encoding;
         }
-        
-        
+
         this.defaultCalibrator = builder.defaultCalibrator;
         this.contextCalibratorList = builder.contextCalibratorList;
-        
-        
+
         this.stringEncoding = builder.stringEncoding;
-        
-        if(builder.baseEncoding != null && builder.baseEncoding instanceof IntegerDataEncoding) {
-            IntegerDataEncoding baseEncoding = (IntegerDataEncoding )builder.baseEncoding;
-            if(builder.defaultCalibrator == null) {
+
+        if (builder.baseEncoding != null && builder.baseEncoding instanceof IntegerDataEncoding) {
+            IntegerDataEncoding baseEncoding = (IntegerDataEncoding) builder.baseEncoding;
+            if (builder.defaultCalibrator == null) {
                 this.defaultCalibrator = baseEncoding.defaultCalibrator;
             }
-            
-            if(builder.contextCalibratorList == null) {
+
+            if (builder.contextCalibratorList == null) {
                 this.contextCalibratorList = baseEncoding.contextCalibratorList;
-            }  
-            
-            if(builder.encoding == null) {
+            }
+
+            if (builder.encoding == null) {
                 this.encoding = baseEncoding.encoding;
             }
-            
-            if(builder.stringEncoding == null) {
+
+            if (builder.stringEncoding == null) {
                 this.stringEncoding = baseEncoding.stringEncoding;
             }
         }
@@ -71,7 +68,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
     public Builder toBuilder() {
         return new Builder(this);
     }
-    
+
     public Encoding getEncoding() {
         return encoding;
     }
@@ -151,13 +148,12 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         return new IntegerDataEncoding(this);
     }
 
-    
     public static class Builder extends DataEncoding.Builder<Builder> implements NumericDataEncoding.Builder<Builder> {
         Calibrator defaultCalibrator = null;
         private List<ContextCalibrator> contextCalibratorList = null;
         Encoding encoding = null;
         StringDataEncoding stringEncoding = null;
-        
+
         public Builder(IntegerDataEncoding encoding) {
             super(encoding);
             this.defaultCalibrator = encoding.defaultCalibrator;
@@ -165,35 +161,44 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             this.encoding = encoding.encoding;
             this.stringEncoding = encoding.stringEncoding;
         }
+
         public Builder() {
             super();
         }
-        
+
         public IntegerDataEncoding build() {
             return new IntegerDataEncoding(this);
         }
+
         public Builder setStringEncoding(StringDataEncoding stringEncoding) {
             this.stringEncoding = stringEncoding;
             this.sizeInBits = stringEncoding.sizeInBits;
             this.encoding = Encoding.STRING;
             return self();
         }
+
         public Builder setDefaultCalibrator(Calibrator defaultCalibrator) {
             this.defaultCalibrator = defaultCalibrator;
             return self();
         }
+
         public Builder setEncoding(Encoding enc) {
             this.encoding = enc;
             return self();
         }
-        
+
+        public Encoding getEncoding() {
+            return encoding;
+        }
+
         public Builder setByteOrder(ByteOrder byteOrder) {
             this.byteOrder = byteOrder;
             return self();
         }
+
         public Builder setContextCalibratorList(List<ContextCalibrator> list) {
             this.contextCalibratorList = list;
-            return self(); 
+            return self();
         }
     }
 }

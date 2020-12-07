@@ -108,4 +108,8 @@ The other elements are supported one way or another, exceptions or changes from 
 
 * Arrays are not supported for commands (they are for telemetry).
 * | ArgumentRefEntry
-  | ``IncludeCondition`` and ``RepeatEntry`` are not supported
+  | ``IncludeCondition`` and ``RepeatEntry`` are not supported.
+
+.. rubric:: Algorithms
+
+* ``OnContainerUpdateTrigger`` is not supported.

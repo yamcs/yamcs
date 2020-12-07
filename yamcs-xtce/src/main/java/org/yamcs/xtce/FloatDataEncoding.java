@@ -210,5 +210,8 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
             return self();
         }
 
+        public Encoding getFloatEncoding() {
+            return encoding;
+        }
     }
 }

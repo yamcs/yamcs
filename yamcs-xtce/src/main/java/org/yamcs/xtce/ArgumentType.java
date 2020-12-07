@@ -41,5 +41,6 @@ public interface ArgumentType extends DataType {
     interface Builder<T extends Builder<T>> extends DataType.Builder<T> {
         T setEncoding(DataEncoding.Builder<?> dataEncoding);
         public ArgumentType build();
+        DataEncoding.Builder<?> getEncoding();
     }
 }

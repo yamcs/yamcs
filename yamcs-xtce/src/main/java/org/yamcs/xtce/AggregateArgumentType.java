@@ -43,5 +43,10 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
         public Builder setEncoding(DataEncoding.Builder<?> dataEncoding) {
             throw new UnsupportedOperationException("aggregate arguments do not support encodings");
         }
+
+        @Override
+        public org.yamcs.xtce.DataEncoding.Builder<?> getEncoding() {
+            throw new UnsupportedOperationException("aggregate arguments do not support encodings");
+        }
     }
 }
