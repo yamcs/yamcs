@@ -404,7 +404,6 @@ public class ParameterTypeProcessor {
 
     static long getEpochTime(TimeEpoch epoch, long offset) {
         CommonEpochs ce = epoch.getCommonEpoch();
-
         if (ce != null) {
             switch (ce) {
             case GPS:
@@ -419,7 +418,7 @@ public class ParameterTypeProcessor {
                 throw new IllegalStateException("Unknonw epoch " + ce);
             }
         } else {
-            return TimeEncoding.parse(epoch.getDateTime());
+            return offset + TimeEncoding.parse(epoch.getDateTime());
         }
     }
 
