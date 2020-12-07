@@ -137,6 +137,7 @@ export interface Instance {
   state: InstanceState;
   processors: Processor[];
   labels?: { [key: string]: string; };
+  missionTime: string;
 }
 
 export interface InstanceTemplate {
