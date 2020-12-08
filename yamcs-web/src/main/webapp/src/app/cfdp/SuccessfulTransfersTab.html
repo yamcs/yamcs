@@ -1,3 +1,5 @@
 <div class="panel-content">
-  <app-file-transfer-table [dataSource]="dataSource"></app-file-transfer-table>
+  <app-file-transfer-table [serviceName]="serviceName$ | async"
+                           [dataSource]="dataSource">
+  </app-file-transfer-table>
 </div>

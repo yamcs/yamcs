@@ -203,7 +203,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     + " endpoint and server support will be removed in a future release. If you are"
                     + " using an official client, download a later copy. Thirdparty clients should"
                     + " follow the online specification of the new '/api/websocket' endpoint:"
-                    + " https://yamcs.org/docs/yamcs-http-api/websocket/");
+                    + " https://docs.yamcs.org/yamcs-http-api/websocket/");
             user = authorizeUser(ctx, req);
             if (path.length == 2) { // No instance specified
                 prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);

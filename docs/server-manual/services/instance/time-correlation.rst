@@ -61,7 +61,7 @@ The second method will timestamp the packet with a time derived from the ``ert``
 Time of flight estimation
 -------------------------
 
-As explained above, the correlation process requires the estimation of the time of flight between the spacecraft and the ground station. This can be configured to a static value or dynamically computed based on the user supplied polynomials on time intervals. The `REST API <https://yamcs.org/docs/yamcs-http-api/time-correlation/add-time-of-flight-intervals/>`_ can be used to add the intervals and corresponding polynomials. 
+As explained above, the correlation process requires the estimation of the time of flight between the spacecraft and the ground station. This can be configured to a static value or dynamically computed based on the user supplied polynomials on time intervals. The `HTTP API <https://docs.yamcs.org/yamcs-http-api/time-correlation/add-time-of-flight-intervals/>`_ can be used to add the intervals and corresponding polynomials. 
 
 
 Class Name

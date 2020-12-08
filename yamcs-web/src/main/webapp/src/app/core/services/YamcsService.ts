@@ -68,6 +68,9 @@ export class YamcsService {
       this.yamcsClient.getInstance(instanceId).then(instance => {
         this.connectionInfo$.next({ instance: instance.name });
 
+        // Don't wait on WebSocket. Lots of pages require mission time
+        this.time$.next(instance.missionTime);
+
         // Listen to time updates, so that we can easily provide actual mission time to components
         this.timeSubscription = this.yamcsClient.createTimeSubscription({
           instance: instance.name,
@@ -97,6 +100,9 @@ export class YamcsService {
       this.clearContext();
       this.yamcsClient.getProcessor(instanceId, processorId).then(processor => {
         this.connectionInfo$.next({ processor, instance: processor.instance });
+
+        // Don't wait on WebSocket. Lots of pages require mission time
+        this.time$.next(processor.time);
 
         // Listen to time updates, so that we can easily provide actual mission time to components
         this.timeSubscription = this.yamcsClient.createTimeSubscription({

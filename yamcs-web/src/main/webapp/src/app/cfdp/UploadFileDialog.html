@@ -45,13 +45,29 @@
     <h2 style="margin-top: 16px">Specify remote destination</h2>
     <label>
       Filename
-      <input type="text" formControlName="destination"
+      <input type="text" formControlName="remotePath"
              placeholder="e.g. /CF:/filename">
     </label>
 
     <h2 style="margin-top: 32px">Options</h2>
     <label>
       <input type="checkbox" formControlName="reliable"> Reliable
+    </label>
+    <br>
+    <label>
+      Source entity
+      <select formControlName="source">
+        <option *ngFor="let entity of service.sources"
+                [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
+      </select>
+    </label>
+    <br>
+    <label>
+      Destination entity
+      <select formControlName="destination">
+        <option *ngFor="let entity of service.destinations"
+                [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
+      </select>
     </label>
   </form>
 </div>

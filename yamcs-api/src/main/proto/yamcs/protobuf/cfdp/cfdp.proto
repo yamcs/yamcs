@@ -17,6 +17,13 @@ import "yamcs/api/annotations.proto";
  
 service CfdpApi {
 
+  // List CFDP services
+  rpc ListCFDPServices(ListCFDPServicesRequest) returns (ListCFDPServicesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/cfdp/{instance}/services"
+    };
+  }
+
   // List transfers
   rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
@@ -81,16 +88,6 @@ service CfdpApi {
       }
     };
   }
-
-  // List CFDP entities
-  rpc ListEntities(ListEntitiesRequest) returns (ListEntitiesResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/cfdp/{instance}/{serviceName}/entities"
-      additional_bindings: {
-        get: "/api/cfdp/{instance}/entities"
-      }
-    };
-  }
   
   // Receive transfer updates
   rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
@@ -115,6 +112,26 @@ enum TransferState {
 message TransactionId {
     optional uint32 sequenceNumber = 1;
     optional uint64 initiatorEntity = 2;
+}
+
+message ListCFDPServicesRequest {
+  optional string instance = 1;
+}
+
+message ListCFDPServicesResponse {
+  repeated CFDPServiceInfo services = 1;
+}
+
+message CFDPServiceInfo {
+  optional string instance = 1;
+  optional string name = 2;
+  repeated EntityInfo sources = 3;
+  repeated EntityInfo destinations = 4;
+}
+
+message EntityInfo {
+  optional string name = 1;
+  optional uint64 id = 2;
 }
 
 //message sent as reponse to the info and also when starting a new transfer
@@ -244,25 +261,6 @@ message GetTransferRequest {
 message ListTransfersResponse {
   repeated TransferInfo transfers = 1;
 }
-
-
-message EntityInfo {
-	optional string name = 1;
-	optional uint64 id = 2;
-}
-
-message ListEntitiesRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-  //CFDP service name
-  optional string serviceName = 2;
-}
-
-message ListEntitiesResponse {
-  repeated EntityInfo sources = 1;
-  repeated EntityInfo destinations = 2;
-}
-
 
 message SubscribeTransfersRequest {
   // Yamcs instance name.

@@ -24,6 +24,9 @@ export class FileTransferTable implements OnChanges {
   displayedColumns$ = new BehaviorSubject<String[]>(this.defaultColumns);
 
   @Input()
+  serviceName: string;
+
+  @Input()
   dataSource = new MatTableDataSource<TransferItem>();
 
   @Input()
@@ -41,19 +44,19 @@ export class FileTransferTable implements OnChanges {
   }
 
   pauseTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.pauseCfdpTransfer(this.yamcs.instance!, transfer.id).catch(err => {
+    this.yamcs.yamcsClient.pauseCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
   resumeTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.resumeCfdpTransfer(this.yamcs.instance!, transfer.id).catch(err => {
+    this.yamcs.yamcsClient.resumeCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
   cancelTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.cancelCfdpTransfer(this.yamcs.instance!, transfer.id).catch(err => {
+    this.yamcs.yamcsClient.cancelCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
       this.messageService.showError(err);
     });
   }
