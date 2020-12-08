@@ -5,10 +5,9 @@ This service implements the CCSDS File Delivery Protocol class 1 (unreliable tra
 
 Class 3 and 4 (transfers via one or more waypoints) are not supported.
 
-The service uploads/downloads files to/from a spacecraft from/to a Yamcs bucket. In the description below, the entity that sends the file is called the Sender and the entity that receives the file is called the Receiver.
+The service uploads and downloads files between a spacecraft (or a remote device) and a Yamcs bucket. In the description below, the entity that sends the file is called the Sender and the entity that receives the file is called the Receiver.
 
 The protocol specification can be found in  `CCSDS 727.0-B-5 <https://public.ccsds.org/Pubs/727x0b5.pdf>`_ The following description summarizes the specs and provide details on the parts implented/not implemented by this service.
-
 
 The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by an metadata PDU (Protocol Data Unit) and finsihed with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
 
@@ -66,12 +65,18 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
            eofAckTimeout: 3000
            eofAckLimit: 3
            sleepBetweenPdus: 1000
-           localIds:
-               src1: 11
-               src2: 12
-           remoteIds:
-               dst1: 1
-               dst2: 2
+           localEntities:
+             - name: default
+               id: 11
+               bucket: bucket1
+             - name: id2
+               id: 12
+           remoteEntities:
+             - name: default
+               id: 5
+             - name: target2
+               id: 7
+               bucket: bucket3
            senderFaultHandlers:
              AckLimitReached: suspend
            receiverFaultHandlers:
@@ -95,13 +100,14 @@ outStream (string)
     The name of the stream where the CFDP PDUs are written. Default: ``cfdp_out``
   
 incomingBucket (string)
-    The name of the bucket where the CFDP incoming files are saved. Default: ``cfdpDown``
+    The name of the bucket where the CFDP incoming files are saved if no specific ones are defined per local or remote entity. Default: ``cfdpDown``
 
-localIds (map)
-    A mapping ``name: id`` used to give names to the local (Yamcs) entity identifiers. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files.
+localEntiess (map)
+    A list of entity definition used to give names to the local (Yamcs) entity identifiers as well as configure which bucket is used for storing the files received for that entity. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files. The bucket is optional and if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too int the general bucket configured with the incomingBucket.
     
-remoteIds (map)
-    A mapping ``name: id`` used to give names to the remote (spacecraft) entity identifiers. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files. If a PDU is received from an identifier not in this map, the PDU will be dropped and no transaction will be started. 
+remoteEntities (map)
+    A list of entity definition used to give names to the remote (spacecraft) entity identifiers. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files. If a PDU is received from an identifier not in this map, the PDU will be dropped and no transaction will be started. 
+    The list can contain also a bucket name used if the matching local entity does not define a bucket. In the example above if a file is downlink having source (remote) id = 7 and destination (Yamcs) id = 12, it will end up in bucket3.
 
 entityIdLength (integer)
     The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the 

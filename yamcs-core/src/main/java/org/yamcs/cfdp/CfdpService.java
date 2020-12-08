@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -62,7 +63,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
     static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
     static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
-    
+
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
 
@@ -77,8 +78,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     EventProducer eventProducer;
 
     private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
-    private Map<String, Long> localIds = new LinkedHashMap<>();
-    private Map<String, Long> remoteIds = new LinkedHashMap<>();
+    private Map<String, EntityConf> localEntities = new LinkedHashMap<>();
+    private Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
 
     boolean nakMetadata;
     int maxNumPendingTransactions;
@@ -89,7 +90,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     Sequence idSeq;
     static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
-    
+
     static {
         VALID_CODES.put("AckLimitReached", ConditionCode.ACK_LIMIT_REACHED);
         VALID_CODES.put("KeepAliveLimitReached", ConditionCode.KEEP_ALIVE_LIMIT_REACHED);
@@ -106,11 +107,18 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     @Override
     public Spec getSpec() {
+        Spec entitySpec = new Spec();
+        entitySpec.addOption("name", OptionType.STRING);
+        entitySpec.addOption("id", OptionType.INTEGER);
+        entitySpec.addOption("bucket", OptionType.STRING).withDefault(null);
+
         Spec spec = new Spec();
         spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
         spec.addOption("outStream", OptionType.STRING).withDefault("cfdp_out");
-        spec.addOption("sourceId", OptionType.INTEGER).withRequired(true);
-        spec.addOption("destinationId", OptionType.INTEGER).withRequired(true);
+        spec.addOption("sourceId", OptionType.INTEGER)
+                .withDeprecationMessage("please use the localEntities");
+        spec.addOption("destinationId", OptionType.INTEGER)
+                .withDeprecationMessage("please use the remoteEntities");
         spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
@@ -120,15 +128,15 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         spec.addOption("finAckTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("finAckLimit", OptionType.INTEGER).withDefault(5);
         spec.addOption("sleepBetweenPdus", OptionType.INTEGER).withDefault(500);
-        spec.addOption("localIds", OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("remoteIds", OptionType.MAP);
+        spec.addOption("localEntities", OptionType.LIST).withElementType(OptionType.MAP).withSpec(entitySpec);
+        spec.addOption("remoteEntities", OptionType.LIST).withElementType(OptionType.MAP).withSpec(entitySpec);
         spec.addOption("nakLimit", OptionType.INTEGER).withDefault(-1);
         spec.addOption("nakTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("immediateNak", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("archiveRetrievalLimit", OptionType.INTEGER).withDefault(100);
         spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
-        
+
         return spec;
     }
 
@@ -151,17 +159,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
         cfdpIn.addSubscriber(this);
 
-        String bucketName = config.getString("incomingBucket");
-        YarchDatabaseInstance globalYdb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-        try {
-            incomingBucket = globalYdb.getBucket(bucketName);
-            if (incomingBucket == null) {
-                incomingBucket = globalYdb.createBucket(bucketName);
-            }
-        } catch (IOException e) {
-            throw new InitException(e);
-        }
-
+        incomingBucket = getBucket(config.getString("incomingBucket"), true);
         maxNumPendingTransactions = config.getInt("maxNumPendingTransactions", 100);
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
         pendingAfterCompletion = config.getInt("ackAfterCompletion", 20000);
@@ -169,13 +167,13 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
         idSeq = ydb.getSequence(SEQUENCE_NAME);
-        if(config.containsKey("senderFaultHandlers")) {
+        if (config.containsKey("senderFaultHandlers")) {
             senderFaultHandlers = readFaultHandlers(config.getMap("senderFaultHandlers"));
         } else {
             senderFaultHandlers = Collections.emptyMap();
         }
-        
-        if(config.containsKey("receiverFaultHandlers")) {
+
+        if (config.containsKey("receiverFaultHandlers")) {
             receiverFaultHandlers = readFaultHandlers(config.getMap("receiverFaultHandlers"));
         } else {
             receiverFaultHandlers = Collections.emptyMap();
@@ -185,14 +183,16 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
         Map<ConditionCode, FaultHandlingAction> m = new HashMap<>();
-        for (Map.Entry<String, String> me: map.entrySet()) {
+        for (Map.Entry<String, String> me : map.entrySet()) {
             ConditionCode code = VALID_CODES.get(me.getKey());
-            if(code == null) {
-                throw new ConfigurationException("Unknown condition code "+me.getKey()+". Valid codes: "+VALID_CODES.keySet());
+            if (code == null) {
+                throw new ConfigurationException(
+                        "Unknown condition code " + me.getKey() + ". Valid codes: " + VALID_CODES.keySet());
             }
             FaultHandlingAction action = FaultHandlingAction.fromString(me.getValue());
-            if(action == null) {
-                throw new ConfigurationException("Unknown action "+me.getKey()+". Valid actions: "+FaultHandlingAction.actions());
+            if (action == null) {
+                throw new ConfigurationException(
+                        "Unknown action " + me.getKey() + ". Valid actions: " + FaultHandlingAction.actions());
             }
             m.put(code, action);
         }
@@ -201,26 +201,63 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     private void initSrcDst(YConfiguration config) throws InitException {
         if (config.containsKey("sourceId")) {
-            localIds.put("default", config.getLong("sourceId"));
+            localEntities.put("default", new EntityConf(config.getLong("sourceId"), "default", null));
         }
 
         if (config.containsKey("destinationId")) {
-            remoteIds.put("default", config.getLong("destinationId"));
+            remoteEntities.put("default", new EntityConf(config.getLong("destinationId"), "default", null));
         }
-        if (config.containsKey("localIds")) {
-            Map<String, Long> src = config.getMap("localIds");
-            addAll(localIds, src);
-        }
-        if (config.containsKey("remoteIds")) {
-            Map<String, Long> dst = config.getMap("remoteIds");
-            addAll(remoteIds, dst);
+        if (config.containsKey("localEntities")) {
+            for (YConfiguration c : config.getConfigList("localEntities")) {
+                long id = c.getLong("id");
+                String name = c.getString("name");
+                if (localEntities.containsKey(name)) {
+                    throw new ConfigurationException("A local entity named '" + name + "' has already been configured");
+                }
+                Bucket bucket = null;
+                if (c.containsKey("bucket")) {
+                    bucket = getBucket(c.getString("bucket"), c.getBoolean("global", true));
+                }
+                EntityConf ent = new EntityConf(id, name, bucket);
+                localEntities.put(name, ent);
+            }
         }
 
-        if (localIds.isEmpty()) {
-            throw new InitException("No source specified");
+        if (config.containsKey("remoteEntities")) {
+            for (YConfiguration c : config.getConfigList("localEntities")) {
+                long id = c.getLong("id");
+                String name = c.getString("name");
+                if (remoteEntities.containsKey(name)) {
+                    throw new ConfigurationException("A local entity named '" + name + "' has already been configured");
+                }
+                Bucket bucket = null;
+                if (c.containsKey("bucket")) {
+                    bucket = getBucket(c.getString("bucket"), c.getBoolean("global", true));
+                }
+                EntityConf ent = new EntityConf(id, name, bucket);
+                remoteEntities.put(name, ent);
+            }
         }
-        if (remoteIds.isEmpty()) {
-            throw new InitException("No destination specified");
+
+        if (localEntities.isEmpty()) {
+            throw new ConfigurationException("No local entity specified");
+        }
+        if (remoteEntities.isEmpty()) {
+            throw new InitException("No remote entity specified");
+        }
+    }
+
+    private Bucket getBucket(String bucketName, boolean global) throws InitException {
+        YarchDatabaseInstance ydb = global ? YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE)
+                : YarchDatabase.getInstance(yamcsInstance);
+        try {
+            Bucket bucket = ydb.getBucket(bucketName);
+            if (bucket == null) {
+                bucket = ydb.createBucket(bucketName);
+            }
+            return bucket;
+        } catch (IOException e) {
+            throw new InitException(e);
         }
     }
 
@@ -288,7 +325,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         r.addAll(pendingTransfers.values());
 
         try {
-            StreamSqlResult res = ydb.execute("select * from " + TABLE_NAME + " order desc limit " + archiveRetrievalLimit);
+            StreamSqlResult res = ydb
+                    .execute("select * from " + TABLE_NAME + " order desc limit " + archiveRetrievalLimit);
             while (res.hasNext()) {
                 r.add(new CompletedTransfer(res.next()));
             }
@@ -318,7 +356,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, idSeq.next(), executor, request,
-                cfdpOut, config,  eventProducer, this, senderFaultHandlers);
+                cfdpOut, config, eventProducer, this, senderFaultHandlers);
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
         stateChanged(transfer);
@@ -397,29 +435,49 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             return null;
         }
 
-        if(packet.getHeader().isLargeFile()) {
+        if (packet.getHeader().isLargeFile()) {
             eventProducer.sendInfo(ETYPE_NO_LARGE_FILE,
                     "Large files not supported; " + txId + ": " + packet);
             return null;
         }
-        
-        String peer = getRemoteEntityName(txId.getInitiatorEntity());
-        if (peer == null) {
+
+        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntity());
+        if (remoteEntity == null) {
             eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
                     "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntity());
             return null;
         }
 
+        EntityConf localEntity = getLocalEntity(packet.getHeader().getDestinationId());
+        if (localEntity == null) {
+            eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
+                    "Received a transaction start for an unknown local entity Id "
+                            + packet.getHeader().getDestinationId());
+            return null;
+        }
+        Bucket bucket = localEntity.bucket != null ? localEntity.bucket
+                : remoteEntity.bucket != null ? remoteEntity.bucket
+                        : incomingBucket;
+
         OngoingCfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), executor, config,
-                packet.getHeader(),  cfdpOut, incomingBucket, eventProducer, this, receiverFaultHandlers);
+                packet.getHeader(), cfdpOut, bucket, eventProducer, this, receiverFaultHandlers);
         return transfer;
     }
 
-    public String getRemoteEntityName(long entityId) {
-        return remoteIds.entrySet()
+    public EntityConf getRemoteEntity(long entityId) {
+        return remoteEntities.entrySet()
                 .stream()
-                .filter(me -> me.getValue() == entityId)
-                .map(me -> me.getKey())
+                .filter(me -> me.getValue().id == entityId)
+                .map(me -> me.getValue())
+                .findAny()
+                .orElse(null);
+    }
+
+    public EntityConf getLocalEntity(long entityId) {
+        return localEntities.entrySet()
+                .stream()
+                .filter(me -> me.getValue().id == entityId)
+                .map(me -> me.getValue())
                 .findAny()
                 .orElse(null);
     }
@@ -470,12 +528,12 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    public Map<String, Long> getSources() {
-        return localIds;
+    public Map<String, Long> getLocalEntities() {
+        return localEntities.entrySet().stream().collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue().id));
     }
 
-    public Map<String, Long> getDestinations() {
-        return remoteIds;
+    public Map<String, Long> getRemoteEntities() {
+        return remoteEntities.entrySet().stream().collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue().id));
     }
 
     public OngoingCfdpTransfer getOngoingCfdpTransfer(long id) {

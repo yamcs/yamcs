@@ -144,13 +144,13 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
             long sourceId, destinationId;
             if (request.hasSource()) {
-                Long l = cfdpService.getSources().get(request.getSource());
+                Long l = cfdpService.getLocalEntities().get(request.getSource());
                 if (l == null) {
                     throw new BadRequestException("Invalid source '" + request.getSource());
                 }
                 sourceId = l;
             } else {
-                Long l = cfdpService.getSources().get(CfdpService.DEFAULT_SRCDST);
+                Long l = cfdpService.getLocalEntities().get(CfdpService.DEFAULT_SRCDST);
                 if (l == null) {
                     throw new BadRequestException("No source specified and no default either.");
                 }
@@ -158,13 +158,13 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
             }
 
             if (request.hasDestination()) {
-                Long l = cfdpService.getDestinations().get(request.getDestination());
+                Long l = cfdpService.getRemoteEntities().get(request.getDestination());
                 if (l == null) {
                     throw new BadRequestException("Invalid destination '" + request.getDestination());
                 }
                 destinationId = l;
             } else {
-                Long l = cfdpService.getDestinations().get(CfdpService.DEFAULT_SRCDST);
+                Long l = cfdpService.getRemoteEntities().get(CfdpService.DEFAULT_SRCDST);
                 if (l == null) {
                     throw new BadRequestException("No destination specified and no default either.");
                 }
@@ -244,11 +244,11 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         CfdpService cfdpService = verifyCfdpService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         ListEntitiesResponse.Builder resp = ListEntitiesResponse.newBuilder();
-        for (Map.Entry<String, Long> me : cfdpService.getSources().entrySet()) {
-            resp.addSources(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+        for (Map.Entry<String, Long> me : cfdpService.getLocalEntities().entrySet()) {
+            resp.addLocal(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
         }
-        for (Map.Entry<String, Long> me : cfdpService.getDestinations().entrySet()) {
-            resp.addDestinations(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
+        for (Map.Entry<String, Long> me : cfdpService.getRemoteEntities().entrySet()) {
+            resp.addRemote(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
         }
         observer.complete(resp.build());
     }

@@ -259,8 +259,8 @@ message ListEntitiesRequest {
 }
 
 message ListEntitiesResponse {
-  repeated EntityInfo sources = 1;
-  repeated EntityInfo destinations = 2;
+  repeated EntityInfo local = 1;
+  repeated EntityInfo remote = 2;
 }
 
 

@@ -60,6 +60,7 @@ public class CfdpIntegrationTest {
         YamcsServer.getServer().start();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
        // org.yamcs.LoggingUtils.enableLogging(java.util.logging.Level.FINE);

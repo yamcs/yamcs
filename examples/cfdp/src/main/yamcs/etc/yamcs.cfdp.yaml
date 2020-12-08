@@ -31,8 +31,6 @@ services:
   - class: org.yamcs.cfdp.CfdpService
     name: cfdp0
     args:
-     sourceId: 5
-     destinationId: 24
      sequenceNrLength: 4
      maxPduSize: 512
      incomingBucket: "cfdpDown"
@@ -42,9 +40,18 @@ services:
      # Decreasign this number will make the packets queue up in the TCP queue
      # and the CFDP sender will timeout waiting for the EOF ACK
      sleepBetweenPdus: 1000
-     localIds:
-       id1: 11
-       id2: 12
+     localEntities:
+       - name: default
+         id: 11
+         bucket: bucket1
+       - name: id2
+         id: 12
+         bucket: bucket2
+     remoteEntities:
+       - name: default
+         id: 5
+       - name: target2
+         id: 7
      senderFaultHandlers:
        AckLimitReached: suspend
 
