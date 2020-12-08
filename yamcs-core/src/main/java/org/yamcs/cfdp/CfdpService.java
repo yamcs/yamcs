@@ -224,7 +224,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
 
         if (config.containsKey("remoteEntities")) {
-            for (YConfiguration c : config.getConfigList("localEntities")) {
+            for (YConfiguration c : config.getConfigList("remoteEntities")) {
                 long id = c.getLong("id");
                 String name = c.getString("name");
                 if (remoteEntities.containsKey(name)) {

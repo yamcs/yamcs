@@ -24,7 +24,7 @@ import org.yamcs.utils.TimeEncoding;
  * The simulation time service (as well as the speed) can be updated by various means:
  * <ul>
  * <li>Using the http time API; see
- * <a href="https://yamcs.org/docs/yamcs-http-api/time/">https://yamcs.org/docs/yamcs-http-api/time/</a> for
+ * <a href="https://docs.yamcs.org/yamcs-http-api/time/">https://docs.yamcs.org/yamcs-http-api/time/</a> for
  * details.</li>
  * <li>Setting the option {@code updateSimulationTime: true} on a TM Data Link (this is implemented in
  * {@link AbstractTmDataLink}) and will cause the simulation time to be updated with the packet generation time each
@@ -37,7 +37,7 @@ import org.yamcs.utils.TimeEncoding;
  * <p>
  * Such an option is better to be used in a template which
  * can then be used to create always new Yamcs instances (corresponding to test sessions) such that the data is
- * separated. See the <a href="https://yamcs.org/docs/yamcs-http-api/management/">instance and templates API</a> .
+ * separated. See the <a href="https://docs.yamcs.org/yamcs-http-api/management/">instance and templates API</a> .
  *
  * @author nm
  *

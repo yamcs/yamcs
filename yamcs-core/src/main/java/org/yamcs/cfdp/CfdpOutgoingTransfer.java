@@ -99,7 +99,8 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     public CfdpOutgoingTransfer(String yamcsInstance, long id, ScheduledThreadPoolExecutor executor, PutRequest request,
             Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, executor, config, request.getSourceId(), request.getDestinationId(), cfdpOut,
+        super(yamcsInstance, id, executor, config, makeTransactionId(request.getSourceId(), config, id),
+                request.getDestinationId(), cfdpOut,
                 eventProducer, monitor, faultHandlerActions);
         this.request = request;
         entityIdLength = config.getInt("entityIdLength");
@@ -139,6 +140,13 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 request.getDestinationId(), // the id of the target
                 this.cfdpTransactionId.getSequenceNumber());
 
+    }
+
+    private static CfdpTransactionId makeTransactionId(long sourceId, YConfiguration config, long id) {
+        int seqNrSize = config.getInt("sequenceNrLength");
+        long seqNum = id & ((1l << seqNrSize * 8) - 1);
+
+        return new CfdpTransactionId(sourceId, seqNum);
     }
 
     public void start() {

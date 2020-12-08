@@ -371,6 +371,10 @@ public class YamcsClient {
         return f;
     }
 
+    public String getServerURL() {
+        return serverURL.toString();
+    }
+
     public CompletableFuture<UserInfo> getOwnUserInfo() {
         CompletableFuture<UserInfo> f = new CompletableFuture<>();
         iamService.getOwnUser(null, Empty.getDefaultInstance(), new ResponseObserver<>(f));

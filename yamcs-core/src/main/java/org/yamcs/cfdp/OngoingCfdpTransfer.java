@@ -64,14 +64,6 @@ public abstract class OngoingCfdpTransfer implements CfdpTransfer {
     final Map<ConditionCode, FaultHandlingAction> faultHandlerActions;
 
     public OngoingCfdpTransfer(String yamcsInstance, long id, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, long initiatorEntity, long destinationId, Stream cfdpOut,
-            EventProducer eventProducer,
-            TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        this(yamcsInstance, id, executor, config, new CfdpTransactionId(initiatorEntity), destinationId, cfdpOut,
-                eventProducer, monitor, faultHandlerActions);
-    }
-
-    public OngoingCfdpTransfer(String yamcsInstance, long id, ScheduledThreadPoolExecutor executor,
             YConfiguration config, CfdpTransactionId cfdpTransactionId, long destinationId, Stream cfdpOut,
             EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {

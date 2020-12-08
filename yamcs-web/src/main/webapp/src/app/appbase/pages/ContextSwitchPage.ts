@@ -22,12 +22,26 @@ export class ContextSwitchPage implements OnInit {
     // Query params do not work, because we use skipLocationChange to get here.
     const paramMap = this.route.snapshot.paramMap;
     const context = paramMap.get('context');
-    const url = paramMap.get('current')!;
+    let url = paramMap.get('current')!;
 
+    // Carefully obtain a URL string with the querystring removed
+    // We must specially 'preserve' % escape patterns, because the parseUrl will decode them
+    url = url.replace(/\%/g, '__TEMP__');
     const tree = this.router.parseUrl(url);
-    const urlWithoutParams = '/' + tree.root.children['primary'].segments.map(it => it.path).join('/');
+    let urlWithoutParams = '/' + tree.root.children['primary'].segments.map(it => it.path).join('/');
+    urlWithoutParams = urlWithoutParams.replace(/__TEMP__/g, '%');
 
-    this.router.navigate([urlWithoutParams], {
+    // Now we have a string that matches exactly what we passed in, but
+    // with query param removed. Next, we need to break it in URI fragments
+    // because otherwise the navigation will also decode % escape patterns.
+    const fragments = urlWithoutParams.split('/');
+    fragments[0] = '/';
+    for (let i = 1; i < fragments.length; i++) {
+      fragments[i] = decodeURIComponent(fragments[i]);
+    }
+
+    // Pass an array of fragments, job done!
+    this.router.navigate(fragments, {
       queryParams: {
         ...tree.queryParams,
         c: context,

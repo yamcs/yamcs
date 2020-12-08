@@ -1,6 +1,6 @@
 [Unit]
 Description=Yamcs Mission Control
-Documentation=https://yamcs.org/docs
+Documentation=https://docs.yamcs.org
 After=network-online.target remote-fs.target
 Wants=network-online.target remote-fs.target
 

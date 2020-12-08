@@ -278,6 +278,18 @@ public class YamcsServerInstance extends YamcsInstanceService {
         return result;
     }
 
+    public <T extends YamcsService> List<ServiceWithConfig> getServicesWithConfig(Class<T> serviceClass) {
+        List<ServiceWithConfig> result = new ArrayList<>();
+        if (services != null) {
+            for (ServiceWithConfig swc : services) {
+                if (serviceClass.isInstance(swc.service)) {
+                    result.add(swc);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Return the service of the given class and name or null if not existing.
      * <p>
