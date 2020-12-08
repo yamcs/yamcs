@@ -31,9 +31,11 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Before
     public void cleanParameterCache() {
+        System.out.println("Aici 0");
         Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
         p.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
+        System.out.println("Aici 01");
     }
 
     @Test
@@ -154,6 +156,30 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
             assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t += 1000;
         }
+    }
+
+    @Test
+    public void testWithEnums() throws Exception {
+        generatePkt13AndPps("2020-12-08T10:00:00", 3600);
+        // org.yamcs.LoggingUtils.enableLogging(Level.ALL);
+        buildParameterArchive("2020-12-08T10:00:00", "2020-12-08T11:00:00");
+        Instant start = Instant.parse("2020-12-08T10:00:00Z");
+        Instant stop = Instant.parse("2020-12-08T10:00:19.59Z");
+        Page<ParameterValue> page = archiveClient
+                .listValues("/REFMDB/SUBSYS1/EnumerationPara1_1_4", start, stop, ListOptions.ascending(true)).get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(20, values.size());
+        ParameterValue pv = values.get(0);
+        Value engValue = pv.getEngValue();
+        assertEquals("zero_yep", engValue.getStringValue());
+
+        List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/EnumerationPara1_1_4", start, stop).get();
+        assertEquals(1, ranges.size());
+        Range r0 = ranges.get(0);
+        assertEquals(20, r0.getCount());
+        assertEquals("zero_yep", r0.getEngValue().getStringValue());
     }
 
     @Test

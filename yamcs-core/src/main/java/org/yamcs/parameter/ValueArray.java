@@ -113,6 +113,7 @@ public class ValueArray {
             ((long[]) obj)[idx] = v.getTimestampValue();
             break;
         case STRING:
+        case ENUMERATED:
             ((Object[]) obj)[idx] = v.getStringValue();
             break;
         case BINARY:
@@ -146,6 +147,7 @@ public class ValueArray {
         case TIMESTAMP:
             return ValueUtility.getTimestampValue(((long[]) obj)[idx]);
         case STRING:
+        case ENUMERATED:
             return ValueUtility.getStringValue((String)((Object[]) obj)[idx]);
         case BINARY:
             return ValueUtility.getBinaryValue((byte[]) (((Object[]) obj)[idx]));
@@ -171,6 +173,7 @@ public class ValueArray {
         case TIMESTAMP:
             return new long[size];
         case STRING:
+        case ENUMERATED:
             return new Object[size];
         case BINARY:
             return new Object[size];
