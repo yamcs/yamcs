@@ -1,3 +1,7 @@
+Version 5.3.1 released 8-Dec-2020
+- CFDP improvements
+- minor tweaks and fixes
+
 Version 5.3.0 released 25-Nov-2020
 - Added a bulk load option to be used by the command yamcs tables load. It does not update the histograms and also disables the RocksDB WAL (write ahead log) resulting in faster loads.
   the histograms have to be rebuilt manually after this.
