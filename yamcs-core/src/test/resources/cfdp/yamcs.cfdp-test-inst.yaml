@@ -6,7 +6,7 @@ services:
       sourceId: 12
       destinationId: 15
       sleepBetweenPdus: 10
-      eofAckTimeout: 30
+      eofAckTimeout: 500
       eofAckLimit: 1
 
 mdb:
