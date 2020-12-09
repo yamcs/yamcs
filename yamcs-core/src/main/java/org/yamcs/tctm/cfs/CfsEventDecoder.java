@@ -119,7 +119,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     @Override
     protected void doStop() {
         for (Stream s : streams) {
-            s.addSubscriber(this);
+            s.removeSubscriber(this);
         }
         notifyStopped();
     }
@@ -177,8 +177,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         maxLength = Math.min(maxLength, buf.remaining());
         ByteBuffer buf1 = buf.slice();
         buf1.limit(maxLength);
-        int k =0;
-        while (k<maxLength) {
+        int k = 0;
+        while (k < maxLength) {
             if (buf1.get(k) == 0) {
                 break;
             }
@@ -196,9 +196,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     public void streamClosed(Stream stream) {
         log.debug("Stream {} closed", stream.getName());
         streams.remove(stream);
-        if(streams.isEmpty()) {
+        if (streams.isEmpty()) {
             notifyFailed(new Exception("All connected streams have been closed"));
         }
     }
-
 }
