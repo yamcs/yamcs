@@ -9,10 +9,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.YamcsServerInstance;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.external.SimpleRegression;
@@ -158,13 +159,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      * default time of flight, used if cannot be obtained from the tofEstimator
      */
     double defaultTof;
-    /**
-     * Name of the on-board clock.
-     * <p>
-     * In case there are multiple clocks, we can have multiple instances of this service,
-     * one for each clock.
-     */
-    String clockName;
 
     /**
      * last computed deviation
@@ -182,23 +176,35 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     private ParameterValue deviationPv;
     String tableName;
 
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("onboardDelay", OptionType.FLOAT).withDefault(0.0);
+        spec.addOption("numSamples", OptionType.INTEGER).withDefault(3);
+        spec.addOption("accuracy", OptionType.FLOAT).withDefault(0.1);
+        spec.addOption("validity", OptionType.FLOAT).withDefault(0.2);
+        spec.addOption("saveCoefficients", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("saveTofPolynomials", OptionType.BOOLEAN).withDefault(true);
+
+        return spec;
+    }
+
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         onboardDelay = config.getDouble("onboardDelay", 0);
         numSamples = config.getInt("numSamples", 3);
         sampleQueue = new ArrayDeque<>(numSamples);
-        clockName = config.getString("clockName", DEFAULT_CLOCK_NAME);
         accuracy = config.getDouble("accuracy", 0.1);
         validity = config.getDouble("validity", 0.2);
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
 
-        tofEstimator = new TimeOfFlightEstimator(yamcsInstance, clockName, saveTofPolynomials);
+        tofEstimator = new TimeOfFlightEstimator(yamcsInstance, serviceName, saveTofPolynomials);
 
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         if (saveCoefficients) {
-            tableName = TABLE_NAME + clockName;
+            tableName = TABLE_NAME + serviceName;
 
             String streamName = tableName + "_in";
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -222,8 +228,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             tcoStream = null;
         }
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getName(), 10000);
-
-        setupSystemParameters();
     }
 
     private void retrieveArchivedCoefficients(YarchDatabaseInstance ydb) throws InitException {
@@ -232,7 +236,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             List<TcoCoefficients> tmpl = new ArrayList<>();
             StreamSqlStatement stmt = ydb.createStatement(
                     "select * from " + tableName + " order desc limit " + MAX_HISTCOEF,
-                    clockName);
+                    serviceName);
 
             StreamSqlResult res = ydb.execute(stmt);
             while (res.hasNext()) {
@@ -247,35 +251,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             throw new InitException(e);
         }
 
-    }
-
-    /**
-     * Helper method to get an instance of this service configured for a clock name
-     * 
-     * @param yamcsInstance
-     * @param clockName
-     * @return the service or null if not defined.
-     * @throws IllegalArgumentException
-     *             if the yamcsInstance is incorrect (no instance on that name)
-     */
-    public static TimeCorrelationService getInstance(String yamcsInstance, String clockName) {
-        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        if (ysi == null) {
-            throw new IllegalArgumentException("Invalid Yamcs instance '" + yamcsInstance + "'");
-        }
-        return ysi.getServices(TimeCorrelationService.class).stream()
-                .filter(tcs -> tcs.getClockName().equals(clockName)).findFirst().orElse(null);
-    }
-
-    /**
-     * same as {@link #getInstance(String, String)} but returns the instance for the default clock name
-     * {@link #DEFAULT_CLOCK_NAME}
-     * 
-     * @param yamcsInstance
-     * @return
-     */
-    public static TimeCorrelationService getInstance(String yamcsInstance) {
-        return getInstance(yamcsInstance, DEFAULT_CLOCK_NAME);
     }
 
     /**
@@ -429,6 +404,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      *             if the packet has no ert set
      */
     public void verify(TmPacket pkt) {
+
         Instant ert = pkt.getEarthReceptionTime();
 
         if (ert == null || ert == Instant.INVALID_INSTANT) {
@@ -484,20 +460,9 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         deviationPv = pv;
     }
 
-    /**
-     * Returns the name of the clock.
-     * <p>
-     * In case there are multiple on-board clocks, there can be different instances of this service, each with its own
-     * clock.
-     * 
-     * @return
-     */
-    public String getClockName() {
-        return clockName;
-    }
-
     @Override
     protected void doStart() {
+        setupSystemParameters();
         notifyStarted();
     }
 
@@ -537,7 +502,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
         if (collector != null) {
             makeParameterStatus();
-            spDeviationId = collector.getNamespace() + "/" + clockName + "/deviation";
+            spDeviationId = collector.getNamespace() + "/" + serviceName + "/deviation";
             collector.registerProducer(this);
         }
     }

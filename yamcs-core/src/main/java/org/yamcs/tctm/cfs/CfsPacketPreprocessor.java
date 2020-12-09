@@ -42,11 +42,14 @@ import org.yamcs.utils.TimeEncoding;
  * <p>
  * For explanation on the {@code timeEncoding} property, please see {@link AbstractPacketPreprocessor}. The default
  * timeEncoding used if none is specified, is GPS, equivalent with this configuration:
+ * 
  * <pre>
  * timeEncoding:
  *     epoch: GPS
  * </pre>
+ * 
  * which is also equivalent with this more detailed configuration:
+ * 
  * <pre>
  * timeEncoding:
  *     epoch: CUSTOM
@@ -65,14 +68,14 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
-        if(!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
+        if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             this.timeEpoch = TimeEpochs.GPS;
         }
     }
 
     @Override
-    public TmPacket process(TmPacket pwt) {
-        byte[] packet = pwt.getPacket();
+    public TmPacket process(TmPacket pkt) {
+        byte[] packet = pkt.getPacket();
         if (packet.length < MINIMUM_LENGTH) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is " + MINIMUM_LENGTH
@@ -89,18 +92,23 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
+        
         if (useLocalGenerationTime) {
-            pwt.setLocalGenTime();
-            pwt.setGenerationTime(timeService.getMissionTime());
+            pkt.setLocalGenTime();
+            pkt.setGenerationTime(timeService.getMissionTime());
         } else {
-            pwt.setGenerationTime(getTimeFromPacket(packet));
+            pkt.setGenerationTime(getTimeFromPacket(packet));
+            System.out.println("tcoService: "+tcoService);
+            if (tcoService != null) {
+                tcoService.verify(pkt);
+            }
         }
-        pwt.setSequenceCount(apidseqcount);
+        pkt.setSequenceCount(apidseqcount);
         if (log.isTraceEnabled()) {
             log.trace("processing packet apid: {}, seqCount:{}, length: {}, genTime: {}", apid, seq, packet.length,
-                    TimeEncoding.toString(pwt.getGenerationTime()));
+                    TimeEncoding.toString(pkt.getGenerationTime()));
         }
-        return pwt;
+        return pkt;
     }
 
     long getTimeFromPacket(byte[] packet) {

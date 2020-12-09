@@ -12,11 +12,14 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
+
 /**
  * This class provides some common facilities for the packet preprocessors.
  * Options:
+ * 
  * <pre>
  *   dataLinks:
  *   ...
@@ -27,30 +30,37 @@ import org.yamcs.utils.TimeEncoding;
  *              epoch: CUSTOM
  *              epochUTC: 1970-01-01T00:00:00Z
  *              timeIncludesLeapSeconds: false
- *   
- *  </pre>  
  * 
- * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used by some implementing classes to decode parts of the header.
+ * </pre>
+ * 
+ * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used by some implementing classes to decode parts of
+ * the header.
  * <p>
  * The {@code timeEncoding} is used to convert the extracted time to Yamcs time.
  * 
  * {@code epoch} can be one of TAI, J2000, UNIX, GPS, CUSTOM.
  * <p>
  * If CUSTOM is specified, the {@code epochUTC} has to be used to specify the UTC time which is used as an epoch (UTC is
- * used here loosely because strictly speaking UTC has been only introduced in 1972 so it does not make sense for the times before).
+ * used here loosely because strictly speaking UTC has been only introduced in 1972 so it does not make sense for the
+ * times before).
  * <p>
  * The time read from the packet is interpreted as delta from {@code epochUTC}.
- * <p>If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds included
+ * <p>
+ * If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds
+ * included
  * (practically it is the real time that passed).
  * <p>
  * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
  * <p>
  * The example above is equivalent with:
+ * 
  * <pre>
  * timeEncoding:
  *    epoch: UNIX
  * </pre>
- * If this option is not configured, the default will be different for each pre-processor.   
+ * 
+ * If this option is not configured, the default will be different for each pre-processor.
+ * 
  * @author nm
  *
  */
@@ -62,6 +72,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected static final String CONFIG_KEY_TIME_ENCODING = "timeEncoding";
+    protected static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
     static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
 
     // which error detection algorithm to use (null = no checksum)
@@ -73,14 +84,15 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected TimeEpochs timeEpoch;
 
     // if timeEpoch is CUSTOM, the following two are used
-    // customEpoch is a Yamcs instant if customEpochIncludeLeapSecond = true 
+    // customEpoch is a Yamcs instant if customEpochIncludeLeapSecond = true
     // and is a unix time if customEpochIncludeLeapSecond=false
     protected long customEpoch;
     protected boolean customEpochIncludeLeapSecond;
 
     protected TimeDecoder timeDecoder = null;
     protected ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
-    //
+
+    protected TimeCorrelationService tcoService;
     /**
      * If true, do not extract time from packets but use the local generation time.
      * <p>
@@ -108,7 +120,16 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 throw new ConfigurationException(
                         "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
             }
+
+            if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
+                String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
+                tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class, tcoServiceName);
+                if (tcoService == null) {
+                    throw new ConfigurationException("Cannot find a time correlation service with name "+tcoServiceName);
+                }
+            }
         }
+
     }
 
     void configureTimeDecoder(YConfiguration config) {
