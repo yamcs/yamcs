@@ -45,7 +45,7 @@ public class ArrayAndAggregatesTest {
 
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
-        parchive.init(instance, config);
+        parchive.init(instance, "test", config);
         pidDb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidDb);

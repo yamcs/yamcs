@@ -42,7 +42,7 @@ public class ParameterArchiveCli extends Command {
             RocksDB.loadLibrary();
             ParameterArchive parchive = new ParameterArchive();
             YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
-            parchive.init(yamcsInstance, config);
+            parchive.init(yamcsInstance, "cli", config);
             ParameterIdDb pid = parchive.getParameterIdDb();
             pid.print(System.out);
         }
@@ -62,7 +62,7 @@ public class ParameterArchiveCli extends Command {
             RocksDB.loadLibrary();
             ParameterArchive parchive = new ParameterArchive();
             YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
-            parchive.init(yamcsInstance, config);
+            parchive.init(yamcsInstance, "cli", config);
             ParameterIdDb pid = parchive.getParameterIdDb();
             ParameterGroupIdDb pgid = parchive.getParameterGroupIdDb();
             ParameterId[] pids = pid.get(name);

@@ -182,8 +182,8 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     private ParameterValue deviationPv;
     String tableName;
 
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
         onboardDelay = config.getDouble("onboardDelay", 0);
         numSamples = config.getInt("numSamples", 3);
         sampleQueue = new ArrayDeque<>(numSamples);

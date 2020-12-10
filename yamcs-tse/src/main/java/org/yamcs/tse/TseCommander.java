@@ -47,7 +47,7 @@ public class TseCommander extends ProcessRunner {
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         YConfiguration telnetArgs = config.getConfig("telnet");
         int telnetPort = telnetArgs.getInt("port");
 
@@ -66,7 +66,7 @@ public class TseCommander extends ProcessRunner {
                     "--tctm-port", "" + tctmPort));
             processRunnerConfig.put("logPrefix", "");
             processRunnerConfig = super.getSpec().validate(processRunnerConfig);
-            super.init(yamcsInstance, YConfiguration.wrap(processRunnerConfig));
+            super.init(yamcsInstance, serviceName, YConfiguration.wrap(processRunnerConfig));
         } catch (ValidationException e) {
             throw new InitException(e.getMessage());
         }
@@ -131,13 +131,9 @@ public class TseCommander extends ProcessRunner {
                 if (instrumentConfig.containsKey("args")) {
                     instrumentArgs = instrumentConfig.getConfig("args");
                 }
-                try {
-                    InstrumentDriver instrument = YObjectLoader.loadObject(instrumentClass);
-                    instrument.init(name, instrumentArgs);
-                    instrumentController.addInstrument(instrument);
-                } catch (IOException e) {
-                    throw new Error(e);
-                }
+                InstrumentDriver instrument = YObjectLoader.loadObject(instrumentClass);
+                instrument.init(name, instrumentArgs);
+                instrumentController.addInstrument(instrument);
             }
         }
         services.add(instrumentController);

@@ -2,7 +2,6 @@ package org.yamcs.tctm;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
@@ -74,9 +73,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the command postprocessor", e);
             throw e;
-        } catch (IOException e) {
-            log.error("Cannot instantiate the command postprocessor", e);
-            throw new ConfigurationException(e);
         }
     }
     

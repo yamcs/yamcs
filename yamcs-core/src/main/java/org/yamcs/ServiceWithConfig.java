@@ -15,10 +15,10 @@ public class ServiceWithConfig {
  
     final String serviceClass;
     final String name;
-    final Object args;
+    final YConfiguration args;
     final boolean enableAtStartup;
 
-    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args, boolean enabledAtStartup) {
+    public ServiceWithConfig(YamcsService service, String serviceClass, String name, YConfiguration args, boolean enabledAtStartup) {
         this.service = service;
         this.serviceClass = serviceClass;
         this.name = name;
@@ -26,7 +26,7 @@ public class ServiceWithConfig {
         this.enableAtStartup = enabledAtStartup;
     }
 
-    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args) {
+    public ServiceWithConfig(YamcsService service, String serviceClass, String name, YConfiguration args) {
         this(service, serviceClass, name, args, true);
     }
 
@@ -51,4 +51,5 @@ public class ServiceWithConfig {
         return "ServiceWithConfig [service=" + service + ", serviceClass=" + serviceClass + ", name=" + name + ", args="
                 + args + "]";
     }
+
 }

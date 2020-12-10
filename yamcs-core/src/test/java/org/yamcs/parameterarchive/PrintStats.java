@@ -17,7 +17,7 @@ public class PrintStats {
 
         ParameterArchive parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
-        parchive.init("aces-ops", config);
+        parchive.init("aces-ops", "test", config);
         PrintStream ps = new PrintStream("/tmp/aces-ops6-stats.txt");
         PrintStream ps1 = new PrintStream("/storage/aces-ops-stats/aces-ops6-paraid.txt");
         parchive.printKeys(ps);

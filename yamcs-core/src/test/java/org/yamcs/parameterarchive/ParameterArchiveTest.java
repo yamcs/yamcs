@@ -97,7 +97,7 @@ public class ParameterArchiveTest {
         }
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));
-        parchive.init(instance, config);
+        parchive.init(instance, "test", config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -119,7 +119,7 @@ public class ParameterArchiveTest {
 
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
-        parchive.init(instance, config);
+        parchive.init(instance, "test", config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);

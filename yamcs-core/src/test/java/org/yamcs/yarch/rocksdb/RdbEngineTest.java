@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
@@ -68,7 +67,6 @@ public class RdbEngineTest extends YarchTestCase {
     public void testOpenCloseWithTableDrop() throws Exception {
         TableDefinition tblDef = populate();
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
-        org.yamcs.LoggingUtils.enableLogging(Level.ALL);
         rse.dropTable(ydb, tblDef);
 
         rse.shutdown();

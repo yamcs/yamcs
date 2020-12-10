@@ -58,8 +58,8 @@ public class ReplicationServer extends AbstractYamcsService {
     SslContext sslCtx = null;
     
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
         port = config.getInt("port");
         tlsCert = config.getString("tlsCert", null);
         if (tlsCert != null) {

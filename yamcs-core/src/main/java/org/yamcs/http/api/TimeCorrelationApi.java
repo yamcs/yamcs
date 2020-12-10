@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
@@ -151,11 +152,12 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         observer.complete();
     }
 
-    TimeCorrelationService verifyService(Context ctx, String yamcsInstance, String clockName) throws HttpException {
+    TimeCorrelationService verifyService(Context ctx, String yamcsInstance, String serviceName) throws HttpException {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeCorrelation);
-        TimeCorrelationService tco = TimeCorrelationService.getInstance(yamcsInstance, clockName);
+        TimeCorrelationService tco = YamcsServer.getServer().getInstance(yamcsInstance)
+                .getService(TimeCorrelationService.class, serviceName);
         if (tco == null) {
-            throw new NotFoundException("Time correlation service for clock '" + clockName + "'not found");
+            throw new NotFoundException("Time correlation service '" + serviceName + "'not found");
         }
         return tco;
     }

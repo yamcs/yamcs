@@ -83,8 +83,8 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         provideJvmVariables = config.getBoolean("provideJvmVariables");
         provideFsVariables = config.getBoolean("provideFsVariables");

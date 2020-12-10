@@ -53,7 +53,7 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     @Test
     public void testApidIndex() throws Exception {
         CcsdsTmIndex tmindex = new CcsdsTmIndex();
-        tmindex.init(ydb.getName(), YConfiguration.wrap(config));
+        tmindex.init(ydb.getName(), "test", YConfiguration.wrap(config));
 
         CcsdsIndexIterator it1 = tmindex.new CcsdsIndexIterator((short) -1, -1L, -1L);
         assertNull(it1.getNextRecord());
@@ -102,7 +102,7 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     @Ignore
     public void testApidIndexSameTimeAndWraparound() throws Exception {
         CcsdsTmIndex tmindex = new CcsdsTmIndex();
-        tmindex.init(ydb.getName(), YConfiguration.emptyConfig());
+        tmindex.init(ydb.getName(), "test", YConfiguration.emptyConfig());
 
         short apid = 2000;
 

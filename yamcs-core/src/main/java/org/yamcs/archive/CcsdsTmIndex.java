@@ -70,8 +70,8 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     List<String> streamNames;
 
     @Override
-    public void init(String yamcsInstance, YConfiguration args) throws InitException {
-        super.init(yamcsInstance, args);
+    public void init(String yamcsInstance, String serviceName, YConfiguration args) throws InitException {
+        super.init(yamcsInstance, serviceName, args);
         if (config.containsKey("streams")) {
             streamNames = config.getList("streams");
         } else {

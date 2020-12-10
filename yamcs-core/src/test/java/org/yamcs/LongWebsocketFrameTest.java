@@ -39,7 +39,7 @@ public class LongWebsocketFrameTest {
         options.put("webSocket", wsOptions);
         HttpServer httpServer = new HttpServer();
         options = httpServer.getSpec().validate(options);
-        httpServer.init(null, YConfiguration.wrap(options));
+        httpServer.init(null, null, YConfiguration.wrap(options));
         httpServer.startServer();
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();

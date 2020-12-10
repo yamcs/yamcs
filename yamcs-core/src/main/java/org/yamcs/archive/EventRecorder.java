@@ -25,8 +25,8 @@ public class EventRecorder extends AbstractYamcsService {
     public static final String REALTIME_EVENT_STREAM_NAME = "events_realtime";
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 

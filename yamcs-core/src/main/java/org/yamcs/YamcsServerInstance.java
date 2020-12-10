@@ -134,10 +134,16 @@ public class YamcsServerInstance extends YamcsInstanceService {
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)
             xtceDb = XtceDbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
-            linkManager = new LinkManager(name);
 
+            // create services before the link manager so that the pre-processors can find them 
+            //if required (even uninitialized)
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
             services = YamcsServer.createServices(name, serviceConfigs, log);
+
+            linkManager = new LinkManager(name);
+
+            YamcsServer.initServices(name, services);
+
             notifyInitialized();
         } catch (Exception e) {
             notifyFailed(e);
@@ -218,14 +224,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
             YConfiguration m = config.getConfig("timeService");
             String servclass = m.getString("class");
             Object args = m.get("args");
-            try {
-                if (args == null) {
-                    timeService = YObjectLoader.loadObject(servclass, name);
-                } else {
-                    timeService = YObjectLoader.loadObject(servclass, name, args);
-                }
-            } catch (IOException e) {
-                throw new ConfigurationException("Failed to load time service:" + e.getMessage(), e);
+            if (args == null) {
+                timeService = YObjectLoader.loadObject(servclass, name);
+            } else {
+                timeService = YObjectLoader.loadObject(servclass, name, args);
             }
         } else {
             timeService = new RealtimeTimeService();
@@ -321,7 +323,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         return new ArrayList<>(services);
     }
 
-    public void startService(String serviceName) throws ConfigurationException, ValidationException, IOException {
+    public void startService(String serviceName) throws ConfigurationException, ValidationException, InitException {
         YamcsServer.startService(name, serviceName, services);
     }
 

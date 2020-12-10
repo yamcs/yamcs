@@ -59,7 +59,7 @@ public class SimulatorCommander extends ProcessRunner {
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         SimulatorArgs defaultOptions = new SimulatorArgs();
         List<String> cmdl = new ArrayList<>();
 
@@ -118,7 +118,7 @@ public class SimulatorCommander extends ProcessRunner {
             processRunnerConfig.put("command", cmdl);
             processRunnerConfig.put("logPrefix", "");
             processRunnerConfig = super.getSpec().validate(processRunnerConfig);
-            super.init(yamcsInstance, YConfiguration.wrap(processRunnerConfig));
+            super.init(yamcsInstance, serviceName, YConfiguration.wrap(processRunnerConfig));
         } catch (ValidationException e) {
             throw new InitException(e.getMessage());
         }

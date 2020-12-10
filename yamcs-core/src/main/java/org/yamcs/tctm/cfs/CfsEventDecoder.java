@@ -65,8 +65,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         if (config.containsKey("streams")) {
             streamNames = config.getList("streams");

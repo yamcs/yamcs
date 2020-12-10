@@ -37,8 +37,8 @@ public class ProcessRunner extends AbstractYamcsService {
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         List<String> command = config.getList("command");
         pb = new ProcessBuilder(command);

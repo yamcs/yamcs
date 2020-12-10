@@ -1,7 +1,6 @@
 package org.yamcs.tse;
 
-import java.io.IOException;
-
+import org.yamcs.InitException;
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.ValidationException;
@@ -28,10 +27,8 @@ public class TsePlugin implements Plugin {
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
         try {
             yamcs.addGlobalService("TSE Commander", TseCommander.class, yconf);
-        } catch (ValidationException e) {
+        } catch (ValidationException | InitException e) {
             throw new PluginException("Invalid configuration: " + e.getMessage());
-        } catch (IOException e) {
-            throw new PluginException("Could not start TSE Commander", e);
         }
     }
 }

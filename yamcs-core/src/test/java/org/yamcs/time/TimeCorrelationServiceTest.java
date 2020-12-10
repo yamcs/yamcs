@@ -34,7 +34,7 @@ public class TimeCorrelationServiceTest {
         TimeCorrelationService ots = new TimeCorrelationService();
         Map<String, Object> conf = new HashMap<>();
         conf.put("numSamples", 2);
-        ots.init(yamcsInstance,  YConfiguration.wrap(conf));
+        ots.init(yamcsInstance,  "test", YConfiguration.wrap(conf));
         ots.startAsync().awaitRunning();
         
         return ots;

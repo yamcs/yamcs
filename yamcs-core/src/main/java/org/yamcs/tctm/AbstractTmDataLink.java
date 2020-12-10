@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,9 +49,6 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packet preprocessor", e);
             throw e;
-        } catch (IOException e) {
-            log.error("Cannot instantiate the packetInput stream", e);
-            throw new ConfigurationException(e);
         }
 
         updateSimulationTime = config.getBoolean("updateSimulationTime", false);

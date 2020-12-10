@@ -26,8 +26,8 @@ public class AlarmRecorder extends AbstractYamcsService {
     public static final String EVENT_ALARM_TABLE_NAME = "event_alarms";
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {

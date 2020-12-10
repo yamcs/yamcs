@@ -141,8 +141,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
 
         String inStream = config.getString("inStream");
         String outStream = config.getString("outStream");

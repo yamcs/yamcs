@@ -39,7 +39,6 @@ import org.yamcs.tctm.TcDataLink;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;

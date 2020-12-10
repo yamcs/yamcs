@@ -40,7 +40,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         List<String> l = Arrays.asList(REALTIME_CMDHIST_STREAM_NAME);
         Map<String, Object> m = new HashMap<>();
         m.put("streams", l);
-        cmdHistRecorder.init(ydb.getName(), YConfiguration.wrap(m));
+        cmdHistRecorder.init(ydb.getName(), "test", YConfiguration.wrap(m));
         cmdHistRecorder.startAsync();
 
         Stream rtstream = ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);

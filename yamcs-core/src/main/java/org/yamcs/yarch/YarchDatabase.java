@@ -85,6 +85,10 @@ public class YarchDatabase {
      * 
      */
     public static synchronized YarchDatabaseInstance getInstance(String yamcsInstance) {
+        if (yamcsInstance == null) {
+            throw new NullPointerException("yamcsInstance cannot be null");
+        }
+
         YarchDatabaseInstance instance = databases.get(yamcsInstance);
         if (instance == null) {
             try {
@@ -149,7 +153,7 @@ public class YarchDatabase {
     public static Collection<StorageEngine> getStorageEngines() {
         return storageEngines.values();
     }
-    
+
     public static Set<String> getStorageEngineNames() {
         return storageEngines.keySet();
     }

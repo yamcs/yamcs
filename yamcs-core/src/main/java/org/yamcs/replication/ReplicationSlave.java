@@ -62,8 +62,8 @@ public class ReplicationSlave extends AbstractYamcsService {
     int localInstanceId;
     SslContext sslCtx = null;
 
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
         this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
         streamNames = config.getList("streams");
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.CLIENT);

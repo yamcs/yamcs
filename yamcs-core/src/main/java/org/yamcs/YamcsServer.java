@@ -156,7 +156,8 @@ public class YamcsServer {
     Path instanceDefDir;
 
     /**
-     * Creates services at global (if instance is null) or instance level. The services are not yet started. This must
+     * Creates services at global (if instance is null) or instance level. The services are not yet initialized. This
+     * must
      * be done in a second step, so that components can ask YamcsServer for other service instantiations.
      *
      * @param instance
@@ -175,15 +176,9 @@ public class YamcsServer {
         List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
         for (YConfiguration servconf : servicesConfig) {
             String servclass;
-            Object args = null;
             String name = null;
             servclass = servconf.getString("class");
-            args = servconf.get("args");
-            if (args instanceof Map) {
-                args = servconf.getConfig("args");
-            } else if (args == null) {
-                args = YConfiguration.emptyConfig();
-            }
+            YConfiguration args = servconf.getConfigOrEmpty("args");
             name = servconf.getString("name", servclass.substring(servclass.lastIndexOf('.') + 1));
             String candidateName = name;
             int count = 1;
@@ -218,8 +213,14 @@ public class YamcsServer {
         return serviceList;
     }
 
+    public static void initServices(String instance, List<ServiceWithConfig> services) throws InitException {
+        for (ServiceWithConfig swc : services) {
+            swc.service.init(instance, swc.name, swc.args);
+        }
+    }
+
     public <T extends YamcsService> void addGlobalService(
-            String name, Class<T> serviceClass, YConfiguration args) throws ValidationException, IOException {
+            String name, Class<T> serviceClass, YConfiguration args) throws ValidationException, InitException {
 
         for (ServiceWithConfig otherService : YAMCS.globalServiceList) {
             if (otherService.getName().equals(name)) {
@@ -230,6 +231,7 @@ public class YamcsServer {
 
         LOG.info("Loading service {}", name);
         ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args, true);
+        swc.service.init(null, name, swc.args);
         YAMCS.globalServiceList.add(swc);
 
         ManagementService managementService = ManagementService.getInstance();
@@ -757,69 +759,42 @@ public class YamcsServer {
         return services;
     }
 
-    static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args,
-            boolean enabledAtStartup)
-            throws ConfigurationException, ValidationException, IOException {
+    static ServiceWithConfig createService(String instance, String serviceClass, String serviceName,
+            YConfiguration args, boolean enabledAtStartup)
+            throws ConfigurationException, ValidationException {
         YamcsService service = null;
 
-        // Try first to find just a no-arg constructor. This will become
-        // the common case when all services are using the init method.
-        if (args instanceof YConfiguration) {
-            try {
-                service = YObjectLoader.loadObject(serviceClass);
-            } catch (ConfigurationException e) {
-                LOG.warn(
-                        "The service {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
-                        serviceClass);
-                // Ignore for now. Fallback to constructor initialization.
-            }
-        }
-
-        if (service == null) { // "Legacy" fallback
-            if (instance != null) {
-                if (args == null) {
-                    service = YObjectLoader.loadObject(serviceClass, instance);
-                } else {
-                    service = YObjectLoader.loadObject(serviceClass, instance, args);
-                }
-            } else {
-                if (args == null) {
-                    service = YObjectLoader.loadObject(serviceClass);
-                } else {
-                    service = YObjectLoader.loadObject(serviceClass, args);
-                }
-            }
-        }
+        service = YObjectLoader.loadObject(serviceClass);
 
         if (args instanceof YConfiguration) {
-            try {
-                Spec spec = service.getSpec();
-                if (spec != null) {
-                    if (LOG.isDebugEnabled()) {
-                        Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
-                        Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
-                        LOG.debug("Raw args for {}: {}", serviceName, safeArgs);
-                    }
-
-                    args = spec.validate((YConfiguration) args);
-
-                    if (LOG.isDebugEnabled()) {
-                        Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
-                        Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
-                        LOG.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
-                    }
+            // try {
+            Spec spec = service.getSpec();
+            if (spec != null) {
+                if (LOG.isDebugEnabled()) {
+                    Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
+                    Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                    LOG.debug("Raw args for {}: {}", serviceName, safeArgs);
                 }
-                service.init(instance, (YConfiguration) args);
-            } catch (InitException e) { // TODO should add this to throws instead
-                throw new ConfigurationException(e);
+
+                args = spec.validate((YConfiguration) args);
+
+                if (LOG.isDebugEnabled()) {
+                    Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
+                    Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                    LOG.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
+                }
             }
+            // service.init(instance, serviceName, (YConfiguration) args);
+            // } catch (InitException e) { // TODO should add this to throws instead
+            // throw new ConfigurationException(e);
+            // }
         }
         return new ServiceWithConfig(service, serviceClass, serviceName, args, enabledAtStartup);
     }
 
     // starts a service that has stopped or not yet started
     static YamcsService startService(String instance, String serviceName, List<ServiceWithConfig> serviceList)
-            throws ConfigurationException, ValidationException, IOException {
+            throws ConfigurationException, ValidationException, InitException {
         for (int i = 0; i < serviceList.size(); i++) {
             ServiceWithConfig swc = serviceList.get(i);
             if (swc.name.equals(serviceName)) {
@@ -836,6 +811,7 @@ public class YamcsServer {
                 case TERMINATED:
                     // start a new one
                     swc = createService(instance, swc.serviceClass, serviceName, swc.args, swc.enableAtStartup);
+                    swc.service.init(instance, swc.getName(), swc.args);
                     serviceList.set(i, swc);
                     swc.service.startAsync();
                     break;
@@ -846,7 +822,7 @@ public class YamcsServer {
         return null;
     }
 
-    public void startGlobalService(String serviceName) throws ConfigurationException, ValidationException, IOException {
+    public void startGlobalService(String serviceName) throws ConfigurationException, ValidationException, InitException {
         startService(null, serviceName, globalServiceList);
     }
 
@@ -1087,7 +1063,7 @@ public class YamcsServer {
         }
     }
 
-    public void prepareStart() throws ValidationException, IOException {
+    public void prepareStart() throws ValidationException, IOException, InitException {
         pluginManager = new PluginManager();
         pluginManager.discoverPlugins();
 
@@ -1225,7 +1201,7 @@ public class YamcsServer {
         instanceTemplates.put(template.getName(), template);
     }
 
-    public void addGlobalServicesAndInstances() throws IOException, ValidationException {
+    public void addGlobalServicesAndInstances() throws IOException, ValidationException, InitException {
         serverId = deriveServerId();
         deriveSecretKey();
 
@@ -1255,6 +1231,7 @@ public class YamcsServer {
         if (config.containsKey("services")) {
             List<YConfiguration> services = config.getServiceConfigList("services");
             globalServiceList = createServices(null, services, LOG);
+            initServices(null, globalServiceList);
         }
 
         try {

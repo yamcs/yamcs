@@ -216,8 +216,6 @@ public class SecurityStore {
             return authModule;
         } catch (ValidationException e) {
             throw new InitException(e);
-        } catch (IOException e) {
-            throw new InitException("Failed to load AuthModule", e);
         }
     }
 

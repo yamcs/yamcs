@@ -22,12 +22,20 @@ public interface YamcsService extends Service {
      * 
      * @param yamcsInstance
      *            The yamcs instance, or <tt>null</tt> if this is a global service.
+     * @param serviceName
+     *            The service name.
      * @param config
      *            The configured arguments for this service. If {@link #getSpec()} is implemented then this contains the
      *            arguments after being validated (including any defaults).
      * @throws InitException
      *             When something goes wrong during the execution of this method.
      */
+    public default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        init(yamcsInstance, config);
+    }
+
+    @Deprecated()
     public default void init(String yamcsInstance, YConfiguration config) throws InitException {
     }
+
 }

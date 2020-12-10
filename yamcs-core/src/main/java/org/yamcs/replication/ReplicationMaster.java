@@ -81,8 +81,8 @@ public class ReplicationMaster extends AbstractYamcsService {
     private long fileCloseTime;
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
         instanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.SERVER);
         port = config.getInt("port", -1);

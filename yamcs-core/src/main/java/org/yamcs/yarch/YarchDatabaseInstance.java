@@ -114,14 +114,10 @@ public class YarchDatabaseInstance {
     private BucketDatabase loadBucketDatabase(YConfiguration config) {
         String clazz = config.getString("class");
         Object args = config.get("args");
-        try {
-            if (args == null) {
-                bucketDatabase = YObjectLoader.loadObject(clazz, instanceName);
-            } else {
-                bucketDatabase = YObjectLoader.loadObject(clazz, instanceName, args);
-            }
-        } catch (IOException e) {
-            throw new ConfigurationException("Failed to load bucket database: " + e.getMessage(), e);
+        if (args == null) {
+            bucketDatabase = YObjectLoader.loadObject(clazz, instanceName);
+        } else {
+            bucketDatabase = YObjectLoader.loadObject(clazz, instanceName, args);
         }
         return bucketDatabase;
     }
@@ -154,8 +150,7 @@ public class YarchDatabaseInstance {
     public PartitionManager getPartitionManager(TableDefinition tblDef) {
         return getStorageEngine(tblDef).getPartitionManager(this, tblDef);
     }
-    
-    
+
     /**
      * Tablespaces are used by {@link RdbStorageEngine} to store data. Returns the default tablespace name that is used
      * by all tables and also the parameter archive of this yamcs instance
@@ -533,7 +528,7 @@ public class YarchDatabaseInstance {
             bucketDatabase.deleteBucket(bucketName);
         }
     }
-    
+
     public Sequence getSequence(String name) throws YarchException {
         return YarchDatabase.getDefaultStorageEngine().getSequence(this, name);
     }

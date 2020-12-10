@@ -1206,9 +1206,6 @@ public class PacketViewer extends JFrame implements ActionListener,
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packet preprocessor", e);
             throw e;
-        } catch (IOException e) {
-            log.error("Cannot instantiate the packet preprocessor", e);
-            throw new ConfigurationException(e);
         }
 
         this.packetInputStreamClassName = config.getString("packetInputStreamClassName",

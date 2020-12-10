@@ -22,10 +22,9 @@ public class YObjectLoader<T> {
      * @param args
      * @return an object of the given class instantiated with the given parameters
      * @throws ConfigurationException
-     * @throws IOException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    static public <T> T loadObject(String className, Object... args) throws ConfigurationException, IOException {
+    static public <T> T loadObject(String className, Object... args) throws ConfigurationException {
         try {
             Class ic = Class.forName(className);
             Constructor<T> constructor = null;
@@ -83,8 +82,6 @@ public class YObjectLoader<T> {
             Throwable t = e.getCause();
             if (t instanceof ConfigurationException) {
                 throw (ConfigurationException) t;
-            } else if (t instanceof IOException) {
-                throw (IOException) t;
             } else if (t instanceof ExceptionInInitializerError) {
                 throw new ConfigurationException(
                         "Cannot instantiate object from class " + className + ": " + t.getCause(), t.getCause());

@@ -1,7 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import java.io.IOException;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -64,9 +62,6 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packet preprocessor", e);
             throw e;
-        } catch (IOException e) {
-            log.error("Cannot instantiate the packetInput stream", e);
-            throw new ConfigurationException(e);
         }
     }
 

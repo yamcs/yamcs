@@ -1,6 +1,5 @@
 package org.yamcs.security;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,11 +71,7 @@ public class SingleUserAuthModule implements AuthModule {
 
         if (args.containsKey("hasher")) {
             String className = args.getString("hasher");
-            try {
-                passwordHasher = YObjectLoader.loadObject(className);
-            } catch (IOException e) {
-                throw new InitException("Could not load configured hasher", e);
-            }
+            passwordHasher = YObjectLoader.loadObject(className);
         }
     }
 

@@ -1,6 +1,5 @@
 package org.yamcs.security;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,11 +32,7 @@ public class YamlAuthModule implements AuthModule {
         required = args.getBoolean("required");
         if (args.containsKey("hasher")) {
             String className = args.getString("hasher");
-            try {
-                passwordHasher = YObjectLoader.loadObject(className);
-            } catch (IOException e) {
-                throw new InitException("Could not load configured hasher", e);
-            }
+            passwordHasher = YObjectLoader.loadObject(className);
         }
 
         // Read from users.yaml
