@@ -83,10 +83,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                 }
                 frameCount.getAndIncrement();
 
-                frameHandler.handleFrame(TimeEncoding.getWallclockHresTime(), datagram.getData(), datagram.getOffset(),
+                frameHandler.handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
                         length);
             } catch (IOException e) {
-                if (isDisabled()) {
+                if (!isRunningAndEnabled()) {
                     break;
                 }
                 log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
