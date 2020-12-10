@@ -79,8 +79,8 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
 
   services:
       - class: org.yamcs.time.TimeCorrelationService
-        args:
-            clockName: clk0
+        name: tco0
+        args:            
             onboardDelay: 0.0
             defaultTof: 0.0
             accuracy: 0.1
@@ -91,9 +91,6 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
               
 Configuration Options
 ---------------------
-
-clockName
-    The name of the clock. If there are multiple clocks to be synchrnozed, then multiple of these services can be configured and distingushed by the clock name.
     
 onboardDelay  (double)
     the on-board delay in seconds used to compute the on-board transmission time from the earth reception time. The default value is 0 seconds.

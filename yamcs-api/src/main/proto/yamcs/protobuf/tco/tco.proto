@@ -18,7 +18,7 @@ service TimeCorrelationApi {
   // Returns the TCO configuration comprising the accuracy, validity and the fixed delays.
   rpc GetConfig(GetTcoConfigRequest) returns (TcoConfig) {
     option (yamcs.api.route) = {
-      get: "/api/tco/{instance}/{clock}/config"
+      get: "/api/tco/{instance}/{serviceName}/config"
     };
   }
   
@@ -28,7 +28,7 @@ service TimeCorrelationApi {
   // Set the TCO configuration. The configuration is not persisted on disk.
   rpc SetConfig(SetTcoConfigRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/tco/{instance}/{clock}/config"
+      post: "/api/tco/{instance}/{serviceName}/config"
       body: "config"
     };
   }
@@ -39,7 +39,7 @@ service TimeCorrelationApi {
   // and the last received samples.
   rpc GetStatus(GetTcoStatusRequest) returns (TcoStatus) {
     option (yamcs.api.route) = {
-      get: "/api/tco/{instance}/{clock}/status"
+      get: "/api/tco/{instance}/{serviceName}/status"
     };
   }
 
@@ -50,7 +50,7 @@ service TimeCorrelationApi {
   // the automatic computed coefficients.
   rpc SetCoefficients(SetCoefficientsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/tco/{instance}/{clock}/coefficients"
+      post: "/api/tco/{instance}/{serviceName}/coefficients"
       body: "coefficients"
     };
   }
@@ -60,7 +60,7 @@ service TimeCorrelationApi {
   //The current used TCO coefficients are removed together with all collected samples.
   rpc Reset(TcoResetRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/tco/{instance}/{clock}:reset"
+      post: "/api/tco/{instance}/{serviceName}:reset"
     };
   }
   
@@ -81,7 +81,7 @@ service TimeCorrelationApi {
   //
   rpc AddTimeOfFlightIntervals(AddTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/tco/{instance}/{clock}/tof:addIntervals"
+      post: "/api/tco/{instance}/{serviceName}/tof:addIntervals"
       body: "*"
     };
   }
@@ -92,7 +92,7 @@ service TimeCorrelationApi {
   // falling in the requested [start, stop] interval will be removed. 
   rpc DeleteTimeOfFlightIntervals(DeleteTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/tco/{instance}/{clock}/tof:deleteIntervals"
+      post: "/api/tco/{instance}/{serviceName}/tof:deleteIntervals"
       body: "*"
     };
   }
@@ -103,8 +103,8 @@ message GetTcoConfigRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // service name.
+  optional string serviceName = 2;
 }
 
 
@@ -112,8 +112,8 @@ message SetTcoConfigRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
  
   //configuration to set
   optional TcoConfig config = 3;
@@ -123,8 +123,8 @@ message TcoResetRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
 }
 
 
@@ -140,16 +140,16 @@ message GetTcoStatusRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
 }
   
 message SetCoefficientsRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
   
   //Time correlation coefficients	
   optional TcoCoefficients coefficients = 3;
@@ -159,8 +159,8 @@ message AddTimeOfFlightIntervalsRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
   	
   //intervals for time of flight calculation
   repeated TofInterval intervals = 3;
@@ -171,8 +171,8 @@ message DeleteTimeOfFlightIntervalsRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Clock name.
-  optional string clock = 2;
+  // Service name.
+  optional string serviceName = 2;
   	
   optional google.protobuf.Timestamp start = 3;
   optional google.protobuf.Timestamp stop = 4;	

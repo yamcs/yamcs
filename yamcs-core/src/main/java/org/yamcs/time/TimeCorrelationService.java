@@ -122,7 +122,6 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  */
 public class TimeCorrelationService extends AbstractYamcsService implements SystemParametersProducer {
     static public final String TABLE_NAME = "tco_";
-    static public final String DEFAULT_CLOCK_NAME = "clk0";
     static public final int MAX_HISTCOEF = 1000;
 
     public static final TupleDefinition TDEF = new TupleDefinition();
