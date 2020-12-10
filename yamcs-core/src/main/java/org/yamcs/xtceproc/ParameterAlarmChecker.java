@@ -46,7 +46,7 @@ public class ParameterAlarmChecker {
 
     LastValueCache lastValueCache;
     final ProcessorData pdata;
-    
+
     public ParameterAlarmChecker(ParameterRequestManager prm, ProcessorData pdata, int subscriptionId) {
         this.subscriptionId = subscriptionId;
         this.prm = prm;
@@ -70,7 +70,6 @@ public class ParameterAlarmChecker {
         }
     }
 
-
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
      * information.
@@ -81,6 +80,13 @@ public class ParameterAlarmChecker {
             ParameterType ptype = pdata.getParameterType(pval.getParameter());
             if (ptype != null && ptype.hasAlarm()) {
                 performAlarmChecking(pval, ptype, criteriaEvaluator);
+            } else if (pval.getMonitoringResult() != null) {
+                // monitoring result set already - either processed parameters or some service like the
+                // TimeCorrelationService
+                if (alarmServer != null) {
+                    alarmServer.update(pval, 1, false, false);
+                }
+
             } // else do not set the MonitoringResult
         }
     }
@@ -141,7 +147,7 @@ public class ParameterAlarmChecker {
                 }
             }
         }
-       
+
         NumericAlarm defaultAlarm = ipt.getDefaultAlarm();
         if (!mon && defaultAlarm != null) {
             alarmType = defaultAlarm;
@@ -182,13 +188,13 @@ public class ParameterAlarmChecker {
         boolean mon = false;
         AlarmType alarmType = null;
         AlarmRanges staticAlarmRanges = null;
-        
+
         int minViolations = 1;
         boolean autoAck = false;
         boolean latching = false;
         if (fpt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
-                
+
                 if (nca.getContextMatch().isMet(criteriaEvaluator)) {
                     mon = true;
                     alarmType = nca;
@@ -200,7 +206,7 @@ public class ParameterAlarmChecker {
                 }
             }
         }
-       
+
         NumericAlarm defaultAlarm = fpt.getDefaultAlarm();
         if (!mon && defaultAlarm != null) {
             alarmType = defaultAlarm;
@@ -292,7 +298,7 @@ public class ParameterAlarmChecker {
         }
         boolean autoAck = false;
         boolean latching = false;
-                
+
         if (alarm != null) {
             AlarmLevels level = alarm.getDefaultAlarmLevel();
             for (EnumerationAlarmItem eai : alarm.getAlarmList()) {
