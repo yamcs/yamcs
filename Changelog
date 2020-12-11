@@ -1,3 +1,8 @@
+Version 5.3.2 released 11-Dec-2020
+- Reorganized the service creation and initialization such that a pre-processor (which used to be initialized earlier) can have access to them.
+- CfsPacketPreprocessor can optionally use the time correlation service to verify the time extracted from the packet.
+- Removed the clock name from the time correlation service, use the serviceName instead.
+
 Version 5.3.1 released 8-Dec-2020
 - CFDP improvements
 - minor tweaks and fixes
