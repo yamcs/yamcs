@@ -22,16 +22,19 @@ public class SelectTableStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext context, ResultListener resultListener) throws StreamSqlException {
+    public void execute(ExecutionContext context, ResultListener resultListener, long limit) throws StreamSqlException {
         if (resultListener == null) {
             throw new GenericStreamSqlException("Cannot select without a result listener");
         }
         Stream stream = createStream(context);
-        stream.addSubscriber(new StreamSubscriber() {
 
+        stream.addSubscriber(new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 resultListener.next(tuple);
+                if (stream.getDataCount() >= limit) {
+                    stream.close();
+                }
             }
 
             @Override
@@ -45,33 +48,30 @@ public class SelectTableStatement implements StreamSqlStatement {
     @Override
     public StreamSqlResult execute(ExecutionContext context) throws StreamSqlException {
         Stream stream = createStream(context);
-        
+
         QueueStreamSqlResult result = new QueueStreamSqlResult(stream);
         stream.addSubscriber(result);
         stream.start();
         return result;
     }
 
-    
     Stream createStream(ExecutionContext context) throws StreamSqlException {
         YarchDatabaseInstance ydb = context.getDb();
         String tblName = expression.tupleSourceExpression.objectName;
         if (ydb.getTable(tblName) == null) {
             throw new GenericStreamSqlException(String.format("Object %s does not exist or is not a table", tblName));
         }
-    
+
         expression.bind(context);
         return expression.execute(context);
     }
-    
-    
-    
+
     static class QueueStreamSqlResult implements StreamSqlResult, StreamSubscriber {
         final Stream stream;
         BlockingQueue<Tuple> queue = new ArrayBlockingQueue<Tuple>(1024);
         Tuple next;
         static Log log = new Log(QueueStreamSqlResult.class);
-        
+
         QueueStreamSqlResult(Stream stream) {
             this.stream = stream;
         }
@@ -100,11 +100,10 @@ public class SelectTableStatement implements StreamSqlStatement {
 
             Tuple r = next;
             next = null;
-            
+
             return r;
         }
 
-        
         private Tuple queueTake() {
             try {
                 return queue.take();
@@ -113,7 +112,7 @@ public class SelectTableStatement implements StreamSqlStatement {
             }
             return END_SIGNAL;
         }
-        
+
         @Override
         public void close() {
             stream.close();
@@ -124,16 +123,17 @@ public class SelectTableStatement implements StreamSqlStatement {
         public void onTuple(Stream stream, Tuple tuple) {
             queue.add(tuple);
         }
-        
+
         @Override
         public void streamClosed(Stream stream) {
             queue.add(END_SIGNAL);
         }
-        
+
         @Override
         public void finalize() {
-            if(!stream.isClosed()) {
-                log.error("Stream {} left dangling (StreamSqlResult has been discarded before closing)", stream.getName());
+            if (!stream.isClosed()) {
+                log.error("Stream {} left dangling (StreamSqlResult has been discarded before closing)",
+                        stream.getName());
                 close();
             }
         }

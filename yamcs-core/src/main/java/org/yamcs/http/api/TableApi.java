@@ -84,6 +84,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 public class TableApi extends AbstractTableApi<Context> {
+    private static final long MAX_NUM_ROWS = 2000;
 
     private static final Log log = new Log(TableApi.class);
 
@@ -416,7 +417,7 @@ public class TableApi extends AbstractTableApi<Context> {
                     public void complete() {
                         observer.complete(rsBuilder.build());
                     }
-                });
+                }, MAX_NUM_ROWS);
             } catch (ParseException e) {
                 throw new BadRequestException(e);
             } catch (StreamSqlException e) {

@@ -414,9 +414,14 @@ public class YarchDatabaseInstance {
         }
     }
 
+    public void execute(StreamSqlStatement stmt, ResultListener resultListener, long limit) throws StreamSqlException {
+        ExecutionContext context = new ExecutionContext(this);
+        stmt.execute(context, resultListener, limit);
+    }
+
     public void execute(StreamSqlStatement stmt, ResultListener resultListener) throws StreamSqlException {
         ExecutionContext context = new ExecutionContext(this);
-        stmt.execute(context, resultListener);
+        stmt.execute(context, resultListener, Long.MAX_VALUE);
     }
 
     public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {

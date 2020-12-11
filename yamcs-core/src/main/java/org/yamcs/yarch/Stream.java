@@ -99,11 +99,11 @@ public abstract class Stream {
     }
 
     protected boolean isRunning() {
-        return state.get()==RUNNING;
+        return state.get() == RUNNING;
     }
-    
+
     protected boolean quitting() {
-        return state.get()==QUITTING;
+        return state.get() == QUITTING;
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class Stream {
     }
 
     public boolean isClosed() {
-        return state.get()==QUITTING;
+        return state.get() == QUITTING;
     }
 
     public long getDataCount() {
