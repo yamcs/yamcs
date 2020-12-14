@@ -1,3 +1,8 @@
+Version 5.3.3 released 14-Dec-2020
+- Added a simple PUS simulator to exemplify the usage of the time correlation (TCO) service with a free running on-board clock.
+- Save the OBT (value of the free running on-board clock) in the tm table.
+- TCP and UDP packet links populate the ERT (Earth Reception Time) field of the TM packets with the local mission time as this is required by the TCO service.
+
 Version 5.3.2 released 11-Dec-2020
 - Reorganized the service creation and initialization such that a pre-processor (which used to be initialized earlier) can have access to them.
 - CfsPacketPreprocessor can optionally use the time correlation service to verify the time extracted from the packet.
