@@ -9,11 +9,11 @@ The service uploads and downloads files between a spacecraft (or a remote device
 
 The protocol specification can be found in  `CCSDS 727.0-B-5 <https://public.ccsds.org/Pubs/727x0b5.pdf>`_ The following description summarizes the specs and provide details on the parts implented/not implemented by this service.
 
-The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by an metadata PDU (Protocol Data Unit) and finsihed with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
+The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by an metadata PDU (Protocol Data Unit) and finished with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
 
 The class 1 (unreliable transfer) will upload/download all the segments without the possibility of retransmission. The EOF is not acknowledged by the Receiver. The Issue 5 of the CFDP standard introduces an option "Closure Requested" which requests the class 1 Receiver to send a Finished PDU upon receiving all the data (or when the canceling the transfer).  The Finished PDU is not acknowledged by the Sender. This option is useful when the underlying communication protocol is reliable.   
 
-For class 2 (reliable transfer) transfers, the Receiver can indicate missing metadata or data by sending NAK PDUs. In this mode, the Receiver has to ackonwoledge the EOF PDU and the Sender has to acknowledge the Finished PDU. Sending a PDU that requires acknowledgment will start a timer. When the timer expires, if the acknowledgment has not been received, the PDU is resent and this is done until a count reaches a maximum defined value. Finally if the count has reached its maximum value and the acknowledgment has still not been received, a fault condition is triggered which may cause the transfer to be abandoned, canceled or suspended.
+For class 2 (reliable transfer) transfers, the Receiver can indicate missing metadata or data by sending NAK PDUs. In this mode, the Receiver has to acknowledge the EOF PDU and the Sender has to acknowledge the Finished PDU. Sending a PDU that requires acknowledgment will start a timer. When the timer expires, if the acknowledgment has not been received, the PDU is resent and this is done until a count reaches a maximum defined value. Finally if the count has reached its maximum value and the acknowledgment has still not been received, a fault condition is triggered which may cause the transfer to be abandoned, canceled or suspended.
 
 
 A diagram of the operations for class 2 is presented in the figure below. Note that the Receiver operates in immediate NAK mode; it sends a NAK as soon as it receives the FileData PDU (containing a file segment) and detects a missing segment.
@@ -27,19 +27,19 @@ Note also that the file is available on the Receiver before the transfer is comp
 The CFDP transfers can be suspended and resumed. Suspending means that no PDU is sent out but incoming PDUs are still processed. The timers are deactivated. Upon resuming, the timers are restarted and their counts reset to 0. For example if at the time of the suspension, an EOF has been sent 2 times out of 5, after the transfer is resumed, the EOF sending is again starting with 0 out of 5. This allows suspending the transfer when the limit has been reached and resume the transfer at a later moment without changing the state.
 
 
-Several pecularities and limitations of the implementation can be noted:
+Several peculiarities and limitations of the implementation can be noted:
  * The NAK PDUs issued by Sender always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
  * The Receiver will overwrite the list of segments to resend with the list received in the latest NAK.
  * Keep Alive PDU and Prompt PDU are not used.
  * Filestore requests are not supported.
  * User operations (proxy, directory, remote status) as per chapter 6 of the CCSDS 727.0-B-5 are not supported.
- * Remote supsend/resume operations are not supported. Note that local suspend/resume operations are supported; this means that suspending a transfer has to be done concurrently on this service and remotely with a different mechanism (e.g. sending a telecommand).
+ * Remote suspend/resume operations are not supported. Note that local suspend/resume operations are supported; this means that suspending a transfer has to be done concurrently on this service and remotely with a different mechanism (e.g. sending a telecommand).
 
 Usage
 -----
 The service produces PDUs as per CCSDS specification. The PDUs are written/read to/from Yamcs streams. How the PDUs are sent to/from the spacecraft is mission specific.
 
-An example on how to use the streams to embeed the CFDP PDUs into CCSDS packets can be seen in the cfdp example.
+An example on how to use the streams to embed the CFDP PDUs into CCSDS packets can be seen in the cfdp example (the most interesting bit is in ``src/main/yamcs/etc/extra_streams.sql``).
 
 
 Class Name
