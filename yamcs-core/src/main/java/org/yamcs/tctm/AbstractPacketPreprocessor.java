@@ -248,6 +248,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         try {
             if (timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
                 long obt = timeDecoder.decodeRaw(packet, offset);
+                tmPacket.setObt(obt);
                 tcoService.timestamp(obt, tmPacket);
             } else {
                 long t = timeDecoder.decode(packet, offset);

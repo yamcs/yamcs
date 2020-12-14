@@ -12,36 +12,37 @@ public class StandardTupleDefinitions {
     public static final String TM_RECTIME_COLUMN = "rectime";
     public static final String TM_STATUS_COLUMN = "status";
     public static final String TM_ERTIME_COLUMN = "ertime";
+    public static final String TM_OBT_COLUMN = "obt";
     public static final String TM_PACKET_COLUMN = "packet";
     public static final String CMDHIST_TUPLE_COL_CMDNAME = "cmdName";
 
     public static final String PARAMETER_COL_RECTIME = "rectime";
     public static final String PARAMETER_COL_SEQ_NUM = "seqNum";
-   
+
     public static final String PARAMETER_COL_GROUP = "group";
     public static final String PARAMETER_COL_GENTIME = "gentime";
-    
+
     public static final String TC_ORIGIN_COLUMN = "origin";
     public static final String PARAMETER_COLUMN = "parameter";
-    
+
     public static final String SOURCE_COLUMN = "source";
     public static final String BODY_COLUMN = "body";
-    
+
     public static final TupleDefinition TM = new TupleDefinition();
     public static final TupleDefinition INVALID_TM = new TupleDefinition();
-    public static final TupleDefinition TM_WITH_ERT;
     static {
         TM.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
         TM.addColumn(SEQNUM_COLUMN, DataType.INT);
         // reception or recording time (useful in case we import data from other recordings which provide this)
         TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
         TM.addColumn(TM_STATUS_COLUMN, DataType.INT);
-        
+
         TM.addColumn(TM_PACKET_COLUMN, DataType.BINARY);
-        
-        TM_WITH_ERT = TM.copy();
-        //earth reception time
-        TM_WITH_ERT.addColumn(TM_ERTIME_COLUMN, DataType.HRES_TIMESTAMP);
+
+        // earth reception time
+        TM.addColumn(TM_ERTIME_COLUMN, DataType.HRES_TIMESTAMP);
+        TM.addColumn(TM_OBT_COLUMN, DataType.LONG);
+
     }
     static {
         INVALID_TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
@@ -88,7 +89,7 @@ public class StandardTupleDefinitions {
         PARAMETER_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         PARAMETER_ALARM.addColumn("event", DataType.STRING);
     }
-    
+
     public static final TupleDefinition EVENT_ALARM = new TupleDefinition();
     // user time, parameter name sequence number and event
     static {
@@ -97,5 +98,5 @@ public class StandardTupleDefinitions {
         EVENT_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         EVENT_ALARM.addColumn("alarmEvent", DataType.STRING);
     }
-    
+
 }

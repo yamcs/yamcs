@@ -234,14 +234,12 @@ public class LinkManager {
         Instant ertime = pwrt.getEarthReceptionTime();
         Tuple t = null;
         if (ertime == Instant.INVALID_INSTANT) {
-            t = new Tuple(StandardTupleDefinitions.TM,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                            pwrt.getStatus(), pwrt.getPacket() });
-        } else {
-            t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                            pwrt.getStatus(), pwrt.getPacket(), ertime });
+            ertime = null;
         }
+        Long obt = pwrt.getObt() == Long.MIN_VALUE ? null : pwrt.getObt();
+        t = new Tuple(StandardTupleDefinitions.TM,
+                new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
+                        pwrt.getStatus(), pwrt.getPacket(), ertime, obt });
         stream.emitTuple(t);
 
     }

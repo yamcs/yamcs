@@ -32,13 +32,14 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class TmPacket {
     final public static int STATUS_MASK_INVALID = 1 << 0;
-    final public static int STATUS_MASK_LOCAL_GEN_TIME = 1 << 2;
-    final public static int STATUS_MASK_DO_NOT_ARCHIVE = 1 << 3;
+    final public static int STATUS_MASK_LOCAL_GEN_TIME = 1 << 1;
+    final public static int STATUS_MASK_DO_NOT_ARCHIVE = 1 << 2;
 
     private long rectime = TimeEncoding.INVALID_INSTANT; // Yamcs reception time
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
     private Instant ertime = Instant.INVALID_INSTANT; // earth reception time
 
+    private long obt = Long.MIN_VALUE;//on-board time when the time is free running
     private int seqCount;
     private byte[] pkt;
     private int status;
@@ -163,6 +164,14 @@ public class TmPacket {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public long getObt() {
+        return obt;
+    }
+
+    public void setObt(long obt) {
+        this.obt = obt;
     }
 
 }
