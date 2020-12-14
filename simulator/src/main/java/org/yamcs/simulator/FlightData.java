@@ -10,37 +10,12 @@ public class FlightData {
     public double heading, timestamp, phi, theta, psi;
     public double groundSpeed, verticalSpeed, mach, sinkRate, tas, cas, alpha, beta, loadFactor;
 
-    public FlightData(CCSDSPacket packet) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        timestamp = buffer.getFloat(0);
-        longitude = buffer.getFloat(4);
-        latitude = buffer.getFloat(8);
-        altitude = buffer.getFloat(12);
-        heading = buffer.getFloat(16);
-        alpha = buffer.getFloat(20);
-        beta = buffer.getFloat(24);
-        tas = buffer.getFloat(28);
-        cas = buffer.getFloat(32);
-        mach = buffer.getFloat(36);
-        loadFactor = buffer.getFloat(40);
-        sinkRate = buffer.getFloat(44);
-        phi = buffer.getFloat(48);
-        theta = buffer.getFloat(52);
-        psi = buffer.getFloat(56);
-
-        groundSpeed = -1;
-        verticalSpeed = -1;
-    }
-
     public FlightData() {
         groundSpeed = -1;
         verticalSpeed = -1;
     }
 
-    public void fillPacket(CCSDSPacket packet, int bufferOffset) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.position(bufferOffset);
-
+    public void fillPacket(ByteBuffer buffer) {
         buffer.putFloat((float) timestamp);
         buffer.putFloat((float) longitude);
         buffer.putFloat((float) latitude);
@@ -56,6 +31,10 @@ public class FlightData {
         buffer.putFloat((float) phi);
         buffer.putFloat((float) theta);
         buffer.putFloat((float) psi);
+    }
+
+    public static int size() {
+        return 60;
     }
 
     public double getYaw() {

@@ -60,6 +60,9 @@ public class Instant implements Comparable<Instant> {
      * @return
      */
     public static Instant get(long millis) {
+        if(millis == TimeEncoding.INVALID_INSTANT) {
+            return INVALID_INSTANT;
+        }
         if (millis > MAX_INSTANT || millis < MIN_INSTANT) {
             throw new IllegalArgumentException("instant exceeds the limit");
         }

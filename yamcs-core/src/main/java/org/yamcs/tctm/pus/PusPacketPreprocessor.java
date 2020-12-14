@@ -6,6 +6,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -40,11 +41,35 @@ import static org.yamcs.tctm.pus.Constants.*;
  * <li>spare optional</li>
  * </ul>
  * <p>
- * The time packets have no secondary header and the apid set to 0. The data part consists of the current onboard time in
- * the same encoding like in the normal packets.
+ * The time packets have no secondary header and the apid set to 0. The data part consists of the current onboard time
+ * in the same encoding like in the normal packets.
  * 
  * <p>
- * In this class we are interested in the time and the sequence count.
+ * In this class we read
+ * <ul>
+ * <li>the APID and sequence count from the CCSDS primary header interested in the time and the sequence count.</li>
+ * <li>the time from the PUS secondary header and from the time packets.</li>
+ * </ul>
+ * <p>
+ * The offset of where the time is read from is configurable as this has changed between different versions of the
+ * standards.
+ * <p>
+ * Example configuration:
+ * <pre>
+ * dataLinks:
+ * ...
+ * - name: tm_realtime
+ *   packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+ *   packetPreprocessorArgs:
+ *   errorDetection:
+ *     type: CRC-16-CCIIT
+ *   pktTimeOffset: 13
+ *   timePktTimeOffset: 7
+ *   timeEncoding:
+ *      epoch: CUSTOM
+ *      epochUTC: 1970-01-01T00:00:00Z
+ *      timeIncludesLeapSeconds: false
+ * </pre>
  *
  * @author nm
  *
@@ -52,9 +77,9 @@ import static org.yamcs.tctm.pus.Constants.*;
 public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     // where to look for time in the telemetry
     int pktTimeOffset;
-    //the offset of the time inside the PUS time packets
+    // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
-    
+
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
     }
@@ -69,99 +94,64 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     public TmPacket process(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
         if (packet.length < 6) {
-            eventProducer.sendWarning(
-                    "Short packet received, length: " + packet.length + "; minimum required length is 6 bytes.");
+            eventProducer.sendWarning("Short packet received, length: " + packet.length
+                    + "; minimum required length is 6 bytes.");
             return null;
         }
+        verifyCrc(tmPacket);
+        if (tmPacket.isInvalid()) {
+            // if the CRC has failed, do not go further
+            return null;
+        }
+
         boolean secondaryHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(packet);
 
-        if (!secondaryHeaderFlag) {// in PUS only time packets are allowed without secondary header and they should have
-                                   // apid = 0
+        if (!secondaryHeaderFlag) {
+            // in PUS only time packets are allowed without secondary header and they should have apid = 0
             int apid = CcsdsPacket.getAPID(packet);
             if (apid == 0) {
                 processTimePacket(tmPacket);
                 return tmPacket;
             }
-            eventProducer.sendWarning("Packet with apid=" + apid + " and without secondary header received, ignoring.");
+            eventProducer.sendWarning("Packet with apid=" + apid
+                    + " and without secondary header received, ignoring.");
             return null;
         }
 
         if (packet.length < 12) {
-            eventProducer.sendWarning(
-                    "Short packet received, length: " + packet.length + "; minimum required length is 14 bytes.");
+            eventProducer.sendWarning("Short packet received, length: " + packet.length
+                    + "; minimum required length is 14 bytes.");
             return null;
         }
-        int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+        tmPacket.setSequenceCount(apidseqcount);
 
-        boolean corrupted = false;
-
-        if (errorDetectionCalculator != null) {
-            int n = packet.length;
-            int computedCheckword;
-            try {
-                computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
-                int packetCheckword = ByteArrayUtils.decodeUnsignedShort(packet, n - 2);
-                if (packetCheckword != computedCheckword) {
-                    eventProducer.sendWarning("Corrupted packet received, computed checkword: " + computedCheckword
-                            + "; packet checkword: " + packetCheckword);
-                    corrupted = true;
-                }
-            } catch (IllegalArgumentException e) {
-                eventProducer.sendWarning("Error when computing checkword: " + e.getMessage());
-                corrupted = true;
-            }
-        }
-
-        long rectime = timeService.getMissionTime();
-        long gentime;
-
-        if (useLocalGenerationTime) {
-            tmPacket.setLocalGenTime();
-            gentime = rectime;
-        } else {
-            try {
-                long t = timeDecoder.decode(packet, pktTimeOffset);
-                gentime = timeEpoch == null ? t : shiftFromEpoch(t);
-            } catch (Exception e) {
-                eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
-                corrupted = true;
-                gentime = rectime;
-            }
-        }
+        setRealtimePacketTime(tmPacket, pktTimeOffset);
 
         if (log.isTraceEnabled()) {
-            log.trace("Recevied packet length: {}, apid: {}, seqcount: {}, gentime: {}, corrupted: {}", packet.length,
-                    CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet), TimeEncoding.toString(gentime),
-                    corrupted);
+            log.trace("Recevied packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
+                    CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet),
+                    TimeEncoding.toString(tmPacket.getGenerationTime()),
+                    Integer.toHexString(tmPacket.getStatus()));
         }
 
-        tmPacket.setSequenceCount(apidseqcount);
-        tmPacket.setGenerationTime(gentime);
-        tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
 
     private void processTimePacket(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
-        long rectime = tmPacket.getReceptionTime();
         boolean corrupted = false;
-        long gentime;
-        if (useLocalGenerationTime) {
-            tmPacket.setLocalGenTime();
-            gentime = rectime;
-        } else {
-            try {
-                long t = timeDecoder.decode(packet, timePktTimeOffset);
-                gentime = timeEpoch == null ? t : shiftFromEpoch(t);
-            } catch (Exception e) {
-                eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
-                corrupted = true;
-                gentime = rectime;
-            }
+        if (!useLocalGenerationTime && timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
+            long obt = timeDecoder.decodeRaw(packet, timePktTimeOffset);
+            Instant ert = tmPacket.getEarthReceptionTime();
+            log.debug("Adding tco sample obt: {} , ert: {}", obt, ert);
+            tcoService.addSample(obt, ert);
         }
+
+        setRealtimePacketTime(tmPacket, timePktTimeOffset);
+
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
         tmPacket.setInvalid(corrupted);
         tmPacket.setSequenceCount(apidseqcount);
-        tmPacket.setGenerationTime(gentime);
     }
 }

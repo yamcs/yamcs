@@ -92,18 +92,17 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
-        
+        pkt.setSequenceCount(apidseqcount);
         if (useLocalGenerationTime) {
-            pkt.setLocalGenTime();
+            pkt.setLocalGenTimeFlag();
             pkt.setGenerationTime(timeService.getMissionTime());
         } else {
             pkt.setGenerationTime(getTimeFromPacket(packet));
-            System.out.println("tcoService: "+tcoService);
             if (tcoService != null) {
                 tcoService.verify(pkt);
             }
         }
-        pkt.setSequenceCount(apidseqcount);
+
         if (log.isTraceEnabled()) {
             log.trace("processing packet apid: {}, seqCount:{}, length: {}, genTime: {}", apid, seq, packet.length,
                     TimeEncoding.toString(pkt.getGenerationTime()));

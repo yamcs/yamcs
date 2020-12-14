@@ -64,9 +64,9 @@ public class LosRecorder {
         return new FileInputStream(new File(dataDir, recordingName));
     }
 
-    public void record(CCSDSPacket packet) {
+    public void record(SimulatorCcsdsPacket packet) {
         try {
-            packet.writeTo(losOs);
+            losOs.write(packet.getBytes());
         } catch (IOException e) {
             log.error("Could not record packet: " + e.getMessage(), e);
         }

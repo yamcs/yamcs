@@ -3,17 +3,18 @@ package org.yamcs.simulator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Vector;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 
 public class DHSHandler {
-
     private static final Logger log = LoggerFactory.getLogger(DHSHandler.class);
 
-    private Vector<DHSData> entries = new Vector<>(100, 100);
+    private List<DHSData> entries = new ArrayList<>(100);
     private int currentEntry = 0;
 
     public DHSHandler() {
@@ -48,7 +49,7 @@ public class DHSHandler {
         log.debug("have {} DHS data records", entries.size());
     }
 
-    public void fillPacket(CCSDSPacket packet) {
+    public void fillPacket(ByteBuffer buffer) {
         if (entries.isEmpty()) {
             return;
         }
@@ -57,7 +58,11 @@ public class DHSHandler {
             currentEntry = 0;
         }
 
-        DHSData entry = entries.elementAt(currentEntry++);
-        entry.fillPacket(packet, 0);
+        DHSData entry = entries.get(currentEntry++);
+        entry.fillPacket(buffer);
+    }
+
+    public int dataSize() {
+        return DHSData.size();
     }
 }

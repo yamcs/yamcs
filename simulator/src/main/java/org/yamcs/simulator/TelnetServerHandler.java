@@ -16,9 +16,9 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     private static final Logger log = LoggerFactory.getLogger(TelnetServerHandler.class);
 
-    private Simulator simulator;
+    private ColSimulator simulator;
 
-    public TelnetServerHandler(Simulator simulator) {
+    public TelnetServerHandler(ColSimulator simulator) {
         this.simulator = simulator;
     }
 

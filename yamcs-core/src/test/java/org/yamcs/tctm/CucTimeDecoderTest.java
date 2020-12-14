@@ -13,7 +13,7 @@ public class CucTimeDecoderTest {
     
     @Test
     public void test1() {
-        CucTimeDecoder ctd = new CucTimeDecoder(46);
+        CucTimeDecoder ctd = new CucTimeDecoder(0x2E);
         //byte[] b = StringConverter.hexStringToArray("5B3F555E48B4");
         byte[] b = StringConverter.hexStringToArray("5B3F555E48B4");
         long t = ctd.decode(b, 0);

@@ -13,18 +13,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cfdp.pdu.CfdpHeader;
+import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 
-import com.google.common.util.concurrent.AbstractService;
+/**
+ * Simulator working with Columbus/ISS kind of packet structure
+ *
+ * @author nm
+ *
+ */
+public class ColSimulator extends AbstractSimulator {
 
-public class Simulator extends AbstractService {
-
-    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
+    private static final Logger log = LoggerFactory.getLogger(ColSimulator.class);
 
     // no more than 100 pending commands
-    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);
+    protected BlockingQueue<ColumbusCcsdsPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     static int DEFAULT_MAX_LENGTH = 65542;
     int maxLength = DEFAULT_MAX_LENGTH;
@@ -32,7 +38,6 @@ public class Simulator extends AbstractService {
     private TcpTmTcLink tm2Link;
     private TcpTmTcLink losLink;
     private UdpTmFrameLink tmFrameLink;
-    private UdpTcFrameLink tcFrameLink;
 
     private boolean los;
     private Date lastLosStart;
@@ -55,10 +60,10 @@ public class Simulator extends AbstractService {
     static final int MAIN_APID = 1;
     static final int PERF_TEST_APID = 2;
     static final int TC_ACK_APID = 101;
-    
+
     CfdpReceiver cfdpReceiver;
 
-    public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
+    public ColSimulator(File dataDir) {
         losRecorder = new LosRecorder(dataDir);
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
@@ -103,20 +108,18 @@ public class Simulator extends AbstractService {
         }
     }
 
-    public void transmitRealtimeTM(CCSDSPacket packet) {
+    public void transmitRealtimeTM(SimulatorCcsdsPacket packet) {
         packet.fillChecksum();
         if (isLOS()) {
             losRecorder.record(packet);
         } else {
-            tmLink.sendPacket(packet.toByteArray());
+            tmLink.sendPacket(packet.getBytes());
             if (tmFrameLink != null) {
-                tmFrameLink.queuePacket(0, packet.toByteArray());
+                tmFrameLink.queuePacket(0, packet.getBytes());
             }
 
         }
     }
-
-   
 
     protected void transmitTM2(byte[] packet) {
         if (!isLOS()) {
@@ -149,27 +152,27 @@ public class Simulator extends AbstractService {
 
         try (DataInputStream dataStream = new DataInputStream(losRecorder.getInputStream(filename))) {
             while (dataStream.available() > 0) {
-                CCSDSPacket packet = readLosPacket(dataStream);
+                ColumbusCcsdsPacket packet = readLosPacket(dataStream);
                 if (packet != null) {
-                    losLink.sendPacket(packet.toByteArray());
+                    losLink.sendPacket(packet.getBytes());
                     if (tmFrameLink != null) {
-                        tmFrameLink.queuePacket(2, packet.toByteArray());
+                        tmFrameLink.queuePacket(2, packet.getBytes());
                     }
                 }
             }
 
             // add packet notifying that the file has been downloaded entirely
-            CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
+            ColumbusCcsdsPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
             transmitRealtimeTM(confirmationPacket);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
-        CCSDSPacket packet = new CCSDSPacket(0, 2, 10, false);
-        packet.appendUserDataBuffer(transmittedRecordName.getBytes());
-        packet.appendUserDataBuffer(new byte[1]);
+    private static ColumbusCcsdsPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
+        byte[] recName = transmittedRecordName.getBytes();
+        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(0, recName.length + 1, 10, false);
+        packet.getUserDataBuffer().put(recName);
 
         return packet;
     }
@@ -177,25 +180,26 @@ public class Simulator extends AbstractService {
     public void deleteLosDataFile(String filename) {
         losRecorder.deleteDump(filename);
         // add packet notifying that the file has been deleted
-        CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
+        ColumbusCcsdsPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
         transmitRealtimeTM(confirmationPacket);
     }
 
-    private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
-        CCSDSPacket packet = new CCSDSPacket(0, 2, 11, false);
-        packet.appendUserDataBuffer(deletedRecordName.getBytes());
-        packet.appendUserDataBuffer(new byte[1]);
+    private static ColumbusCcsdsPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
+        byte[] recName = deletedRecordName.getBytes();
+        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(0, recName.length + 1, 11, false);
+        packet.getUserDataBuffer().put(recName);
         return packet;
     }
 
-    protected CCSDSPacket ackPacket(CCSDSPacket commandPacket, int stage, int result) {
-        CCSDSPacket ackPacket = new CCSDSPacket(TC_ACK_APID, 10, commandPacket.getPacketType(), 2000, false);
+    protected ColumbusCcsdsPacket ackPacket(ColumbusCcsdsPacket commandPacket, int stage, int result) {
+        ColumbusCcsdsPacket ackPacket = new ColumbusCcsdsPacket(TC_ACK_APID, 10, commandPacket.getPacketType(), 2000,
+                false);
         int batNum = commandPacket.getPacketId();
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
 
         bb.putInt(0, batNum);
-        bb.putInt(4, commandPacket.getSeq());
+        bb.putInt(4, commandPacket.getSequenceCount());
         bb.put(8, (byte) stage);
         bb.put(9, (byte) result);
 
@@ -203,8 +207,8 @@ public class Simulator extends AbstractService {
     }
 
     private void sendFlightPacket() {
-        CCSDSPacket flightpacket = new CCSDSPacket(MAIN_APID, 60, 33);
-        flightDataHandler.fillPacket(flightpacket);
+        ColumbusCcsdsPacket flightpacket = new ColumbusCcsdsPacket(MAIN_APID, flightDataHandler.dataSize(), 33);
+        flightDataHandler.fillPacket(flightpacket.getUserDataBuffer());
         transmitRealtimeTM(flightpacket);
     }
 
@@ -215,20 +219,20 @@ public class Simulator extends AbstractService {
     }
 
     private void sendHkTm() {
-        CCSDSPacket powerpacket = new CCSDSPacket(MAIN_APID, 16, 1);
-        powerDataHandler.fillPacket(powerpacket);
+        ColumbusCcsdsPacket powerpacket = new ColumbusCcsdsPacket(MAIN_APID, powerDataHandler.dataSize(), 1);
+        powerDataHandler.fillPacket(powerpacket.getUserDataBuffer());
         transmitRealtimeTM(powerpacket);
 
-        CCSDSPacket packet = new CCSDSPacket(MAIN_APID, 9, 2);
-        dhsHandler.fillPacket(packet);
+        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(MAIN_APID, dhsHandler.dataSize(), 2);
+        dhsHandler.fillPacket(packet.getUserDataBuffer());
         transmitRealtimeTM(packet);
 
-        packet = new CCSDSPacket(MAIN_APID, 36, 3);
-        rcsHandler.fillPacket(packet);
+        packet = new ColumbusCcsdsPacket(MAIN_APID, rcsHandler.dataSize(), 3);
+        rcsHandler.fillPacket(packet.getUserDataBuffer());
         transmitRealtimeTM(packet);
 
-        packet = new CCSDSPacket(MAIN_APID, 6, 4);
-        epslvpduHandler.fillPacket(packet);
+        packet = new ColumbusCcsdsPacket(MAIN_APID, epslvpduHandler.dataSize(), 4);
+        epslvpduHandler.fillPacket(packet.getUserDataBuffer());
         transmitRealtimeTM(packet);
     }
 
@@ -260,7 +264,7 @@ public class Simulator extends AbstractService {
      * runs in the main TM thread, executes commands from the queue (if any)
      */
     private void executePendingCommands() {
-        CCSDSPacket commandPacket;
+        ColumbusCcsdsPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
             if (commandPacket.getPacketType() == 10) {
                 log.info("Received TC packet-id: " + commandPacket.getPacketId());
@@ -287,7 +291,7 @@ public class Simulator extends AbstractService {
                 case 7:
                     deleteRecording(commandPacket);
                     break;
-                  
+
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
                 }
@@ -297,7 +301,7 @@ public class Simulator extends AbstractService {
         }
     }
 
-    private void switchBatteryOn(CCSDSPacket commandPacket) {
+    private void switchBatteryOn(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(1);
         int batNum = commandPacket.getUserDataBuffer().get(0);
@@ -305,7 +309,7 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    private void switchBatteryOff(CCSDSPacket commandPacket) {
+    private void switchBatteryOff(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(2);
         int batNum = commandPacket.getUserDataBuffer().get(0);
@@ -313,22 +317,22 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    private void listRecordings(CCSDSPacket commandPacket) {
+    private void listRecordings(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
-
-        CCSDSPacket packet = new CCSDSPacket(0, 2, 9, false);
         String[] dumps = losRecorder.listRecordings();
-        log.info("LOS dump count: {}", dumps.length);
 
+        log.info("LOS dump count: {}", dumps.length);
         String joined = String.join(" ", dumps);
-        packet.appendUserDataBuffer(joined.getBytes());
-        packet.appendUserDataBuffer(new byte[1]); // terminate with \0
+        byte[] b = joined.getBytes();
+
+        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(0, b.length + 1, 9, false);
+        packet.getUserDataBuffer().put(b);
 
         transmitRealtimeTM(packet);
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    private void dumpRecording(CCSDSPacket commandPacket) {
+    private void dumpRecording(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         int indexStartOfString = 16;
@@ -345,7 +349,7 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    private void deleteRecording(CCSDSPacket commandPacket) {
+    private void deleteRecording(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
@@ -354,14 +358,13 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-
-    private void criticalTc1(CCSDSPacket commandPacket) {
+    private void criticalTc1(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         log.info("Command CRITICAL_TC1");
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    private void criticalTc2(CCSDSPacket commandPacket) {
+    private void criticalTc2(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         log.info("Command CRITICAL_TC2");
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
@@ -375,20 +378,21 @@ public class Simulator extends AbstractService {
         this.tm2Link = tm2Link;
     }
 
-    public void processTc(CCSDSPacket tc) {
-        if (tc.getApid() == CFDP_APID) {
+    public void processTc(SimulatorCcsdsPacket tc) {
+        ColumbusCcsdsPacket coltc = (ColumbusCcsdsPacket) tc;
+        if (tc.getAPID() == CFDP_APID) {
             cfdpReceiver.processCfdp(tc.getUserDataBuffer());
         } else {
-            transmitRealtimeTM(ackPacket(tc, 0, 0));
+            transmitRealtimeTM(ackPacket(coltc, 0, 0));
             try {
-                pendingCommands.put(tc);
+                pendingCommands.put(coltc);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    protected CCSDSPacket readLosPacket(DataInputStream dIn) {
+    protected ColumbusCcsdsPacket readLosPacket(DataInputStream dIn) {
         try {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
@@ -400,7 +404,7 @@ public class Simulator extends AbstractService {
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
-            return new CCSDSPacket(ByteBuffer.wrap(b));
+            return new ColumbusCcsdsPacket(ByteBuffer.wrap(b));
         } catch (Exception e) {
             log.error("Error reading LOS packet from file " + e.getMessage(), e);
         }
@@ -414,8 +418,9 @@ public class Simulator extends AbstractService {
     public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
         this.tmFrameLink = tmFrameLink;
     }
+
     public void setTcFrameLink(UdpTcFrameLink tcFrameLink) {
-        this.tcFrameLink = tcFrameLink;
+        // nothing to do with the link, we get called in new command
     }
 
     @Override
@@ -434,5 +439,18 @@ public class Simulator extends AbstractService {
     protected void doStop() {
         executor.shutdownNow();
         notifyStopped();
+    }
+
+    @Override
+    public void transmitCfdp(CfdpPacket packet) {
+        CfdpHeader header = packet.getHeader();
+
+        int length = 16 + header.getLength() + packet.getDataFieldLength();
+        ByteBuffer buffer = ByteBuffer.allocate(length);
+        buffer.putShort((short) 0x17FD);
+        buffer.putShort(4, (short) (length - 7));
+        buffer.position(16);
+        packet.writeToBuffer(buffer.slice());
+        transmitRealtimeTM(new ColumbusCcsdsPacket(buffer));
     }
 }

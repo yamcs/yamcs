@@ -3,7 +3,9 @@ package org.yamcs.simulator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Vector;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,7 @@ public class EpsLvpduHandler {
 
     private static final Logger log = LoggerFactory.getLogger(EpsLvpduHandler.class);
 
-    private Vector<EpsLvpduData> entries = new Vector<>(100, 100);
+    private List<EpsLvpduData> entries = new ArrayList<>(100);
     private int currentEntry = 0;
 
     public EpsLvpduHandler() {
@@ -43,7 +45,7 @@ public class EpsLvpduHandler {
         log.debug("have {} EPS LVPDU data records", entries.size());
     }
 
-    public void fillPacket(CCSDSPacket packet) {
+    public void fillPacket(ByteBuffer buffer) {
         if (entries.isEmpty()) {
             return;
         }
@@ -52,7 +54,11 @@ public class EpsLvpduHandler {
             currentEntry = 0;
         }
 
-        EpsLvpduData entry = entries.elementAt(currentEntry++);
-        entry.fillPacket(packet, 0);
+        EpsLvpduData entry = entries.get(currentEntry++);
+        entry.fillPacket(buffer);
+    }
+
+    public int dataSize() {
+        return EpsLvpduData.size();
     }
 }

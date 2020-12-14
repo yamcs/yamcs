@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <SpaceSystem name="SIMULATOR">
+      <Header validationStatus="Unknown" version="1.2" date="2020-11-26T03:11:27Z">
+      </Header>
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <FloatParameterType sizeInBits="32" name="engfloat32_Tank_avg_press">
+            <DefaultAlarm>
+              <StaticAlarmRanges>
+                <WarningRange minInclusive="100.0" maxInclusive="300.0"/>
+              </StaticAlarmRanges>
+            </DefaultAlarm>
+          </FloatParameterType>
+          <IntegerParameterType signed="false" name="uint8A">
+            <UnitSet>
+              <Unit>A</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint8C">
+            <UnitSet>
+              <Unit>C</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="BatteryVoltage2_BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint8V_BatteryVoltage1">
+            <UnitSet>
+              <Unit>V</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <FloatParameterType sizeInBits="32" name="engfloat32"/>
+          <FloatParameterType sizeInBits="32" name="uint16P">
+            <UnitSet>
+              <Unit>%</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="16">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="0.0"/>
+                  <Term exponent="1" coefficient="0.2"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </FloatParameterType>
+          <IntegerParameterType signed="false" name="uint8V">
+            <UnitSet>
+              <Unit>V</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint32">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint8V_BatteryVoltage1_BatteryVoltage1_BatteryVoltage1">
+            <UnitSet>
+              <Unit>V</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint16">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint8V_BatteryVoltage1_BatteryVoltage1">
+            <UnitSet>
+              <Unit>V</Unit>
+            </UnitSet>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="BatteryVoltage2_BatteryVoltage2_BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <FloatParameterType sizeInBits="32" name="double">
+            <FloatDataEncoding encoding="IEEE754_1985" sizeInBits="64"/>
+          </FloatParameterType>
+          <FloatParameterType sizeInBits="32" name="float32">
+            <FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32"/>
+          </FloatParameterType>
+          <BooleanParameterType oneStringValue="True" zeroStringValue="False" name="engbool"/>
+          <IntegerParameterType signed="false" name="BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <StringParameterType name="C_string">
+            <StringDataEncoding>
+              <SizeInBits>
+                <TerminationChar>0</TerminationChar>
+              </SizeInBits>
+            </StringDataEncoding>
+          </StringParameterType>
+          <IntegerParameterType signed="false" name="uint64">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="64"/>
+          </IntegerParameterType>
+          <AggregateParameterType name="position">
+            <MemberList>
+              <Member name="longitude" typeRef="float32"/>
+              <Member name="latitude" typeRef="float32"/>
+              <Member name="altitude" typeRef="float32"/>
+            </MemberList>
+          </AggregateParameterType>
+          <IntegerParameterType signed="false" name="BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <IntegerParameterType signed="false" name="uint8">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerParameterType>
+          <FloatParameterType sizeInBits="32" name="engfloat32_Tank_avg_press_Tank_avg_press_Tank_avg_press">
+            <DefaultAlarm>
+              <StaticAlarmRanges>
+                <WarningRange minInclusive="100.0" maxInclusive="300.0"/>
+              </StaticAlarmRanges>
+            </DefaultAlarm>
+          </FloatParameterType>
+          <IntegerParameterType signed="false" name="BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8">
+              <DefaultCalibrator>
+                <PolynomialCalibrator>
+                  <Term exponent="0" coefficient="1.0"/>
+                  <Term exponent="1" coefficient="2.0"/>
+                </PolynomialCalibrator>
+              </DefaultCalibrator>
+            </IntegerDataEncoding>
+          </IntegerParameterType>
+          <FloatParameterType sizeInBits="32" name="engfloat32_Tank_avg_press_Tank_avg_press">
+            <DefaultAlarm>
+              <StaticAlarmRanges>
+                <WarningRange minInclusive="100.0" maxInclusive="300.0"/>
+              </StaticAlarmRanges>
+            </DefaultAlarm>
+          </FloatParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter parameterTypeRef="float32" name="ElapsedTime"/>
+          <Parameter parameterTypeRef="float32" name="Longitude"/>
+          <Parameter parameterTypeRef="float32" name="Latitude"/>
+          <Parameter parameterTypeRef="float32" name="Altitude"/>
+          <Parameter parameterTypeRef="float32" name="Heading"/>
+          <Parameter parameterTypeRef="float32" name="Alpha"/>
+          <Parameter parameterTypeRef="float32" name="Beta"/>
+          <Parameter parameterTypeRef="float32" name="TAS"/>
+          <Parameter parameterTypeRef="float32" name="CAS"/>
+          <Parameter parameterTypeRef="float32" name="Mach_Number"/>
+          <Parameter parameterTypeRef="float32" name="Load_factor"/>
+          <Parameter parameterTypeRef="float32" name="SinkRate"/>
+          <Parameter parameterTypeRef="float32" name="Phi"/>
+          <Parameter parameterTypeRef="float32" name="Theta"/>
+          <Parameter parameterTypeRef="float32" name="Psi"/>
+          <Parameter parameterTypeRef="position" name="Position"/>
+          <Parameter parameterTypeRef="uint8" name="BusStatus"/>
+          <Parameter parameterTypeRef="uint8V" name="BusVoltage"/>
+          <Parameter parameterTypeRef="uint8A" name="BusCurrent"/>
+          <Parameter parameterTypeRef="uint8A" name="TotalSystemCurrent"/>
+          <Parameter parameterTypeRef="uint8V_BatteryVoltage1_BatteryVoltage1_BatteryVoltage1" name="BatteryVoltage1"/>
+          <Parameter parameterTypeRef="uint8C" name="BatteryTemperature1"/>
+          <Parameter parameterTypeRef="uint16P" name="BatteryCapacity1"/>
+          <Parameter parameterTypeRef="BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2_BatteryVoltage2" name="BatteryVoltage2">
+            <AliasSet>
+              <Alias nameSpace="MDB:OPS Name" alias="SIMULATOR_BatteryVoltage2"/>
+            </AliasSet>
+          </Parameter>
+          <Parameter parameterTypeRef="uint8C" name="BatteryTemperature2"/>
+          <Parameter parameterTypeRef="uint16P" name="BatteryCapacity2"/>
+          <Parameter parameterTypeRef="uint8V" name="BatteryVoltage3"/>
+          <Parameter parameterTypeRef="uint8C" name="BatteryTemperature3"/>
+          <Parameter parameterTypeRef="uint16P" name="BatteryCapacity3"/>
+          <Parameter parameterTypeRef="uint8V" name="PrimBusVoltage1">
+            <AliasSet>
+              <Alias nameSpace="MDB:OPS Name" alias="SIMULATOR_PrimBusVoltage1"/>
+            </AliasSet>
+          </Parameter>
+          <Parameter parameterTypeRef="uint8A" name="PrimBusCurrent1"/>
+          <Parameter parameterTypeRef="uint8V" name="PrimBusVoltage2"/>
+          <Parameter parameterTypeRef="uint8A" name="PrimBusCurrent2"/>
+          <Parameter parameterTypeRef="uint8V" name="SecBusVoltage2"/>
+          <Parameter parameterTypeRef="uint8A" name="SecBusCurrent2"/>
+          <Parameter parameterTypeRef="uint8V" name="SecBusVoltage3"/>
+          <Parameter parameterTypeRef="uint8A" name="SecBusCurrent3"/>
+          <Parameter parameterTypeRef="uint8" name="MemoryRate"/>
+          <Parameter parameterTypeRef="float32" name="H2TankFill"/>
+          <Parameter parameterTypeRef="float32" name="O2TankFill"/>
+          <Parameter parameterTypeRef="uint16" name="H2TankTemp"/>
+          <Parameter parameterTypeRef="uint16" name="O2TankTemp"/>
+          <Parameter parameterTypeRef="float32" name="H2TankPressure"/>
+          <Parameter parameterTypeRef="float32" name="O2TankPressure"/>
+          <Parameter parameterTypeRef="uint16" name="H2ValveTemp"/>
+          <Parameter parameterTypeRef="uint16" name="O2ValveTemp"/>
+          <Parameter parameterTypeRef="float32" name="H2ValvePressure"/>
+          <Parameter parameterTypeRef="float32" name="O2ValvePressure"/>
+          <Parameter parameterTypeRef="uint16" name="TurbineTemp"/>
+          <Parameter parameterTypeRef="uint16" name="TurbinePressure"/>
+          <Parameter parameterTypeRef="uint8" name="LVPDUStatus"/>
+          <Parameter parameterTypeRef="uint8" name="LVPDUVoltage"/>
+          <Parameter parameterTypeRef="uint8" name="WhichBatteryExecuted"/>
+          <Parameter parameterTypeRef="uint8" name="WhichBatteryCommanded"/>
+          <Parameter parameterTypeRef="uint8" name="CommandReceived"/>
+          <Parameter parameterTypeRef="uint8" name="CommandExecuted"/>
+          <Parameter parameterTypeRef="C_string" name="AvailableRecordingNames"/>
+          <Parameter parameterTypeRef="C_string" name="TransmittedRecordingName"/>
+          <Parameter parameterTypeRef="C_string" name="DeletedRecordingName"/>
+          <Parameter parameterTypeRef="uint32" name="avc_command_id"/>
+          <Parameter parameterTypeRef="uint32" name="avc_command_seq"/>
+          <Parameter parameterTypeRef="uint8" name="avc_command_execution_stage"/>
+          <Parameter parameterTypeRef="uint8" name="avc_command_result"/>
+          <Parameter parameterTypeRef="uint16" name="tm2_size"/>
+          <Parameter parameterTypeRef="uint64" name="tm2_timestamp"/>
+          <Parameter parameterTypeRef="uint32" name="tm2_seq"/>
+          <Parameter parameterTypeRef="uint32" name="tm2_uint"/>
+          <Parameter parameterTypeRef="double" name="tm2_double"/>
+          <Parameter parameterTypeRef="engfloat32_Tank_avg_press_Tank_avg_press_Tank_avg_press" name="Tank_avg_press">
+            <ParameterProperties dataSource="derived"/>
+          </Parameter>
+          <Parameter parameterTypeRef="engfloat32" name="battery_voltage_avg">
+            <ParameterProperties dataSource="derived"/>
+          </Parameter>
+          <Parameter parameterTypeRef="engbool" initialValue="true" name="AllowCriticalTC1">
+            <ParameterProperties dataSource="local"/>
+          </Parameter>
+          <Parameter parameterTypeRef="engbool" initialValue="false" name="AllowCriticalTC2">
+            <ParameterProperties dataSource="local"/>
+          </Parameter>
+        </ParameterSet>
+        <ContainerSet>
+          <SequenceContainer name="FlightData">
+            <AncillaryDataSet>
+              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+            </AncillaryDataSet>
+            <EntryList>
+              <ParameterRefEntry parameterRef="ElapsedTime">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>128</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Longitude">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>160</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Latitude">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>192</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Altitude">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>224</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Position">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>160</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Heading">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>256</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Alpha">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>288</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Beta">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>320</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="TAS">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>352</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="CAS">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>384</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Mach_Number">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>416</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Load_factor">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>448</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="SinkRate">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>480</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Phi">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>512</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Theta">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>544</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="Psi">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>576</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+            </EntryList>
+            <BaseContainer containerRef="../PUS/hk25">
+              <RestrictionCriteria>
+                <ComparisonList>
+                  <Comparison parameterRef="../PUS/hkid" value="0"/>
+                </ComparisonList>
+              </RestrictionCriteria>
+            </BaseContainer>
+          </SequenceContainer>
+          <SequenceContainer name="Power">
+            <AncillaryDataSet>
+              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+            </AncillaryDataSet>
+            <EntryList>
+              <ParameterRefEntry parameterRef="BusStatus">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>128</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BusVoltage">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>136</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BusCurrent">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>144</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="TotalSystemCurrent">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>152</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryVoltage1">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>160</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryTemperature1">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>168</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryCapacity1">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>176</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryVoltage2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>192</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryTemperature2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>200</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryCapacity2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>208</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryVoltage3">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>224</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryTemperature3">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>232</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="BatteryCapacity3">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>240</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+            </EntryList>
+            <BaseContainer containerRef="../PUS/hk25">
+              <RestrictionCriteria>
+                <ComparisonList>
+                  <Comparison parameterRef="../PUS/hkid" value="1"/>
+                </ComparisonList>
+              </RestrictionCriteria>
+            </BaseContainer>
+          </SequenceContainer>
+          <SequenceContainer name="DHS">
+            <AncillaryDataSet>
+              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+            </AncillaryDataSet>
+            <EntryList>
+              <ParameterRefEntry parameterRef="PrimBusVoltage1">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>128</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="PrimBusCurrent1">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>136</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="PrimBusVoltage2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>144</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="PrimBusCurrent2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>152</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="SecBusVoltage2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>160</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="SecBusCurrent2">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>168</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="SecBusVoltage3">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>176</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="SecBusCurrent3">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>184</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="MemoryRate">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>192</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+            </EntryList>
+            <BaseContainer containerRef="../PUS/hk25">
+              <RestrictionCriteria>
+                <ComparisonList>
+                  <Comparison parameterRef="../PUS/hkid" value="2"/>
+                </ComparisonList>
+              </RestrictionCriteria>
+            </BaseContainer>
+          </SequenceContainer>
+          <SequenceContainer name="RCS">
+            <AncillaryDataSet>
+              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+            </AncillaryDataSet>
+            <EntryList>
+              <ParameterRefEntry parameterRef="H2TankFill"/>
+              <ParameterRefEntry parameterRef="O2TankFill"/>
+              <ParameterRefEntry parameterRef="H2TankTemp"/>
+              <ParameterRefEntry parameterRef="O2TankTemp"/>
+              <ParameterRefEntry parameterRef="H2TankPressure"/>
+              <ParameterRefEntry parameterRef="O2TankPressure"/>
+              <ParameterRefEntry parameterRef="H2ValveTemp"/>
+              <ParameterRefEntry parameterRef="O2ValveTemp"/>
+              <ParameterRefEntry parameterRef="H2ValvePressure"/>
+              <ParameterRefEntry parameterRef="O2ValvePressure"/>
+              <ParameterRefEntry parameterRef="TurbineTemp"/>
+              <ParameterRefEntry parameterRef="TurbinePressure"/>
+           </EntryList>
+            <BaseContainer containerRef="../PUS/hk25">
+              <RestrictionCriteria>
+                <ComparisonList>
+                  <Comparison parameterRef="../PUS/hkid" value="3"/>
+                </ComparisonList>
+              </RestrictionCriteria>
+            </BaseContainer>
+          </SequenceContainer>
+          <SequenceContainer name="EPS">
+            <AncillaryDataSet>
+              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+            </AncillaryDataSet>
+            <EntryList>
+              <ParameterRefEntry parameterRef="LVPDUStatus">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>128</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+              <ParameterRefEntry parameterRef="LVPDUVoltage">
+                <LocationInContainerInBits referenceLocation="containerStart">
+                  <FixedValue>136</FixedValue>
+                </LocationInContainerInBits>
+              </ParameterRefEntry>
+            </EntryList>
+            <BaseContainer containerRef="../PUS/hk25">
+              <RestrictionCriteria>
+                <ComparisonList>
+                  <Comparison parameterRef="../PUS/hkid" value="4"/>
+                </ComparisonList>
+              </RestrictionCriteria>
+            </BaseContainer>
+          </SequenceContainer>
+        </ContainerSet>
+      </TelemetryMetaData>
+<!--      <CommandMetaData>
+        <ArgumentTypeSet>
+          <EnumeratedArgumentType name="voltage_num">
+            <EnumerationList>
+              <Enumeration label="PRIMARY" value="1"/>
+              <Enumeration label="SECONDARY" value="2"/>
+              <Enumeration label="BACKUP" value="3"/>
+            </EnumerationList>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </EnumeratedArgumentType>
+          <IntegerArgumentType sizeInBits="32" signed="false" name="uint8_SWITCH_VOLTAGE_OFF_voltage_num">
+            <ValidRange minInclusive="1" maxInclusive="3" validRangeAppliesToCalibrated="false"/>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerArgumentType>
+          <IntegerArgumentType sizeInBits="32" signed="false" name="uint8_SWITCH_VOLTAGE_ON_voltage_num">
+            <ValidRange minInclusive="1" maxInclusive="3" validRangeAppliesToCalibrated="false"/>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerArgumentType>
+          <StringArgumentType name="C_string">
+            <StringDataEncoding>
+              <SizeInBits>
+                <TerminationChar>0</TerminationChar>
+              </SizeInBits>
+            </StringDataEncoding>
+          </StringArgumentType>
+          <IntegerArgumentType sizeInBits="32" signed="false" name="uint32">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+          </IntegerArgumentType>
+          <IntegerArgumentType sizeInBits="32" signed="false" name="uint8">
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </IntegerArgumentType>
+          <EnumeratedArgumentType name="voltage_num_SWITCH_VOLTAGE_ON_ENUM_voltage_num">
+            <EnumerationList>
+              <Enumeration label="PRIMARY" value="1"/>
+              <Enumeration label="SECONDARY" value="2"/>
+              <Enumeration label="BACKUP" value="3"/>
+            </EnumerationList>
+            <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+          </EnumeratedArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+          <MetaCommand name="CRITICAL_TC1">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="3"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="uint8" name="p1"/>
+            </ArgumentList>
+            <CommandContainer name="CRITICAL_TC1">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="p1"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="SWITCH_VOLTAGE_ON_ENUM">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="1"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="voltage_num_SWITCH_VOLTAGE_ON_ENUM_voltage_num" name="voltage_num" shortDescription="voltage number to switch on"/>
+            </ArgumentList>
+            <CommandContainer name="SWITCH_VOLTAGE_ON_ENUM">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="voltage_num"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="CRITICAL_TC2">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="4"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="uint8" name="p1"/>
+            </ArgumentList>
+            <CommandContainer name="CRITICAL_TC2">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="p1"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="SWITCH_VOLTAGE_ON">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="1"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="uint8_SWITCH_VOLTAGE_ON_voltage_num" name="voltage_num" shortDescription="voltage number to switch on"/>
+            </ArgumentList>
+            <CommandContainer name="SWITCH_VOLTAGE_ON">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="voltage_num"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="SWITCH_VOLTAGE_OFF">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="2"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="uint8_SWITCH_VOLTAGE_OFF_voltage_num" name="voltage_num" shortDescription="voltage number to switch off"/>
+            </ArgumentList>
+            <CommandContainer name="SWITCH_VOLTAGE_OFF">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="voltage_num"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="DUMP_RECORDING">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="6"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="C_string" name="filename"/>
+              <Argument argumentTypeRef="uint32" name="speed"/>
+            </ArgumentList>
+            <CommandContainer name="DUMP_RECORDING">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="filename"/>
+                <ArgumentRefEntry argumentRef="speed"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="LIST_RECORDINGS">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="5"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList/>
+            <CommandContainer name="LIST_RECORDINGS">
+              <EntryList/>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand name="DELETE_RECORDING">
+            <BaseMetaCommand metaCommandRef="SIM_TC">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="packet-id" argumentValue="7"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList>
+              <Argument argumentTypeRef="C_string" name="filename"/>
+            </ArgumentList>
+            <CommandContainer name="DELETE_RECORDING">
+              <EntryList>
+                <ArgumentRefEntry argumentRef="filename"/>
+              </EntryList>
+              <BaseContainer containerRef="SIM_TC"/>
+            </CommandContainer>
+          </MetaCommand>
+          <MetaCommand abstract="true" name="SIM_TC">
+            <BaseMetaCommand metaCommandRef="../ccsds-tc">
+              <ArgumentAssignmentList>
+                <ArgumentAssignment argumentName="ccsds-apid" argumentValue="100"/>
+                <ArgumentAssignment argumentName="timeId" argumentValue="1"/>
+                <ArgumentAssignment argumentName="packet-type" argumentValue="10"/>
+              </ArgumentAssignmentList>
+            </BaseMetaCommand>
+            <ArgumentList/>
+            <CommandContainer name="SIM_TC">
+              <EntryList/>
+              <BaseContainer containerRef="../ccsds-tc"/>
+            </CommandContainer>
+          </MetaCommand>
+        </MetaCommandSet>
+      </CommandMetaData>-->
+    </SpaceSystem>

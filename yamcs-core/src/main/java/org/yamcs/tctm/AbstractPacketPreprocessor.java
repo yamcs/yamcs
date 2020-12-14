@@ -14,6 +14,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -67,7 +68,7 @@ import org.yamcs.utils.TimeEncoding;
 public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     public static enum TimeEpochs {
-        TAI, J2000, UNIX, GPS, CUSTOM
+        TAI, J2000, UNIX, GPS, CUSTOM, NONE
     };
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
@@ -96,7 +97,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     /**
      * If true, do not extract time from packets but use the local generation time.
      * <p>
-     * It is a good idea to set the {@link TmPacket#setLocalGenTime()} flag to indicate it.
+     * It is a good idea to set the {@link TmPacket#setLocalGenTimeFlag()} flag to indicate it.
      * <p>
      * The flag has to be set by the pre-processor!
      */
@@ -123,9 +124,11 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
             if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
                 String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
-                tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class, tcoServiceName);
+                tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class,
+                        tcoServiceName);
                 if (tcoService == null) {
-                    throw new ConfigurationException("Cannot find a time correlation service with name "+tcoServiceName);
+                    throw new ConfigurationException(
+                            "Cannot find a time correlation service with name " + tcoServiceName);
                 }
             }
         }
@@ -142,7 +145,8 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             String type = c.getString("type", "CUC");
             if ("CUC".equals(type)) {
                 int implicitPField = c.getInt("implicitPField", -1);
-                timeDecoder = new CucTimeDecoder(implicitPField);
+                int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
+                timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
             } else {
                 throw new ConfigurationException("Time encoding of type '" + type
                         + " not supported. Supported: CUC=CCSDS unsegmented time");
@@ -163,6 +167,33 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         log.debug("Using time decoder {}", timeDecoder);
     }
 
+    public void verifyCrc(TmPacket tmPacket) {
+        if (errorDetectionCalculator == null) {
+            return;
+        }
+
+        boolean corrupted = false;
+        byte[] packet = tmPacket.getPacket();
+
+        int n = packet.length;
+        int computedCheckword;
+        try {
+            computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
+            int packetCheckword = ByteArrayUtils.decodeUnsignedShort(packet, n - 2);
+            if (packetCheckword != computedCheckword) {
+                eventProducer.sendWarning("Corrupted packet received, computed checkword: " + computedCheckword
+                        + "; packet checkword: " + packetCheckword);
+                corrupted = true;
+            }
+        } catch (IllegalArgumentException e) {
+            eventProducer.sendWarning("Error when computing checkword: " + e.getMessage());
+            corrupted = true;
+        }
+        if (corrupted) {
+            tmPacket.setInvalid(true);
+        }
+    }
+
     public static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(YConfiguration config) {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             return null;
@@ -180,16 +211,56 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             return new Running16BitChecksumCalculator();
         } else if ("CRC-16-CCIIT".equalsIgnoreCase(type)) {
             if (crcConf == null) {
-                return new CrcCciitCalculator(crcConf);
-            } else {
                 return new CrcCciitCalculator();
+            } else {
+                return new CrcCciitCalculator(crcConf);
             }
+        } else if ("ISO-16".equalsIgnoreCase(type)) {
+            return new Iso16CrcCalculator();
         } else if ("NONE".equalsIgnoreCase(type)) {
             return null;
         } else {
             throw new ConfigurationException(
                     "Unknown errorDetectionWord type '" + type
-                            + "': supported types are 16-SUM and CRC-16-CCIIT (or NONE)");
+                            + "': supported types are 16-SUM, CRC-16-CCIIT and ISO-16 (or NONE)");
+        }
+    }
+
+    /**
+     * Decodes the time at the offset using the time decoder, sets and verifies the generation time depending on the
+     * timeEpoch and the tcoService.
+     * <p>
+     * If there is any exception when decoding the time, the packet is marked as invalid.
+     * <p>
+     * It is important this is called only for realtime packets.
+     *
+     * @param tmPacket
+     * @param offset
+     */
+    protected void setRealtimePacketTime(TmPacket tmPacket, int offset) {
+        if (useLocalGenerationTime) {
+            tmPacket.setGenerationTime(tmPacket.getReceptionTime());
+            tmPacket.setLocalGenTimeFlag();
+            return;
+        }
+
+        byte[] packet = tmPacket.getPacket();
+        try {
+            if (timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
+                long obt = timeDecoder.decodeRaw(packet, offset);
+                tcoService.timestamp(obt, tmPacket);
+            } else {
+                long t = timeDecoder.decode(packet, offset);
+                long gentime = timeEpoch == null ? t : shiftFromEpoch(t);
+                tmPacket.setGenerationTime(gentime);
+                if (tcoService != null) {
+                    tcoService.verify(tmPacket);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
+            tmPacket.setInvalid(true);
         }
     }
 

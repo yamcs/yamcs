@@ -1,0 +1,115 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.parameter.SystemParametersCollector
+    args:
+      provideJvmVariables: true
+      provideFsVariables: true
+  - class: org.yamcs.time.TimeCorrelationService
+    name: tco0
+    args:
+       onboardDelay: 1.0
+       accuracy: 0.5
+       validity: 1.0
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime" 
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller: 
+        enabled: false
+      backFiller:
+        enabled: true
+        warmupTime: 60
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      type: pus
+      tctm:
+        tmPort: 10015
+        tcPort: 10025
+  - class: org.yamcs.cfdp.CfdpService
+    name: cfdp0
+    args:
+     sequenceNrLength: 4
+     maxPduSize: 512
+     incomingBucket: "cfdpDown"
+     eofAckTimeout: 3000
+     eofAckLimit: 5
+     #Note that the simulator does not process commands faster than 1/second.
+     # Decreasign this number will make the packets queue up in the TCP queue
+     # and the CFDP sender will timeout waiting for the EOF ACK
+     sleepBetweenPdus: 1000
+     localEntities:
+       - name: default
+         id: 11
+         bucket: bucket1
+       - name: id2
+         id: 12
+         bucket: bucket2
+     remoteEntities:
+       - name: default
+         id: 5
+       - name: target2
+         id: 7
+     senderFaultHandlers:
+       AckLimitReached: suspend
+
+dataLinks:
+  - name: tm_realtime
+    enabledAtStartup: true
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm_realtime
+    host: localhost
+    port: 10015
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
+    packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+    packetPreprocessorArgs:
+        errorDetection:
+           type: CRC-16-CCIIT
+        timeEncoding:
+           type: CUC
+           epoch: NONE           
+        tcoService: tco0
+    
+  - name: tc_realtime
+    class: org.yamcs.tctm.TcpTcDataLink
+    stream: tc_realtime
+    host: localhost
+    port: 10025
+    # Give the embedded simulator smoe time to boot up
+    initialDelay: 2000
+    commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+    commandPostprocessorArgs:
+        errorDetection:
+          type: 16-SUM
+        enforceEvenNumberOfBytes: true
+        
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "xtce"
+    spec: "mdb/dt.xml"
+  - type: "xtce"
+    spec: "mdb/pus.xml"
+  - type: "xtce"
+    spec: "mdb/landing.xml"
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc: ["tc_realtime"]
+  sqlFile: "etc/extra_streams.sql"

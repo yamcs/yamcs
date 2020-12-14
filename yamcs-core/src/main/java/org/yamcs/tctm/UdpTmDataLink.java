@@ -97,11 +97,12 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         }
 
         if (packet != null) {
-            return packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet.array()));
+            TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet.array());
+            tmPacket.setEarthRceptionTime(timeService.getHresMissionTime());
+            return packetPreprocessor.process(tmPacket);
         } else {
             return null;
         }
-
     }
 
     /**

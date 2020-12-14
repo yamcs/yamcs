@@ -4,6 +4,25 @@ import java.nio.ByteBuffer;
 
 import org.yamcs.utils.ByteArrayUtils;
 
+/**
+ * CCSDS Packet as per CCSDS 133.0-B-2 https://public.ccsds.org/Pubs/133x0b2e1.pdf
+ *
+ * <pre>
+ * primary header (6 bytes):
+ *  3 bit = version - 0
+ *  1 bit = type (0 = TM, 1= TC)
+ *  1 bit = 2nd header present
+ *  11 bit = apid
+ *
+ *  2 bit = grouping, 01 = first, 00 = cont, 10 = last packet of group, 11 = unsegmented data
+ *  14 bit = seq
+ *
+ *  16 bit = packet length (excluding primary header) minus 1
+ * </pre>
+ *
+ * @author nm
+ *
+ */
 public class CcsdsPacket {
     protected ByteBuffer bb;
 
@@ -45,6 +64,33 @@ public class CcsdsPacket {
         return bb.getShort(0) & 0x07FF;
     }
 
+    /**
+     * Write the header. The grouping is set to 10b = last packet in the group and the length to the capacity of the
+     * buffer (minus 7)
+     *
+     * @param apid
+     * @param secHeaderPresent
+     *            1 = present, 0 = absent
+     * @param tmtc
+     *            0 = tm, 1 = tc
+     * @param seqFlags
+     *            grouping: 01 = first packet, 00 = continuation packet, 10 = last packet of group, 11 = unsegmented
+     *            data
+     * @param seq
+     */
+    public void setHeader(int apid, int tmtc, int secHeaderPresent, int seqFlags, int seq) {
+        secHeaderPresent &= 1;
+        tmtc &= 1;
+        seq &= 0x3FFF;
+        seqFlags &= 3;
+
+        short w = (short) ((tmtc << 12) | (secHeaderPresent << 11) | apid); // 2nd header present
+        bb.putShort(0, w);
+        w = (short) ((seqFlags << 14) | seq);
+        bb.putShort(2, w);
+        bb.putShort(4, (short) (bb.capacity() - 7));
+    }
+
     public void setAPID(int apid) {
         int tmp = bb.getShort(0) & (~0x07FF);
         tmp = tmp | apid;
@@ -75,7 +121,6 @@ public class CcsdsPacket {
         return bb.capacity();
     }
 
-
     /**
      * @return time in seconds since 6 Jan 1980
      */
@@ -85,26 +130,6 @@ public class CcsdsPacket {
 
     public int getTimeId() {
         return (bb.get(11) & 0xFF) >> 6;
-    }
-
-    public void setCoarseTime(int time) {
-        bb.putInt(6, time);
-    }
-
-    public static long getCoarseTime(ByteBuffer bb) {
-        return bb.getInt(6) & 0xFFFFFFFFL;
-    }
-
-    public int getFineTime() {
-        return bb.get(10) & 0xFF;
-    }
-
-    public void setFineTime(short fineTime) {
-        bb.put(10, (byte) (fineTime & 0xFF));
-    }
-
-    public static int getFineTime(ByteBuffer bb) {
-        return bb.get(10) & 0xFF;
     }
 
     public boolean getChecksumIndicator() {
@@ -128,37 +153,20 @@ public class CcsdsPacket {
     }
 
     public byte[] getBytes() {
-        return bb.array();
+        if (bb.hasArray() && bb.array().length == bb.capacity() && !bb.isReadOnly()) {
+            return bb.array();
+        }
+        byte[] b = new byte[bb.capacity()];
+        int pos = bb.position();
+        bb.get(b);
+        bb.position(0);
+        bb.position(pos);
+
+        return b;
     }
 
     public ByteBuffer getByteBuffer() {
         return bb;
-    }
-
-    public int getPrivateHeaderClass() {
-        return bb.get(18);
-    }
-
-    public int getPrivateHeaderType() {
-        return bb.get(19);
-    }
-
-    public int getPrivateHeaderSource() {
-        return ((int) bb.get(16)) & 0xFF;
-    }
-
-    public void fillCheckword() {
-        if (checksumPresent()) {
-            int checksum = 0;
-            for (int i = 0; i < bb.limit() - 2; i += 2) {
-                checksum += bb.getShort(i);
-            }
-            bb.putShort(bb.limit() - 2, (short) checksum);
-        }
-    }
-
-    private boolean checksumPresent() {
-        return ((bb.get(11) >> 5) & 1) == 1;
     }
 
     public static short getAPID(byte[] packet) {
@@ -168,7 +176,6 @@ public class CcsdsPacket {
     public static int getCccsdsPacketLength(byte[] buf) {
         return getCccsdsPacketLength(ByteBuffer.wrap(buf));
     }
-
 
     @Override
     public String toString() {

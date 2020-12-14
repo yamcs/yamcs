@@ -49,4 +49,7 @@ public class SimulatorArgs {
     @Parameter(names = "--perf-ms", description = "performance test: interval in between packets in milliseconds")
     public long perfMs = 100l;
 
+    @Parameter(names = "--type", description = "one of pus or columbus")
+    public String type;
+
 }

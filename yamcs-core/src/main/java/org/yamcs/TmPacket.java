@@ -139,7 +139,7 @@ public class TmPacket {
     /**
      * Set the flag that this packet generation time is in fact local time.
      */
-    public void setLocalGenTime() {
+    public void setLocalGenTimeFlag() {
         status |= STATUS_MASK_LOCAL_GEN_TIME;
     }
 

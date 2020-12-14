@@ -20,7 +20,7 @@ import org.yamcs.utils.StringConverter;
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
     final static CrcCciitCalculator crc = new CrcCciitCalculator();
-    final Simulator simulator;
+    final ColSimulator simulator;
 
     // FARM parameters
     boolean lockout;
@@ -32,7 +32,7 @@ public class TcVcFrameLink {
 
     int farmBCounter;
 
-    public TcVcFrameLink(Simulator simulator, int vcId) {
+    public TcVcFrameLink(ColSimulator simulator, int vcId) {
         this.simulator = simulator;
         this.vcId = vcId;
     }
@@ -124,7 +124,7 @@ public class TcVcFrameLink {
 
     private void processCommand(byte[] data, int offset, int length) {
         ByteBuffer bb = ByteBuffer.wrap(data, offset, length).slice();
-        simulator.processTc(new CCSDSPacket(bb));
+        simulator.processTc(new ColumbusCcsdsPacket(bb));
     }
 
     private void processControlCommand(byte[] data, int offset, int length) {

@@ -19,12 +19,12 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
     int numPackets;
     int packetSize;
     long interval;
-    final Simulator simulator;
+    final ColSimulator simulator;
     private static final Logger log = LoggerFactory.getLogger(PerfPacketGenerator.class);
     final public static int PERF_TEST_PACKET_ID = 1000; // the packet id of the packets used for performance testing
                                                         // start from here
 
-    public PerfPacketGenerator(Simulator simulator, int numPackets, int packetSize, long interval) {
+    public PerfPacketGenerator(ColSimulator simulator, int numPackets, int packetSize, long interval) {
         this.simulator = simulator;
         this.numPackets = numPackets;
         this.packetSize = packetSize;
@@ -36,10 +36,10 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         Random r = new Random();
         log.info("Starting performance data sending thread with {} packets of {} size spaced at {} ms intervals",
                 numPackets, packetSize, interval);
-        CCSDSPacket[] packets = new CCSDSPacket[numPackets];
+        ColumbusCcsdsPacket[] packets = new ColumbusCcsdsPacket[numPackets];
 
         for (int i = 0; i < numPackets; i++) {
-            CCSDSPacket packet = new CCSDSPacket(Simulator.PERF_TEST_APID, packetSize, PERF_TEST_PACKET_ID + i);
+            ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(ColSimulator.PERF_TEST_APID, packetSize, PERF_TEST_PACKET_ID + i);
             ByteBuffer bb = packet.getUserDataBuffer();
             while (bb.remaining() > 4) {
                 bb.putInt(r.nextInt());
@@ -50,7 +50,7 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
 
         while (isRunning()) {
             for (int i = 0; i < numPackets; i++) {
-                CCSDSPacket packet = packets[i];
+                ColumbusCcsdsPacket packet = packets[i];
                 ByteBuffer bb = packet.getUserDataBuffer();
                 for (int j = 0; j < numParamChanging; j++) {
                     bb.putInt(r.nextInt(packetSize - 4), r.nextInt());
@@ -63,10 +63,10 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         }
     }
 
-    private CCSDSPacket duplicate(CCSDSPacket packet) {
-        ByteBuffer bb = ByteBuffer.allocate(packet.buffer.capacity());
-        bb.put(packet.buffer.array());
-        return new CCSDSPacket(bb);
+    private ColumbusCcsdsPacket duplicate(ColumbusCcsdsPacket packet) {
+        ByteBuffer bb = ByteBuffer.allocate(packet.getLength());
+        bb.put(packet.getBytes());
+        return new ColumbusCcsdsPacket(bb);
     }
 
 }

@@ -12,12 +12,12 @@ public class PowerData {
     public float batteryVoltage3, batteryTemp3, batteryCapacity3;
 
 
-    public PowerData() {
+
+    public static int size() {
+        return 16;
     }
 
-    public void fillPacket(CCSDSPacket packet, int bufferOffset) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.position(bufferOffset);
+    public void fillPacket(ByteBuffer buffer) {
         buffer.put((byte) busStatus);
         buffer.put((byte) busVoltage);
         buffer.put((byte) busCurrent);
@@ -37,4 +37,5 @@ public class PowerData {
     public String toString() {
         return String.format("[PowerData]");
     }
+
 }

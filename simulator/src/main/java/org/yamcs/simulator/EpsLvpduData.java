@@ -8,19 +8,11 @@ public class EpsLvpduData {
     public float LVPDUStatus;
     public float LVPDUVoltage;
 
-    public EpsLvpduData(CCSDSPacket packet) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        LVPDUStatus = (float) buffer.get(0);
-        LVPDUVoltage = (float) buffer.get(1);
+    public static int size() {
+        return 2;
     }
 
-    public EpsLvpduData() {
-    }
-
-    public void fillPacket(CCSDSPacket packet, int bufferOffset) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.position(bufferOffset);
-
+    public void fillPacket(ByteBuffer buffer) {
         buffer.put((byte) LVPDUStatus);
         buffer.put((byte) LVPDUVoltage);
     }
@@ -29,4 +21,5 @@ public class EpsLvpduData {
     public String toString() {
         return String.format("[EpsLVPDUData]");
     }
+
 }

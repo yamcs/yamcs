@@ -2,7 +2,7 @@ package org.yamcs.tctm.pus;
 
 public class Constants {
     //the offset of the time inside the regular PUS packets
-    public static final int DEFAULT_PKT_TIME_OFFSET = 11;
+    public static final int DEFAULT_PKT_TIME_OFFSET = 13;
    //the offset of the time inside the PUS time packets
     public static final int DEFAULT_TIME_PACKET_TIME_OFFSET = 7;
     

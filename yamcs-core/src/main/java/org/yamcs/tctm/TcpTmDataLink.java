@@ -113,7 +113,9 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
                 }
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
-                pwt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
+                TmPacket pkt = new TmPacket(timeService.getMissionTime(), packet);
+                pkt.setEarthRceptionTime(timeService.getHresMissionTime());
+                pwt = packetPreprocessor.process(pkt);
                 if (pwt != null) {
                     break;
                 }

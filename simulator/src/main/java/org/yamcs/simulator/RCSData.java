@@ -9,30 +9,11 @@ public class RCSData {
     public float O2TankFill, O2TankTemp, O2TankPressure, O2ValveTemp, O2ValvePressure;
     public float TurbineTemp, TurbinePressure;
 
-    public RCSData(CCSDSPacket packet) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-
-        H2TankFill = buffer.getFloat(0);
-        O2TankFill = buffer.getFloat(4);
-        H2TankTemp = (float) buffer.getShort(8);
-        O2TankTemp = (float) buffer.getShort(10);
-
-        H2TankPressure = buffer.getFloat(12);
-        O2TankPressure = buffer.getFloat(16);
-        H2ValveTemp = (float) buffer.getShort(20);
-        O2ValveTemp = (float) buffer.getShort(22);
-
-        H2ValvePressure = buffer.getFloat(24);
-        O2ValvePressure = buffer.getFloat(28);
+    public static int size() {
+        return 36;
     }
 
-    public RCSData() {
-    }
-
-    public void fillPacket(CCSDSPacket packet, int bufferOffset) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.position(bufferOffset);
-
+    public void fillPacket(ByteBuffer buffer) {
         buffer.putFloat(H2TankFill);
         buffer.putFloat(O2TankFill);
         buffer.putShort((short) H2TankTemp);

@@ -9,7 +9,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Receives telemetry fames via UDP. One UDP datagram = one TM frame.

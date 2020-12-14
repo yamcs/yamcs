@@ -5,7 +5,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -22,22 +21,24 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
 
     private static final Logger log = LoggerFactory.getLogger(TcpTmTcLink.class);
     final String name;
-    private Simulator simulator;
+    private AbstractSimulator simulator;
     int port;
     volatile boolean connected;
     Socket socket;
     ServerSocket serverSocket;
     DataInputStream inputStream;
 
-    private int maxTcLength = Simulator.DEFAULT_MAX_LENGTH;
+    private int maxTcLength = ColSimulator.DEFAULT_MAX_LENGTH;
     private int MIN_TC_LENGTH = 16;
 
     private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(100);
+    final PacketFactory packetFactory;
 
-    public TcpTmTcLink(String name, Simulator simulator, int port) {
+    public TcpTmTcLink(String name, AbstractSimulator simulator, int port, PacketFactory packetFactory) {
         this.name = name;
         this.simulator = simulator;
         this.port = port;
+        this.packetFactory = packetFactory;
     }
 
     public void sendPacket(byte[] packet) {
@@ -61,9 +62,11 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
             }
             try {
                 byte[] p = queue.poll(1, TimeUnit.SECONDS);
+
                 if (p != null) {
                     socket.getOutputStream().write(p);
                 }
+
             } catch (IOException e1) {
                 log.error("Error while sending " + name + " packet", e1);
                 connect();
@@ -71,7 +74,7 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
 
             try {
                 if (socket.getInputStream().available() > 0) {
-                    CCSDSPacket tc = readPacket(inputStream);
+                    SimulatorCcsdsPacket tc = readPacket(inputStream);
                     if (tc != null) {
                         simulator.processTc(tc);
                     } else {
@@ -111,10 +114,10 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
         }
     }
 
-    public void ackPacketSend(CCSDSPacket packet) {
+    public void sendImmediate(SimulatorCcsdsPacket packet) {
         if (connected) {
             try {
-                packet.writeTo(socket.getOutputStream());
+                socket.getOutputStream().write(packet.getBytes());
             } catch (IOException e1) {
                 log.error("Error while sending {} packet", name, e1);
                 connect();
@@ -122,7 +125,7 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
         }
     }
 
-    CCSDSPacket readPacket(DataInputStream dIn) {
+    SimulatorCcsdsPacket readPacket(DataInputStream dIn) {
         try {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
@@ -137,7 +140,8 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
-            CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
+
+            SimulatorCcsdsPacket packet = packetFactory.getPacket(b);
             return packet;
         } catch (EOFException e) {
             log.error(name + " Connection lost");

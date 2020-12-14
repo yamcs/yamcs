@@ -98,7 +98,7 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * <p>
  * The method {@link #verify} will check the difference between the packet generation time and the expected generation
  * time (using ert - delays) and in case the difference is greater than the validity, the packet will be changed with
- * the local computed time and the flag {@link TmPacket#setLocalGenTime()} will also be set.
+ * the local computed time and the flag {@link TmPacket#setLocalGenTimeFlag()} will also be set.
  * 
  * <h2>Usage</h2>
  * 
@@ -289,7 +289,9 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
                 computeCoefficients();
             }
         } else {// state=SYNC
-            sampleQueue.removeFirst();
+            if (sampleQueue.size() >= numSamples) {
+                sampleQueue.removeFirst();
+            }
             sampleQueue.addLast(s);
             // verify accuracy
             Instant obi1 = curCoefficients.getInstant(obt);
@@ -347,7 +349,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      * Set the generation time of the packet based on the computed coefficients.
      * <p>
      * If the coefficients are not valid, set the generation time to gentime = ert-delays and also set the flag
-     * {@link TmPacket#setLocalGenTime()}
+     * {@link TmPacket#setLocalGenTimeFlag()}
      * 
      * <p>
      * The packet has to have the ert set, otherwise an exception is thrown
@@ -369,7 +371,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             double delay = tofEstimator.getTof(ert) + onboardDelay;
             Instant genTime = ert.plus(-delay);
             pkt.setGenerationTime(genTime.getMillis());
-            pkt.setLocalGenTime();
+            pkt.setLocalGenTimeFlag();
         } else {
             Instant genTime = c.getInstant(obt);
             pkt.setGenerationTime(genTime.getMillis());
@@ -394,7 +396,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      * <p>
      * If the deviation between the provided generation time and the expected generation time (computed based on the ert
      * - delays) is greater than the validity threshold, the generation time is changed to the expected time and the
-     * {@link TmPacket#setLocalGenTime()} is also set.
+     * {@link TmPacket#setLocalGenTimeFlag()} is also set.
      * <p>
      * The computed deviation is also published as a processed parameter.
      * 
@@ -415,7 +417,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         double deviation = expectedGenTime.deltaFrom(Instant.get(pkt.getGenerationTime()));
         if (Math.abs(deviation) > validity) {
             pkt.setGenerationTime(expectedGenTime.getMillis());
-            pkt.setLocalGenTime();
+            pkt.setLocalGenTimeFlag();
         }
 
         publishDeviation(deviation);

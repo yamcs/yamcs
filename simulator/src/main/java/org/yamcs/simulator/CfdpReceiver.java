@@ -36,12 +36,12 @@ import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
  */
 public class CfdpReceiver {
     private static final Logger log = LoggerFactory.getLogger(CfdpReceiver.class);
-    final Simulator simulator;
+    final AbstractSimulator simulator;
 
     private DataFile cfdpDataFile = null;
     List<SegmentRequest> missingSegments;
 
-    public CfdpReceiver(Simulator simulator) {
+    public CfdpReceiver(AbstractSimulator simulator) {
         this.simulator = simulator;
     }
 
@@ -225,15 +225,6 @@ public class CfdpReceiver {
     }
 
     protected void transmitCfdp(CfdpPacket packet) {
-        CfdpHeader header = packet.getHeader();
-
-        int length = 16 + header.getLength() + packet.getDataFieldLength();
-        ByteBuffer buffer = ByteBuffer.allocate(length);
-        buffer.putShort((short) 0x17FD);
-        buffer.putShort(4, (short) (length - 7));
-        buffer.position(16);
-        packet.writeToBuffer(buffer.slice());
-
-        simulator.transmitRealtimeTM(new CCSDSPacket(buffer));
+        simulator.transmitCfdp(packet);
     }
 }
