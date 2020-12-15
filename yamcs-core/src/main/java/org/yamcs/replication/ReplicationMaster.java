@@ -98,7 +98,6 @@ public class ReplicationMaster extends AbstractYamcsService {
         }
 
         fileCloseTime = config.getLong("fileCloseTimeSec", 300) * 1000;
-
         YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> closeUnusedFiles(), fileCloseTime,
                 fileCloseTime, TimeUnit.MILLISECONDS);
 
@@ -346,10 +345,13 @@ public class ReplicationMaster extends AbstractYamcsService {
                     buf.putInt(streamId);
                     TupleDefinition tdef = tuple.getDefinition();
                     for (int i = 0; i < tdef.size(); i++) {
+                        Object v = tuple.getColumn(i);
+                        if (v == null) { // since Yamcs 5.3.1 we allow nulls in the tuple values
+                            continue;
+                        }
                         ColumnDefinition cd = tdef.getColumn(i);
                         int cidx = completeTuple.getColumnIndex(cd.getName());
 
-                        Object v = tuple.getColumn(i);
                         ColumnSerializer tcs = valueSerializers[cidx];
                         int x = (cd.getType().getTypeId() << 24) | cidx;
                         buf.putInt(x);
