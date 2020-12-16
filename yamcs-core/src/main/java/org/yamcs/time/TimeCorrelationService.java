@@ -299,16 +299,16 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             double dev = Math.abs(deviation);
 
             if (dev > validity) {
-                eventProducer.sendWarning(String.format("Deviation %f (ms) "
-                        + "greater than the allowed validity %f (ms), reseting correlation", dev * 1000,
-                        validity * 1000));
+                eventProducer.sendWarning(String.format("Deviation %f sec "
+                        + "greater than the allowed validity %f sec, reseting correlation", dev,
+                        validity));
                 curCoefficients = null;
                 sampleQueue.clear();
                 sampleQueue.addLast(s);
             } else if (dev > accuracy) {
-                eventProducer.sendInfo(String.format("Deviation %f (ms) "
-                        + "greater than the allowed accuracy %f, recomputing coefficients", dev * 1000,
-                        accuracy * 1000));
+                eventProducer.sendInfo(String.format("Deviation %f sec "
+                        + "greater than the allowed accuracy %f sec, recomputing coefficients", dev,
+                        accuracy));
                 computeCoefficients();
             }
             publishDeviation(deviation);

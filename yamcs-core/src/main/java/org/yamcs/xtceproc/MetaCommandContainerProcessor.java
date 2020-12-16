@@ -26,7 +26,7 @@ public class MetaCommandContainerProcessor {
 
         CommandContainer container = metaCommand.getCommandContainer();
         if (container == null) {
-            throw new ErrorInCommand("MetaCommand has no container: " + metaCommand);
+            throw new ErrorInCommand("MetaCommand has no container: " + metaCommand.getQualifiedName());
         }
 
         if (parent == null) { // strange case for inheriting only the container without a command
