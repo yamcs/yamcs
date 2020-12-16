@@ -262,7 +262,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             try {
                 SimpleCompiler compiler = new SimpleCompiler();
                 if (log.isTraceEnabled()) {
-                    log.trace("Compiling this:{}\n", source);
+                    log.trace("Compiling this:\n{}\n", source);
                 }
 
                 compiler.cook(source.toString());

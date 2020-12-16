@@ -14,7 +14,12 @@ import java.net.URI;
  * 
  */
 public class AncillaryData implements Serializable {
-    public static final String YAMCS_KEY = "Yamcs";
+    public static final String KEY_YAMCS = "Yamcs";
+    /**
+     * Used to specifies that certain inputs for an algorithm are mandatory (the algorithm won't be started if they are
+     * not there)
+     */
+    public static final String KEY_ALGO_MANDATORY_INPUT = "Yamcs:AlgorithmMandatoryInput";
 
     /**
      * Used to configure the SequenceContainers to be used to partition the archive data.

@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,7 @@ import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -333,7 +335,7 @@ public class XtceStaxReader {
         log.info("Parsing XTCE file {}", fileName);
         xmlEvent = null;
         SpaceSystem spaceSystem = null;
-        try (InputStream in = new FileInputStream(new File(fileName))){
+        try (InputStream in = new FileInputStream(new File(fileName))) {
             xmlEventReader = initEventReader(in);
             while (true) {
                 xmlEvent = xmlEventReader.nextEvent();
@@ -3496,7 +3498,9 @@ public class XtceStaxReader {
                 readContainerRef(spaceSystem, cmdVerifier);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.ALGORITHM, stage);
-
+                CustomAlgorithm algo = readCustomAlgorithm(spaceSystem);
+                algo.setScope(Scope.COMMAND_VERIFICATION);
+                cmdVerifier.setAlgorithm(algo);
             } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
                 CheckWindow cw = readCheckWindow(spaceSystem);
                 if (cmdVerifier != null) {
@@ -3717,16 +3721,19 @@ public class XtceStaxReader {
         String name = readMandatoryAttribute("name", startElement);
 
         CustomAlgorithm algo = new CustomAlgorithm(name);
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_ALGORITHM_TEXT)) {
+            if (isNamedItemProperty()) {
+                readNamedItemProperty(algo);
+            } else if (isStartElementWithName(XTCE_ALGORITHM_TEXT)) {
                 readCustomAlgorithmText(algo);
             } else if (isStartElementWithName(XTCE_TRIGGER_SET)) {
                 algo.setTriggerSet(readTriggerSet(spaceSystem));
             } else if (isStartElementWithName(XTCE_OUTPUT_SET)) {
                 algo.setOutputSet(readOutputSet(spaceSystem));
             } else if (isStartElementWithName(XTCE_INPUT_SET)) {
-                algo.setInputSet(readInputSet(spaceSystem));
+                addInputSet(spaceSystem, algo);
             } else if (isEndElementWithName(tag)) {
                 return algo;
             } else {
@@ -3753,28 +3760,27 @@ public class XtceStaxReader {
         }
     }
 
-    private List<InputParameter> readInputSet(SpaceSystem spaceSystem) throws XMLStreamException {
+    private void addInputSet(SpaceSystem spaceSystem, CustomAlgorithm algo) throws XMLStreamException {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
 
-        List<InputParameter> result = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_INPUT_PARAMETER_INSTANCE_REF)) {
-                result.add(readInputParameterInstanceRef(spaceSystem));
+                addInputParameterInstanceRef(spaceSystem, algo);
             } else if (isStartElementWithName(XTCE_CONSTANT)) {
                 throw new XMLStreamException("Constant input parameters not supported", xmlEvent.getLocation());
             } else if (isEndElementWithName(tag)) {
-                return result;
+                return;
             } else {
                 logUnknown();
             }
         }
     }
 
-    private InputParameter readInputParameterInstanceRef(SpaceSystem spaceSystem) throws XMLStreamException {
+    private void addInputParameterInstanceRef(SpaceSystem spaceSystem, CustomAlgorithm algo) throws XMLStreamException {
         log.trace(XTCE_INPUT_PARAMETER_INSTANCE_REF);
         String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
@@ -3790,8 +3796,15 @@ public class XtceStaxReader {
             return true;
         });
         spaceSystem.addUnresolvedReference(nr);
-
-        return new InputParameter(instanceRef, inputName);
+        InputParameter inputParameter = new InputParameter(instanceRef, inputName);
+        List<AncillaryData> adlist = algo.getAncillaryData();
+        if (adlist != null) {
+            boolean mandatory = algo.getAncillaryData().stream()
+                    .anyMatch(ad -> AncillaryData.KEY_ALGO_MANDATORY_INPUT.equalsIgnoreCase(ad.getName())
+                            && Objects.equals(ad.getValue(), inputName));
+            inputParameter.setMandatory(mandatory);
+        }
+        algo.addInput(inputParameter);
     }
 
     private List<OutputParameter> readOutputSet(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -3823,9 +3836,10 @@ public class XtceStaxReader {
         try {
             clevel = Levels.fromString(conseq.toLowerCase());
         } catch (IllegalArgumentException e) {
-            String allowedValues = Arrays.stream(Levels.values()).map(l->l.xtceAlias()).collect(Collectors.joining(", "));
+            String allowedValues = Arrays.stream(Levels.values()).map(l -> l.xtceAlias())
+                    .collect(Collectors.joining(", "));
             throw new XMLStreamException(
-                    "Invalid consequence level '" + conseq + "'; allowed values: [" + allowedValues +"]");
+                    "Invalid consequence level '" + conseq + "'; allowed values: [" + allowedValues + "]");
         }
 
         while (true) {
@@ -3949,8 +3963,8 @@ public class XtceStaxReader {
         // Merge multiple character data blocks into a single event (e.g. algorithm text)
         factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
 
-        //Sonarqube suggestion to protect Java XML Parsers from XXE attack
-        //see https://rules.sonarsource.com/java/RSPEC-2755
+        // Sonarqube suggestion to protect Java XML Parsers from XXE attack
+        // see https://rules.sonarsource.com/java/RSPEC-2755
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
@@ -3990,7 +4004,8 @@ public class XtceStaxReader {
             return false;
         }
         String name = xmlEvent.asStartElement().getName().getLocalPart();
-        return XTCE_ALIAS_SET.equals(name) || XTCE_LONG_DESCRIPTION.equals(name) || XTCE_ANCILLARY_DATA_SET.equals(name);
+        return XTCE_ALIAS_SET.equals(name) || XTCE_LONG_DESCRIPTION.equals(name)
+                || XTCE_ANCILLARY_DATA_SET.equals(name);
     }
 
     void readNamedItemProperty(NameDescription nd) throws XMLStreamException {

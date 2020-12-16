@@ -54,7 +54,7 @@ public class SequenceContainer extends Container {
     }
 
     private boolean isArchivePartition(AncillaryData ad) {
-        return YAMCS_KEY.equalsIgnoreCase(ad.getName())
+        return KEY_YAMCS.equalsIgnoreCase(ad.getName())
                 && PROP_USE_AS_ARCHIVING_PARTITION.equalsIgnoreCase(ad.getValue());
     }
 
@@ -141,7 +141,7 @@ public class SequenceContainer extends Container {
         }
 
         if (useAsArchivePartition) {
-            addAncillaryData(new AncillaryData(YAMCS_KEY, PROP_USE_AS_ARCHIVING_PARTITION));
+            addAncillaryData(new AncillaryData(KEY_YAMCS, PROP_USE_AS_ARCHIVING_PARTITION));
         }
     }
 

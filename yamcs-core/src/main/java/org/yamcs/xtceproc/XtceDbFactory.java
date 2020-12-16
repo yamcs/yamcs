@@ -29,6 +29,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
@@ -350,6 +351,12 @@ public class XtceDbFactory {
 
         for (MetaCommand c : ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
+            for (CommandVerifier cv : c.getCommandVerifiers()) {
+                Algorithm a = cv.getAlgorithm();
+                if (a != null) {
+                    a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());
+                }
+            }
         }
 
         for (Algorithm a : ss.getAlgorithms()) {
@@ -570,7 +577,7 @@ public class XtceDbFactory {
 
         @Override
         public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-            //no consistency needed since we are always "up2date"
+            // no consistency needed since we are always "up2date"
         }
 
         @Override

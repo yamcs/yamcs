@@ -13,6 +13,7 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.TriggerSetType;
 
 /**
  * Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
@@ -79,21 +80,26 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         }
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered = false;
-        for (OnParameterUpdateTrigger trigger : algorithmDef.getTriggerSet().getOnParameterUpdateTriggers()) {
-            if (triggered) {
-                break;
-            }
-            for (ParameterValue pval : items) {
-                if (pval.getParameter().equals(trigger.getParameter())) {
-                    triggered = true;
+        TriggerSetType triggerSet = algorithmDef.getTriggerSet();
+        if (triggerSet == null) {
+            triggered = true;
+        } else {
+            for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
+                if (triggered) {
                     break;
                 }
+                for (ParameterValue pval : items) {
+                    if (pval.getParameter().equals(trigger.getParameter())) {
+                        triggered = true;
+                        break;
+                    }
+                }
             }
-        }
-        if (!skipRun && !triggered && log.isTraceEnabled()) {
-            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
-                    algorithmDef.getName(),
-                    algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
+            if (!skipRun && !triggered && log.isTraceEnabled()) {
+                log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
+                        algorithmDef.getName(),
+                        algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
+            }
         }
         boolean shouldRun = (!skipRun && triggered);
         return shouldRun;
