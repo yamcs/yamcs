@@ -30,10 +30,9 @@ public class CcsdsPacketTest {
 
         String packetString = ccsdsPacket.toString();
         Assert.assertEquals("apid: 906\n" +
-                "packetId: 318825003\n" +
                 "0000: 1b8a e154 005b 467f b356 7245 1300 e22b ...T.[F\u007F.VrE...+\n" +
                 "0010: a192 0300 0026 0001 0090 0030 07e1 0133 .....&.....0...3\n" +
-                "0020: 00ec                                    ..              \n\n", packetString);
+                "0020: 00ec                                    ..              \n", packetString);
     }
 
 
@@ -45,9 +44,8 @@ public class CcsdsPacketTest {
 
         String packetString = ccsdsPacket.toString();
         Assert.assertEquals("apid: 906\n" +
-                "packetId: 318825003\n" +
                 "0000: 1b8a e154 005b 467f b356 7245 1300 e22b ...T.[F\u007F.VrE...+\n" +
-                "0010: a192 0300 0026 0001 0090 0030 07e1 0133 .....&.....0...3\n\n", packetString);
+                "0010: a192 0300 0026 0001 0090 0030 07e1 0133 .....&.....0...3\n", packetString);
     }
 
 }
