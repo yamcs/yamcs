@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
-<xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
-	
-    <xtce:TelemetryMetaData>
-       <xtce:ParameterTypeSet>
+<xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+
+	<xtce:TelemetryMetaData>
+		<xtce:ParameterTypeSet>
 			<xtce:BinaryParameterType name="binary_param_type">
 				<xtce:BinaryDataEncoding>
+					<xtce:SizeInBits>
+						<!-- -1 means the algorithm will find the size -->
+						<xtce:FixedValue>-1</xtce:FixedValue>
+					</xtce:SizeInBits>
 					<xtce:FromBinaryTransformAlgorithm name="LeadingSizeBinaryDecoder" shortDescription="decodes byte arrays whith the size specified at the beginning">
+						<!-- the 8 passed to the constructor means the size is encoded on 8 bits -->
 						<xtce:AlgorithmText language="java">
        	   		    		org.yamcs.algo.LeadingSizeBinaryDecoder(8)
-       	   	   			</xtce:AlgorithmText>     
-					</xtce:FromBinaryTransformAlgorithm>	
+       	   	   			</xtce:AlgorithmText>
+					</xtce:FromBinaryTransformAlgorithm>
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryParameterType>
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
-			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type"/>
+			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
 				<xtce:EntryList>
-					<xtce:ParameterRefEntry parameterRef="param1"/>
+					<xtce:ParameterRefEntry parameterRef="param1" />
 				</xtce:EntryList>
-			</xtce:SequenceContainer>		
+			</xtce:SequenceContainer>
 		</xtce:ContainerSet>
 	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>
 		<xtce:ArgumentTypeSet>
 			<xtce:AbsoluteTimeArgumentType name="gps_time_type">
-				<xtce:UnitSet />
 				<xtce:Encoding>
 					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
 				</xtce:Encoding>
@@ -38,7 +42,6 @@
 				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeArgumentType>
 			<xtce:AbsoluteTimeArgumentType name="unix_time_type">
-				<xtce:UnitSet />
 				<xtce:Encoding>
 					<xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
 				</xtce:Encoding>
@@ -61,16 +64,21 @@
 				<xtce:UnitSet />
 				<xtce:FloatDataEncoding sizeInBits="64" />
 				<xtce:ValidRangeSet>
-					 <xtce:ValidRange maxInclusive="100"/>
+					<xtce:ValidRange maxInclusive="100" />
 				</xtce:ValidRangeSet>
 			</xtce:FloatArgumentType>
 			<xtce:BinaryArgumentType name="barray">
 				<xtce:BinaryDataEncoding>
+					<xtce:SizeInBits>
+						<!-- -1 means the algorithm will find the size -->
+						<xtce:FixedValue>-1</xtce:FixedValue>
+					</xtce:SizeInBits>
 					<xtce:ToBinaryTransformAlgorithm name="LeadingSizeBinaryEncoder" shortDescription="encodes byte arrays whith the size specified at the beginning">
+						<!-- the 16 passed to the constructor means the size is encoded on 16 bits -->
 						<xtce:AlgorithmText language="java">
        	   		    		org.yamcs.algo.LeadingSizeBinaryEncoder(16)
-       	   	   			</xtce:AlgorithmText>     
-					</xtce:ToBinaryTransformAlgorithm>	
+       	   	   			</xtce:AlgorithmText>
+					</xtce:ToBinaryTransformAlgorithm>
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryArgumentType>
 		</xtce:ArgumentTypeSet>
@@ -116,7 +124,7 @@
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
 				</xtce:CommandContainer>
-				<xtce:DefaultSignificance reasonForWarning="no particular reason" consequenceLevel="vital"/>
+				<xtce:DefaultSignificance reasonForWarning="no particular reason" consequenceLevel="vital" />
 			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>
