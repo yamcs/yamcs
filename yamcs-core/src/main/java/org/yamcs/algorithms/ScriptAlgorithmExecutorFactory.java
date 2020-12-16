@@ -98,7 +98,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
             log.warn("Error while evaluating script {}: {}", functionScript, e.getMessage(), e);
             throw new AlgorithmException(msg);
         }
-        return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, execCtx);
+        return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, functionScript, execCtx);
     }
 
     public static String generateFunctionCode(String functionName, CustomAlgorithm algorithmDef) {

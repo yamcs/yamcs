@@ -1,5 +1,9 @@
 package org.yamcs.algorithms;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,14 +57,16 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     ParameterTypeProcessor parameterTypeProcessor;
     final String functionName;
     final EventProducer eventProducer;
+    final String functionScript;
 
     public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable, String functionName,
-            AlgorithmExecutionContext execCtx) {
+            String functionScript, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
         this.eventProducer = execCtx.getProcessorData().getEventProducer();
+        this.functionScript = functionScript;
 
         numInputs = algorithmDef.getInputList().size();
         List<OutputParameter> outputList = algorithmDef.getOutputList();
@@ -117,11 +123,47 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             propagateToListeners(returnValue, outputValues);
 
             return outputValues;
-        } catch (ScriptException | NoSuchMethodException e) {
-            log.warn("Error while executing algorithm: " + e.getMessage(), e);
+        } catch (ScriptException e) {
+            String msg = getError(e);
+            log.warn("{}", msg);
+            eventProducer.sendWarning(msg);
+        } catch (NoSuchMethodException e) {
             eventProducer.sendWarning("Error while executing algorithm: " + e.getMessage());
-            return Collections.emptyList();
+            log.warn("Error while executing algorithm: " + e.getMessage(), e);
         }
+        return Collections.emptyList();
+    }
+
+    String getError(ScriptException e) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(e.getMessage());
+        String line = getLine(functionScript, e.getLineNumber());
+        if (line != null) {
+            sb.append(":\n").append(line).append("\n");
+            if (e.getColumnNumber() >= 0) {
+                for (int i = 0; i < e.getColumnNumber(); i++) {
+                    sb.append(" ");
+                }
+                sb.append("^");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private String getLine(String script, int lineNumber) {
+        int n = 0;
+        try (BufferedReader bufReader = new BufferedReader(new StringReader(script))) {
+            String line;
+            while ((line = bufReader.readLine()) != null) {
+                if (++n == lineNumber) {
+                    return line;
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return null;
     }
 
     private String getRunningTraceString() {
