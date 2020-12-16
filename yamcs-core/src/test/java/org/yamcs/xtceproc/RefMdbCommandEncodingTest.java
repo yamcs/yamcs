@@ -348,7 +348,7 @@ public class RefMdbCommandEncodingTest {
         CcsdsPacket p = new CcsdsPacket(b);
 
         assertEquals(100, p.getAPID());
-        assertEquals(0xABCDEFAB, p.getPacketID());
+        assertEquals(0xABCDEFAB, ByteArrayUtils.decodeInt(b, 12));
         assertEquals(1, p.getTimeId());
         assertEquals(true, p.getChecksumIndicator());
 

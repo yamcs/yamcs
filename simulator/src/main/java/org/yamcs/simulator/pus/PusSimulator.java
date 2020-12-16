@@ -1,9 +1,14 @@
 package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
+import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.simulator.CfdpReceiver;
@@ -20,7 +25,8 @@ import org.yamcs.simulator.TcpTmTcLink;
  * 
  * Supports services:
  * <ul>
- * <li>ST[03] -housekeeping</li>
+ * <li>ST[01] - request verification</li>
+ * <li>ST[03] - housekeeping</li>
  * <li>ST[05] - event reporting - TODO</li>
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
@@ -38,6 +44,13 @@ import org.yamcs.simulator.TcpTmTcLink;
  *
  */
 public class PusSimulator extends AbstractSimulator {
+    static final int MAIN_APID = 1;
+    static final int PUS_TYPE_HK = 3;
+    static final int PUS_TYPE_ACK = 1;
+    private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
+
+    final Random random = new Random();
+    
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
 
@@ -48,8 +61,8 @@ public class PusSimulator extends AbstractSimulator {
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
 
-    static final int MAIN_APID = 1;
-    static final int PUS_TYPE_HK = 3;
+    
+    protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     public PusSimulator() {
         powerDataHandler = new PowerHandler();
@@ -130,11 +143,103 @@ public class PusSimulator extends AbstractSimulator {
     }
 
     @Override
-    protected void processTc(SimulatorCcsdsPacket tc) {
-        // TODO Auto-generated method stub
+    public void processTc(SimulatorCcsdsPacket tc) {
+        PusTcPacket pustc = (PusTcPacket) tc;
+        if (tc.getAPID() == CFDP_APID) {
+       //     cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+        } else {
+            transmitRealtimeTM(ackAcceptance(pustc));
+            try {
+                pendingCommands.put(pustc);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+   
 
+    private void switchBatteryOn(PusTcPacket commandPacket) {
+        transmitRealtimeTM(ackStart(commandPacket));
+        int batNum = commandPacket.getUserDataBuffer().get(0);
+        log.info("CMD: BATERRY ON {}", batNum);
+        executor.schedule(() -> {
+            powerDataHandler.setBatteryOn(batNum);
+            transmitRealtimeTM(ackCompletion(commandPacket));    
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
+    private void switchBatteryOff(PusTcPacket commandPacket) {
+        transmitRealtimeTM(ackStart(commandPacket));
+        int batNum = commandPacket.getUserDataBuffer().get(0);
+        log.info("CMD: BATERRY OFF {}", batNum);
+        executor.schedule(() -> {
+            powerDataHandler.setBatteryOff(batNum);
+            if(batNum == 2) {
+                int returnCode = random.nextInt(5);
+                log.info("Sending failure completion with code {}", returnCode);
+                transmitRealtimeTM(ackFailureCompletion(commandPacket, returnCode));
+            } else {
+                transmitRealtimeTM(ackCompletion(commandPacket));
+            }
+        }, 500, TimeUnit.MILLISECONDS);
+    }
+
+    private void executePendingCommands() {
+        PusTcPacket commandPacket;
+        while ((commandPacket = pendingCommands.poll()) != null) {
+            if (commandPacket.getType() == 25) {
+                log.info("Received PUS TC : {}", commandPacket);
+
+                switch (commandPacket.getSubtype()) {
+                case 1:
+                    switchBatteryOn(commandPacket);
+                    break;
+                case 2:
+                    switchBatteryOff(commandPacket);
+                    break;
+
+                default:
+                    log.error("Invalid command  subtype {}", commandPacket.getSubtype());
+                }
+            } else {
+                log.warn("Unknown command type {}", commandPacket.getType());
+            }
+        }
+    }
+
+    protected PusTmPacket ackAcceptance(PusTcPacket commandPacket) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 1);
+
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 6);
+        return ackPacket;
+    }
+    
+
+    protected PusTmPacket ackStart(PusTcPacket commandPacket) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 3);
+
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 6);
+        return ackPacket;
+    }
+    
+    protected PusTmPacket ackCompletion(PusTcPacket commandPacket) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 7);
+
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 6);
+        return ackPacket;
+    }
+
+    protected PusTmPacket ackFailureCompletion(PusTcPacket commandPacket, int code) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 10, PUS_TYPE_ACK, 8);
+
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 6);
+        bb.putInt(code);
+        return ackPacket;
+    }
     @Override
     protected void setTmLink(TcpTmTcLink tmLink) {
         this.tmLink = tmLink;
@@ -149,9 +254,4 @@ public class PusSimulator extends AbstractSimulator {
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
     }
-
-    private void executePendingCommands() {
-        // TODO Auto-generated method stub
-    }
-
 }

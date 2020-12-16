@@ -29,12 +29,11 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
     DataInputStream inputStream;
 
     private int maxTcLength = ColSimulator.DEFAULT_MAX_LENGTH;
-    private int MIN_TC_LENGTH = 16;
 
     private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(100);
-    final PacketFactory packetFactory;
+    final TcPacketFactory packetFactory;
 
-    public TcpTmTcLink(String name, AbstractSimulator simulator, int port, PacketFactory packetFactory) {
+    public TcpTmTcLink(String name, AbstractSimulator simulator, int port, TcPacketFactory packetFactory) {
         this.name = name;
         this.simulator = simulator;
         this.port = port;
@@ -126,12 +125,13 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
     }
 
     SimulatorCcsdsPacket readPacket(DataInputStream dIn) {
+        int minTcLength = packetFactory.getMinLength();
         try {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
             int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining < MIN_TC_LENGTH - 6) {
-                throw new IOException("Command too short: " + (remaining + 6) + " minimum required " + MIN_TC_LENGTH);
+            if (remaining < minTcLength - 6) {
+                throw new IOException("Command too short: " + (remaining + 6) + " minimum required " + minTcLength);
             }
             if (remaining > maxTcLength - 6) {
                 throw new IOException(

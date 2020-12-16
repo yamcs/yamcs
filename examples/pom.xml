@@ -36,6 +36,7 @@
     <module>simulation</module>
     <module>snippets</module>
     <module>templates</module>
+    <module>pus</module>
   </modules>
 
   <build>

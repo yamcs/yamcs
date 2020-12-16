@@ -84,11 +84,10 @@ dataLinks:
     port: 10025
     # Give the embedded simulator smoe time to boot up
     initialDelay: 2000
-    commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+    commandPostprocessorClassName: org.yamcs.tctm.pus.PusCommandPostprocessor
     commandPostprocessorArgs:
         errorDetection:
-          type: 16-SUM
-        enforceEvenNumberOfBytes: true
+          type: CRC-16-CCIIT
         
 mdb:
   # Configuration of the active loaders

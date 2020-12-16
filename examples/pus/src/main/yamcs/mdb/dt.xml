@@ -1,30 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- we create these types at the root level so we can refer to them from all the subsystems -->
-<SpaceSystem name="">
-    <Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z"/>
-    <TelemetryMetaData>
-      <ParameterTypeSet>
-        <IntegerParameterType signed="false" name="uint4">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="4"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint8">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint11">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="11"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint12">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="12"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint14">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="14"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint16">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint32">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
-        </IntegerParameterType>
-      </ParameterTypeSet>
-  </TelemetryMetaData>
+<SpaceSystem name="dt">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType signed="false" name="uint4">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="4" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint8">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint11">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint12">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="12" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint14">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="14" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint16">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint24">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="24" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint32">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="32" />
+			</IntegerParameterType>
+			<IntegerParameterType signed="false" name="uint64" sizeInBits="64">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="64" />
+			</IntegerParameterType>
+			<FloatParameterType sizeInBits="32" name="float32">
+				<FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32" />
+			</FloatParameterType>
+		</ParameterTypeSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="uint4" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="4" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint8" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint11" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint16" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint32" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="32" />
+			</IntegerArgumentType>
+		</ArgumentTypeSet>
+	</CommandMetaData>
 </SpaceSystem>

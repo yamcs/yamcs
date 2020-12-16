@@ -5,15 +5,15 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.3.3-SNAPSHOT</version>
+    <version>5.3.4-SNAPSHOT</version>
   </parent>
 
-  <artifactId>cfdp</artifactId>
+  <artifactId>pus</artifactId>
   <packaging>jar</packaging>
 
-  <name>Yamcs :: Examples :: CFDP</name>
+  <name>Yamcs :: Examples :: PUS</name>
   <description>
-    Example demonstrating the use of the CCSDS File Delivery Protocol (CFDP). 
+    Example demonstrating the use of the Packet Utilisation Standard (PUS). 
   </description>
 
   <dependencies>

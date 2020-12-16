@@ -1,119 +1,184 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SpaceSystem name="PUS">
-    <Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z"/>
-    <TelemetryMetaData>
-      <ParameterTypeSet>
-        <IntegerParameterType signed="false" name="uint4">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="4"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint8">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint11">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="11"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint12">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="12"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint14">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="14"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint16">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint24">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="24"/>
-        </IntegerParameterType>
-        <IntegerParameterType signed="false" name="uint32">
-          <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
-        </IntegerParameterType>
-      </ParameterTypeSet>
-      <ParameterSet>
-        <Parameter parameterTypeRef="uint11" name="apid"/>
-        <Parameter parameterTypeRef="uint14" name="seqcount"/>
-        <Parameter parameterTypeRef="uint8" name="type"/>
-        <Parameter parameterTypeRef="uint8" name="subtype"/>
-        <Parameter parameterTypeRef="uint16" name="counter"/>
-        <Parameter parameterTypeRef="uint16" name="destination"/>
-        <Parameter parameterTypeRef="uint8" name="time-rate"/>
-        <Parameter parameterTypeRef="uint8" name="time-type"/>
-        <Parameter parameterTypeRef="uint32" name="obt-coarse"/>
-        <Parameter parameterTypeRef="uint24" name="obt-fine"/>
-        <Parameter parameterTypeRef="uint32" name="hkid"/>
-      </ParameterSet>
-      <ContainerSet>
-        <SequenceContainer name="ccsds">
-          <EntryList>
-            <ParameterRefEntry parameterRef="apid">
-              <LocationInContainerInBits referenceLocation="containerStart">
-                <FixedValue>5</FixedValue>
-              </LocationInContainerInBits>
-            </ParameterRefEntry>
-            <ParameterRefEntry parameterRef="seqcount">
-              <LocationInContainerInBits referenceLocation="containerStart">
-                <FixedValue>18</FixedValue>
-              </LocationInContainerInBits>
-            </ParameterRefEntry>
-          </EntryList>
-        </SequenceContainer>
-        <SequenceContainer name = "pus-time">
-            <EntryList>
-                <ParameterRefEntry parameterRef="time-rate">
-                  <LocationInContainerInBits referenceLocation="containerStart">
-                    <FixedValue>48</FixedValue>
-                  </LocationInContainerInBits>
-                </ParameterRefEntry>
-                <ParameterRefEntry parameterRef="time-type"/>
-                <ParameterRefEntry parameterRef="obt-coarse"/>
-                <ParameterRefEntry parameterRef="obt-fine"/>
-            </EntryList>
-            <BaseContainer containerRef="ccsds">
-              <RestrictionCriteria>
-                <Comparison parameterRef="apid" comparisonOperator="==" value="0"/>
-              </RestrictionCriteria>
-            </BaseContainer>
-        </SequenceContainer>
-        <SequenceContainer name = "pus-tm">
-            <EntryList>
-            <ParameterRefEntry parameterRef="type">
-              <LocationInContainerInBits referenceLocation="containerStart">
-                <FixedValue>56</FixedValue>
-              </LocationInContainerInBits>
-            </ParameterRefEntry>
-            <ParameterRefEntry parameterRef="subtype"/>
-            <ParameterRefEntry parameterRef="counter"/>
-            <ParameterRefEntry parameterRef="destination"/>
-            <ParameterRefEntry parameterRef="time-type"/>
-            <ParameterRefEntry parameterRef="obt-coarse"/>
-            <ParameterRefEntry parameterRef="obt-fine"/>
-          </EntryList>
-          <BaseContainer containerRef="ccsds">
-              <RestrictionCriteria>
-                <Comparison parameterRef="apid" comparisonOperator="!=" value="0"/>
-              </RestrictionCriteria>
-            </BaseContainer>
-        </SequenceContainer>
-       <SequenceContainer name = "hk">
-           <BaseContainer containerRef="pus-tm">
-              <RestrictionCriteria>
-                <Comparison parameterRef="type" comparisonOperator="==" value="3"/>
-              </RestrictionCriteria>
-            </BaseContainer>
-        </SequenceContainer>
-        <SequenceContainer name = "hk25">
-           <AncillaryDataSet>
-              <AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
-            </AncillaryDataSet>
-           <EntryList>
-              <ParameterRefEntry parameterRef="hkid"/>
-           </EntryList>
-           <BaseContainer containerRef="hk">
-              <RestrictionCriteria>
-                <Comparison parameterRef="subtype" comparisonOperator="==" value="25"/>
-              </RestrictionCriteria>
-            </BaseContainer>
-        </SequenceContainer>
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/uint11" name="apid" />
+			<Parameter parameterTypeRef="/dt/uint14" name="seqcount" />
+			<Parameter parameterTypeRef="/dt/uint8" name="type" />
+			<Parameter parameterTypeRef="/dt/uint8" name="subtype" />
+			<Parameter parameterTypeRef="/dt/uint16" name="counter" />
+			<Parameter parameterTypeRef="/dt/uint16" name="destination" />
+			<Parameter parameterTypeRef="/dt/uint8" name="time-rate" />
+			<Parameter parameterTypeRef="/dt/uint8" name="time-type" />
+			<Parameter parameterTypeRef="/dt/uint32" name="obt-coarse" />
+			<Parameter parameterTypeRef="/dt/uint24" name="obt-fine" />
+			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
+			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
+			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
+			<Parameter parameterTypeRef="/dt/uint32" name="tc-ack-code" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="ccsds">
+				<EntryList>
+					<ParameterRefEntry parameterRef="apid">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>5</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="seqcount">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>18</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="pus-time">
+				<EntryList>
+					<ParameterRefEntry parameterRef="time-rate">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>48</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="time-type" />
+					<ParameterRefEntry parameterRef="obt-coarse" />
+					<ParameterRefEntry parameterRef="obt-fine" />
+				</EntryList>
+				<BaseContainer containerRef="ccsds">
+					<RestrictionCriteria>
+						<Comparison parameterRef="apid" comparisonOperator="==" value="0" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tm">
+				<EntryList>
+					<ParameterRefEntry parameterRef="type">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>56</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="subtype" />
+					<ParameterRefEntry parameterRef="counter" />
+					<ParameterRefEntry parameterRef="destination" />
+					<ParameterRefEntry parameterRef="time-type" />
+					<ParameterRefEntry parameterRef="obt-coarse" />
+					<ParameterRefEntry parameterRef="obt-fine" />
+				</EntryList>
+				<BaseContainer containerRef="ccsds">
+					<RestrictionCriteria>
+						<Comparison parameterRef="apid" comparisonOperator="!=" value="0" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
 
-      </ContainerSet>
-    </TelemetryMetaData>
- </SpaceSystem>
+			<SequenceContainer name="pus-tc-ack">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-apid">
+						<LocationInContainerInBits>
+							<FixedValue>5</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc-ack-seq">
+						<LocationInContainerInBits>
+							<FixedValue>2</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc-ack-code">
+						<IncludeCondition>
+							<BooleanExpression>
+								<ORedConditions>
+									<Condition parameterRef="subtype" comparisonOperator="==" value="2" />
+									<Condition parameterRef="subtype" comparisonOperator="==" value="4" />
+									<Condition parameterRef="subtype" comparisonOperator="==" value="6" />
+									<Condition parameterRef="subtype" comparisonOperator="==" value="8" />
+								</ORedConditions>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus-tm">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="type" comparisonOperator="==" value="1" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk">
+				<BaseContainer containerRef="pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="type" comparisonOperator="==" value="3" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk25">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<EntryList>
+					<ParameterRefEntry parameterRef="hkid" />
+				</EntryList>
+				<BaseContainer containerRef="hk">
+					<RestrictionCriteria>
+						<Comparison parameterRef="subtype" comparisonOperator="==" value="25" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<MetaCommandSet>
+			<MetaCommand name="pus-tc" abstract="true" shortDescription="Super-container for all PUS telecommand packets">
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint11" name="apid" />
+					<Argument argumentTypeRef="/dt/uint4" name="ackflags" initialValue="7" />
+					<Argument argumentTypeRef="/dt/uint8" name="type" />
+					<Argument argumentTypeRef="/dt/uint8" name="subtype" />
+					<Argument argumentTypeRef="/dt/uint16" name="source" initialValue="0" />
+				</ArgumentList>
+				<CommandContainer name="pus-tc">
+					<EntryList>
+						<FixedValueEntry name="ccsds-vesion" binaryValue="00" sizeInBits="3" />
+						<FixedValueEntry name="ccsds-tctm" binaryValue="01" sizeInBits="1" />
+						<FixedValueEntry name="ccsds-2ndheader" binaryValue="01" sizeInBits="1" />
+						<ArgumentRefEntry argumentRef="apid" />
+						<FixedValueEntry name="ccsds-seqFlags" binaryValue="03" sizeInBits="2" />
+						<FixedValueEntry name="ccsds-seq" binaryValue="0000" sizeInBits="14" />
+						<FixedValueEntry name="ccsds-length" binaryValue="0000" sizeInBits="16" />
+						<FixedValueEntry name="pus-version" binaryValue="02" sizeInBits="4" />
+						<ArgumentRefEntry argumentRef="ackflags" />
+						<ArgumentRefEntry argumentRef="type" />
+						<ArgumentRefEntry argumentRef="subtype" />
+						<ArgumentRefEntry argumentRef="source" />
+					</EntryList>
+				</CommandContainer>
+				<VerifierSet>
+					<ReceivedVerifier>
+						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
+							<AlgorithmText language="JavaScript">
+								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
+								   if(subtype.value == 1) {
+								      return true;
+								   } else if(subtype.value == 2) {
+								       return errorCode.value;
+								   }
+								}
+							</AlgorithmText>
+							<InputSet>
+								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
+								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="tc-ack-code" inputName="errorCode" />
+							</InputSet>
+							<TriggerSet>
+								<OnParameterUpdateTrigger parameterRef="tc-ack-apid" />
+							</TriggerSet>
+						</CustomAlgorithm>
+					</ReceivedVerifier>
+				</VerifierSet>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

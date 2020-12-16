@@ -140,18 +140,6 @@ public class CcsdsPacket {
         return (packet[11] & 0x20) == 0x20;
     }
 
-    public int getPacketID() {
-        if (getSecondaryHeaderFlag() != 0) {
-            return bb.getInt(12);
-        } else {
-            return 0;
-        }
-    }
-
-    public void setPacketID(int id) {
-        bb.putInt(12, id);
-    }
-
     public byte[] getBytes() {
         if (bb.hasArray() && bb.array().length == bb.capacity() && !bb.isReadOnly()) {
             return bb.array();
@@ -179,13 +167,17 @@ public class CcsdsPacket {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        StringBuffer text = new StringBuffer();
-        byte c;
+        StringBuilder sb = new StringBuilder();
+        sb.append("apid: ").append(getAPID()).append("\n");
+        appendBinaryData(sb);
+        return sb.toString();
+    }
+
+    protected void appendBinaryData(StringBuilder sb) {
+        StringBuilder text = new StringBuilder();
         int len = bb.limit();
         int lengthRoundedUpToNextMultipleOf16 = (int) Math.ceil(len / 16.0) * 16;
-        sb.append("apid: " + getAPID() + "\n");
-        sb.append("packetId: " + getPacketID() + "\n");
+        byte c;
         for (int i = 0; i < lengthRoundedUpToNextMultipleOf16; ++i) {
             // If we are at the beginning of a 16 byte multiple
             if (i % 16 == 0) {
@@ -219,9 +211,6 @@ public class CcsdsPacket {
                 sb.append("\n");
             }
         }
-        // End with an extra newline
-        sb.append("\n");
-        return sb.toString();
     }
 
 }

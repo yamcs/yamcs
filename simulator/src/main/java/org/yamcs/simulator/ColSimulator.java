@@ -56,7 +56,7 @@ public class ColSimulator extends AbstractSimulator {
 
     ScheduledThreadPoolExecutor executor;
 
-    static final int CFDP_APID = 2045;
+   
     static final int MAIN_APID = 1;
     static final int PERF_TEST_APID = 2;
     static final int TC_ACK_APID = 101;
