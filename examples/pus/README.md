@@ -10,11 +10,11 @@ Simulated services are:
 ST[01] Request verification
 
 - Command Acceptance, Start and Completion reports are sent.
-- The command VOLTAGE_ON can be used to test it. 
-  - voltage_num = 1 will send all three reports
-  - voltage_num = 2 will skip the acceptance (as if the report packet was lost)
-  - voltage_num = 4 will send a negative acceptance
-  If the voltage is already on, a negative completion will be sent.
+- The command VOLTAGE_ON can be used to test it:
+    * voltage_num = 1 will send all three reports
+    * voltage_num = 2 will skip the acceptance (as if the report packet was lost)
+    * voltage_num = 3 will send a negative completion with a random code.
+    * voltage_num = 4 will send a negative start.
 
 
 ST[03] HK
@@ -32,8 +32,11 @@ ST[09] Time Management
 TODO:
 
 ST[05] - event reporting - an algorithm (customizable by the user) can be made to turn event packets into Yamcs events.
+
 ST[06] - no special support planned in Yamcs but we have to verify that the way binary structures are communicated via PUS works with Yamcs.
+
 ST[11] - time based schedule. To verify how time planned commands which have to contain the on-board time can be supported with Yamcs.
 
 ST[15] - on-board storage and retrieval - to show how LOS recorded packets can be inserted into the Yamcs archive with the correct timestamps.
+
 ST[23] - file management - to augument the existing CFDP support in Yamcs with functionality for showing the list of files on the remote system.

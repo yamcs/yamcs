@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
@@ -17,6 +15,7 @@ import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.Verifier.State;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -44,20 +43,21 @@ import org.yamcs.xtce.XtceDb;
  *
  */
 public class CommandVerificationHandler implements CommandHistoryConsumer {
-    final Processor yproc;
+    final Processor processor;
     final PreparedCommand preparedCommand;
     final ScheduledThreadPoolExecutor timer;
     private List<Verifier> verifiers = Collections.synchronizedList(new ArrayList<>());
-    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private final Log log;
     AlgorithmExecutionContext algorithmCtx;
 
     // accumulate here all command attributes, arguments and command history events
     List<ParameterValue> cmdParameters = new ArrayList<>();
 
-    public CommandVerificationHandler(Processor yproc, PreparedCommand pc) {
-        this.yproc = yproc;
+    public CommandVerificationHandler(Processor proc, PreparedCommand pc) {
+        this.processor = proc;
         this.preparedCommand = pc;
-        this.timer = yproc.getTimer();
+        this.timer = proc.getTimer();
+        log = new Log(this.getClass(), proc.getInstance());
     }
 
     public void start() {
@@ -65,20 +65,20 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         MetaCommand cmd = preparedCommand.getMetaCommand();
         List<CommandVerifier> cmdVerifiers = new ArrayList<>();
         collectCmdVerifiers(cmd, cmdVerifiers, preparedCommand.getVerifierOverride());
-        
-        if(preparedCommand.disableCommandVerifiers()) {
+
+        if (preparedCommand.disableCommandVerifiers()) {
             log.debug("All verifiers are disabled");
-            CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
-            cmdVerifiers.forEach( cv -> cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv), yproc.getCurrentTime(),
+            CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
+            cmdVerifiers.forEach(cv -> cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv),
+                    processor.getCurrentTime(),
                     AckStatus.DISABLED));
             return;
         }
-        
-        
+
         Verifier prevVerifier = null;
 
         try {
-            yproc.getCommandHistoryManager().subscribeCommand(preparedCommand.getCommandId(), this);
+            processor.getCommandHistoryManager().subscribeCommand(preparedCommand.getCommandId(), this);
         } catch (InvalidCommandId e) {
             log.error("Got invalidCommand id while subscribing for command history", e);
         }
@@ -114,7 +114,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     private void collectCommandParameters() {
-        XtceDb xtcedb = yproc.getXtceDb();
+        XtceDb xtcedb = processor.getXtceDb();
         for (CommandHistoryAttribute cha : preparedCommand.getAttributes()) {
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
             if (xtcedb.getParameter(fqn) == null) {
@@ -151,8 +151,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
      */
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers,
             Map<String, VerifierConfig> verifierOverride) {
-        CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
-        
+        CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
+
         for (CommandVerifier cv : cmd.getCommandVerifiers()) {
             boolean found = false;
             for (CommandVerifier existingv : cmdVerifiers) {
@@ -167,7 +167,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                     cmdVerifiers.add(cv);
                 } else {
                     if (extraOptions.getDisable()) {
-                        cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv), yproc.getCurrentTime(),
+                        cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv),
+                                processor.getCurrentTime(),
                                 AckStatus.DISABLED);
                         log.debug("skipping verifier {}", cv.getStage());
                         continue;
@@ -196,7 +197,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     private void createAlgorithmContext() {
-        AlgorithmManager algMgr = yproc.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
+        AlgorithmManager algMgr = processor.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
         if (algMgr == null) {
             String msg = "Algorithm manager not configured for this processor, cannot run command verification based on algorithms";
             log.error(msg);
@@ -207,23 +208,23 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     private void scheduleVerifier(final Verifier verifier, long windowStart, long windowStop) {
-        CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
+        CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
         String histKey = getHistKey(verifier.cv);
 
         if (windowStart > 0) {
             timer.schedule(() -> {
                 if (verifier.state == State.NEW) {
-                    cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+                    cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, processor.getCurrentTime(),
                             AckStatus.PENDING);
+                    startVerifier(verifier);
 
-                    verifier.start();
                 }
             }, windowStart, TimeUnit.MILLISECONDS);
 
-            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, processor.getCurrentTime(),
                     AckStatus.SCHEDULED);
         } else {
-            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, processor.getCurrentTime(),
                     AckStatus.PENDING);
             verifier.start();
         }
@@ -237,17 +238,25 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }, windowStop, TimeUnit.MILLISECONDS);
     }
 
-    String getHistKey( CommandVerifier cv) {
+    private void startVerifier(Verifier verifier) {
+        log.debug("Command {} starting verifier: {}", StringConverter.toString(preparedCommand.getCommandId()),
+                verifier.cv);
+        verifier.start();
+
+    }
+
+    String getHistKey(CommandVerifier cv) {
         return CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + cv.getStage();
     }
+
     void onVerifierFinished(Verifier v, String failureReason) {
         Verifier.State state = v.getState();
         log.debug("Command {} verifier finished: {} result: {}",
                 StringConverter.toString(preparedCommand.getCommandId()), v.cv, state);
         CommandVerifier cv = v.cv;
-        CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
+        CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
         String histKey = CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + cv.getStage();
-        cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+        cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, processor.getCurrentTime(),
                 getAckState(v.state), failureReason);
         TerminationAction ta = null;
         switch (state) {
@@ -267,14 +276,14 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
         if (ta == TerminationAction.SUCCESS) {
             cmdHistPublisher.publishAck(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY,
-                    yproc.getCurrentTime(), AckStatus.OK);
+                    processor.getCurrentTime(), AckStatus.OK);
             stop();
         } else if (ta == TerminationAction.FAIL) {
             if (failureReason == null) {
                 failureReason = "Verifier " + cv.getStage() + " result: " + state;
             }
 
-            cmdHistPublisher.commandFailed(preparedCommand.getCommandId(), yproc.getCurrentTime(), failureReason);
+            cmdHistPublisher.commandFailed(preparedCommand.getCommandId(), processor.getCurrentTime(), failureReason);
             stop();
         }
 
@@ -306,11 +315,11 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
 
     private void stop() {
         log.debug("{} command verification finished", preparedCommand);
-        yproc.getCommandHistoryManager().unsubscribeCommand(preparedCommand.getCommandId(), this);
+        processor.getCommandHistoryManager().unsubscribeCommand(preparedCommand.getCommandId(), this);
     }
 
     public Processor getProcessor() {
-        return yproc;
+        return processor;
     }
 
     public AlgorithmExecutionContext getAlgorithmExecutionContext() {
@@ -322,19 +331,19 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     public AlgorithmManager getAlgorithmManager() {
-        return yproc.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
+        return processor.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
     }
 
     @Override
     public void addedCommand(PreparedCommand pc) {
         // this will not be called because we subscribe to only one command
-    } 
+    }
 
     // called from the command history when things are added in the stream
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
         String fqn = XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME + "/" + key;
-        XtceDb xtcedb = yproc.getXtceDb();
+        XtceDb xtcedb = processor.getXtceDb();
         if (xtcedb.getParameter(fqn) == null) {
             // if it was required in the algorithm, it would be in the XtceDb
             log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);

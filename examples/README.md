@@ -24,4 +24,4 @@ Demonstrates the usage of replication between two instances. Into a real environ
 Demonstrates the usage of CCSDS File Delivery Protocol
 
 ## pus
-Simulator using PUS (Packet Utilization Standard - ECSS-E-ST-70-41C).
+Simulator using PUS (Packet Utilization Standard - ECSS-E-ST-70-41C) also connected via TCP links. Please read the README inside to understand what services are simulated.

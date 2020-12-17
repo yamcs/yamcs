@@ -3,9 +3,12 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
- *XTCE:
- * A command verifier is used to check that the command has been successfully executed. 
- * Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative change in the value of a Parameter.  
+ * XTCE:
+ * A command verifier is used to check that the command has been successfully executed.
+ * <p>
+ * Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative
+ * change in the value of a Parameter.
+ * <p>
  * The CheckWindow is a time period where the verification must test true to pass.
  *
  * @author nm
@@ -13,73 +16,73 @@ import java.io.Serializable;
  */
 public class CommandVerifier implements Serializable {
     private static final long serialVersionUID = 2L;
-    public enum Type {CONTAINER, ALGORITHM};
+
+    public enum Type {
+        CONTAINER, ALGORITHM
+    };
 
     private final Type type;
 
     /**
      * what can happen when the verification finishes
-     * XTCE does not specify very well, just that each verifier returns true or false. 
+     * XTCE does not specify very well, just that each verifier returns true or false.
      * 
-     * We acknowledge the fact that the verifier can also timeout and define three TerminationAction for the three outcomes: true, false or timeout. 
+     * We acknowledge the fact that the verifier can also timeout and define three TerminationAction for the three
+     * outcomes: true, false or timeout.
      */
     public enum TerminationAction {
-        SUCCESS, //the command is declared successful
-        FAIL //the command is declared failed
-    }      
+        SUCCESS, // the command is declared successful
+        FAIL // the command is declared failed
+    }
+
     private TerminationAction onSuccess = null, onFail = null, onTimeout = null;
 
-
-    /** 
-     * differs from XTCE
+    /**
      * 
-     * Command verification stage. We use this to implement the different stages hardcoded in the XTCE: TransferredToRange, SentFromRange, etc
-     * In XTCE some of those verifications have extra parameters. This can be implemented in the future by subclassing this class.
-     *  
+     * Command verification stage. This corresponds to the verifier name from XTCE.
+     * 
      */
     final private String stage;
-
 
     /**
      * XTCE: A time based check window
      */
     private CheckWindow checkWindow;
 
-
     /**
-     * When verification is a new instance of the referenced Container; this verifier return true when the referenced container has been received and processed.
+     * When verification is a new instance of the referenced Container; this verifier return true when the referenced
+     * container has been received and processed.
      */
     SequenceContainer containerRef;
     Algorithm algorithm;
 
-    //NOT implemented from XTCE
-    /*       
+    // NOT implemented from XTCE
+    /*
      * comparisonList;
      * ParameterValueChange
      * BooleanExpression
      */
 
-
     public CommandVerifier(Type type, String stage) {
         this.type = type;
         this.stage = stage;
     }
-    
+
     public CommandVerifier(Type type, String stage, CheckWindow checkWindow) {
         this(type, stage);
         this.checkWindow = checkWindow;
     }
 
-    //copy constructor
+    // copy constructor
     public CommandVerifier(CommandVerifier cv) {
-       this.algorithm = cv.algorithm;
-       this.checkWindow = cv.checkWindow;
-       this.type = cv.type;
-       this.stage = cv.stage;
-       this.containerRef = cv.containerRef;
-       this.onSuccess = cv.onSuccess;
-       this.onFail = cv.onFail;
-       this.onTimeout = cv.onTimeout;
+        this.algorithm = cv.algorithm;
+        this.checkWindow = cv.checkWindow;
+        this.type = cv.type;
+        this.stage = cv.stage;
+        this.containerRef = cv.containerRef;
+        this.onSuccess = cv.onSuccess;
+        this.onFail = cv.onFail;
+        this.onTimeout = cv.onTimeout;
     }
 
     public String getStage() {
@@ -89,7 +92,7 @@ public class CommandVerifier implements Serializable {
     public Type getType() {
         return type;
     }
-    
+
     public void setContainerRef(SequenceContainer containerRef) {
         this.containerRef = containerRef;
     }
@@ -103,7 +106,7 @@ public class CommandVerifier implements Serializable {
     }
 
     public void setAlgorithm(Algorithm algo) {
-        this.algorithm = algo;        
+        this.algorithm = algo;
     }
 
     public CheckWindow getCheckWindow() {
@@ -121,7 +124,7 @@ public class CommandVerifier implements Serializable {
     public TerminationAction getOnFail() {
         return onFail;
     }
-    
+
     public void setCheckWindow(CheckWindow checkWindow) {
         this.checkWindow = checkWindow;
     }
@@ -138,14 +141,13 @@ public class CommandVerifier implements Serializable {
         this.onSuccess = onSuccess;
     }
 
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{stage: ").append(stage);
-        if(containerRef!=null) {
+        if (containerRef != null) {
             sb.append(", containerRef: ").append(containerRef.getName());
         }
-        if(algorithm!=null) {
+        if (algorithm != null) {
             sb.append(", algorithm: ").append(algorithm.getName());
         }
         sb.append(", checkWindow: ").append(checkWindow.toString()).append("}");

@@ -71,6 +71,7 @@ import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Condition;
@@ -2876,8 +2877,8 @@ public class XtceStaxReader {
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
 
         NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
-            Parameter para = (Parameter)nd;
-            if(para.getParameterType() == null) {
+            Parameter para = (Parameter) nd;
+            if (para.getParameterType() == null) {
                 return false;
             }
             instanceRef.setParameter(para);
@@ -3622,9 +3623,14 @@ public class XtceStaxReader {
     }
 
     private CommandVerifier readVerifier(SpaceSystem spaceSystem) throws XMLStreamException {
-        checkStartElementPreconditions();
-        String tag = xmlEvent.asStartElement().getName().getLocalPart();
-        String stage = tag.substring(0, tag.length() - 8);// strip the "Verifier" suffix
+        StartElement element = checkStartElementPreconditions();
+
+        String tag = element.getName().getLocalPart();
+        String stage = readAttribute("name", element, null);
+        String type = tag.substring(0, tag.length() - 8);// strip the "Verifier" suffix;
+        if (stage == null) {
+            stage = type;
+        }
         CommandVerifier cmdVerifier = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3643,6 +3649,16 @@ public class XtceStaxReader {
                     cmdVerifier.setCheckWindow(cw);
                 }
             } else if (isEndElementWithName(tag)) {
+                if (cmdVerifier != null) {
+                    if ("Failed".equals(type)) {
+                        cmdVerifier.setOnSuccess(TerminationAction.FAIL);
+                    } else if ("Complete".equals(type)) {
+                        cmdVerifier.setOnSuccess(TerminationAction.SUCCESS);
+                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                    } else {
+                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                    }
+                }
                 return cmdVerifier;
             } else {
                 logUnknown();

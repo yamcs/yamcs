@@ -3,6 +3,24 @@
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
 	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<EnumeratedParameterType name="start-failure-code">
+				<IntegerDataEncoding sizeInBits="32" />
+				<EnumerationList>
+					<Enumeration label="INVALID_VOLTAGE_NUM" value="1" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="completion-failure-code">
+				<IntegerDataEncoding sizeInBits="32" />
+				<EnumerationList>
+					<Enumeration label="COMPLETION_ERROR_0" value="0" />
+					<Enumeration label="COMPLETION_ERROR_1" value="1" />
+					<Enumeration label="COMPLETION_ERROR_2" value="2" />
+					<Enumeration label="COMPLETION_ERROR_3" value="3" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="/dt/uint11" name="apid" />
 			<Parameter parameterTypeRef="/dt/uint14" name="seqcount" />
@@ -17,7 +35,9 @@
 			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
 			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
 			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
-			<Parameter parameterTypeRef="/dt/uint32" name="tc-ack-code" />
+			<Parameter parameterTypeRef="/dt/uint32" name="tc-ack-acceptance-failure-code" />
+			<Parameter parameterTypeRef="start-failure-code" name="tc-ack-start-failure-code" />
+			<Parameter parameterTypeRef="completion-failure-code" name="tc-ack-completion-failure-code" />
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="ccsds">
@@ -84,39 +104,47 @@
 							<FixedValue>2</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="tc-ack-code">
-						<IncludeCondition>
-							<BooleanExpression>
-								<ORedConditions>
-									<Condition>
-										<ParameterInstanceRef parameterRef="subtype" />
-										<ComparisonOperator>==</ComparisonOperator>
-										<Value>2</Value>
-									</Condition>
-									<Condition>
-										<ParameterInstanceRef parameterRef="subtype" />
-										<ComparisonOperator>==</ComparisonOperator>
-										<Value>4</Value>
-									</Condition>
-									<Condition>
-										<ParameterInstanceRef parameterRef="subtype" />
-										<ComparisonOperator>==</ComparisonOperator>
-										<Value>6</Value>
-									</Condition>
-									<Condition>
-										<ParameterInstanceRef parameterRef="subtype" />
-										<ComparisonOperator>==</ComparisonOperator>
-										<Value>8</Value>
-									</Condition>
-								</ORedConditions>
-							</BooleanExpression>
-						</IncludeCondition>
-					</ParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="pus-tm">
 					<RestrictionCriteria>
 						<ComparisonList>
 							<Comparison parameterRef="type" comparisonOperator="==" value="1" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-acceptance-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-acceptance-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="2" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-start-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-start-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="4" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-completion-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-completion-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="8" />
 						</ComparisonList>
 					</RestrictionCriteria>
 				</BaseContainer>
@@ -172,7 +200,7 @@
 					</EntryList>
 				</CommandContainer>
 				<VerifierSet>
-					<ReceivedVerifier>
+					<ReceivedVerifier name="Accepted">
 						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
 							<AncillaryDataSet>
 								<!--
@@ -210,7 +238,6 @@
 								    }
 								}
 							</AlgorithmText>
-
 							<InputSet>
 								<!-- the special /yamcs/cmd/arg namespace means that this is the value of an command argument -->
 								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
@@ -223,13 +250,85 @@
 								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
-								<InputParameterInstanceRef parameterRef="tc-ack-code" inputName="errorCode" />
+								<InputParameterInstanceRef parameterRef="tc-ack-acceptance-failure-code" inputName="errorCode" />
 							</InputSet>
 
 						</CustomAlgorithm>
 						<!-- This says that the algorithm will run for maximum 5 seconds from when the command is sent -->
 						<CheckWindow timeToStopChecking="PT5S" />
 					</ReceivedVerifier>
+					<ExecutionVerifier name="Started">
+						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">
+							<AncillaryDataSet>
+								<!--
+									This is a Yamcs XTCE extension which says to only run the algorithm if these inputs are present.
+
+									Without this, the algorithm would run on receiving other packet because all packets (except time) have the subtype pus header parameter.
+									To deal with that, the algorithm could check the inputs for null and return no value but this is more efficient.
+
+									Note that the errorCode is not made mandatory because we want this to run also for the response OK packets.
+									If the subtype.value is 2 we know it was an error so the errorCode has to be there.
+
+									The list here could be reduced to rcvdApid and sentSeq because sentApid is a command argument available right at the beginning
+									and the rcvdSeq is available when the rcvdApid is available.
+
+									sentSeq is coming from the post-processor via command history; if another command has just received an ack, we may get called with it
+									before having our sentSeq available. That is why the sentSeq has to be also mentioned in the list.
+								-->
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
+							</AncillaryDataSet>
+							<AlgorithmText language="JavaScript">
+								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
+								   if(subtype.value == 3) {
+								       return true;
+								    } else if(subtype.value == 4) {
+								       return errorCode.value;
+								    }
+								}
+							</AlgorithmText>
+							<InputSet>
+								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
+								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="errorCode" />
+							</InputSet>
+						</CustomAlgorithm>
+						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
+					</ExecutionVerifier>
+					<CompleteVerifier name="Complete">
+						<CustomAlgorithm name="alg_verif_completed" shortDescription="Verify the PUS completion">
+							<AncillaryDataSet>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
+							</AncillaryDataSet>
+							<AlgorithmText language="JavaScript">
+								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
+								   if(subtype.value == 7) {
+								       return true;
+								    } else if(subtype.value == 8) {
+								       return errorCode.value;
+								    }
+								}
+							</AlgorithmText>
+							<InputSet>
+								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
+								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="errorCode" />
+							</InputSet>
+
+						</CustomAlgorithm>
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
+					</CompleteVerifier>
 				</VerifierSet>
 			</MetaCommand>
 		</MetaCommandSet>

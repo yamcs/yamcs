@@ -110,6 +110,11 @@ The other elements are supported one way or another, exceptions or changes from 
 * | ArgumentRefEntry
   | ``IncludeCondition`` and ``RepeatEntry`` are not supported.
 
+* | Multiple CompleteVerifiers can be declared but the success of any of them will make the command complete successfully; XTCE specifies that all of them  have to succeed for the command to be declared successful. 
+  | Note that when a command is completed (with success or failure), all the pending verifies are canceled. This means that if mutiple CompleteVerifiers are declared, the first one finishing will decide the outcome of the command.
+
+
+
 .. rubric:: Algorithms
 
 * ``OnContainerUpdateTrigger`` is not supported.

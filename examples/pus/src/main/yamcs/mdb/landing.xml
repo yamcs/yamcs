@@ -525,7 +525,8 @@
 				</EnumerationList>
 			</EnumeratedArgumentType>
 			<IntegerArgumentType name="voltage_num_uint8" baseType="/dt/uint8">
-				<ValidRange minInclusive="1" maxInclusive="3" validRangeAppliesToCalibrated="false" />
+			<!--  we allow here up to 4 to be able to send a negative start from the simulator -->
+				<ValidRange minInclusive="1" maxInclusive="4" validRangeAppliesToCalibrated="false" />
 			</IntegerArgumentType>
 		</ArgumentTypeSet>
 		<MetaCommandSet>

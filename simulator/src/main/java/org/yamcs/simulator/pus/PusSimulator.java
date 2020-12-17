@@ -47,10 +47,11 @@ public class PusSimulator extends AbstractSimulator {
     static final int MAIN_APID = 1;
     static final int PUS_TYPE_HK = 3;
     static final int PUS_TYPE_ACK = 1;
+    static final int START_FAILURE_INVALID_VOLTAGE_NUM = 1;
     private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
 
     final Random random = new Random();
-    
+
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
 
@@ -61,7 +62,6 @@ public class PusSimulator extends AbstractSimulator {
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
 
-    
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     public PusSimulator() {
@@ -146,9 +146,9 @@ public class PusSimulator extends AbstractSimulator {
     public void processTc(SimulatorCcsdsPacket tc) {
         PusTcPacket pustc = (PusTcPacket) tc;
         if (tc.getAPID() == CFDP_APID) {
-       //     cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+            // cfdpReceiver.processCfdp(tc.getUserDataBuffer());
         } else {
-            transmitRealtimeTM(ackAcceptance(pustc));
+            transmitRealtimeTM(ack(pustc, 1));
             try {
                 pendingCommands.put(pustc);
             } catch (InterruptedException e) {
@@ -156,31 +156,42 @@ public class PusSimulator extends AbstractSimulator {
             }
         }
     }
-   
 
     private void switchBatteryOn(PusTcPacket commandPacket) {
-        transmitRealtimeTM(ackStart(commandPacket));
         int batNum = commandPacket.getUserDataBuffer().get(0);
-        log.info("CMD: BATERRY ON {}", batNum);
+        if (batNum < 1 || batNum > 3) {
+            log.info("CMD: BATERRY ON {}, sending NACK start", batNum);
+            transmitRealtimeTM(nack(commandPacket, 4, START_FAILURE_INVALID_VOLTAGE_NUM));
+            return;
+        }
+        if (batNum != 2) {
+            log.info("CMD: BATERRY ON {} ACK start", batNum);
+            transmitRealtimeTM(ack(commandPacket, 3));
+        } else {
+            log.info("CMD: BATERRY ON {}, skip ACK start", batNum);
+        }
+
         executor.schedule(() -> {
-            powerDataHandler.setBatteryOn(batNum);
-            transmitRealtimeTM(ackCompletion(commandPacket));    
-        }, 500, TimeUnit.MILLISECONDS);
+            if (batNum == 3) {
+                int returnCode = random.nextInt(5);
+                log.info("CMD: BATERRY ON {}, sending failure completion with code {}", batNum, returnCode);
+                transmitRealtimeTM(nack(commandPacket, 8, returnCode));
+            } else {
+                powerDataHandler.setBatteryOn(batNum);
+                transmitRealtimeTM(ack(commandPacket, 7));
+            }
+
+            transmitRealtimeTM(ack(commandPacket, 7));
+        }, 1500, TimeUnit.MILLISECONDS);
     }
 
     private void switchBatteryOff(PusTcPacket commandPacket) {
-        transmitRealtimeTM(ackStart(commandPacket));
+        transmitRealtimeTM(ack(commandPacket, 3));
         int batNum = commandPacket.getUserDataBuffer().get(0);
         log.info("CMD: BATERRY OFF {}", batNum);
         executor.schedule(() -> {
             powerDataHandler.setBatteryOff(batNum);
-            if(batNum == 2) {
-                int returnCode = random.nextInt(5);
-                log.info("Sending failure completion with code {}", returnCode);
-                transmitRealtimeTM(ackFailureCompletion(commandPacket, returnCode));
-            } else {
-                transmitRealtimeTM(ackCompletion(commandPacket));
-            }
+            transmitRealtimeTM(ack(commandPacket, 7));
         }, 500, TimeUnit.MILLISECONDS);
     }
 
@@ -207,39 +218,23 @@ public class PusSimulator extends AbstractSimulator {
         }
     }
 
-    protected PusTmPacket ackAcceptance(PusTcPacket commandPacket) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 1);
+    protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 4, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 6);
-        return ackPacket;
-    }
-    
-
-    protected PusTmPacket ackStart(PusTcPacket commandPacket) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 3);
-
-        ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 6);
-        return ackPacket;
-    }
-    
-    protected PusTmPacket ackCompletion(PusTcPacket commandPacket) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 6, PUS_TYPE_ACK, 7);
-
-        ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 6);
+        bb.put(commandPacket.getBytes(), 0, 4);
         return ackPacket;
     }
 
-    protected PusTmPacket ackFailureCompletion(PusTcPacket commandPacket, int code) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 10, PUS_TYPE_ACK, 8);
+    protected PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 6);
+        bb.put(commandPacket.getBytes(), 0, 4);
         bb.putInt(code);
         return ackPacket;
     }
+
     @Override
     protected void setTmLink(TcpTmTcLink tmLink) {
         this.tmLink = tmLink;
