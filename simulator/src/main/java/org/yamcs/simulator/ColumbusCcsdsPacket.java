@@ -1,11 +1,6 @@
 package org.yamcs.simulator;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -46,18 +41,17 @@ public class ColumbusCcsdsPacket extends SimulatorCcsdsPacket {
 
     private int packetid, packetType;
     private long timeMillis; // yamcs time
-    private short w;
 
-    
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private boolean checksumPresent;
 
     public ColumbusCcsdsPacket(byte[] packet) {
         super(packet);
+        readHeader();
     }
 
     public ColumbusCcsdsPacket(ByteBuffer bb) {
         super(bb);
+        readHeader();
     }
 
     public ColumbusCcsdsPacket(int apid, int userDataLength, int packetid) {
@@ -92,8 +86,6 @@ public class ColumbusCcsdsPacket extends SimulatorCcsdsPacket {
         return pl;
     }
 
-    
-
     public ByteBuffer getUserDataBuffer() {
         bb.position(16);
         return bb.slice();
@@ -106,11 +98,11 @@ public class ColumbusCcsdsPacket extends SimulatorCcsdsPacket {
     public void setPacketId(int packetId) {
         this.packetid = packetId;
     }
-    
 
     public int getPacketType() {
         return packetType;
     }
+
     public void setTime(long instant) {
         timeMillis = instant;
         putHeader();
@@ -120,12 +112,19 @@ public class ColumbusCcsdsPacket extends SimulatorCcsdsPacket {
         long gpsMillis = TimeEncoding.toGpsTimeMillisec(timeMillis);
         bb.putInt(6, (int) (gpsMillis / 1000));
         bb.put(10, (byte) ((gpsMillis % 1000) * 256 / 1000));
-        // original version with checksum;
         int checksum = checksumPresent ? 1 : 0;
-        bb.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | (checksum << 5) | packetType)); // checksum
+        bb.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | (checksum << 5) | packetType));
         bb.putInt(12, packetid);
         // describePacketHeader();
     }
+
+    private void readHeader() {
+        this.timeMillis = TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10));
+        this.packetType = bb.get(11) & 0x1F;
+        this.packetid = bb.getInt(12);
+        this.checksumPresent = (bb.get(11) & 0x20) == 1;
+    }
+
     @Override
     public void fillChecksum() {
         if (checksumPresent) {

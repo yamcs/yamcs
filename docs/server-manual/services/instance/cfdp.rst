@@ -1,5 +1,5 @@
-CCSDS File Delivery Protocol
-============================
+CCSDS File Delivery Protocol (CFDP)
+===================================
 
 This service implements the CCSDS File Delivery Protocol class 1 (unreliable transfer also called unacknowledged ) and class 2 (reliable transfer also called acknowledged).
 
@@ -66,13 +66,13 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
            eofAckLimit: 3
            sleepBetweenPdus: 1000
            localEntities:
-             - name: default
+             - name: id1
                id: 11
                bucket: bucket1
              - name: id2
                id: 12
            remoteEntities:
-             - name: default
+             - name: target1
                id: 5
              - name: target2
                id: 7

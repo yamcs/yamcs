@@ -41,14 +41,14 @@ services:
      # and the CFDP sender will timeout waiting for the EOF ACK
      sleepBetweenPdus: 1000
      localEntities:
-       - name: default
+       - name: id11
          id: 11
          bucket: bucket1
        - name: id2
          id: 12
          bucket: bucket2
      remoteEntities:
-       - name: default
+       - name: id5
          id: 5
        - name: target2
          id: 7

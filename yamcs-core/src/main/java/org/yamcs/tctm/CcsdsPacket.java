@@ -84,7 +84,7 @@ public class CcsdsPacket {
         seq &= 0x3FFF;
         seqFlags &= 3;
 
-        short w = (short) ((tmtc << 12) | (secHeaderPresent << 11) | apid); // 2nd header present
+        short w = (short) ((tmtc << 12) | (secHeaderPresent << 11) | apid);
         bb.putShort(0, w);
         w = (short) ((seqFlags << 14) | seq);
         bb.putShort(2, w);

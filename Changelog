@@ -1,7 +1,6 @@
 Version 5.3.4 released 17-Dec-2020
 - Fixed a bug in replication introduced in version 5.3.2 when allowing tuples to contain null values.
-- Added a PUS (Packet Utilization Standard) based simulator exemplifying the usage of the Time Correlation Service.
-- Improved XTCE support for command verifiers, also demonstrated with the PUS simulator.
+- Improved XTCE support for command verifiers, demonstrated with the PUS simulator.
 
 Version 5.3.3 released 14-Dec-2020
 - Added a simple PUS simulator to exemplify the usage of the time correlation (TCO) service with a free running on-board clock.

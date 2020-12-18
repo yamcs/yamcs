@@ -137,14 +137,6 @@ public class CfdpHeader {
         buffer.put(CfdpUtils.longToBytes(destinationId, entityIdLength));
     }
 
-    @Override
-    public String toString() {
-        return "CfdpHeader [fileDirective=" + fileDirective + ", towardsSender=" + towardsSender + ", acknowledged="
-                + acknowledged + ", withCrc=" + withCrc + ", entityIdLength="
-                + entityIdLength + ", sequenceNumberLength=" + sequenceNumberLength + ", sourceId=" + sourceId
-                + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + "]";
-    }
-
     /**
      * 
      * @return the header length
@@ -153,4 +145,25 @@ public class CfdpHeader {
         return 4 + entityIdLength + sequenceNumberLength + entityIdLength;
     }
 
+    @Override
+    public String toString() {
+        return "CfdpHeader [fileDirective=" + fileDirective + ", towardsSender=" + towardsSender + ", acknowledged="
+                + acknowledged + ", withCrc=" + withCrc + ", entityIdLength="
+                + entityIdLength + ", sequenceNumberLength=" + sequenceNumberLength + ", sourceId=" + sourceId
+                + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + "]";
+    }
+    
+    public String toJson() {
+        return " {\n"
+                + "        fileDirective: " + fileDirective + ",\n"
+                + "        towardsSender=" + towardsSender + ",\n"
+                + "        acknowledged=" + acknowledged + ",\n"
+                + "        withCrc=" + withCrc + ",\n"
+                + "        entityIdLength=" + entityIdLength  + ",\n"
+                + "        sequenceNumberLength=" + sequenceNumberLength  + ",\n"
+                + "        sourceId=" + sourceId + ",\n"
+                + "        destinationId=" + destinationId + ",\n"
+                + "        sequenceNr=" + sequenceNr + ",\n"
+                + "    }";
+    }
 }

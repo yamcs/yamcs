@@ -53,12 +53,12 @@ import static org.yamcs.cfdp.CompletedTransfer.TDEF;
  *
  */
 public class CfdpService extends AbstractYamcsService implements StreamSubscriber, TransferMonitor {
-    public static final String DEFAULT_SRCDST = "default";
-
     static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
     static final String ETYPE_TRANSFER_META = "TRANSFER_METADATA";
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
+    static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
+    static final String ETYPE_TRANSFER_COMPLETED = "TRANSFER_COMPLETED";
     static final String ETYPE_TX_LIMIT_REACHED = "TX_LIMIT_REACHED";
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
     static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
@@ -279,16 +279,6 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    private void addAll(Map<String, Long> m1, Map<String, Long> m2) throws InitException {
-        for (Map.Entry<String, Long> me : m2.entrySet()) {
-            if (m1.containsKey(me.getKey())) {
-                throw new InitException("Duplicate name " + me.getKey());
-            }
-            Number n = (Number) me.getValue();
-            m1.put(me.getKey(), n.longValue());
-        }
-    }
-
     public OngoingCfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
         return pendingTransfers.get(transferId);
     }
@@ -357,13 +347,14 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, idSeq.next(), executor, request,
                 cfdpOut, config, eventProducer, this, senderFaultHandlers);
+
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
         stateChanged(transfer);
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                "Starting new CFDP upload (" + transfer.getTransactionId() + ")" + request.getObjectName() + " -> "
+                "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] " + request.getObjectName() + " -> "
                         + request.getTargetPath());
         transfer.start();
 
@@ -393,47 +384,46 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         CfdpPacket packet = CfdpPacket.fromTuple(tuple);
         CfdpTransactionId id = packet.getTransactionId();
 
-        OngoingCfdpTransfer transaction = null;
+        OngoingCfdpTransfer transfer = null;
         if (pendingTransfers.containsKey(id)) {
-            transaction = pendingTransfers.get(id);
+            transfer = pendingTransfers.get(id);
         } else {
-
+            if (!isTransferInitiator(packet)) {
+                eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
+                        "Unexpected CFDP packet received; " + packet.getHeader() + ": " + packet);
+                return;
+            }
             // the communication partner has initiated a transfer
             if (pendingTransfers.size() >= maxNumPendingTransactions) {
                 eventProducer.sendInfo(ETYPE_TX_LIMIT_REACHED, "Maximum number of pending transfers "
                         + maxNumPendingTransactions + " reached. Dropping packet " + packet);
             } else {
-                transaction = instantiateIncomingTransaction(packet);
-                if (transaction != null) {
-                    pendingTransfers.put(transaction.getTransactionId(), transaction);
+                transfer = instantiateIncomingTransaction(packet);
+                if (transfer != null) {
+                    pendingTransfers.put(transfer.getTransactionId(), transfer);
                 }
             }
         }
 
-        if (transaction != null) {
-            transaction.processPacket(packet);
+        if (transfer != null) {
+            transfer.processPacket(packet);
+            if (packet instanceof MetadataPacket) {
+                OngoingCfdpTransfer t1 = transfer;
+                executor.submit(() -> {
+                    dbStream.emitTuple(CompletedTransfer.toInitialTuple(t1));
+                });
+            }
         }
+    }
+
+    private boolean isTransferInitiator(CfdpPacket packet) {
+        return packet instanceof MetadataPacket
+                || packet instanceof FileDataPacket
+                || packet instanceof EofPacket;
     }
 
     private OngoingCfdpTransfer instantiateIncomingTransaction(CfdpPacket packet) {
         CfdpTransactionId txId = packet.getTransactionId();
-
-        if (packet instanceof MetadataPacket) {
-            MetadataPacket mpkt = (MetadataPacket) packet;
-            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new CFDP downlink (" + txId + ")"
-                            + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-
-        } else if (packet instanceof FileDataPacket || packet instanceof EofPacket) {
-            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new CFDP downlink (" + txId
-                            + "); the metadata PDU has not yet been received");
-
-        } else {
-            eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
-                    "Unexpected CFDP packet received; " + txId + ": " + packet);
-            return null;
-        }
 
         if (packet.getHeader().isLargeFile()) {
             eventProducer.sendInfo(ETYPE_NO_LARGE_FILE,
@@ -455,6 +445,10 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
                             + packet.getHeader().getDestinationId());
             return null;
         }
+
+        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
+
         Bucket bucket = localEntity.bucket != null ? localEntity.bucket
                 : remoteEntity.bucket != null ? remoteEntity.bucket
                         : incomingBucket;
@@ -498,7 +492,9 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     @Override
     protected void doStop() {
         for (OngoingCfdpTransfer trsf : pendingTransfers.values()) {
-            trsf.failTransfer("service shutdown");
+            if (trsf.state == TransferState.RUNNING || trsf.state == TransferState.PAUSED) {
+                trsf.failTransfer("service shutdown");
+            }
         }
         executor.shutdown();
         notifyStopped();
@@ -538,5 +534,29 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     public OngoingCfdpTransfer getOngoingCfdpTransfer(long id) {
         return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
+    }
+
+    public boolean hasLocalEntity(String name) {
+        return localEntities.containsKey(name);
+    }
+
+    public boolean hasRemoteEntity(String name) {
+        return remoteEntities.containsKey(name);
+    }
+
+    public long getLocalEntityId(String name) {
+        return localEntities.get(name).id;
+    }
+
+    public long getRemoteEntityId(String name) {
+        return remoteEntities.get(name).id;
+    }
+
+    public long getDefaultLocalEntityId() {
+        return localEntities.values().iterator().next().id;
+    }
+
+    public long getDefaultRemoteEntityId() {
+        return remoteEntities.values().iterator().next().id;
     }
 }

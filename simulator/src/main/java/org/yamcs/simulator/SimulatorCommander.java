@@ -183,13 +183,18 @@ public class SimulatorCommander extends ProcessRunner {
     private static List<Service> createServices(SimulatorArgs runtimeOptions) {
         TcPacketFactory pktFactory;
         AbstractSimulator simulator;
-
+        File losDir = new File("losData");
+        losDir.mkdirs();
+        File dataDir = new File("data");
+        dataDir.mkdirs();
+        
         if (runtimeOptions.type == null || runtimeOptions.type.equalsIgnoreCase("col")) {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
-            simulator = new ColSimulator(new File("losData"));
+            
+            simulator = new ColSimulator(losDir, dataDir);
         } else if (runtimeOptions.type.equalsIgnoreCase("pus")) {
             pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
-            simulator = new PusSimulator();
+            simulator = new PusSimulator(dataDir);
         } else {
             throw new ConfigurationException("Unknonw simulatior type '" + runtimeOptions.type + "'. Use COL or PUS");
         }

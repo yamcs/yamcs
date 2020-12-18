@@ -13,6 +13,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferState;
@@ -28,6 +29,8 @@ public abstract class OngoingCfdpTransfer implements CfdpTransfer {
     protected boolean acknowledged = false;
     protected final Log log;
     protected final long startTime;
+    protected final long wallclockStartTime;
+    
     final TransferMonitor monitor;
     final long destinationId;
 
@@ -73,6 +76,7 @@ public abstract class OngoingCfdpTransfer implements CfdpTransfer {
         this.executor = executor;
         this.eventProducer = eventProducer;
         this.startTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+        this.wallclockStartTime = System.currentTimeMillis();
         this.log = new Log(this.getClass(), yamcsInstance);
         this.id = id;
         this.destinationId = destinationId;
@@ -232,5 +236,17 @@ public abstract class OngoingCfdpTransfer implements CfdpTransfer {
      */
     public long getDestinationId() {
         return destinationId;
+    }
+    
+    protected void sendInfoEvent(String type, String msg) {
+        eventProducer.sendInfo(type, "TXID[" + cfdpTransactionId + "] " + msg);
+    }
+
+    protected void sendWarnEvent(String type, String msg) {
+        eventProducer.sendWarning(type, "TXID[" + cfdpTransactionId + "] " + msg);
+    }
+
+    protected String toEventMsg(MetadataPacket packet) {
+        return packet.toJson();
     }
 }

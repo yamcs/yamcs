@@ -160,7 +160,12 @@ public class CompletedTransfer implements CfdpTransfer {
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_TRANSFERED_SIZE, transfer.getTransferredSize());
+        
         t.addColumn(COL_FAILURE_REASON, transfer.getFailuredReason());
+        if(transfer.getDirection()==TransferDirection.DOWNLOAD) { 
+            //the object name is updated when saved in a bucket
+            t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
+        }
 
         return t;
     }

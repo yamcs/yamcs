@@ -3,10 +3,8 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CfdpService.*;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,11 +264,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         incomingDataFile.setSize(fileSize);
 
         this.acknowledged = packet.getHeader().isAcknowledged();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
-        objectName = "received_" + dateFormat.format(new Date(startTime));
+        objectName = packet.getDestinationFilename();
 
-        eventProducer.sendInfo(CfdpService.ETYPE_TRANSFER_META,
-                "CFDP downlink " + packet.getTransactionId() + packet);
+        sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
         checkFileComplete();
     }
 
@@ -367,10 +363,14 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 complete(ConditionCode.NO_ERROR);
             }
             saveFileInBucket(false, Collections.emptyList());
+            sendInfoEvent(ETYPE_TRANSFER_FINISHED,
+                    " downlink finished and saved in " + incomingBucket.getName() + "/" + getObjectName());
         } else {
             log.warn("TXID{} file checksum failure; EOF packet indicates {} while data received has {}",
                     cfdpTransactionId, expectedChecksum, incomingDataFile.getChecksum());
             saveFileInBucket(true, Collections.emptyList());
+            sendWarnEvent(ETYPE_TRANSFER_FINISHED,
+                    " checksum failure; corrupted file saved in " + incomingBucket.getName() + "/" + getObjectName());
             handleFault(ConditionCode.FILE_CHECKSUM_FAILURE);
         }
     }
@@ -397,8 +397,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finTimer.start(() -> sendPacket(finPacket),
                 () -> {
-                    eventProducer.sendWarning(ETYPE_FIN_LIMIT_REACHED, "TXID" + cfdpTransactionId
-                            + ": resend attempts (" + finTimer.maxNumAttempts + ") of Finished PDU reached");
+                    sendWarnEvent(ETYPE_FIN_LIMIT_REACHED, "resend attempts (" + finTimer.maxNumAttempts + ") of Finished PDU reached");
                     if (finPacket.getConditionCode() == ConditionCode.NO_ERROR) {
                         complete(ConditionCode.ACK_LIMIT_REACHED,
                                 "File was received OK but the Finished PDU has not been acknowledged");
@@ -421,12 +420,15 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
+            sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) succesfully");
         } else {
+            sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccesfully: " + failureReason);
             changeState(TransferState.FAILED);
             if (failureReason != null) {
                 this.failureReason = failureReason;
             }
         }
+
     }
 
     private void handleFault(ConditionCode conditionCode) {
@@ -474,6 +476,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             return;
         }
         log.info("TXID{} suspending transfer", cfdpTransactionId);
+        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer suspended");
         changeState(TransferState.PAUSED);
         finTimer.cancel();
         suspended = true;
@@ -492,6 +495,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
 
+        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer resumed");
         if (inTxState == InTxState.RECEIVING_DATA) {
             nakCount = 0;
             sendOrSheduledNak();
@@ -528,10 +532,26 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 }
                 metadata.put("checksumError", "true");
             }
-            incomingBucket.putObject(getObjectName(), null, metadata, incomingDataFile.getData());
+            objectName = getFileName(objectName);
+            incomingBucket.putObject(objectName, null, metadata, incomingDataFile.getData());
         } catch (IOException e) {
             throw new RuntimeException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
         }
+    }
+
+    private String getFileName(String name) throws IOException {
+        name = name.replace("/", "_");
+        if (incomingBucket.getObject(name) == null) {
+            return name;
+        }
+        for (int i = 1; i < 10000; i++) {
+            String namei = name + "(" + i + ")";
+            if (incomingBucket.getObject(namei) == null) {
+                return namei;
+            }
+        }
+        log.warn("Cannot find a new name for {}, overwirting object", name);
+        return name;
     }
 
     private AckPacket getAckEofPacket(ConditionCode code) {
@@ -602,5 +622,4 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     public long getTransferredSize() {
         return incomingDataFile.getReceivedSize();
     }
-
 }

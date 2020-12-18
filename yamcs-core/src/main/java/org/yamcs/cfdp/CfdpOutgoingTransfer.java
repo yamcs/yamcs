@@ -1,7 +1,6 @@
 package org.yamcs.cfdp;
 
-import static org.yamcs.cfdp.CfdpService.ETYPE_EOF_LIMIT_REACHED;
-import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_FINISHED;
+import static org.yamcs.cfdp.CfdpService.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +63,6 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     }
 
     private final boolean withCrc = false; // no CRCs are used
-    private final boolean withSegmentation = false; // segmentation not supported
     private final CfdpHeader directiveHeader, dataHeader;
     private final Timer eofTimer;
     private final int entityIdLength;
@@ -161,6 +159,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         switch (outTxState) {
         case START:
             metadata = getMetadataPacket();
+            sendInfoEvent(ETYPE_TRANSFER_META, "Sending metadata: "+toEventMsg(metadata));
             sendPacket(metadata);
             this.outTxState = OutTxState.SENDING_DATA;
             offset = 0; // first file data packet starts at the start of the data
@@ -214,7 +213,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         } else {
             eofTimer.start(() -> sendPacket(eofPacket),
                     () -> {
-                        eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED,
+                        sendWarnEvent(ETYPE_EOF_LIMIT_REACHED,
                                 "Resend attempts (" + eofTimer.maxNumAttempts + ") of EOF reached");
                         handleFault(ConditionCode.ACK_LIMIT_REACHED);
                     });
@@ -280,24 +279,16 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         if (outTxState == OutTxState.COMPLETED) {
             return;
         }
-        long duration = (System.currentTimeMillis() - startTime) / 1000;
 
         // depending on the conditioncode, the transfer was a success or a failure
         // failure can
         if (finishedPacket.getConditionCode() != ConditionCode.NO_ERROR) {
             complete(finishedPacket.getConditionCode());
-            eventProducer.sendWarning(ETYPE_TRANSFER_FINISHED,
-                    "CFDP upload finished with error in " + duration + " seconds: "
-                            + request.getObjectName()
-                            + " -> "
-                            + request.getTargetPath() + " error: " + finishedPacket.getConditionCode());
+
         } else {
             if (eofSent) {
                 complete(ConditionCode.NO_ERROR);
-                eventProducer.sendInfo(ETYPE_TRANSFER_FINISHED,
-                        "CFDP upload finished successfully in " + duration + " seconds: "
-                                + request.getObjectName() + " -> "
-                                + request.getTargetPath());
+               
             } else {
                 log.warn("TXID{} received Finished PDU before sending the EOF: {}", cfdpTransactionId,
                         finishedPacket);
@@ -322,6 +313,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             return;
         }
 
+        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer suspended");
         log.info("TXID{} suspending transfer", cfdpTransactionId);
 
         eofTimer.cancel();
@@ -344,6 +336,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             return;
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
+        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer resumed");
         pduSendingSchedule = executor.scheduleAtFixedRate(() -> sendPDU(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
         if (expectingAck()) {
             sendEof();
@@ -371,12 +364,23 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         if (outTxState == OutTxState.COMPLETED) {
             return;
         }
-
         outTxState = OutTxState.COMPLETED;
+
+        long duration = (System.currentTimeMillis() - wallclockStartTime) / 1000;
+
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
+            sendInfoEvent(ETYPE_TRANSFER_FINISHED,
+                    "transfer finished successfully in " + duration + " seconds: "
+                            + request.getObjectName() + " -> "
+                            + request.getTargetPath());
         } else {
             failTransfer(conditionCode.toString());
+            sendWarnEvent(ETYPE_TRANSFER_FINISHED,
+                    "transfer finished with error in " + duration + " seconds: "
+                            + request.getObjectName()
+                            + " -> "
+                            + request.getTargetPath() + " error: " + finishedPacket.getConditionCode());
         }
     }
 
@@ -467,7 +471,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private MetadataPacket getMetadataPacket() {
         return new MetadataPacket(
-                withSegmentation, closureRequested, checksumType,
+                closureRequested, checksumType,
                 request.getFileLength(),
                 "", // no source file name, the data will come from a bucket
                 request.getTargetPath(),

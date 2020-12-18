@@ -13,4 +13,8 @@ public class EntityConf {
         this.bucket = bucket;
     }
 
+    public String toString() {
+        return name + " [id=" + id + "]";
+    }
+
 }

@@ -18,8 +18,8 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     private boolean closureRequested;
     private byte checksumType;
 
-    public MetadataPacket(boolean segmentationControl, boolean closureRequested, byte checksumType, int fileSize,
-            String source, String destination, List<FileStoreRequest> fsrs, List<MessageToUser> mtus, 
+    public MetadataPacket(boolean closureRequested, byte checksumType, int fileSize,
+            String source, String destination, List<FileStoreRequest> fsrs, List<MessageToUser> mtus,
             List<FaultHandlerOverride> fhos, TLV flowLabel, CfdpHeader header) {
         super(header);
         if (fileSize == 0) {
@@ -90,9 +90,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
             toReturn += 2 // type and length of a TLV message
                     + mtu.getMessage().length;
         }
-        for (FaultHandlerOverride fho : this.faultHandlerOverrides) {
-            toReturn += 3;
-        }
+        toReturn += this.faultHandlerOverrides.size() * FaultHandlerOverride.length();
         toReturn += 3;
         if (flowLabel != null) {
             toReturn += flowLabel.getValue().length;
@@ -141,6 +139,17 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
                 + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName
                 + ", filestoreRequests=" + filestoreRequests + ", messagesToUser=" + messagesToUser
                 + ", faultHandlerOverrides=" + faultHandlerOverrides + ", flowLabel=" + flowLabel + "]";
+    }
+
+    public String toJson() {
+        return " {\n"
+                + "    header: " + header.toJson() + ", \n"
+                + "    closureRequested:" + closureRequested + ",\n"
+                + "    fileSize=" + fileSize + ",\n"
+                + "    checksumType=" + checksumType + ",\n"
+                + "    sourceFileName=" + sourceFileName + ",\n"
+                + "    destinationFileName=" + destinationFileName + ",\n"
+                + "}";
     }
 
     public byte getChecksumType() {

@@ -52,11 +52,13 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // fix packet length
         int seqCount = seqFiller.fill(binary);
-
-        GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());
-        bb.putInt(6, gpsTime.coarseTime);
-        bb.put(10, gpsTime.fineTime);
-
+        
+        if (secHeaderFlag) {
+            GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());
+            bb.putInt(6, gpsTime.coarseTime);
+            bb.put(10, gpsTime.fineTime);
+        }
+        
         commandHistory.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
         if (checksumIndicator) {
             int pos = binary.length - 2;
@@ -75,11 +77,11 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
                 log.debug("Not appending a checkword since checksumIndicator is false");
             }
         }
-       
+
         commandHistory.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
         return binary;
     }
-    
+
     @Override
     public int getBinaryLength(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
@@ -89,7 +91,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         if (secHeaderFlag) {
             checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
         }
-       
+
         if (checksumIndicator) { // 2 extra bytes for the checkword
             length += 2;
         }

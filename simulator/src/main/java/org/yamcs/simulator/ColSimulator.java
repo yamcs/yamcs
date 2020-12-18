@@ -2,6 +2,7 @@ package org.yamcs.simulator;
 
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -15,6 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
+import org.yamcs.simulator.cfdp.CfdpReceiver;
+import org.yamcs.simulator.cfdp.CfdpSender;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -32,8 +36,10 @@ public class ColSimulator extends AbstractSimulator {
     // no more than 100 pending commands
     protected BlockingQueue<ColumbusCcsdsPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
-    static int DEFAULT_MAX_LENGTH = 65542;
-    int maxLength = DEFAULT_MAX_LENGTH;
+    static int MAX_PKT_LENGTH = 65542;
+
+    final File dataDir;
+
     private TcpTmTcLink tmLink;
     private TcpTmTcLink tm2Link;
     private TcpTmTcLink losLink;
@@ -56,21 +62,23 @@ public class ColSimulator extends AbstractSimulator {
 
     ScheduledThreadPoolExecutor executor;
 
-   
     static final int MAIN_APID = 1;
     static final int PERF_TEST_APID = 2;
     static final int TC_ACK_APID = 101;
 
     CfdpReceiver cfdpReceiver;
 
-    public ColSimulator(File dataDir) {
-        losRecorder = new LosRecorder(dataDir);
+    private CfdpSender cfdpSender;
+
+    public ColSimulator(File losDir, File dataDir) {
+        losRecorder = new LosRecorder(losDir);
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
-        cfdpReceiver = new CfdpReceiver(this);
+        cfdpReceiver = new CfdpReceiver(this, dataDir);
+        this.dataDir = dataDir;
     }
 
     /**
@@ -291,6 +299,9 @@ public class ColSimulator extends AbstractSimulator {
                 case 7:
                     deleteRecording(commandPacket);
                     break;
+                case 8:
+                    downloadFile(commandPacket);
+                    break;
 
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
@@ -334,19 +345,55 @@ public class ColSimulator extends AbstractSimulator {
 
     private void dumpRecording(ColumbusCcsdsPacket commandPacket) {
         transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
-        byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
-        int indexStartOfString = 16;
-        int indexEndOfString = indexStartOfString;
-        for (int i = indexStartOfString; i < fileNameArray.length; i++) {
-            if (fileNameArray[i] == 0) {
-                indexEndOfString = i;
-                break;
-            }
+        String fileName = readNullTerminatedString(commandPacket.getUserDataBuffer());
+        if (checkFile(fileName)) {
+            log.info("DUMP_RECORDING for file {}", fileName);
+            dumpLosDataFile(fileName);
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+        } else {
+            log.warn("Invalid filename (has to be relative to the dataDir) {}", fileName);
         }
-        String fileName1 = new String(fileNameArray, indexStartOfString, indexEndOfString - indexStartOfString);
-        log.info("Command DUMP_RECORDING for file {}", fileName1);
-        dumpLosDataFile(fileName1);
-        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+    }
+
+    private void downloadFile(ColumbusCcsdsPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        ByteBuffer bb = commandPacket.getUserDataBuffer();
+        int destinationId = bb.getInt();
+        String fileName = readNullTerminatedString(bb);
+        if (checkFile(fileName)) {
+            File f = new File(dataDir, fileName);
+            log.info("CFDP download file {}", fileName);
+            try {
+                cfdpSender = new CfdpSender(this, f, destinationId);
+                cfdpSender.start();
+                transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+            } catch (FileNotFoundException e) {
+                log.warn("File does not exist or is not readable: {}", f.getAbsoluteFile());
+                transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+            }
+        } else {
+            log.warn("Invalid filename {}", fileName);
+        }
+    }
+
+    private boolean checkFile(String fileName) {
+        return !fileName.contains("..");
+    }
+
+    String readNullTerminatedString(ByteBuffer bb) {
+        if (!bb.hasRemaining()) {
+            return null;
+        }
+        int position = bb.position();
+        while (bb.hasRemaining() && bb.get() != 0) {
+        }
+
+        int position1 = bb.position();
+        byte[] b = new byte[position1 - position - 1];
+        bb.position(position);
+        bb.get(b);
+        bb.position(position1);
+        return new String(b);
     }
 
     private void deleteRecording(ColumbusCcsdsPacket commandPacket) {
@@ -379,10 +426,20 @@ public class ColSimulator extends AbstractSimulator {
     }
 
     public void processTc(SimulatorCcsdsPacket tc) {
-        ColumbusCcsdsPacket coltc = (ColumbusCcsdsPacket) tc;
+       
         if (tc.getAPID() == CFDP_APID) {
-            cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+            byte b0 = tc.getUserDataBuffer().get();
+            if ((b0 & 0x08) == 0) { // towards receiver
+                cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+            } else {//towards sender
+                if (cfdpSender != null) {
+                    cfdpSender.processCfdp(tc.getUserDataBuffer());
+                } else {
+                    log.warn("Received CFDP packet for sender but have no sender");
+                }
+            }
         } else {
+            ColumbusCcsdsPacket coltc = (ColumbusCcsdsPacket) tc;
             transmitRealtimeTM(ackPacket(coltc, 0, 0));
             try {
                 pendingCommands.put(coltc);
@@ -397,9 +454,10 @@ public class ColSimulator extends AbstractSimulator {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
             int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining > maxLength - 6) {
+            if (remaining > MAX_PKT_LENGTH - 6) {
                 throw new IOException(
-                        "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+                        "Remaining packet length too big: " + remaining + " maximum allowed is "
+                                + (MAX_PKT_LENGTH - 6));
             }
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
@@ -444,13 +502,10 @@ public class ColSimulator extends AbstractSimulator {
     @Override
     public void transmitCfdp(CfdpPacket packet) {
         CfdpHeader header = packet.getHeader();
-
-        int length = 16 + header.getLength() + packet.getDataFieldLength();
-        ByteBuffer buffer = ByteBuffer.allocate(length);
-        buffer.putShort((short) 0x17FD);
-        buffer.putShort(4, (short) (length - 7));
-        buffer.position(16);
-        packet.writeToBuffer(buffer.slice());
-        transmitRealtimeTM(new ColumbusCcsdsPacket(buffer));
+        int length = header.getLength() + packet.getDataFieldLength();
+        CfdpCcsdsPacket pkt = new CfdpCcsdsPacket(length);
+        ByteBuffer buffer = pkt.getUserDataBuffer();
+        packet.writeToBuffer(buffer);
+        transmitRealtimeTM(pkt);
     }
 }

@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
+import org.yamcs.tctm.CcsdsPacket;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -28,7 +30,7 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
     ServerSocket serverSocket;
     DataInputStream inputStream;
 
-    private int maxTcLength = ColSimulator.DEFAULT_MAX_LENGTH;
+    private int maxTcLength = ColSimulator.MAX_PKT_LENGTH;
 
     private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(100);
     final TcPacketFactory packetFactory;
@@ -140,8 +142,13 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
-
-            SimulatorCcsdsPacket packet = packetFactory.getPacket(b);
+            
+            SimulatorCcsdsPacket packet;
+            if(CcsdsPacket.getAPID(b) == CfdpCcsdsPacket.APID) {
+                packet = new CfdpCcsdsPacket(b);
+            } else {
+                packet = packetFactory.getPacket(b);
+            }
             return packet;
         } catch (EOFException e) {
             log.error(name + " Connection lost");

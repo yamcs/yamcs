@@ -1,5 +1,6 @@
 package org.yamcs.simulator.pus;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -11,7 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.simulator.AbstractSimulator;
-import org.yamcs.simulator.CfdpReceiver;
+import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
+import org.yamcs.simulator.cfdp.CfdpReceiver;
 import org.yamcs.simulator.DHSHandler;
 import org.yamcs.simulator.EpsLvpduHandler;
 import org.yamcs.simulator.FlightDataHandler;
@@ -64,13 +66,13 @@ public class PusSimulator extends AbstractSimulator {
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
-    public PusSimulator() {
+    public PusSimulator(File dataDir) {
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
-        cfdpReceiver = new CfdpReceiver(this);
+        cfdpReceiver = new CfdpReceiver(this, dataDir);
     }
 
     @Override
@@ -145,7 +147,7 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     public void processTc(SimulatorCcsdsPacket tc) {
         PusTcPacket pustc = (PusTcPacket) tc;
-        if (tc.getAPID() == CFDP_APID) {
+        if (tc.getAPID() == CfdpCcsdsPacket.APID) {
             // cfdpReceiver.processCfdp(tc.getUserDataBuffer());
         } else {
             transmitRealtimeTM(ack(pustc, 1));

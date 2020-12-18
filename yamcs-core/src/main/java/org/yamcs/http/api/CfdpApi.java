@@ -160,31 +160,21 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
             long sourceId, destinationId;
             if (request.hasSource()) {
-                Long l = cfdpService.getLocalEntities().get(request.getSource());
-                if (l == null) {
+                if(!cfdpService.hasLocalEntity(request.getSource())) {
                     throw new BadRequestException("Invalid source '" + request.getSource());
                 }
-                sourceId = l;
+                sourceId = cfdpService.getLocalEntityId(request.getSource());
             } else {
-                Long l = cfdpService.getLocalEntities().get(CfdpService.DEFAULT_SRCDST);
-                if (l == null) {
-                    throw new BadRequestException("No source specified and no default either.");
-                }
-                sourceId = l;
+                sourceId = cfdpService.getDefaultLocalEntityId();
             }
 
             if (request.hasDestination()) {
-                Long l = cfdpService.getRemoteEntities().get(request.getDestination());
-                if (l == null) {
-                    throw new BadRequestException("Invalid destination '" + request.getDestination());
+                if(!cfdpService.hasRemoteEntity(request.getDestination())) {
+                    throw new BadRequestException("Invalid destination '" + request.getDestination()+"'");
                 }
-                destinationId = l;
+                destinationId = cfdpService.getRemoteEntityId(request.getDestination());
             } else {
-                Long l = cfdpService.getRemoteEntities().get(CfdpService.DEFAULT_SRCDST);
-                if (l == null) {
-                    throw new BadRequestException("No destination specified and no default either.");
-                }
-                destinationId = l;
+                destinationId = cfdpService.getDefaultRemoteEntityId();
             }
 
             PutRequest req = new PutRequest(sourceId, destinationId, objectName, target, overwrite, reliable,

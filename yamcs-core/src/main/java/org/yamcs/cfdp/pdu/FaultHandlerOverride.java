@@ -28,4 +28,7 @@ public class FaultHandlerOverride {
                 new byte[] { (byte) (getConditionCode().getCode() << 4
                         | getHandlerCode().getCode()) });
     }
+    public static int length() {
+        return 3;
+    }
 }

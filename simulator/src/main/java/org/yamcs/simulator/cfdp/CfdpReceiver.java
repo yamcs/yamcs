@@ -1,4 +1,4 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.cfdp;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +22,7 @@ import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
@@ -37,15 +38,17 @@ import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 public class CfdpReceiver {
     private static final Logger log = LoggerFactory.getLogger(CfdpReceiver.class);
     final AbstractSimulator simulator;
-
+    final File dataDir;
     private DataFile cfdpDataFile = null;
     List<SegmentRequest> missingSegments;
+    MetadataPacket metadata;
 
-    public CfdpReceiver(AbstractSimulator simulator) {
+    public CfdpReceiver(AbstractSimulator simulator, File dataDir) {
         this.simulator = simulator;
+        this.dataDir = dataDir;
     }
 
-    protected void processCfdp(ByteBuffer buffer) {
+    public void processCfdp(ByteBuffer buffer) {
         CfdpPacket packet = CfdpPacket.getCFDPPacket(buffer);
         if (packet.getHeader().isFileDirective()) {
             processFileDirective(packet);
@@ -72,7 +75,7 @@ public class CfdpReceiver {
             break;
         case METADATA:
             log.info("Metadata CFDP packet received");
-            MetadataPacket metadata = (MetadataPacket) packet;
+            metadata = (MetadataPacket) packet;
             long packetLength = metadata.getFileLength();
             cfdpDataFile = new DataFile(packetLength);
             missingSegments = null;
@@ -172,7 +175,7 @@ public class CfdpReceiver {
 
     private void saveFile() {
         try {
-            File f = File.createTempFile("cfdp", "");
+            File f = new File(dataDir, sanitize(metadata.getDestinationFilename()));
             try (FileOutputStream fw = new FileOutputStream(f)) {
                 fw.write(cfdpDataFile.getData());
                 log.info("CFDP file saved in {}", f.getAbsolutePath());
@@ -180,6 +183,10 @@ public class CfdpReceiver {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    String sanitize(String filename) {
+        return filename.replace("/", "_");
     }
 
     private void processFileData(FileDataPacket packet) {

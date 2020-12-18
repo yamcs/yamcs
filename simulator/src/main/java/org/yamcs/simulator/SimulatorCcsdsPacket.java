@@ -18,7 +18,7 @@ public abstract class SimulatorCcsdsPacket extends CcsdsPacket {
         super(bb);
     }
 
-    protected abstract ByteBuffer getUserDataBuffer();
+    public abstract ByteBuffer getUserDataBuffer();
 
     protected abstract void fillChecksum();
 
@@ -26,6 +26,4 @@ public abstract class SimulatorCcsdsPacket extends CcsdsPacket {
         AtomicInteger seq = seqMap.computeIfAbsent(apid, a -> new AtomicInteger(0));
         return seq.getAndIncrement() & 0xFFFF;
     }
-
-    
 }
