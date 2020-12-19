@@ -52,13 +52,17 @@ public class CfdpClient {
         cfdpService.getTransfer(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
-
     public CompletableFuture<TransferInfo> upload(ObjectId source, UploadOption... options) {
+        return upload(source, source.getObjectName(), options);
+    }
+
+    public CompletableFuture<TransferInfo> upload(ObjectId source, String remotePath, UploadOption... options) {
         CreateTransferRequest.Builder requestb = CreateTransferRequest.newBuilder()
                 .setInstance(instance)
                 .setServiceName(serviceName)
                 .setBucket(source.getBucket())
                 .setObjectName(source.getObjectName())
+                .setRemotePath(remotePath)
                 .setDirection(TransferDirection.UPLOAD);
         CreateTransferRequest.UploadOptions.Builder optionsb = requestb.getUploadOptionsBuilder();
         for (UploadOption option : options) {
