@@ -36,7 +36,7 @@ public class PusTmTimePacket extends SimulatorCcsdsPacket {
     }
 
     @Override
-    protected ByteBuffer getUserDataBuffer() {
+    public ByteBuffer getUserDataBuffer() {
         bb.position(6);
         return bb.slice();
     }

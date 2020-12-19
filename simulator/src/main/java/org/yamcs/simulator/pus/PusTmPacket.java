@@ -68,7 +68,7 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
     }
 
     @Override
-    protected ByteBuffer getUserDataBuffer() {
+    public ByteBuffer getUserDataBuffer() {
         bb.position(DATA_OFFSET);
         return bb.slice();
     }

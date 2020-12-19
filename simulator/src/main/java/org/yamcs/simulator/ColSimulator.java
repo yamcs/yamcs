@@ -427,7 +427,7 @@ public class ColSimulator extends AbstractSimulator {
 
     public void processTc(SimulatorCcsdsPacket tc) {
        
-        if (tc.getAPID() == CFDP_APID) {
+        if (tc.getAPID() == CfdpCcsdsPacket.APID) {
             byte b0 = tc.getUserDataBuffer().get();
             if ((b0 & 0x08) == 0) { // towards receiver
                 cfdpReceiver.processCfdp(tc.getUserDataBuffer());
