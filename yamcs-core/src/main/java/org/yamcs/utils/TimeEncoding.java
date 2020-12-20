@@ -391,15 +391,18 @@ public class TimeEncoding {
     }
 
     /**
-     * Transforms UNIX time (milliseconds since 1970) to instant
+     * Transforms UNIX time (milliseconds since 1970, picos in millisecond) to high resolution instant
      * 
-     * @param milliseconds
+     * @param millis
+     *            milliseconds since 1970 (without leap seconds)
+     * @param picos
+     *            picoseconds in milliseconds - can be negative or larger than 10^9 (but has to fit into a 32 bit signed
+     *            integer).
+     * 
      * @return
-     * @deprecated use {@link fromUnixMillisec}
      */
-    @Deprecated
-    public static long fromUnixTime(long milliseconds) {
-        return fromUnixMillisec(milliseconds);
+    public static Instant fromUnixPicos(long millis, int picos) {
+        return Instant.get(taiUtcConverter.unixToInstant(millis), picos);
     }
 
     /**
@@ -449,7 +452,7 @@ public class TimeEncoding {
      * Transforms a Date from UNIX (millisec since 1970) to instant
      */
     public static long fromDate(Date date) {
-        return fromUnixTime(date.getTime());
+        return fromUnixMillisec(date.getTime());
     }
 
     /**
