@@ -495,7 +495,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
 
-        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer resumed");
+        sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
         if (inTxState == InTxState.RECEIVING_DATA) {
             nakCount = 0;
             sendOrSheduledNak();

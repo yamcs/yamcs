@@ -336,7 +336,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             return;
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
-        sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer resumed");
+        sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
         pduSendingSchedule = executor.scheduleAtFixedRate(() -> sendPDU(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
         if (expectingAck()) {
             sendEof();

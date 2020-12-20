@@ -58,6 +58,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     static final String ETYPE_TRANSFER_META = "TRANSFER_METADATA";
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
+    static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
     static final String ETYPE_TRANSFER_COMPLETED = "TRANSFER_COMPLETED";
     static final String ETYPE_TX_LIMIT_REACHED = "TX_LIMIT_REACHED";
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
