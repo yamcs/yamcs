@@ -1,3 +1,6 @@
+Version 5.3.5 released 20-Dec-2020
+- Fixed a bug related to CFDP transfer storage in archive (the entity id was not saved for the incoming transfers)
+
 Version 5.3.4 released 17-Dec-2020
 - Fixed a bug in replication introduced in version 5.3.2 when allowing tuples to contain null values.
 - Improved XTCE support for command verifiers, demonstrated with the PUS simulator.
