@@ -18,6 +18,7 @@ import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.Sequence;
+import org.yamcs.yarch.SequenceInfo;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
@@ -323,9 +324,9 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public Sequence getSequence(YarchDatabaseInstance ydb, String name) throws YarchException {
+    public Sequence getSequence(YarchDatabaseInstance ydb, String name, boolean create) throws YarchException {
         try {
-            return getTablespace(ydb).getSequence(name);
+            return getTablespace(ydb).getSequence(name, create);
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }
@@ -337,5 +338,10 @@ public class RdbStorageEngine implements StorageEngine {
         Tablespace tblsp = getTablespace(ydb, tableDefinition);
 
         return tblsp.newSecondaryIndexTableWalker(ydb, tableDefinition, ascending, follow);
+    }
+
+    @Override
+    public List<SequenceInfo> getSequencesInfo(YarchDatabaseInstance ydb) {
+        return getTablespace(ydb).getSequencesInfo();
     }
 }

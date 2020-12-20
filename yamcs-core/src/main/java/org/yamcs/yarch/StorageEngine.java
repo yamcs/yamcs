@@ -85,7 +85,7 @@ public interface StorageEngine {
     public ProtobufDatabase getProtobufDatabase(YarchDatabaseInstance ydb) throws YarchException;
 
     public PartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef);
-    
+
     /**
      * In Yamcs version 4 the table definitions were stored in yaml serialized format (in the
      * /storage/yamcs-data/<instance-name>/<table-name>.def)
@@ -100,15 +100,23 @@ public interface StorageEngine {
     }
 
     /**
-     * Creates (if not already existing) and returns a sequence with the given name.
+     * Returns a sequence with the given name if it exists or first create it and returns it if create is true.
+     * <p>
+     * If create is false and the sequence does not exist, returns null.
      * 
      * @param name
+     * @param create
      * @return
-     * @throws YarchException 
+     * @throws YarchException
      */
-    public Sequence getSequence(YarchDatabaseInstance ydb, String name) throws YarchException;
+    public Sequence getSequence(YarchDatabaseInstance ydb, String name, boolean create) throws YarchException;
 
     public TableWalker newSecondaryIndexTableWalker(YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             boolean ascending, boolean follow);
+
+    /**
+     * Gets the list of sequences togehter with their latest values
+     */
+    public List<SequenceInfo> getSequencesInfo(YarchDatabaseInstance ydb);
 
 }

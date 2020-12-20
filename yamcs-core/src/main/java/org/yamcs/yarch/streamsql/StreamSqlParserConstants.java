@@ -157,93 +157,101 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_REAL = 77;
   /** RegularExpression Id. */
-  int K_REVERSE = 78;
+  int K_RESTART = 78;
   /** RegularExpression Id. */
-  int K_ROW = 79;
+  int K_REVERSE = 79;
   /** RegularExpression Id. */
-  int K_ROWS = 80;
+  int K_ROW = 80;
   /** RegularExpression Id. */
-  int K_SAMPLE = 81;
+  int K_ROWS = 81;
   /** RegularExpression Id. */
-  int K_SELECT = 82;
+  int K_SAMPLE = 82;
   /** RegularExpression Id. */
-  int K_SET = 83;
+  int K_SELECT = 83;
   /** RegularExpression Id. */
-  int K_SIZE = 84;
+  int K_SEQUENCE = 84;
   /** RegularExpression Id. */
-  int K_SHOW = 85;
+  int K_SET = 85;
   /** RegularExpression Id. */
-  int K_SHRT = 86;
+  int K_SIZE = 86;
   /** RegularExpression Id. */
-  int K_SMALLINT = 87;
+  int K_SHOW = 87;
   /** RegularExpression Id. */
-  int K_SPEED = 88;
+  int K_SHRT = 88;
   /** RegularExpression Id. */
-  int K_STEP_BY_STEP = 89;
+  int K_SMALLINT = 89;
   /** RegularExpression Id. */
-  int K_STREAM = 90;
+  int K_SEQUENCES = 90;
   /** RegularExpression Id. */
-  int K_STREAMS = 91;
+  int K_SPEED = 91;
   /** RegularExpression Id. */
-  int K_STRING = 92;
+  int K_STEP_BY_STEP = 92;
   /** RegularExpression Id. */
-  int K_TABLE = 93;
+  int K_STREAM = 93;
   /** RegularExpression Id. */
-  int K_TABLE_FORMAT = 94;
+  int K_STREAMS = 94;
   /** RegularExpression Id. */
-  int K_TABLES = 95;
+  int K_STRING = 95;
   /** RegularExpression Id. */
-  int K_TABLESPACE = 96;
+  int K_TABLE = 96;
   /** RegularExpression Id. */
-  int K_TIME = 97;
+  int K_TABLE_FORMAT = 97;
   /** RegularExpression Id. */
-  int K_TIME_AND_VALUE = 98;
+  int K_TABLES = 98;
   /** RegularExpression Id. */
-  int K_TUPLES = 99;
+  int K_TABLESPACE = 99;
   /** RegularExpression Id. */
-  int K_UNIQUE = 100;
+  int K_TIME = 100;
   /** RegularExpression Id. */
-  int K_UPDATE = 101;
+  int K_TIME_AND_VALUE = 101;
   /** RegularExpression Id. */
-  int K_UPSERT = 102;
+  int K_TUPLES = 102;
   /** RegularExpression Id. */
-  int K_UPSERT_APPEND = 103;
+  int K_UNIQUE = 103;
   /** RegularExpression Id. */
-  int K_USE = 104;
+  int K_UPDATE = 104;
   /** RegularExpression Id. */
-  int K_USING = 105;
+  int K_UPSERT = 105;
   /** RegularExpression Id. */
-  int K_VALUE = 106;
+  int K_UPSERT_APPEND = 106;
   /** RegularExpression Id. */
-  int K_WHEN = 107;
+  int K_USE = 107;
   /** RegularExpression Id. */
-  int K_WHERE = 108;
+  int K_USING = 108;
   /** RegularExpression Id. */
-  int S_INTEGER = 109;
+  int K_VALUE = 109;
   /** RegularExpression Id. */
-  int S_FLOAT = 110;
+  int K_WHEN = 110;
   /** RegularExpression Id. */
-  int EXPONENT = 111;
+  int K_WHERE = 111;
   /** RegularExpression Id. */
-  int DIGIT = 112;
+  int K_WITH = 112;
   /** RegularExpression Id. */
-  int SIGN = 113;
+  int S_INTEGER = 113;
   /** RegularExpression Id. */
-  int S_STRING = 114;
+  int S_FLOAT = 114;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 115;
+  int EXPONENT = 115;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 116;
+  int DIGIT = 116;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 117;
+  int SIGN = 117;
   /** RegularExpression Id. */
-  int LETTER = 118;
+  int S_STRING = 118;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 119;
+  int LINE_COMMENT = 119;
   /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 120;
+  int MULTI_LINE_COMMENT = 120;
   /** RegularExpression Id. */
-  int S_QMARK = 121;
+  int S_IDENTIFIER = 121;
+  /** RegularExpression Id. */
+  int LETTER = 122;
+  /** RegularExpression Id. */
+  int SPECIAL_CHARS = 123;
+  /** RegularExpression Id. */
+  int S_DOUBLE_QUOTED_IDENTIFIER = 124;
+  /** RegularExpression Id. */
+  int S_QMARK = 125;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -328,16 +336,19 @@ public interface StreamSqlParserConstants {
     "\"RANGE\"",
     "\"READ\"",
     "\"REAL\"",
+    "\"RESTART\"",
     "\"REVERSE\"",
     "\"ROW\"",
     "\"ROWS\"",
     "\"SAMPLE\"",
     "\"SELECT\"",
+    "\"SEQUENCE\"",
     "\"SET\"",
     "\"SIZE\"",
     "\"SHOW\"",
     "\"SHORT\"",
     "\"SMALLINT\"",
+    "\"SEQUENCES\"",
     "\"SPEED\"",
     "\"STEP_BY_STEP\"",
     "\"STREAM\"",
@@ -359,6 +370,7 @@ public interface StreamSqlParserConstants {
     "\"VALUE\"",
     "\"WHEN\"",
     "\"WHERE\"",
+    "\"WITH\"",
     "<S_INTEGER>",
     "<S_FLOAT>",
     "<EXPONENT>",

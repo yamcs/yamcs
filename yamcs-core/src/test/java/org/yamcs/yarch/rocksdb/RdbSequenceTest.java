@@ -63,6 +63,15 @@ public class RdbSequenceTest {
         for (long i = 234; i < 543; i++) {
             assertEquals(i, seq1.next());
         }
+        seq1.reset(100);
+        assertEquals(100, seq1.next());
+        seq1.close();
+        closeDb();
+        openDb();
+
+        RdbSequence seq2 = new RdbSequence("test1", rdb, cfMetadata);
+        assertEquals(101, seq2.next());
+
     }
 
     @Test
@@ -83,7 +92,7 @@ public class RdbSequenceTest {
                 return a;
             });
         }
-        List<Long> list = new ArrayList<>(n*m);
+        List<Long> list = new ArrayList<>(n * m);
         for (int k = 0; k < n; k++) {
             LongArray la = f[k].get();
             assertEquals(m, la.size());
@@ -93,19 +102,17 @@ public class RdbSequenceTest {
         }
         Collections.sort(list);
         for (int i = 0; i < n * m; i++) {
-            assertEquals(i, (long)list.get(i));
+            assertEquals(i, (long) list.get(i));
         }
     }
 
-    
-    @Test(expected=YarchException.class)
+    @Test(expected = YarchException.class)
     public void testClose() throws Exception {
         RdbSequence seq = new RdbSequence("testclose", rdb, cfMetadata);
         seq.close();
         seq.next();
     }
-    
-    
+
     private void openDb() throws Exception {
         rdb = new YRDB(dbdir.toString(), false);
         cfMetadata = rdb.getColumnFamilyHandle("_metadata_");
@@ -118,5 +125,4 @@ public class RdbSequenceTest {
         cfMetadata.close();
         rdb.close();
     }
-
 }

@@ -162,16 +162,19 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_RANGE:"RANGE">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
+|   <K_RESTART:"RESTART">
 |   <K_REVERSE:"REVERSE">
 |   <K_ROW:"ROW">
 |   <K_ROWS:"ROWS">
 |   <K_SAMPLE:"SAMPLE">
 |   <K_SELECT:"SELECT">
+|   <K_SEQUENCE:"SEQUENCE">
 |   <K_SET:"SET">
 |   <K_SIZE:"SIZE">
 |   <K_SHOW:"SHOW">
 |   <K_SHRT:"SHORT">
 |   <K_SMALLINT:"SMALLINT">
+|   <K_SEQUENCES:"SEQUENCES">
 |   <K_SPEED:"SPEED">
 |   <K_STEP_BY_STEP:"STEP_BY_STEP">
 |   <K_STREAM:"STREAM">
@@ -193,6 +196,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUE:"VALUE">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
+|   <K_WITH:"WITH">
 }
 
 TOKEN : /* Numeric Constants */
@@ -293,6 +297,10 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     LOOKAHEAD(2) statement=ShowEnginesStatement()
     |
     LOOKAHEAD(2) statement=ShowDatabasesStatement()
+    |
+    LOOKAHEAD(2) statement=ShowSequencesStatement()
+    |
+    LOOKAHEAD(2) statement=AlterSequenceStatement()
     )
     {
 	return statement;
@@ -500,12 +508,30 @@ ShowDatabasesStatement ShowDatabasesStatement() throws StreamSqlException: {
     }
 }
 
+ShowSequencesStatement ShowSequencesStatement() throws StreamSqlException: {
+} {
+    <K_SHOW> <K_SEQUENCES> 
+    {
+	return new ShowSequencesStatement();
+    }
+}
+
 DescribeStatement DescribeStatement() throws StreamSqlException: {
     String name;
 } {
     <K_DESCRIBE> name=ObjectName()
     {
 	return new DescribeStatement(name);
+    }
+}
+
+AlterSequenceStatement AlterSequenceStatement() throws StreamSqlException: {
+    String name;
+    BigDecimal n = new BigDecimal(0);
+} {
+    <K_ALTER>  <K_SEQUENCE> name=ObjectName() <K_RESTART> [ <K_WITH> n = NumericConstant()]
+    {
+	return new AlterSequenceStatement(name, n.longValue());
     }
 }
 

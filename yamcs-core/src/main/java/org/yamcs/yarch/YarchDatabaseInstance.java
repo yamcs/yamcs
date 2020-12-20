@@ -534,7 +534,12 @@ public class YarchDatabaseInstance {
         }
     }
 
-    public Sequence getSequence(String name) throws YarchException {
-        return YarchDatabase.getDefaultStorageEngine().getSequence(this, name);
+    public Sequence getSequence(String name, boolean create) throws YarchException {
+        return YarchDatabase.getDefaultStorageEngine().getSequence(this, name, create);
+    }
+
+    public List<SequenceInfo> getSequencesInfo() {
+        return YarchDatabase.getDefaultStorageEngine().getSequencesInfo(this);
+
     }
 }

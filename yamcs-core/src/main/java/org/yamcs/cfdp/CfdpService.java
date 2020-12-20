@@ -166,7 +166,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
-        idSeq = ydb.getSequence(SEQUENCE_NAME);
+        idSeq = ydb.getSequence(SEQUENCE_NAME, true);
         if (config.containsKey("senderFaultHandlers")) {
             senderFaultHandlers = readFaultHandlers(config.getMap("senderFaultHandlers"));
         } else {

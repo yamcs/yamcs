@@ -30,6 +30,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.Sequence;
+import org.yamcs.yarch.SequenceInfo;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.YarchDatabase;
@@ -69,21 +70,24 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
  * Except for the 4 bytes tbsIndex, the rest of the key and value are completely dependent on the data type. For example
  * for yarch table data, the rest of key following the 4 bytes tbsIndex represents the key of the row in the table.
  * <p>
- * The metadata contains two types of records, identified by the first byte of the key:
+ * The metadata contains three types of records, identified by the first byte of the key:
  * <ul>
- * <li>key: 0x1
+ * <li>key: 0x01
  * <p>
  * value: 1 byte version number (0x1), 4 bytes max tbsIndex
  * <p>
  * used to store the max tbsIndex and also stores
  * a version number in case the format will change in the future
- * <li>key: 0x2, 1 byte record type, 4 bytes tbsIndex
+ * <li>key: 0x02, 1 byte record type, 4 bytes tbsIndex
  * <p>
  * value: protobuf encoded TablespaceRecord
  * <p>
  * Used to store the information corresponding to the given tbsIndex. The record type corresponds to the Type
  * enumerations from tablespace.proto
  * </li>
+ * <li>key: 0x03, 1 byte record type, sequence name encoded in UTF8
+ * <p>
+ * value: last sequence number 8 bytes big endian
  * </ul>
  */
 public class Tablespace {
@@ -232,7 +236,7 @@ public class Tablespace {
                 arit.next();
             }
         } catch (RocksDBException e1) {
-           throw new YarchException(e1);
+            throw new YarchException(e1);
         }
         return r;
     }
@@ -478,10 +482,10 @@ public class Tablespace {
 
             createMetadataRecord(yamcsInstance, trb);
 
-            for(SecondaryIndex sidx: rtd.getSecondaryIndexList()) {
+            for (SecondaryIndex sidx : rtd.getSecondaryIndexList()) {
                 TablespaceRecord.Builder trbsidx = TablespaceRecord.newBuilder();
                 trbsidx.setType(Type.SECONDARY_INDEX);
-                trbsidx.setSecondaryIndex(sidx);//only one secondary index supported for now
+                trbsidx.setSecondaryIndex(sidx);// only one secondary index supported for now
                 trbsidx.setTableName(tblDef.getName());
                 createMetadataRecord(yamcsInstance, trbsidx);
             }
@@ -510,7 +514,7 @@ public class Tablespace {
 
     private Sequence autoincrementSequence(String yamcsInstance, String tableName, String columnName)
             throws YarchException, RocksDBException {
-        return getSequence("autoincrement:" + yamcsInstance + "." + tableName + "." + columnName);
+        return getSequence("autoincrement:" + yamcsInstance + "." + tableName + "." + columnName, true);
     }
 
     void saveTableDefinition(String yamcsInstance, TableDefinition tblDef,
@@ -573,7 +577,7 @@ public class Tablespace {
                 w.close();
             }
         }
-        //TODO make atomic as much as possible
+        // TODO make atomic as much as possible
         synchronized (tables) {
             RdbTable table = tables.remove(tblDef);
             if (table == null) {
@@ -675,13 +679,19 @@ public class Tablespace {
         for (TableWalker rrs : walkers.keySet()) {
             rrs.close();
         }
+        synchronized (sequences) {
+            for (RdbSequence seq : sequences.values()) {
+                seq.close();
+            }
+            sequences.clear();
+        }
         rdbFactory.shutdown();
     }
 
-    public Sequence getSequence(String name) throws YarchException, RocksDBException {
+    public Sequence getSequence(String name, boolean create) throws YarchException, RocksDBException {
         synchronized (sequences) {
             RdbSequence seq = sequences.get(name);
-            if (seq == null) {
+            if (seq == null && (create || db.get(cfMetadata, RdbSequence.getDbKey(name)) != null)) {
                 seq = new RdbSequence(name, db, cfMetadata);
                 sequences.put(name, seq);
             }
@@ -708,5 +718,29 @@ public class Tablespace {
             throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
         }
         return table;
+    }
+
+    public List<SequenceInfo> getSequencesInfo() {
+        List<SequenceInfo> seqlist = new ArrayList<>();
+        // first add the open sequences
+        synchronized (sequences) {
+            for (Map.Entry<String, RdbSequence> me : sequences.entrySet()) {
+                seqlist.add(new SequenceInfo(me.getKey(), me.getValue().get()));
+            }
+        }
+        // then the not open ones
+        byte[] prefix = new byte[] { METADATA_FB_SEQ };
+        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(cfMetadata), prefix, prefix)) {
+            while (it.isValid()) {
+                String name = RdbSequence.getName(it.key());
+                if (!seqlist.stream().anyMatch(s -> name.equals(s.getName()))) {
+                    seqlist.add(new SequenceInfo(name, RdbSequence.getValue(it.value())));
+                }
+                it.next();
+            }
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
+        return seqlist;
     }
 }
