@@ -1,4 +1,4 @@
-package org.yamcs.utils;
+package org.yamcs.xtce.util;
 
 import java.io.Serializable;
 

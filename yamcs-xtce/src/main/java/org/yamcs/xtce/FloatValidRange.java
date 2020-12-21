@@ -1,6 +1,6 @@
 package org.yamcs.xtce;
 
-import org.yamcs.utils.DoubleRange;
+import org.yamcs.xtce.util.DoubleRange;
 
 /**
  * Holds the min/max of a ValidRange for floating point.

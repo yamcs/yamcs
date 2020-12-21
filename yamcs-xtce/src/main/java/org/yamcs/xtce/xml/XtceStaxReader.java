@@ -40,7 +40,6 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.utils.DoubleRange;
 import org.yamcs.xtce.ANDedConditions;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AbsoluteTimeDataType;
@@ -144,6 +143,7 @@ import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.util.DataTypeUtil;
+import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.HexUtils;
 import org.yamcs.xtce.util.IncompleteType;
 import org.yamcs.xtce.util.NameReference;

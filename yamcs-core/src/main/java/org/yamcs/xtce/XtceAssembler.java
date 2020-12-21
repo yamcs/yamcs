@@ -22,12 +22,12 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.yamcs.logging.Log;
-import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.util.DoubleRange;
 
 /**
  * 

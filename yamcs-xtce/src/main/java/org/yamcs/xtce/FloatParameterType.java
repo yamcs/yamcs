@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.yamcs.utils.DoubleRange;
+import org.yamcs.xtce.util.DoubleRange;
 
 public class FloatParameterType extends FloatDataType implements NumericParameterType {
     private static final long serialVersionUID = 2L;

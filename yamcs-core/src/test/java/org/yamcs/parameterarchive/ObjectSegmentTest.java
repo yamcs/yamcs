@@ -10,9 +10,9 @@ import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
-import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.util.DoubleRange;
 
 
 public class ObjectSegmentTest {

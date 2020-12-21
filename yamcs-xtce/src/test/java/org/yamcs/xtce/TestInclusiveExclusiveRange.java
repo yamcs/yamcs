@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Test;
-import org.yamcs.utils.DoubleRange;
+import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 public class TestInclusiveExclusiveRange {

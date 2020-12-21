@@ -4,7 +4,7 @@ import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.utils.DoubleRange;
+import org.yamcs.xtce.util.DoubleRange;
 
 public class ParameterStatus {
     public static final ParameterStatus NOMINAL = new ParameterStatus();

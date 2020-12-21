@@ -10,8 +10,8 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.utils.DoubleRange;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.util.DoubleRange;
 
 public class ParameterStatusTest {
     
