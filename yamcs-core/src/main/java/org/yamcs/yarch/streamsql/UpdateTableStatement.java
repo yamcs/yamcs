@@ -148,6 +148,11 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
         }
     }
 
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
+
     static public class UpdateItem {
         final String colName;
         final Expression value;
@@ -165,5 +170,4 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
             return "UpdateItem [colName=" + colName + ", value=" + value + "]";
         }
     }
-
 }

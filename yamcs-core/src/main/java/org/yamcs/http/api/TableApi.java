@@ -385,27 +385,26 @@ public class TableApi extends AbstractTableApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
-
         if (request.hasStatement()) {
             try {
                 StreamSqlStatement stmt = ydb.createStatement(request.getStatement());
 
                 ResultSet.Builder rsBuilder = ResultSet.newBuilder();
                 ydb.execute(stmt, new ResultListener() {
-
-                    boolean first = true;
+                    TupleDefinition tdef;
+                    @Override
+                    public void start(TupleDefinition tdef) {
+                        for (int i = 0; i < tdef.size(); i++) {
+                            ColumnDefinition cdef = tdef.getColumn(i);
+                            rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
+                        }
+                        this.tdef = tdef.copy();
+                    }
 
                     @Override
                     public void next(Tuple tuple) {
-                        if (first) {
-                            for (int i = 0; i < tuple.getDefinition().size(); i++) {
-                                ColumnDefinition cdef = tuple.getColumnDefinition(i);
-                                rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
-                            }
-                            first = false;
-                        }
                         rsBuilder.addRows(ListValue.newBuilder()
-                                .addAllValues(getTupleValues(tuple)));
+                                .addAllValues(getTupleValues(tdef, tuple)));
                     }
 
                     @Override
@@ -444,23 +443,22 @@ public class TableApi extends AbstractTableApi<Context> {
                 final int RESULT_SET_SIZE_TRESHOLD = 2000;
 
                 ydb.execute(stmt, new ResultListener() {
-
-                    boolean first = true;
+                    TupleDefinition tdef;
                     int sizeEstimate;
                     ResultSet.Builder rsBuilder = ResultSet.newBuilder();
 
                     @Override
-                    public void next(Tuple tuple) {
-                        if (first) {
-                            for (int i = 0; i < tuple.getDefinition().size(); i++) {
-                                ColumnDefinition cdef = tuple.getColumnDefinition(i);
-                                ColumnInfo column = toColumnInfo(cdef, null);
-                                rsBuilder.addColumns(column);
-                                sizeEstimate += column.getSerializedSize();
-                            }
-                            first = false;
+                    public void start(TupleDefinition tdef) {
+                        for (int i = 0; i < tdef.size(); i++) {
+                            ColumnDefinition cdef = tdef.getColumn(i);
+                            rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
                         }
-                        ListValue row = ListValue.newBuilder().addAllValues(getTupleValues(tuple)).build();
+                        this.tdef = tdef.copy();
+                    }
+
+                    @Override
+                    public void next(Tuple tuple) {
+                        ListValue row = ListValue.newBuilder().addAllValues(getTupleValues(tdef, tuple)).build();
                         rsBuilder.addRows(row);
                         sizeEstimate += row.getSerializedSize();
                         if (sizeEstimate > RESULT_SET_SIZE_TRESHOLD) {
@@ -665,104 +663,83 @@ public class TableApi extends AbstractTableApi<Context> {
         return infob.build();
     }
 
-    private static List<Value> getTupleValues(Tuple tuple) {
+    private static List<Value> getTupleValues(TupleDefinition tdef, Tuple tuple) {
         List<Value> result = new ArrayList<>();
-        int i = 0;
-        for (Object column : tuple.getColumns()) {
-            ColumnDefinition cdef = tuple.getColumnDefinition(i);
-
+        for (ColumnDefinition cdef : tdef.getColumnDefinitions()) {
+            Object column = tuple.getColumn(cdef.getName());
             Value.Builder v = Value.newBuilder();
-            switch (cdef.getType().val) {
-            case SHORT:
-                v.setType(Type.SINT32);
-                if (column != null) {
+            if (column == null) {
+                v.setType(Type.NONE);
+            } else {
+                switch (cdef.getType().val) {
+                case SHORT:
+                    v.setType(Type.SINT32);
                     v.setSint32Value((Short) column);
-                }
-                break;
-            case DOUBLE:
-                v.setType(Type.DOUBLE);
-                if (column != null) {
+                    break;
+                case DOUBLE:
+                    v.setType(Type.DOUBLE);
                     v.setDoubleValue((Double) column);
-                }
-                break;
-            case BINARY:
-                v.setType(Type.BINARY);
-                if (column != null) {
+                    break;
+                case BINARY:
+                    v.setType(Type.BINARY);
                     v.setBinaryValue(ByteString.copyFrom((byte[]) column));
-                }
-                break;
-            case INT:
-                v.setType(Type.SINT32);
-                if (column != null) {
+                    break;
+                case INT:
+                    v.setType(Type.SINT32);
                     v.setSint32Value((Integer) column);
-                }
-                break;
-            case TIMESTAMP:
-                v.setType(Type.TIMESTAMP);
-                if (column != null) {
+                    break;
+                case TIMESTAMP:
+                    v.setType(Type.TIMESTAMP);
                     v.setTimestampValue((Long) column);
                     v.setStringValue(TimeEncoding.toString((Long) column));
-                }
-                break;
-            case HRES_TIMESTAMP:
-                v.setType(Type.TIMESTAMP);
-                if (column != null) {
+                    break;
+                case HRES_TIMESTAMP:
+                    v.setType(Type.TIMESTAMP);
                     long m = ((Instant) column).getMillis();
                     v.setTimestampValue(m);
                     v.setStringValue(TimeEncoding.toString(m));
-                }
-                break;
-            case ENUM:
-            case STRING:
-                v.setType(Type.STRING);
-                if (column != null) {
+                    break;
+                case ENUM:
+                case STRING:
+                    v.setType(Type.STRING);
                     v.setStringValue((String) column);
-                }
-                break;
-            case BOOLEAN:
-                v.setType(Type.BOOLEAN);
-                if (column != null) {
+                    break;
+                case BOOLEAN:
+                    v.setType(Type.BOOLEAN);
                     v.setBooleanValue((Boolean) column);
-                }
-                break;
-            case LONG:
-                v.setType(Type.SINT64);
-                if (column != null) {
+                    break;
+                case LONG:
+                    v.setType(Type.SINT64);
                     v.setSint64Value((Long) column);
-                }
-                break;
-            case PARAMETER_VALUE:
-                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
-                v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
-                break;
-            case PROTOBUF:
-                v.setType(Type.BINARY);
-                if (column != null) {
+                    break;
+                case PARAMETER_VALUE:
+                    org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
+                    v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
+                    break;
+                case PROTOBUF:
+                    v.setType(Type.BINARY);
                     MessageLite message = (MessageLite) column;
                     v.setBinaryValue(message.toByteString());
-                }
-                break;
-            case UUID:
-                v.setType(Type.STRING);
-                if (column != null) {
+                    break;
+                case UUID:
+                    v.setType(Type.STRING);
                     v.setStringValue(((java.util.UUID) column).toString());
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Tuple column type " + cdef.getType().val + " is currently not supported");
                 }
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Tuple column type " + cdef.getType().val + " is currently not supported");
             }
-
             result.add(v.build());
-            i++;
         }
+
         return result;
     }
 
     public final static List<ColumnData> toColumnDataList(Tuple tuple) {
         List<ColumnData> result = new ArrayList<>();
         int i = 0;
-        for (Value value : getTupleValues(tuple)) {
+        for (Value value : getTupleValues(tuple.getDefinition(), tuple)) {
             ColumnDefinition cdef = tuple.getColumnDefinition(i);
 
             ColumnData.Builder colData = ColumnData.newBuilder();

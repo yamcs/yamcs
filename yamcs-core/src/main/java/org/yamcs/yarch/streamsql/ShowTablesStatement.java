@@ -30,4 +30,9 @@ public class ShowTablesStatement extends SimpleStreamSqlStatement {
             }
         }
     }
+
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }

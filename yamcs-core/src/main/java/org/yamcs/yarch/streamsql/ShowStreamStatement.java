@@ -42,4 +42,9 @@ public class ShowStreamStatement extends SimpleStreamSqlStatement {
             consumer.accept(tuple);
         }
     }
+
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }

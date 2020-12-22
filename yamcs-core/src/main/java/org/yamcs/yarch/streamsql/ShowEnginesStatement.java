@@ -29,4 +29,8 @@ public class ShowEnginesStatement extends SimpleStreamSqlStatement {
         }
     }
 
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }

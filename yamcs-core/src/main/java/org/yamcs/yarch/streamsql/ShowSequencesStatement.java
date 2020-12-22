@@ -25,4 +25,8 @@ public class ShowSequencesStatement extends SimpleStreamSqlStatement {
         }
     }
 
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }

@@ -113,6 +113,11 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
             consumer.accept(tuple);
         }
     }
+
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }
 
 /*

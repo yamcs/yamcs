@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 
 /**
  * common implementation for statements which do not return a stream of results but just a limited set
@@ -12,8 +13,11 @@ import org.yamcs.yarch.Tuple;
  *
  */
 public abstract class SimpleStreamSqlStatement implements StreamSqlStatement {
+    final static TupleDefinition EMPTY_TDEF = new TupleDefinition();
     @Override
     public void execute(ExecutionContext c, ResultListener resultListener, long limit) throws StreamSqlException {
+        resultListener.start(getResultDefinition());
+
         AtomicLong count = new AtomicLong();
         execute(c, t -> {
             if (count.getAndIncrement() < limit) {
@@ -31,4 +35,8 @@ public abstract class SimpleStreamSqlStatement implements StreamSqlStatement {
     }
 
     protected abstract void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException;
+
+    protected TupleDefinition getResultDefinition() {
+        return EMPTY_TDEF;
+    }
 }

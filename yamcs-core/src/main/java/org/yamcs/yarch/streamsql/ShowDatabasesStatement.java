@@ -28,4 +28,8 @@ public class ShowDatabasesStatement extends SimpleStreamSqlStatement {
         }
     }
 
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }

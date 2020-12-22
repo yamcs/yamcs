@@ -34,6 +34,7 @@ message Value {
     ARRAY = 11;
     // Enumerated values have both an integer (sint64Value) and a string representation
     ENUMERATED = 12;
+    NONE = 13;
   }
   required Type type = 1;
   optional float floatValue = 2;

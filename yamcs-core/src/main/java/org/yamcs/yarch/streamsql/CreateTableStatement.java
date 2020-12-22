@@ -102,5 +102,4 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
     public void setEngine(String engine) {
         this.engine = engine;
     }
-
 }

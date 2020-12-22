@@ -78,4 +78,9 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
             consumer.accept(tuple);
         }
     }
+
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF_TABLE;
+    }
 }

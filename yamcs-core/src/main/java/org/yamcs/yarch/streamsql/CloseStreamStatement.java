@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class CloseStreamStatement extends SimpleStreamSqlStatement  {
@@ -24,4 +25,5 @@ public class CloseStreamStatement extends SimpleStreamSqlStatement  {
         }
         s.close();
     }
+
 }

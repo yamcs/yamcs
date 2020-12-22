@@ -27,6 +27,7 @@ public class SelectTableStatement implements StreamSqlStatement {
             throw new GenericStreamSqlException("Cannot select without a result listener");
         }
         Stream stream = createStream(context);
+        resultListener.start(stream.getDefinition());
 
         stream.addSubscriber(new StreamSubscriber() {
             @Override

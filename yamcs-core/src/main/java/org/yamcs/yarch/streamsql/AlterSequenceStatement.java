@@ -34,4 +34,9 @@ public class AlterSequenceStatement  extends SimpleStreamSqlStatement {
         Tuple tuple = new Tuple(TDEF, new Object[] { seqName, value});
         consumer.accept(tuple);
     }
+
+    @Override
+    protected TupleDefinition getResultDefinition() {
+        return TDEF;
+    }
 }
