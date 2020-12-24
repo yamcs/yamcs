@@ -88,7 +88,11 @@
           Unshelve
         </button>
       </mat-menu>
-      <button mat-button [matMenuTriggerFor]="alarmMenu" class="icon" *ngIf="mayControl">
+      <button mat-button
+              [matMenuTriggerFor]="alarmMenu"
+              class="icon"
+              (click)="$event.stopPropagation()"
+              *ngIf="mayControl">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

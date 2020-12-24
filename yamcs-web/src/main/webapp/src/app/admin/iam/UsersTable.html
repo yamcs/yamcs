@@ -54,7 +54,10 @@
           Delete user
         </button>
       </mat-menu>
-      <button mat-button [matMenuTriggerFor]="groupMenu" class="icon">
+      <button mat-button
+              [matMenuTriggerFor]="groupMenu"
+              class="icon"
+              (click)="$event.stopPropagation()">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

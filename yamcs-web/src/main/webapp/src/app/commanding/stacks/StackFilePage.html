@@ -39,7 +39,10 @@
         Delete selected command
       </button>
     </mat-menu>
-    <button mat-icon-button color="primary" [matMenuTriggerFor]="moreMenu">
+    <button mat-icon-button
+            color="primary"
+            [matMenuTriggerFor]="moreMenu"
+            (click)="$event.stopPropagation()">
       <mat-icon>more_vert</mat-icon>
     </button>
   </app-instance-toolbar>
