@@ -1,7 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Pipe({ name: 'ago' })
 export class AgoPipe implements PipeTransform {
+
+  constructor(private yamcs: YamcsService) {
+  }
 
   transform(value: string): string | null {
     if (!value) {
@@ -11,7 +15,8 @@ export class AgoPipe implements PipeTransform {
   }
 
   private timeSince(date: Date) {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    const relto = this.yamcs.getMissionTime();
+    const seconds = Math.floor((relto.getTime() - date.getTime()) / 1000);
     let interval = Math.floor(seconds / 31536000);
 
     if (interval > 1) {
