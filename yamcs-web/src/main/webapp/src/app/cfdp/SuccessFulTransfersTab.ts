@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { StorageClient, TransferSubscription } from '../client';
+import { StorageClient, Transfer, TransferSubscription } from '../client';
+import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
 
@@ -19,19 +20,35 @@ export class SuccessfulTransfersTab implements OnDestroy {
   private transfersById = new Map<number, TransferItem>();
   private transferSubscription: TransferSubscription;
 
+  private dirty = false;
+  private syncSubscription: Subscription;
+
   private queryParamSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, route: ActivatedRoute) {
+  constructor(
+    private yamcs: YamcsService,
+    route: ActivatedRoute,
+    synchronizer: Synchronizer,
+  ) {
     this.storageClient = yamcs.createStorageClient();
     this.queryParamSubscription = route.queryParamMap.subscribe(params => {
       const service = params.get('service');
       this.serviceName$.next(service);
       this.switchService(service);
     });
+    this.syncSubscription = synchronizer.sync(() => {
+      if (this.dirty) {
+        const values = [...this.transfersById.values()];
+        values.sort((a, b) => a.transfer.startTime.localeCompare(b.transfer.startTime));
+        this.dataSource.data = values;
+        this.dirty = false;
+      }
+    });
   }
 
   private switchService(service: string | null) {
     // Clear state
+    this.dirty = false;
     this.transfersById.clear();
     this.dataSource.data = [];
     if (this.transferSubscription) {
@@ -45,22 +62,34 @@ export class SuccessfulTransfersTab implements OnDestroy {
       }, transfer => {
         switch (transfer.state) {
           case 'COMPLETED':
-            this.transfersById.set(transfer.id, {
-              ...transfer,
-              objectUrl: this.storageClient.getObjectURL(
-                '_global', transfer.bucket, transfer.objectName),
-            });
+            this.setOrUpdate(transfer);
             break;
         }
 
-        const values = [...this.transfersById.values()];
-        values.sort((a, b) => a.startTime.localeCompare(b.startTime));
-        this.dataSource.data = values;
+        // Throttle updates, it can get spammy
+        this.dirty = true;
       });
     }
   }
 
+  // Do our best to preserve top-level object identity
+  // It improves change detection behaviour
+  private setOrUpdate(transfer: Transfer) {
+    let item = this.transfersById.get(transfer.id);
+    if (item) {
+      item.updateTransfer(transfer);
+    } else {
+      const objectUrl = this.storageClient.getObjectURL(
+        '_global', transfer.bucket, transfer.objectName);
+      item = new TransferItem(transfer, objectUrl);
+      this.transfersById.set(transfer.id, item);
+    }
+  }
+
   ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
     if (this.queryParamSubscription) {
       this.queryParamSubscription.unsubscribe();
     }
