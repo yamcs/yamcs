@@ -7,6 +7,12 @@ options:
         multiple Yamcs servers in distributed deployments.
     type: STRING
     
+  extraHeaderHTML:
+    title: Extra Header HTML
+    description:
+      - Additional HTML to be included at the end of the <head></head> section.
+    type: STRING
+
   displayPath:
     title: Display Path
     description:
@@ -14,7 +20,7 @@ options:
         stores displays in a regular bucket (in binary form). Using the filesystem allows
         to manage displays outside of Yamcs; for example with a versioning system.
     type: STRING
-    
+
   displayFolderPerInstance:
     title: Display Folder Per Instance
     description:
