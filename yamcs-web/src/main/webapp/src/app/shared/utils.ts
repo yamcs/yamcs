@@ -233,6 +233,8 @@ function printValueWithoutPreview(value: Value): string {
       return '' + value.uint64Value;
     case 'SINT64':
       return '' + value.sint64Value;
+    case 'NONE':
+      return '';
     default:
       return 'Unsupported data type';
   }
