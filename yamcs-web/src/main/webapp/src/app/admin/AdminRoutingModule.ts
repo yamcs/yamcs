@@ -23,6 +23,7 @@ import { UsersPage } from './iam/UsersPage';
 import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ProcessorTypesPage } from './processor-types/ProcessorTypesPage';
+import { ReplicationPage } from './replication/ReplicationPage';
 import { RocksDbDatabasePage } from './rocksdb/RocksDbDatabasePage';
 import { RocksDbDatabasesPage } from './rocksdb/RocksDbDatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
@@ -78,6 +79,10 @@ const routes: Routes = [
       {
         path: 'processor-types',
         component: ProcessorTypesPage,
+      },
+      {
+        path: 'replication',
+        component: ReplicationPage,
       },
       {
         path: 'services',
@@ -206,6 +211,7 @@ export const routingComponents = [
   LeapSecondsPage,
   PluginsPage,
   ProcessorTypesPage,
+  ReplicationPage,
   RocksDbDatabasesPage,
   RocksDbDatabasePage,
   RolesPage,

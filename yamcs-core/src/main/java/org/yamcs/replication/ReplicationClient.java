@@ -1,24 +1,22 @@
 package org.yamcs.replication;
 
+import static org.yamcs.replication.ReplicationServer.workerGroup;
+
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-
 
 import org.yamcs.logging.Log;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.ScheduledFuture;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.channel.ChannelInitializer;
-
-import static org.yamcs.replication.ReplicationServer.workerGroup;
 
 /**
  * Replication TCP client - works both on the master and on the slave side depending on the config
@@ -67,19 +65,16 @@ public class ReplicationClient {
 
     private void doConnect() {
         log.debug("Connecting for replication to {}:{}", host, port);
-        bootstrap.connect(host, port).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture f) throws Exception {
-                if (f.isSuccess()) {
-                    channel = f.channel();
-                    log.info("Connected to server at {}:{}", host, port);
-                    channel.closeFuture().addListener(f1 -> {
-                        scheduleReconnect();
-                    });
-                } else {
-                    log.warn("Failed to connect: {}", f.cause().getMessage());
+        bootstrap.connect(host, port).addListener((ChannelFuture f) -> {
+            if (f.isSuccess()) {
+                channel = f.channel();
+                log.info("Connected to server at {}:{}", host, port);
+                channel.closeFuture().addListener(f1 -> {
                     scheduleReconnect();
-                }
+                });
+            } else {
+                log.warn("Failed to connect: {}", f.cause().getMessage());
+                scheduleReconnect();
             }
         });
     }
@@ -103,5 +98,9 @@ public class ReplicationClient {
         if (channel != null) {
             channel.close();
         }
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 }

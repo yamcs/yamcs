@@ -45,6 +45,7 @@ import org.yamcs.http.api.PacketsApi;
 import org.yamcs.http.api.ParameterArchiveApi;
 import org.yamcs.http.api.ProcessingApi;
 import org.yamcs.http.api.QueueApi;
+import org.yamcs.http.api.ReplicationApi;
 import org.yamcs.http.api.RocksDbApi;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.api.StreamArchiveApi;
@@ -295,6 +296,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new ParameterArchiveApi());
         addApi(new ProcessingApi());
         addApi(new QueueApi());
+        addApi(new ReplicationApi());
         addApi(new ServerApi(this));
         addApi(new StreamArchiveApi());
         addApi(new RocksDbApi());
