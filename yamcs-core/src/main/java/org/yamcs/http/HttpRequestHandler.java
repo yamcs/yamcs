@@ -91,6 +91,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
 
+    public static final AttributeKey<String> CTX_CONTEXT_PATH = AttributeKey.valueOf("contextPath");
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("httpRequest");
     public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
@@ -171,6 +172,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
         cleanPipeline(ctx.pipeline());
+        ctx.channel().attr(CTX_CONTEXT_PATH).set(contextPath);
         ctx.channel().attr(CTX_HTTP_REQUEST).set(req);
 
         if (!req.uri().startsWith(contextPath)) {

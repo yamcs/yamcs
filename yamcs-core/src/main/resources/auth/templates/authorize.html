@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Yamcs Mission Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-name" content="Yamcs">
+  <link rel="stylesheet" href="{{ contextPath }}/static/auth.css">
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="console">
+      <img src="{{ contextPath }}/static/console.svg">
+    </div>
+    <div class="login-panel">
+      <div class="logo">
+        <a href="{{ contextPath }}/">
+          <img src="{{ contextPath }}/static/yamcs300.png">
+        </a>
+      </div>
+      <div class="login-form">
+        <h3>Sign in to your account</h3>
+        <form method="post" action="{{ contextPath }}/auth/actions/login">
+          <label>
+            Username
+            <input type="text" name="username" autofocus autocomplete="off">
+          </label>
+          <br>
+          <label>
+            Password
+            <input type="password" name="password" autocomplete="off">
+          </label>
+
+          <br>
+
+          {% if errorMessage %}
+          <p class="error-message">
+            {{ errorMessage }}
+          </p>
+          {% endif %}
+
+          <input type="hidden" name="client_id" value="{{ request.client_id }}">
+          <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
+          
+          {% if request.state %}
+          <input type="hidden" name="state" value="{{ request.state }}">
+          {% endif %}
+          
+          <input type="submit" value="Sign in">
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

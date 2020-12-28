@@ -5,13 +5,13 @@ import { CreateInstancePage1 } from './appbase/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './appbase/pages/CreateInstancePage2';
 import { ForbiddenPage } from './appbase/pages/ForbiddenPage';
 import { HomePage } from './appbase/pages/HomePage';
-import { LoginPage } from './appbase/pages/LoginPage';
 import { NotFoundPage } from './appbase/pages/NotFoundPage';
 import { ProfilePage } from './appbase/pages/ProfilePage';
 import { ServerUnavailablePage } from './appbase/pages/ServerUnavailablePage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { ClearContextGuard } from './core/guards/ClearContextGuard';
 import { OpenIDCallbackGuard } from './core/guards/OpenIDCallbackGuard';
+import { ServerSideOpenIDCallbackGuard } from './core/guards/ServerSideOpenIDCallbackGuard';
 import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
 
 /*
@@ -97,13 +97,13 @@ const routes: Routes = [
         loadChildren: () => import('src/app/mdb/MdbModule').then(m => m.MdbModule),
         canActivate: [AuthGuard],
       }, {
-        path: 'login',
-        component: LoginPage,
-        canActivate: [ClearContextGuard],
+        path: 'cb',
+        canActivate: [ClearContextGuard, OpenIDCallbackGuard],
+        children: [],
         data: { 'hasSidebar': false }
       }, {
         path: 'oidc-browser-callback',
-        canActivate: [ClearContextGuard, OpenIDCallbackGuard],
+        canActivate: [ClearContextGuard, ServerSideOpenIDCallbackGuard],
         children: [],
         data: { 'hasSidebar': false }
       }, {
@@ -129,10 +129,10 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-    onSameUrlNavigation: 'reload',
-    preloadingStrategy: CustomPreloadingStrategy,
-    relativeLinkResolution: 'legacy'
-}),
+      onSameUrlNavigation: 'reload',
+      preloadingStrategy: CustomPreloadingStrategy,
+      relativeLinkResolution: 'legacy'
+    }),
   ],
   exports: [RouterModule],
 })

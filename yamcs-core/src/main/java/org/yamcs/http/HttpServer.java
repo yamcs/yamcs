@@ -305,7 +305,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new TimeApi());
         addApi(new TimeCorrelationApi());
 
-        AuthHandler authHandler = new AuthHandler(tokenStore, contextPath);
+        AuthHandler authHandler = new AuthHandler(tokenStore);
         addHandler("auth", () -> authHandler);
     }
 

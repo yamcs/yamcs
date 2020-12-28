@@ -7,7 +7,6 @@ import { CreateInstancePage2 } from './pages/CreateInstancePage2';
 import { CreateInstanceWizardStep } from './pages/CreateInstanceWizardStep';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
-import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { Oops } from './pages/Oops';
 import { ProfilePage } from './pages/ProfilePage';
@@ -21,7 +20,6 @@ const appComponents = [
   CreateInstanceWizardStep,
   ForbiddenPage,
   HomePage,
-  LoginPage,
   NotFoundPage,
   Oops,
   ProfilePage,
