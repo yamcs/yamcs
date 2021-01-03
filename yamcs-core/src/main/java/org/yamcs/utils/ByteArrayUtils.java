@@ -257,6 +257,12 @@ public class ByteArrayUtils {
                 ((a[offset + 2] & 0xFF));
     }
 
+	public static int decode3BytesLE(byte[] a, int offset) {
+		return ((a[offset + 2] & 0xFF) << 16) +
+			   ((a[offset + 1] & 0xFF) << 8) +
+		       ((a[offset] & 0xFF));
+	}
+	
     public static byte[] encodeShort(int x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 8);
         a[offset + 1] = (byte) (x);

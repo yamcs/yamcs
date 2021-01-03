@@ -42,6 +42,7 @@ public class GenericPacketInputStream implements PacketInputStream {
     private int lengthFieldEndOffset;
     private int lengthAdjustment;
     private int initialBytesToStrip;
+	private boolean isLittleEndian;
     DataInputStream dataInputStream;
     static Log log = new Log(GenericPacketInputStream.class);
 
@@ -55,6 +56,7 @@ public class GenericPacketInputStream implements PacketInputStream {
         this.lengthFieldLength = args.getInt("lengthFieldLength");
         this.lengthAdjustment = args.getInt("lengthAdjustment");
         this.initialBytesToStrip = args.getInt("initialBytesToStrip");
+		this.isLittleEndian = args.containsKey("isLittleEndian") ? args.getBoolean("isLittleEndian") : false;
         lengthFieldEndOffset = lengthFieldOffset + lengthFieldLength;
 
         if (lengthFieldLength != 1 && lengthFieldLength != 2 && lengthFieldLength != 3 && lengthFieldLength != 4) {
@@ -74,13 +76,13 @@ public class GenericPacketInputStream implements PacketInputStream {
             length = 0xFF & b[lengthFieldOffset];
             break;
         case 2:
-            length = ByteArrayUtils.decodeUnsignedShort(b, lengthFieldOffset);
+            length = isLittleEndian ? ByteArrayUtils.decodeUnsignedShortLE(b, lengthFieldOffset) : ByteArrayUtils.decodeUnsignedShort(b, lengthFieldOffset);
             break;
         case 3:
-            length = ByteArrayUtils.decode3Bytes(b, lengthFieldOffset);
+            length = isLittleEndian ? ByteArrayUtils.decode3BytesLE(b, lengthFieldOffset) : ByteArrayUtils.decode3Bytes(b, lengthFieldOffset);
             break;
         case 4:
-            length = ByteArrayUtils.decodeInt(b, lengthFieldOffset);
+            length = isLittleEndian ? ByteArrayUtils.decodeIntLE(b, lengthFieldOffset) : ByteArrayUtils.decodeInt(b, lengthFieldOffset);
             break;
         default:
             throw new IllegalStateException();
