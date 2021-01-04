@@ -60,6 +60,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  */
 @ThreadSafe
 public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService {
+    static final String TM_INDEX_NAME = "CCSDS";
 
     // if time between two packets with the same apid is more than one hour,
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
@@ -68,6 +69,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     Tablespace tablespace;
     int tbsIndex;
     List<String> streamNames;
+
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration args) throws InitException {
@@ -119,12 +121,13 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     }
 
     private void openDb() throws RocksDBException {
-        List<TablespaceRecord> l = tablespace.filter(Type.CCSDS_TM_INDEX, yamcsInstance, tr -> true);
+        List<TablespaceRecord> l = tablespace.filter(Type.TM_INDEX, yamcsInstance,
+                tr -> !tr.hasTmIndexName() || TM_INDEX_NAME.equals(tr.getTmIndexName()));
         TablespaceRecord tbr;
         if (l.isEmpty()) {
             tbr = tablespace.createMetadataRecord(yamcsInstance,
-                    TablespaceRecord.newBuilder().setType(Type.CCSDS_TM_INDEX));
-            // add a record at the beginnign and at the end to mkae sure the cursor doesn't run out
+                    TablespaceRecord.newBuilder().setType(Type.TM_INDEX).setTmIndexName(TM_INDEX_NAME));
+            // add a record at the beginning and at the end to make sure the cursor doesn't run out
             YRDB db = tablespace.getRdb();
             byte[] v = new byte[Record.VAL_SIZE];
             db.put(Record.key(tbr.getTbsIndex(), (short) 0, (long) 0, (short) 0), v);
@@ -481,8 +484,8 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     public void streamClosed(Stream stream) {
         log.warn("Stream {} closed", stream.getName());
         streamNames.remove(stream.getName());
-        if(streamNames.isEmpty()) {
-            //if all the streams we are subscribed to are closed we fail the service
+        if (streamNames.isEmpty()) {
+            // if all the streams we are subscribed to are closed we fail the service
             log.warn("No stream left");
             notifyFailed(new Exception("stream clsed"));
         }
@@ -556,7 +559,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             }
         }
     }
-    
+
     public static String getWhereCondition(String timeColumnName, TimeInterval interval) {
         if (!interval.hasStart() && !interval.hasEnd()) {
             return "";

@@ -44,9 +44,9 @@ message TablespaceRecord {
     	// relevant information: instanceName, bucketProperties
     	BUCKET = 8;
 
-    	//used to store CCSDS TM index
-    	//relevant information: instanceName
-    	CCSDS_TM_INDEX = 9;
+    	//used to store (CCSDS) TM index
+    	//relevant information: instanceName, tmIndexName
+    	TM_INDEX = 9;
     
     	//used to store small named protobuf messages
     	PROTOBUF = 10;
@@ -97,6 +97,9 @@ message TablespaceRecord {
   	
   	//used for SECONDARY_INDEX
   	optional SecondaryIndex secondaryIndex = 13;
+  	
+  	//used for TM_INDEX
+  	optional string tmIndexName = 14;
 }
 
 //associated to each bucket
