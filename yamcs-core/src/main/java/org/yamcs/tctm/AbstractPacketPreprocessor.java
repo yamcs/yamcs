@@ -112,15 +112,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         configureTimeDecoder(config);
 
         if (config != null) {
-            String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
-            if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
-                byteOrder = ByteOrder.BIG_ENDIAN;
-            } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
-                byteOrder = ByteOrder.LITTLE_ENDIAN;
-            } else {
-                throw new ConfigurationException(
-                        "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
-            }
+
 
             if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
                 String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
@@ -283,6 +275,18 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             }
         default:
             throw new IllegalStateException("Unknonw epoch " + timeEpoch);
+        }
+    }
+
+    public static ByteOrder getByteOrder(YConfiguration config) {
+        String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
+        if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
+            return ByteOrder.BIG_ENDIAN;
+        } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
+            return ByteOrder.LITTLE_ENDIAN;
+        } else {
+            throw new ConfigurationException(
+                    "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
         }
     }
 }

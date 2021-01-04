@@ -26,6 +26,7 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Stream;
@@ -79,15 +80,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
                 }
             }
         }
-        String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
-        if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
-            byteOrder = ByteOrder.BIG_ENDIAN;
-        } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
-            byteOrder = ByteOrder.LITTLE_ENDIAN;
-        } else {
-            throw new ConfigurationException(
-                    "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
-        }
+        byteOrder = AbstractPacketPreprocessor.getByteOrder(config);
         String chrname = config.getString("charset", "US-ASCII");
         try {
             charset = Charset.forName(chrname);
