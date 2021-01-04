@@ -66,7 +66,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
     static long maxApidInterval = 3600 * 1000l;
     private static AtomicInteger streamCounter = new AtomicInteger();
-    Tablespace tablespace;
+    protected Tablespace tablespace;
     int tbsIndex;
     List<String> streamNames;
 
