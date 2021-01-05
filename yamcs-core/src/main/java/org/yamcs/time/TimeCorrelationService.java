@@ -184,7 +184,8 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         spec.addOption("validity", OptionType.FLOAT).withDefault(0.2);
         spec.addOption("saveCoefficients", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("saveTofPolynomials", OptionType.BOOLEAN).withDefault(true);
-
+        spec.addOption("defaultTof", OptionType.FLOAT).withDefault(0.0);
+        
         return spec;
     }
 
@@ -195,6 +196,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         sampleQueue = new ArrayDeque<>(numSamples);
         accuracy = config.getDouble("accuracy", 0.1);
         validity = config.getDouble("validity", 0.2);
+        defaultTof = config.getDouble("deafaultTof", 0.0);        
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
@@ -271,7 +273,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      *             if the obt or ert are smaller than the ones in the previous sample
      */
     public synchronized void addSample(long obt, Instant ert) {
-        double delay = tofEstimator.getTof(ert) + onboardDelay;
+        double delay = getTof(ert) + onboardDelay;
         Instant obi = ert.plus(-delay);
 
         if (!sampleQueue.isEmpty()) {
@@ -368,7 +370,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
         TcoCoefficients c = curCoefficients;
         if (c == null) {
-            double delay = tofEstimator.getTof(ert) + onboardDelay;
+            double delay = getTof(ert) + onboardDelay;
             Instant genTime = ert.plus(-delay);
             pkt.setGenerationTime(genTime.getMillis());
             pkt.setLocalGenTimeFlag();
@@ -411,7 +413,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         if (ert == null || ert == Instant.INVALID_INSTANT) {
             throw new IllegalArgumentException("no ert available");
         }
-        double delay = tofEstimator.getTof(ert) + onboardDelay;
+        double delay = getTof(ert) + onboardDelay;
         Instant expectedGenTime = ert.plus(-delay);
 
         double deviation = expectedGenTime.deltaFrom(Instant.get(pkt.getGenerationTime()));
