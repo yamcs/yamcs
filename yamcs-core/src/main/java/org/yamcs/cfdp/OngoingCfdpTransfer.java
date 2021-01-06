@@ -15,12 +15,13 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.events.EventProducer;
+import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.Stream;
 
-public abstract class OngoingCfdpTransfer implements CfdpTransfer {
+public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected final CfdpTransactionId cfdpTransactionId;
     private Stream cfdpOut;
     protected TransferState state;
@@ -173,7 +174,7 @@ public abstract class OngoingCfdpTransfer implements CfdpTransfer {
         return this;
     }
 
-    @Override
+    // @Override
     public CfdpTransactionId getTransactionId() {
         return cfdpTransactionId;
     }

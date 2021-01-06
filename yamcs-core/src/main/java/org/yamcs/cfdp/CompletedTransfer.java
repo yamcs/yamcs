@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
@@ -9,15 +10,15 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * Represents a past {@link CfdpTransfer} obtained from the database. Reads all the properties from a tuple (row in the
- * database).
+ * Represents a past {@link CfdpFileTransfer} obtained from the database. Reads all the properties from a tuple (row in
+ * the database).
  * <p>
  * Implements also some methods for converting between on-going transfers and tuples.
  * 
  * @author nm
  *
  */
-public class CompletedTransfer implements CfdpTransfer {
+public class CompletedTransfer implements CfdpFileTransfer {
     public static final TupleDefinition TDEF = new TupleDefinition();
     static final Log log = new Log(CompletedTransfer.class);
     static final String COL_ID = "id";
@@ -107,7 +108,7 @@ public class CompletedTransfer implements CfdpTransfer {
         return tuple.getColumn(COL_BUCKET);
     }
 
-    @Override
+    // @Override
     public CfdpTransactionId getTransactionId() {
         return new CfdpTransactionId(tuple.getLongColumn(COL_SOURCE_ID),
                 tuple.getIntColumn(COL_SEQUENCE_NUMBER));
@@ -152,7 +153,7 @@ public class CompletedTransfer implements CfdpTransfer {
         return t;
     }
 
-    static Tuple toUpdateTuple(OngoingCfdpTransfer transfer) {
+    static Tuple toUpdateTuple(FileTransfer transfer) {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, serverId);

@@ -1,16 +1,16 @@
-package org.yamcs.client.cfdp;
+package org.yamcs.client.filetransfer;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.ResponseObserver;
-import org.yamcs.client.cfdp.CfdpClient.UploadOptions.CreatePathOption;
-import org.yamcs.client.cfdp.CfdpClient.UploadOptions.OverwriteOption;
-import org.yamcs.client.cfdp.CfdpClient.UploadOptions.ReliableOption;
-import org.yamcs.client.cfdp.CfdpClient.UploadOptions.UploadOption;
+import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.CreatePathOption;
+import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.OverwriteOption;
+import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.ReliableOption;
+import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.UploadOption;
 import org.yamcs.client.storage.ObjectId;
-import org.yamcs.protobuf.CfdpApiClient;
+import org.yamcs.protobuf.FileTransferApiClient;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListTransfersRequest;
@@ -18,16 +18,16 @@ import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
 
-public class CfdpClient {
+public class FileTransferClient {
 
     private String instance;
     private String serviceName;
-    private CfdpApiClient cfdpService;
+    private FileTransferApiClient ftService;
 
-    public CfdpClient(YamcsClient baseClient, String instance, String serviceName) {
+    public FileTransferClient(YamcsClient baseClient, String instance, String serviceName) {
         this.instance = instance;
         this.serviceName = serviceName;
-        cfdpService = new CfdpApiClient(baseClient.getMethodHandler());
+        ftService = new FileTransferApiClient(baseClient.getMethodHandler());
     }
 
     public String getInstance() {
@@ -39,7 +39,7 @@ public class CfdpClient {
                 .setInstance(instance)
                 .setServiceName(serviceName);
         CompletableFuture<ListTransfersResponse> f = new CompletableFuture<>();
-        cfdpService.listTransfers(null, requestb.build(), new ResponseObserver<>(f));
+        ftService.listTransfers(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getTransfersList());
     }
 
@@ -49,7 +49,7 @@ public class CfdpClient {
                 .setServiceName(serviceName)
                 .setId(id);
         CompletableFuture<TransferInfo> f = new CompletableFuture<>();
-        cfdpService.getTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        ftService.getTransfer(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
     public CompletableFuture<TransferInfo> upload(ObjectId source, UploadOption... options) {
@@ -78,7 +78,7 @@ public class CfdpClient {
         }
         requestb.setUploadOptions(optionsb);
         CompletableFuture<TransferInfo> f = new CompletableFuture<>();
-        cfdpService.createTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        ftService.createTransfer(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -91,7 +91,7 @@ public class CfdpClient {
                 .setBucket(target.getBucket())
                 .setObjectName(target.getObjectName());
         CompletableFuture<TransferInfo> f = new CompletableFuture<>();
-        cfdpService.createTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        ftService.createTransfer(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
