@@ -26,6 +26,8 @@ import org.yamcs.client.cfdp.CfdpClient.UploadOptions;
 import org.yamcs.client.storage.ObjectId;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.FileUtils;
@@ -265,7 +267,7 @@ public class CfdpIntegrationTest {
         }
 
         @Override
-        public void stateChanged(OngoingCfdpTransfer cfdpTransfer) {
+        public void stateChanged(FileTransfer cfdpTransfer) {
         }
     }
 }

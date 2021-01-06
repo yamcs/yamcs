@@ -18,6 +18,13 @@ public interface YamcsService extends Service {
     }
 
     /**
+     * returns the instance name
+     * 
+     * @return
+     */
+    public String getYamcsInstance();
+
+    /**
      * Initialize this service. This is called before the service is started. All operations should finish fast.
      * 
      * @param yamcsInstance

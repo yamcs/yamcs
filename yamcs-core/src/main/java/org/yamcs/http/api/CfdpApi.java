@@ -4,23 +4,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.filetransfer.FileTransferService;
+import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
-import org.yamcs.cfdp.CancelRequest;
-import org.yamcs.cfdp.CfdpService;
+import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
-import org.yamcs.cfdp.CfdpTransfer;
-import org.yamcs.cfdp.OngoingCfdpTransfer;
-import org.yamcs.cfdp.PauseRequest;
-import org.yamcs.cfdp.PutRequest;
-import org.yamcs.cfdp.ResumeRequest;
-import org.yamcs.cfdp.TransferMonitor;
+import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.TransferMonitor;
+import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
@@ -30,7 +27,6 @@ import org.yamcs.protobuf.CFDPServiceInfo;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
-import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListCFDPServicesRequest;
 import org.yamcs.protobuf.ListCFDPServicesResponse;
@@ -46,7 +42,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
@@ -62,8 +57,8 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         YamcsServer yamcs = YamcsServer.getServer();
         ListCFDPServicesResponse.Builder responseb = ListCFDPServicesResponse.newBuilder();
         YamcsServerInstance ysi = yamcs.getInstance(instance);
-        for (ServiceWithConfig service : ysi.getServicesWithConfig(CfdpService.class)) {
-            responseb.addServices(toCFDPServiceInfo(service.getName(), (CfdpService) service.getService()));
+        for (ServiceWithConfig service : ysi.getServicesWithConfig(FileTransferService.class)) {
+            responseb.addServices(toCFDPServiceInfo(service.getName(), (FileTransferService) service.getService()));
         }
         observer.complete(responseb.build());
     }
@@ -72,14 +67,14 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     public void listTransfers(Context ctx, ListTransfersRequest request,
             Observer<ListTransfersResponse> observer) {
 
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
-        List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers());
+        List<FileTransfer> transfers = new ArrayList<>(ftService.getTransfers());
         Collections.sort(transfers, (a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
 
         ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
-        for (CfdpTransfer transfer : transfers) {
+        for (FileTransfer transfer : transfers) {
             responseb.addTransfers(toTransferInfo(transfer));
         }
         observer.complete(responseb.build());
@@ -87,22 +82,20 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
-        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
+        FileTransfer transaction = verifyTransaction(ftService, request.getId());
         observer.complete(toTransferInfo(transaction));
     }
 
     @Override
     public void createTransfer(Context ctx, CreateTransferRequest request, Observer<TransferInfo> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
         if (!request.hasDirection()) {
             throw new BadRequestException("Direction not specified");
         }
-
-        byte[] objData;
 
         String bucketName = request.getBucket();
         BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
@@ -121,66 +114,45 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
             throw new BadRequestException("No bucket by name '" + bucketName + "'");
         }
 
-        try {
-            ObjectProperties props = bucket.findObject(objectName);
-            if (props == null) {
-                throw new NotFoundException();
-            }
-            objData = bucket.getObject(objectName);
-        } catch (IOException e) {
-            log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
-            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
-        }
-
         if (request.getDirection() == TransferDirection.UPLOAD) {
-            boolean overwrite = true;
-            boolean createPath = true;
-            boolean reliable = false;
-            boolean closureRequested = false;
+            TransferOptions transferOptions = new TransferOptions();
+
+            transferOptions.setOverwrite(true);
+            transferOptions.setCreatePath(true);
             if (request.hasUploadOptions()) {
                 UploadOptions opts = request.getUploadOptions();
                 if (opts.hasOverwrite()) {
-                    overwrite = opts.getOverwrite();
+                    transferOptions.setOverwrite(opts.getOverwrite());
                 }
                 if (opts.hasCreatePath()) {
-                    createPath = opts.getCreatePath();
+                    transferOptions.setCreatePath(opts.getCreatePath());
                 }
                 if (opts.hasReliable()) {
-                    reliable = opts.getReliable();
+                    transferOptions.setReliable(opts.getReliable());
                 }
                 if (opts.hasClosureRequested()) {
-                    closureRequested = opts.getClosureRequested();
+                    transferOptions.setClosureRequested(opts.getClosureRequested());
                 }
             }
 
-            if (reliable && closureRequested) {
+            if (transferOptions.isReliable() && transferOptions.isClosureRequested()) {
                 throw new BadRequestException("Cannot set both reliable and closureRequested options");
             }
-            String target = request.getRemotePath();
+            String destinationPath = request.getRemotePath();
+            String source = request.hasSource() ? request.getSource() : null;
+            String destination = request.hasDestination() ? request.getDestination() : null;
 
-            long sourceId, destinationId;
-            if (request.hasSource()) {
-                if(!cfdpService.hasLocalEntity(request.getSource())) {
-                    throw new BadRequestException("Invalid source '" + request.getSource());
-                }
-                sourceId = cfdpService.getLocalEntityId(request.getSource());
-            } else {
-                sourceId = cfdpService.getDefaultLocalEntityId();
+            try {
+                FileTransfer transfer = ftService.startUpload(source, bucket, objectName, destination,
+                        destinationPath, transferOptions);
+                observer.complete(toTransferInfo(transfer));
+
+            } catch (InvalidRequestException e) {
+                throw new BadRequestException(e.getMessage());
+            } catch (IOException e) {
+                log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
+                throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
             }
-
-            if (request.hasDestination()) {
-                if(!cfdpService.hasRemoteEntity(request.getDestination())) {
-                    throw new BadRequestException("Invalid destination '" + request.getDestination()+"'");
-                }
-                destinationId = cfdpService.getRemoteEntityId(request.getDestination());
-            } else {
-                destinationId = cfdpService.getDefaultRemoteEntityId();
-            }
-
-            PutRequest req = new PutRequest(sourceId, destinationId, objectName, target, overwrite, reliable,
-                    closureRequested, createPath, bucket, objData);
-            OngoingCfdpTransfer transfer = cfdpService.processRequest(req);
-            observer.complete(toTransferInfo(transfer));
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             throw new BadRequestException("Download not yet implemented");
         } else {
@@ -190,12 +162,12 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void pauseTransfer(Context ctx, PauseTransferRequest request, Observer<Empty> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
-        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
+        FileTransfer transaction = verifyTransaction(ftService, request.getId());
         if (transaction.pausable()) {
-            cfdpService.processRequest(new PauseRequest(transaction));
+            ftService.pause(transaction);
         } else {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be paused");
         }
@@ -204,12 +176,12 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void cancelTransfer(Context ctx, CancelTransferRequest request, Observer<Empty> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
-        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
+        FileTransfer transaction = verifyTransaction(ftService, request.getId());
         if (transaction.cancellable()) {
-            cfdpService.processRequest(new CancelRequest(transaction));
+            ftService.cancel(transaction);
         } else {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be cancelled");
         }
@@ -218,12 +190,12 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void resumeTransfer(Context ctx, ResumeTransferRequest request, Observer<Empty> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
-        CfdpTransfer transaction = verifyTransaction(cfdpService, request.getId());
+        FileTransfer transaction = verifyTransaction(ftService, request.getId());
 
         if (transaction.pausable()) {
-            cfdpService.processRequest(new ResumeRequest(transaction));
+            ftService.resume(transaction);
         } else {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be resumed");
         }
@@ -232,34 +204,30 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void subscribeTransfers(Context ctx, SubscribeTransfersRequest request, Observer<TransferInfo> observer) {
-        CfdpService cfdpService = verifyCfdpService(request.getInstance(),
+        FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         TransferMonitor listener = transfer -> {
             observer.next(toTransferInfo(transfer));
         };
-        observer.setCancelHandler(() -> cfdpService.removeTransferListener(listener));
+        observer.setCancelHandler(() -> ftService.unregisterTransferMonitor(listener));
 
-        for (CfdpTransfer transfer : cfdpService.getCfdpTransfers()) {
+        for (FileTransfer transfer : ftService.getTransfers()) {
             observer.next(toTransferInfo(transfer));
         }
-        cfdpService.addTransferListener(listener);
+        ftService.registerTransferMonitor(listener);
     }
 
-    private static CFDPServiceInfo toCFDPServiceInfo(String name, CfdpService service) {
+    private static CFDPServiceInfo toCFDPServiceInfo(String name, FileTransferService service) {
         CFDPServiceInfo.Builder infob = CFDPServiceInfo.newBuilder()
                 .setInstance(service.getYamcsInstance())
                 .setName(name);
-        for (Map.Entry<String, Long> me : service.getLocalEntities().entrySet()) {
-            infob.addLocalEntities(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
-        }
-        for (Map.Entry<String, Long> me : service.getRemoteEntities().entrySet()) {
-            infob.addRemoteEntities(EntityInfo.newBuilder().setId(me.getValue()).setName(me.getKey()).build());
-        }
+        infob.addAllLocalEntities(service.getLocalEntities());
+        infob.addAllRemoteEntities(service.getRemoteEntities());
         return infob.build();
     }
 
-    private CfdpTransfer verifyTransaction(CfdpService cfdpService, long id) throws NotFoundException {
-        CfdpTransfer transaction = cfdpService.getCfdpTransfer(id);
+    private FileTransfer verifyTransaction(FileTransferService ftService, long id) throws NotFoundException {
+        FileTransfer transaction = ftService.getFileTransfer(id);
         if (transaction == null) {
             throw new NotFoundException("No such transaction");
         } else {
@@ -267,22 +235,24 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         }
     }
 
-    private static TransferInfo toTransferInfo(CfdpTransfer transaction) {
-        CfdpTransactionId id = transaction.getTransactionId();
-        Timestamp startTime = TimeEncoding.toProtobufTimestamp(transaction.getStartTime());
+    private static TransferInfo toTransferInfo(FileTransfer transfer) {
+        Timestamp startTime = TimeEncoding.toProtobufTimestamp(transfer.getStartTime());
         TransferInfo.Builder tib = TransferInfo.newBuilder()
-                .setId(transaction.getId())
+                .setId(transfer.getId())
                 .setStartTime(startTime)
-                .setState(transaction.getTransferState())
-                .setBucket(transaction.getBucketName())
-                .setObjectName(transaction.getObjectName())
-                .setRemotePath(transaction.getRemotePath())
-                .setDirection(transaction.getDirection())
-                .setTotalSize(transaction.getTotalSize())
-                .setSizeTransferred(transaction.getTransferredSize())
-                .setReliable(transaction.isReliable())
-                .setTransactionId(toTransactionId(id));
-        String failureReason = transaction.getFailuredReason();
+                .setState(transfer.getTransferState())
+                .setBucket(transfer.getBucketName())
+                .setObjectName(transfer.getObjectName())
+                .setRemotePath(transfer.getRemotePath())
+                .setDirection(transfer.getDirection())
+                .setTotalSize(transfer.getTotalSize())
+                .setSizeTransferred(transfer.getTransferredSize())
+                .setReliable(transfer.isReliable());
+        if (transfer instanceof CfdpFileTransfer) {
+            CfdpTransactionId txid = ((CfdpFileTransfer) transfer).getTransactionId();
+            tib.setTransactionId(toTransactionId(txid));
+        }
+        String failureReason = transfer.getFailuredReason();
         if (failureReason != null) {
             tib.setFailureReason(failureReason);
         }
@@ -295,27 +265,27 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 .setSequenceNumber(id.getSequenceNumber()).build();
     }
 
-    private CfdpService verifyCfdpService(String yamcsInstance, String serviceName) throws NotFoundException {
+    private FileTransferService verifyService(String yamcsInstance, String serviceName) throws NotFoundException {
         String instance = ManagementApi.verifyInstance(yamcsInstance);
-        CfdpService cfdpServ = null;
+        FileTransferService ftServ = null;
         if (serviceName != null) {
-            cfdpServ = YamcsServer.getServer().getInstance(instance)
-                    .getService(CfdpService.class, serviceName);
+            ftServ = YamcsServer.getServer().getInstance(instance)
+                    .getService(FileTransferService.class, serviceName);
         } else {
-            List<CfdpService> cl = YamcsServer.getServer().getInstance(instance)
-                    .getServices(CfdpService.class);
+            List<FileTransferService> cl = YamcsServer.getServer().getInstance(instance)
+                    .getServices(FileTransferService.class);
             if (cl.size() > 0) {
-                cfdpServ = cl.get(0);
+                ftServ = cl.get(0);
             }
         }
-        if (cfdpServ == null) {
+        if (ftServ == null) {
             if (serviceName == null) {
-                throw new NotFoundException("No CFDP service found");
+                throw new NotFoundException("No file transfer service found");
             } else {
-                throw new NotFoundException("CFDP service '" + serviceName + "' not found");
+                throw new NotFoundException("File transfer service '" + serviceName + "' not found");
             }
         }
-        return cfdpServ;
+        return ftServ;
     }
 
 }
