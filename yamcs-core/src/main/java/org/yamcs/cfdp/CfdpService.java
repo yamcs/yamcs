@@ -2,7 +2,6 @@ package org.yamcs.cfdp;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,6 +16,11 @@ import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferService;
+import org.yamcs.filetransfer.InvalidRequestException;
+import org.yamcs.filetransfer.TransferMonitor;
+import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -30,6 +34,7 @@ import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -52,7 +57,8 @@ import static org.yamcs.cfdp.CompletedTransfer.TDEF;
  * @author nm
  *
  */
-public class CfdpService extends AbstractYamcsService implements StreamSubscriber, TransferMonitor {
+public class CfdpService extends AbstractYamcsService
+        implements FileTransferService, StreamSubscriber, TransferMonitor {
     static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
     static final String ETYPE_TRANSFER_META = "TRANSFER_METADATA";
@@ -284,7 +290,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         return pendingTransfers.get(transferId);
     }
 
-    public CfdpTransfer getCfdpTransfer(long id) {
+    @Override
+    public FileTransfer getFileTransfer(long id) {
         Optional<OngoingCfdpTransfer> r = pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny();
         if (r.isPresent()) {
             return r.get();
@@ -293,11 +300,11 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    private CfdpTransfer searchInArchive(long id) {
+    private FileTransfer searchInArchive(long id) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             StreamSqlResult res = ydb.execute("select * from " + TABLE_NAME + " where id=?", id);
-            CfdpTransfer r = null;
+            FileTransfer r = null;
             if (res.hasNext()) {
                 r = new CompletedTransfer(res.next());
             }
@@ -310,8 +317,9 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    public Collection<CfdpTransfer> getCfdpTransfers() {
-        List<CfdpTransfer> r = new ArrayList<>();
+    @Override
+    public List<FileTransfer> getTransfers() {
+        List<FileTransfer> r = new ArrayList<>();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         r.addAll(pendingTransfers.values());
 
@@ -477,11 +485,11 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
                 .orElse(null);
     }
 
-    public void addTransferListener(TransferMonitor listener) {
+    public void registerTransferMonitor(TransferMonitor listener) {
         transferListeners.add(listener);
     }
 
-    public void removeTransferListener(TransferMonitor listener) {
+    public void unregisterTransferMonitor(TransferMonitor listener) {
         transferListeners.remove(listener);
     }
 
@@ -510,7 +518,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     @Override
-    public void stateChanged(OngoingCfdpTransfer cfdpTransfer) {
+    public void stateChanged(FileTransfer ft) {
+        OngoingCfdpTransfer cfdpTransfer = (OngoingCfdpTransfer) ft;
         dbStream.emitTuple(CompletedTransfer.toUpdateTuple(cfdpTransfer));
         // Notify downstream listeners
         transferListeners.forEach(l -> l.stateChanged(cfdpTransfer));
@@ -525,39 +534,70 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    public Map<String, Long> getLocalEntities() {
-        return localEntities.entrySet().stream().collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue().id));
+    public List<EntityInfo> getLocalEntities() {
+        return localEntities.values().stream()
+                .map(c -> EntityInfo.newBuilder().setName(c.name).setId(c.id).build())
+                .collect(Collectors.toList());
     }
 
-    public Map<String, Long> getRemoteEntities() {
-        return remoteEntities.entrySet().stream().collect(Collectors.toMap(me -> me.getKey(), me -> me.getValue().id));
+    public List<EntityInfo> getRemoteEntities() {
+        return remoteEntities.values().stream()
+                .map(c -> EntityInfo.newBuilder().setName(c.name).setId(c.id).build())
+                .collect(Collectors.toList());
     }
 
     public OngoingCfdpTransfer getOngoingCfdpTransfer(long id) {
         return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
     }
 
-    public boolean hasLocalEntity(String name) {
-        return localEntities.containsKey(name);
+
+    @Override
+    public OngoingCfdpTransfer startUpload(String source, Bucket bucket, String objectName, String destination,
+            String destinationPath, TransferOptions options) throws IOException {
+        byte[] objData;
+        objData = bucket.getObject(objectName);
+        if (objData == null) {
+            throw new InvalidRequestException("No object named '" + objectName + "' in bucket " + bucket.getName());
+        }
+
+        long sourceId, destinationId;
+
+        if (source == null) {
+            sourceId = localEntities.values().iterator().next().id;
+        } else {
+            if (!localEntities.containsKey(source)) {
+                throw new InvalidRequestException("Invalid source '" + source + "'");
+            }
+            sourceId = localEntities.get(source).id;
+        }
+
+        if (destination == null) {
+            destinationId = remoteEntities.values().iterator().next().id;
+        } else {
+            if (!remoteEntities.containsKey(destination)) {
+                throw new InvalidRequestException("Invalid destination '" + destination + "'");
+            }
+            destinationId = remoteEntities.get(destination).id;
+        }
+
+        PutRequest putReq = new PutRequest(sourceId, destinationId, objectName, destinationPath,
+                options.isOverwrite(), options.isReliable(), options.isClosureRequested(), options.isCreatePath(),
+                bucket, objData);
+        return processPutRequest(putReq);
     }
 
-    public boolean hasRemoteEntity(String name) {
-        return remoteEntities.containsKey(name);
+    @Override
+    public void pause(FileTransfer transfer) {
+        processPauseRequest(new PauseRequest(transfer));
     }
 
-    public long getLocalEntityId(String name) {
-        return localEntities.get(name).id;
+    @Override
+    public void resume(FileTransfer transfer) {
+        processResumeRequest(new ResumeRequest(transfer));
     }
 
-    public long getRemoteEntityId(String name) {
-        return remoteEntities.get(name).id;
-    }
-
-    public long getDefaultLocalEntityId() {
-        return localEntities.values().iterator().next().id;
-    }
-
-    public long getDefaultRemoteEntityId() {
-        return remoteEntities.values().iterator().next().id;
+    @Override
+    public void cancel(FileTransfer transfer) {
+        processCancelRequest(new CancelRequest(transfer));
     }
 }

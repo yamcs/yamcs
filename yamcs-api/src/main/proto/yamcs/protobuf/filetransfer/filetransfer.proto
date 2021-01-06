@@ -1,9 +1,9 @@
 syntax="proto2";
   
-package yamcs.protobuf.cfdp;
+package yamcs.protobuf.filetransfer;
 
 option java_package = "org.yamcs.protobuf";
-option java_outer_classname = "CfdpProto";
+option java_outer_classname = "FileTransferProto";
 option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
@@ -11,23 +11,29 @@ import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
 
-// CFDP (CCSDS File Delivery Protocol) is a protocol suitable for the
-// transmission (upload and download) of file to and from spacecraft.
-// The protocol includes file management services.
+// This API deals with transmission (upload and download) of file to and from spacecraft.
+// The API can be used to interface any implementation of the FileTransferService.
+// One such implementation is for the CFDP - CCSDS File Delivery Protocol.
  
-service CfdpApi {
+service FileTransferApi {
 
-  // List CFDP services
-  rpc ListCFDPServices(ListCFDPServicesRequest) returns (ListCFDPServicesResponse) {
+  // List file transfer services
+  rpc ListFileTransferServices(ListFileTransferServicesRequest) returns (ListFileTransferServicesResponse) {
     option (yamcs.api.route) = {
-      get: "/api/cfdp/{instance}/services"
+      get: "/api/filetransfer/{instance}/services"
+      additional_bindings: {
+         get: "/api/cfdp/{instance}/services"
+      }
     };
   }
 
   // List transfers
   rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
-      get: "/api/cfdp/{instance}/{serviceName}/transfers"
+      get: "/api/filetransfer/{instance}/{serviceName}/transfers"
+      additional_bindings: {        
+        get: "/api/cfdp/{instance}/{serviceName}/transfers"
+      }
       additional_bindings: {
         get: "/api/cfdp/{instance}/transfers"
       }
@@ -37,7 +43,10 @@ service CfdpApi {
   // Get a transfer
   rpc GetTransfer(GetTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      get: "/api/cfdp/{instance}/{serviceName}/transfers/{id}"
+      get: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}"
+      additional_bindings: {
+        get: "/api/cfdp/{instance}/{serviceName}/transfers/{id}"
+      }
       additional_bindings: {
         get: "/api/cfdp/{instance}/transfers/{id}"
       }
@@ -47,8 +56,12 @@ service CfdpApi {
   // Create a transfer
   rpc CreateTransfer(CreateTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      post: "/api/cfdp/{instance}/{serviceName}/transfers"
+      post: "/api/filetransfer/{instance}/{serviceName}/transfers"
       body: "*"
+      additional_bindings: {
+        post: "/api/cfdp/{instance}/{serviceName}/transfers"
+        body: "*"
+      }
       additional_bindings: {
         post: "/api/cfdp/{instance}/transfers"
         body: "*"
@@ -59,7 +72,10 @@ service CfdpApi {
   // Pause a transfer
   rpc PauseTransfer(PauseTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:pause"
+      post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:pause"
+      additional_bindings: {
+        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:pause"
+      }
       additional_bindings: {
         post: "/api/cfdp/{instance}/transfers/{id}:pause"
       }
@@ -72,7 +88,10 @@ service CfdpApi {
   // are retained.
   rpc CancelTransfer(CancelTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:cancel"
+      post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:cancel"
+      additional_bindings: {
+        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:cancel"
+      }
       additional_bindings: {
         post: "/api/cfdp/{instance}/transfers/{id}:cancel"
       }
@@ -82,7 +101,10 @@ service CfdpApi {
   // Resume a transfer
   rpc ResumeTransfer(ResumeTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:resume"
+      post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:resume"
+      additional_bindings: {
+        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:resume"
+      }
       additional_bindings: {
         post: "/api/cfdp/{instance}/transfers/{id}:resume"
       }
@@ -92,7 +114,10 @@ service CfdpApi {
   // Receive transfer updates
   rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
     option (yamcs.api.websocket) = {
-      topic: "cfdp-transfers"
+      topic: "file-transfers"
+      additional_bindings: {
+         topic: "cfdp-transfers"
+      }
     };
   }
 }
@@ -114,15 +139,15 @@ message TransactionId {
     optional uint64 initiatorEntity = 2;
 }
 
-message ListCFDPServicesRequest {
+message ListFileTransferServicesRequest {
   optional string instance = 1;
 }
 
-message ListCFDPServicesResponse {
-  repeated CFDPServiceInfo services = 1;
+message ListFileTransferServicesResponse {
+  repeated FileTransferServiceInfo services = 1;
 }
 
-message CFDPServiceInfo {
+message FileTransferServiceInfo {
   optional string instance = 1;
   optional string name = 2;
   repeated EntityInfo localEntities = 3;
@@ -136,7 +161,7 @@ message EntityInfo {
 
 //message sent as reponse to the info and also when starting a new transfer
 message TransferInfo {
-  //unique identifier assigned by the CfdpService
+  //unique identifier assigned by the file transfer service
   optional uint64 id = 1;
   
   optional google.protobuf.Timestamp startTime = 2;
@@ -158,7 +183,7 @@ message TransferInfo {
   //in case the transcation is failed, this provides more information
   optional string failureReason = 11;
 
-  // CFDP transaction id;
+  // valid for CFDP: transaction id;
   // for the incoming transfers it is assigned by the remote peer so therefore might not be unique
   optional TransactionId transactionId = 12;
 }
@@ -185,7 +210,7 @@ message CreateTransferRequest {
   }
 
   optional string instance = 1;
-  //CFDP service name
+  //service name
   optional string serviceName = 8;
 
   // **Required** One of ``UPLOAD`` or ``DOWNLOAD``.
@@ -196,11 +221,11 @@ message CreateTransferRequest {
   
   // **Required** The object name in Yamcs bucket storage. For UPLOAD transfers,
   // this object must exist and is what Yamcs will transfer to the remote
-  // CFDP entity. For DOWNLOAD transfers, it refers to the object that
-  // Yamcs will write to when downloading from a remote CFDP entity.
+  // entity. For DOWNLOAD transfers, it refers to the object that
+  // Yamcs will write to when downloading from a remote entity.
   optional string objectName = 4;
   
-  // **Required** The path at the remote CFDP entity. Example: ``a/local/path/some_filename``.
+  // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
   
   optional DownloadOptions downloadOptions = 6;
@@ -218,7 +243,7 @@ message CreateTransferRequest {
 message PauseTransferRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  //service name
   optional string serviceName = 3;
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
@@ -227,7 +252,7 @@ message PauseTransferRequest {
 message CancelTransferRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  // service name
   optional string serviceName = 3;
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
@@ -236,7 +261,7 @@ message CancelTransferRequest {
 message ResumeTransferRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  // service name
   optional string serviceName = 3;
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
@@ -245,14 +270,14 @@ message ResumeTransferRequest {
 message ListTransfersRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  // service name
   optional string serviceName = 2;
 }
 
 message GetTransferRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  // service name
   optional string serviceName = 3;
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
@@ -265,6 +290,6 @@ message ListTransfersResponse {
 message SubscribeTransfersRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  //CFDP service name
+  // service name
   optional string serviceName = 2;
 }

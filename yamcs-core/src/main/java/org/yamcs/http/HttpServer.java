@@ -30,13 +30,13 @@ import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
 import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.http.api.BucketsApi;
-import org.yamcs.http.api.CfdpApi;
 import org.yamcs.http.api.ClearanceApi;
 import org.yamcs.http.api.ClientsApi;
 import org.yamcs.http.api.CommandsApi;
 import org.yamcs.http.api.Cop1Api;
 import org.yamcs.http.api.DatabaseApi;
 import org.yamcs.http.api.EventsApi;
+import org.yamcs.http.api.FileTransferApi;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.api.IndexesApi;
 import org.yamcs.http.api.ManagementApi;
@@ -281,7 +281,7 @@ public class HttpServer extends AbstractYamcsService {
 
         addApi(new AlarmsApi());
         addApi(new BucketsApi());
-        addApi(new CfdpApi());
+        addApi(new FileTransferApi());
         addApi(new ClearanceApi());
         addApi(new ClientsApi());
         addApi(new CommandsApi());
