@@ -47,7 +47,6 @@ public class FileSystemBucketDatabase implements BucketDatabase {
             String dataDir = YarchDatabase.getDataDir();
             root = Paths.get(dataDir).resolve(yamcsInstance).resolve("fsbuckets");
         }
-        Files.createDirectories(root);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         }
 
         Path path = root.resolve(bucketName);
-        Files.createDirectory(path);
+        Files.createDirectories(path);
         return new FileSystemBucket(bucketName, path);
     }
 
