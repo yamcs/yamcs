@@ -185,7 +185,8 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         spec.addOption("saveCoefficients", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("saveTofPolynomials", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("defaultTof", OptionType.FLOAT).withDefault(0.0);
-        
+        spec.addOption("useTofEstimator", OptionType.BOOLEAN).withDefault(false);
+
         return spec;
     }
 
@@ -200,9 +201,15 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
+        boolean useTofEstimator = config.getBoolean("useTofEstimator", false);
 
-        tofEstimator = new TimeOfFlightEstimator(yamcsInstance, serviceName, saveTofPolynomials);
-
+        if (useTofEstimator) {
+            tofEstimator = new TimeOfFlightEstimator(yamcsInstance, serviceName, saveTofPolynomials);
+        }
+        else {
+            tofEstimator = null;
+        }
+        
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         if (saveCoefficients) {
             tableName = TABLE_NAME + serviceName;
