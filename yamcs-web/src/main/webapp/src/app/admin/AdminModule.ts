@@ -10,6 +10,7 @@ import { AddRolesDialog } from './iam/AddRolesDialog';
 import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
 import { ChangeUserPasswordDialog } from './iam/ChangeUserPasswordDialog';
 import { UsersTable } from './iam/UsersTable';
+import { ReplicationState } from './replication/ReplicationState';
 import { MessageNamePipe } from './routes/MessageNamePipe';
 import { RouteDetail } from './routes/RouteDetail';
 import { ServicesTable } from './services/ServicesTable';
@@ -37,6 +38,7 @@ const pipes = [
     ChangeUserPasswordDialog,
     CreateBucketDialog,
     RenameObjectDialog,
+    ReplicationState,
     RouteDetail,
     ServiceState,
     ServicesTable,

@@ -64,7 +64,9 @@
         Export archive data...
       </button>
     </mat-menu>
-    <button mat-button [matMenuTriggerFor]="moreMenu">
+    <button mat-button
+            [matMenuTriggerFor]="moreMenu"
+            (click)="$event.stopPropagation()">
       <mat-icon>more_vert</mat-icon>
     </button>
   </ng-container>

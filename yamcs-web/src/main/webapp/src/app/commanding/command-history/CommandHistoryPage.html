@@ -236,7 +236,10 @@
                 </app-download-menu-item>
               </ng-container>
             </mat-menu>
-            <button mat-button [matMenuTriggerFor]="itemMenu" class="icon">
+            <button mat-button
+                    [matMenuTriggerFor]="itemMenu"
+                    class="icon"
+                    (click)="$event.stopPropagation()">
               <mat-icon>more_vert</mat-icon>
             </button>
           </td>

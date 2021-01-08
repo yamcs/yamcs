@@ -32,11 +32,17 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         this.router.navigate(['/down'], { queryParams: { next: state.url } });
         return false;
       } else {
+        this.authService.logout(false);
         if (this.authInfo.openid) {
-          window.location.href = this.buildRedirector(this.authInfo.openid);
+          const redirectURI = this.authService.buildServerSideOpenIDRedirectURI();
+          window.location.href = this.buildRedirector(this.authInfo.openid, redirectURI);
         } else {
-          this.authService.logout(false);
-          this.router.navigate(['/login'], { queryParams: { next: state.url } });
+          const redirectURI = this.authService.buildOpenIDRedirectURI();
+          window.location.href = this.buildRedirector({
+            clientId: 'yamcs-web',
+            authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+            scope: 'openid',
+          }, redirectURI);
         }
         return false;
       }
@@ -47,12 +53,11 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     return this.canActivate(route, state);
   }
 
-  private buildRedirector(openid: OpenIDConnectInfo) {
+  private buildRedirector(openid: OpenIDConnectInfo, redirectURI: string) {
     // The current client-side URL gets passed as state
     // When the whole OIDC setup is done, we will get it back on the /oidc-browser-callback route
     // together with a code that we can exchange for a valid Yamcs access token.
     const state = utils.toBase64URL(this.router.url);
-    const redirectURI = this.authService.buildOpenIDRedirectURI();
 
     let url = openid.authorizationEndpoint;
     url += `?client_id=${encodeURIComponent(openid.clientId)}`;

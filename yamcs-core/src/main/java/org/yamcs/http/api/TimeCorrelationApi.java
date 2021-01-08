@@ -61,7 +61,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
             tco.setOnboardDelay(verifyPositive("onboardDelay", conf.getOnboardDelay()));
         }
 
-        observer.complete();
+        observer.complete(Empty.getDefaultInstance());
     }
 
     private double verifyPositive(String name, double value) {
@@ -98,7 +98,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         double offset = pcoef.hasOffset() ? pcoef.getOffset() : 0;
 
         tco.forceCoefficients(TimeEncoding.fromProtobufHresTimestamp(pcoef.getUtc()), pcoef.getObt(), offset, gradient);
-        observer.complete();
+        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override
@@ -129,7 +129,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         }
 
         tofEstimator.addIntervals(intervalList);
-        observer.complete();
+        observer.complete(Empty.getDefaultInstance());
     }
 
     private Instant verifyInstant(String name, Timestamp value) {
@@ -149,7 +149,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         Instant stop = verifyInstant("stop", request.getStop());
 
         tofEstimator.deleteSplineIntervals(start, stop);
-        observer.complete();
+        observer.complete(Empty.getDefaultInstance());
     }
 
     TimeCorrelationService verifyService(Context ctx, String yamcsInstance, String serviceName) throws HttpException {

@@ -49,14 +49,14 @@ export class ParameterDataTab {
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
     this.validStop = yamcs.getMissionTime();
-    this.validStart = this.subtractDuration(this.validStop, defaultInterval);
+    this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();
 
     this.filter.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
-        const customStart = this.validStart || new Date();
-        const customStop = this.validStop || new Date();
+        const customStart = this.validStart || this.yamcs.getMissionTime();
+        const customStop = this.validStop || this.yamcs.getMissionTime();
         this.filter.get('customStart')!.setValue(utils.toISOString(customStart));
         this.filter.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
@@ -66,7 +66,7 @@ export class ParameterDataTab {
         this.loadData();
       } else {
         this.validStop = yamcs.getMissionTime();
-        this.validStart = this.subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -81,7 +81,7 @@ export class ParameterDataTab {
       this.filter.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = this.subtractDuration(this.validStop, interval);
+      this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
     }
   }
@@ -133,26 +133,5 @@ export class ParameterDataTab {
       options.start = this.validStart.toISOString();
     }
     this.dataSource.loadMoreData(options);
-  }
-
-  private subtractDuration(date: Date, duration: string) {
-    let result;
-    switch (duration) {
-      case 'PT1H':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 1);
-        return result;
-      case 'PT6H':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 6);
-        return result;
-      case 'P1D':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 24);
-        return result;
-      default:
-        console.error('Unexpected duration ', duration);
-        return date;
-    }
   }
 }

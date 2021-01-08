@@ -8,6 +8,7 @@ export interface Value {
   | 'DOUBLE'
   | 'ENUMERATED'
   | 'FLOAT'
+  | 'NONE'
   | 'SINT32'
   | 'SINT64'
   | 'STRING'

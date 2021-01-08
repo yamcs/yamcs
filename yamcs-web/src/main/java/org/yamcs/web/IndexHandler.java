@@ -1,8 +1,5 @@
 package org.yamcs.web;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -19,8 +16,10 @@ import org.yamcs.CommandOption;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.Handler;
-import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.HandlerContext;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
@@ -31,11 +30,8 @@ import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler.Sharable;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -60,25 +56,21 @@ public class IndexHandler extends Handler {
     }
 
     @Override
-    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if (req.method() != HttpMethod.GET) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
-            return;
-        }
+    public void handle(HandlerContext ctx) {
+        ctx.requireGET();
+
         if (!Files.exists(indexFile)) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
-            return;
+            throw new NotFoundException();
         }
 
         String html = null;
         try {
             html = getHtml();
         } catch (IOException e) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, INTERNAL_SERVER_ERROR);
-            return;
+            throw new InternalServerErrorException(e);
         }
 
-        ByteBuf body = ctx.alloc().buffer();
+        ByteBuf body = ctx.createByteBuf();
         body.writeCharSequence(html, StandardCharsets.UTF_8);
 
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
@@ -90,7 +82,7 @@ public class IndexHandler extends Handler {
         // the app from an outdated index.html.
         response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
 
-        HttpRequestHandler.sendResponse(ctx, req, response);
+        ctx.sendResponse(response);
     }
 
     private synchronized String getHtml() throws IOException {

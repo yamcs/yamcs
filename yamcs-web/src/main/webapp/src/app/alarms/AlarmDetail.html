@@ -22,6 +22,11 @@
   {{ alarm.severity }}
 </div>
 
+<h6>Violations</h6>
+<div class="block">
+  {{ alarm.violations | number }}
+</div>
+
 <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
   <br>
   <mat-divider></mat-divider>

@@ -1,0 +1,129 @@
+.error-message {
+  color: red;
+  text-align: left;
+}
+
+.wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #5787b1;
+}
+
+.console {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 100px;
+}
+
+.console img {
+  width: 100%;
+  height: 100%;
+}
+
+.login-panel {
+  position: absolute;
+  top: 0;
+  right: 200px;
+  bottom: 0;
+  width: 500px;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.logo {
+  padding-top: 100px;
+  padding-bottom: 100px;
+  text-align: center;
+}
+
+.login-form {
+  padding-left: 64px;
+  padding-right: 64px;
+}
+
+h1 {
+font-family: Verdana, Geneva, sans-serif;
+font-size: 24px;
+font-style: normal;
+font-variant: normal;
+font-weight: bold;
+line-height: 26px;
+}
+
+h3 {
+font-family: Verdana, Geneva, sans-serif;
+font-size: 14px;
+font-style: normal;
+font-variant: normal;
+font-weight: bold;
+line-height: 15px;
+}
+
+label {
+font-family: Verdana, Geneva, sans-serif;
+font-size: 14px;
+font-style: normal;
+font-variant: normal;
+font-weight: 400;
+line-height: 20px;
+}
+
+label {
+  margin: -3px 0 20px 0;
+  color: black;
+  text-transform: inherit;
+  cursor: default;
+  position: relative;
+}
+
+label, label input {
+  margin: 5px 0 0;
+  display: block;
+  width: 100%;
+}
+
+input {
+  background: white;
+  border: 1px solid #d3d3d3;
+  border-radius: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  height: 24px;
+  padding: 0 7px 1px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+input:focus {
+  border-color: #5787b1;
+}
+
+button {
+  height: 24px;
+  border: 1px solid #d3d3d3;
+  background-color: #fff;
+  outline: none;
+  color: rgba(0, 0, 0, .75);
+  margin: 0;
+  border-radius: 1px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+  cursor: pointer;
+}
+
+button:active {
+  border-color: #bbb;
+  color: rgba(0, 0, 0, .75);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04))
+}
+
+button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

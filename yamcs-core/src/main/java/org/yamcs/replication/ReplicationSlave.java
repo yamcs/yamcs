@@ -62,6 +62,7 @@ public class ReplicationSlave extends AbstractYamcsService {
     int localInstanceId;
     SslContext sslCtx = null;
 
+    @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
@@ -164,13 +165,41 @@ public class ReplicationSlave extends AbstractYamcsService {
         } catch (IOException e) {
             log.warn("Failed to update the last tx file " + txtfilePath, e);
         }
+    }
 
+    public List<String> getStreamNames() {
+        return streamNames;
+    }
+
+    public boolean isTcpClient() {
+        return tcpRole == TcpRole.CLIENT;
+    }
+
+    public ReplicationClient getTcpClient() {
+        return tcpClient;
+    }
+
+    public String getMasterHost() {
+        return host;
+    }
+
+    public int getMasterPort() {
+        return port;
+    }
+
+    public String getMasterInstance() {
+        return masterInstance;
+    }
+
+    public long getTxId() {
+        return lastTxId;
     }
 
     /**
      * Called when the tcpRole = Server and a new client connects to {@link ReplicationServer}
      * 
-     * @throws YamcsException if there is already a connection open to this slave
+     * @throws YamcsException
+     *             if there is already a connection open to this slave
      */
     public ChannelHandler newChannelHandler() throws YamcsException {
         if (slaveChannelHandler != null) {
@@ -180,7 +209,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         return slaveChannelHandler;
     }
 
-    class SlaveChannelHandler extends ChannelInboundHandlerAdapter {
+    public class SlaveChannelHandler extends ChannelInboundHandlerAdapter {
         ReplicationSlave replSlave;
         private ChannelHandlerContext channelHandlerContext;
         Map<Integer, ByteBufToStream> streamWriters = new HashMap<>();
@@ -256,13 +285,14 @@ public class ReplicationSlave extends AbstractYamcsService {
                 log.debug("TX{}: received stream info {}", tmsg.txId, TextFormat.shortDebugString(streamInfo));
                 String streamName = streamInfo.getName();
                 if (!streamNames.contains(streamName)) {
-                    log.debug("TX{}Ignoring stream {} because it is not in the list configured", tmsg.txId, streamName);
+                    log.debug("TX{}: Ignoring stream {} because it is not in the list configured", tmsg.txId,
+                            streamName);
                     return;
                 }
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
                 Stream stream = ydb.getStream(streamName);
                 if (stream == null) {
-                    log.warn("TX{}Received data for stream {} which does not exist", tmsg.txId, streamName);
+                    log.warn("TX{}: Received data for stream {} which does not exist", tmsg.txId, streamName);
                     return;
                 }
                 streamWriters.put(streamInfo.getId(), new ByteBufToStream(stream, streamInfo));

@@ -10,7 +10,6 @@ import { ChangeUserPasswordDialog } from './ChangeUserPasswordDialog';
 
 @Component({
   templateUrl: './UserPage.html',
-  styleUrls: ['./UserPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserPage {

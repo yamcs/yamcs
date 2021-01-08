@@ -1,23 +1,30 @@
 package org.yamcs.http.auth;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 import java.io.IOException;
-import java.net.URLDecoder;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Handler;
-import org.yamcs.http.HttpRequestHandler;
-import org.yamcs.http.HttpUtils;
+import org.yamcs.http.HandlerContext;
+import org.yamcs.http.HttpServer;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
+import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
@@ -33,17 +40,15 @@ import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.utils.FileUtils;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import io.netty.channel.ChannelHandler.Sharable;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 /**
  * Adds servers-side support for OAuth 2 authorization flows for obtaining limited access to API functionality. The
@@ -58,34 +63,62 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 @Sharable
 public class AuthHandler extends Handler {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
+    private static final Log log = new Log(AuthHandler.class);
+    private static final SecureRandom RNG = new SecureRandom();
+
+    // Cache for temporary authorization codes. This is an indermediate format provided
+    // to browsers so that they can provide it to a server-side web application that
+    // will exchange it for their id_token on our token endpoint.
+    private static Cache<String, AuthenticationInfo> CODE_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(60, TimeUnit.SECONDS).build();
 
     private TokenStore tokenStore;
-    private String contextPath;
 
-    public AuthHandler(TokenStore tokenStore, String contextPath) {
+    public AuthHandler(TokenStore tokenStore) {
         this.tokenStore = tokenStore;
-        this.contextPath = contextPath;
+
+        try {
+            YamcsServer yamcs = YamcsServer.getServer();
+            Path staticRoot = yamcs.getCacheDirectory().resolve("auth");
+            FileUtils.deleteRecursivelyIfExists(staticRoot);
+            Files.createDirectory(staticRoot);
+            String[] staticFiles = new String[] { "console.svg", "auth.css", "yamcs300.png" };
+            for (String staticFile : staticFiles) {
+                try (InputStream resource = getClass().getResourceAsStream("/auth/static/" + staticFile)) {
+                    Files.copy(resource, staticRoot.resolve(staticFile));
+                }
+            }
+            HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+            httpServer.addStaticRoot(staticRoot);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
-    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
-        String path = HttpUtils.getPathWithoutContext(req, contextPath);
+    public void handle(HandlerContext ctx) {
+        String path = ctx.getPathWithoutContext();
         if (path.equals("/auth")) {
-            handleAuthInfoRequest(ctx, req);
+            handleAuthInfoRequest(ctx);
+            return;
+        } else if (path.equals("/auth/authorize")) {
+            handleAuthorize(ctx);
             return;
         } else if (path.equals("/auth/token")) {
-            handleTokenRequest(ctx, req);
+            handleToken(ctx);
             return;
         } else if (path.equals("/auth/spnego")) {
             SpnegoAuthModule spnegoAuthModule = getSecurityStore().getAuthModule(SpnegoAuthModule.class);
             if (spnegoAuthModule != null) {
-                spnegoAuthModule.handle(ctx, req);
+                spnegoAuthModule.handle(ctx);
                 return;
             }
+        } else if (path.equals("/auth/actions/login")) {
+            handleLoginAction(ctx);
+            return;
         }
 
-        HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+        throw new NotFoundException();
     }
 
     /**
@@ -93,13 +126,37 @@ public class AuthHandler extends Handler {
      * determine whether Yamcs is secured or not (e.g. in order to detect if a login screen should be shown to the
      * user).
      */
-    private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if (req.method() == HttpMethod.GET) {
-            AuthInfo info = createAuthInfo();
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, info);
-        } else {
-            HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
-        }
+    private void handleAuthInfoRequest(HandlerContext ctx) {
+        ctx.requireGET();
+        ctx.sendOK(createAuthInfo());
+    }
+
+    private void handleAuthorize(HandlerContext ctx) {
+        ctx.requireMethod(HttpMethod.GET, HttpMethod.POST);
+        OpenIDAuthenticationRequest request = new OpenIDAuthenticationRequest(ctx);
+        showLoginForm(ctx, request);
+    }
+
+    private void handleLoginAction(HandlerContext ctx) {
+        ctx.requirePOST();
+        ctx.requireFormEncoding();
+
+        LoginRequest request = new LoginRequest(ctx);
+
+        AuthenticationToken token = request.getUsernamePasswordToken();
+        getSecurityStore().login(token).whenComplete((info, err) -> {
+            if (err != null) {
+                if (err instanceof AuthenticationException || err instanceof AuthorizationException) {
+                    log.info("Denying access to '" + request.getUsername() + "': " + err.getMessage());
+                    showLoginError(ctx, HttpResponseStatus.FORBIDDEN, "Access Denied");
+                } else {
+                    log.error("Unexpected error while attempting user login", err);
+                    showLoginError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Server Error");
+                }
+            } else {
+                redirectWithCode(ctx, info, request);
+            }
+        });
     }
 
     public static AuthInfo createAuthInfo() {
@@ -124,6 +181,38 @@ public class AuthHandler extends Handler {
         return infob.build();
     }
 
+    private void showLoginForm(HandlerContext ctx, OpenIDAuthenticationRequest request) {
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("contextPath", ctx.getContextPath());
+        vars.put("request", request.getMap());
+        ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
+    }
+
+    private void showLoginError(HandlerContext ctx, HttpResponseStatus status, String errorMessage) {
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("contextPath", ctx.getContextPath());
+        if (errorMessage != null) {
+            vars.put("errorMessage", errorMessage);
+        }
+        ctx.render(status, "/auth/templates/authorize.html", vars);
+    }
+
+    private void redirectWithCode(HandlerContext ctx, AuthenticationInfo info, LoginRequest request) {
+        String code = generateUrlSafeCode();
+        CODE_CACHE.put(code, info);
+
+        QueryStringEncoder qsEncoder = new QueryStringEncoder(request.getRedirectURI());
+        qsEncoder.addParam("code", code);
+
+        String state = request.getState();
+        if (state != null) {
+            qsEncoder.addParam("state", state);
+        }
+
+        log.info("Redirecting to " + qsEncoder.toString());
+        ctx.sendRedirect(qsEncoder.toString());
+    }
+
     /**
      * Issues time-limited access tokens based on different grant types. Depending on the type of grant, this endpoint
      * may also issue rotating refresh tokens that can be used on the client to establish user sessions that last longer
@@ -132,191 +221,145 @@ public class AuthHandler extends Handler {
      * TODO ignore global CORS settings on this endpoint (?). We should not encourage passing password credentials
      * directly from a browser context, unless for official clients.
      */
-    private void handleTokenRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if ("application/x-www-form-urlencoded".equals(req.headers().get("Content-Type"))) {
-            HttpPostRequestDecoder formDecoder = new HttpPostRequestDecoder(req);
-            try {
-                String grantType = getStringFromForm(formDecoder, "grant_type");
-                if (grantType == null) {
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
-                            "grant_type not specified");
-                } else {
-                    log.info("Access token request using grant_type '{}'", grantType);
-                    switch (grantType) {
-                    case "password":
-                        handleTokenRequestWithPasswordGrant(ctx, req, formDecoder);
-                        break;
-                    case "authorization_code":
-                        handleTokenRequestWithAuthorizationCode(ctx, req, formDecoder);
-                        break;
-                    case "refresh_token":
-                        handleTokenRequestWithRefreshToken(ctx, req, formDecoder);
-                        break;
-                    case "client_credentials":
-                        handleTokenRequestWithClientCredentials(ctx, req, formDecoder);
-                        break;
-                    case "spnego":
-                        // TODO ?
-                        // Could maybe move the http handling from SpnegoAuthModule here.
-                        // Saves us a roundtrip for the intermediate authorization_code
-                        // Spnego with token response is not really covered by oauth spec, and
-                        // could be considered a special case due to the browser negotiation.
-                    default:
-                        HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
-                                "Unsupported grant_type '" + grantType + "'");
-                    }
-                }
-            } catch (IOException e) {
-                log.error("Unexpected error while attempting user login", e);
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                return;
-            } finally {
-                formDecoder.destroy();
-            }
-        } else {
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+    private void handleToken(HandlerContext ctx) {
+        ctx.requireFormEncoding();
+        String grantType = ctx.requireFormParameter("grant_type");
+
+        log.info("Access token request using grant_type '{}'", grantType);
+        switch (grantType) {
+        case "password":
+            handleTokenRequestWithPasswordGrant(ctx);
+            break;
+        case "authorization_code":
+            handleTokenRequestWithAuthorizationCode(ctx);
+            break;
+        case "refresh_token":
+            handleTokenRequestWithRefreshToken(ctx);
+            break;
+        case "client_credentials":
+            handleTokenRequestWithClientCredentials(ctx);
+            break;
+        default:
+            throw new BadRequestException("Unsupported grant_type '" + grantType + "'");
         }
     }
 
-    private void handleTokenRequestWithPasswordGrant(ChannelHandlerContext ctx, FullHttpRequest req,
-            HttpPostRequestDecoder formDecoder) throws IOException {
-        String username = getStringFromForm(formDecoder, "username");
-        String password = getStringFromForm(formDecoder, "password");
-        if (password == null) {
-            password = "";
-        }
+    private void handleTokenRequestWithPasswordGrant(HandlerContext ctx) {
+        String username = ctx.requireFormParameter("username");
+        String password = ctx.requireFormParameter("password");
+
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
             String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
-            sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
+            sendNewAccessToken(ctx, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
                 log.info("Denying access to '" + username + "': " + cause.getMessage());
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                throw new UnauthorizedException();
             } else {
                 log.error("Unexpected error while attempting user login", cause);
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                throw new InternalServerErrorException(cause);
             }
         }
     }
 
-    private void handleTokenRequestWithAuthorizationCode(ChannelHandlerContext ctx, FullHttpRequest req,
-            HttpPostRequestDecoder formDecoder) throws IOException {
-        // This code must have been previously granted via an extension path such as /auth/spnego
-        // (which is a special case due to the use of Negotiate).
-        // Currently we only support authorization codes that are managed by an AuthModule (hence the
-        // name 'ThirdParty'. This may need to be revised when we add general support for the /authorize
-        // endpoint.
-        String authcode = getStringFromForm(formDecoder, "code");
-        try {
-            AuthenticationInfo authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode))
-                    .get();
+    private void handleTokenRequestWithAuthorizationCode(HandlerContext ctx) {
+        String authcode = ctx.requireFormParameter("code");
 
-            // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
-            // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
-            // using the /auth/spnego route (= alternative refresh).
-            String refreshToken = null;
-            if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
-                refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
-            }
-            sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
-                log.info("Denying access: " + cause.getMessage());
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-            } else {
-                log.error("Unexpected error while attempting user login", cause);
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        AuthenticationInfo authenticationInfo = CODE_CACHE.getIfPresent(authcode);
+
+        // Maybe it's a code coming from one of the AuthModules
+        if (authenticationInfo == null) {
+            try {
+                authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode)).get();
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
+                    log.info("Denying access: " + cause.getMessage());
+                    throw new UnauthorizedException();
+                } else {
+                    log.error("Unexpected error while attempting user login", cause);
+                    throw new InternalServerErrorException(cause);
+                }
             }
         }
+
+        // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
+        // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
+        // using the /auth/spnego route (= alternative refresh).
+        String refreshToken = null;
+        if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
+            refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+        }
+        sendNewAccessToken(ctx, authenticationInfo, refreshToken);
     }
 
     /**
      * Issues a new access token after verifying the provided refresh token. This will also output a new refresh token,
      * thereby enforcing single use of a refresh token.
      */
-    private void handleTokenRequestWithRefreshToken(ChannelHandlerContext ctx, FullHttpRequest req,
-            HttpPostRequestDecoder formDecoder) throws IOException {
-        String refreshToken = getStringFromForm(formDecoder, "refresh_token");
+    private void handleTokenRequestWithRefreshToken(HandlerContext ctx) {
+        String refreshToken = ctx.getFormParameter("refresh_token");
         RefreshResult result = tokenStore.verifyRefreshToken(refreshToken);
         if (result == null) {
-            log.info("Invalid refresh token");
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+            throw new UnauthorizedException("Invalid refresh token");
         } else {
-            sendNewAccessToken(ctx, req, result.authenticationInfo, result.refreshToken);
+            sendNewAccessToken(ctx, result.authenticationInfo, result.refreshToken);
         }
     }
 
-    private void handleTokenRequestWithClientCredentials(ChannelHandlerContext ctx, FullHttpRequest req,
-            HttpPostRequestDecoder formDecoder) throws IOException {
+    private void handleTokenRequestWithClientCredentials(HandlerContext ctx) {
         String clientId = null;
         String clientSecret = null;
-        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
-            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
-            if (authorizationHeader.startsWith("Basic ")) {
-                String userpassEncoded = authorizationHeader.substring("Basic ".length());
-                String userpassDecoded;
-                try {
-                    userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
-                } catch (IllegalArgumentException e) {
-                    log.warn("Could not decode Base64-encoded credentials");
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-                    return;
-                }
-                String[] parts = userpassDecoded.split(":", 2);
-                if (parts.length < 2) {
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-                    return;
-                }
-                clientId = URLDecoder.decode(parts[0], "UTF-8");
-                clientSecret = URLDecoder.decode(parts[1], "UTF-8");
-            }
-        }
-        if (clientId == null) {
-            clientId = getStringFromForm(formDecoder, "client_id");
-            clientSecret = getStringFromForm(formDecoder, "client_secret");
+
+        String[] basicAuth = ctx.getBasicCredentials();
+        if (basicAuth != null) {
+            clientId = basicAuth[0];
+            clientSecret = basicAuth[1];
+        } else {
+            clientId = ctx.getFormParameter("client_id");
+            clientSecret = ctx.getFormParameter("client_secret");
         }
         if (clientId == null || clientSecret == null) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-            return;
+            throw new BadRequestException("Missing client id or secret");
         }
 
         ApplicationCredentials token = new ApplicationCredentials(clientId, clientSecret);
-        token.setBecome(getStringFromForm(formDecoder, "become"));
+        token.setBecome(ctx.getFormParameter("become"));
 
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            sendNewAccessToken(ctx, req, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
+            sendNewAccessToken(ctx, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
                 log.info("Denying access to '" + clientId + "': " + cause.getMessage());
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                throw new UnauthorizedException();
             } else {
                 log.error("Unexpected error while attempting user login", cause);
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                throw new InternalServerErrorException(cause);
             }
         }
     }
 
-    private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req,
-            AuthenticationInfo authenticationInfo, String refreshToken) {
+    private void sendNewAccessToken(HandlerContext ctx, AuthenticationInfo authenticationInfo, String refreshToken) {
         try {
             User user = getSecurityStore().getDirectory().getUser(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
             tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response);
+            ctx.sendOK(response);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -343,13 +386,10 @@ public class AuthHandler extends Handler {
         return responseb.build();
     }
 
-    private String getStringFromForm(HttpPostRequestDecoder formDecoder, String attributeName) throws IOException {
-        InterfaceHttpData d = formDecoder.getBodyHttpData(attributeName);
-        if (d.getHttpDataType() == HttpDataType.Attribute) {
-            return ((Attribute) d).getValue();
-        }
-
-        return null;
+    private static String generateUrlSafeCode() {
+        byte[] bytes = new byte[10];
+        RNG.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     public static SecurityStore getSecurityStore() {

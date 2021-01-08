@@ -113,8 +113,8 @@ export class CommandHistoryPage {
 
     this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
-        const customStart = this.validStart || new Date();
-        const customStop = this.validStop || new Date();
+        const customStart = this.validStart || this.yamcs.getMissionTime();
+        const customStop = this.validStop || this.yamcs.getMissionTime();
         this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
         this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
