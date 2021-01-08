@@ -165,6 +165,7 @@ message AddTimeOfFlightIntervalsRequest {
   //intervals for time of flight calculation
   repeated TofInterval intervals = 3;
 }
+
 //Delete all the TofIntervals having
 // start <= tofInterval.ertStart <= stop
 message DeleteTimeOfFlightIntervalsRequest {
