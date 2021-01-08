@@ -206,7 +206,11 @@ public class Directory {
                             for (String name : (List<String>) objects) {
                                 role.addSystemPrivilege(new SystemPrivilege(name));
                             }
-                        } else {
+                        }
+                        else if(typeString.equals("default")){
+                            role.setDefaultRole(true);
+                        }
+                        else {
                             ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
                             for (String object : (List<String>) objects) {
                                 role.addObjectPrivilege(new ObjectPrivilege(type, object));
