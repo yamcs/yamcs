@@ -1,3 +1,6 @@
+Version 5.2.1 released 8-Jan-2021
+- YamlAuthModule: added a default role used when the user has no role assigned
+
 Version 5.2 released 13-Oct-2020
 - allow all TM data links to update a simulation time if configured
 - allow the XTCE loader to load multiple files using a glob pattern or a list
