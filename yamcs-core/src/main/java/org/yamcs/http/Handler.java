@@ -10,13 +10,23 @@ public abstract class Handler extends SimpleChannelInboundHandler<FullHttpReques
 
     private static final Log log = new Log(Handler.class);
 
-    public abstract void handle(HandlerContext ctx);
+    // TODO make abstract once plugins have migrated
+    public /* abstract */ void handle(HandlerContext ctx) {
+    }
+
+    /**
+     * Implement {@link #handle(HandlerContext)} instead
+     */
+    @Deprecated
+    public void handle(ChannelHandlerContext ctx, FullHttpRequest msg) {
+        String contextPath = ctx.channel().attr(HttpRequestHandler.CTX_CONTEXT_PATH).get();
+        handle(new HandlerContext(contextPath, ctx, msg));
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
         try {
-            String contextPath = ctx.channel().attr(HttpRequestHandler.CTX_CONTEXT_PATH).get();
-            handle(new HandlerContext(contextPath, ctx, msg));
+            handle(ctx, msg);
         } catch (Throwable t) {
             if (!(t instanceof HttpException)) {
                 t = new InternalServerErrorException(t);
