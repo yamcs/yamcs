@@ -3,12 +3,8 @@ package org.yamcs;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,8 +12,6 @@ import org.junit.Test;
 import org.yamcs.AbstractIntegrationTest.MyConnectionListener;
 import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.base.WebSocketClientHandler;
-import org.yamcs.http.HttpServer;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -26,24 +20,9 @@ public class LongWebsocketFrameTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        // LoggingUtils.enableLogging();
-        // io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder debug FINE:Encoding WebSocket Frame opCode=2
-        // length=328927
-
-        // avoid printing stack traces in the unit tests run
         YConfiguration.setupTest("LongWebsocketFrameTest");
-        Map<String, Object> options = new HashMap<>();
-        options.put("port", 9191);
-        Map<String, Object> wsOptions = new HashMap<>();
-        wsOptions.put("maxFrameLength", 1048576);
-        options.put("webSocket", wsOptions);
-        HttpServer httpServer = new HttpServer();
-        options = httpServer.getSpec().validate(options);
-        httpServer.init(null, null, YConfiguration.wrap(options));
-        httpServer.startServer();
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
-        Logger.getLogger(WebSocketClientHandler.class.getName()).setLevel(Level.OFF);
     }
 
     @AfterClass

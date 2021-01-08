@@ -13,7 +13,6 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractQueueApi;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
@@ -31,8 +30,10 @@ import org.yamcs.protobuf.ListQueuesResponse;
 import org.yamcs.protobuf.SubscribeQueueEventsRequest;
 import org.yamcs.protobuf.SubscribeQueueStatisticsRequest;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Significance.Levels;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 public class QueueApi extends AbstractQueueApi<Context> {
@@ -76,7 +77,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         for (CommandQueue q : mgr.getQueues()) {
             int order = mgr.getQueues().indexOf(q) + 1;
-            CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, true);
+            CommandQueueInfo info = toCommandQueueInfo(q, order, true);
             observer.next(info);
         }
 
@@ -84,7 +85,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
             @Override
             public void updateQueue(CommandQueue q) {
                 int order = mgr.getQueues().indexOf(q) + 1;
-                CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, false);
+                CommandQueueInfo info = toCommandQueueInfo(q, order, false);
                 observer.next(info);
             }
         };
@@ -103,7 +104,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         CommandQueueListener listener = new CommandQueueListener() {
             @Override
             public void commandAdded(CommandQueue q, PreparedCommand pc) {
-                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_ADDED);
                 evtb.setData(data);
@@ -112,7 +113,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
             @Override
             public void commandUpdated(CommandQueue q, PreparedCommand pc) {
-                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_UPDATED);
                 evtb.setData(data);
@@ -121,7 +122,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
             @Override
             public void commandRejected(CommandQueue q, PreparedCommand pc) {
-                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_REJECTED);
                 evtb.setData(data);
@@ -130,7 +131,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
             @Override
             public void commandSent(CommandQueue q, PreparedCommand pc) {
-                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_SENT);
                 evtb.setData(data);
@@ -191,32 +192,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
         }
     }
 
-    private CommandQueueInfo toCommandQueueInfo(CommandQueue queue, int order, boolean detail) {
-        CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder();
-        b.setInstance(queue.getProcessor().getInstance());
-        b.setProcessorName(queue.getProcessor().getName());
-        b.setName(queue.getName());
-        b.setState(queue.getState());
-        b.setNbSentCommands(queue.getNbSentCommands());
-        b.setNbRejectedCommands(queue.getNbRejectedCommands());
-        b.setOrder(order);
-        b.addAllUsers(queue.getUsers());
-        b.addAllGroups(queue.getGroups());
-        if (queue.getMinLevel() != Levels.none) {
-            b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
-        }
-        if (queue.getStateExpirationRemainingS() != -1) {
-            b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
-        }
-        if (detail) {
-            for (PreparedCommand pc : queue.getCommands()) {
-                CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
-                b.addEntry(qEntry);
-            }
-        }
-        return b.build();
-    }
-
     @Override
     public void listQueueEntries(Context ctx, ListQueueEntriesRequest request,
             Observer<ListQueueEntriesResponse> observer) {
@@ -228,7 +203,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         ListQueueEntriesResponse.Builder responseb = ListQueueEntriesResponse.newBuilder();
         for (PreparedCommand pc : queue.getCommands()) {
-            CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
+            CommandQueueEntry qEntry = toCommandQueueEntry(queue, pc);
             responseb.addEntries(qEntry);
         }
         observer.complete(responseb.build());
@@ -259,5 +234,58 @@ public class QueueApi extends AbstractQueueApi<Context> {
         }
 
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    private CommandQueueInfo toCommandQueueInfo(CommandQueue queue, int order, boolean detail) {
+        CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder();
+        b.setInstance(queue.getProcessor().getInstance());
+        b.setProcessorName(queue.getProcessor().getName());
+        b.setName(queue.getName());
+        b.setState(queue.getState());
+        b.setNbSentCommands(queue.getNbSentCommands());
+        b.setNbRejectedCommands(queue.getNbRejectedCommands());
+        b.setOrder(order);
+        b.addAllUsers(queue.getUsers());
+        b.addAllGroups(queue.getGroups());
+        if (queue.getMinLevel() != Levels.none) {
+            b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
+        }
+        if (queue.getStateExpirationRemainingS() != -1) {
+            b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
+        }
+        if (detail) {
+            for (PreparedCommand pc : queue.getCommands()) {
+                CommandQueueEntry qEntry = toCommandQueueEntry(queue, pc);
+                b.addEntry(qEntry);
+            }
+        }
+        return b.build();
+    }
+
+    private static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
+        Processor c = q.getProcessor();
+        CommandQueueEntry.Builder entryb = CommandQueueEntry.newBuilder()
+                .setInstance(q.getProcessor().getInstance())
+                .setProcessorName(c.getName())
+                .setQueueName(q.getName())
+                .setId(pc.getId())
+                .setOrigin(pc.getOrigin())
+                .setSequenceNumber(pc.getSequenceNumber())
+                .setCommandName(pc.getCommandName())
+                .setSource(pc.getSource())
+                .setPendingTransmissionConstraints(pc.isPendingTransmissionConstraints())
+                .setUuid(pc.getUUID().toString())
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
+                .setUsername(pc.getUsername());
+
+        if (pc.getBinary() != null) {
+            entryb.setBinary(ByteString.copyFrom(pc.getBinary()));
+        }
+
+        if (pc.getComment() != null) {
+            entryb.setComment(pc.getComment());
+        }
+
+        return entryb.build();
     }
 }

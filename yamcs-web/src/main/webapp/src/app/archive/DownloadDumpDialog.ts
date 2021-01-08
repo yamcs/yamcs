@@ -18,7 +18,7 @@ export class DownloadDumpDialog {
 
   constructor(
     private dialogRef: MatDialogRef<DownloadDumpDialog>,
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
     formBuilder: FormBuilder,
     @Inject(MAT_DIALOG_DATA) data: any,
   ) {
@@ -43,7 +43,7 @@ export class DownloadDumpDialog {
     let start = data.start;
     let stop = data.stop;
     if (!start || !stop) {
-      stop = new Date();
+      stop = this.yamcs.getMissionTime();
       start = subtractDuration(stop, 'PT1H');
     }
     this.form.setValue({

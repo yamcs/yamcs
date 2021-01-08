@@ -21,7 +21,10 @@
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="removeColumn.emit(parameter)">Remove column</button>
       </mat-menu>
-      <button *ngIf="showActions" mat-button [matMenuTriggerFor]="colMenu">
+      <button *ngIf="showActions"
+              mat-button
+              [matMenuTriggerFor]="colMenu"
+              (click)="$event.stopPropagation()">
         <mat-icon>more_vert</mat-icon>
       </button>
     </th>

@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { CfdpService, Transfer, TransferSubscription } from '../client';
+import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { UploadFileDialog } from './UploadFileDialog';
 
@@ -27,12 +28,16 @@ export class FileTransferPage implements OnDestroy {
 
   private transferSubscription: TransferSubscription;
 
+  private dirty = false;
+  private syncSubscription: Subscription;
+
   constructor(
     readonly yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
+    synchronizer: Synchronizer,
   ) {
     title.setTitle('CFDP File Transfer');
 
@@ -56,6 +61,14 @@ export class FileTransferPage implements OnDestroy {
       }
       if (service) {
         this.switchService(service);
+      }
+    });
+
+    this.syncSubscription = synchronizer.sync(() => {
+      if (this.dirty) {
+        this.ongoingCount$.next(this.ongoingTransfersById.size);
+        this.failedCount$.next(this.failedTransfersById.size);
+        this.successfulCount$.next(this.successfulTransfersById.size);
       }
     });
   }
@@ -102,9 +115,9 @@ export class FileTransferPage implements OnDestroy {
             break;
         }
 
-        this.ongoingCount$.next(this.ongoingTransfersById.size);
-        this.failedCount$.next(this.failedTransfersById.size);
-        this.successfulCount$.next(this.successfulTransfersById.size);
+        // Dirty mechanism, to prevent overloading change detection
+        // on fast updates
+        this.dirty = true;
       });
     }
   }
@@ -122,6 +135,9 @@ export class FileTransferPage implements OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
     if (this.transferSubscription) {
       this.transferSubscription.cancel();
     }

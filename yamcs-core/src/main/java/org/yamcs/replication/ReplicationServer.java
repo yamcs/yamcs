@@ -4,9 +4,12 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLException;
 
@@ -14,6 +17,7 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
+import org.yamcs.replication.ReplicationSlave.SlaveChannelHandler;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.Wakeup;
@@ -28,16 +32,16 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.ChannelInitializer;
 
 /**
  * TCP replication server - works both on the master and on the slave side depending on the channel handler
@@ -56,7 +60,7 @@ public class ReplicationServer extends AbstractYamcsService {
     String tlsCert;
     String tlsKey;
     SslContext sslCtx = null;
-    
+
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
@@ -67,7 +71,7 @@ public class ReplicationServer extends AbstractYamcsService {
             try {
                 sslCtx = SslContextBuilder.forServer(new File(tlsCert), new File(tlsKey)).build();
             } catch (SSLException e) {
-                throw new InitException("Failed to initialize the TLS: "+e.toString());
+                throw new InitException("Failed to initialize the TLS: " + e.toString());
             }
         }
     }
@@ -114,6 +118,28 @@ public class ReplicationServer extends AbstractYamcsService {
 
     public void registerSlave(ReplicationSlave replicationSlave) {
         slaves.put(replicationSlave.getYamcsInstance(), replicationSlave);
+    }
+
+    public List<Channel> getActiveChannels(ReplicationMaster replicationMaster) {
+        return activeChannels.stream().filter(ch -> {
+            for (Entry<String, ChannelHandler> entry : ch.pipeline()) {
+                if (entry.getValue() instanceof MasterChannelHandler) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
+    }
+
+    public List<Channel> getActiveChannels(ReplicationSlave replicationSlave) {
+        return activeChannels.stream().filter(ch -> {
+            for (Entry<String, ChannelHandler> entry : ch.pipeline()) {
+                if (entry.getValue() instanceof SlaveChannelHandler) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
 
     class MyChannelHandler extends ChannelInboundHandlerAdapter {

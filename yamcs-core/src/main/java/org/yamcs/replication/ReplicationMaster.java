@@ -71,7 +71,6 @@ public class ReplicationMaster extends AbstractYamcsService {
     int pageSize;
     int maxPages;
     int maxFileSize;
-    ReplicationServer replicationTcpServer;
     TcpRole tcpRole;
     List<SlaveServer> slaves;
     long reconnectionInterval;
@@ -266,6 +265,10 @@ public class ReplicationMaster extends AbstractYamcsService {
 
     }
 
+    public long getTxId() {
+        return (currentFile) == null ? 0 : currentFile.getNextTxId();
+    }
+
     private void writeToFile(Transaction tx) {
         ReplicationFile cf = currentFile;
         long txId = cf.writeData(tx);
@@ -320,6 +323,18 @@ public class ReplicationMaster extends AbstractYamcsService {
 
     public ChannelHandler newChannelHandler(Request req) {
         return new MasterChannelHandler(this, req);
+    }
+
+    public List<String> getStreamNames() {
+        return streamNames;
+    }
+
+    public boolean isTcpClient() {
+        return tcpRole == TcpRole.CLIENT;
+    }
+
+    public List<SlaveServer> getSlaveServers() {
+        return slaves;
     }
 
     class StreamToFile implements StreamSubscriber {
@@ -557,9 +572,9 @@ public class ReplicationMaster extends AbstractYamcsService {
             this.rf = null;
             this.path = path;
         }
-    };
+    }
 
-    static class SlaveServer {
+    public static class SlaveServer {
         String host;
         int port;
         ReplicationClient client;
@@ -573,5 +588,20 @@ public class ReplicationMaster extends AbstractYamcsService {
             this.enableTls = enableTls;
         }
 
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getInstance() {
+            return instance;
+        }
+
+        public ReplicationClient getTcpClient() {
+            return client;
+        }
     }
 }

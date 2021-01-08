@@ -7,7 +7,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ThreadPage.html',
-  styleUrls: ['./ThreadPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ThreadPage {

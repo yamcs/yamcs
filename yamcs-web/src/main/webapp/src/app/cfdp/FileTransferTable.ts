@@ -8,6 +8,7 @@ import { TransferItem } from './TransferItem';
 @Component({
   selector: 'app-file-transfer-table',
   templateUrl: './FileTransferTable.html',
+  styleUrls: ['./FileTransferTable.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileTransferTable implements OnChanges {
@@ -22,6 +23,10 @@ export class FileTransferTable implements OnChanges {
   ];
 
   displayedColumns$ = new BehaviorSubject<String[]>(this.defaultColumns);
+
+  isIncomplete = (index: number, item: TransferItem) => {
+    return item.transfer.state !== 'COMPLETED';
+  };
 
   @Input()
   serviceName: string;
@@ -43,20 +48,23 @@ export class FileTransferTable implements OnChanges {
     }
   }
 
-  pauseTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.pauseCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
+  pauseTransfer(item: TransferItem) {
+    const id = item.transfer.id;
+    this.yamcs.yamcsClient.pauseCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
-  resumeTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.resumeCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
+  resumeTransfer(item: TransferItem) {
+    const id = item.transfer.id;
+    this.yamcs.yamcsClient.resumeCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
-  cancelTransfer(transfer: TransferItem) {
-    this.yamcs.yamcsClient.cancelCfdpTransfer(this.yamcs.instance!, this.serviceName, transfer.id).catch(err => {
+  cancelTransfer(item: TransferItem) {
+    const id = item.transfer.id;
+    this.yamcs.yamcsClient.cancelCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }
