@@ -338,21 +338,6 @@ public class CfdpService extends AbstractYamcsService
         return r;
     }
 
-    public OngoingCfdpTransfer processRequest(CfdpRequest request) {
-        switch (request.getType()) {
-        case PUT:
-            return processPutRequest((PutRequest) request);
-        case PAUSE:
-            return processPauseRequest((PauseRequest) request);
-        case RESUME:
-            return processResumeRequest((ResumeRequest) request);
-        case CANCEL:
-            return processCancelRequest((CancelRequest) request);
-        default:
-            return null;
-        }
-    }
-
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, idSeq.next(), executor, request,
                 cfdpOut, config, eventProducer, this, senderFaultHandlers);
@@ -550,10 +535,14 @@ public class CfdpService extends AbstractYamcsService
         return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
     }
 
+	@Override
+	public FileTransfer startDownload(String source, Bucket bucket, String objectName, String destination, String destinationPath, TransferOptions options) throws IOException, InvalidRequestException {
+		throw new InvalidRequestException("Download not implemented");
+	}
 
-    @Override
-    public OngoingCfdpTransfer startUpload(String source, Bucket bucket, String objectName, String destination,
-            String destinationPath, TransferOptions options) throws IOException {
+	@Override
+    public FileTransfer startUpload(String source, Bucket bucket, String objectName, String destination,
+            String destinationPath, TransferOptions options) throws IOException, InvalidRequestException {
         byte[] objData;
         objData = bucket.getObject(objectName);
         if (objData == null) {

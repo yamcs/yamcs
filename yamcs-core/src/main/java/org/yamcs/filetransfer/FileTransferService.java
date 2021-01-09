@@ -44,7 +44,7 @@ public interface FileTransferService extends YamcsService {
 
     /**
      * Start a file upload.
-     * 
+	 *
      * @param sourceEntity
      *            the source entity. Can be null if the service supports only one unnamed source entity.
      * @param bucket
@@ -73,7 +73,14 @@ public interface FileTransferService extends YamcsService {
      */
     FileTransfer startUpload(String sourceEntity, Bucket bucket, String objectName,
             String destinationEntity, String destinationPath,
-            TransferOptions options) throws IOException;
+            TransferOptions options) throws IOException, InvalidRequestException;
+
+	/**
+	 * Start a file download.
+	 *
+	 * Parameters are the same like in startUpload().
+	 */
+	FileTransfer startDownload(String sourceEntity, Bucket bucket, String objectName, String destinationEntity, String destinationPath, TransferOptions options) throws IOException, InvalidRequestException;
 
     /**
      * Get the list of ongoing or past transfers.

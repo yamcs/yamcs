@@ -17,4 +17,15 @@ public class EntityConf {
         return name + " [id=" + id + "]";
     }
 
+	public long getId() {
+		return id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public Bucket getBucket() {
+		return bucket;
+	}
 }
