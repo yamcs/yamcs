@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, CfdpService, StorageClient } from '../client';
+import { Bucket, FileTransferService, StorageClient } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
 
@@ -17,7 +17,7 @@ export class UploadFileDialog {
   localForm: FormGroup;
   remoteForm: FormGroup;
 
-  service: CfdpService;
+  service: FileTransferService;
   private storageClient: StorageClient;
   dataSource = new MatTableDataSource<Bucket>();
 
@@ -59,7 +59,7 @@ export class UploadFileDialog {
   }
 
   startTransfer() {
-    this.yamcs.yamcsClient.createCfdpTransfer(this.yamcs.instance!, this.service.name, {
+    this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
       direction: 'UPLOAD',
       bucket: this.selectedBucket$.value!.name,
       objectName: this.localForm.value['object'],

@@ -11,7 +11,7 @@ export * from './app/appbase/pages/NotFoundPage';
 export * from './app/appbase/pages/ProfilePage';
 export * from './app/appbase/pages/ServerUnavailablePage';
 export * from './app/archive/ArchiveModule';
-export * from './app/cfdp/CfdpModule';
+export * from './app/filetransfer/FileTransferModule';
 export * from './app/client';
 export * from './app/commanding/CommandingModule';
 export * from './app/commanding/stacks/StackFormatter';

@@ -1,6 +1,6 @@
 import { WebSocketCall } from '../WebSocketCall';
 
-export interface CfdpService {
+export interface FileTransferService {
   instance: string;
   name: string;
   localEntities: Entity[];
@@ -46,7 +46,7 @@ export interface TransfersPage {
 }
 
 export interface ServicesPage {
-  services: CfdpService[];
+  services: FileTransferService[];
 }
 
 export interface SubscribeTransfersRequest {

@@ -63,8 +63,8 @@ const routes: Routes = [
         loadChildren: () => import('src/app/admin/AdminModule').then(m => m.AdminModule),
         canActivate: [AuthGuard],
       }, {
-        path: 'cfdp',
-        loadChildren: () => import('src/app/cfdp/CfdpModule').then(m => m.CfdpModule),
+        path: 'filetransfer',
+        loadChildren: () => import('src/app/filetransfer/FileTransferModule').then(m => m.FileTransferModule),
         canActivate: [AuthGuard],
       }, {
         path: 'commanding',
