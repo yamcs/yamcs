@@ -80,10 +80,10 @@
       </app-sidebar-nav-group>
 
       <app-sidebar-nav-item *ngIf="config.cfdp"
-                            routerLink="/cfdp"
+                            routerLink="/filetransfer"
                             [queryParams]="{c: yamcs.context}">
         <mat-icon class="item-icon">file_copy</mat-icon>
-        CFDP File Transfer
+        File Transfer
       </app-sidebar-nav-item>
 
       <app-sidebar-nav-group *ngIf="mdbItems.length"

@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { CfdpService, Transfer, TransferSubscription } from '../client';
+import { FileTransferService, Transfer, TransferSubscription } from '../client';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { UploadFileDialog } from './UploadFileDialog';
@@ -15,8 +15,8 @@ import { UploadFileDialog } from './UploadFileDialog';
 })
 export class FileTransferPage implements OnDestroy {
 
-  services$ = new BehaviorSubject<CfdpService[]>([]);
-  service$ = new BehaviorSubject<CfdpService | null>(null);
+  services$ = new BehaviorSubject<FileTransferService[]>([]);
+  service$ = new BehaviorSubject<FileTransferService | null>(null);
 
   private ongoingTransfersById = new Map<number, Transfer>();
   private failedTransfersById = new Map<number, Transfer>();
@@ -39,12 +39,12 @@ export class FileTransferPage implements OnDestroy {
     private router: Router,
     synchronizer: Synchronizer,
   ) {
-    title.setTitle('CFDP File Transfer');
+    title.setTitle('File Transfer');
 
     const queryParams = route.snapshot.queryParamMap;
     const requestedService = queryParams.get('service');
 
-    yamcs.yamcsClient.getCfdpServices(yamcs.instance!).then(page => {
+    yamcs.yamcsClient.getFileTransferServices(yamcs.instance!).then(page => {
       this.services$.next(page.services);
 
       // Respect the requested service (from query param)
@@ -73,7 +73,7 @@ export class FileTransferPage implements OnDestroy {
     });
   }
 
-  switchService(service: CfdpService | null) {
+  switchService(service: FileTransferService | null) {
     // Update URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -122,7 +122,7 @@ export class FileTransferPage implements OnDestroy {
     }
   }
 
-  uploadFile(service: CfdpService) {
+  uploadFile(service: FileTransferService) {
     const dialogRef = this.dialog.open(UploadFileDialog, {
       width: '70%',
       height: '100%',

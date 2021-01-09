@@ -3,7 +3,7 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
-import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/cfdp';
+import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
@@ -458,7 +458,7 @@ export default class YamcsClient implements HttpHandler {
   }
 
   createTransferSubscription(options: SubscribeTransfersRequest, observer: (transfer: Transfer) => void): TransferSubscription {
-    return this.webSocketClient!.createSubscription('cfdp-transfers', options, observer);
+    return this.webSocketClient!.createSubscription('file-transfers', options, observer);
   }
 
   createParameterSubscription(options: SubscribeParametersRequest, observer: (data: SubscribeParametersData) => void): ParameterSubscription {
@@ -934,20 +934,20 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Algorithm;
   }
 
-  async getCfdpServices(instance: string) {
-    const url = `${this.apiUrl}/cfdp/${instance}/services`;
+  async getFileTransferServices(instance: string) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/services`;
     const response = await this.doFetch(url);
     return await response.json() as ServicesPage;
   }
 
-  async getCfdpTransfers(instance: string, service: string) {
-    const url = `${this.apiUrl}/cfdp/${instance}/${service}/transfers`;
+  async getFileTransfers(instance: string, service: string) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers`;
     const response = await this.doFetch(url);
     return await response.json() as TransfersPage;
   }
 
-  async createCfdpTransfer(instance: string, service: string, options: CreateTransferRequest) {
-    const url = `${this.apiUrl}/cfdp/${instance}/${service}/transfers`;
+  async createFileTransfer(instance: string, service: string, options: CreateTransferRequest) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers`;
     const body = JSON.stringify(options);
     const response = await this.doFetch(url, {
       body,
@@ -956,18 +956,18 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Transfer;
   }
 
-  async pauseCfdpTransfer(instance: string, service: string, id: number) {
-    const url = `${this.apiUrl}/cfdp/${instance}/${service}/transfers/${id}:pause`;
+  async pauseFileTransfer(instance: string, service: string, id: number) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers/${id}:pause`;
     return this.doFetch(url, { method: 'POST' });
   }
 
-  async resumeCfdpTransfer(instance: string, service: string, id: number) {
-    const url = `${this.apiUrl}/cfdp/${instance}/${service}/transfers/${id}:resume`;
+  async resumeFileTransfer(instance: string, service: string, id: number) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers/${id}:resume`;
     return this.doFetch(url, { method: 'POST' });
   }
 
-  async cancelCfdpTransfer(instance: string, service: string, id: number) {
-    const url = `${this.apiUrl}/cfdp/${instance}/${service}/transfers/${id}:cancel`;
+  async cancelFileTransfer(instance: string, service: string, id: number) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers/${id}:cancel`;
     return this.doFetch(url, { method: 'POST' });
   }
 

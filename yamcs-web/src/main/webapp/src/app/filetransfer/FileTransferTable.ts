@@ -50,21 +50,21 @@ export class FileTransferTable implements OnChanges {
 
   pauseTransfer(item: TransferItem) {
     const id = item.transfer.id;
-    this.yamcs.yamcsClient.pauseCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
+    this.yamcs.yamcsClient.pauseFileTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
   resumeTransfer(item: TransferItem) {
     const id = item.transfer.id;
-    this.yamcs.yamcsClient.resumeCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
+    this.yamcs.yamcsClient.resumeFileTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }
 
   cancelTransfer(item: TransferItem) {
     const id = item.transfer.id;
-    this.yamcs.yamcsClient.cancelCfdpTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
+    this.yamcs.yamcsClient.cancelFileTransfer(this.yamcs.instance!, this.serviceName, id).catch(err => {
       this.messageService.showError(err);
     });
   }

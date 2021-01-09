@@ -3,7 +3,7 @@ export { HttpHandler } from './HttpHandler';
 export { HttpInterceptor } from './HttpInterceptor';
 export { StorageClient } from './StorageClient';
 export * from './types/alarms';
-export * from './types/cfdp';
+export * from './types/filetransfer';
 export * from './types/commandHistory';
 export * from './types/cop1';
 export * from './types/events';
