@@ -299,6 +299,9 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new TimeCorrelationApi());
         addApi(new TimelineApi());
 
+        WellKnownHandler wellKnownHandler = new WellKnownHandler();
+        addHandler(".well-known", () -> wellKnownHandler);
+
         AuthHandler authHandler = new AuthHandler(tokenStore);
         addHandler("auth", () -> authHandler);
 

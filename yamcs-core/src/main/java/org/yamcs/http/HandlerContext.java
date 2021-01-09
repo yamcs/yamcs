@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -17,6 +18,8 @@ import java.util.Map;
 import org.yamcs.templating.TemplateProcessor;
 
 import com.google.common.io.CharStreams;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
@@ -34,6 +37,7 @@ import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
+import io.netty.handler.ssl.SslHandler;
 
 public class HandlerContext {
 
@@ -49,6 +53,47 @@ public class HandlerContext {
         nettyContext = ctx;
         nettyRequest = req;
         qsDecoder = new QueryStringDecoder(req.uri());
+    }
+
+    /**
+     * Attempts to derive the externally used URL to Yamcs based on request information
+     * 
+     * @return a url of the form [protocol]://[host]:[port][context]
+     */
+    public String getExternalBaseURL() {
+        boolean tls = nettyContext.channel().pipeline().get(SslHandler.class) != null;
+        String forwardedProto = nettyRequest.headers().get("x-forwarded-proto");
+        if ("https".equals(forwardedProto)) {
+            tls = true;
+        }
+
+        String host;
+        int port = tls ? 443 : 80;
+
+        String hostURL = nettyRequest.headers().get("x-forwarded-host");
+        if (hostURL == null) {
+            hostURL = nettyRequest.headers().get(HttpHeaderNames.HOST);
+        }
+
+        if (hostURL != null) {
+            int idx = hostURL.lastIndexOf(':');
+            if (idx == -1) {
+                host = hostURL;
+            } else {
+                host = hostURL.substring(0, idx);
+                port = Integer.parseInt(hostURL.substring(idx + 1));
+            }
+        } else {
+            InetSocketAddress address = (InetSocketAddress) nettyContext.channel().remoteAddress();
+            host = address.getHostName();
+            port = address.getPort();
+        }
+
+        if (tls) {
+            return String.format("https://%s%s", port == 443 ? host : host + ":" + port, contextPath);
+        } else {
+            return String.format("http://%s%s", port == 80 ? host : host + ":" + port, contextPath);
+        }
     }
 
     public ChannelHandlerContext getNettyChannelHandlerContext() {
@@ -240,6 +285,16 @@ public class HandlerContext {
 
     public void sendOK(Message message) {
         HttpRequestHandler.sendMessageResponse(nettyContext, nettyRequest, HttpResponseStatus.OK, message);
+    }
+
+    public void sendOK(JsonObject jsonObject) {
+        ByteBuf body = nettyContext.alloc().buffer();
+        String json = new GsonBuilder().setPrettyPrinting().create().toJson(jsonObject);
+        body.writeCharSequence(json, StandardCharsets.UTF_8);
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
     }
 
     public ChannelFuture sendResponse(HttpResponse response) {
