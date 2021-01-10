@@ -155,7 +155,24 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
-            throw new BadRequestException("Download not yet implemented");
+            TransferOptions transferOptions = new TransferOptions();
+            transferOptions.setOverwrite(true);
+            transferOptions.setCreatePath(true);
+
+            String sourcePath = request.getRemotePath();
+            String source = request.hasSource() ? request.getSource() : null;
+            String destination = request.hasDestination() ? request.getDestination() : null;
+
+            try {
+                FileTransfer transfer = ftService.startDownload(source, sourcePath, destination, bucket, objectName,
+                        transferOptions);
+                observer.complete(toTransferInfo(transfer));
+            } catch (InvalidRequestException e) {
+                throw new BadRequestException(e.getMessage());
+            } catch (IOException e) {
+                log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
+                throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
+            }
         } else {
             throw new BadRequestException("Unexpected direction '" + request.getDirection() + "'");
         }

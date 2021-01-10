@@ -338,21 +338,6 @@ public class CfdpService extends AbstractYamcsService
         return r;
     }
 
-    public OngoingCfdpTransfer processRequest(CfdpRequest request) {
-        switch (request.getType()) {
-        case PUT:
-            return processPutRequest((PutRequest) request);
-        case PAUSE:
-            return processPauseRequest((PauseRequest) request);
-        case RESUME:
-            return processResumeRequest((ResumeRequest) request);
-        case CANCEL:
-            return processCancelRequest((CancelRequest) request);
-        default:
-            return null;
-        }
-    }
-
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, idSeq.next(), executor, request,
                 cfdpOut, config, eventProducer, this, senderFaultHandlers);
@@ -586,6 +571,7 @@ public class CfdpService extends AbstractYamcsService
         return processPutRequest(putReq);
     }
 
+
     @Override
     public void pause(FileTransfer transfer) {
         processPauseRequest(new PauseRequest(transfer));
@@ -599,5 +585,11 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public void cancel(FileTransfer transfer) {
         processCancelRequest(new CancelRequest(transfer));
+    }
+
+    @Override
+    public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
+            String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+        throw new InvalidRequestException("Download not implemented");
     }
 }
