@@ -46,13 +46,14 @@ public interface FileTransferService extends YamcsService {
      * Start a file upload.
      * 
      * @param sourceEntity
-     *            the source entity. Can be null if the service supports only one unnamed source entity.
+     *            the source (local) entity. Can be null if the service supports only one unnamed source entity.
      * @param bucket
      *            the bucket containing the object to be transferred.
      * @param objectName
      *            the object name to be transferred.
      * @param destinationEntity
-     *            the destination entity. Can be null if the service supports only one unnamed destination entity.
+     *            the destination (remote) entity. Can be null if the service supports only one unnamed destination
+     *            entity.
      * @param destinationPath
      *            the path on the destination where the file will be uploaded. Depending on the implementation this
      *            can be the path of a directory in which case the objectName will be used as a destination file name or
@@ -74,6 +75,38 @@ public interface FileTransferService extends YamcsService {
     FileTransfer startUpload(String sourceEntity, Bucket bucket, String objectName,
             String destinationEntity, String destinationPath,
             TransferOptions options) throws IOException;
+
+    /**
+     * Start a file download.
+     * 
+     * @param sourceEntity
+     *            the source (remote) entity. Can be null if the service supports only one unnamed source entity.
+     * @param sourcePath
+     *            the path on the source representing the file to be transferred.
+     * @param destinationEntity
+     *            the destination (local) entity. Can be null if the service supports only one unnamed destination
+     *            entity.
+     * @param bucket
+     *            the bucket where the file will be stored.
+     * @param objectName
+     *            the object name where the file will be stored.
+     * @param options
+     *            transfer options.
+     * @return
+     * @throws IOException
+     *             if there was a problem retrieving the object from the bucket.
+     * @throws InvalidRequestException
+     *             thrown if the request is invalid; possible reasons:
+     *             <ul>
+     *             <li>the source or destination entities are not valid</li>
+     *             <li>the transfer options are invalid</li>
+     *             <li>download operation not supported or cannot be triggered by this call (most systems will have a
+     *             telecommand to trigger a download)</li>
+     *             <li>other service specific error.</li>
+     *             </ul>
+     */
+    FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
+            String objectName, TransferOptions options) throws IOException, InvalidRequestException;
 
     /**
      * Get the list of ongoing or past transfers.
