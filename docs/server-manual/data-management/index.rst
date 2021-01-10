@@ -18,3 +18,4 @@ In addition, Yamcs contains a **Parameter Archive** that is specifically optimiz
     streams
     archive/index
     parameter-archive/index
+    buckets
