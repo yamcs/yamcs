@@ -4,7 +4,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { Parameter } from '../../client';
+import { ConnectionInfo, Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, NavItem, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -17,6 +17,8 @@ import { User } from '../../shared/User';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstancePage implements OnInit, OnDestroy {
+
+  connectionInfo$: Observable<ConnectionInfo | null>;
 
   searchControl = new FormControl(null);
   filteredOptions: Observable<Parameter[]>;
@@ -47,6 +49,7 @@ export class InstancePage implements OnInit, OnDestroy {
     preferenceStore: PreferenceStore,
     private router: Router,
   ) {
+    this.connectionInfo$ = this.yamcs.connectionInfo$;
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
 

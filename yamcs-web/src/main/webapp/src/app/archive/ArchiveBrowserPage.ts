@@ -8,8 +8,6 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { IndexGroup } from '../client';
-import { ConfigService } from '../core/services/ConfigService';
-import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
@@ -63,18 +61,16 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
-    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
     private overlay: Overlay,
     private dialog: MatDialog,
     private dateTimePipe: DateTimePipe,
     private snackBar: MatSnackBar,
-    configService: ConfigService,
   ) {
     title.setTitle('Archive Browser');
 
-    if (configService.getConfig().completeness) {
+    if (yamcs.connectionInfo$.value?.instance?.capabilities.indexOf('ccsds-completeness') !== -1) {
       this.legendOptions = [
         { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
         ... this.legendOptions,

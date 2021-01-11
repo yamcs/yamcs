@@ -31,6 +31,8 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.Observer;
+import org.yamcs.archive.CcsdsTmIndex;
+import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
@@ -774,6 +776,13 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         TimeService timeService = ysi.getTimeService();
         if (timeService != null) {
             instanceb.setMissionTime(TimeEncoding.toProtobufTimestamp(timeService.getMissionTime()));
+        }
+
+        if (!ysi.getServicesWithConfig(CcsdsTmIndex.class).isEmpty()) {
+            instanceb.addCapabilities("ccsds-completeness");
+        }
+        if (!ysi.getServicesWithConfig(FileTransferService.class).isEmpty()) {
+            instanceb.addCapabilities("file-transfer");
         }
         return instanceb.build();
     }

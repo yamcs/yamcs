@@ -100,14 +100,6 @@ public class IndexHandler extends Handler {
 
         Map<String, Object> webConfig = new HashMap<>(config.toMap());
 
-        // Deprecated support for "features" section. yamcs-web already ignores it
-        if (webConfig.containsKey("features")) {
-            Map<String, Object> featuresConfig = YConfiguration.getMap(webConfig, "features");
-            // We must overwrite. Even if unset, the root level contains defaults.
-            webConfig.putAll(featuresConfig);
-            webConfig.remove("features");
-        }
-
         AuthInfo authInfo = AuthHandler.createAuthInfo();
         String authJson = JsonFormat.printer().print(authInfo);
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
