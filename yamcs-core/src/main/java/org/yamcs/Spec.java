@@ -42,6 +42,7 @@ public class Spec {
         OPTION_DESCRIPTOR.addOption("required", OptionType.BOOLEAN).withDefault(false);
         OPTION_DESCRIPTOR.addOption("secret", OptionType.BOOLEAN).withDefault(false);
         OPTION_DESCRIPTOR.addOption("default", OptionType.ANY);
+        OPTION_DESCRIPTOR.addOption("deprecationMessage", OptionType.STRING);
         OPTION_DESCRIPTOR.addOption("elementType", OptionType.STRING)
                 .withChoices(OptionType.class);
         OPTION_DESCRIPTOR.addOption("suboptions", OptionType.MAP)

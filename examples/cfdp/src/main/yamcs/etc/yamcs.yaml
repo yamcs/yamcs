@@ -21,7 +21,6 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: "Example: cfdp"
-  cfdp: true
 
 buckets:
   - name: cfdpUp

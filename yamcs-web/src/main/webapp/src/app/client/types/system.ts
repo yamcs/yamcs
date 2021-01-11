@@ -138,6 +138,7 @@ export interface Instance {
   processors: Processor[];
   labels?: { [key: string]: string; };
   missionTime: string;
+  capabilities: string[];
 }
 
 export interface InstanceTemplate {
@@ -157,7 +158,7 @@ export interface TemplateVariable {
 }
 
 export interface ConnectionInfo {
-  instance: string;
+  instance: Instance;
   processor?: Processor;
 }
 

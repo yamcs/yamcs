@@ -86,7 +86,7 @@ options:
       - Controls whether functionalities related to CCSDS completeness are shown.
       - Only enable when the service CcsdsTmIndex is used.
     type: BOOLEAN
-    default: false
+    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
     
   logoutRedirectUrl:
     title: Logout Redirect URL
@@ -101,8 +101,8 @@ options:
       - Controls whether functionalities related to CFDP are shown.
       - Only enable when the service CfdpService is used.
     type: BOOLEAN
-    default: false
-    
+    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
+
   dass:
     title: Show DaSS Functionalities
     description:

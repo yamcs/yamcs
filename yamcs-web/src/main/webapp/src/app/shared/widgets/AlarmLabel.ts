@@ -23,10 +23,10 @@ export class AlarmLabel implements OnDestroy {
         /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
           this.clearAlarmSubscription();
         }*/
-        let context = connectionInfo.instance;
+        let context = connectionInfo.instance.name;
         if (connectionInfo.processor) {
           const options = {
-            instance: connectionInfo.instance,
+            instance: connectionInfo.instance.name,
             processor: connectionInfo.processor.name,
           };
           this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
