@@ -17,7 +17,6 @@ import com.google.protobuf.Message;
 
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
 
 @Sharable
 public class RouteHandler extends Handler {
@@ -37,9 +36,10 @@ public class RouteHandler extends Handler {
     }
 
     @Override
-    public void handle(ChannelHandlerContext nettyContext, FullHttpRequest req) {
+    public void handle(HandlerContext handlerContext) {
+        ChannelHandlerContext nettyContext = handlerContext.getNettyChannelHandlerContext();
         RouteContext ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
-        ctx.setFullNettyRequest(req);
+        ctx.setFullNettyRequest(handlerContext.getNettyFullHttpRequest());
 
         if (ctx.isOffloaded()) {
             ctx.getBody().retain();

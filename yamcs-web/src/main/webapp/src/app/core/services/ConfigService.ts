@@ -13,9 +13,7 @@ export interface WebsiteConfig {
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];
   hasTemplates: boolean;
-  completeness: boolean;
   logoutRedirectUrl: string;
-  cfdp: boolean;
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;

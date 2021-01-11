@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
-import { CfdpService, Transfer, TransferSubscription } from '../client';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { FileTransferService, Transfer, TransferSubscription } from '../client';
+import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { UploadFileDialog } from './UploadFileDialog';
 
@@ -14,8 +15,8 @@ import { UploadFileDialog } from './UploadFileDialog';
 })
 export class FileTransferPage implements OnDestroy {
 
-  services$ = new BehaviorSubject<CfdpService[]>([]);
-  service$ = new BehaviorSubject<CfdpService | null>(null);
+  services$ = new BehaviorSubject<FileTransferService[]>([]);
+  service$ = new BehaviorSubject<FileTransferService | null>(null);
 
   private ongoingTransfersById = new Map<number, Transfer>();
   private failedTransfersById = new Map<number, Transfer>();
@@ -27,19 +28,23 @@ export class FileTransferPage implements OnDestroy {
 
   private transferSubscription: TransferSubscription;
 
+  private dirty = false;
+  private syncSubscription: Subscription;
+
   constructor(
     readonly yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
+    synchronizer: Synchronizer,
   ) {
-    title.setTitle('CFDP File Transfer');
+    title.setTitle('File Transfer');
 
     const queryParams = route.snapshot.queryParamMap;
     const requestedService = queryParams.get('service');
 
-    yamcs.yamcsClient.getCfdpServices(yamcs.instance!).then(page => {
+    yamcs.yamcsClient.getFileTransferServices(yamcs.instance!).then(page => {
       this.services$.next(page.services);
 
       // Respect the requested service (from query param)
@@ -58,9 +63,17 @@ export class FileTransferPage implements OnDestroy {
         this.switchService(service);
       }
     });
+
+    this.syncSubscription = synchronizer.sync(() => {
+      if (this.dirty) {
+        this.ongoingCount$.next(this.ongoingTransfersById.size);
+        this.failedCount$.next(this.failedTransfersById.size);
+        this.successfulCount$.next(this.successfulTransfersById.size);
+      }
+    });
   }
 
-  switchService(service: CfdpService | null) {
+  switchService(service: FileTransferService | null) {
     // Update URL
     this.router.navigate([], {
       relativeTo: this.route,
@@ -102,14 +115,14 @@ export class FileTransferPage implements OnDestroy {
             break;
         }
 
-        this.ongoingCount$.next(this.ongoingTransfersById.size);
-        this.failedCount$.next(this.failedTransfersById.size);
-        this.successfulCount$.next(this.successfulTransfersById.size);
+        // Dirty mechanism, to prevent overloading change detection
+        // on fast updates
+        this.dirty = true;
       });
     }
   }
 
-  uploadFile(service: CfdpService) {
+  uploadFile(service: FileTransferService) {
     const dialogRef = this.dialog.open(UploadFileDialog, {
       width: '70%',
       height: '100%',
@@ -122,6 +135,9 @@ export class FileTransferPage implements OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
     if (this.transferSubscription) {
       this.transferSubscription.cancel();
     }

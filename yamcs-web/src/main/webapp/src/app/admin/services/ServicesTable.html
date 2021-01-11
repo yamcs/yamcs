@@ -38,7 +38,11 @@
           Stop service
         </button>
       </mat-menu>
-      <button mat-button [matMenuTriggerFor]="serviceMenu" *ngIf="!readonly" class="icon">
+      <button mat-button
+              [matMenuTriggerFor]="serviceMenu"
+              *ngIf="!readonly"
+              class="icon"
+              (click)="$event.stopPropagation()">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

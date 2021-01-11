@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { CfdpRoutingModule, routingComponents } from './CfdpRoutingModule';
+import { FileTransferRoutingModule, routingComponents } from './FileTransferRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
 import { UploadFileDialog } from './UploadFileDialog';
 
 @NgModule({
   imports: [
     SharedModule,
-    CfdpRoutingModule,
+    FileTransferRoutingModule,
   ],
   declarations: [
     routingComponents,
@@ -15,5 +15,5 @@ import { UploadFileDialog } from './UploadFileDialog';
     UploadFileDialog,
   ],
 })
-export class CfdpModule {
+export class FileTransferModule {
 }

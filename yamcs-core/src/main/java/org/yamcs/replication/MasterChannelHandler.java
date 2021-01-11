@@ -175,6 +175,10 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    public long getNextTxId() {
+        return nextTxToSend;
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
@@ -182,8 +186,8 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * this is called when the TCP connection is established, only when we are working as TCP client
-     * in the other case the ReplicationServer adds us to the pipeline after the connection is estabilished)
+     * this is called when the TCP connection is established, only when we are working as TCP client in the other case
+     * the ReplicationServer adds us to the pipeline after the connection is estabilished)
      * <p>
      * Send a Wakeup message
      */

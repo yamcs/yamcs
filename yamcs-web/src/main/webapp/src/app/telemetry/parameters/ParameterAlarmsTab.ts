@@ -52,8 +52,8 @@ export class ParameterAlarmsTab {
 
     this.filter.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
-        const customStart = this.validStart || new Date();
-        const customStop = this.validStop || new Date();
+        const customStart = this.validStart || this.yamcs.getMissionTime();
+        const customStop = this.validStop || this.yamcs.getMissionTime();
         this.filter.get('customStart')!.setValue(utils.toISOString(customStart));
         this.filter.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {

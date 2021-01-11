@@ -85,7 +85,10 @@
         </button>
       </mat-menu>
 
-      <button mat-button [matMenuTriggerFor]="queueMenu" class="icon">
+      <button mat-button
+              [matMenuTriggerFor]="queueMenu"
+              class="icon"
+              (click)="$event.stopPropagation()">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

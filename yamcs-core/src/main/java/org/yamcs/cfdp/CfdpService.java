@@ -535,14 +535,10 @@ public class CfdpService extends AbstractYamcsService
         return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
     }
 
-	@Override
-	public FileTransfer startDownload(String source, Bucket bucket, String objectName, String destination, String destinationPath, TransferOptions options) throws IOException, InvalidRequestException {
-		throw new InvalidRequestException("Download not implemented");
-	}
 
-	@Override
-    public FileTransfer startUpload(String source, Bucket bucket, String objectName, String destination,
-            String destinationPath, TransferOptions options) throws IOException, InvalidRequestException {
+    @Override
+    public OngoingCfdpTransfer startUpload(String source, Bucket bucket, String objectName, String destination,
+            String destinationPath, TransferOptions options) throws IOException {
         byte[] objData;
         objData = bucket.getObject(objectName);
         if (objData == null) {
@@ -575,6 +571,7 @@ public class CfdpService extends AbstractYamcsService
         return processPutRequest(putReq);
     }
 
+
     @Override
     public void pause(FileTransfer transfer) {
         processPauseRequest(new PauseRequest(transfer));
@@ -588,5 +585,11 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public void cancel(FileTransfer transfer) {
         processCancelRequest(new CancelRequest(transfer));
+    }
+
+    @Override
+    public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
+            String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+        throw new InvalidRequestException("Download not implemented");
     }
 }

@@ -44,7 +44,7 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class CfdpRoutingModule { }
+export class FileTransferRoutingModule { }
 
 export const routingComponents = [
   FailedTransfersTab,

@@ -1,6 +1,6 @@
 <app-instance-page>
   <app-instance-toolbar>
-    CFDP File Transfer
+    File Transfer
     &nbsp;&nbsp;&nbsp;&nbsp;
 
     <ng-container *ngIf="services$ | async as services">
@@ -58,9 +58,9 @@
       <router-outlet></router-outlet>
     </div>
   </ng-container>
-  <app-empty-message *ngIf="!(services$ | async).length" headerTitle="CFDP File Transfer">
+  <app-empty-message *ngIf="!(services$ | async).length" headerTitle="File Transfer">
     <p>
-      This instance has no CFDP services configured.
+      This instance has no file transfer services configured.
     </p>
   </app-empty-message>
 </app-instance-page>

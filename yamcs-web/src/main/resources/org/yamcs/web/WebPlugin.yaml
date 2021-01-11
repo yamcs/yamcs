@@ -7,6 +7,12 @@ options:
         multiple Yamcs servers in distributed deployments.
     type: STRING
     
+  extraHeaderHTML:
+    title: Extra Header HTML
+    description:
+      - Additional HTML to be included at the end of the <head></head> section.
+    type: STRING
+
   displayPath:
     title: Display Path
     description:
@@ -14,7 +20,7 @@ options:
         stores displays in a regular bucket (in binary form). Using the filesystem allows
         to manage displays outside of Yamcs; for example with a versioning system.
     type: STRING
-    
+
   displayFolderPerInstance:
     title: Display Folder Per Instance
     description:
@@ -80,7 +86,7 @@ options:
       - Controls whether functionalities related to CCSDS completeness are shown.
       - Only enable when the service CcsdsTmIndex is used.
     type: BOOLEAN
-    default: false
+    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
     
   logoutRedirectUrl:
     title: Logout Redirect URL
@@ -95,8 +101,8 @@ options:
       - Controls whether functionalities related to CFDP are shown.
       - Only enable when the service CfdpService is used.
     type: BOOLEAN
-    default: false
-    
+    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
+
   dass:
     title: Show DaSS Functionalities
     description:

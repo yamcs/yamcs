@@ -59,14 +59,14 @@ export class YamcsService {
     return new Promise<void>((resolve, reject) => {
       const currentConnectionInfo = this.connectionInfo$.value;
       if (currentConnectionInfo) {
-        if (currentConnectionInfo.instance === instanceId) {
+        if (currentConnectionInfo.instance?.name === instanceId) {
           resolve();
           return;
         }
       }
       this.clearContext();
       this.yamcsClient.getInstance(instanceId).then(instance => {
-        this.connectionInfo$.next({ instance: instance.name });
+        this.connectionInfo$.next({ instance });
 
         // Don't wait on WebSocket. Lots of pages require mission time
         this.time$.next(instance.missionTime);
@@ -92,17 +92,20 @@ export class YamcsService {
     return new Promise<void>((resolve, reject) => {
       const currentConnectionInfo = this.connectionInfo$.value;
       if (currentConnectionInfo) {
-        if (currentConnectionInfo.instance === instanceId && currentConnectionInfo.processor?.name === processorId) {
+        if (currentConnectionInfo.instance?.name === instanceId && currentConnectionInfo.processor?.name === processorId) {
           resolve();
           return;
         }
       }
       this.clearContext();
-      this.yamcsClient.getProcessor(instanceId, processorId).then(processor => {
-        this.connectionInfo$.next({ processor, instance: processor.instance });
+      Promise.all([
+        this.yamcsClient.getInstance(instanceId),
+        this.yamcsClient.getProcessor(instanceId, processorId),
+      ]).then(result => {
+        this.connectionInfo$.next({ instance: result[0], processor: result[1] });
 
         // Don't wait on WebSocket. Lots of pages require mission time
-        this.time$.next(processor.time);
+        this.time$.next(result[1].time);
 
         // Listen to time updates, so that we can easily provide actual mission time to components
         this.timeSubscription = this.yamcsClient.createTimeSubscription({
@@ -130,7 +133,7 @@ export class YamcsService {
     const value = this.connectionInfo$.getValue();
     if (value) {
       const processor = value.processor?.name;
-      return processor ? `${value.instance}__${processor}` : value.instance;
+      return processor ? `${value.instance.name}__${processor}` : value.instance.name;
     }
   }
 
@@ -138,7 +141,7 @@ export class YamcsService {
    * Returns the currently active instance (if any).
    */
   get instance() {
-    return this.connectionInfo$.getValue()?.instance;
+    return this.connectionInfo$.getValue()?.instance?.name;
   }
 
   /**

@@ -29,7 +29,7 @@ export class ExportArchiveDataDialog implements OnDestroy {
     let start = data.start;
     let stop = data.stop;
     if (!start || !stop) {
-      stop = new Date();
+      stop = yamcs.getMissionTime();
       start = subtractDuration(stop, 'PT1H');
     }
 

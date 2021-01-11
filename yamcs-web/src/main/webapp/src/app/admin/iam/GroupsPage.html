@@ -53,7 +53,10 @@
               Delete group
             </button>
           </mat-menu>
-          <button mat-button [matMenuTriggerFor]="groupMenu" class="icon">
+          <button mat-button
+                  [matMenuTriggerFor]="groupMenu"
+                  (click)="$event.stopPropagation()"
+                  class="icon">
             <mat-icon>more_vert</mat-icon>
           </button>
         </td>

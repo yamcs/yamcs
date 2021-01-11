@@ -30,7 +30,6 @@ The number of configuration options in ``etc/yamcs.yaml`` are relatively limited
         tag: DEMO
         displayPath: displays
         stackPath: stacks
-        cfdp: true
 
 The following options are supported
 

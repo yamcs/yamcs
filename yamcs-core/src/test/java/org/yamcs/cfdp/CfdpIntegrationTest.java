@@ -21,8 +21,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.cfdp.CfdpClient;
-import org.yamcs.client.cfdp.CfdpClient.UploadOptions;
+import org.yamcs.client.filetransfer.FileTransferClient;
+import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions;
 import org.yamcs.client.storage.ObjectId;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
@@ -50,7 +50,7 @@ public class CfdpIntegrationTest {
     private static Bucket incomingBucket;
 
     private YamcsClient client;
-    private CfdpClient cfdpClient;
+    private FileTransferClient cfdpClient;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -71,7 +71,7 @@ public class CfdpIntegrationTest {
     @Before
     public void before() {
         client = YamcsClient.newBuilder("localhost", 9193).build();
-        cfdpClient = new CfdpClient(client, yamcsInstance, "CfdpService");
+        cfdpClient = new FileTransferClient(client, yamcsInstance, "CfdpService");
     }
 
     @After

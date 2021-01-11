@@ -283,6 +283,10 @@ export class AuthService implements OnDestroy {
   }
 
   public buildOpenIDRedirectURI() {
+    return `${location.protocol}//${location.host}${this.baseHref}cb`;
+  }
+
+  public buildServerSideOpenIDRedirectURI() {
     return `${location.protocol}//${location.host}${this.baseHref}oidc-browser-callback`;
   }
 

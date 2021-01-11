@@ -22,14 +22,14 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.protobuf.AbstractCfdpApi;
-import org.yamcs.protobuf.CFDPServiceInfo;
+import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
-import org.yamcs.protobuf.ListCFDPServicesRequest;
-import org.yamcs.protobuf.ListCFDPServicesResponse;
+import org.yamcs.protobuf.ListFileTransferServicesRequest;
+import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.PauseTransferRequest;
@@ -46,19 +46,20 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 
-public class CfdpApi extends AbstractCfdpApi<Context> {
+public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
-    private static final Logger log = LoggerFactory.getLogger(CfdpApi.class);
+    private static final Logger log = LoggerFactory.getLogger(FileTransferApi.class);
 
     @Override
-    public void listCFDPServices(Context ctx, ListCFDPServicesRequest request,
-            Observer<ListCFDPServicesResponse> observer) {
+    public void listFileTransferServices(Context ctx, ListFileTransferServicesRequest request,
+            Observer<ListFileTransferServicesResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
-        ListCFDPServicesResponse.Builder responseb = ListCFDPServicesResponse.newBuilder();
+        ListFileTransferServicesResponse.Builder responseb = ListFileTransferServicesResponse.newBuilder();
         YamcsServerInstance ysi = yamcs.getInstance(instance);
         for (ServiceWithConfig service : ysi.getServicesWithConfig(FileTransferService.class)) {
-            responseb.addServices(toCFDPServiceInfo(service.getName(), (FileTransferService) service.getService()));
+            responseb.addServices(
+                    toFileTransferServiceInfo(service.getName(), (FileTransferService) service.getService()));
         }
         observer.complete(responseb.build());
     }
@@ -154,26 +155,25 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
+            TransferOptions transferOptions = new TransferOptions();
+            transferOptions.setOverwrite(true);
+            transferOptions.setCreatePath(true);
 
-			TransferOptions transferOptions = new TransferOptions();
-			transferOptions.setOverwrite(true);
-			transferOptions.setCreatePath(true);
-			
-			String destinationPath = request.getRemotePath();
-			String source = request.hasSource() ? request.getSource() : null;
-			String destination = request.hasDestination() ? request.getDestination() : null;
-			
-			try {
-				FileTransfer transfer = ftService.startDownload(source, bucket, objectName, destination, destinationPath, transferOptions);
-				observer.complete(toTransferInfo(transfer));
-			} catch (InvalidRequestException e) {
-				throw new BadRequestException(e.getMessage());
-			} catch (IOException e) {
-				log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
-				throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
-			}
+            String sourcePath = request.getRemotePath();
+            String source = request.hasSource() ? request.getSource() : null;
+            String destination = request.hasDestination() ? request.getDestination() : null;
 
-		} else {
+            try {
+                FileTransfer transfer = ftService.startDownload(source, sourcePath, destination, bucket, objectName,
+                        transferOptions);
+                observer.complete(toTransferInfo(transfer));
+            } catch (InvalidRequestException e) {
+                throw new BadRequestException(e.getMessage());
+            } catch (IOException e) {
+                log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
+                throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
+            }
+        } else {
             throw new BadRequestException("Unexpected direction '" + request.getDirection() + "'");
         }
     }
@@ -235,8 +235,8 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         ftService.registerTransferMonitor(listener);
     }
 
-    private static CFDPServiceInfo toCFDPServiceInfo(String name, FileTransferService service) {
-        CFDPServiceInfo.Builder infob = CFDPServiceInfo.newBuilder()
+    private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
+        FileTransferServiceInfo.Builder infob = FileTransferServiceInfo.newBuilder()
                 .setInstance(service.getYamcsInstance())
                 .setName(name);
         infob.addAllLocalEntities(service.getLocalEntities());

@@ -1,0 +1,54 @@
+syntax="proto2";
+  
+package yamcs.protobuf.replication;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ReplicationProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+service ReplicationApi {
+
+  // Get replication info
+  rpc GetReplicationInfo(google.protobuf.Empty) returns (ReplicationInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/replication"
+    };
+  }
+  
+  // Receive replication updates
+  rpc SubscribeReplicationInfo(google.protobuf.Empty) returns (stream ReplicationInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "replication-info"
+    };
+  }
+}
+
+message ReplicationInfo {
+  repeated ReplicationMasterInfo masters = 1;
+  repeated ReplicationSlaveInfo slaves = 2;
+}
+
+message ReplicationMasterInfo {
+  optional string instance = 1;
+  repeated string streams = 2;
+  optional string localAddress = 3;
+  optional string remoteAddress = 4;
+  optional bool push = 5;
+  optional string pushTo = 6;
+  optional int64 localTx = 7;
+  optional int64 nextTx = 8;
+}
+
+message ReplicationSlaveInfo {
+  optional string instance = 1;
+  repeated string streams = 2;  
+  optional string localAddress = 3;
+  optional string remoteAddress = 4;
+  optional bool push = 5;
+  optional string pullFrom = 6;
+  optional int64 tx = 7;
+}

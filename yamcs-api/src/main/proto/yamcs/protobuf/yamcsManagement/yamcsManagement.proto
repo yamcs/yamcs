@@ -194,6 +194,9 @@ message YamcsInstance {
   optional string failureCause = 9;
   optional google.protobuf.Timestamp missionTime = 10;
   map<string, string> labels = 12;
+
+  // Feature capability hints for client use
+  repeated string capabilities = 13;
 }
 
 message InstanceTemplate {

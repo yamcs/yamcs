@@ -138,6 +138,7 @@ export interface Instance {
   processors: Processor[];
   labels?: { [key: string]: string; };
   missionTime: string;
+  capabilities: string[];
 }
 
 export interface InstanceTemplate {
@@ -157,7 +158,7 @@ export interface TemplateVariable {
 }
 
 export interface ConnectionInfo {
-  instance: string;
+  instance: Instance;
   processor?: Processor;
 }
 
@@ -294,6 +295,8 @@ export interface Clearance {
 
 export type ClearanceSubscription = WebSocketCall<void, Clearance>;
 
+export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
+
 export interface Service {
   instance: string;
   name: string;
@@ -382,4 +385,30 @@ export interface ValidityRange {
   stop: string;
   leapSeconds: number;
   taiDifference: number;
+}
+
+export interface ReplicationInfo {
+  masters: ReplicationMaster[];
+  slaves: ReplicationSlave[];
+}
+
+export interface ReplicationMaster {
+  instance: string;
+  streams: string[];
+  localAddress: string;
+  remoteAddress: string;
+  push: boolean;
+  pushTo?: string;
+  localTx: number;
+  nextTx: number;
+}
+
+export interface ReplicationSlave {
+  instance: string;
+  streams: string;
+  localAddress: string;
+  remoteAddress: string;
+  push: boolean;
+  pullFrom?: string;
+  tx: number;
 }

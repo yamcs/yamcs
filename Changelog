@@ -1,3 +1,6 @@
+Version 5.3.6
+- Generalized file transfers: allow different than CFDP file transfer services to be implemented offering the same external API.
+
 Version 5.3.5 released 20-Dec-2020
 - Fixed a bug related to CFDP transfer storage in archive (the entity id was not saved for the incoming transfers)
 

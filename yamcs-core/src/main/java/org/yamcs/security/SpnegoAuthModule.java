@@ -30,15 +30,16 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Handler;
-import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.HandlerContext;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.UnauthorizedException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -179,69 +180,59 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
     }
 
     @Override
-    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
-            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
-            if (authorizationHeader.startsWith(NEGOTIATE)) {
-                try {
-                    byte[] spnegoToken = Base64.getDecoder()
-                            .decode(authorizationHeader.substring(NEGOTIATE.length() + 1));
-                    GSSCredential cred = getGSSCredential();
-                    if (cred == null) {
-                        HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                        return;
-                    }
-
-                    GSSContext yamcsContext = gssManager.createContext(cred);
-                    yamcsContext.acceptSecContext(spnegoToken, 0, spnegoToken.length);
-                    if (yamcsContext.isEstablished()) {
-                        if (yamcsContext.getSrcName() == null) {
-                            log.warn("Unknown user. No TGT?");
-                            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                            return;
-                        }
-                        String userPrincipal = yamcsContext.getSrcName().toString();
-                        log.debug("GSS context initiator {}", userPrincipal);
-
-                        if (!userPrincipal.endsWith("@" + realm)) {
-                            log.warn("User {} does not match realm {}", userPrincipal, realm);
-                            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                            return;
-                        }
-                        String username = userPrincipal;
-                        if (stripRealm) {
-                            username = userPrincipal.substring(0, userPrincipal.length() - realm.length() - 1);
-                        }
-                        SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, username);
-                        authInfo.addExternalIdentity(getClass().getName(), userPrincipal);
-                        String authorizationCode = CryptoUtils.generateRandomPassword(10);
-                        code2info.put(authorizationCode, authInfo);
-                        ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
-                        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
-                        HttpUtil.setContentLength(res, buf.readableBytes());
-                        log.info("{} {} {} Sending authorization code", req.method(), req.uri(), res.status().code());
-                        ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
-                    } else {
-                        log.warn("Context is not established, multiple rounds needed???");
-                        HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                    }
-                } catch (IllegalArgumentException e) {
-                    log.warn("Failed to base64 decode the SPNEGO token: {}", e.getMessage());
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-                } catch (GSSException e) {
-                    log.warn("Failed to establish context with the SPNEGO token from header '{}': ",
-                            authorizationHeader, e);
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+    public void handle(HandlerContext ctx) {
+        String negotiateHeader = ctx.getCredentials("Negotiate");
+        if (negotiateHeader != null) {
+            try {
+                byte[] spnegoToken = Base64.getDecoder().decode(negotiateHeader);
+                GSSCredential cred = getGSSCredential();
+                if (cred == null) {
+                    throw new InternalServerErrorException("Unexpected GSS error");
                 }
+
+                GSSContext yamcsContext = gssManager.createContext(cred);
+                yamcsContext.acceptSecContext(spnegoToken, 0, spnegoToken.length);
+                if (yamcsContext.isEstablished()) {
+                    if (yamcsContext.getSrcName() == null) {
+                        log.warn("Unknown user. No TGT?");
+                        throw new UnauthorizedException();
+                    }
+                    String userPrincipal = yamcsContext.getSrcName().toString();
+                    log.debug("GSS context initiator {}", userPrincipal);
+
+                    if (!userPrincipal.endsWith("@" + realm)) {
+                        log.warn("User {} does not match realm {}", userPrincipal, realm);
+                        throw new UnauthorizedException();
+                    }
+                    String username = userPrincipal;
+                    if (stripRealm) {
+                        username = userPrincipal.substring(0, userPrincipal.length() - realm.length() - 1);
+                    }
+                    SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, username);
+                    authInfo.addExternalIdentity(getClass().getName(), userPrincipal);
+                    String authorizationCode = CryptoUtils.generateRandomPassword(10);
+                    code2info.put(authorizationCode, authInfo);
+                    ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
+                    HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
+                    HttpUtil.setContentLength(res, buf.readableBytes());
+                    ctx.sendResponse(res).addListener(ChannelFutureListener.CLOSE);
+                } else {
+                    log.warn("Context is not established, multiple rounds needed???");
+                    throw new UnauthorizedException();
+                }
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Failed to base64 decode the SPNEGO token");
+            } catch (GSSException e) {
+                log.warn("Failed to establish context with the SPNEGO token from header '{}': ",
+                        negotiateHeader, e);
+                throw new UnauthorizedException();
             }
         } else {
             ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
             HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
             HttpUtil.setContentLength(res, buf.readableBytes());
             res.headers().set(HttpHeaderNames.WWW_AUTHENTICATE, NEGOTIATE);
-
-            log.info("{} {} {} Sending WWW-Authenticate: Negotiate", req.method(), req.uri(), res.status().code());
-            ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
+            ctx.sendResponse(res).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
