@@ -205,8 +205,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
         if (useTofEstimator) {
             tofEstimator = new TimeOfFlightEstimator(yamcsInstance, serviceName, saveTofPolynomials);
-        }
-        else {
+        } else {
             tofEstimator = null;
         }
         
