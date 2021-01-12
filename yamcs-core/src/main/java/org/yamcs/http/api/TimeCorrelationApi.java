@@ -115,6 +115,10 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         TimeOfFlightEstimator tofEstimator = tco.getTofEstimator();
+        if (tofEstimator == null) {
+            throw new BadRequestException(
+                    "Time of flight estimator not configured for this service ( 'useTofEstimator: true' in the configuration)");
+        }
         List<TimeOfFlightEstimator.TofInterval> intervalList = new ArrayList<>();
 
         for (TofInterval ti : request.getIntervalsList()) {
