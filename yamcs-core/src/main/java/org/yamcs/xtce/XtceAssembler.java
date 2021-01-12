@@ -1328,7 +1328,7 @@ public class XtceAssembler {
         sb.append(getNameReference(pinstRef.getParameter()));
         if (pinstRef.getMemberPath() != null) {
             for (PathElement pe : pinstRef.getMemberPath()) {
-                sb.append("/").append(pe.getName());
+                sb.append(".").append(pe.getName());
             }
         }
         return sb.toString();
