@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.YamcsService;
 import org.yamcs.protobuf.EntityInfo;
+import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -43,6 +44,15 @@ public interface FileTransferService extends YamcsService {
     public List<EntityInfo> getRemoteEntities();
 
     /**
+     * Get the capabilities supported by this service.
+     * <p>
+     * The capabilities are used by the yamcs-web to enable/disable some options.
+     * 
+     * @return
+     */
+    public FileTransferCapabilities getCapabilities();
+
+    /**
      * Start a file upload.
      * 
      * @param sourceEntity
@@ -58,6 +68,7 @@ public interface FileTransferService extends YamcsService {
      *            the path on the destination where the file will be uploaded. Depending on the implementation this
      *            can be the path of a directory in which case the objectName will be used as a destination file name or
      *            can be the name of a (non-existent) file which will then be used as the destination file.
+     *            if the destinationPath is null, then the objectName will be used as the name at the destination.
      * @param options
      *            transfer options.
      * @return

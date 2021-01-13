@@ -35,6 +35,7 @@ import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.EntityInfo;
+import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -565,6 +566,10 @@ public class CfdpService extends AbstractYamcsService
             destinationId = remoteEntities.get(destination).id;
         }
 
+        if (destinationPath == null) {
+            destinationPath = objectName;
+        }
+
         PutRequest putReq = new PutRequest(sourceId, destinationId, objectName, destinationPath,
                 options.isOverwrite(), options.isReliable(), options.isClosureRequested(), options.isCreatePath(),
                 bucket, objData);
@@ -591,5 +596,15 @@ public class CfdpService extends AbstractYamcsService
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
         throw new InvalidRequestException("Download not implemented");
+    }
+
+    @Override
+    public FileTransferCapabilities getCapabilities() {
+        return FileTransferCapabilities
+                .newBuilder()
+                .setDownload(false)
+                .setUpload(true)
+                .setReliability(true)
+                .build();
     }
 }

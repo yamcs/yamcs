@@ -139,7 +139,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             if (transferOptions.isReliable() && transferOptions.isClosureRequested()) {
                 throw new BadRequestException("Cannot set both reliable and closureRequested options");
             }
-            String destinationPath = request.getRemotePath();
+            String destinationPath = request.hasRemotePath() ? request.getRemotePath() : null;
             String source = request.hasSource() ? request.getSource() : null;
             String destination = request.hasDestination() ? request.getDestination() : null;
 
