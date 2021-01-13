@@ -4,7 +4,7 @@ CCSDS Frame Processing
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
 * TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
-* AOS AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
+* AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
 * TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
 * Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
 * TC Synchronization and Channel Coding `CCSDS 231.0-B-3 <https://public.ccsds.org/Pubs/231x0b3.pdf>`_
@@ -26,13 +26,13 @@ The CCSDS specifies how to transport data into three types of frames:
 * TM
 * USLP
 
-In Yamcs we support to a certain extent all three of them. The main support is around the "packet service" - that is describing how the telemetry packets are extracted from the frames. The implementation is however generic enough (hopefully) such that it is possible to add additional functionality for processing non-packet data (e.g. sending video to external application).
+Yamcs supports to a certain extent all three of them. The main support is around the "packet service" - that is describing how the telemetry packets are extracted from the frames. The implementation is however generic enough (hopefully) such that it is possible to add additional functionality for processing non-packet data (e.g. sending video to external application).
 
 The packets are inserted into frames which are sent as part of Virtual Channels (VC). The VCs can have different priority on-board, for example one VC can be used to transport low volume HK data, while another one to transport high volume science data.
 
 Note that The USLP frames (as well as the TC frames used for commanding) support a second level of multiplexing called Multiplexer Access Point (MAP) which allows multiplexing data inside a VC. The MAP service is not supported by Yamcs.
 
-Currently the built-in way to receive frame dat inside Yamcs is by using the UdpTmFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows receiving frame data from Ground Stations supporting this protocol. The options described below are valid for both link types.
+Currently the built-in way to receive frame dat inside Yamcs is by using the UdpTmFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows receiving frame data from SLE-enabled Ground Stations (such as those from NASA Deep Space Network or ESA ESTRACK). The options described below are valid for both link types.
 
 An example of a UDP TM frame link specification is below:
 
@@ -98,7 +98,7 @@ frameHeaderErrorControlPresent (boolean)
     Used only for AOS frames to specify the presence/absence of the 2 bytes Frame Header Error Control. This can be used to detect and correct errors in parts of the AOS frame headers using a  Reed-Solomon (10,6) code.
  
 insertZoneLength (integer)
-    The AOS and USLP frames can optionally use an Insert Service to trasnfer fixed-length data synchronized with the release of the frames. The insert data follows immediately the frame primary header. If the Insert Service is used, this parameter specifies the length of the insert data. If not used, please set it to 0 (default). For TM frames this parameter is ignored.
+    The AOS and USLP frames can optionally use an Insert Service to transfer fixed-length data synchronized with the release of the frames. The insert data follows immediately the frame primary header. If the Insert Service is used, this parameter specifies the length of the insert data. If not used, please set it to 0 (default). For TM frames this parameter is ignored.
     Currently Yamcs ignores any data in the insert zone. 
 
 errorDetection (string)
@@ -138,7 +138,7 @@ Telecommand Frame Processing
 
 Yamcs supports packing telecommand packets into TC Transfer Frames and in addition encapsulating the frames into Communications Link Transmission Unit (CLTU).
 
-Currently the built-in way to send telecommand frames from  Yamcs is by using the UdpTcFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows sending CLTUs to Ground Stations supporting this protocol. The options described below are valid for both link types.
+Currently the built-in way to send telecommand frames from  Yamcs is by using the UdpTcFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows sending CLTUs to SLE-enabled Ground Stations. The options described below are valid for both link types.
 
 An example of a UDP TC frame link specification is below:
 
@@ -176,10 +176,10 @@ spacecraftId (integer)
     **Required.** The spacecraftId is encoded in the TC Transfer Frame primary header.
     
 maxFrameLength (integer)
-    **Required.** The maximum length of the frames sent over this link. The Virtual Channel can also specify an option for this but the VC specifc maximum frame length has to be smaller or equal than this. Note that since Yamcs does not support segmentation (i.e. spliting a packet over multiple frames), this value limits effectively the size of the TC packet that can be sent.
+    **Required.** The maximum length of the frames sent over this link. The Virtual Channel can also specify an option for this but the VC specifc maximum frame length has to be smaller or equal than this. Note that since Yamcs does not support segmentation (i.e. spliting a TC packet over multiple frames), this value limits effectively the size of the TC packet that can be sent.
 
 priorityScheme (string)
-    One of ``FIFO``, ``ABSOLUTE`` or ``POLLING_VECTOR``. This configures the priority of the different Virtual Channels. See below an explanation on how the different schemes work.
+    One of ``FIFO``, ``ABSOLUTE`` or ``POLLING_VECTOR``. This configures the priority of the different Virtual Channels. The different schemes are described below.
     
 cltuEncoding (string)
     One of ``BCH``, ``LDPC64`` or ``LDPC256``. If this parameter is present, the TC transfer frames will be encoded into CLTUs and this parameter configures the code to be used. If this parameter is not present, the frames will not be encapsulated into CLTUs and the following related parameters are ignored.
@@ -248,7 +248,7 @@ The multiplexing of command frames from the different Virtual Channels is done a
 
 ``FIFO`` means that the first frame received across all virtual channels will be the first one sent.
 
-``ABSOLUTE`` means that the frames will be sent according to the priority set on each Virtual Channel (according to the ``priority`` parameter). This means that as long as a high priority VC has commands to be sent, the lower priority VC will not release any command.
+``ABSOLUTE`` means that the frames will be sent according to the priority set on each Virtual Channel (set by the ``priority`` parameter). This means that as long as a high priority VC has commands to be sent, the lower priority VC will not release any command.
 
 
 ``POLLING_VECTOR`` means that a polling vector will be built and each Virtual Channel will have the number of entries in the vector according to its priority. The multiplexing algorithm will cycle throgugh the vector releasing the first command available. 
