@@ -16,10 +16,11 @@ import org.yamcs.xtce.util.NameReference.Type;
 
 public class ReferenceFinder {
     Consumer<String> logger;
-    
+
     public ReferenceFinder(Consumer<String> logger) {
         this.logger = logger;
     }
+
     /**
      * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in
      * the parent hierarchy if relative reference
@@ -90,12 +91,11 @@ public class ReferenceFinder {
         if (l == null || l.isEmpty()) {
             return null;
         } else if (l.size() > 1) {
-            logger.accept("When looking for aliases '"+nr+"' found multiple matches: "+l);
+            logger.accept("When looking for aliases '" + nr + "' found multiple matches: " + l);
         }
         return new FoundReference(l.get(0));
     }
 
-   
     /**
      * searches for aliases in the parent hierarchy
      * 
@@ -125,7 +125,7 @@ public class ReferenceFinder {
      * @param nr
      * @return
      */
-    private static FoundReference findReference(SpaceSystem startSs, NameReference nr) {
+    private FoundReference findReference(SpaceSystem startSs, NameReference nr) {
         String[] path = nr.getReference().split("/");
         SpaceSystem ss = startSs;
         for (int i = 0; i < path.length - 1; i++) {
@@ -134,7 +134,7 @@ public class ReferenceFinder {
             } else if ("..".equals(path[i])) {
                 ss = ss.getParent();
                 if (ss == null) {
-                    break; // this can only happen if the root has no parent (normally it's its own parent)
+                    break; // this can only happen if the root has no parent (normally it is its own parent)
                 }
                 continue;
             }
@@ -146,13 +146,18 @@ public class ReferenceFinder {
             SpaceSystem ss1 = ss.getSubsystem(path[i]);
 
             if ((ss1 == null) && nr.getType() == Type.PARAMETER) {
-                // check if it's an aggregate
+                // check if it's an aggregate specified using path separator /
+                // This is not according to the XTCE 1.2 standard but was used in BogusSAT2 xml
+                // XTCE 1.1 standard did not specify how it should be done
+                // TODO: remove after a while
                 Parameter p = ss.getParameter(path[i]);
                 if (p != null && p.getParameterType() instanceof AggregateParameterType) {
 
                     PathElement[] aggregateMemberPath = getAggregateMemberPath(
                             Arrays.copyOfRange(path, i + 1, path.length));
                     if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
+                        logger.accept("Found eference to an aggregate member using path separator '/': "
+                                + nr.getReference() + ". Please use dot '.' separator instead.");
                         return new FoundReference(p, aggregateMemberPath);
                     }
                 }
@@ -169,9 +174,16 @@ public class ReferenceFinder {
         }
 
         String name = path[path.length - 1];
+        if ("..".equals(name)) {
+            return null;
+        }
         switch (nr.getType()) {
         case PARAMETER:
-            return getSimpleReference(ss.getParameter(name));
+            if (name.contains(".")) {
+                return getAggregateReference(ss, name);
+            } else {
+                return getSimpleReference(ss.getParameter(name));
+            }
         case PARAMETER_TYPE:
             return getSimpleReference((NameDescription) ss.getParameterType(name));
         case SEQUENCE_CONTAINER:
@@ -190,6 +202,20 @@ public class ReferenceFinder {
             return getSimpleReference((NameDescription) ss.getArgumentType(name));
         }
         // shouldn't arrive here
+        return null;
+    }
+
+    private FoundReference getAggregateReference(SpaceSystem ss, String ref) {
+        String[] a = ref.split("\\.");
+        String pname = a[0];
+        PathElement[] aggregateMemberPath = getAggregateMemberPath(Arrays.copyOfRange(a, 1, a.length));
+        Parameter p = ss.getParameter(pname);
+        if (p == null) {
+            return null;
+        }
+        if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
+            return new FoundReference(p, aggregateMemberPath);
+        }
         return null;
     }
 
@@ -213,7 +239,6 @@ public class ReferenceFinder {
         return false;
     }
 
-    
     private static FoundReference getSimpleReference(NameDescription nd) {
         if (nd == null) {
             return null;
@@ -221,7 +246,6 @@ public class ReferenceFinder {
             return new FoundReference(nd);
         }
     }
-
 
     private static PathElement[] getAggregateMemberPath(String[] path) {
         PathElement[] pea = new PathElement[path.length];
@@ -231,7 +255,6 @@ public class ReferenceFinder {
         return pea;
     }
 
-    
     public static class FoundReference {
         private final NameDescription nd;
         private final PathElement[] aggregateMemberPath;
@@ -259,9 +282,10 @@ public class ReferenceFinder {
         public PathElement[] getAggregateMemberPath() {
             return aggregateMemberPath;
         }
+
         @Override
         public String toString() {
-            return nd.getName() +  (aggregateMemberPath==null ? "": "." + Arrays.toString(aggregateMemberPath) );
+            return nd.getName() + (aggregateMemberPath == null ? "" : "." + Arrays.toString(aggregateMemberPath));
         }
     }
 }

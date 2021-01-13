@@ -398,8 +398,8 @@
 				<xtce:BaseContainer containerRef="CCSDSPacket">
 					<xtce:RestrictionCriteria>
 						<xtce:ComparisonList>
-							<xtce:Comparison value="0" parameterRef="CCSDS_Packet_ID/Version" />
-							<xtce:Comparison value="TM" parameterRef="CCSDS_Packet_ID/Type" />
+							<xtce:Comparison value="0" parameterRef="CCSDS_Packet_ID.Version" />
+							<xtce:Comparison value="TM" parameterRef="CCSDS_Packet_ID.Type" />
 						</xtce:ComparisonList>
 					</xtce:RestrictionCriteria>
 				</xtce:BaseContainer>
@@ -421,7 +421,7 @@
 				</xtce:EntryList>
 				<xtce:BaseContainer containerRef="CCSDSTelemetryPacket">
 					<xtce:RestrictionCriteria>
-						<xtce:Comparison parameterRef="CCSDS_Packet_ID/SecHdrFlag" value="Present" />
+						<xtce:Comparison parameterRef="CCSDS_Packet_ID.SecHdrFlag" value="Present" />
 					</xtce:RestrictionCriteria>
 				</xtce:BaseContainer>
 				<xtce:AncillaryDataSet>
@@ -481,7 +481,7 @@
 					<!-- need to fill these in -->
 					<xtce:BaseContainer containerRef="CCSDSTelecommandPacket">
 						<xtce:RestrictionCriteria>
-							<xtce:Comparison parameterRef="CCSDS_Packet_ID/SecHdrFlag" value="Present" />
+							<xtce:Comparison parameterRef="CCSDS_Packet_ID.SecHdrFlag" value="Present" />
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
 				</xtce:CommandContainer>
@@ -495,7 +495,7 @@
 					<xtce:EntryList />
 					<xtce:BaseContainer containerRef="CCSDSTelecommandPacket">
 						<xtce:RestrictionCriteria>
-							<xtce:Comparison parameterRef="CCSDS_Packet_ID/SecHdrFlag" value="NotPresent" />
+							<xtce:Comparison parameterRef="CCSDS_Packet_ID.SecHdrFlag" value="NotPresent" />
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
 				</xtce:CommandContainer>
@@ -511,8 +511,8 @@
 				<xtce:BaseContainer containerRef="CCSDSPacket">
 					<xtce:RestrictionCriteria>
 						<xtce:ComparisonList>
-							<xtce:Comparison value="0" parameterRef="CCSDS_Packet_ID/Version" />
-							<xtce:Comparison value="TC" parameterRef="CCSDS_Packet_ID/Type" />
+							<xtce:Comparison value="0" parameterRef="CCSDS_Packet_ID.Version" />
+							<xtce:Comparison value="TC" parameterRef="CCSDS_Packet_ID.Type" />
 						</xtce:ComparisonList>
 					</xtce:RestrictionCriteria>
 				</xtce:BaseContainer>
@@ -539,8 +539,8 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="1" parameterRef="CCSDS_Packet_ID/APID" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="1" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -571,8 +571,8 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="2" parameterRef="CCSDS_Packet_ID/APID" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="2" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -591,8 +591,8 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="3" parameterRef="CCSDS_Packet_ID/APID" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="3" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -610,7 +610,7 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
 								<xtce:Comparison value="4" parameterRef="CCSDS_Packet_ID/APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
@@ -630,8 +630,8 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="5" parameterRef="CCSDS_Packet_ID/APID" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="5" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -668,8 +668,8 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="6" parameterRef="CCSDS_Packet_ID/APID" />
+								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="6" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -683,13 +683,13 @@
 					<xtce:BaseContainer containerRef="BogusSAT/CCSDSPUSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID/APID" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare1" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Version" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare4" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Service" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Subservice" />
+								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID.APID" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare1" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Version" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare4" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Service" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Subservice" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -717,13 +717,13 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID/APID" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare1" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Version" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare4" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Service" />
-								<xtce:Comparison value="2" parameterRef="PUS_Data_Field_Header/Subservice" />
+								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID.APID" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare1" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Version" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare4" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Service" />
+								<xtce:Comparison value="2" parameterRef="PUS_Data_Field_Header.Subservice" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -740,13 +740,13 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID/APID" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare1" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Version" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare4" />
-								<xtce:Comparison value="3" parameterRef="PUS_Data_Field_Header/Service" />
-								<xtce:Comparison value="25" parameterRef="PUS_Data_Field_Header/Subservice" />
+								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID.APID" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare1" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Version" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare4" />
+								<xtce:Comparison value="3" parameterRef="PUS_Data_Field_Header.Service" />
+								<xtce:Comparison value="25" parameterRef="PUS_Data_Field_Header.Subservice" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -779,13 +779,13 @@
 					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSTelemetryPacket">
 						<xtce:RestrictionCriteria>
 							<xtce:ComparisonList>
-								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID/SecHdrFlag" />
-								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID/APID" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare1" />
-								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header/Version" />
-								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header/Spare4" />
-								<xtce:Comparison value="6" parameterRef="PUS_Data_Field_Header/Service" />
-								<xtce:Comparison value="6" parameterRef="PUS_Data_Field_Header/Subservice" />
+								<xtce:Comparison value="Present" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
+								<xtce:Comparison value="100" parameterRef="CCSDS_Packet_ID.APID" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare1" />
+								<xtce:Comparison value="1" parameterRef="PUS_Data_Field_Header.Version" />
+								<xtce:Comparison value="0" parameterRef="PUS_Data_Field_Header.Spare4" />
+								<xtce:Comparison value="6" parameterRef="PUS_Data_Field_Header.Service" />
+								<xtce:Comparison value="6" parameterRef="PUS_Data_Field_Header.Subservice" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>

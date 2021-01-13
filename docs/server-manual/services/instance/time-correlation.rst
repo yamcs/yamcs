@@ -82,6 +82,7 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
         name: tco0
         args:            
             onboardDelay: 0.0
+            useTofEstimator: false
             defaultTof: 0.0
             accuracy: 0.1
             validity: 0.2
@@ -94,6 +95,9 @@ Configuration Options
     
 onboardDelay  (double)
     the on-board delay in seconds used to compute the on-board transmission time from the earth reception time. The default value is 0 seconds.
+
+useTofEstimator (boolean)
+    Flag to enable or disable time of flight estimator service. The default value is false. Enable time of flight estimator service when it is required to dynamically compute the time of flight.
 
 defaultTof (double)
     The default time of flight in seconds. This value is used if the tof estimator does not return a value because no interval has been configured.

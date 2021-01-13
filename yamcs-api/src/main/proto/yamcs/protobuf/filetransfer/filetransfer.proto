@@ -132,6 +132,7 @@ enum TransferState {
   PAUSED = 2;
   FAILED = 3;
   COMPLETED = 4;
+  QUEUED = 5;
 }
 
 message TransactionId {
@@ -147,11 +148,26 @@ message ListFileTransferServicesResponse {
   repeated FileTransferServiceInfo services = 1;
 }
 
+//This message is used to configure the yacms-web
+message FileTransferCapabilities {
+    //if true, yamcs-web shows a button for initiating an upload
+	optional bool upload = 1;
+	 
+	 //if true, yamcs-web shows a button for initiating a download
+	optional bool download = 2;
+	
+	//if true, yamcs-web will allow to chose reliable/non-reliable transfer 
+	optional bool reliability = 3;	 
+}
+
+
 message FileTransferServiceInfo {
   optional string instance = 1;
   optional string name = 2;
+ 
   repeated EntityInfo localEntities = 3;
   repeated EntityInfo remoteEntities = 4;
+  optional FileTransferCapabilities capabilities = 5; 
 }
 
 message EntityInfo {
