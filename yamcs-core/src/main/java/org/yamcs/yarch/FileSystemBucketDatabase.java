@@ -77,7 +77,8 @@ public class FileSystemBucketDatabase implements BucketDatabase {
      */
     public FileSystemBucket registerBucket(String bucketName, Path location) throws IOException {
         if (!location.toFile().exists()) {
-            throw new FileNotFoundException("Directory '" + location + "'("+location.toAbsolutePath()+") not found");
+            throw new FileNotFoundException(
+                    "Directory '" + location + "'(" + location.toAbsolutePath() + ") not found");
         } else if (!location.toFile().isDirectory()) {
             throw new IOException("Not a directory '" + location + "'");
         }
@@ -119,15 +120,16 @@ public class FileSystemBucketDatabase implements BucketDatabase {
                 BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
                 props.add(toBucketProperties(entry.getKey(), file, attrs));
             }
-
-            try (java.util.stream.Stream<Path> stream = Files.list(root)) {
-                List<Path> files = stream.collect(Collectors.toList());
-                for (Path file : files) {
-                    String bucketName = file.getFileName().toString();
-                    if (!additionalBuckets.containsKey(bucketName)) {
-                        BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-                        if (attrs.isDirectory() && !Files.isHidden(file)) {
-                            props.add(toBucketProperties(bucketName, file, attrs));
+            if (Files.exists(root)) {
+                try (java.util.stream.Stream<Path> stream = Files.list(root)) {
+                    List<Path> files = stream.collect(Collectors.toList());
+                    for (Path file : files) {
+                        String bucketName = file.getFileName().toString();
+                        if (!additionalBuckets.containsKey(bucketName)) {
+                            BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+                            if (attrs.isDirectory() && !Files.isHidden(file)) {
+                                props.add(toBucketProperties(bucketName, file, attrs));
+                            }
                         }
                     }
                 }
