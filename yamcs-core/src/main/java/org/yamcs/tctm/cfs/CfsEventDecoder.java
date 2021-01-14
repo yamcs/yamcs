@@ -53,6 +53,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     TimeService timeService;
     ByteOrder byteOrder;
     Charset charset;
+    Integer appNameMax;
+    Integer eventMsgMax;
 
     @Override
     public Spec getSpec() {
@@ -61,13 +63,18 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         spec.addOption("msgIds", OptionType.LIST).withElementType(OptionType.INTEGER);
         spec.addOption("byteOrder", OptionType.STRING);
         spec.addOption("charset", OptionType.STRING);
-
+        spec.addOption("appNameMax", OptionType.INTEGER);
+        spec.addOption("eventMsgMax", OptionType.INTEGER);
+        
         return spec;
     }
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
+
+        appNameMax = config.getInt("appNameMax");
+        eventMsgMax = config.getInt("eventMsgMax");
 
         if (config.containsKey("streams")) {
             streamNames = config.getList("streams");
@@ -139,12 +146,12 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         ByteBuffer buf = ByteBuffer.wrap(packet);
         buf.order(byteOrder);
         buf.position(12);
-        String app = decodeString(buf, 20);
+        String app = decodeString(buf, appNameMax);
         int eventId = buf.getShort();
         int eventType = buf.getShort();
         buf.getInt();// int spacecraftId = */
         int processorId = buf.getInt();
-        String msg = decodeString(buf, 122);
+        String msg = decodeString(buf, eventMsgMax);
 
         EventSeverity evSev;
 
