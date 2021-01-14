@@ -2,6 +2,7 @@ package org.yamcs.yarch.rocksdb;
 
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.DbRange;
 
 /**
@@ -11,22 +12,6 @@ import org.yamcs.yarch.DbRange;
  * <p>
  * That means they will all be returned when {@code strictStart/End=false}
  * or they will all be skipped if {@code strictStart/End=true}.
- * 
- * <p>
- * For example, with the following DB:
- * 
- * <pre>
- *  1: 0x00 0x00 0x00 0x02
- *  2: 0x01 0x01 0x01 0x00
- *  3: 0x01 0x01 0x01 0x03
- *  4: 0x01 0x01 0x02 0x00
- * </pre>
- * 
- * and {@code rangeStart = 0x01 0x01 0x01, strictStart=true}
- * <p>
- * the iterator will only return record 4
- * <p>
- * with {@code rangeEnd = 0x01, strictEnd = false}, the iterator will return all records in descending order 4,3,2,1.
  * 
  * 
  * @author nm
@@ -52,6 +37,7 @@ public class DescendingRangeIterator implements DbIterator {
         this.rangeEnd = rangeEnd;
         init();
     }
+
     public DescendingRangeIterator(RocksIterator it, DbRange range) {
         this(it, range.rangeStart, range.rangeEnd);
     }
@@ -66,27 +52,17 @@ public class DescendingRangeIterator implements DbIterator {
                 endFound = true;
             }
         } else {
-            iterator.seek(rangeEnd); // seek moves cursor beyond the match but we have to move it
-                                     // beyond any key which starts with rangeEnd
-            while (iterator.isValid()) {
-                curKey = iterator.key();
-
-                if (ByteArrayUtils.compare(curKey, rangeEnd) == 0) {
-                    iterator.next();
-                } else {
-                    break;
-                }
-            }
+            byte[] k = ByteArrayUtils.plusOne(rangeEnd);
+            iterator.seekForPrev(k);
             if (iterator.isValid()) {
-                iterator.prev();
-                if (iterator.isValid()) {
-                    curKey = iterator.key();
-                    endFound = true;
-                }
-            } else { // reached the end of the table -> check the last entry
-                iterator.seekToLast();
-                if (iterator.isValid()) {
-                    curKey = iterator.key();
+                curKey = iterator.key();
+                if (ByteArrayUtils.compare(curKey, rangeEnd) > 0) {
+                    iterator.prev();
+                    if (iterator.isValid()) {
+                        curKey = iterator.key();
+                        endFound = true;
+                    }
+                } else {
                     endFound = true;
                 }
             }
