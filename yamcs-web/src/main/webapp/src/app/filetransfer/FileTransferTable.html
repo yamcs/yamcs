@@ -62,7 +62,7 @@
         [attr.colspan]="(displayedColumns$ | async).length">
         <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
           {{ (transfer.sizeTransferred / transfer.totalSize) * 100 | number:'1.2-2' }} %
-          <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED'"
+          <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
                             style="width: 200px"
                             [value]="(transfer.sizeTransferred / transfer.totalSize) * 100">
           </mat-progress-bar>

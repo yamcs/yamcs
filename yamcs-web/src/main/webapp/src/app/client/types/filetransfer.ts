@@ -15,7 +15,7 @@ export interface Entity {
 export interface Transfer {
   id: number;
   startTime: string;
-  state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED';
+  state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING';
   bucket: string;
   objectName: string;
   remotePath: string;
