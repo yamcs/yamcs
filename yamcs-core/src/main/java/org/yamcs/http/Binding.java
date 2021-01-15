@@ -80,14 +80,7 @@ public class Binding {
             address = InetAddress.getByName(config.getString("address"));
         }
 
-        // Temporarily support also the deprecated tlsPort property.
-        int port;
-        if (config.containsKey("tlsPort")) {
-            port = config.getInt("tlsPort");
-        } else {
-            port = config.getInt("port");
-        }
-
+        int port = config.getInt("port");
         Binding binding = new Binding(address, port);
         if (config.containsKey("tlsCert")) {
             List<String> tlsCerts = config.getList("tlsCert");
