@@ -103,6 +103,7 @@ export class FileTransferPage implements OnDestroy {
         switch (transfer.state) {
           case 'RUNNING':
           case 'PAUSED':
+          case 'CANCELLING':
             this.ongoingTransfersById.set(transfer.id, transfer);
             break;
           case 'FAILED':

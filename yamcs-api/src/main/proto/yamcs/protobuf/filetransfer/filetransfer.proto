@@ -133,6 +133,7 @@ enum TransferState {
   FAILED = 3;
   COMPLETED = 4;
   QUEUED = 5;
+  CANCELLING = 6;
 }
 
 message TransactionId {
