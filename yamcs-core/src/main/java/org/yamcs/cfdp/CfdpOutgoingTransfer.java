@@ -393,6 +393,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             reasonForCancellation = conditionCode;
             suspended = false; // wake up if sleeping
             outTxState = OutTxState.CANCELING;
+			changeState(TransferState.CANCELLING);
             sendEof(conditionCode);
             break;
         case CANCELING:

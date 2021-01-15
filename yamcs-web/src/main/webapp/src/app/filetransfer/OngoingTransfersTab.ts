@@ -63,6 +63,7 @@ export class OngoingTransfersTab implements OnDestroy {
         switch (transfer.state) {
           case 'RUNNING':
           case 'PAUSED':
+          case 'CANCELLING':
             this.setOrUpdate(transfer);
             break;
           case 'FAILED':

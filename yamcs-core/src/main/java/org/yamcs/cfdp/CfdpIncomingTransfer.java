@@ -389,6 +389,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finPacket = getFinishedPacket(code);
         this.inTxState = InTxState.FIN;
+		changeState(TransferState.CANCELLING);
 
         sendFin();
     }
@@ -421,7 +422,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
-            sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) succesfully");
+            sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
             sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccesfully: " + failureReason);
             changeState(TransferState.FAILED);
@@ -429,7 +430,6 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 this.failureReason = failureReason;
             }
         }
-
     }
 
     private void handleFault(ConditionCode conditionCode) {
