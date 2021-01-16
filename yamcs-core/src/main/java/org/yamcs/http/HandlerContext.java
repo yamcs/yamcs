@@ -60,7 +60,7 @@ public class HandlerContext {
      * 
      * @return a url of the form [protocol]://[host]:[port][context]
      */
-    public String getExternalBaseURL() {
+    public String getRequestBaseURL() {
         boolean tls = nettyContext.channel().pipeline().get(SslHandler.class) != null;
         String forwardedProto = nettyRequest.headers().get("x-forwarded-proto");
         if ("https".equals(forwardedProto)) {

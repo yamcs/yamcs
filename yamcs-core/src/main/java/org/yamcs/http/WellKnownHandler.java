@@ -30,7 +30,7 @@ public class WellKnownHandler extends Handler {
     private void handleOAuthMetadata(HandlerContext ctx) {
         ctx.requireGET();
 
-        String issuerURL = ctx.getExternalBaseURL() + "/auth";
+        String issuerURL = ctx.getRequestBaseURL() + "/auth";
         JsonObject response = new JsonObject();
         response.addProperty("issuer", issuerURL);
         response.addProperty("authorization_endpoint", issuerURL + "/authorize");

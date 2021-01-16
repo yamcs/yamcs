@@ -86,9 +86,19 @@ public class SecurityStore {
             }
         }
 
+        authModules.add(new DirectoryAuthModule());
+
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
+
+                // TODO temp to not crash while built-in modules are manually added
+                // could become an exception in init() of those modules
+                if (authModule instanceof DirectoryAuthModule) {
+                    log.warn("Remove DirectoryAuthModule from security configuration. It is automatically added.");
+                    continue;
+                }
+
                 authModules.add(authModule);
             }
         }
