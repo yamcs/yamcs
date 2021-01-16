@@ -92,11 +92,6 @@ public class SecurityStore {
                 authModules.add(authModule);
             }
         }
-
-        if (!config.getBoolean("enabled", true) || authModules.isEmpty()) {
-            log.info("Enabling guest access");
-            guestUser.setActive(true);
-        }
     }
 
     /**
@@ -115,7 +110,7 @@ public class SecurityStore {
         guestUser.setId(2);
         guestUser.setDisplayName(guestConfig.getString("displayName", username));
         guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
-        guestUser.setActive(false);
+        guestUser.setActive(!config.getBoolean("enabled"));
         if (guestConfig.containsKey("privileges")) {
             YConfiguration privilegeConfigs = guestConfig.getConfig("privileges");
             for (String privilegeName : privilegeConfigs.getKeys()) {
@@ -235,17 +230,17 @@ public class SecurityStore {
         guestSpec.addOption("privileges", OptionType.ANY);
 
         Spec spec = new Spec();
-        spec.addOption("enabled", OptionType.BOOLEAN).withDeprecationMessage(
-                "Remove this argument. If you want to allow guest access, remove security.yaml");
         spec.addOption("blockUnknownUsers", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("authModules", OptionType.LIST).withElementType(OptionType.MAP).withSpec(moduleSpec);
+
+        boolean securityConfigured = YConfiguration.isDefined("security");
+        spec.addOption("enabled", OptionType.BOOLEAN).withDefault(securityConfigured);
         spec.addOption("guest", OptionType.MAP).withSpec(guestSpec)
-                .withAliases("unauthenticatedUser") // Legacy, remove some day
                 .withApplySpecDefaults(true);
         spec.addOption("accessTokenLifespan", OptionType.INTEGER).withDefault(500_000); // Just over 8 minutes
 
         YConfiguration yconf = YConfiguration.emptyConfig();
-        if (YConfiguration.isDefined("security")) {
+        if (securityConfigured) {
             yconf = YConfiguration.getConfiguration("security");
         }
         yconf = spec.validate(yconf);
