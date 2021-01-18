@@ -317,4 +317,5 @@ message RoleInfo {
   optional string description = 2;
   repeated string systemPrivileges = 3;
   repeated ObjectPrivilegeInfo objectPrivileges = 4;
+  optional bool default = 5;
 }

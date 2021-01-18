@@ -56,6 +56,14 @@ public class Role {
         objectPrivileges.addAll(privileges);
     }
 
+    public boolean isDefaultRole() {
+        return defaultRole;
+    }
+
+    public void setDefaultRole(boolean defaultRole) {
+        this.defaultRole = defaultRole;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof Role)) {
@@ -73,13 +81,5 @@ public class Role {
     @Override
     public String toString() {
         return name;
-    }
-
-    public boolean isDefaultRole() {
-        return defaultRole;
-    }
-
-    public void setDefaultRole(boolean defaultRole) {
-        this.defaultRole = defaultRole;
     }
 }

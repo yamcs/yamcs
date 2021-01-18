@@ -88,9 +88,13 @@ public class Directory {
         }
         int id = accountIdSequence.incrementAndGet();
         user.setId(id);
+        for (Role role : roles.values()) {
+            if (role.isDefaultRole()) {
+                user.addRole(role.getName());
+            }
+        }
         log.info("Saving new user {}", user);
-        users.put(user.getName(), user);
-        persistChanges();
+        updateUserProperties(user);
     }
 
     public synchronized void updateUserProperties(User user) throws IOException {
@@ -206,11 +210,9 @@ public class Directory {
                             for (String name : (List<String>) objects) {
                                 role.addSystemPrivilege(new SystemPrivilege(name));
                             }
-                        }
-                        else if(typeString.equals("default")){
-                            role.setDefaultRole(true);
-                        }
-                        else {
+                        } else if (typeString.equals("default")) {
+                            role.setDefaultRole((Boolean) objects);
+                        } else {
                             ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
                             for (String object : (List<String>) objects) {
                                 role.addObjectPrivilege(new ObjectPrivilege(type, object));
