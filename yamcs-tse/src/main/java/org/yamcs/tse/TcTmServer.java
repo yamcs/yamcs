@@ -2,7 +2,11 @@ package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,7 +51,7 @@ public class TcTmServer extends AbstractService {
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
     private static final Pattern ARGUMENT_REFERENCE = Pattern.compile("([^<]*)<(.*?)>([^<>]*)");
-    private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`([^`]*)");
+    private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`(\\{[0-9]+,?[0-9]*\\})?([^`]*)");
 
     private InstrumentController instrumentController;
     private int port = 8135;
@@ -151,8 +155,20 @@ public class TcTmServer extends AbstractService {
             String arg = m.group(2);
             String r = m.group(3);
             buf.append(l);
-            Value v = command.getArgumentMappingMap().get(arg);
-            buf.append(StringConverter.toString(v));
+
+            int sep = arg.indexOf(':');
+            if (sep == -1) {
+                Value v = command.getArgumentMappingMap().get(arg);
+                buf.append(StringConverter.toString(v));
+            } else {
+                // Support printf-style manipulations. For example:
+                // <n:%09.3f> with an argument 'n' set to 4917.24 becomes: 04917.240
+                String format = arg.substring(sep + 1);
+                arg = arg.substring(0, sep);
+                Value v = command.getArgumentMappingMap().get(arg);
+                buf.append(String.format(format, parseValue(v)));
+            }
+
             buf.append(r);
         }
 
@@ -175,11 +191,16 @@ public class TcTmServer extends AbstractService {
         while (m.find()) {
             String l = m.group(1);
             String name = m.group(2);
-            String r = m.group(3);
+            String r = m.group(4);
             regex.append(Pattern.quote(l));
             String groupName = "cap" + group2name.size();
             group2name.put(groupName, name);
-            regex.append("(?<").append(groupName).append(">.+)");
+            if (m.group(3) == null) {
+                regex.append("(?<").append(groupName).append(">.+)");
+            } else {
+                String charCountSpecifier = m.group(3); // {3,30}, {3}, {3,}
+                regex.append("(?<").append(groupName).append(">." + charCountSpecifier + ")");
+            }
             regex.append(Pattern.quote(r));
         }
 
@@ -214,6 +235,50 @@ public class TcTmServer extends AbstractService {
                 notifyFailed(future.cause());
             }
         });
+    }
+
+    /**
+     * Converts a Protobuf value from the API into a Java equivalent
+     */
+    private static Object parseValue(Value value) {
+        switch (value.getType()) {
+        case FLOAT:
+            return value.getFloatValue();
+        case DOUBLE:
+            return value.getDoubleValue();
+        case SINT32:
+            return value.getSint32Value();
+        case UINT32:
+            return value.getUint32Value() & 0xFFFFFFFFL;
+        case UINT64:
+            return value.getUint64Value();
+        case SINT64:
+            return value.getSint64Value();
+        case STRING:
+            return value.getStringValue();
+        case BOOLEAN:
+            return value.getBooleanValue();
+        case TIMESTAMP:
+            return Date.from(Instant.parse(value.getStringValue()));
+        case ENUMERATED:
+            return value.getStringValue();
+        case BINARY:
+            return value.getBinaryValue().toByteArray();
+        case ARRAY:
+            List<Object> arr = new ArrayList<>(value.getArrayValueCount());
+            for (Value item : value.getArrayValueList()) {
+                arr.add(parseValue(item));
+            }
+            return arr;
+        case AGGREGATE:
+            Map<String, Object> obj = new LinkedHashMap<>();
+            for (int i = 0; i < value.getAggregateValue().getNameCount(); i++) {
+                obj.put(value.getAggregateValue().getName(i), value.getAggregateValue().getValue(i));
+            }
+            return obj;
+        default:
+            throw new IllegalStateException("Unexpected value type " + value.getType());
+        }
     }
 
     @SuppressWarnings("serial")

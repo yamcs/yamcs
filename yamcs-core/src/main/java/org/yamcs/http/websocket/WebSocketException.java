@@ -1,10 +1,5 @@
 package org.yamcs.http.websocket;
 
-import java.io.IOException;
-
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
-
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 
 /**
@@ -55,28 +50,5 @@ public class WebSocketException extends Exception {
 
     public Message getData() {
         return data;
-    }
-
-    /**
-     * Converts this exception to a protobuf message
-     */
-    public WebSocketExceptionData toWebSocketExceptionData() throws IOException {
-        WebSocketExceptionData.Builder resultb = WebSocketExceptionData.newBuilder();
-        resultb.setProtocolVersion(WSConstants.PROTOCOL_VERSION);
-        resultb.setSequenceNumber(requestId);
-        resultb.setType(dataType);
-        String msg = getMessage();
-        if (msg != null) {
-            resultb.setMessage(msg);
-        }
-
-        if (!dataType.equals("STRING")) {
-            try (ByteString.Output out = ByteString.newOutput()) {
-                data.writeTo(out);
-                out.close();
-                resultb.setData(out.toByteString());
-            }
-        }
-        return resultb.build();
     }
 }

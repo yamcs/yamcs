@@ -282,6 +282,7 @@ export interface ObjectPrivilege {
 export interface RoleInfo {
   name: string;
   description: string;
+  default: boolean;
   systemPrivileges: string[];
   objectPrivileges: ObjectPrivilege[];
 }

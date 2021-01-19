@@ -70,7 +70,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   ) {
     title.setTitle('Archive Browser');
 
-    if (yamcs.connectionInfo$.value?.instance?.capabilities.indexOf('ccsds-completeness') !== -1) {
+    if (yamcs.connectionInfo$.value?.instance?.capabilities?.indexOf('ccsds-completeness') !== -1) {
       this.legendOptions = [
         { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
         ... this.legendOptions,

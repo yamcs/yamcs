@@ -13,7 +13,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpRequestInfo;
-import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.User;
 
@@ -100,35 +99,19 @@ public class LegacyWebSocketFrameHandler extends SimpleChannelInboundHandler<Web
         } else {
             wsClient = new ConnectedWebSocketClient(user, applicationName, hostAddress, null, this);
         }
-
-        ManagementService managementService = ManagementService.getInstance();
-        managementService.registerClient(wsClient);
-        managementService.addManagementListener(wsClient);
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof HandshakeComplete) {
-            HandshakeComplete handshakeEvt = (HandshakeComplete) evt;
-            String subprotocol = handshakeEvt.selectedSubprotocol();
+            decoder = new JsonDecoder();
+            encoder = new JsonEncoder();
 
-            if ("protobuf".equals(subprotocol)) {
-                decoder = new ProtobufDecoder();
-                encoder = new ProtobufEncoder(ctx);
-            } else {
-                subprotocol = "json";
-                decoder = new JsonDecoder();
-                encoder = new JsonEncoder();
-            }
-
-            log.info("{} {} {} [subprotocol: {}]", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
-                    HttpResponseStatus.SWITCHING_PROTOCOLS.code(), subprotocol);
+            log.info("{} {} {} [subprotocol: json]", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
+                    HttpResponseStatus.SWITCHING_PROTOCOLS.code());
 
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
-
-            // Send data with server-assigned connection state (clientId, instance, processor)
-            wsClient.sendInitialState();
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -164,7 +147,6 @@ public class LegacyWebSocketFrameHandler extends SimpleChannelInboundHandler<Web
         } catch (Exception e) {
             log.error("Internal Server Error while handling incoming web socket frame", e);
             try { // Gut-shot, at least try to inform the client
-                  // TODO should do our best to return a better requestId here
                 sendException(new WebSocketException(WSConstants.NO_REQUEST_ID, "Internal Server Error"));
             } catch (Exception e2) { // Oh well, we tried.
                 log.warn("Could not inform client of earlier Internal Server Error due to additional exception " + e2,

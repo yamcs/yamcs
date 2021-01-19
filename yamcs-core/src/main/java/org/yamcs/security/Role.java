@@ -12,6 +12,7 @@ public class Role {
     private String description;
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Set<ObjectPrivilege> objectPrivileges = new HashSet<>();
+    private boolean defaultRole = false;
 
     public Role(String name) {
         this.name = name;
@@ -53,6 +54,14 @@ public class Role {
     public void setObjectPrivileges(Set<ObjectPrivilege> privileges) {
         objectPrivileges.clear();
         objectPrivileges.addAll(privileges);
+    }
+
+    public boolean isDefaultRole() {
+        return defaultRole;
+    }
+
+    public void setDefaultRole(boolean defaultRole) {
+        this.defaultRole = defaultRole;
     }
 
     @Override

@@ -169,19 +169,6 @@ enum ProtoDataType {
   ARCHIVE_TAG = 7;
   PARAMETER = 8;
   CMD_HISTORY = 9;
-  PROCESSOR_INFO = 10;
-  CLIENT_INFO = 11;
-  PROCESSING_STATISTICS = 12;
-  STREAM_DATA = 13;
-  ALARM_DATA = 14;
-  TIME_INFO = 15;
-  LINK_EVENT = 16;
-  COMMAND_QUEUE_INFO = 17;
-  COMMAND_QUEUE_EVENT = 18;
-  CONNECTION_INFO = 19;
-  INSTANCE = 20;
-  STREAM_EVENT = 21;
-  COP1_STATUS = 22;
 }
 
 //used to replay (concurrently) TM packets, parameters and events
