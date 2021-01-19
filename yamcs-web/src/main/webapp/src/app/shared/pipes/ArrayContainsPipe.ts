@@ -1,0 +1,12 @@
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({ name: 'arrayContains' })
+export class ArrayContainsPipe implements PipeTransform {
+
+  transform(haystack: any[] | null, needle: any): boolean {
+    if (!haystack) {
+      return false;
+    }
+    return haystack.indexOf(needle) !== -1;
+  }
+}

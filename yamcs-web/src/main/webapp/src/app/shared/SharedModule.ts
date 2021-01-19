@@ -61,6 +61,7 @@ import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { Hex } from './hex/Hex';
 import { AgoPipe } from './pipes/AgoPipe';
+import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
 import { ClassNameHtmlPipe } from './pipes/ClassNameHtmlPipe';
@@ -220,6 +221,7 @@ const sharedComponents = [
 
 const pipes = [
   AgoPipe,
+  ArrayContainsPipe,
   BasenamePipe,
   BinarySizePipe,
   ClassNameHtmlPipe,
