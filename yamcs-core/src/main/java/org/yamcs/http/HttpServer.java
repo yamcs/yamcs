@@ -167,10 +167,7 @@ public class HttpServer extends AbstractYamcsService {
 
         Spec spec = new Spec();
         spec.addOption("address", OptionType.STRING);
-        spec.addOption("port", OptionType.INTEGER);
-        spec.addOption("tlsPort", OptionType.INTEGER).withDeprecationMessage(
-                "Use 'port' instead. If you want to use both TLS and non-TLS, define "
-                        + "'port' and optionally 'address', 'tlsCert' and 'tlsKey' under a subsection 'bindings'");
+        spec.addOption("port", OptionType.INTEGER).withDefault(8090);
         spec.addOption("tlsCert", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
@@ -183,13 +180,9 @@ public class HttpServer extends AbstractYamcsService {
                 .withElementType(OptionType.MAP)
                 .withSpec(bindingSpec);
 
-        // Use bindings instead, tlsPort will be removed
-        spec.mutuallyExclusive("port", "tlsPort");
-
         // When using multiple bindings, best to avoid confusion and disable the top-level properties
         spec.mutuallyExclusive("address", "bindings");
         spec.mutuallyExclusive("port", "bindings");
-        spec.mutuallyExclusive("tlsPort", "bindings");
         spec.mutuallyExclusive("tlsCert", "bindings");
         spec.mutuallyExclusive("tlsKey", "bindings");
 
@@ -203,14 +196,6 @@ public class HttpServer extends AbstractYamcsService {
 
         clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        if (config.containsKey("port") || config.containsKey("tlsPort")) {
-            try {
-                Binding binding = Binding.fromConfig(config);
-                bindings.add(binding);
-            } catch (UnknownHostException e) {
-                throw new InitException("Cannot determine IP address for binding " + config, e);
-            }
-        }
         if (config.containsKey("bindings")) {
             for (YConfiguration bindingConfig : config.getConfigList("bindings")) {
                 try {
@@ -220,15 +205,12 @@ public class HttpServer extends AbstractYamcsService {
                     throw new InitException("Cannot determine IP address for binding " + bindingConfig, e);
                 }
             }
-        }
-
-        if (bindings.isEmpty()) {
-            if (config.containsKey("bindings")) {
-                log.info("Running without binding");
-            } else {
-                // User does not specify anything at all, just provide HTTP over 8090
-                // TODO this can become the default of the top-level 'port' property but first tlsPort must be gone
-                bindings.add(new Binding(8090));
+        } else {
+            try {
+                Binding binding = Binding.fromConfig(config);
+                bindings.add(binding);
+            } catch (UnknownHostException e) {
+                throw new InitException("Cannot determine IP address for binding " + config, e);
             }
         }
 

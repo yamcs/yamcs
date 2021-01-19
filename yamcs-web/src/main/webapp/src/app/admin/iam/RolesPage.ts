@@ -20,6 +20,7 @@ export class RolesPage implements AfterViewInit {
 
   displayedColumns = [
     'name',
+    'default',
   ];
   dataSource = new MatTableDataSource<RoleInfo>();
 

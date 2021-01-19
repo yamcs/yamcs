@@ -613,6 +613,7 @@ public class IamApi extends AbstractIamApi<Context> {
     private static RoleInfo toRoleInfo(Role role) {
         RoleInfo.Builder b = RoleInfo.newBuilder();
         b.setName(role.getName());
+        b.setDefault(role.isDefaultRole());
         if (role.getDescription() != null) {
             b.setDescription(role.getDescription());
         }

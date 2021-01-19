@@ -117,7 +117,7 @@ public class YamlAuthModule implements AuthModule {
                                 for (String name : (List<String>) objects) {
                                     authz.addSystemPrivilege(new SystemPrivilege(name));
                                 }
-                            } else {
+                            } else if (!typeString.equals("default")) {
                                 ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
                                 for (String object : (List<String>) objects) {
                                     authz.addObjectPrivilege(new ObjectPrivilege(type, object));
