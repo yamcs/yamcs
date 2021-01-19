@@ -93,7 +93,7 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
             pv.setGenerationTime(now);
             int idx = tdef.getColumnIndex(qualifiedName);
             if (idx != -1) {
-                log.warn("duplicate value for {} \nfirst: {}" + "\n second: {} ", pv.getParameter(), cols.get(idx),
+                log.warn("Duplicate value for {} \nfirst: {}" + "\n second: {} ", qualifiedName, cols.get(idx),
                         pv);
                 continue;
             }

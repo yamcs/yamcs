@@ -51,7 +51,7 @@ public class TcTmServer extends AbstractService {
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
     private static final Pattern ARGUMENT_REFERENCE = Pattern.compile("([^<]*)<(.*?)>([^<>]*)");
-    private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`([^`]*)");
+    private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`(\\{[0-9]+,?[0-9]*\\})?([^`]*)");
 
     private InstrumentController instrumentController;
     private int port = 8135;
@@ -191,11 +191,16 @@ public class TcTmServer extends AbstractService {
         while (m.find()) {
             String l = m.group(1);
             String name = m.group(2);
-            String r = m.group(3);
+            String r = m.group(4);
             regex.append(Pattern.quote(l));
             String groupName = "cap" + group2name.size();
             group2name.put(groupName, name);
-            regex.append("(?<").append(groupName).append(">.+)");
+            if (m.group(3) == null) {
+                regex.append("(?<").append(groupName).append(">.+)");
+            } else {
+                String charCountSpecifier = m.group(3); // {3,30}, {3}, {3,}
+                regex.append("(?<").append(groupName).append(">." + charCountSpecifier + ")");
+            }
             regex.append(Pattern.quote(r));
         }
 
