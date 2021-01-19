@@ -63,8 +63,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         spec.addOption("msgIds", OptionType.LIST).withElementType(OptionType.INTEGER);
         spec.addOption("byteOrder", OptionType.STRING);
         spec.addOption("charset", OptionType.STRING);
-        spec.addOption("appNameMax", OptionType.INTEGER);
-        spec.addOption("eventMsgMax", OptionType.INTEGER);
+        spec.addOption("appNameMax", OptionType.INTEGER).withDefault(20);
+        spec.addOption("eventMsgMax", OptionType.INTEGER).withDefault(122);
         
         return spec;
     }
