@@ -440,7 +440,7 @@ public class LinkManager {
         Action action;
     }
 
-    public static class LinkWithInfo {
+    public class LinkWithInfo {
         final Link link;
         LinkInfo linkInfo;
 
@@ -450,23 +450,28 @@ public class LinkManager {
         }
 
         boolean hasChanged() {
-            if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
-                    || linkInfo.getDisabled() != link.isDisabled()
-                    || linkInfo.getDataInCount() != link.getDataInCount()
-                    || linkInfo.getDataOutCount() != link.getDataOutCount()) {
+            try {
+                if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
+                        || linkInfo.getDisabled() != link.isDisabled()
+                        || linkInfo.getDataInCount() != link.getDataInCount()
+                        || linkInfo.getDataOutCount() != link.getDataOutCount()) {
 
-                LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
-                        .setDisabled(link.isDisabled())
-                        .setStatus(link.getLinkStatus().name())
-                        .setDataInCount(link.getDataInCount())
-                        .setDataOutCount(link.getDataOutCount());
-                String ds = link.getDetailedStatus();
-                if (ds != null) {
-                    lib.setDetailedStatus(ds);
+                    LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
+                            .setDisabled(link.isDisabled())
+                            .setStatus(link.getLinkStatus().name())
+                            .setDataInCount(link.getDataInCount())
+                            .setDataOutCount(link.getDataOutCount());
+                    String ds = link.getDetailedStatus();
+                    if (ds != null) {
+                        lib.setDetailedStatus(ds);
+                    }
+                    linkInfo = lib.build();
+                    return true;
+                } else {
+                    return false;
                 }
-                linkInfo = lib.build();
-                return true;
-            } else {
+            } catch (Exception e) {
+                log.error("Error checking link status for {}", link.getName(), e);
                 return false;
             }
         }
