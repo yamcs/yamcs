@@ -68,7 +68,7 @@
     <p *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">&nbsp;</p>
     <h3 *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">Arguments</h3>
     <app-command-form #commandForm [command]="command$ | async"
-                      [template]="template$ | async"></app-command-form>
+                      [templateProvider]="templateProvider$ | async"></app-command-form>
     <p>&nbsp;</p>
     <mat-toolbar>
       <button class="ya-button"

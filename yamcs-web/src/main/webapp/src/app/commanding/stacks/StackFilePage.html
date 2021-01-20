@@ -13,12 +13,18 @@
       <mat-icon>save</mat-icon>
       SAVE
     </button>
-    <button mat-button color="primary" matTooltip="Add a command below"
+    <mat-divider vertical style="height: 100%"></mat-divider>
+    <button mat-icon-button color="primary" matTooltip="Add a command below"
             (click)="addCommand()">
-      <mat-icon>add</mat-icon>
-      ADD COMMAND
+      <mat-icon>add_circle_outline</mat-icon>
     </button>
-    <button mat-button color="primary" matTooltip="Run selected entry"
+    <button mat-icon-button color="primary" matTooltip="Edit selected command"
+            [disabled]="!(selectedEntry$ | async)"
+            (click)="editSelectedCommand()">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <mat-divider vertical style="height: 100%"></mat-divider>
+    <button mat-button color="primary" matTooltip="Run selected command"
             [disabled]="!(selectedEntry$ | async)"
             (click)="runSelection()">
       <mat-icon>play_arrow</mat-icon>
@@ -82,7 +88,7 @@
                 [ ]:
               </ng-container>
             </div>
-            <div class="body">
+            <div class="body" (dblclick)="editCommand(entry)">
               {{ entry.name }}
               <mat-icon *ngIf="entry.comment"
                         [matTooltip]="entry.comment"

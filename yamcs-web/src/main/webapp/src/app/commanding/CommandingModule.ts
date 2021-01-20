@@ -14,8 +14,8 @@ import { CommandingRoutingModule, routingComponents } from './CommandingRoutingM
 import { CommandDownloadLinkPipe } from './pipes/CommandDownloadLinkPipe';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
 import { QueuesTable } from './queues/QueuesTable';
-import { AddCommandDialog } from './stacks/AddCommandDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
+import { EditStackEntryDialog } from './stacks/EditStackEntryDialog';
 import { ImportStackDialog } from './stacks/ImportStackDialog';
 import { RenameStackDialog } from './stacks/RenameStackDialog';
 import { StackedCommandDetail } from './stacks/StackedCommandDetail';
@@ -34,7 +34,7 @@ const pipes = [
     routingComponents,
     pipes,
     AcknowledgmentIcon,
-    AddCommandDialog,
+    EditStackEntryDialog,
     ChangeLevelDialog,
     CommandDetail,
     CommandForm,

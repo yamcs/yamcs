@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { CommandForm } from './CommandForm';
+import { CommandForm, TemplateProvider } from './CommandForm';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
@@ -27,7 +27,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
-  template$ = new BehaviorSubject<CommandHistoryEntry | null>(null);
+  templateProvider$ = new BehaviorSubject<TemplateProvider | null>(null);
   cleared$ = new BehaviorSubject<boolean>(true);
 
   private connectionInfoSubscription: Subscription;
@@ -67,7 +67,11 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
         template = responses[1];
       }
       this.command$.next(command);
-      this.template$.next(template || null);
+      if (template) {
+        this.templateProvider$.next(new CommandHistoryTemplateProvider(template));
+      } else {
+        this.templateProvider$.next(null);
+      }
 
       if (this.config.commandClearances) {
         this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
@@ -163,5 +167,25 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     if (this.connectionInfoSubscription) {
       this.connectionInfoSubscription.unsubscribe();
     }
+  }
+}
+
+export class CommandHistoryTemplateProvider implements TemplateProvider {
+
+  constructor(private entry: CommandHistoryEntry) {
+  }
+
+  getAssignment(argumentName: string) {
+    if (this.entry.assignment) {
+      for (const assignment of this.entry.assignment) {
+        if (assignment.name === argumentName) {
+          return assignment.value;
+        }
+      }
+    }
+  }
+
+  getComment() {
+    // Don't copy
   }
 }

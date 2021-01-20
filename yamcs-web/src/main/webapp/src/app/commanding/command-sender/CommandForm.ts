@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentAssignment, ArgumentType, Command, CommandHistoryEntry, CommandOption, Member, Value } from '../../client';
+import { AggregateValue, Argument, ArgumentAssignment, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
 import { requireFloat, requireInteger } from '../../shared/forms/validators';
@@ -53,6 +53,11 @@ function renderValue(value: Value) {
   }
 }
 
+export interface TemplateProvider {
+  getAssignment(name: string): Value | void;
+  getComment(): string | void;
+}
+
 @Component({
   selector: 'app-command-form',
   templateUrl: './CommandForm.html',
@@ -68,7 +73,7 @@ export class CommandForm implements OnChanges {
   command: Command;
 
   @Input()
-  template: CommandHistoryEntry;
+  templateProvider: TemplateProvider;
 
   arguments: Argument[] = [];
   argumentsWithInitial: Argument[] = [];
@@ -96,6 +101,9 @@ export class CommandForm implements OnChanges {
     }
     this.form.reset();
 
+    const comment = this.templateProvider?.getComment() || '';
+    this.form.controls['extra__comment'].setValue(comment);
+
     if (!this.command) {
       return;
     }
@@ -112,8 +120,8 @@ export class CommandForm implements OnChanges {
     for (const c of commandHierarchy) {
       if (c.argument) {
         for (const argument of c.argument) {
-          if (this.template) {
-            const previousValue = this.getPreviousAssignment(this.template, argument.name);
+          if (this.templateProvider) {
+            const previousValue = this.templateProvider.getAssignment(argument.name);
             if (previousValue !== undefined) {
               const stringValue = renderValue(previousValue);
               if (stringValue === argument.initialValue) {
@@ -144,10 +152,10 @@ export class CommandForm implements OnChanges {
     this.argumentsWithInitial = this.argumentsWithInitial.filter(argument => !assignments.has(argument.name));
 
     for (const arg of this.arguments) {
-      this.addControl(arg, this.template);
+      this.addControl(arg, this.templateProvider);
     }
     for (const arg of this.argumentsWithInitial) {
-      this.addControl(arg, this.template);
+      this.addControl(arg, this.templateProvider);
     }
   }
 
@@ -233,24 +241,14 @@ export class CommandForm implements OnChanges {
     return this.user.hasSystemPrivilege('CommandOptions');
   }
 
-  private getPreviousAssignment(entry: CommandHistoryEntry, argumentName: string) {
-    if (entry.assignment) {
-      for (const assignment of entry.assignment) {
-        if (assignment.name === argumentName) {
-          return assignment.value;
-        }
-      }
-    }
-  }
-
-  private addControl(argument: Argument, template?: CommandHistoryEntry) {
+  private addControl(argument: Argument, templateProvider: TemplateProvider) {
     if (argument.type.engType === 'aggregate') {
-      this.addAggregateControl(argument, template);
+      this.addAggregateControl(argument, templateProvider);
     } else {
       let initialValue = argument.initialValue;
 
-      if (template) {
-        const previousValue = this.getPreviousAssignment(template, argument.name);
+      if (templateProvider) {
+        const previousValue = templateProvider.getAssignment(argument.name);
         if (previousValue !== undefined) {
           initialValue = renderValue(previousValue);
         }
@@ -266,12 +264,12 @@ export class CommandForm implements OnChanges {
     }
   }
 
-  private addAggregateControl(argument: Argument, template?: CommandHistoryEntry) {
+  private addAggregateControl(argument: Argument, templateProvider?: TemplateProvider) {
     this.addMemberControls(argument.name + '.', argument.type.member || []);
 
     // let initialValueJSON = argument.initialValue;
-    if (template) {
-      const previousValue = this.getPreviousAssignment(template, argument.name);
+    if (templateProvider) {
+      const previousValue = templateProvider.getAssignment(argument.name);
       if (previousValue !== undefined) {
         if (previousValue.type === 'AGGREGATE') {
           const initialValues = renderAggregateControlValues(argument.name + '.', previousValue.aggregateValue!);
