@@ -5,8 +5,6 @@
   align-items: center;
   color: #000;
   cursor: pointer;
-  padding-left: 6px;
-  padding-right: 6px;
   user-select: none;
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -38,4 +36,9 @@
 
 :host.disabled .action-content {
   color: #aaa;
+}
+
+:host.padding .text-action {
+  padding-left: 6px;
+  padding-right: 6px;
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, HostBinding } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 
 @Component({
   selector: 'app-text-action',
@@ -14,6 +14,10 @@ export class TextAction {
   @Input()
   @HostBinding('class.active')
   active: boolean;
+
+  @Input()
+  @HostBinding('class.padding')
+  padding = true;
 
   @Input()
   @HostBinding('class.disabled')
