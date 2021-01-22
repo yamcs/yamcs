@@ -3,6 +3,7 @@ import { SharedModule } from '../shared/SharedModule';
 import { FileTransferRoutingModule, routingComponents } from './FileTransferRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
 import { UploadFileDialog } from './UploadFileDialog';
+import { DownloadFileDialog } from './DownloadFileDialog';
 
 @NgModule({
   imports: [
@@ -13,6 +14,7 @@ import { UploadFileDialog } from './UploadFileDialog';
     routingComponents,
     FileTransferTable,
     UploadFileDialog,
+    DownloadFileDialog,
   ],
 })
 export class FileTransferModule {
