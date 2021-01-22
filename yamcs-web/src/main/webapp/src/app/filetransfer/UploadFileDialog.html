@@ -50,10 +50,12 @@
     </label>
 
     <h2 style="margin-top: 32px">Options</h2>
-    <label *ngIf="service.capabilities.reliable">
-      <input type="checkbox" formControlName="reliable"> Reliable
-    </label>
-    <br>
+	<ng-container *ngIf="service.capabilities.reliable">
+		<label>
+			<input type="checkbox" formControlName="reliable"> Reliable
+		</label>
+		<br>
+	</ng-container>
     <label>
       Local Entity
       <select formControlName="source">
