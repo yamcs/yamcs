@@ -1,6 +1,8 @@
-<dl class="dl-horizontal no-lead no-trail">
-  <dt>Parameter</dt>
-  <dd>{{ parameter.qualifiedName | shortName }}</dd>
+<dl *ngIf="offset" class="dl-horizontal no-lead no-trail">
+  <dt>Entry</dt>
+  <dd>
+    {{ parameter.qualifiedName | shortName }}{{ offset }}
+  </dd>
 
   <dt>Space System</dt>
   <dd>
@@ -13,6 +15,40 @@
     </ng-container>
   </dd>
 
+  <dt>Source</dt>
+  <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+</dl>
+
+<dl class="dl-horizontal no-trail" [class.no-lead]="!offset">
+  <ng-container *ngIf="offset">
+    <dt>Host Parameter</dt>
+    <dd>
+      <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName]"
+         [queryParams]="{c: yamcs.context}"
+         class="ya-link">
+        {{ parameter.qualifiedName | shortName }}
+      </a>
+    </dd>
+  </ng-container>
+
+  <ng-container *ngIf="!offset">
+    <dt>Parameter</dt>
+    <dd>{{ parameter.qualifiedName | shortName }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="!offset">
+    <dt>Space System</dt>
+    <dd>
+      <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+        <a routerLink="/telemetry/parameters"
+           [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
+           class="ya-link">
+          {{ spaceSystemName }}
+        </a>
+      </ng-container>
+    </dd>
+  </ng-container>
+
   <ng-container *ngFor="let alias of parameter.alias">
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
@@ -24,8 +60,10 @@
   <dt>Type</dt>
   <dd style="font-family: monospace">{{ parameter.type?.engType || '-' }}</dd>
 
-  <dt>Source</dt>
-  <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+  <ng-container *ngIf="!offset">
+    <dt>Source</dt>
+    <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+  </ng-container>
 </dl>
 
 <p>&nbsp;</p>
@@ -39,7 +77,7 @@
       </tr>
       <tr *ngFor="let name of value.aggregateValue!.name; index as i">
         <td>
-          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '.' + name]"
+          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + (offset || '') + '.' + name]"
              [queryParams]="{c: yamcs.context}">{{ name }}</a>
         </td>
         <td>{{ value.aggregateValue!.value[i] | value }}</td>
@@ -52,7 +90,7 @@
       </tr>
       <tr *ngFor="let element of value.arrayValue!; index as i">
         <td>
-          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '[' + i + ']']"
+          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + (offset || '') + '[' + i + ']']"
              [queryParams]="{c: yamcs.context}">{{ i }}</a>
         </td>
         <td>{{ element | value }}</td>

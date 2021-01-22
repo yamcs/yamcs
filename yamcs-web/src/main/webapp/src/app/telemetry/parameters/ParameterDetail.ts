@@ -14,6 +14,9 @@ export class ParameterDetail {
   parameter: Parameter;
 
   @Input()
+  offset: string;
+
+  @Input()
   pval: ParameterValue;
 
   constructor(readonly yamcs: YamcsService) {

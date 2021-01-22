@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Parameter, ParameterSubscription, ParameterValue } from '../../client';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -11,11 +12,16 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class ParameterSummaryTab implements OnDestroy {
 
   parameter$ = new BehaviorSubject<Parameter | null>(null);
+  offset$ = new BehaviorSubject<string | null>(null);
 
-  parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
-  parameterValueSubscription: ParameterSubscription;
+  private parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
+  private parameterValueSubscription: ParameterSubscription;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
+  private dirty = false;
+  private syncSubscription: Subscription;
+  private pval$ = new BehaviorSubject<ParameterValue | null>(null);
+
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private synchronizer: Synchronizer) {
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -23,15 +29,31 @@ export class ParameterSummaryTab implements OnDestroy {
       const qualifiedName = params.get('qualifiedName')!;
       this.changeParameter(qualifiedName);
     });
+
+    // Extra step to slow down UI updates
+    this.syncSubscription = this.synchronizer.syncFast(() => {
+      if (this.dirty) {
+        this.pval$.next(this.parameterValue$.value);
+        this.dirty = false;
+      }
+    });
   }
 
   changeParameter(qualifiedName: string) {
     this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
+      if (qualifiedName !== parameter.qualifiedName) {
+        this.offset$.next(qualifiedName.substring(parameter.qualifiedName.length));
+      } else {
+        this.offset$.next(null);
+      }
+
       if (this.parameterValueSubscription) {
         this.parameterValueSubscription.cancel();
       }
+      this.parameterValue$.next(null);
+      this.pval$.next(null);
       this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
         instance: this.yamcs.instance!,
         processor: this.yamcs.processor!,
@@ -42,6 +64,11 @@ export class ParameterSummaryTab implements OnDestroy {
         action: 'REPLACE',
       }, data => {
         this.parameterValue$.next(data.values ? data.values[0] : null);
+        if (this.pval$.value == null) {
+          this.pval$.next(this.parameterValue$.value);
+        } else {
+          this.dirty = true;
+        }
       });
     });
   }
@@ -49,6 +76,9 @@ export class ParameterSummaryTab implements OnDestroy {
   ngOnDestroy() {
     if (this.parameterValueSubscription) {
       this.parameterValueSubscription.cancel();
+    }
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
   }
 }

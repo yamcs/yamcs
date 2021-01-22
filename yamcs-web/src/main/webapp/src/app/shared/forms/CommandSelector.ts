@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Input } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject } from 'rxjs';
-import { Command, CommandsPage, GetCommandsOptions } from '../../client';
+import { Command, GetCommandsOptions } from '../../client';
+import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
 import { YamcsService } from '../../core/services/YamcsService';
+import { SearchFilter } from './SearchFilter';
 
 @Component({
   selector: 'app-command-selector',
@@ -18,21 +20,38 @@ import { YamcsService } from '../../core/services/YamcsService';
     }
   ]
 })
-export class CommandSelector implements ControlValueAccessor {
+export class CommandSelector implements ControlValueAccessor, AfterViewInit {
 
   @Input()
   path: string;
 
-  displayedColumns = ['name', 'description', 'significance'];
-  dataSource = new MatTableDataSource<BrowseItem>([]);
+  pageSize = 100;
 
-  currentSystem$ = new BehaviorSubject<string>('/');
-  selectedCommand$ = new BehaviorSubject<BrowseItem | null>(null);
+  system: string | null = null;
+  breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
+
+  @ViewChild('top', { static: true })
+  top: ElementRef;
+
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
+
+  @ViewChild('searchFilter')
+  searchFilter: SearchFilter;
+
+  filterControl = new FormControl();
+
+  dataSource: CommandsDataSource;
+
+  displayedColumns = ['name', 'description', 'significance'];
+
+  selectedCommand$ = new BehaviorSubject<ListItem | null>(null);
 
   private onChange = (_: Command | null) => { };
   private onTouched = () => { };
 
   constructor(readonly yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+    this.dataSource = new CommandsDataSource(yamcs);
     this.selectedCommand$.subscribe(item => {
       if (item && item.command) {
         return this.onChange(item.command);
@@ -40,61 +59,67 @@ export class CommandSelector implements ControlValueAccessor {
         return this.onChange(null);
       }
     });
-
-    this.loadCurrentSystem('/');
   }
 
-  private loadCurrentSystem(system: string) {
-    const options: GetCommandsOptions = {
-      noAbstract: true,
-    };
-    if (system) {
-      options.system = system;
-    }
-
-    this.yamcs.yamcsClient.getCommands(this.yamcs.instance!, options).then(page => {
-      this.changeSystem(page);
-      this.currentSystem$.next(system);
+  ngAfterViewInit() {
+    this.changeSystem('');
+    this.searchFilter.filter.nativeElement.focus();
+    this.filterControl.valueChanges.subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.updateDataSource();
+    });
+    this.paginator.page.subscribe(() => {
+      this.updateDataSource();
+      this.top.nativeElement.scrollIntoView();
     });
   }
 
-  private changeSystem(page: CommandsPage) {
-    this.selectedCommand$.next(null);
-    const items: BrowseItem[] = [];
-    for (const spaceSystem of page.spaceSystems || []) {
-      items.push({
-        folder: true,
-        name: spaceSystem,
-      });
-    }
-    for (const command of page.commands || []) {
-      items.push({
-        folder: false,
-        name: command.name,
-        command: command,
-      });
-    }
-    this.dataSource.data = items;
-    this.changeDetection.detectChanges();
+  changeSystem(system: string, page = 0) {
+    this.system = system;
+    this.updateBrowsePath();
+    this.paginator.pageIndex = page;
+    this.updateDataSource();
   }
 
-  selectRow(row: BrowseItem) {
-    if (row.folder) {
+  private updateDataSource() {
+    const options: GetCommandsOptions = {
+      system: this.system || '/',
+      noAbstract: true,
+      pos: this.paginator.pageIndex * this.pageSize,
+      limit: this.pageSize,
+    };
+    const filterValue = this.filterControl.value;
+    if (filterValue) {
+      options.q = filterValue.toLowerCase();
+    }
+    this.dataSource.loadCommands(options).then(() => {
+      this.updateBrowsePath();
+    });
+  }
+
+  selectRow(row: ListItem) {
+    if (row.spaceSystem) {
       this.selectedCommand$.next(null);
-      this.loadCurrentSystem(row.name);
+      this.changeSystem(row.name);
     } else {
       this.selectedCommand$.next(row);
     }
+    return false;
   }
 
-  selectParent() {
-    const currentPrefix = this.currentSystem$.value;
-    const idx = currentPrefix.lastIndexOf('/');
-    if (idx !== -1) {
-      const parentPrefix = currentPrefix.substring(0, idx) || '/';
-      this.selectedCommand$.next(null);
-      this.loadCurrentSystem(parentPrefix);
+  private updateBrowsePath() {
+    const breadcrumb: BreadCrumbItem[] = [];
+    let path = '';
+    if (this.system) {
+      for (const part of this.system.slice(1).split('/')) {
+        path += '/' + part;
+        breadcrumb.push({
+          name: part,
+          system: path,
+        });
+      }
     }
+    this.breadcrumb$.next(breadcrumb);
   }
 
   writeValue(value: any) {
@@ -110,8 +135,13 @@ export class CommandSelector implements ControlValueAccessor {
   }
 }
 
-export class BrowseItem {
-  folder: boolean;
+export class ListItem {
+  spaceSystem: boolean;
   name: string;
   command?: Command;
+}
+
+export interface BreadCrumbItem {
+  name?: string;
+  system: string;
 }

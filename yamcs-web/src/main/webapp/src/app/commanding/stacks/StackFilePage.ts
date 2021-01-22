@@ -9,7 +9,7 @@ import { CommandSubscription, StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
-import { AddCommandDialog, CommandResult } from './AddCommandDialog';
+import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
 import { CommandArgument, StackEntry } from './StackEntry';
 import { StackFormatter } from './StackFormatter';
 
@@ -41,6 +41,7 @@ export class StackFilePage implements OnDestroy {
 
   private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
+  clipboardEntry$ = new BehaviorSubject<StackEntry | null>(null);
   private commandHistoryRecords = new Map<string, CommandHistoryRecord>();
 
   @ViewChild('entryParent')
@@ -304,12 +305,15 @@ export class StackFilePage implements OnDestroy {
   }
 
   addCommand() {
-    const dialogRef = this.dialog.open(AddCommandDialog, {
+    const dialogRef = this.dialog.open(EditStackEntryDialog, {
       width: '70%',
       height: '100%',
       autoFocus: false,
       position: {
         right: '0',
+      },
+      data: {
+        okLabel: 'ADD TO STACK',
       }
     });
 
@@ -336,6 +340,95 @@ export class StackFilePage implements OnDestroy {
         this.dirty$.next(true);
       }
     });
+  }
+
+  editSelectedCommand() {
+    const entry = this.selectedEntry$.value!;
+    this.editCommand(entry);
+  }
+
+  editCommand(entry: StackEntry) {
+    this.selectEntry(entry);
+
+    const dialogRef = this.dialog.open(EditStackEntryDialog, {
+      width: '70%',
+      height: '100%',
+      autoFocus: false,
+      position: {
+        right: '0',
+      },
+      data: {
+        okLabel: 'UPDATE',
+        entry,
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: CommandResult) => {
+      if (result) {
+        const changedEntry: StackEntry = {
+          name: result.command.qualifiedName,
+          arguments: result.assignments,
+          comment: result.comment,
+          extra: result.extra,
+          command: result.command,
+        };
+
+        const entries = this.entries$.value;
+        const idx = entries.indexOf(entry);
+        entries.splice(idx, 1, changedEntry);
+        this.entries$.next([...this.entries$.value]);
+
+        this.selectEntry(changedEntry);
+        this.dirty$.next(true);
+      }
+    });
+
+    return false;
+  }
+
+  cutSelectedCommand() {
+    const entry = this.selectedEntry$.value!;
+    this.advanceSelection(entry);
+    this.clipboardEntry$.next(entry);
+
+    const entries = this.entries$.value;
+    const idx = entries.indexOf(entry);
+    entries.splice(idx, 1);
+    this.entries$.next([...this.entries$.value]);
+
+    this.dirty$.next(true);
+  }
+
+  copySelectedCommand() {
+    const entry = this.selectedEntry$.value!;
+    this.clipboardEntry$.next(entry);
+  }
+
+  pasteCommand() {
+    const entry = this.clipboardEntry$.value;
+    if (entry) {
+      const copiedEntry: StackEntry = {
+        name: entry.name,
+        arguments: [...entry.arguments],
+        comment: entry.comment,
+        command: entry.command,
+      };
+      if (entry.extra) {
+        copiedEntry.extra = { ...entry.extra };
+      }
+
+      const relto = this.selectedEntry$.value;
+      if (relto) {
+        const entries = this.entries$.value;
+        const idx = entries.indexOf(relto);
+        entries.splice(idx + 1, 0, copiedEntry);
+        this.entries$.next([...this.entries$.value]);
+      } else {
+        this.entries$.next([... this.entries$.value, copiedEntry]);
+      }
+      this.selectEntry(copiedEntry);
+      this.dirty$.next(true);
+    }
   }
 
   saveStack() {
