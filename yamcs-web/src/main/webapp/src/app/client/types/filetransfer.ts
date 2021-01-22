@@ -5,6 +5,13 @@ export interface FileTransferService {
   name: string;
   localEntities: Entity[];
   remoteEntities: Entity[];
+  capabilities: FileTransferCapabilities;
+}
+
+export interface FileTransferCapabilities {
+  upload: boolean;
+  download: boolean;
+  reliable: boolean;
 }
 
 export interface Entity {

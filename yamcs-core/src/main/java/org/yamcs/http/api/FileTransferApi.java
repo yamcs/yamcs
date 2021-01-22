@@ -241,6 +241,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 .setName(name);
         infob.addAllLocalEntities(service.getLocalEntities());
         infob.addAllRemoteEntities(service.getRemoteEntities());
+		infob.setCapabilities(service.getCapabilities());
         return infob.build();
     }
 

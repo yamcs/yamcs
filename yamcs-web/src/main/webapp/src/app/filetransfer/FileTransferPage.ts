@@ -7,6 +7,7 @@ import { FileTransferService, Transfer, TransferSubscription } from '../client';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { UploadFileDialog } from './UploadFileDialog';
+import { DownloadFileDialog } from './DownloadFileDialog';
 
 @Component({
   templateUrl: './FileTransferPage.html',
@@ -125,6 +126,18 @@ export class FileTransferPage implements OnDestroy {
 
   uploadFile(service: FileTransferService) {
     const dialogRef = this.dialog.open(UploadFileDialog, {
+      width: '70%',
+      height: '100%',
+      autoFocus: false,
+      position: {
+        right: '0',
+      },
+      data: { service, }
+    });
+  }
+
+  downloadFile(service: FileTransferService) {
+    const dialogRef = this.dialog.open(DownloadFileDialog, {
       width: '70%',
       height: '100%',
       autoFocus: false,

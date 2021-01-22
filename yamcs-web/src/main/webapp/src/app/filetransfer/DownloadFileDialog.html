@@ -1,18 +1,7 @@
 <div class="local-selector mat-typography">
-  <form [formGroup]="localForm" class="ya-form">
-    <h2>Upload File</h2>
+    <h2>Download File</h2>
     <div class="table-caption-wrapper">
       <label class="table-caption">Bucket</label>
-    </div>
-    <div class="table-breadcrumb" *ngIf="breadcrumb$ | async as breadcrumb">
-      <app-breadcrumb-trail>
-        <app-breadcrumb icon="account_tree" [action]="true"
-                        (click)="changePrefix('')"></app-breadcrumb>
-        <app-breadcrumb *ngFor="let item of breadcrumb"
-                        [label]="item.name"
-                        [action]="true"
-                        (click)="changePrefix(item.prefix)"></app-breadcrumb>
-      </app-breadcrumb-trail>
     </div>
     <div class="bucket-table-wrapper">
       <table mat-table [dataSource]="dataSource" class="ya-data-table">
@@ -29,36 +18,30 @@
             (click)="selectBucket(row)"></tr>
       </table>
     </div>
-    <div class="object-table-wrapper">
-      <ng-container *ngIf="selectedBucket$ | async as bucket">
-        <app-object-selector #selector
-                             formControlName="object"
-                             [bucket]="bucket"
-                             (prefixChange)="updateBreadcrumb($event)"></app-object-selector>
-      </ng-container>
+    <div class="object-table-wrapper" style="border: none;">
+      The file will be saved with the source file name. Existing files will be overwritten.
     </div>
-  </form>
 </div>
 
 <div class="remote-selector mat-typography">
   <form [formGroup]="remoteForm" class="ya-form">
-    <h2 style="margin-top: 16px">Specify Destination File</h2>
+    <h2 style="margin-top: 16px">Specify Source File</h2>
     <label>
       Filename
       <input type="text" formControlName="remotePath"
-             placeholder="e.g. /CF:/filename">
+             placeholder="Filename.dat">
     </label>
 
     <h2 style="margin-top: 32px">Options</h2>
-	<ng-container *ngIf="service.capabilities.reliable">
-		<label>
-			<input type="checkbox" formControlName="reliable"> Reliable
-		</label>
-		<br>
-	</ng-container>
+    <ng-container *ngIf="service.capabilities.reliable">
+      <label>
+        <input type="checkbox" formControlName="reliable"> Reliable
+      </label>
+      <br>
+    </ng-container>
     <label>
       Local Entity
-      <select formControlName="source">
+      <select formControlName="destination">
         <option *ngFor="let entity of service.localEntities"
                 [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
       </select>
@@ -66,7 +49,7 @@
     <br>
     <label>
       Remote Entity
-      <select formControlName="destination">
+      <select formControlName="source">
         <option *ngFor="let entity of service.remoteEntities"
                 [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
       </select>
@@ -79,8 +62,8 @@
     <mat-toolbar-row>
       <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
       <button class="ya-button primary"
-              [disabled]="!localForm.valid || !remoteForm.valid"
-              (click)="startTransfer()">UPLOAD</button>
+              [disabled]="!(selectedBucket$ | async) || !remoteForm.valid"
+              (click)="startTransfer()">DOWNLOAD</button>
     </mat-toolbar-row>
   </mat-toolbar>
 </div>
