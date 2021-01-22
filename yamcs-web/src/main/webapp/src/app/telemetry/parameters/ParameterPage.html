@@ -8,7 +8,7 @@
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
     </ng-container>
     &nbsp;&nbsp;&nbsp;
-    <button *ngIf="isWritable() && maySetParameter()"
+    <button *ngIf="isWritable() && maySetParameter() && !(offset$ | async)"
             mat-button
             color="primary"
             (click)="setParameter()">
