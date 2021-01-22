@@ -41,6 +41,7 @@ export class StackFilePage implements OnDestroy {
 
   private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
+  clipboardEntry$ = new BehaviorSubject<StackEntry | null>(null);
   private commandHistoryRecords = new Map<string, CommandHistoryRecord>();
 
   @ViewChild('entryParent')
@@ -383,6 +384,51 @@ export class StackFilePage implements OnDestroy {
     });
 
     return false;
+  }
+
+  cutSelectedCommand() {
+    const entry = this.selectedEntry$.value!;
+    this.advanceSelection(entry);
+    this.clipboardEntry$.next(entry);
+
+    const entries = this.entries$.value;
+    const idx = entries.indexOf(entry);
+    entries.splice(idx, 1);
+    this.entries$.next([...this.entries$.value]);
+
+    this.dirty$.next(true);
+  }
+
+  copySelectedCommand() {
+    const entry = this.selectedEntry$.value!;
+    this.clipboardEntry$.next(entry);
+  }
+
+  pasteCommand() {
+    const entry = this.clipboardEntry$.value;
+    if (entry) {
+      const copiedEntry: StackEntry = {
+        name: entry.name,
+        arguments: [...entry.arguments],
+        comment: entry.comment,
+        command: entry.command,
+      };
+      if (entry.extra) {
+        copiedEntry.extra = { ...entry.extra };
+      }
+
+      const relto = this.selectedEntry$.value;
+      if (relto) {
+        const entries = this.entries$.value;
+        const idx = entries.indexOf(relto);
+        entries.splice(idx + 1, 0, copiedEntry);
+        this.entries$.next([...this.entries$.value]);
+      } else {
+        this.entries$.next([... this.entries$.value, copiedEntry]);
+      }
+      this.selectEntry(copiedEntry);
+      this.dirty$.next(true);
+    }
   }
 
   saveStack() {

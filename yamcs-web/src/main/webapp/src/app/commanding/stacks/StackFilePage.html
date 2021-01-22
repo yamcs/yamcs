@@ -18,13 +18,28 @@
             (click)="addCommand()">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
-    <button mat-icon-button color="primary" matTooltip="Edit selected command"
+    <button mat-icon-button color="primary" matTooltip="Edit the selected command"
             [disabled]="!(selectedEntry$ | async)"
             (click)="editSelectedCommand()">
       <mat-icon>edit</mat-icon>
     </button>
+    <button mat-icon-button color="primary" matTooltip="Cut the selected command"
+            [disabled]="!(selectedEntry$ | async)"
+            (click)="cutSelectedCommand()">
+      <mat-icon>content_cut</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Copy the selected command"
+            [disabled]="!(selectedEntry$ | async)"
+            (click)="copySelectedCommand()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Paste command from the clipboard"
+            [disabled]="!(clipboardEntry$ | async)"
+            (click)="pasteCommand()">
+      <mat-icon>content_paste</mat-icon>
+    </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
-    <button mat-button color="primary" matTooltip="Run selected command"
+    <button mat-button color="primary" matTooltip="Run the selected command"
             [disabled]="!(selectedEntry$ | async)"
             (click)="runSelection()">
       <mat-icon>play_arrow</mat-icon>
