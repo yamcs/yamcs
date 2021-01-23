@@ -15,56 +15,50 @@
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
     <button mat-icon-button color="primary" matTooltip="Add a command below"
+            [disabled]="running$ | async"
             (click)="addCommand()">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Edit the selected command"
-            [disabled]="!(selectedEntry$ | async)"
+            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
             (click)="editSelectedCommand()">
       <mat-icon>edit</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Cut the selected command"
-            [disabled]="!(selectedEntry$ | async)"
+            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
             (click)="cutSelectedCommand()">
       <mat-icon>content_cut</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Copy the selected command"
-            [disabled]="!(selectedEntry$ | async)"
+            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
             (click)="copySelectedCommand()">
       <mat-icon>content_copy</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Paste command from the clipboard"
-            [disabled]="!(clipboardEntry$ | async)"
+            [disabled]="(running$ | async) || !(clipboardEntry$ | async)"
             (click)="pasteCommand()">
       <mat-icon>content_paste</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
-    <button mat-button color="primary" matTooltip="Run the selected command"
-            [disabled]="!(selectedEntry$ | async)"
+    <button mat-icon-button color="primary" matTooltip="Run the selected command"
+            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
             (click)="runSelection()">
       <mat-icon>play_arrow</mat-icon>
-      RUN COMMAND
     </button>
-    <mat-menu #moreMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item (click)="clearSelectedOutputs()"
-              [disabled]="!((selectedEntry$ | async)?.record)">
-        Clear output of selected command
-      </button>
-      <button mat-menu-item (click)="clearOutputs()"
-              [disabled]="!(hasOutputs$ | async)">
-        Clear all outputs
-      </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="deleteSelectedCommands()"
-              [disabled]="!(selectedEntry$ | async)">
-        Delete selected command
-      </button>
-    </mat-menu>
-    <button mat-icon-button
-            color="primary"
-            [matMenuTriggerFor]="moreMenu"
-            (click)="$event.stopPropagation()">
-      <mat-icon>more_vert</mat-icon>
+    <button mat-icon-button color="primary" matTooltip="Stop current execution"
+            [disabled]="!(running$ | async)"
+            (click)="stopRun()">
+      <mat-icon>stop</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Clear all outputs"
+            [disabled]="(running$ | async) || !(hasOutputs$ | async)"
+            (click)="clearOutputs()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Run all from selected command"
+            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            (click)="runFromSelection()">
+      <mat-icon>playlist_play</mat-icon>
     </button>
   </app-instance-toolbar>
 
