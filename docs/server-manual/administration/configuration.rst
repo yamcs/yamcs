@@ -28,8 +28,6 @@ The number of configuration options in ``etc/yamcs.yaml`` are relatively limited
 
     yamcs-web:
         tag: DEMO
-        displayPath: displays
-        stackPath: stacks
 
 The following options are supported
 
