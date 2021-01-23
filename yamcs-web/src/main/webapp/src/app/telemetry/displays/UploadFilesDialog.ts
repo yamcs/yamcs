@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { StorageClient } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -22,6 +23,7 @@ export class UploadFilesDialog {
 
   constructor(
     private dialogRef: MatDialogRef<UploadFilesDialog>,
+    private messageService: MessageService,
     formBuilder: FormBuilder,
     yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
@@ -61,7 +63,8 @@ export class UploadFilesDialog {
     Promise.all(uploadPromises).then(() => {
       this.uploading$.next(false);
       this.dialogRef.close(true);
-    }).catch(() => {
+    }).catch(err => {
+      this.messageService.showError(err);
       this.uploading$.next(false);
       this.dialogRef.close(true);
     });
