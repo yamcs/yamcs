@@ -4,6 +4,9 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
+
+import java.util.UUID;
+
 import org.yamcs.time.Instant;
 import org.yamcs.utils.parser.ParseException;
 
@@ -64,6 +67,9 @@ public class ValueExpression extends Expression {
             code.append('"');
             escapeJavaString((String) constantValue, code);
             code.append('"');
+        } else if (constantValue instanceof UUID) {
+            UUID uuid = (UUID) constantValue;
+            code.append(UUID.class.getName()).append(".fromString(\"").append(uuid.toString()).append("\")");
         } else if (constantValue instanceof Instant) {
             Instant t = (Instant) constantValue;
             code.append(Instant.class.getName()).append(".get(").append(t.getMillis())
