@@ -424,6 +424,14 @@ public class YarchDatabaseInstance {
         stmt.execute(context, resultListener, Long.MAX_VALUE);
     }
 
+    public void executeUnchecked(StreamSqlStatement stmt, ResultListener resultListener) {
+        try {
+            ExecutionContext context = new ExecutionContext(this);
+            stmt.execute(context, resultListener, Long.MAX_VALUE);
+        } catch (StreamSqlException e) {
+            throw new YarchException(e);
+        }
+    }
     public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {
         ExecutionContext context = new ExecutionContext(this);
         return stmt.execute(context);
@@ -443,6 +451,25 @@ public class YarchDatabaseInstance {
     public StreamSqlResult execute(String query, Object... args) throws StreamSqlException, ParseException {
         StreamSqlStatement stmt = createStatement(query, args);
         return execute(stmt);
+    }
+
+    /**
+     * Same as {@link #executeUnchecked(String, Object...)} but it embeds any exception into a {@link YarchException}
+     * 
+     * @param query
+     * @param args
+     * @return
+     * @throws StreamSqlException
+     * @throws ParseException
+     */
+    public StreamSqlResult executeUnchecked(String query, Object... args) {
+        StreamSqlStatement stmt;
+        try {
+            stmt = createStatement(query, args);
+            return execute(stmt);
+        } catch (StreamSqlException | ParseException e) {
+            throw new YarchException(e);
+        }
     }
 
     public void executeDiscardingResult(String query, Object... args) throws StreamSqlException, ParseException {
