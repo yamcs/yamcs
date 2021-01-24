@@ -19,6 +19,7 @@ import org.yamcs.client.YamcsClient;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Duration;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -57,7 +58,6 @@ public class HttpMethodHandler implements MethodHandler {
 
         String template = getPattern(route);
         QueryStringEncoder uri = resolveUri(template, request, method.getInputType(), partial);
-
         Message body = null;
         if (route.hasBody()) {
             if ("*".equals(route.getBody())) {
@@ -147,6 +147,7 @@ public class HttpMethodHandler implements MethodHandler {
             String stringValue = String.valueOf(fieldValue);
 
             String encodedValue = encodeURIComponent(stringValue);
+
             matcher.appendReplacement(buf, encodedValue);
             partial.clearField(field);
         }
@@ -176,6 +177,9 @@ public class HttpMethodHandler implements MethodHandler {
             Timestamp proto = (Timestamp) value;
             Instant instant = Instant.ofEpochSecond(proto.getSeconds(), proto.getNanos());
             return instant.toString();
+        } else if (value instanceof Duration) {
+            Duration proto = (Duration) value;
+            return String.format("%d.%09ds", proto.getSeconds(), proto.getNanos());
         } else {
             return String.valueOf(value);
         }

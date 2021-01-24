@@ -12,8 +12,10 @@ import org.yamcs.logging.Log;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 
 import io.netty.buffer.ByteBufInputStream;
@@ -183,6 +185,13 @@ public class HttpTranscoder {
                     return Timestamps.parse(parameter);
                 } catch (ParseException e) {
                     throw new HttpTranscodeException("Provided date string does not conform to RFC 3339", e);
+                }
+            }
+            if (Duration.getDescriptor().equals(field.getMessageType())) {
+                try {
+                    return Durations.parse(parameter);
+                } catch (ParseException e) {
+                    throw new HttpTranscodeException(e.getMessage());
                 }
             }
             throw new UnsupportedOperationException(
