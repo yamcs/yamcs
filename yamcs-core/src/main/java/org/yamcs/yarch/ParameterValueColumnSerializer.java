@@ -21,24 +21,28 @@ import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 public class ParameterValueColumnSerializer implements ColumnSerializer<ParameterValue> {
 
     @Override
-    public ParameterValue deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+    public ParameterValue deserialize(ByteArray byteArray, ColumnDefinition cd) {
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder();
         byteArray.getSizePrefixedProto(gpvb);
         return fromProto(cd.getName(), gpvb.build());
     }
 
     @Override
-    public ParameterValue deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+    public ParameterValue deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
         int size = byteBuf.getInt();
         if (size > ColumnSerializerFactory.maxBinaryLength) {
-            throw new IOException("serialized size too big " + size + ">" + ColumnSerializerFactory.maxBinaryLength);
+            throw new YarchException("serialized size too big " + size + ">" + ColumnSerializerFactory.maxBinaryLength);
         }
 
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder();
 
         int limit = byteBuf.limit();
         byteBuf.limit(byteBuf.position() + size);
-        gpvb.mergeFrom(CodedInputStream.newInstance(byteBuf));
+        try {
+            gpvb.mergeFrom(CodedInputStream.newInstance(byteBuf));
+        } catch (IOException e) {
+            throw new YarchException(e);
+        }
         byteBuf.limit(limit);
         byteBuf.position(byteBuf.position() + size);
 

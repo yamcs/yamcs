@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArray;
+import org.yamcs.utils.DatabaseCorruptionException;
+import org.yamcs.utils.DecodingException;
 import org.yamcs.yarch.DataType._type;
 
 import com.google.protobuf.CodedInputStream;
@@ -61,22 +63,29 @@ public class ColumnSerializerFactory {
         }
     }
 
-
-    @SuppressWarnings("unchecked")
     public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, TableColumnDefinition cd) {
-        DataType type = cd.getType();
+        return getColumnSerializer(tblDef, cd, cd.getType());
+    }
+
+    public static <T> ColumnSerializer<T> getColumnSerializer(TableDefinition tblDef, TableColumnDefinition cd,
+            DataType type) {
         if (type.val == _type.ENUM) {
             return (ColumnSerializer<T>) new EnumColumnSerializer(tblDef, cd);
         } else if (type.val == _type.PROTOBUF) {
             return (ColumnSerializer<T>) getProtobufSerializer(cd);
+        } else if (type.val == _type.ARRAY) {
+            DataType elementType = ((ArrayDataType) type).getElementType();
+            return (ColumnSerializer<T>) new ColumnSerializerV3.ArrayColumnSerializer(
+                    getColumnSerializer(tblDef, cd, elementType));
         } else {
             if (tblDef.getFormatVersion() < 3) {
-                return getBasicColumnSerializerV2(cd.getType());
+                return getBasicColumnSerializerV2(type);
             } else {
-                return getBasicColumnSerializerV3(cd.getType());
+                return getBasicColumnSerializerV3(type);
             }
         }
     }
+
 
     /**
      * Returns the V2 serializers with the enumerations serialzied as strings (so they don't need a decoding table on
@@ -91,6 +100,8 @@ public class ColumnSerializerFactory {
             return STRING_CS_V2;
         } else if (type.val == _type.PROTOBUF) {
             return getProtobufSerializer(cd);
+        } else if (type.val == _type.ARRAY) {
+            return getBasicColumnSerializerV3(cd.getType());
         } else {
             // V2 is fine for replication as the serialized values are not used for sorting
             // should upgrade to V3 at some point but it will break compatibility with old replicated data
@@ -130,10 +141,9 @@ public class ColumnSerializerFactory {
             return (ColumnSerializer<T>) HRES_TIMESTAMP_CS_V3;
         case UUID:
             return (ColumnSerializer<T>) UUID_CS;
-        case LIST:
         case TUPLE:
             // TODO
-            throw new UnsupportedOperationException("List and Tuple not implemented");
+            throw new UnsupportedOperationException("Tuple not implemented");
         }
         throw new IllegalArgumentException("' " + type + " is not a basic type");
     }
@@ -168,7 +178,7 @@ public class ColumnSerializerFactory {
             return (ColumnSerializer<T>) PARAMETER_VALUE_CS;
         case HRES_TIMESTAMP:
             return (ColumnSerializer<T>) HRES_TIMESTAMP_CS_V2;
-        case LIST:
+        case ARRAY:
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("List and Tuple not implemented");
@@ -205,7 +215,7 @@ public class ColumnSerializerFactory {
 
     static class BooleanColumnSerializer implements ColumnSerializer<Boolean> {
         @Override
-        public Boolean deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Boolean deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.get() != 0;
         }
 
@@ -228,7 +238,7 @@ public class ColumnSerializerFactory {
 
     static class ByteColumnSerializer implements ColumnSerializer<Byte> {
         @Override
-        public Byte deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Byte deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.get();
         }
 
@@ -250,12 +260,16 @@ public class ColumnSerializerFactory {
 
     static class NullTerminatedStringColumnSerializer implements ColumnSerializer<String> {
         @Override
-        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
-            return byteArray.getNullTerminatedUTF();
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) {
+            try {
+                return byteArray.getNullTerminatedUTF();
+            } catch (DecodingException e) {
+                throw new DatabaseCorruptionException(e);
+            }
         }
 
         @Override
-        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
             return decodeUTF(byteBuf, true);
         }
 
@@ -274,12 +288,16 @@ public class ColumnSerializerFactory {
     static class SizePrefixedtringColumnSerializer implements ColumnSerializer<String> {
 
         @Override
-        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
-            return byteArray.getSizePrefixedUTF();
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) {
+            try {
+                return byteArray.getSizePrefixedUTF();
+            } catch (DecodingException e) {
+                throw new DatabaseCorruptionException(e);
+            }
         }
 
         @Override
-        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
             int len = byteBuf.getShort();
             if (len > byteBuf.remaining()) {
                 throw new BufferUnderflowException();
@@ -331,7 +349,7 @@ public class ColumnSerializerFactory {
         }
     }
 
-    static private String decodeUTF(ByteBuffer byteBuf, boolean nullTerminated) throws IOException {
+    static private String decodeUTF(ByteBuffer byteBuf, boolean nullTerminated) {
         char[] ca = new char[byteBuf.remaining()];
         int k = 0;
 
@@ -356,7 +374,7 @@ public class ColumnSerializerFactory {
                         ((char2 & 0x3F) << 6) |
                         ((char3 & 0x3F) << 0));
             } else {
-                throw new IOException("invalid UTF8 string at byte" + byteBuf.position());
+                throw new DatabaseCorruptionException("invalid UTF8 string at byte" + byteBuf.position());
             }
         }
         return new String(ca, 0, k);
@@ -364,7 +382,7 @@ public class ColumnSerializerFactory {
 
     static class BinaryColumnSerializer implements ColumnSerializer<byte[]> {
         @Override
-        public byte[] deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public byte[] deserialize(ByteArray byteArray, ColumnDefinition cd) {
             int length = byteArray.getInt();
             if (length > maxBinaryLength) {
                 log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length,
@@ -377,10 +395,10 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public byte[] deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+        public byte[] deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
             int length = byteBuf.getInt();
             if (length > maxBinaryLength) {
-                throw new IOException("binary length " + length + " greater than maxBinaryLenght " + maxBinaryLength
+                throw new YarchException("binary length " + length + " greater than maxBinaryLenght " + maxBinaryLength
                         + " (is the endianess wrong?)");
             }
             byte[] bp = new byte[length];
@@ -410,7 +428,7 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public MessageLite deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public MessageLite deserialize(ByteArray byteArray, ColumnDefinition cd) {
             try {
                 Builder b = (Builder) newBuilderMethod.invoke(null);
                 byteArray.getSizePrefixedProto(b);
@@ -421,10 +439,11 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public MessageLite deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+        public MessageLite deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
             int length = byteBuf.getInt();
             if (length > maxBinaryLength) {
-                throw new IOException("binary length " + length + " greater than maxBinaryLenght " + maxBinaryLength);
+                throw new YarchException(
+                        "binary length " + length + " greater than maxBinaryLenght " + maxBinaryLength);
             }
             Builder b;
             try {
@@ -434,7 +453,11 @@ public class ColumnSerializerFactory {
             }
             int limit = byteBuf.limit();
             byteBuf.limit(byteBuf.position() + length);
-            b.mergeFrom(CodedInputStream.newInstance(byteBuf));
+            try {
+                b.mergeFrom(CodedInputStream.newInstance(byteBuf));
+            } catch (IOException e) {
+                throw new YarchException(e);
+            }
             byteBuf.limit(limit);
             byteBuf.position(byteBuf.position() + length);
 
@@ -496,12 +519,12 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public String deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public String deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return getValue(byteArray.getShort());
         }
 
         @Override
-        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException {
+        public String deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
             return getValue(byteBuf.getShort());
         }
 

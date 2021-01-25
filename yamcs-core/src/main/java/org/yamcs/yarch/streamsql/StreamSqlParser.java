@@ -58,55 +58,66 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   final public DataType DataTypeDefinition() throws ParseException {
     Token className;
+    DataType dataType;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case K_INT:
       jj_consume_token(K_INT);
-              {if (true) return DataType.INT;}
+               dataType = DataType.INT;
       break;
     case K_LONG:
       jj_consume_token(K_LONG);
-               {if (true) return DataType.LONG;}
+                 dataType = DataType.LONG;
       break;
     case K_BOOLEAN:
       jj_consume_token(K_BOOLEAN);
-                  {if (true) return DataType.BOOLEAN;}
+                    dataType = DataType.BOOLEAN;
       break;
     case K_BYTE:
       jj_consume_token(K_BYTE);
-               {if (true) return DataType.BYTE;}
+                 dataType = DataType.BYTE;
       break;
     case K_SHRT:
       jj_consume_token(K_SHRT);
-                {if (true) return DataType.SHORT;}
+                  dataType = DataType.SHORT;
       break;
     case K_DOUBLE:
       jj_consume_token(K_DOUBLE);
-                 {if (true) return DataType.DOUBLE;}
+                   dataType = DataType.DOUBLE;
       break;
     case K_STRING:
       jj_consume_token(K_STRING);
-                  {if (true) return DataType.STRING;}
+                    dataType = DataType.STRING;
       break;
     case K_ENUM:
       jj_consume_token(K_ENUM);
-                {if (true) return DataType.ENUM;}
+                  dataType = DataType.ENUM;
       break;
     case K_PROTOBUF:
       jj_consume_token(K_PROTOBUF);
       jj_consume_token(126);
       className = jj_consume_token(S_STRING);
       jj_consume_token(127);
-                                                   {if (true) return DataType.protobuf(getNonEscapedString(className.image));}
+                                                     dataType =  DataType.protobuf(getNonEscapedString(className.image));
       break;
     case S_IDENTIFIER:
       jj_consume_token(S_IDENTIFIER);
-                      {if (true) return getBasicDataType(token.image);}
+                        dataType = getBasicDataType(token.image);
       break;
     default:
       jj_la1[0] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 128:
+      jj_consume_token(128);
+            dataType = DataType.array(dataType);
+      break;
+    default:
+      jj_la1[1] = jj_gen;
+      ;
+    }
+     {if (true) return dataType;}
     throw new Error("Missing return statement in function");
   }
 
@@ -179,7 +190,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
           statement = DescribeStatement();
           break;
         default:
-          jj_la1[1] = jj_gen;
+          jj_la1[2] = jj_gen;
           if (jj_2_3(2)) {
             statement = ShowStreamsStatement();
           } else if (jj_2_4(2)) {
@@ -203,7 +214,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         {if (true) return statement;}
       break;
     default:
-      jj_la1[2] = jj_gen;
+      jj_la1[3] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -244,7 +255,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                                      ifNotExists=true;
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[4] = jj_gen;
       ;
     }
     tableName = ObjectName();
@@ -252,7 +263,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_1:
     while (true) {
       tcd = TableColumnDefinition();
-      jj_consume_token(128);
+      jj_consume_token(129);
                                             tupleDefinition.addColumn(tcd);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case S_IDENTIFIER:
@@ -260,7 +271,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         ;
         break;
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[5] = jj_gen;
         break label_1;
       }
     }
@@ -272,21 +283,21 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         break label_2;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       pk = ObjectName();
                                                                                         primaryKey.add(pk);
     }
     jj_consume_token(127);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 128:
-      jj_consume_token(128);
+    case 129:
+      jj_consume_token(129);
       jj_consume_token(K_INDEX);
       jj_consume_token(126);
       indexColumn = ObjectName();
@@ -294,21 +305,21 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 128:
+        case 129:
           ;
           break;
         default:
-          jj_la1[6] = jj_gen;
+          jj_la1[7] = jj_gen;
           break label_3;
         }
-        jj_consume_token(128);
+        jj_consume_token(129);
         indexColumn = ObjectName();
                                                                                                         index.add(indexColumn);
       }
       jj_consume_token(127);
       break;
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[8] = jj_gen;
       ;
     }
     jj_consume_token(127);
@@ -324,7 +335,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         ;
         break;
       default:
-        jj_la1[8] = jj_gen;
+        jj_la1[9] = jj_gen;
         break label_4;
       }
       TableOption(cts);
@@ -346,7 +357,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                         tcd.setAutoIncrement(true);
       break;
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[10] = jj_gen;
       ;
     }
    {if (true) return tcd;}
@@ -365,14 +376,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       label_5:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 128:
+        case 129:
           ;
           break;
         default:
-          jj_la1[10] = jj_gen;
+          jj_la1[11] = jj_gen;
           break label_5;
         }
-        jj_consume_token(128);
+        jj_consume_token(129);
         columnName = ObjectName();
                                                                                                                 cts.addHistogramColumn(columnName);
       }
@@ -396,12 +407,12 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       break;
     case K_TABLE_FORMAT:
       jj_consume_token(K_TABLE_FORMAT);
-      jj_consume_token(129);
+      jj_consume_token(130);
       jj_consume_token(K_COMPRESSED);
                                       cts.setCompressed(true);
       break;
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -423,7 +434,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         jj_consume_token(127);
         break;
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[13] = jj_gen;
         ;
       }
       jj_consume_token(127);
@@ -447,16 +458,16 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         jj_consume_token(127);
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[14] = jj_gen;
         ;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       cname2 = ObjectName();
       jj_consume_token(127);
                                                                                                                          pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2);
       break;
     default:
-      jj_la1[14] = jj_gen;
+      jj_la1[15] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -502,7 +513,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
             {if (true) return new CreateStreamStatement(name,tupleDefinition);}
       break;
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[16] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -528,7 +539,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                               speedSpec=SpeedSpec();
       break;
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[17] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -537,7 +548,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                                                                       follow=false;
       break;
     default:
-      jj_la1[17] = jj_gen;
+      jj_la1[18] = jj_gen;
       ;
     }
     if(expression instanceof SelectExpression) {
@@ -568,7 +579,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                            ifExists=true;
       break;
     default:
-      jj_la1[18] = jj_gen;
+      jj_la1[19] = jj_gen;
       ;
     }
     name = ObjectName();
@@ -641,7 +652,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       n = NumericConstant();
       break;
     default:
-      jj_la1[19] = jj_gen;
+      jj_la1[20] = jj_gen;
       ;
     }
         {if (true) return new AlterSequenceStatement(name, n.longValue());}
@@ -658,7 +669,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       expression = MergeExpression();
       break;
     default:
-      jj_la1[20] = jj_gen;
+      jj_la1[21] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -679,14 +690,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       label_6:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 128:
+        case 129:
           ;
           break;
         default:
-          jj_la1[21] = jj_gen;
+          jj_la1[22] = jj_gen;
           break label_6;
         }
-        jj_consume_token(128);
+        jj_consume_token(129);
         ColumnValue();
       }
       break;
@@ -696,24 +707,24 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       label_7:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 128:
+        case 129:
           ;
           break;
         default:
-          jj_la1[22] = jj_gen;
+          jj_la1[23] = jj_gen;
           break label_7;
         }
-        jj_consume_token(128);
+        jj_consume_token(129);
         ObjectName();
       }
       jj_consume_token(127);
-      jj_consume_token(129);
+      jj_consume_token(130);
       jj_consume_token(126);
       SelectExpression();
       jj_consume_token(127);
       break;
     default:
-      jj_la1[23] = jj_gen;
+      jj_la1[24] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -721,7 +732,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   final public void ColumnValue() throws ParseException, StreamSqlException {
     ObjectName();
-    jj_consume_token(129);
+    jj_consume_token(130);
     Expression();
   }
 
@@ -791,14 +802,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[24] = jj_gen;
+        jj_la1[25] = jj_gen;
         break label_8;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       tsrc = TupleSourceExpression();
                                       mergeExpr.addTupleSourceExpression(tsrc);
     }
@@ -811,7 +822,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                mergeExpr.setAscending(ascending);
       break;
     default:
-      jj_la1[25] = jj_gen;
+      jj_la1[26] = jj_gen;
       ;
     }
         {if (true) return mergeExpr;}
@@ -831,7 +842,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       expression = Expression();
       break;
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[27] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -840,7 +851,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       limit = NumericConstant();
       break;
     default:
-      jj_la1[27] = jj_gen;
+      jj_la1[28] = jj_gen;
       ;
     }
         {if (true) return new DeleteStatement(tableName, expression, limit.longValue());}
@@ -858,22 +869,22 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     tableName = ObjectName();
     jj_consume_token(K_SET);
     colName = ObjectName();
-    jj_consume_token(129);
+    jj_consume_token(130);
     colValue = SimpleExpression();
           updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
     label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[28] = jj_gen;
+        jj_la1[29] = jj_gen;
         break label_9;
       }
-      jj_consume_token(128);
-      colName = ObjectName();
       jj_consume_token(129);
+      colName = ObjectName();
+      jj_consume_token(130);
       colValue = SimpleExpression();
           updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
     }
@@ -883,7 +894,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       whereExpr = Expression();
       break;
     default:
-      jj_la1[29] = jj_gen;
+      jj_la1[30] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -892,7 +903,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       limit = NumericConstant();
       break;
     default:
-      jj_la1[30] = jj_gen;
+      jj_la1[31] = jj_gen;
       ;
     }
         {if (true) return new UpdateTableStatement(tableName, updateList, whereExpr, limit.longValue());}
@@ -917,13 +928,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(K_ORIGINAL);
       columnName = ObjectName();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
-        jj_consume_token(128);
+      case 129:
+        jj_consume_token(129);
         bd = NumericConstant();
                                                                   x=bd.floatValue();
         break;
       default:
-        jj_la1[31] = jj_gen;
+        jj_la1[32] = jj_gen;
         ;
       }
                                                                                         {if (true) return new SpeedSpec(SpeedSpec.Type.ORIGINAL, columnName, x);}
@@ -934,7 +945,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                 {if (true) return new SpeedSpec(SpeedSpec.Type.STEP_BY_STEP, Integer.parseInt(token.image));}
       break;
     default:
-      jj_la1[32] = jj_gen;
+      jj_la1[33] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -954,7 +965,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                     retExpr=new OrExpression(retExpr,expr);
       break;
     default:
-      jj_la1[33] = jj_gen;
+      jj_la1[34] = jj_gen;
       ;
     }
       {if (true) return retExpr;}
@@ -972,8 +983,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     case S_IDENTIFIER:
     case S_DOUBLE_QUOTED_IDENTIFIER:
     case S_QMARK:
-    case 131:
     case 132:
+    case 133:
       expr = UnaryLogicalExpression();
       break;
     case 126:
@@ -982,7 +993,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(127);
       break;
     default:
-      jj_la1[34] = jj_gen;
+      jj_la1[35] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -994,7 +1005,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         ;
         break;
       default:
-        jj_la1[35] = jj_gen;
+        jj_la1[36] = jj_gen;
         break label_10;
       }
       jj_consume_token(K_AND);
@@ -1006,8 +1017,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       case S_IDENTIFIER:
       case S_DOUBLE_QUOTED_IDENTIFIER:
       case S_QMARK:
-      case 131:
       case 132:
+      case 133:
         expr = UnaryLogicalExpression();
         break;
       case 126:
@@ -1016,7 +1027,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         jj_consume_token(127);
         break;
       default:
-        jj_la1[36] = jj_gen;
+        jj_la1[37] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1036,7 +1047,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
             notset=true;
       break;
     default:
-      jj_la1[37] = jj_gen;
+      jj_la1[38] = jj_gen;
       ;
     }
     expr = RelationalExpression();
@@ -1059,21 +1070,21 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     case K_IS:
     case K_LIKE:
     case K_NOT:
-    case 129:
-    case 136:
+    case 130:
     case 137:
     case 138:
+    case 139:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 129:
-      case 136:
+      case 130:
       case 137:
       case 138:
+      case 139:
         relOp = RelOp();
         expr = SimpleExpression();
                                              retExpr=new RelationalExpression(retExpr,expr,relOp);
         break;
       default:
-        jj_la1[38] = jj_gen;
+        jj_la1[39] = jj_gen;
         if (jj_2_10(2)) {
           inClause = InClause();
                                         retExpr=new InExpression(expr, inClause);
@@ -1088,7 +1099,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
             IsNullClause();
             break;
           default:
-            jj_la1[39] = jj_gen;
+            jj_la1[40] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -1096,7 +1107,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       }
       break;
     default:
-      jj_la1[40] = jj_gen;
+      jj_la1[41] = jj_gen;
       ;
     }
         {if (true) return retExpr;}
@@ -1111,14 +1122,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[41] = jj_gen;
+        jj_la1[42] = jj_gen;
         break label_11;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       expr = Expression();
                                                                list.add(expr);
     }
@@ -1135,7 +1146,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
             inClause.setNegation(true);
       break;
     default:
-      jj_la1[42] = jj_gen;
+      jj_la1[43] = jj_gen;
       ;
     }
     jj_consume_token(K_IN);
@@ -1153,7 +1164,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(K_NOT);
       break;
     default:
-      jj_la1[43] = jj_gen;
+      jj_la1[44] = jj_gen;
       ;
     }
     jj_consume_token(K_BETWEEN);
@@ -1171,7 +1182,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
             likeClause.setNegation(true);
       break;
     default:
-      jj_la1[44] = jj_gen;
+      jj_la1[45] = jj_gen;
       ;
     }
     jj_consume_token(K_LIKE);
@@ -1185,7 +1196,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                  likeClause.setPattern(nextArgAsString());
       break;
     default:
-      jj_la1[45] = jj_gen;
+      jj_la1[46] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1200,7 +1211,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(K_NOT);
       break;
     default:
-      jj_la1[46] = jj_gen;
+      jj_la1[47] = jj_gen;
       ;
     }
     jj_consume_token(K_NULL);
@@ -1216,13 +1227,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_12:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 131:
       case 132:
       case 133:
+      case 134:
         ;
         break;
       default:
-        jj_la1[47] = jj_gen;
+        jj_la1[48] = jj_gen;
         break label_12;
       }
       addOp = AddOp();
@@ -1248,12 +1259,12 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_MOD:
-      case 134:
       case 135:
+      case 136:
         ;
         break;
       default:
-        jj_la1[48] = jj_gen;
+        jj_la1[49] = jj_gen;
         break label_13;
       }
       multOp = MultOp();
@@ -1273,13 +1284,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     expr = UnaryExpression();
                             retExpr=expr;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 130:
-      jj_consume_token(130);
+    case 131:
+      jj_consume_token(131);
       expr = UnaryExpression();
                                    retExpr=new ExponentExpression(retExpr,expr);
       break;
     default:
-      jj_la1[49] = jj_gen;
+      jj_la1[50] = jj_gen;
       ;
     }
         {if (true) return retExpr;}
@@ -1290,24 +1301,24 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     Expression expr;
     boolean negative=false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 131:
     case 132:
+    case 133:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 131:
-        jj_consume_token(131);
-        break;
       case 132:
         jj_consume_token(132);
+        break;
+      case 133:
+        jj_consume_token(133);
                 negative=true;
         break;
       default:
-        jj_la1[50] = jj_gen;
+        jj_la1[51] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[51] = jj_gen;
+      jj_la1[52] = jj_gen;
       ;
     }
     expr = PrimaryExpression();
@@ -1347,7 +1358,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                {if (true) return new ValueExpression(nextArg());}
       break;
     default:
-      jj_la1[52] = jj_gen;
+      jj_la1[53] = jj_gen;
       if (jj_2_13(2147483647)) {
         expr = FunctionCall();
                                                      {if (true) return expr;}
@@ -1359,7 +1370,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                        {if (true) return new ColumnExpression(name);}
           break;
         default:
-          jj_la1[53] = jj_gen;
+          jj_la1[54] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1380,7 +1391,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                   String s1 = token.image; {if (true) return s1.substring(1, s1.length() - 1);}
       break;
     default:
-      jj_la1[54] = jj_gen;
+      jj_la1[55] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1389,39 +1400,17 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   final public AddOp AddOp() throws ParseException, StreamSqlException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 131:
-      jj_consume_token(131);
-         {if (true) return AddOp.PLUS;}
-      break;
     case 132:
       jj_consume_token(132);
-         {if (true) return AddOp.MINUS;}
+         {if (true) return AddOp.PLUS;}
       break;
     case 133:
       jj_consume_token(133);
-          {if (true) return AddOp.STRING_PLUS;}
+         {if (true) return AddOp.MINUS;}
       break;
-    default:
-      jj_la1[55] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-    throw new Error("Missing return statement in function");
-  }
-
-  final public MultOp MultOp() throws ParseException, StreamSqlException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 134:
       jj_consume_token(134);
-         {if (true) return MultOp.MULT;}
-      break;
-    case 135:
-      jj_consume_token(135);
-         {if (true) return MultOp.DIV;}
-      break;
-    case K_MOD:
-      jj_consume_token(K_MOD);
-           {if (true) return MultOp.MOD;}
+          {if (true) return AddOp.STRING_PLUS;}
       break;
     default:
       jj_la1[56] = jj_gen;
@@ -1431,47 +1420,69 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public RelOp RelOp() throws ParseException, StreamSqlException {
+  final public MultOp MultOp() throws ParseException, StreamSqlException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 129:
-      jj_consume_token(129);
-         {if (true) return RelOp.EQUAL;}
+    case 135:
+      jj_consume_token(135);
+         {if (true) return MultOp.MULT;}
       break;
     case 136:
       jj_consume_token(136);
-      jj_consume_token(129);
-             {if (true) return RelOp.NOT_EQUAL;}
+         {if (true) return MultOp.DIV;}
+      break;
+    case K_MOD:
+      jj_consume_token(K_MOD);
+           {if (true) return MultOp.MOD;}
       break;
     default:
       jj_la1[57] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    throw new Error("Missing return statement in function");
+  }
+
+  final public RelOp RelOp() throws ParseException, StreamSqlException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 130:
+      jj_consume_token(130);
+         {if (true) return RelOp.EQUAL;}
+      break;
+    case 137:
+      jj_consume_token(137);
+      jj_consume_token(130);
+             {if (true) return RelOp.NOT_EQUAL;}
+      break;
+    default:
+      jj_la1[58] = jj_gen;
       if (jj_2_14(2)) {
-        jj_consume_token(137);
-        jj_consume_token(129);
+        jj_consume_token(138);
+        jj_consume_token(130);
                           {if (true) return RelOp.GREATER_OR_EQUAL;}
       } else {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 137:
-          jj_consume_token(137);
+        case 138:
+          jj_consume_token(138);
          {if (true) return RelOp.GREATER;}
           break;
         default:
-          jj_la1[58] = jj_gen;
+          jj_la1[59] = jj_gen;
           if (jj_2_15(2)) {
+            jj_consume_token(139);
             jj_consume_token(138);
-            jj_consume_token(137);
                           {if (true) return RelOp.NOT_EQUAL;}
           } else if (jj_2_16(2)) {
-            jj_consume_token(138);
-            jj_consume_token(129);
+            jj_consume_token(139);
+            jj_consume_token(130);
                           {if (true) return RelOp.LESS_OR_EQUAL;}
           } else {
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case 138:
-              jj_consume_token(138);
+            case 139:
+              jj_consume_token(139);
          {if (true) return RelOp.LESS;}
               break;
             default:
-              jj_la1[59] = jj_gen;
+              jj_la1[60] = jj_gen;
               jj_consume_token(-1);
               throw new ParseException();
             }
@@ -1487,14 +1498,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_14:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[60] = jj_gen;
+        jj_la1[61] = jj_gen;
         break label_14;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       Argument();
     }
   }
@@ -1502,7 +1513,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   final public void Argument() throws ParseException, StreamSqlException {
     if (jj_2_17(2)) {
       jj_consume_token(S_IDENTIFIER);
-      jj_consume_token(139);
+      jj_consume_token(140);
     } else {
       ;
     }
@@ -1524,7 +1535,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                 expression.setAscending(ascending);
       break;
     default:
-      jj_la1[61] = jj_gen;
+      jj_la1[62] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1532,7 +1543,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(K_LIMIT);
       if (jj_2_18(2)) {
         offset = NumericConstant();
-        jj_consume_token(128);
+        jj_consume_token(129);
       } else {
         ;
       }
@@ -1540,7 +1551,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                   expression.setLimit(offset, limit);
       break;
     default:
-      jj_la1[62] = jj_gen;
+      jj_la1[63] = jj_gen;
       ;
     }
         {if (true) return expression;}
@@ -1560,14 +1571,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     tsrc = TupleSourceExpression();
                                            selectExpr.setFirstSource(tsrc);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 140:
-      jj_consume_token(140);
+    case 141:
+      jj_consume_token(141);
       windowSpec = WindowSpecification();
                                             selectExpr.setWindow(windowSpec);
-      jj_consume_token(141);
+      jj_consume_token(142);
       break;
     default:
-      jj_la1[63] = jj_gen;
+      jj_la1[64] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1577,7 +1588,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                                          selectExpr.setWhereClause(whereClause);
       break;
     default:
-      jj_la1[64] = jj_gen;
+      jj_la1[65] = jj_gen;
       ;
     }
         {if (true) return selectExpr;}
@@ -1593,14 +1604,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_15:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[65] = jj_gen;
+        jj_la1[66] = jj_gen;
         break label_15;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       selectItem = SelectItem();
                                     selectList.add(selectItem);
     }
@@ -1613,8 +1624,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     Expression expr;
     SelectItem selectItem;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 134:
-      jj_consume_token(134);
+    case 135:
+      jj_consume_token(135);
             {if (true) return SelectItem.STAR;}
       break;
     case S_INTEGER:
@@ -1623,8 +1634,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     case S_IDENTIFIER:
     case S_DOUBLE_QUOTED_IDENTIFIER:
     case S_QMARK:
-    case 131:
     case 132:
+    case 133:
       expr = SimpleExpression();
                                 selectItem=new SelectItem(expr);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1636,20 +1647,20 @@ public class StreamSqlParser implements StreamSqlParserConstants {
           jj_consume_token(K_AS);
           break;
         default:
-          jj_la1[66] = jj_gen;
+          jj_la1[67] = jj_gen;
           ;
         }
         name = ObjectName();
             selectItem.setAlias(name);
         break;
       default:
-        jj_la1[67] = jj_gen;
+        jj_la1[68] = jj_gen;
         ;
       }
       {if (true) return selectItem;}
       break;
     default:
-      jj_la1[68] = jj_gen;
+      jj_la1[69] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1686,14 +1697,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                         wspec=new WindowSpecification(size,advance,WindowSpecification.Type.FIELD,field);
         break;
       default:
-        jj_la1[69] = jj_gen;
+        jj_la1[70] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
    {if (true) return wspec;}
       break;
     default:
-      jj_la1[70] = jj_gen;
+      jj_la1[71] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1717,24 +1728,24 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         histoColumn = ObjectName();
                                                        tsrc.setHistogramColumn(histoColumn);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 128:
-          jj_consume_token(128);
+        case 129:
+          jj_consume_token(129);
           mergeTime = NumericConstant();
                                                tsrc.setHistogramMergeTime(mergeTime);
           break;
         default:
-          jj_la1[71] = jj_gen;
+          jj_la1[72] = jj_gen;
           ;
         }
         jj_consume_token(127);
         break;
       default:
-        jj_la1[72] = jj_gen;
+        jj_la1[73] = jj_gen;
         ;
       }
       break;
     default:
-      jj_la1[73] = jj_gen;
+      jj_la1[74] = jj_gen;
       if (jj_2_19(3)) {
         jj_consume_token(126);
         expr = StreamExpression();
@@ -1760,14 +1771,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_16:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[74] = jj_gen;
+        jj_la1[75] = jj_gen;
         break label_16;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       columnName = ObjectName();
       columnType = DataTypeDefinition();
                                                                   tupleDefinition.addColumn(columnName,columnType);
@@ -1792,13 +1803,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
                      ascending=false;
         break;
       default:
-        jj_la1[75] = jj_gen;
+        jj_la1[76] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[76] = jj_gen;
+      jj_la1[77] = jj_gen;
       ;
     }
     {if (true) return ascending;}
@@ -1820,9 +1831,9 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     case S_DOUBLE_QUOTED_IDENTIFIER:
     case S_QMARK:
     case 126:
-    case 131:
     case 132:
-    case 134:
+    case 133:
+    case 135:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_NOT:
       case S_INTEGER:
@@ -1832,22 +1843,22 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       case S_DOUBLE_QUOTED_IDENTIFIER:
       case S_QMARK:
       case 126:
-      case 131:
       case 132:
+      case 133:
         args = FunctionArgumentList();
         break;
-      case 134:
-        jj_consume_token(134);
+      case 135:
+        jj_consume_token(135);
                    star=true;
         break;
       default:
-        jj_la1[77] = jj_gen;
+        jj_la1[78] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[78] = jj_gen;
+      jj_la1[79] = jj_gen;
       ;
     }
     jj_consume_token(127);
@@ -1863,14 +1874,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     label_17:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 128:
+      case 129:
         ;
         break;
       default:
-        jj_la1[79] = jj_gen;
+        jj_la1[80] = jj_gen;
         break label_17;
       }
-      jj_consume_token(128);
+      jj_consume_token(129);
       expr = Expression();
                               args.add(expr);
     }
@@ -1887,7 +1898,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_consume_token(S_FLOAT);
       break;
     default:
-      jj_la1[80] = jj_gen;
+      jj_la1[81] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2037,38 +2048,6 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     finally { jj_save(18, xla); }
   }
 
-  private boolean jj_3_12() {
-    if (jj_3R_29()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_45() {
-    if (jj_3R_48()) return true;
-    return false;
-  }
-
-  private boolean jj_3_11() {
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
-  private boolean jj_3_10() {
-    if (jj_3R_27()) return true;
-    return false;
-  }
-
-  private boolean jj_3_17() {
-    if (jj_scan_token(S_IDENTIFIER)) return true;
-    if (jj_scan_token(139)) return true;
-    return false;
-  }
-
-  private boolean jj_3_19() {
-    if (jj_scan_token(126)) return true;
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
   private boolean jj_3_2() {
     if (jj_3R_19()) return true;
     return false;
@@ -2100,14 +2079,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   }
 
   private boolean jj_3_16() {
-    if (jj_scan_token(138)) return true;
-    if (jj_scan_token(129)) return true;
+    if (jj_scan_token(139)) return true;
+    if (jj_scan_token(130)) return true;
     return false;
   }
 
   private boolean jj_3_15() {
+    if (jj_scan_token(139)) return true;
     if (jj_scan_token(138)) return true;
-    if (jj_scan_token(137)) return true;
     return false;
   }
 
@@ -2117,8 +2096,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   }
 
   private boolean jj_3_14() {
-    if (jj_scan_token(137)) return true;
-    if (jj_scan_token(129)) return true;
+    if (jj_scan_token(138)) return true;
+    if (jj_scan_token(130)) return true;
     return false;
   }
 
@@ -2166,7 +2145,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   }
 
   private boolean jj_3R_61() {
-    if (jj_scan_token(134)) return true;
+    if (jj_scan_token(135)) return true;
     return false;
   }
 
@@ -2386,7 +2365,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   }
 
   private boolean jj_3R_54() {
-    if (jj_scan_token(132)) return true;
+    if (jj_scan_token(133)) return true;
     return false;
   }
 
@@ -2402,7 +2381,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   private boolean jj_3_18() {
     if (jj_3R_31()) return true;
-    if (jj_scan_token(128)) return true;
+    if (jj_scan_token(129)) return true;
     return false;
   }
 
@@ -2420,7 +2399,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   private boolean jj_3R_51() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(131)) {
+    if (jj_scan_token(132)) {
     jj_scanpos = xsp;
     if (jj_3R_54()) return true;
     }
@@ -2446,6 +2425,38 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
+  private boolean jj_3_12() {
+    if (jj_3R_29()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_45() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3_11() {
+    if (jj_3R_28()) return true;
+    return false;
+  }
+
+  private boolean jj_3_10() {
+    if (jj_3R_27()) return true;
+    return false;
+  }
+
+  private boolean jj_3_17() {
+    if (jj_scan_token(S_IDENTIFIER)) return true;
+    if (jj_scan_token(140)) return true;
+    return false;
+  }
+
+  private boolean jj_3_19() {
+    if (jj_scan_token(126)) return true;
+    if (jj_3R_32()) return true;
+    return false;
+  }
+
   /** Generated Token Manager. */
   public StreamSqlParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
@@ -2457,7 +2468,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[81];
+  final private int[] jj_la1 = new int[82];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -2471,19 +2482,19 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_la1_init_4();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x80028000,0x28080000,0x28480101,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x0,0x0,0x200,0x0,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10001000,0x10001000,0x0,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x80028000,0x0,0x28080000,0x28480101,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40,0x0,0x0,0x200,0x0,0x0,0x0,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10001000,0x10001000,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x2040008,0x1030001,0x1030001,0x800,0x0,0x0,0x0,0x0,0x402,0x0,0x0,0x402,0x0,0x0,0x0,0x0,0x0,0x20000000,0x800,0x0,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x800000,0x0,0x0,0x800000,0x0,0x40,0x0,0x10000000,0x0,0x10000000,0x10000000,0x0,0x100000,0x10501000,0x0,0x10000000,0x10000000,0x10000000,0x0,0x10000000,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x800000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x10000000,0x10000000,0x0,0x0,};
+      jj_la1_1 = new int[] {0x2040008,0x0,0x1030001,0x1030001,0x800,0x0,0x0,0x0,0x0,0x402,0x0,0x0,0x402,0x0,0x0,0x0,0x0,0x0,0x20000000,0x800,0x0,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x800000,0x0,0x0,0x800000,0x0,0x40,0x0,0x10000000,0x0,0x10000000,0x10000000,0x0,0x100000,0x10501000,0x0,0x10000000,0x10000000,0x10000000,0x0,0x10000000,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x0,0x0,0x800000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400,0x0,0x0,0x0,0x0,0x10000000,0x10000000,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x81000400,0x80000,0x880000,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x80000,0x0,0x0,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x10000010,0x4,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0x81000400,0x0,0x80000,0x880000,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x80,0x0,0x0,0x0,0x0,0x8000000,0x0,0x0,0x0,0x80000,0x0,0x0,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x10000010,0x4,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_3() {
-      jj_la1_3 = new int[] {0x2000000,0x700,0x700,0x0,0x12000000,0x0,0x0,0x0,0xa,0x0,0x0,0xa,0x40000000,0x40000000,0x2030,0x40000000,0x0,0x0,0x0,0x10000,0x0,0x0,0x0,0x52000000,0x0,0x0,0x8000,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x72460000,0x0,0x72460000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20400000,0x0,0x0,0x0,0x0,0x0,0x0,0x20460000,0x12000000,0x12000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x12000000,0x32460000,0x50,0x12000000,0x0,0x0,0x12000000,0x0,0x0,0x0,0x72460000,0x72460000,0x0,0x60000,};
+      jj_la1_3 = new int[] {0x2000000,0x0,0x700,0x700,0x0,0x12000000,0x0,0x0,0x0,0xa,0x0,0x0,0xa,0x40000000,0x40000000,0x2030,0x40000000,0x0,0x0,0x0,0x10000,0x0,0x0,0x0,0x52000000,0x0,0x0,0x8000,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x72460000,0x0,0x72460000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20400000,0x0,0x0,0x0,0x0,0x0,0x0,0x20460000,0x12000000,0x12000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x12000000,0x32460000,0x50,0x12000000,0x0,0x0,0x12000000,0x0,0x0,0x0,0x72460000,0x72460000,0x0,0x60000,};
    }
    private static void jj_la1_init_4() {
-      jj_la1_4 = new int[] {0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x1,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x0,0x1,0x0,0x0,0x0,0x1,0x0,0x0,0x1,0x0,0x0,0x18,0x0,0x18,0x0,0x702,0x0,0x702,0x1,0x0,0x0,0x0,0x0,0x0,0x38,0xc0,0x4,0x18,0x18,0x0,0x0,0x0,0x38,0xc0,0x102,0x200,0x400,0x1,0x0,0x0,0x1000,0x0,0x1,0x0,0x0,0x58,0x0,0x0,0x1,0x0,0x0,0x1,0x0,0x0,0x58,0x58,0x1,0x0,};
+      jj_la1_4 = new int[] {0x0,0x1,0x0,0x0,0x0,0x0,0x2,0x2,0x2,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x2,0x0,0x0,0x0,0x2,0x0,0x0,0x2,0x0,0x0,0x30,0x0,0x30,0x0,0xe04,0x0,0xe04,0x2,0x0,0x0,0x0,0x0,0x0,0x70,0x180,0x8,0x30,0x30,0x0,0x0,0x0,0x70,0x180,0x204,0x400,0x800,0x2,0x0,0x0,0x2000,0x0,0x2,0x0,0x0,0xb0,0x0,0x0,0x2,0x0,0x0,0x2,0x0,0x0,0xb0,0xb0,0x2,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[19];
   private boolean jj_rescan = false;
@@ -2500,7 +2511,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2515,7 +2526,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2526,7 +2537,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2537,7 +2548,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2547,7 +2558,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2557,7 +2568,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 81; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 82; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2672,12 +2683,12 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[142];
+    boolean[] la1tokens = new boolean[143];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 81; i++) {
+    for (int i = 0; i < 82; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -2698,7 +2709,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         }
       }
     }
-    for (int i = 0; i < 142; i++) {
+    for (int i = 0; i < 143; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

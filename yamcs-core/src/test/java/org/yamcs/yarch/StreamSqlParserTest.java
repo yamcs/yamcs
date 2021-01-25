@@ -76,6 +76,21 @@ public class StreamSqlParserTest extends YarchTestCase {
         assertEquals("RESOURCE_NOT_FOUND Stream or table 'unexistent_stream' not found", e.getMessage());
     }
 
+    @Test
+    public void testArrayColumn() throws ParseException, StreamSqlException {
+        execute(
+                "create table arraycol_test1(id long, tag string[], primary key(id))");
+        TableDefinition tbl = ydb.getTable("arraycol_test1");
+        assertNotNull(tbl);
+        ColumnDefinition ctime = tbl.getColumnDefinition("tag");
+        ArrayDataType dt = (ArrayDataType) ctime.getType();
+        assertEquals(dt.getElementType(), DataType.STRING);
+
+        execute("drop table arraycol_test1");
+        tbl = ydb.getTable("arraycol_test1");
+
+        assertNull(tbl);
+    }
     /* @Test
     public void testShowStreams() throws Exception {
         ydb.execute("create input stream testshow_is1(a int, b timestamp)");

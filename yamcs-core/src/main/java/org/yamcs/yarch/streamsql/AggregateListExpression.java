@@ -16,10 +16,10 @@ public class AggregateListExpression extends AggregateExpression {
 
     @Override
     protected void doBind() throws StreamSqlException {
-        if(star) {
-            type=DataType.list(inputDef);
+        if (star) {
+            type = DataType.array(DataType.tuple(inputDef));
         } else {
-            //TODO
+            // TODO
         }
     }
 

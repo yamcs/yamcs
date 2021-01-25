@@ -1,6 +1,5 @@
 package org.yamcs.yarch;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.yamcs.time.Instant;
@@ -15,7 +14,7 @@ import org.yamcs.utils.ByteArrayUtils;
 public class ColumnSerializerV2 {
     static class ShortColumnSerializer implements ColumnSerializer<Short> {
         @Override
-        public Short deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Short deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.getShort();
         }
 
@@ -37,7 +36,7 @@ public class ColumnSerializerV2 {
 
     static class IntegerColumnSerializer implements ColumnSerializer<Integer> {
         @Override
-        public Integer deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Integer deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.getInt();
         }
 
@@ -59,7 +58,7 @@ public class ColumnSerializerV2 {
 
     static class LongColumnSerializer implements ColumnSerializer<Long> {
         @Override
-        public Long deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Long deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.getLong();
         }
 
@@ -84,7 +83,7 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public Long fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+        public Long fromByteArray(byte[] b, ColumnDefinition cd) {
             return ByteArrayUtils.decodeLong(b, 0);
         }
     }
@@ -93,7 +92,7 @@ public class ColumnSerializerV2 {
     static class HresTimestampColumnSerializer implements ColumnSerializer<Instant> {
 
         @Override
-        public Instant deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Instant deserialize(ByteArray byteArray, ColumnDefinition cd) {
             long millis = byteArray.getLong();
             int picos = byteArray.getInt();
             return Instant.get(millis, picos);
@@ -127,7 +126,7 @@ public class ColumnSerializerV2 {
         }
 
         @Override
-        public Instant fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+        public Instant fromByteArray(byte[] b, ColumnDefinition cd) {
             long millis = ByteArrayUtils.decodeLong(b, 0);
             int picos = ByteArrayUtils.decodeInt(b, 8);
             return Instant.get(millis, picos);
@@ -136,7 +135,7 @@ public class ColumnSerializerV2 {
     static class DoubleColumnSerializer implements ColumnSerializer<Double> {
 
         @Override
-        public Double deserialize(ByteArray byteArray, ColumnDefinition cd) throws IOException {
+        public Double deserialize(ByteArray byteArray, ColumnDefinition cd) {
             return byteArray.getDouble();
         }
 

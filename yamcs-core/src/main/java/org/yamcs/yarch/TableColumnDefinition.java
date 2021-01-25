@@ -24,8 +24,18 @@ public class TableColumnDefinition extends ColumnDefinition {
     
     public TableColumnDefinition(String name, DataType type) {
         super(name, type);
-        if (type == DataType.ENUM) {
+        if (hasEnums(type)) {
             enumValues = HashBiMap.create();
+        }
+    }
+
+    private boolean hasEnums(DataType type) {
+        if (type == DataType.ENUM) {
+            return true;
+        } else if (type instanceof ArrayDataType) {
+            return hasEnums(((ArrayDataType) type).getElementType());
+        } else {
+            return false;
         }
     }
 

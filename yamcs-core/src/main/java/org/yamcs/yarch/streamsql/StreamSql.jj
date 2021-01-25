@@ -232,18 +232,26 @@ TOKEN:
 DataType DataTypeDefinition():
 {
     Token className;
+    DataType dataType;
 }
 {
-       "INT" {return DataType.INT;}
-    |  "LONG" {return DataType.LONG;}
-    |  "BOOLEAN" {return DataType.BOOLEAN;}
-    |  "BYTE" {return DataType.BYTE;}
-    |  "SHORT" {return DataType.SHORT;}
-    |  "DOUBLE" {return DataType.DOUBLE;}
-    |  "STRING"  {return DataType.STRING;}
-    |  "ENUM"  {return DataType.ENUM;}
-    |  "PROTOBUF" "(" className= <S_STRING> ")"   {return DataType.protobuf(getNonEscapedString(className.image));}
-    | <S_IDENTIFIER> {return getBasicDataType(token.image);}
+   (    "INT" {dataType = DataType.INT;}
+      |  "LONG" {dataType = DataType.LONG;}
+      |  "BOOLEAN" {dataType = DataType.BOOLEAN;}
+      |  "BYTE" {dataType = DataType.BYTE;}
+      |  "SHORT" {dataType = DataType.SHORT;}
+      |  "DOUBLE" {dataType = DataType.DOUBLE;}
+      |  "STRING"  {dataType = DataType.STRING;}
+      |  "ENUM"  {dataType = DataType.ENUM;}
+      |  "PROTOBUF" "(" className= <S_STRING> ")"   {dataType =  DataType.protobuf(getNonEscapedString(className.image));}
+      | <S_IDENTIFIER> {dataType = getBasicDataType(token.image);}
+    )
+    [
+      "[]" {dataType = DataType.array(dataType);}
+    ]
+    {
+     return dataType;
+    }
     
 }
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class UUIDTest extends YarchTestCase {
     int n = 10;
@@ -38,5 +39,24 @@ public class UUIDTest extends YarchTestCase {
             String data = (String) t.getColumn("data");
             assertEquals(data, id.toString());
         }
+    }
+
+    @Test
+    public void testUuidArray() throws Exception {
+        String tblName = "test2";
+        execute("create table " + tblName
+                + "(id int, uuidarray uuid[], primary key(id))");
+        execute("create stream " + tblName + "_in(id int, uuidarray uuid[])");
+        execute("upsert into " + tblName + " select * from " + tblName + "_in");
+        Stream s = ydb.getStream(tblName + "_in");
+        List<UUID> idlist = Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
+
+        s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(1, idlist)));
+
+        StreamSqlResult res = ydb.execute("select * from test2");
+        assertTrue(res.hasNext());
+        Tuple t = res.next();
+        assertEquals(1, t.getIntColumn("id"));
+        assertEquals(idlist, t.getColumn("uuidarray"));
     }
 }

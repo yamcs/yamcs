@@ -11,10 +11,10 @@ public class Enum3Test extends YarchTestCase {
     int n = 10;
 
     private void populate(String tblname) throws Exception {
-        ydb.execute("create table " + tblname
+        execute("create table " + tblname
                 + "(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by value(packetName)");
-        ydb.execute("create stream " + tblname + "_in(gentime timestamp, packetName enum, packet binary)");
-        ydb.execute("insert into " + tblname + " select * from " + tblname + "_in");
+        execute("create stream " + tblname + "_in(gentime timestamp, packetName enum, packet binary)");
+        execute("insert into " + tblname + " select * from " + tblname + "_in");
 
         Stream s = ydb.getStream(tblname + "_in");
         TupleDefinition td = new TupleDefinition();

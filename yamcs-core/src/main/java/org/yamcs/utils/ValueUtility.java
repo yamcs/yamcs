@@ -100,7 +100,7 @@ public class ValueUtility {
             return getBooleanValue((Boolean) v);
         case DOUBLE:
             return getDoubleValue((Double) v);
-        case LIST:
+        case ARRAY:
         case PROTOBUF:
         case TUPLE:
         default:

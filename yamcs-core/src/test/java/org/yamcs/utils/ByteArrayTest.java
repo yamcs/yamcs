@@ -12,7 +12,7 @@ public class ByteArrayTest {
     
     
     @Test
-    public void testString0() throws IOException {
+    public void testString0() throws DecodingException {
         ByteArray ba = new ByteArray();
         ba.addNullTerminatedUTF("aa");
         assertEquals(3, ba.size());
@@ -23,7 +23,7 @@ public class ByteArrayTest {
     
     
     @Test
-    public void testString1() throws IOException {
+    public void testString1() throws DecodingException {
         String s1 = "abc";
         String s2 = "cdh";
         
@@ -41,7 +41,7 @@ public class ByteArrayTest {
         
     }
     @Test
-    public void testString2() throws IOException {
+    public void testString2() throws DecodingException {
         byte[] x = new byte[100];
         rand.nextBytes(x);
         String s1 = new String(x);
@@ -56,7 +56,7 @@ public class ByteArrayTest {
     
     
     @Test
-    public void testString3() throws IOException {
+    public void testString3() throws DecodingException {
         byte[] x = new byte[100];
         rand.nextBytes(x);
         String s1 = new String(x);

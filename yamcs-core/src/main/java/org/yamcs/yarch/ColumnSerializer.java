@@ -27,9 +27,8 @@ public interface ColumnSerializer<T> {
      *            the column definition for the involved column (can be used to look up column name or other properties
      *            to help in deserialization)
      * @return the deserialized value
-     * @throws IOException
      */
-    T deserialize(ByteArray array, ColumnDefinition cd) throws IOException;
+    T deserialize(ByteArray array, ColumnDefinition cd);
 
     /**
      * Same as above but read the data from a ByteBuffer.
@@ -39,9 +38,8 @@ public interface ColumnSerializer<T> {
      * @param byteBuf
      * @param cd
      * @return
-     * @throws IOException 
      */
-    T deserialize(ByteBuffer byteBuf, ColumnDefinition cd) throws IOException;
+    T deserialize(ByteBuffer byteBuf, ColumnDefinition cd);
 
     /**
      * @param array
@@ -80,9 +78,8 @@ public interface ColumnSerializer<T> {
      *            the column definition for the involved column (can be used to look up column name or other properties
      *            to help in deserialization)
      * @return the deserialized value
-     * @throws IOException
      */
-    public default T fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+    public default T fromByteArray(byte[] b, ColumnDefinition cd) {
         ByteArray ba = ByteArray.wrap(b);
         return deserialize(ba, cd);
     }

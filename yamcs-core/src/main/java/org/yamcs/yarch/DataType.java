@@ -21,7 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 public class DataType {
 
     public enum _type {
-        BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST, HRES_TIMESTAMP, UUID
+        BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, ARRAY, HRES_TIMESTAMP, UUID
     }
 
     public final _type val;
@@ -40,7 +40,7 @@ public class DataType {
 
     public static final byte PROTOBUF_ID = 12;
     public static final byte TUPLE_ID = 13;
-    public static final byte LIST_ID = 14;
+    public static final byte ARRAY_ID = 14;
 
     public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15);
     public static final DataType UUID = new DataType(_type.UUID, (byte) 16);
@@ -57,8 +57,8 @@ public class DataType {
         return new TupleDataType(td);
     }
 
-    public static DataType list(TupleDefinition td) {
-        return new ListDataType(td);
+    public static DataType array(DataType elementType) {
+        return new ArrayDataType(elementType);
     }
 
     public static DataType protobuf(String className) {

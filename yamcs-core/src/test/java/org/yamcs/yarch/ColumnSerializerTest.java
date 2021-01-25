@@ -2,12 +2,14 @@ package org.yamcs.yarch;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.protobuf.Db.Event;
@@ -19,7 +21,7 @@ public class ColumnSerializerTest {
     }
     
     @Test
-    public void test1() throws IOException {
+    public void test1() {
         ColumnDefinition cd = new ColumnDefinition("test", DataType.protobuf(Event.class.getName()));
         ColumnSerializer<Event> cs = ColumnSerializerFactory.getProtobufSerializer(cd);
         Event ev = Event.newBuilder().setSource("test1").setGenerationTime(1000).setType("evtype").setMessage("msg").build();
@@ -42,7 +44,6 @@ public class ColumnSerializerTest {
         
         bb.mark();
         cs1.serialize(bb, pv);
-        System.out.println("bbposition: "+bb.position());
         
         bb.reset();
         ParameterValue pv1 = cs1.deserialize(bb, cd1);
@@ -67,4 +68,30 @@ public class ColumnSerializerTest {
     }
     
     
+    @Test
+    public void testArrays() {
+        DataType arrayDt = DataType.array(DataType.STRING);
+        
+        ColumnDefinition cd = new ColumnDefinition("test", arrayDt);
+
+        ColumnSerializer<List> cs = new ColumnSerializerV3.ArrayColumnSerializer(
+                ColumnSerializerFactory.getBasicColumnSerializerV3(DataType.STRING));
+        
+        List<String> l1 = Arrays.asList("a", "ab", "abcd");
+        ByteArray array = new ByteArray();
+        cs.serialize(array, l1);
+
+        List<String> l2 = cs.deserialize(array, cd);
+        assertEquals(array.size(), array.position());
+        assertEquals(l1, l2);
+
+        ByteBuffer byteBuf = ByteBuffer.allocate(array.size());
+        cs.serialize(byteBuf, l1);
+        byteBuf.position(0);
+        List<String> l3 = cs.deserialize(byteBuf, cd);
+        assertFalse(byteBuf.hasRemaining());
+        assertEquals(l1, l3);
+
+
+    }
 }

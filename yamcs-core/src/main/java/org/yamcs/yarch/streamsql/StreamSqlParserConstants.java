@@ -386,6 +386,7 @@ public interface StreamSqlParserConstants {
     "\"?\"",
     "\"(\"",
     "\")\"",
+    "\"[]\"",
     "\",\"",
     "\"=\"",
     "\"**\"",

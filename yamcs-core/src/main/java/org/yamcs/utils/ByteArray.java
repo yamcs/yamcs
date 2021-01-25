@@ -191,6 +191,10 @@ public class ByteArray {
         a[pos] = x;
     }
 
+    public void setInt(int pos, int x) {
+        rangeCheck(pos + 4);
+        ByteArrayUtils.encodeInt(x, a, pos);
+    }
     public byte get() {
         rangeCheck(position + 1);
         return a[position++];
@@ -221,12 +225,12 @@ public class ByteArray {
         return Double.longBitsToDouble(getLong());
     }
 
-    public String getSizePrefixedUTF() throws IOException {
+    public String getSizePrefixedUTF() throws DecodingException {
         int len = getShort() & 0xFFFF;
         return getUTF(position + len, false);
     }
 
-    public String getNullTerminatedUTF() throws IOException {
+    public String getNullTerminatedUTF() throws DecodingException {
         String s = getUTF(length, true);
         rangeCheck(position + 1);
         position++;
@@ -249,7 +253,7 @@ public class ByteArray {
         position += size;
     }
 
-    private String getUTF(int limit, boolean nullTerminated) throws IOException {
+    private String getUTF(int limit, boolean nullTerminated) throws DecodingException {
         char[] ca = new char[limit - position];
         int k = 0;
         int i = position;
@@ -266,14 +270,14 @@ public class ByteArray {
                 ca[k++] = (char) c;
             } else if (c4 == 12 || c4 == 13) {
                 if (i + 1 > limit) {
-                    throw new IOException("invalid UTF8 string at byte" + (i - 1));
+                    throw new DecodingException("invalid UTF8 string at byte" + (i - 1));
                 }
                 char2 = a[i++] & 0xFF;
                 ca[k++] = (char) (((c & 0x1F) << 6) |
                         (char2 & 0x3F));
             } else if (c4 == 14) {
                 if (i + 2 > limit) {
-                    throw new IOException("invalid UTF8 string at byte" + (i - 1));
+                    throw new DecodingException("invalid UTF8 string at byte" + (i - 1));
                 }
                 char2 = a[i++] & 0xFF;
                 char3 = a[i++] & 0xFF;
@@ -281,7 +285,7 @@ public class ByteArray {
                         ((char2 & 0x3F) << 6) |
                         ((char3 & 0x3F) << 0));
             } else {
-                throw new IOException("invalid UTF8 string at byte" + (i - 1));
+                throw new DecodingException("invalid UTF8 string at byte" + (i - 1));
             }
         }
         position = i;
