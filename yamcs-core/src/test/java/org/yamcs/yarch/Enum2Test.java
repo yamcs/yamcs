@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.google.common.base.Objects;
+
 public class Enum2Test extends YarchTestCase {
     int n = 20;
 
@@ -32,7 +34,6 @@ public class Enum2Test extends YarchTestCase {
             s.emitTuple(t);
         }
         execute("close stream " + tblname + "_in");
-
     }
 
     @Test

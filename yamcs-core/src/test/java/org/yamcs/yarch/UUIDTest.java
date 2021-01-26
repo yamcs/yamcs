@@ -22,7 +22,6 @@ public class UUIDTest extends YarchTestCase {
             UUID id = UUID.randomUUID();
             s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(i + 0l, i + 5l, id, id.toString())));
         }
-
     }
 
     @Test
@@ -58,5 +57,25 @@ public class UUIDTest extends YarchTestCase {
         Tuple t = res.next();
         assertEquals(1, t.getIntColumn("id"));
         assertEquals(idlist, t.getColumn("uuidarray"));
+    }
+
+    @Test
+    public void testSelectWithNull() throws Exception {
+        execute("create table test3 (id1 int, id2 uuid, primary key(id1))");
+        execute("create stream test3_in(id1 int, id2 uuid)");
+        execute("upsert into test3 select * from test3_in");
+        Stream s = ydb.getStream("test3_in");
+        UUID uuid = UUID.randomUUID();
+
+        s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(1, uuid)));
+        Tuple twithoutid2 = new Tuple();
+        twithoutid2.addColumn("id1", 2);
+        s.emitTuple(twithoutid2);
+
+        StreamSqlResult res = ydb.execute("select * from test3 where id2 = ?", uuid);
+        assertTrue(res.hasNext());
+        Tuple t1 = res.next();
+        assertEquals(uuid, t1.getColumn("id2"));
+        assertFalse(res.hasNext());
     }
 }

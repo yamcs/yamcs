@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -135,12 +136,13 @@ public abstract class Expression {
     public abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
 
     private static AtomicInteger counter = new AtomicInteger();
-
     public CompiledExpression compile() throws StreamSqlException {
         String className = "Expression" + counter.incrementAndGet();
         StringBuilder source = new StringBuilder();
         source.append("package org.yamcs.yarch;\n")
                 .append("import org.yamcs.parameter.ParameterValue;\n")
+                .append("import org.yamcs.yarch.utils.Comparators;\n")
+                .append("import java.util.Objects;\n")
                 .append("public class " + className + " implements CompiledExpression {\n")
                 .append("\tColumnDefinition cdef;\n");
         fillCode_Declarations(source);
@@ -168,7 +170,6 @@ public abstract class Expression {
                 .append("\t\treturn cdef;\n")
                 .append("\t}\n")
                 .append("}\n");
-     //   System.out.println("source: " + source);
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));
