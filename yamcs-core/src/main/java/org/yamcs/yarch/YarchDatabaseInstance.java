@@ -459,8 +459,6 @@ public class YarchDatabaseInstance {
      * @param query
      * @param args
      * @return
-     * @throws StreamSqlException
-     * @throws ParseException
      */
     public StreamSqlResult executeUnchecked(String query, Object... args) {
         StreamSqlStatement stmt;
