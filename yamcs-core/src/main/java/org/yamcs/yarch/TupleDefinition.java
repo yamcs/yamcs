@@ -114,7 +114,7 @@ public class TupleDefinition {
                 sb.append(", ");
             } else
                 first = false;
-            sb.append(cd.toString());
+            sb.append(cd.getStringDefinition());
         }
         return sb.toString();
     }

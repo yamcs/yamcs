@@ -32,6 +32,8 @@ public class ColumnDefinition {
     public Object getStringDefinition() {
         if(type.val==_type.PROTOBUF) {
             return String.format("\"%s\" PROTOBUF('%s')", name, ((ProtobufDataType)type).getClassName());
+        } else if (type.val == _type.ARRAY) {
+            return String.format("\"%s\" %s[]", name, ((ArrayDataType) type).getElementType());
         } else {
             return String.format("\"%s\" %s",name, type);
         }
