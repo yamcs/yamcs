@@ -541,13 +541,19 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private String getFileName(String name) throws IOException {
+    	/**
+    	 *@todo This assumes that filesystem separator is "/". Shouldn't this be configurable?
+    	 */
         name = name.replace("/", "_");
-        if (incomingBucket.getObject(name) == null) {
+        if (incomingBucket.findObject(name) == null) {
             return name;
         }
+        /**
+         *@note Any chance we can make this "10000" configurable?
+         */
         for (int i = 1; i < 10000; i++) {
             String namei = name + "(" + i + ")";
-            if (incomingBucket.getObject(namei) == null) {
+            if (incomingBucket.findObject(namei) == null) {
                 return namei;
             }
         }
