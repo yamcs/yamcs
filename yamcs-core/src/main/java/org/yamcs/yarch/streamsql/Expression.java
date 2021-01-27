@@ -170,6 +170,8 @@ public abstract class Expression {
                 .append("\t\treturn cdef;\n")
                 .append("\t}\n")
                 .append("}\n");
+
+        // System.out.println("source: " + source);
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));

@@ -58,6 +58,23 @@ public class ValueExpression extends Expression {
     }
 
     @Override
+    protected void fillCode_Declarations(StringBuilder code) {
+        if (constantValue instanceof UUID) {
+            UUID uuid = (UUID) constantValue;
+            code.append("\tprivate final ")
+                    .append(UUID.class.getName()).append(" const_uuid = ")
+                    .append(UUID.class.getName()).append(".fromString(\"")
+                    .append(uuid.toString()).append("\");\n");
+        } else if (constantValue instanceof Instant) {
+            Instant t = (Instant) constantValue;
+            code.append("\tprivate final ")
+                    .append(Instant.class.getName()).append(" const_instant = ")
+                    .append(Instant.class.getName()).append(".get(").append(t.getMillis())
+                    .append("l, ").append(t.getPicos()).append(");\n");
+        }
+    }
+
+    @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
         if ((constantValue instanceof Byte) || (constantValue instanceof Short) || (constantValue instanceof Integer)) {
             code.append(constantValue.toString());
@@ -68,12 +85,9 @@ public class ValueExpression extends Expression {
             escapeJavaString((String) constantValue, code);
             code.append('"');
         } else if (constantValue instanceof UUID) {
-            UUID uuid = (UUID) constantValue;
-            code.append(UUID.class.getName()).append(".fromString(\"").append(uuid.toString()).append("\")");
+            code.append("const_uuid");
         } else if (constantValue instanceof Instant) {
-            Instant t = (Instant) constantValue;
-            code.append(Instant.class.getName()).append(".get(").append(t.getMillis())
-            .append("l, ").append(t.getPicos()).append(")");
+            code.append("const_instant");
         } else {
             throw new NotImplementedException(constantValue.getClass() + " not usable in constants");
         }
