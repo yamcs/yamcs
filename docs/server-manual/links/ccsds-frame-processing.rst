@@ -4,7 +4,7 @@ CCSDS Frame Processing
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
 * TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
-* AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
+* AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/732x0b3e1.pdf>`_
 * TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
 * Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
 * TC Synchronization and Channel Coding `CCSDS 231.0-B-3 <https://public.ccsds.org/Pubs/231x0b3.pdf>`_
