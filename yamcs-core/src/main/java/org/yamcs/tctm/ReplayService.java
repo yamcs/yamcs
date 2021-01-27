@@ -84,7 +84,7 @@ public class ReplayService extends AbstractProcessorService
 
     private SecurityStore securityStore;
 
-    // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
+    // this can be set in the config (in processor.yaml) to exclude certain parameter groups from replay
     List<String> excludeParameterGroups = null;
 
     @Override
@@ -199,13 +199,17 @@ public class ReplayService extends AbstractProcessorService
         notifyStopped();
     }
 
-    // finds out all raw data (TM and PP) required to provide the needed parameters.
-    // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which
-    // containers are needed and in the subscribedParameters which PPs may be required
+    // Create rawDataRequest from originalReplayRequest by finding out all raw data (TM and PP) required to provide the
+    // needed parameters. The raw request must not contain parameters but only TM or PP.
+    //
+    // in order to do this, the method addPacketsRequiredForParams will subscribe to all parameters part of the original
+    // request, then check in the tmProcessor subscription which containers are needed and in the subscribedParameters
+    // which PPs may be required
     private void createRawSubscription() throws YamcsException {
 
         boolean replayAll = originalReplayRequest.isReplayAll();
 
+        Set<String> ppRecFilter = new HashSet<>();
         if (replayAll) {
             rawDataRequest = new ReplayOptions(originalReplayRequest);
             rawDataRequest.setPacketRequest(PacketReplayRequest.newBuilder().build());
@@ -215,24 +219,25 @@ public class ReplayService extends AbstractProcessorService
         } else {
             rawDataRequest = new ReplayOptions(originalReplayRequest);
             rawDataRequest.clearParameterRequest();
-        }
-
-        if (!replayAll) {
             addPacketsRequiredForParams();
+
+            // addPacketsRequiredForParams above has caused the parameter request manager to populate the
+            // subscribedParameters set; in case we do not have to retrieve all parameters, create a pp filter such that
+            // only the required pps are replayed
+            if (!originalReplayRequest.isReplayAllParameters()) {
+                for (Parameter p : subscribedParameters) {
+                    ppRecFilter.add(p.getRecordingGroup());
+                }
+            }
         }
 
-        // now check for PPs
-        Set<String> pprecordings = new HashSet<>();
 
-        for (Parameter p : subscribedParameters) {
-            pprecordings.add(p.getRecordingGroup());
-        }
-        if (pprecordings.isEmpty() && excludeParameterGroups == null) {
+        if (ppRecFilter.isEmpty() && excludeParameterGroups == null) {
             log.debug("No additional pp group added or removed to/from the subscription");
         } else {
             PpReplayRequest ppreq = originalReplayRequest.getPpRequest();
             PpReplayRequest.Builder pprr = ppreq.toBuilder();
-            pprr.addAllGroupNameFilter(pprecordings);
+            pprr.addAllGroupNameFilter(ppRecFilter);
             if (excludeParameterGroups != null) {
                 pprr.addAllGroupNameExclude(excludeParameterGroups);
             }
@@ -342,6 +347,7 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public void startProviding(Parameter paramDef) {
+        // the subscribedParameters is used at the beginning to select the PP parameters which have to be subscribed
         synchronized (subscribedParameters) {
             subscribedParameters.add(paramDef);
         }
@@ -349,7 +355,7 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public void startProvidingAll() {
-        // TODO
+        // ignore as we always provide all parameters
     }
 
     @Override

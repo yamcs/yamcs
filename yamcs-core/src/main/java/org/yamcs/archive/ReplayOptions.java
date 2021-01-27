@@ -18,6 +18,10 @@ public class ReplayOptions {
     ReplaySpeed speed;
     boolean reverse;
 
+    // if all request objects are null -> replay all
+    // if at least one of them is not null -> replay that type
+    // if not null but empty -> means replay all of that type (e.g. all PP)
+    // if not null and not empty -> use it as a filter
     private PpReplayRequest ppRequest;
     private PacketReplayRequest packetReplayRequest;
     private ParameterReplayRequest parameterReplayRequest;
@@ -238,6 +242,10 @@ public class ReplayOptions {
         // at least one filter is specified.
         return ppRequest == null && packetReplayRequest == null && parameterReplayRequest == null
                 && commandHistoryReplayRequest == null && eventReplayRequest == null;
+    }
+
+    public boolean isReplayAllParameters() {
+        return isReplayAll() || (parameterReplayRequest != null && parameterReplayRequest.getNameFilterCount() == 0);
     }
 
 }
