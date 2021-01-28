@@ -38,9 +38,30 @@ public class TableUpdateTest extends YarchTestCase {
     }
 
     @Test(expected = StreamSqlException.class)
-    public void testPKupdate() throws Exception {
-        createTable("invl4");
+    public void testPKupdateDuplicate() throws Exception {
+        populate("invl4");
         execute("update invl4 set b = 3");
+        StreamSqlResult r = ydb.execute("select * from invl4");
+        System.out.println("r.hasnext: " + r.hasNext());
+        while (r.hasNext()) {
+            System.out.println("r: " + r.next());
+        }
+    }
+
+    @Test
+    public void testUpdatePk() throws Exception {
+        populate("tbl1");
+        StreamSqlResult r = ydb.execute("update tbl1 set b =b + 100");
+        assertTrue(r.hasNext());
+        Tuple t = r.next();
+        assertEquals(1000l, t.getLongColumn("inspected"));
+        assertEquals(1000l, t.getLongColumn("updated"));
+
+        verify("select * from tbl1",
+                (a, b, c, d, e) -> {
+                    assertTrue(b >= 100);
+                }, 1000);
+        execute("drop table tbl1");
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Row;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.TableWalker;
@@ -31,7 +32,7 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
 
     CompiledExpression cwhere = null;
     TableDefinition tableDefinition;
-    
+    boolean updateKey = false;
 
     public UpdateTableStatement(String tableName, List<UpdateItem> updateList, Expression whereClause, long limit) {
         this.tableName = tableName;
@@ -52,13 +53,14 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
             if (whereClause != null) {
                 whereClause.addFilter(twb);
             }
-            TableWalker tblIt = twb.build();
+            TableWalker tblWalker = twb.build();
+            tblWalker.setBatchUpdates(true);
             
             if (whereClause != null) {
                 cwhere = whereClause.compile();
             }
 
-            tblIt.walk(new TableVisitor() {
+            tblWalker.walk(new TableVisitor() {
                 @Override
                 public Action visit(byte[] key, byte[] value) {
                     inspected.getAndIncrement();
@@ -82,15 +84,24 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     }
                     long c = updated.incrementAndGet();
                     boolean stop = (limit > 0 && c >= limit);
-                    byte[] svalue;
+                    byte[] updatedValue;
+                    Row row = null;
                     try {
-                        svalue = tableDefinition.serializeValue(tuple, null);
+                        if (updateKey) {
+                            row = tableDefinition.generateRow(tuple);
+                            updatedValue = tableDefinition.serializeValue(tuple, row);
+                        } else {
+                            updatedValue = tableDefinition.serializeValue(tuple, null);
+                        }
                     } catch (YarchException e) {
                         log.error("Error serializing value", e);
                         return ACTION_STOP;
                     }
-
-                    return Action.updateAction(svalue, stop);
+                    if (row != null) {
+                        return Action.updateAction(row.getKey(), updatedValue, stop);
+                    } else {
+                        return Action.updateAction(updatedValue, stop);
+                    }
                 }
             });
 
@@ -121,8 +132,11 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     ui.compiledExpr = ui.value.compile();
                 }
             } else {
+                if (tableDefinition.isPartitionedBy(ui.colName)) {
+                    throw new NotImplementedException("Cannot update partition column");
+                }
                 if (tableDefinition.hasKey(ui.colName)) {
-                    throw new NotSupportedException("Column '" + ui.colName + "' is part of the primary key");
+                    updateKey = true;
                 }
 
                 if (!DataType.compatible(ui.value.getType(), cd.getType())) {

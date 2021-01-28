@@ -42,5 +42,4 @@ public class SecondaryIndex2Test extends YarchTestCase {
         }        
         assertFalse(res.hasNext());
     }
-    
 }

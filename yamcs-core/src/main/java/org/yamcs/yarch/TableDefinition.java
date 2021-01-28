@@ -505,7 +505,8 @@ public class TableDefinition {
      * If there are columns in the tuple which are not in the valueDef, they are added and
      * the TableDefinition is serialized on disk.
      * <p>
-     * Columns whose values are null are not serialized but their definition is still added to the table definition if not
+     * Columns whose values are null are not serialized but their definition is still added to the table definition if
+     * not
      * present already.
      * 
      * @param tuple
@@ -744,6 +745,17 @@ public class TableDefinition {
 
     public boolean hasSecondaryIndex() {
         return secondaryIndex != null;
+    }
+
+    /**
+     * Return true if the table is partitioned and the colName is used as partition column (either time or value)
+     * 
+     * @param colName
+     * @return
+     */
+    public boolean isPartitionedBy(String colName) {
+        return colName.equals(partitioningSpec.timeColumn)
+                || colName.equals(partitioningSpec.valueColumn);
     }
 
 }

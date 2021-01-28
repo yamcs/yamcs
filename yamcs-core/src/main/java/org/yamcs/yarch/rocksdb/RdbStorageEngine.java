@@ -262,16 +262,6 @@ public class RdbStorageEngine implements StorageEngine {
         return db;
     }
 
-    static byte[] dbKey(int tbsIndex) {
-        return ByteArrayUtils.encodeInt(tbsIndex, new byte[TBS_INDEX_SIZE], 0);
-    }
-
-    static byte[] dbKey(int tbsIndex, byte[] key) {
-        byte[] dbKey = ByteArrayUtils.encodeInt(tbsIndex, new byte[key.length + 4], 0);
-        System.arraycopy(key, 0, dbKey, 4, key.length);
-        return dbKey;
-    }
-
     public Tablespace getTablespace(String tablespaceName) {
         return tablespaces.get(tablespaceName);
     }
@@ -343,5 +333,19 @@ public class RdbStorageEngine implements StorageEngine {
     @Override
     public List<SequenceInfo> getSequencesInfo(YarchDatabaseInstance ydb) {
         return getTablespace(ydb).getSequencesInfo();
+    }
+
+    static final byte[] dbKey(int tbsIndex) {
+        return ByteArrayUtils.encodeInt(tbsIndex, new byte[TBS_INDEX_SIZE], 0);
+    }
+
+    static final byte[] dbKey(int tbsIndex, byte[] key) {
+        byte[] dbKey = ByteArrayUtils.encodeInt(tbsIndex, new byte[key.length + 4], 0);
+        System.arraycopy(key, 0, dbKey, 4, key.length);
+        return dbKey;
+    }
+
+    static final int tbsIndex(byte[] dbKey) {
+        return ByteArrayUtils.decodeInt(dbKey, 0);
     }
 }

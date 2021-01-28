@@ -28,7 +28,7 @@ public class StreamSqlException extends Exception {
         INVALID_HISTOGRAM_COLUMN,
         INVALID_INDEX_COLUMN,
         WRONG_ARG_COUNT,
-        BAD_ARG_TYPE;
+        BAD_ARG_TYPE, DUPLICATE_KEY;
     };
 
     ErrCode errCode;
@@ -82,3 +82,4 @@ class NotImplementedException extends StreamSqlException {
         super(ErrCode.NOT_IMPLEMENTED, item);
     }
 }
+

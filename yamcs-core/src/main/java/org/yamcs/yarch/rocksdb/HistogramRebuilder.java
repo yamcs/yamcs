@@ -28,6 +28,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import static org.yamcs.yarch.HistogramSegment.segmentStart;
 import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
@@ -105,7 +106,7 @@ public class HistogramRebuilder {
                 MyTableVisitor visitor = new MyTableVisitor(interval, cf);
                 tw.walkInterval(interval, new DbRange(), visitor);
                 visitor.flush();
-            } catch (YarchException | IOException | RocksDBException e1) {
+            } catch (YarchException | IOException | RocksDBException | StreamSqlException e1) {
                 cf.completeExceptionally(e1);
             }
         } catch (IOException | InterruptedException | ExecutionException e) {

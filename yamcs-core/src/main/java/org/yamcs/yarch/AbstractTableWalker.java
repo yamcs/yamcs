@@ -6,6 +6,7 @@ import java.util.Set;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Iterator through a table.
@@ -48,7 +49,7 @@ public abstract class AbstractTableWalker implements TableWalker {
     }
 
     @Override
-    public void walk(TableVisitor visitor) {
+    public void walk(TableVisitor visitor) throws StreamSqlException {
         if (visitor == null) {
             throw new NullPointerException("visitor cannot be null");
         }
@@ -64,8 +65,6 @@ public abstract class AbstractTableWalker implements TableWalker {
                     break;
                 }
             }
-        } catch (Exception e) {
-            log.error("got exception ", e);
         } finally {
             close();
         }
@@ -140,14 +139,16 @@ public abstract class AbstractTableWalker implements TableWalker {
         }
         this.range = range;
     }
+    
     /**
      * Runs the data in a time interval (corresponding to a time partition) sending data only that conform with the
      * start and end filters. Returns true if the stop condition is met
      * 
      * @return returns true if the end condition has been reached.
+     * @throws StreamSqlException
      */
     protected abstract boolean walkInterval(PartitionManager.Interval interval, DbRange range, TableVisitor visitor)
-            throws YarchException;
+            throws YarchException, StreamSqlException;
 
     protected boolean isRunning() {
         return running;

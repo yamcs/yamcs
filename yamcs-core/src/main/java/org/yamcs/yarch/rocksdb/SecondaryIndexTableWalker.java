@@ -9,6 +9,7 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
@@ -20,7 +21,9 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.DataType._type;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.*;
 
 /**
  * iterates through a table based on the secondary index range.
@@ -63,6 +66,7 @@ public class SecondaryIndexTableWalker implements TableWalker {
     final int skeyLength[];
 
     boolean batchUpdates = false;
+
     Snapshot snapshot = null;
     protected TableVisitor visitor;
 
@@ -101,31 +105,42 @@ public class SecondaryIndexTableWalker implements TableWalker {
      * tableRange has to be non-null but can be unbounded at one or both ends.
      * <p
      * Return true if the tableRange is bounded and the end has been reached.
+     * 
+     * @throws StreamSqlException
      */
-    public void walk(TableVisitor visitor) throws YarchException {
+    public void walk(TableVisitor visitor) throws YarchException, StreamSqlException {
         this.visitor = visitor;
         int tbsIndex = table.getSecondaryIndexWriter().getTbsIndex();
         DbRange dbRange = RdbTableWalker.getDbRange(tbsIndex, skRange);
         YRDB rdb = tablespace.getRdb();
+
         try (ReadOptions readOptions = new ReadOptions();
                 RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
-                AscendingRangeIterator it = new AscendingRangeIterator(rocksIt, dbRange)) {
+                AscendingRangeIterator it = new AscendingRangeIterator(rocksIt, dbRange);
+                WriteBatch writeBatch = batchUpdates ? new WriteBatch() : null;) {
             while (isRunning() && it.isValid()) {
                 byte[] dbKey = it.key();
                 byte[] pk = getPk(dbKey);
                 if (pkInRange(pk)) {
-                    visitRow(pk, it.value());
+                    visitRow(writeBatch, pk, it.value());
                 }
                 it.next();
             }
+            if (writeBatch != null) {
+                WriteOptions wo = new WriteOptions();
+                rdb.getDb().write(wo, writeBatch);
+                wo.close();
+            }
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
         }
     }
 
-    private void visitRow(byte[] pk, byte[] skValue) {
+    private void visitRow(WriteBatch writeBatch, byte[] pk, byte[] skValue) throws StreamSqlException {
         String part = null;
-        int rowTbsIndex = ByteArrayUtils.decodeInt(skValue, 0);
-        if (skValue.length > 4) {
-            part = new String(skValue, 4, skValue.length - 4, StandardCharsets.US_ASCII);
+        int rowTbsIndex = tbsIndex(skValue);
+        if (skValue.length > TBS_INDEX_SIZE) {
+            part = new String(skValue, TBS_INDEX_SIZE, skValue.length - TBS_INDEX_SIZE, StandardCharsets.US_ASCII);
         }
         YRDB rdb = null;
         try {
@@ -134,7 +149,14 @@ public class SecondaryIndexTableWalker implements TableWalker {
             byte[] rowValue = rdb.get(dbKey);
             if (rowValue != null) {
                 TableVisitor.Action action = visitor.visit(pk, rowValue);
-                executeAction(rdb, action, dbKey);
+                if (writeBatch == null) {
+                    RdbTableWalker.executeAction(rdb, action, dbKey);
+                } else {
+                    RdbTableWalker.executeAction(rdb, writeBatch, action, dbKey);
+                }
+                if (action.stop()) {
+                    close();
+                }
             }
         } catch (RocksDBException e) {
             throw new YarchException(e);
@@ -175,29 +197,6 @@ public class SecondaryIndexTableWalker implements TableWalker {
         }
     }
 
-    void executeAction(WriteBatch writeBatch, TableVisitor.Action action, byte[] dbKey)
-            throws RocksDBException {
-        if (action.action() == TableVisitor.ActionType.DELETE) {
-            writeBatch.delete(dbKey);
-        } else if (action.action() == TableVisitor.ActionType.UPDATE) {
-            writeBatch.delete(dbKey);
-        }
-        if (action.stop()) {
-            close();
-        }
-    }
-
-    void executeAction(YRDB rdb, TableVisitor.Action action, byte[] dbKey)
-            throws RocksDBException {
-        if (action.action() == TableVisitor.ActionType.DELETE) {
-            rdb.delete(dbKey);
-        } else if (action.action() == TableVisitor.ActionType.UPDATE) {
-            rdb.put(dbKey, action.getUpdateValue());
-        }
-        if (action.stop()) {
-            close();
-        }
-    }
 
     @Override
     public void setPrimaryIndexRange(DbRange pkRange) {
@@ -213,4 +212,13 @@ public class SecondaryIndexTableWalker implements TableWalker {
     public void close() {
         running = false;
     }
+
+    public boolean isBatchUpdates() {
+        return batchUpdates;
+    }
+
+    public void setBatchUpdates(boolean batchUpdates) {
+        this.batchUpdates = batchUpdates;
+    }
+
 }

@@ -12,6 +12,7 @@ import org.rocksdb.RocksIterator;
 import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.AbstractTableWalker;
 import org.yamcs.yarch.DbRange;
 import org.yamcs.yarch.Partition;
@@ -21,17 +22,18 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 public class RdbTableWalker extends AbstractTableWalker {
-   private final Tablespace tablespace;
-  
-   static AtomicInteger count = new AtomicInteger(0);
-   
-  
-   boolean batchUpdates = false;
+    private final Tablespace tablespace;
+
+    static AtomicInteger count = new AtomicInteger(0);
+
+    boolean batchUpdates = false;
     Snapshot snapshot = null;
     protected TableVisitor visitor;
-    
+
     protected RdbTableWalker(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
             boolean ascending, boolean follow) {
         super(ydb, tableDefinition, ascending, follow);
@@ -46,9 +48,12 @@ public class RdbTableWalker extends AbstractTableWalker {
      * tableRange has to be non-null but can be unbounded at one or both ends.
      * <p
      * Return true if the tableRange is bounded and the end has been reached.
+     * 
+     * @throws StreamSqlException
      */
     @Override
-    protected boolean walkInterval(PartitionManager.Interval interval, DbRange tableRange, TableVisitor visitor) throws YarchException {
+    protected boolean walkInterval(PartitionManager.Interval interval, DbRange tableRange, TableVisitor visitor)
+            throws YarchException, StreamSqlException {
         this.visitor = visitor;
         running = true;
         try {
@@ -64,10 +69,12 @@ public class RdbTableWalker extends AbstractTableWalker {
      *
      * @return true if the end condition has been reached
      * @throws RocksDBException
+     * @throws StreamSqlException
      */
-    private boolean doWalkInterval(PartitionManager.Interval interval, DbRange tableRange) throws RocksDBException {
+    private boolean doWalkInterval(PartitionManager.Interval interval, DbRange tableRange)
+            throws RocksDBException, StreamSqlException {
         DbIterator iterator = null;
-        
+
         RdbPartition p1 = (RdbPartition) interval.iterator().next();
         YRDB rdb;
         if (p1.dir != null) {
@@ -76,7 +83,7 @@ public class RdbTableWalker extends AbstractTableWalker {
         } else {
             rdb = tablespace.getRdb();
         }
-        
+
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         if (!follow) {
@@ -100,7 +107,7 @@ public class RdbTableWalker extends AbstractTableWalker {
                     it.close();
                 }
             }
-            
+
             if (itList.size() == 0) {
                 return false;
             } else if (itList.size() == 1) {
@@ -141,7 +148,7 @@ public class RdbTableWalker extends AbstractTableWalker {
     /**
      * If set, the snapshot will be used to iterate the database but only if the follow = false
      * <p>
-     * The snapshot will be release at the end 
+     * The snapshot will be release at the end
      * 
      * @param snapshot
      */
@@ -151,21 +158,25 @@ public class RdbTableWalker extends AbstractTableWalker {
 
     // return true if the end condition has been reached
     boolean runAscending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeEnd)
-            throws RocksDBException {
-        
+            throws RocksDBException, StreamSqlException {
+
         while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
             byte[] value = iterator.value();
             numRecordsRead++;
-            
+
             if (iAscendingFinished(key, value, rangeEnd)) {
                 return true;
             }
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            executeAction(rdb, action, dbKey);
-
-            if (!isRunning()) {
+            if (writeBatch == null) {
+                executeAction(rdb, action, dbKey);
+            } else {
+                executeAction(rdb, writeBatch, action, dbKey);
+            }
+            if (action.stop()) {
+                close();
                 return false;
             }
 
@@ -175,20 +186,25 @@ public class RdbTableWalker extends AbstractTableWalker {
     }
 
     boolean runDescending(YRDB rdb, DbIterator iterator, WriteBatch writeBatch, byte[] rangeStart)
-            throws RocksDBException {
+            throws RocksDBException, StreamSqlException {
         while (isRunning() && iterator.isValid()) {
             byte[] dbKey = iterator.key();
             byte[] key = Arrays.copyOfRange(dbKey, 4, dbKey.length);
             numRecordsRead++;
-            
+
             if (isDescendingFinished(key, iterator.value(), rangeStart)) {
                 return true;
             }
 
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            executeAction(rdb, action, dbKey);
+            if (writeBatch == null) {
+                executeAction(rdb, action, dbKey);
+            } else {
+                executeAction(rdb, writeBatch, action, dbKey);
+            }
 
-            if (!isRunning()) {
+            if (action.stop()) {
+                close();
                 return false;
             }
             iterator.prev();
@@ -196,32 +212,44 @@ public class RdbTableWalker extends AbstractTableWalker {
         return false;
     }
 
-    void executeAction(WriteBatch writeBatch, TableVisitor.Action action, byte[] dbKey)
-            throws RocksDBException {
+    static void executeAction(YRDB rdb, WriteBatch writeBatch, TableVisitor.Action action, byte[] dbKey)
+            throws RocksDBException, StreamSqlException {
         if (action.action() == TableVisitor.ActionType.DELETE) {
             writeBatch.delete(dbKey);
-        } else if (action.action() == TableVisitor.ActionType.UPDATE) {
+        } else if (action.action() == TableVisitor.ActionType.UPDATE_VAL) {
+            writeBatch.put(dbKey, action.getUpdatedValue());
+        } else if (action.action() == TableVisitor.ActionType.UPDATE_ROW) {
+            // we only support updates on non partition tables
+            int tbsIndex = RdbStorageEngine.tbsIndex(dbKey);
+            byte[] updatedDbKey = RdbStorageEngine.dbKey(tbsIndex, action.getUpdatedKey());
+            if (rdb.get(updatedDbKey) != null) {
+                throw new StreamSqlException(ErrCode.DUPLICATE_KEY,
+                        "duplicate key in update: " + StringConverter.arrayToHexString(updatedDbKey));
+            }
+
             writeBatch.delete(dbKey);
-        }
-        if (action.stop()) {
-            close();
+            writeBatch.put(updatedDbKey, action.getUpdatedValue());
+
         }
     }
 
-    void executeAction(YRDB rdb, TableVisitor.Action action, byte[] dbKey)
-            throws RocksDBException {
+    static void executeAction(YRDB rdb, TableVisitor.Action action, byte[] dbKey)
+            throws RocksDBException, StreamSqlException {
         if (action.action() == TableVisitor.ActionType.DELETE) {
             rdb.delete(dbKey);
-        } else if (action.action() == TableVisitor.ActionType.UPDATE) {
-            rdb.put(dbKey, action.getUpdateValue());
+        } else if (action.action() == TableVisitor.ActionType.UPDATE_VAL) {
+            rdb.put(dbKey, action.getUpdatedValue());
+        } else if (action.action() == TableVisitor.ActionType.UPDATE_ROW) {
+            // we only support updates on non partition tables
+            int tbsIndex = RdbStorageEngine.tbsIndex(dbKey);
+            byte[] updatedDbKey = RdbStorageEngine.dbKey(tbsIndex, action.getUpdatedKey());
+            if (rdb.get(updatedDbKey) != null) {
+                throw new StreamSqlException(ErrCode.DUPLICATE_KEY,
+                        "duplicate key in update: " + StringConverter.arrayToHexString(updatedDbKey));
+            }
+            rdb.delete(dbKey);
+            rdb.put(updatedDbKey, action.getUpdatedValue());
         }
-        if (action.stop()) {
-            close();
-        }
-    }
-
-    public void setBatchUpdates(boolean batchUpdates) {
-        this.batchUpdates = batchUpdates;
     }
 
     /*
@@ -242,7 +270,13 @@ public class RdbTableWalker extends AbstractTableWalker {
         return numRecordsRead;
     }
 
-   
+    public boolean isBatchUpdates() {
+        return batchUpdates;
+    }
+
+    public void setBatchUpdates(boolean batchUpdates) {
+        this.batchUpdates = batchUpdates;
+    }
 
     class RdbRawTuple extends RawTuple {
         RocksIterator iterator;
@@ -269,15 +303,15 @@ public class RdbTableWalker extends AbstractTableWalker {
         }
     }
 
-   static  DbRange getDbRange(int tbsIndex, DbRange tableRange) {
+    static DbRange getDbRange(int tbsIndex, DbRange tableRange) {
         DbRange dbr = new DbRange();
-        if (tableRange!=null && tableRange.rangeStart != null) {
+        if (tableRange != null && tableRange.rangeStart != null) {
             dbr.rangeStart = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeStart);
         } else {
             dbr.rangeStart = RdbStorageEngine.dbKey(tbsIndex);
         }
 
-        if (tableRange!=null && tableRange.rangeEnd != null) {
+        if (tableRange != null && tableRange.rangeEnd != null) {
             dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex, tableRange.rangeEnd);
         } else {
             dbr.rangeEnd = RdbStorageEngine.dbKey(tbsIndex);

@@ -2,12 +2,12 @@ package org.yamcs.yarch;
 
 public interface TableVisitor {
     public enum ActionType {
-        NONE, DELETE, UPDATE
+        NONE, DELETE, UPDATE_VAL, UPDATE_ROW
     };
 
     class Action {
         final boolean stop;
-        byte[] updateData;
+        byte[] updatedValue, updatedKey;
 
         ActionType type;
 
@@ -16,9 +16,16 @@ public interface TableVisitor {
             this.stop = stop;
         }
 
-        public static Action updateAction(byte[] updateValue, boolean stop) {
-            Action a = new Action(ActionType.UPDATE, stop);
-            a.updateData = updateValue;
+        public static Action updateAction(byte[] updatdeValue, boolean stop) {
+            Action a = new Action(ActionType.UPDATE_VAL, stop);
+            a.updatedValue = updatdeValue;
+            return a;
+        }
+
+        public static Action updateAction(byte[] updatedKey, byte[] updatedValue, boolean stop) {
+            Action a = new Action(ActionType.UPDATE_ROW, stop);
+            a.updatedKey = updatedKey;
+            a.updatedValue = updatedValue;
             return a;
         }
 
@@ -30,8 +37,12 @@ public interface TableVisitor {
             return type;
         }
 
-        public byte[] getUpdateValue() {
-            return updateData;
+        public byte[] getUpdatedValue() {
+            return updatedValue;
+        }
+
+        public byte[] getUpdatedKey() {
+            return updatedKey;
         }
     }
 
@@ -39,8 +50,8 @@ public interface TableVisitor {
     public static final Action ACTION_CONTINUE = new Action(ActionType.NONE, false);
     public static final Action ACTION_DELETE = new Action(ActionType.DELETE, false);
     public static final Action ACTION_DELETE_STOP = new Action(ActionType.DELETE, true);
-    public static final Action ACTION_UPDATE = new Action(ActionType.UPDATE, false);
-    public static final Action ACTION_UPDATE_STOP = new Action(ActionType.UPDATE, false);
+    public static final Action ACTION_UPDATE = new Action(ActionType.UPDATE_VAL, false);
+    public static final Action ACTION_UPDATE_STOP = new Action(ActionType.UPDATE_VAL, false);
 
     Action visit(byte[] key, byte[] value);
 }
