@@ -116,7 +116,11 @@ public class FileSystemBucket implements Bucket {
     @Override
     public byte[] getObject(String objectName) throws IOException {
         Path path = root.resolve(objectName);
-        return Files.readAllBytes(path);
+        if(Files.exists(path)) {
+        	return Files.readAllBytes(path);
+        } else {
+        	return null;
+        }
     }
 
     @Override
