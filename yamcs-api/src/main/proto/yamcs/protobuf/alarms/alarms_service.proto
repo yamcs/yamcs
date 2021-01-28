@@ -131,8 +131,8 @@ message EditAlarmRequest {
   
   optional uint32 seqnum = 4;
   
-  // **Required.** The state of the alarm. Either ``acknowledged``
-  // or ``unacknowledged``.
+  // **Required.** The state of the alarm. 
+  // Either ``acknowledged``, ``shelved``, ``unshelved`` or ``cleared``.
   optional string state = 5;
   
   // Message documenting the alarm change.
