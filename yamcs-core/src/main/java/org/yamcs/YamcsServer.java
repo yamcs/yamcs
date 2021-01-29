@@ -157,8 +157,7 @@ public class YamcsServer {
 
     /**
      * Creates services at global (if instance is null) or instance level. The services are not yet initialized. This
-     * must
-     * be done in a second step, so that components can ask YamcsServer for other service instantiations.
+     * must be done in a second step, so that components can ask YamcsServer for other service instantiations.
      *
      * @param instance
      *            if null, then start a global service, otherwise an instance service
@@ -822,7 +821,8 @@ public class YamcsServer {
         return null;
     }
 
-    public void startGlobalService(String serviceName) throws ConfigurationException, ValidationException, InitException {
+    public void startGlobalService(String serviceName)
+            throws ConfigurationException, ValidationException, InitException {
         startService(null, serviceName, globalServiceList);
     }
 
@@ -1096,24 +1096,28 @@ public class YamcsServer {
         serviceSpec.addOption("name", OptionType.STRING);
         serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
+        Spec bucketSpec = new Spec();
+        bucketSpec.addOption("name", OptionType.STRING).withRequired(true);
+        bucketSpec.addOption("path", OptionType.STRING);
+
         spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
                 .withSpec(serviceSpec);
         spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("buckets", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(bucketSpec);
         spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
         spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
         spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
         spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
         spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
+        spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {
             spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
                     .withApplySpecDefaults(true);
         });
-
-        // TODO The goal is to (over time) be able to remove this relaxation
-        spec.allowUnknownKeys(true);
 
         config = YConfiguration.getConfiguration("yamcs");
         config = spec.validate(config);
