@@ -21,5 +21,13 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: "Example: simulation"
-  displayPath: displays
-  stackPath: stacks
+
+# The buckets 'displays' and 'stacks' are used
+# by yamcs-web. Here we choose to map them to
+# the filesystem.
+buckets:
+  - name: displays
+    path: displays
+
+  - name: stacks
+    path: stacks

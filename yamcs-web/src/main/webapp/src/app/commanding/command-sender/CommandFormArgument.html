@@ -61,6 +61,9 @@
                       [right]="argument.type.rangeMax">
         </app-interval>
       </div>
+      <div class="item" *ngIf="argument.type?.unitSet">
+        {{ argument.type?.unitSet | units }}
+      </div>
       <div class="item">{{ argument.type.engType }}</div>
     </div>
     {{ argument.name }}

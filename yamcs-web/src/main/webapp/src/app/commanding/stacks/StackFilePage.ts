@@ -39,6 +39,8 @@ export class StackFilePage implements OnDestroy {
     })
   );
 
+  running$ = new BehaviorSubject<boolean>(false);
+
   private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
   clipboardEntry$ = new BehaviorSubject<StackEntry | null>(null);
@@ -233,7 +235,13 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
+    this.runEntry(entry).finally(() => {
+      this.advanceSelection(entry);
+    });
+  }
+
+  private async runEntry(entry: StackEntry) {
+    return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
       assignment: entry.arguments,
       extra: entry.extra,
     }).then(response => {
@@ -249,13 +257,33 @@ export class StackFilePage implements OnDestroy {
 
       // Refresh subject, to be sure
       this.entries$.next([...this.entries$.value]);
-
-      this.advanceSelection(entry);
     }).catch(err => {
       entry.executionNumber = ++this.executionCounter;
       entry.err = err.message || err;
-      this.advanceSelection(entry);
     });
+  }
+
+  async runFromSelection() {
+    let entry = this.selectedEntry$.value;
+    if (!entry) {
+      return;
+    }
+
+    this.running$.next(true);
+    try {
+      const entries = this.entries$.value;
+      for (let i = entries.indexOf(entry); i < entries.length; i++) {
+        entry = entries[i];
+        await this.runEntry(entry);
+        this.advanceSelection(entry);
+      }
+    } finally {
+      this.running$.next(false);
+    }
+  }
+
+  stopRun() {
+    this.running$.next(false);
   }
 
   private advanceSelection(entry: StackEntry) {
