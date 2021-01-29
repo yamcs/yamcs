@@ -183,7 +183,7 @@ public class LinkManager {
                 Stream streamf = stream;
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
                 InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                tmLink.setTmSink(pwrt -> processTmPacket(pwrt, streamf, ipa));
+                tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
             }
         }
 
@@ -219,27 +219,27 @@ public class LinkManager {
         registerLink(link.getName(), json, link);
     }
 
-    private void processTmPacket(TmPacket pwrt, Stream stream, InvalidPacketAction ipa) {
-        if (pwrt.isInvalid()) {
+    private void processTmPacket(TmPacketDataLink tmLink, TmPacket tmPacket, Stream stream, InvalidPacketAction ipa) {
+        if (tmPacket.isInvalid()) {
             if (ipa.action == Action.DROP) {
                 return;
             } else if (ipa.action == Action.DIVERT) {
                 Tuple t = new Tuple(StandardTupleDefinitions.INVALID_TM,
-                        new Object[] { pwrt.getReceptionTime(), ipa.divertStream.getDataCount(), pwrt.getPacket() });
+                        new Object[] { tmPacket.getReceptionTime(), ipa.divertStream.getDataCount(), tmPacket.getPacket() });
                 ipa.divertStream.emitTuple(t);
                 return;
             } // if action is PROCESS, continue below
         }
 
-        Instant ertime = pwrt.getEarthReceptionTime();
+        Instant ertime = tmPacket.getEarthReceptionTime();
         Tuple t = null;
         if (ertime == Instant.INVALID_INSTANT) {
             ertime = null;
         }
-        Long obt = pwrt.getObt() == Long.MIN_VALUE ? null : pwrt.getObt();
+        Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
         t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                        pwrt.getStatus(), pwrt.getPacket(), ertime, obt });
+                new Object[] { tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
+                        tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName() });
         stream.emitTuple(t);
 
     }

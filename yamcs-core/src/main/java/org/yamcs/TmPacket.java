@@ -27,6 +27,7 @@ import org.yamcs.utils.TimeEncoding;
  * For the invalid packets there is an option at the link level to redirect them on a different stream. Using
  * StreamSQL any other packet can be redirected as well.
  * 
+ * 
  * @author nm
  *
  */
@@ -173,5 +174,4 @@ public class TmPacket {
     public void setObt(long obt) {
         this.obt = obt;
     }
-
 }

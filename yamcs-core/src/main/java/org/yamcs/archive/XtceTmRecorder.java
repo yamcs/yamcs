@@ -60,7 +60,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     private long totalNumPackets;
 
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null, null, null, null });
+            new Object[] { null, null, null, null, null, null, null, null });
 
     XtceDb xtceDb;
 
