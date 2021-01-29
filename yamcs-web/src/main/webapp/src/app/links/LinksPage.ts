@@ -194,7 +194,17 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       }
     });
     data.sort((x, y) => {
-      return x.link.name.localeCompare(y.link.name);
+      const xParts = x.link.name.split('.');
+      const yParts = y.link.name.split('.');
+      for (let i = 0; i < Math.max(xParts.length, yParts.length); i++) {
+        const xPart = i < xParts.length ? xParts[i] : '';
+        const yPart = i < yParts.length ? yParts[i] : '';
+        const cmp = xPart.localeCompare(yPart);
+        if (cmp !== 0) {
+          return cmp;
+        }
+      }
+      return 0;
     });
     this.dataSource.data = data;
   }
