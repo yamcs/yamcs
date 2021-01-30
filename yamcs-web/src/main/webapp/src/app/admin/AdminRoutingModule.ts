@@ -7,6 +7,19 @@ import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ConnectionsPage } from './connections/ConnectionsPage';
+import { DatabasePage } from './databases/database/DatabasePage';
+import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
+import { StreamColumnsTab } from './databases/database/stream/StreamColumnsTab';
+import { StreamDataTab } from './databases/database/stream/StreamDataTab';
+import { StreamPage } from './databases/database/stream/StreamPage';
+import { StreamScriptTab } from './databases/database/stream/StreamScriptTab';
+import { DatabaseStreamsTab } from './databases/database/streams/DatabaseStreamsTab';
+import { TableDataTab } from './databases/database/table/TableDataTab';
+import { TableInfoTab } from './databases/database/table/TableInfoTab';
+import { TablePage } from './databases/database/table/TablePage';
+import { TableScriptTab } from './databases/database/table/TableScriptTab';
+import { DatabaseTablesTab } from './databases/database/tables/DatabaseTablesTab';
+import { DatabasesPage } from './databases/databases/DatabasesPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
@@ -90,7 +103,72 @@ const routes: Routes = [
       },
       {
         path: 'databases',
-        loadChildren: () => import('src/app/admin/databases/DatabasesModule').then(m => m.DatabasesModule),
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            component: DatabasesPage,
+          }, {
+            path: ':database',
+            component: DatabasePage,
+            children: [
+              {
+                path: '',
+                pathMatch: 'full',
+                redirectTo: 'tables',
+              }, {
+                path: 'tables',
+                pathMatch: 'full',
+                component: DatabaseTablesTab,
+              }, {
+                path: 'tables/:table',
+                component: TablePage,
+                children: [
+                  {
+                    path: '',
+                    pathMatch: 'full',
+                    redirectTo: 'info',
+                  }, {
+                    path: 'info',
+                    component: TableInfoTab,
+                  }, {
+                    path: 'data',
+                    component: TableDataTab,
+                  }, {
+                    path: 'script',
+                    component: TableScriptTab,
+                  }
+                ],
+              }, {
+                path: 'shell',
+                pathMatch: 'full',
+                component: DatabaseShellTab,
+              }, {
+                path: 'streams',
+                pathMatch: 'full',
+                component: DatabaseStreamsTab,
+              }, {
+                path: 'streams/:stream',
+                component: StreamPage,
+                children: [
+                  {
+                    path: '',
+                    pathMatch: 'full',
+                    redirectTo: 'columns',
+                  }, {
+                    path: 'columns',
+                    component: StreamColumnsTab,
+                  }, {
+                    path: 'data',
+                    component: StreamDataTab,
+                  }, {
+                    path: 'script',
+                    component: StreamScriptTab,
+                  }
+                ],
+              }]
+          }
+        ]
       },
       {
         path: 'rocksdb',
@@ -204,6 +282,11 @@ export const routingComponents = [
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
+  DatabasesPage,
+  DatabasePage,
+  DatabaseShellTab,
+  DatabaseStreamsTab,
+  DatabaseTablesTab,
   EditGroupPage,
   EditUserPage,
   GroupsPage,
@@ -219,6 +302,14 @@ export const routingComponents = [
   RoutesPage,
   ServiceAccountsPage,
   ServicesPage,
+  StreamPage,
+  StreamColumnsTab,
+  StreamDataTab,
+  StreamScriptTab,
+  TablePage,
+  TableInfoTab,
+  TableDataTab,
+  TableScriptTab,
   ThreadsPage,
   ThreadPage,
   UsersPage,
