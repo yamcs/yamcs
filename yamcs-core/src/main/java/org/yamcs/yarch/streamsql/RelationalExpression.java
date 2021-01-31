@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.yarch.ArrayDataType;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FilterableTarget;
@@ -57,6 +58,13 @@ public class RelationalExpression extends Expression {
 
         DataType ltype = children[0].getType();
         DataType rtype = children[1].getType();
+
+        if (relOp == RelOp.OVERLAP) {
+            if (!(ltype instanceof ArrayDataType) || !(rtype instanceof ArrayDataType)) {
+                throw new StreamSqlException(ErrCode.INCOMPATIBLE,
+                        "Overlap operator " + relOp.getSign() + " can only be used between two arrays");
+            }
+        }
         if (DataType.compatible(ltype, rtype)) {
             return;
         }
@@ -110,6 +118,13 @@ public class RelationalExpression extends Expression {
                 code.append("Objects.equals(");
                 children[0].fillCode_getValueReturn(code);
                 code.append(",");
+                children[1].fillCode_getValueReturn(code);
+                code.append(")");
+                break;
+            case OVERLAP:
+                code.append("SqlArrays.overlap(");
+                children[0].fillCode_getValueReturn(code);
+                code.append(", ");
                 children[1].fillCode_getValueReturn(code);
                 code.append(")");
                 break;

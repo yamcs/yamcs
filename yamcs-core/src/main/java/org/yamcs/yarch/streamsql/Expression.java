@@ -5,7 +5,6 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,6 +26,7 @@ public abstract class Expression {
 
     protected boolean hasAggregates;
     protected Object constantValue;
+    Object[] args;
 
     String colName;
     static Logger log = LoggerFactory.getLogger(Expression.class);
@@ -42,6 +42,12 @@ public abstract class Expression {
             }
         }
         colName = String.format("%s0x%xd", this.getClass().getSimpleName(), this.hashCode());
+    }
+
+    // TODO: this is now called from within the parser at query preparation time.
+    // when we add PreparedStatements, we should support passing the args at execution time
+    public void setArgs(Object[] args) {
+        this.args = args;
     }
 
     protected boolean isAggregate() {
@@ -90,7 +96,7 @@ public abstract class Expression {
         return type;
     }
 
-    protected void fillCode_Declarations(StringBuilder code) {
+    protected void fillCode_Declarations(StringBuilder code) throws StreamSqlException {
         if (children != null) {
             for (Expression c : children) {
                 c.fillCode_Declarations(code);
@@ -136,19 +142,27 @@ public abstract class Expression {
     public abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
 
     private static AtomicInteger counter = new AtomicInteger();
+
+    // TODO: when adding support for PreparedStatements we should remember the result of the compilation
+    // and create new instances of that class with different arguments
+    // (currently the arguments are passed from the parser.)
+    // additional code should be added to verify that the arguments match the expected type
     public CompiledExpression compile() throws StreamSqlException {
         String className = "Expression" + counter.incrementAndGet();
         StringBuilder source = new StringBuilder();
         source.append("package org.yamcs.yarch;\n")
                 .append("import org.yamcs.parameter.ParameterValue;\n")
-                .append("import org.yamcs.yarch.utils.Comparators;\n")
+                .append("import org.yamcs.yarch.utils.*;\n")
                 .append("import java.util.Objects;\n")
                 .append("public class " + className + " implements CompiledExpression {\n")
-                .append("\tColumnDefinition cdef;\n");
+                .append("\tColumnDefinition cdef;\n")
+                .append("\tObject[] __sql_args;\n")
+                .append("\n");
         fillCode_Declarations(source);
 
-        source.append("\tpublic " + className + "(ColumnDefinition cdef) {\n")
-                .append("\t\tthis.cdef=cdef;\n");
+        source.append("\tpublic " + className + "(ColumnDefinition cdef, Object[] args) {\n")
+                .append("\t\tthis.cdef = cdef;\n")
+                .append("\t\tthis.__sql_args = args;\n");
         fillCode_Constructor(source);
         source.append("\t}\n");
 
@@ -178,9 +192,10 @@ public abstract class Expression {
             @SuppressWarnings("unchecked")
             Class<CompiledExpression> cexprClass = (Class<CompiledExpression>) compiler.getClassLoader()
                     .loadClass("org.yamcs.yarch." + className);
-            Constructor<CompiledExpression> cexprConstructor = cexprClass.getConstructor(ColumnDefinition.class);
+            Constructor<CompiledExpression> cexprConstructor = cexprClass.getConstructor(ColumnDefinition.class,
+                    Object[].class);
             ColumnDefinition cdef = new ColumnDefinition(colName, type);
-            return cexprConstructor.newInstance(cdef);
+            return cexprConstructor.newInstance(cdef, args);
         } catch (Exception e) {
             log.warn("Got exception when compiling {} ", source.toString(), e);
             throw new StreamSqlException(ErrCode.COMPILE_ERROR, e.toString());

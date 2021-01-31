@@ -3,7 +3,7 @@ package org.yamcs.yarch.streamsql;
 import org.yamcs.yarch.streamsql.RelOp;
 
 public enum RelOp {
-    EQUAL, NOT_EQUAL, GREATER_OR_EQUAL, GREATER, LESS_OR_EQUAL, LESS;
+    EQUAL, NOT_EQUAL, GREATER_OR_EQUAL, GREATER, LESS_OR_EQUAL, LESS, OVERLAP;
 
     public RelOp getOppsite() {
         switch (this) {
@@ -19,8 +19,9 @@ public enum RelOp {
             return GREATER_OR_EQUAL;
         case LESS:
             return GREATER_OR_EQUAL;
+        default:
+            throw new IllegalStateException("No opposite for " + this);
         }
-        throw new RuntimeException("there is no such RelOp " + this);
     }
 
     public String getSign() {
@@ -37,6 +38,8 @@ public enum RelOp {
             return "<=";
         case NOT_EQUAL:
             return "!=";
+        case OVERLAP:
+            return "&&";
         default:
             return null;
         }

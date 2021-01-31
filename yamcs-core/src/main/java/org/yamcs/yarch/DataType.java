@@ -3,6 +3,8 @@
  */
 package org.yamcs.yarch;
 
+import java.util.List;
+
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
@@ -171,7 +173,8 @@ public class DataType {
             return "org.yamcs.time.Instant";
         case UUID:
             return "java.util.UUID";
-            
+        case ARRAY:
+            return "java.util.List";
         default:
             throw new IllegalStateException("no java type available for " + this);
         }
@@ -233,6 +236,12 @@ public class DataType {
             return HRES_TIMESTAMP;
         } else if (v instanceof java.util.UUID) {
             return UUID;
+        } else if (v instanceof List<?>) {
+            List<?> l = (List<?>) v;
+            if (l.isEmpty()) {
+                throw new IllegalArgumentException("Constant empty arrays not supported");
+            }
+            return DataType.array(typeOf(l.get(0)));
         } else {
             throw new IllegalArgumentException("invalid or unsupported object of type of " + v.getClass());
         }
@@ -391,6 +400,9 @@ public class DataType {
 
         if (dt1.val == _type.STRING || dt1.val == _type.ENUM) {
             return dt2.val == _type.STRING || dt2.val == _type.ENUM;
+        }
+        if (dt1 instanceof ArrayDataType && dt2 instanceof ArrayDataType) {
+            return compatible(((ArrayDataType) dt1).getElementType(), ((ArrayDataType) dt2).getElementType());
         }
         return false;
     }

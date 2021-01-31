@@ -5,6 +5,7 @@ import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.time.Instant;
@@ -88,6 +89,8 @@ public class ValueExpression extends Expression {
             code.append("const_uuid");
         } else if (constantValue instanceof Instant) {
             code.append("const_instant");
+        } else if (constantValue instanceof List<?>) {
+            code.append("const_list");
         } else {
             throw new NotImplementedException(constantValue.getClass() + " not usable in constants");
         }

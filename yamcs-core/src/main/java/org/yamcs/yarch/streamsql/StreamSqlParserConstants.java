@@ -23,235 +23,237 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_ANY = 10;
   /** RegularExpression Id. */
-  int K_AS = 11;
+  int K_ARRAY = 11;
   /** RegularExpression Id. */
-  int K_ASC = 12;
+  int K_AS = 12;
   /** RegularExpression Id. */
-  int K_AUTO_INCREMENT = 13;
+  int K_ASC = 13;
   /** RegularExpression Id. */
-  int K_BETWEEN = 14;
+  int K_AUTO_INCREMENT = 14;
   /** RegularExpression Id. */
-  int K_BOOLEAN = 15;
+  int K_BETWEEN = 15;
   /** RegularExpression Id. */
-  int K_BY = 16;
+  int K_BOOLEAN = 16;
   /** RegularExpression Id. */
-  int K_BYTE = 17;
+  int K_BY = 17;
   /** RegularExpression Id. */
-  int K_CHAR = 18;
+  int K_BYTE = 18;
   /** RegularExpression Id. */
-  int K_CLOSE = 19;
+  int K_CHAR = 19;
   /** RegularExpression Id. */
-  int K_COLUMN_FAMILY = 20;
+  int K_CLOSE = 20;
   /** RegularExpression Id. */
-  int K_COMPRESSED = 21;
+  int K_COLUMN_FAMILY = 21;
   /** RegularExpression Id. */
-  int K_CREATE = 22;
+  int K_COMPRESSED = 22;
   /** RegularExpression Id. */
-  int K_CURRENT = 23;
+  int K_CREATE = 23;
   /** RegularExpression Id. */
-  int K_DATABASES = 24;
+  int K_CURRENT = 24;
   /** RegularExpression Id. */
-  int K_DATE = 25;
+  int K_DATABASES = 25;
   /** RegularExpression Id. */
-  int K_DECIMAL = 26;
+  int K_DATE = 26;
   /** RegularExpression Id. */
-  int K_DELETE = 27;
+  int K_DECIMAL = 27;
   /** RegularExpression Id. */
-  int K_DESC = 28;
+  int K_DELETE = 28;
   /** RegularExpression Id. */
-  int K_DESCRIBE = 29;
+  int K_DESC = 29;
   /** RegularExpression Id. */
-  int K_DISTINCT = 30;
+  int K_DESCRIBE = 30;
   /** RegularExpression Id. */
-  int K_DOUBLE = 31;
+  int K_DISTINCT = 31;
   /** RegularExpression Id. */
-  int K_DROP = 32;
+  int K_DOUBLE = 32;
   /** RegularExpression Id. */
-  int K_ENGINE = 33;
+  int K_DROP = 33;
   /** RegularExpression Id. */
-  int K_ENGINES = 34;
+  int K_ENGINE = 34;
   /** RegularExpression Id. */
-  int K_ENUM = 35;
+  int K_ENGINES = 35;
   /** RegularExpression Id. */
-  int K_ESCAPE = 36;
+  int K_ENUM = 36;
   /** RegularExpression Id. */
-  int K_EXISTS = 37;
+  int K_ESCAPE = 37;
   /** RegularExpression Id. */
-  int K_FIXED_DELAY = 38;
+  int K_EXISTS = 38;
   /** RegularExpression Id. */
-  int K_FLOAT = 39;
+  int K_FIXED_DELAY = 39;
   /** RegularExpression Id. */
-  int K_FROM = 40;
+  int K_FLOAT = 40;
   /** RegularExpression Id. */
-  int K_HAVING = 41;
+  int K_FROM = 41;
   /** RegularExpression Id. */
-  int K_HISTOGRAM = 42;
+  int K_HAVING = 42;
   /** RegularExpression Id. */
-  int K_IF = 43;
+  int K_HISTOGRAM = 43;
   /** RegularExpression Id. */
-  int K_IN = 44;
+  int K_IF = 44;
   /** RegularExpression Id. */
-  int K_IN_KEY = 45;
+  int K_IN = 45;
   /** RegularExpression Id. */
-  int K_INPUT = 46;
+  int K_IN_KEY = 46;
   /** RegularExpression Id. */
-  int K_INDEX = 47;
+  int K_INPUT = 47;
   /** RegularExpression Id. */
-  int K_INSERT = 48;
+  int K_INDEX = 48;
   /** RegularExpression Id. */
-  int K_INSERT_APPEND = 49;
+  int K_INSERT = 49;
   /** RegularExpression Id. */
-  int K_INT = 50;
+  int K_INSERT_APPEND = 50;
   /** RegularExpression Id. */
-  int K_INTO = 51;
+  int K_INT = 51;
   /** RegularExpression Id. */
-  int K_IS = 52;
+  int K_INTO = 52;
   /** RegularExpression Id. */
-  int K_KEY = 53;
+  int K_IS = 53;
   /** RegularExpression Id. */
-  int K_LIKE = 54;
+  int K_KEY = 54;
   /** RegularExpression Id. */
-  int K_LIMIT = 55;
+  int K_LIKE = 55;
   /** RegularExpression Id. */
-  int K_LOAD = 56;
+  int K_LIMIT = 56;
   /** RegularExpression Id. */
-  int K_LONG = 57;
+  int K_LOAD = 57;
   /** RegularExpression Id. */
-  int K_MERGE = 58;
+  int K_LONG = 58;
   /** RegularExpression Id. */
-  int K_MOD = 59;
+  int K_MERGE = 59;
   /** RegularExpression Id. */
-  int K_NOT = 60;
+  int K_MOD = 60;
   /** RegularExpression Id. */
-  int K_NOFOLLOW = 61;
+  int K_NOT = 61;
   /** RegularExpression Id. */
-  int K_NULL = 62;
+  int K_NOFOLLOW = 62;
   /** RegularExpression Id. */
-  int K_NULLS = 63;
+  int K_NULL = 63;
   /** RegularExpression Id. */
-  int K_ON = 64;
+  int K_NULLS = 64;
   /** RegularExpression Id. */
-  int K_ONLY = 65;
+  int K_ON = 65;
   /** RegularExpression Id. */
-  int K_OR = 66;
+  int K_ONLY = 66;
   /** RegularExpression Id. */
-  int K_ORDER = 67;
+  int K_OR = 67;
   /** RegularExpression Id. */
-  int K_ORIGINAL = 68;
+  int K_ORDER = 68;
   /** RegularExpression Id. */
-  int K_OUT = 69;
+  int K_ORIGINAL = 69;
   /** RegularExpression Id. */
-  int K_OUTPUT = 70;
+  int K_OUT = 70;
   /** RegularExpression Id. */
-  int K_PARTITION = 71;
+  int K_OUTPUT = 71;
   /** RegularExpression Id. */
-  int K_PORT = 72;
+  int K_PARTITION = 72;
   /** RegularExpression Id. */
-  int K_PRIMARY = 73;
+  int K_PORT = 73;
   /** RegularExpression Id. */
-  int K_PROTOBUF = 74;
+  int K_PRIMARY = 74;
   /** RegularExpression Id. */
-  int K_RANGE = 75;
+  int K_PROTOBUF = 75;
   /** RegularExpression Id. */
-  int K_READ = 76;
+  int K_RANGE = 76;
   /** RegularExpression Id. */
-  int K_REAL = 77;
+  int K_READ = 77;
   /** RegularExpression Id. */
-  int K_RESTART = 78;
+  int K_REAL = 78;
   /** RegularExpression Id. */
-  int K_REVERSE = 79;
+  int K_RESTART = 79;
   /** RegularExpression Id. */
-  int K_ROW = 80;
+  int K_REVERSE = 80;
   /** RegularExpression Id. */
-  int K_ROWS = 81;
+  int K_ROW = 81;
   /** RegularExpression Id. */
-  int K_SAMPLE = 82;
+  int K_ROWS = 82;
   /** RegularExpression Id. */
-  int K_SELECT = 83;
+  int K_SAMPLE = 83;
   /** RegularExpression Id. */
-  int K_SEQUENCE = 84;
+  int K_SELECT = 84;
   /** RegularExpression Id. */
-  int K_SET = 85;
+  int K_SEQUENCE = 85;
   /** RegularExpression Id. */
-  int K_SIZE = 86;
+  int K_SET = 86;
   /** RegularExpression Id. */
-  int K_SHOW = 87;
+  int K_SIZE = 87;
   /** RegularExpression Id. */
-  int K_SHRT = 88;
+  int K_SHOW = 88;
   /** RegularExpression Id. */
-  int K_SMALLINT = 89;
+  int K_SHRT = 89;
   /** RegularExpression Id. */
-  int K_SEQUENCES = 90;
+  int K_SMALLINT = 90;
   /** RegularExpression Id. */
-  int K_SPEED = 91;
+  int K_SEQUENCES = 91;
   /** RegularExpression Id. */
-  int K_STEP_BY_STEP = 92;
+  int K_SPEED = 92;
   /** RegularExpression Id. */
-  int K_STREAM = 93;
+  int K_STEP_BY_STEP = 93;
   /** RegularExpression Id. */
-  int K_STREAMS = 94;
+  int K_STREAM = 94;
   /** RegularExpression Id. */
-  int K_STRING = 95;
+  int K_STREAMS = 95;
   /** RegularExpression Id. */
-  int K_TABLE = 96;
+  int K_STRING = 96;
   /** RegularExpression Id. */
-  int K_TABLE_FORMAT = 97;
+  int K_TABLE = 97;
   /** RegularExpression Id. */
-  int K_TABLES = 98;
+  int K_TABLE_FORMAT = 98;
   /** RegularExpression Id. */
-  int K_TABLESPACE = 99;
+  int K_TABLES = 99;
   /** RegularExpression Id. */
-  int K_TIME = 100;
+  int K_TABLESPACE = 100;
   /** RegularExpression Id. */
-  int K_TIME_AND_VALUE = 101;
+  int K_TIME = 101;
   /** RegularExpression Id. */
-  int K_TUPLES = 102;
+  int K_TIME_AND_VALUE = 102;
   /** RegularExpression Id. */
-  int K_UNIQUE = 103;
+  int K_TUPLES = 103;
   /** RegularExpression Id. */
-  int K_UPDATE = 104;
+  int K_UNIQUE = 104;
   /** RegularExpression Id. */
-  int K_UPSERT = 105;
+  int K_UPDATE = 105;
   /** RegularExpression Id. */
-  int K_UPSERT_APPEND = 106;
+  int K_UPSERT = 106;
   /** RegularExpression Id. */
-  int K_USE = 107;
+  int K_UPSERT_APPEND = 107;
   /** RegularExpression Id. */
-  int K_USING = 108;
+  int K_USE = 108;
   /** RegularExpression Id. */
-  int K_VALUE = 109;
+  int K_USING = 109;
   /** RegularExpression Id. */
-  int K_WHEN = 110;
+  int K_VALUE = 110;
   /** RegularExpression Id. */
-  int K_WHERE = 111;
+  int K_WHEN = 111;
   /** RegularExpression Id. */
-  int K_WITH = 112;
+  int K_WHERE = 112;
   /** RegularExpression Id. */
-  int S_INTEGER = 113;
+  int K_WITH = 113;
   /** RegularExpression Id. */
-  int S_FLOAT = 114;
+  int S_INTEGER = 114;
   /** RegularExpression Id. */
-  int EXPONENT = 115;
+  int S_FLOAT = 115;
   /** RegularExpression Id. */
-  int DIGIT = 116;
+  int EXPONENT = 116;
   /** RegularExpression Id. */
-  int SIGN = 117;
+  int DIGIT = 117;
   /** RegularExpression Id. */
-  int S_STRING = 118;
+  int SIGN = 118;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 119;
+  int S_STRING = 119;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 120;
+  int LINE_COMMENT = 120;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 121;
+  int MULTI_LINE_COMMENT = 121;
   /** RegularExpression Id. */
-  int LETTER = 122;
+  int S_IDENTIFIER = 122;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 123;
+  int LETTER = 123;
   /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 124;
+  int SPECIAL_CHARS = 124;
   /** RegularExpression Id. */
-  int S_QMARK = 125;
+  int S_DOUBLE_QUOTED_IDENTIFIER = 125;
+  /** RegularExpression Id. */
+  int S_QMARK = 126;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -269,6 +271,7 @@ public interface StreamSqlParserConstants {
     "\"ALTER\"",
     "\"AND\"",
     "\"ANY\"",
+    "\"ARRAY\"",
     "\"AS\"",
     "\"ASC\"",
     "\"AUTO_INCREMENT\"",
@@ -392,15 +395,16 @@ public interface StreamSqlParserConstants {
     "\"**\"",
     "\"+\"",
     "\"-\"",
+    "\"[\"",
+    "\"]\"",
     "\"||\"",
     "\"*\"",
     "\"/\"",
     "\"!\"",
     "\">\"",
     "\"<\"",
+    "\"&\"",
     "\"=>\"",
-    "\"[\"",
-    "\"]\"",
   };
 
 }

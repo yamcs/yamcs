@@ -45,15 +45,20 @@ public class StreamSqlParser {
         this.args = args;
     }
     
-    Object nextArg() throws StreamSqlException {
+    ArgumentExpression nextArg() throws StreamSqlException {
         if(argCount>=args.length) {
             throw new StreamSqlException(StreamSqlException.ErrCode.WRONG_ARG_COUNT); 
         }
-        return args[argCount++];
+       ArgumentExpression expr = new ArgumentExpression(argCount, args[argCount++]);
+       expr.setArgs(args);
+       return expr;
     }
     
     String nextArgAsString() throws StreamSqlException {
-        Object o = nextArg();
+  	    if(argCount>=args.length) {
+            throw new StreamSqlException(StreamSqlException.ErrCode.WRONG_ARG_COUNT); 
+        }
+        Object o = args[argCount++];
         if(o instanceof String) {
             return (String) o;
         } else {
@@ -95,6 +100,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_ALTER: "ALTER">
 |   <K_AND: "AND">
 |   <K_ANY: "ANY">
+|   <K_ARRAY:"ARRAY">
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_AUTO_INCREMENT: "AUTO_INCREMENT">
@@ -704,7 +710,10 @@ Expression Expression() throws StreamSqlException: {
         expr=AndExpression() {retExpr=expr;}
         ["OR" expr=AndExpression() {retExpr=new OrExpression(retExpr,expr);} ]
     )
-    { return retExpr; }
+    { 
+        retExpr.setArgs(args);
+        return retExpr; 
+    }
 }
 
 Expression AndExpression() throws StreamSqlException: {
@@ -881,6 +890,7 @@ Expression UnaryExpression() throws StreamSqlException: {
 Expression PrimaryExpression() throws StreamSqlException: {
     String name;
     Expression expr;
+    List<Expression> exprList;
 } {
     <S_INTEGER> 
       {
@@ -891,7 +901,8 @@ Expression PrimaryExpression() throws StreamSqlException: {
       }
   | <S_FLOAT> {return new ValueExpression(Double.valueOf(token.image));}
   | <S_STRING> {return new ValueExpression(getNonEscapedString(token.image));}
-  | <S_QMARK> {return new ValueExpression(nextArg());}
+  | <S_QMARK> {return nextArg();}
+  | "ARRAY" "[" exprList = ExpressionList() "]" {return new ArrayExpression(exprList); }
   | LOOKAHEAD(ObjectName() "(") expr=FunctionCall() {return expr;}
   | name=ObjectName() {return new ColumnExpression(name);}
 }
@@ -931,6 +942,7 @@ RelOp RelOp() throws StreamSqlException: {
   | ">" {return RelOp.GREATER;}
   | LOOKAHEAD(2) "<" ">" {return RelOp.NOT_EQUAL;}
   | LOOKAHEAD(2) "<" "=" {return RelOp.LESS_OR_EQUAL;}
+  | LOOKAHEAD(2) "&" "&" {return RelOp.OVERLAP;}
   | "<" {return RelOp.LESS;}
 }
 
@@ -1073,22 +1085,12 @@ Expression FunctionCall() throws StreamSqlException: {
    boolean star=false;
 } {
     name=ObjectName()
-        "(" [(args=FunctionArgumentList()
+        "(" [(args=ExpressionList()
             | "*" {star=true;}
              )] ")"
     {
       return FunctionExpressionFactory.get(name, args, star);
     }
-}
-
-List<Expression> FunctionArgumentList() throws StreamSqlException: {
-  List<Expression> args=new ArrayList<Expression>();
-  Expression expr;
-} {
-    expr = Expression() {args.add(expr);}
-    ("," expr = Expression() {args.add(expr);}
-    )*
- { return args; }
 }
 
 BigDecimal NumericConstant()  throws StreamSqlException: {
