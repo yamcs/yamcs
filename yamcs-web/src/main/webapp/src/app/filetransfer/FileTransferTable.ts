@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
+import { Transfer } from '../client';
 
 @Component({
   selector: 'app-file-transfer-table',
@@ -46,6 +47,10 @@ export class FileTransferTable implements OnChanges {
     } else {
       this.displayedColumns$.next(this.defaultColumns);
     }
+  }
+
+  transferPercent(transfer: Transfer) {
+    return transfer.totalSize != 0 ? (transfer.sizeTransferred / transfer.totalSize) : 0;
   }
 
   pauseTransfer(item: TransferItem) {
