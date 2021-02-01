@@ -9,6 +9,6 @@ import org.yamcs.TmPacket;
  *
  */
 public interface TmSink {
-    public void processPacket(TmPacket pwrt);
+    public void processPacket(TmPacket tmPacket);
 }
 

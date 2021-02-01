@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,12 +25,18 @@ import org.yamcs.utils.YObjectLoader;
  * The data link scans continuously the incoming directory for new files. If multiple files are found, it processes them
  * in alphabetical order.
  * <p>
+ * If the file is gzip-compressed, the {@link GZIPInputStream} is used to decompress it. To check if the file is
+ * gzip-compressed, the first two bytes of the file are read and compared with 0x1F8B (gzip magic number).
+ * <p>
  * Options:
  * <ul>
  * <li>{@code incomingDir} - the directory where the files are read from.</li>
  * <li>{@code delteAfterImport} - if true (default), the files will be removed after being read.</li>
  * <li>{@code delayBetweenPackets} - if configured, it is the number of milliseconds to wait in between sending two
  * packets. By default it is -1 meaning the packets are sent as fast as possible.</li>
+ * <li>{@code headerSize} - if configured, the input files have a header which will be skipped before reading the first
+ * packet.
+ * </li>
  * </ul>
  *
  */
@@ -38,6 +45,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     Path incomingDir;
     boolean deleteAfterImport = true;
     long delayBetweenPackets = -1;
+    long headerSize = -1l;
     Thread thread;
 
     String packetInputStreamClassName;
@@ -55,6 +63,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         }
         deleteAfterImport = config.getBoolean("deleteAfterImport", true);
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
+        headerSize = config.getLong("headerSize", -1);
         packetInputStreamArgs = YConfiguration.emptyConfig();
 
         if (config.containsKey("packetInputStreamClassName")) {
@@ -109,6 +118,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                         Thread.sleep(delayBetweenPackets);
                     }
                 }
+            } catch (EOFException e) {
+                log.debug("{} finished", f);
             } catch (IOException | PacketTooLongException e) {
                 log.warn("Got IOException while reading from " + f + ": ", e);
             }
@@ -134,6 +145,14 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
 
         InputStream inputStream = gzip ? new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)))
                 : new BufferedInputStream(new FileInputStream(fileName));
+        if (headerSize > 0) {
+            long n = inputStream.skip(headerSize);
+            if (n != headerSize) {
+                inputStream.close();
+                throw new IOException(
+                        "Short read: only" + n + " out of " + headerSize + "header bytes could be skipped");
+            }
+        }
         PacketInputStream packetInputStream;
         try {
             packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName);
@@ -195,6 +214,15 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     @Override
     protected void doStop() {
         doDisable();
+        if (thread != null) {
+            thread.interrupt();
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                notifyFailed(e);
+                return;
+            }
+        }
         notifyStopped();
     }
 
