@@ -973,7 +973,6 @@ public class StreamSqlParser implements StreamSqlParserConstants {
       jj_la1[34] = jj_gen;
       ;
     }
-      System.out.println("setting expression args to:" +args);
         retExpr.setArgs(args);
         {if (true) return retExpr;}
     throw new Error("Missing return statement in function");
@@ -2058,6 +2057,12 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     finally { jj_save(19, xla); }
   }
 
+  private boolean jj_3_16() {
+    if (jj_scan_token(142)) return true;
+    if (jj_scan_token(131)) return true;
+    return false;
+  }
+
   private boolean jj_3_15() {
     if (jj_scan_token(142)) return true;
     if (jj_scan_token(141)) return true;
@@ -2132,14 +2137,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3R_37() {
-    if (jj_scan_token(S_IDENTIFIER)) return true;
-    return false;
-  }
-
   private boolean jj_3R_17() {
     if (jj_scan_token(K_CREATE)) return true;
     if (jj_scan_token(K_TABLE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(S_IDENTIFIER)) return true;
     return false;
   }
 
@@ -2174,6 +2179,12 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
+  private boolean jj_3R_24() {
+    if (jj_scan_token(K_SHOW)) return true;
+    if (jj_scan_token(K_SEQUENCES)) return true;
+    return false;
+  }
+
   private boolean jj_3R_59() {
     if (jj_3R_63()) return true;
     return false;
@@ -2181,12 +2192,6 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   private boolean jj_3R_48() {
     if (jj_3R_52()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_scan_token(K_SHOW)) return true;
-    if (jj_scan_token(K_SEQUENCES)) return true;
     return false;
   }
 
@@ -2311,6 +2316,11 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
+  private boolean jj_3_9() {
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
   private boolean jj_3R_26() {
     Token xsp;
     xsp = jj_scanpos;
@@ -2320,24 +2330,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3_9() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
   private boolean jj_3_8() {
     if (jj_3R_24()) return true;
-    return false;
-  }
-
-  private boolean jj_3_19() {
-    if (jj_3R_30()) return true;
-    if (jj_scan_token(130)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_53() {
-    if (jj_scan_token(134)) return true;
     return false;
   }
 
@@ -2352,6 +2346,17 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
+  private boolean jj_3_19() {
+    if (jj_3R_30()) return true;
+    if (jj_scan_token(130)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_53() {
+    if (jj_scan_token(134)) return true;
+    return false;
+  }
+
   private boolean jj_3_6() {
     if (jj_3R_22()) return true;
     return false;
@@ -2359,6 +2364,11 @@ public class StreamSqlParser implements StreamSqlParserConstants {
 
   private boolean jj_3_5() {
     if (jj_3R_21()) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_3R_20()) return true;
     return false;
   }
 
@@ -2372,11 +2382,6 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3_4() {
-    if (jj_3R_20()) return true;
-    return false;
-  }
-
   private boolean jj_3R_47() {
     Token xsp;
     xsp = jj_scanpos;
@@ -2385,13 +2390,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3R_42() {
-    if (jj_3R_45()) return true;
+  private boolean jj_3_3() {
+    if (jj_3R_19()) return true;
     return false;
   }
 
-  private boolean jj_3_3() {
-    if (jj_3R_19()) return true;
+  private boolean jj_3R_42() {
+    if (jj_3R_45()) return true;
     return false;
   }
 
@@ -2401,14 +2406,14 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3_12() {
-    if (jj_3R_28()) return true;
-    return false;
-  }
-
   private boolean jj_3R_19() {
     if (jj_scan_token(K_SHOW)) return true;
     if (jj_scan_token(K_STREAMS)) return true;
+    return false;
+  }
+
+  private boolean jj_3_12() {
+    if (jj_3R_28()) return true;
     return false;
   }
 
@@ -2454,19 +2459,13 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3R_41() {
-    if (jj_3R_44()) return true;
-    return false;
-  }
-
   private boolean jj_3_2() {
     if (jj_3R_18()) return true;
     return false;
   }
 
-  private boolean jj_3_17() {
-    if (jj_scan_token(143)) return true;
-    if (jj_scan_token(143)) return true;
+  private boolean jj_3R_41() {
+    if (jj_3R_44()) return true;
     return false;
   }
 
@@ -2475,9 +2474,9 @@ public class StreamSqlParser implements StreamSqlParserConstants {
     return false;
   }
 
-  private boolean jj_3_16() {
-    if (jj_scan_token(142)) return true;
-    if (jj_scan_token(131)) return true;
+  private boolean jj_3_17() {
+    if (jj_scan_token(143)) return true;
+    if (jj_scan_token(143)) return true;
     return false;
   }
 
