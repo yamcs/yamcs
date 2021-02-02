@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -67,6 +68,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -392,6 +394,7 @@ public class TableApi extends AbstractTableApi<Context> {
                 ResultSet.Builder rsBuilder = ResultSet.newBuilder();
                 ydb.execute(stmt, new ResultListener() {
                     TupleDefinition tdef;
+
                     @Override
                     public void start(TupleDefinition tdef) {
                         for (int i = 0; i < tdef.size(); i++) {
@@ -602,7 +605,28 @@ public class TableApi extends AbstractTableApi<Context> {
                 infob.setPartitioningInfo(partb);
             }
         }
-        StringBuilder scriptb = new StringBuilder("create table ").append(def.toString());
+        StringBuilder scriptb = new StringBuilder("create table ").append(def.getName());
+
+        List<TableColumnDefinition> columns = new ArrayList<>();
+        columns.addAll(def.getKeyDefinition());
+        columns.addAll(def.getValueDefinition());
+        String columnSpec = columns.stream()
+                .map(colDef -> {
+                    String colDefString = "\"" + colDef.getName() + "\" " + colDef.getType();
+                    if (colDef.isAutoIncrement()) {
+                        colDefString += " auto_increment";
+                    }
+                    return colDefString;
+                })
+                .collect(Collectors.joining(", "));
+        scriptb.append("(").append(columnSpec).append(")");
+
+        List<TableColumnDefinition> keyColumns = def.getKeyDefinition();
+        if (!keyColumns.isEmpty()) {
+            String keySpec = keyColumns.stream().map(TableColumnDefinition::getName).collect(Collectors.joining(", "));
+            scriptb.append(" primary key(").append(keySpec).append(")");
+        }
+
         scriptb.append(" engine ").append(def.getStorageEngineName());
         if (def.hasHistogram()) {
             scriptb.append(" histogram(").append(String.join(", ", def.getHistogramColumns())).append(")");
