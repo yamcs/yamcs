@@ -34,6 +34,7 @@
         <app-object-selector #selector
                              formControlName="object"
                              [bucket]="bucket"
+							 [isMultiSelect]="service.capabilities.multiSelection"
                              (prefixChange)="updateBreadcrumb($event)"></app-object-selector>
       </ng-container>
     </div>
@@ -42,12 +43,14 @@
 
 <div class="remote-selector mat-typography">
   <form [formGroup]="remoteForm" class="ya-form">
-    <h2 style="margin-top: 16px">Specify Destination File</h2>
+	<ng-container *ngIf="!service.capabilities.hideUploadDestinationFile">
+    <h2 style="margin-top: 16px">Destination File</h2>
     <label>
-      Filename
+      Filename Or Folder
       <input type="text" formControlName="remotePath"
              placeholder="e.g. /CF:/filename">
     </label>
+	</ng-container>
 
     <h2 style="margin-top: 32px">Options</h2>
 	<ng-container *ngIf="service.capabilities.reliable">

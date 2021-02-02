@@ -47,7 +47,7 @@ export class UploadFileDialog {
       object: ['', Validators.required],
     });
     this.remoteForm = formBuilder.group({
-      remotePath: ['', Validators.required],
+      remotePath: ['', []],
       source: [firstSource, Validators.required],
       destination: [firstDestination, Validators.required],
       reliable: [true, []],

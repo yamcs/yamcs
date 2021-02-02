@@ -45,6 +45,6 @@
       [class.hide]="!(currentPrefix$ | async)"
       (click)="selectParent()"></tr>
   <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-      [class.selected]="(selectedObject$ | async) === row"
+      [class.selected]="isSelected(row)"
       (click)="selectFile(row)"></tr>
 </table>

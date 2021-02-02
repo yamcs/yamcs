@@ -12,6 +12,8 @@ export interface FileTransferCapabilities {
   upload: boolean;
   download: boolean;
   reliable: boolean;
+  multiSelection: boolean;
+  hideUploadDestinationFile : boolean;
 }
 
 export interface Entity {
@@ -22,7 +24,7 @@ export interface Entity {
 export interface Transfer {
   id: number;
   startTime: string;
-  state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING';
+  state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING' | 'QUEUED';
   bucket: string;
   objectName: string;
   remotePath: string;

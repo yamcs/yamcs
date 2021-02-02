@@ -113,7 +113,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 		setTmSink(pwrt -> processTmPacket(pwrt, tmStream));
 	}
 	
-	// Inspired from LinkManager.processTmPacket()
+	// Method copied and modified from LinkManager
 	protected void processTmPacket(TmPacket pwrt, Stream stream) {
 		if (pwrt.isInvalid()) {
 			return;
@@ -125,7 +125,9 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 			ertime = null;
 		}
 		Long obt = pwrt.getObt() == Long.MIN_VALUE ? null : pwrt.getObt();
-		t = new Tuple(StandardTupleDefinitions.TM, new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getStatus(), pwrt.getPacket(), ertime, obt });
+		Object[] columns = new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getStatus(), pwrt.getPacket(), ertime, obt, getName() };
+		assert(columns.length == StandardTupleDefinitions.TM.size());
+		t = new Tuple(StandardTupleDefinitions.TM, columns);
 		stream.emitTuple(t);
 	}
 	
