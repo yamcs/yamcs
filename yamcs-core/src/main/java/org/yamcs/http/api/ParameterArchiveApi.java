@@ -187,7 +187,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             pcache = processor.getParameterCache();
         }
 
-        ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, false);
+        ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
         SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
             spdr.retrieve(sampler);
@@ -259,7 +259,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             streamArchiveApi.listParameterHistory(ctx, request, observer);
             return;
         }
-        
+
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
@@ -279,15 +279,15 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
 
         boolean ascending = request.getOrder().equals("asc");
-        if(request.hasNext()) {
+        if (request.hasNext()) {
             TimeSortedPageToken token = TimeSortedPageToken.decode(request.getNext());
-            if(ascending) {
+            if (ascending) {
                 start = token.time;
             } else {
                 stop = token.time;
             }
         }
-        
+
         ParameterArchive parchive = getParameterArchive(ysi);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();

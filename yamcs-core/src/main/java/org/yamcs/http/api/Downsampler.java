@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
+import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.UnsignedLong;
 
@@ -24,7 +25,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
 
     private static final Log log = new Log(Downsampler.class);
     private static final int DEFAULT_SAMPLE_COUNT = 500;
-    private static long GAP_TIME = 120000;
+    private static long DEFAULT_GAP_TIME = 120000;
 
     private TreeMap<Long, Sample> samplesByTime = new TreeMap<>();
     private long start;
@@ -52,7 +53,96 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         }
     }
 
-    public void process(long time, double value) {
+    public void process(org.yamcs.parameter.ParameterValue pval) {
+        if (pval.getEngValue() == null) {
+            return;
+        }
+
+        switch (pval.getEngValue().getType()) {
+        case DOUBLE:
+            process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue(), pval.getExpireMills());
+            break;
+        case FLOAT:
+            process(pval.getGenerationTime(), pval.getEngValue().getFloatValue(), pval.getExpireMills());
+            break;
+        case SINT32:
+            process(pval.getGenerationTime(), pval.getEngValue().getSint32Value(), pval.getExpireMills());
+            break;
+        case SINT64:
+            process(pval.getGenerationTime(), pval.getEngValue().getSint64Value(), pval.getExpireMills());
+            break;
+        case UINT32:
+            process(pval.getGenerationTime(), pval.getEngValue().getUint32Value() & 0xFFFFFFFFL, pval.getExpireMills());
+            break;
+        case UINT64:
+            process(pval.getGenerationTime(), pval.getEngValue().getUint64Value(), pval.getExpireMills());
+            break;
+        default:
+            log.warn("Unexpected value type {}", pval.getEngValue().getType());
+        }
+    }
+
+    @Override
+    public void accept(ParameterValueArray t) {
+        ValueArray va = t.getEngValues();
+        long[] timestamps = t.getTimestamps();
+        ParameterStatus[] statuses = t.getStatuses();
+
+        // Consider expireMillis, but only from the last value
+        long expireMillis = -1;
+        if (statuses != null && statuses.length > 0) {
+            ParameterStatus lastStatus = statuses[statuses.length - 1];
+            if (lastStatus != null && lastStatus.hasExpireMillis()) {
+                expireMillis = lastStatus.getExpireMillis();
+            }
+        }
+
+        int n = timestamps.length;
+        Type engType = t.getEngType();
+
+        switch (engType) {
+        case FLOAT:
+            float[] fv = va.getFloatArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], fv[i], expireMillis);
+            }
+            break;
+        case DOUBLE:
+            double[] dv = va.getDoubleArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], dv[i], expireMillis);
+            }
+            break;
+        case UINT32:
+            int[] iv = va.getIntArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], iv[i] & 0xFFFFFFFFL, expireMillis);
+            }
+            break;
+        case SINT32:
+            iv = va.getIntArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], iv[i], expireMillis);
+            }
+            break;
+        case UINT64:
+            long[] lv = va.getLongArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], UnsignedLong.toDouble(lv[i]), expireMillis);
+            }
+            break;
+        case SINT64:
+            lv = va.getLongArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], lv[i], expireMillis);
+            }
+            break;
+        default:
+            log.debug("Ignoring value type {}", engType);
+        }
+    }
+
+    public void process(long time, double value, long expireMillis) {
         if (time > stop || time < start) {
             return;
         }
@@ -66,9 +156,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         lastSampleTime = entry.getKey();
         Sample sample = entry.getValue();
         if (sample == null) {
-            samplesByTime.put(entry.getKey(), new Sample(entry.getKey(), value));
+            samplesByTime.put(entry.getKey(), new Sample(entry.getKey(), value, expireMillis));
         } else {
-            sample.process(value);
+            sample.process(value, expireMillis);
         }
     }
 
@@ -82,8 +172,11 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             Sample s = e.getValue();
             if (s == null) {
                 long t = e.getKey();
-                if ((prev != null) && (t - prev.t > GAP_TIME)) { // generate a gap
-                    r.add(new Sample(t));
+                if (prev != null) { // Maybe generate a gap
+                    long gapTime = (prev.expireMillis != -1) ? prev.expireMillis : DEFAULT_GAP_TIME;
+                    if (t - prev.t > gapTime) {
+                        r.add(new Sample(t));
+                    }
                 }
             } else {
                 r.add(s);
@@ -94,115 +187,39 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         return r;
     }
 
-    public void process(org.yamcs.parameter.ParameterValue pval) {
-        if (pval.getEngValue() == null) {
-            return;
-        }
-
-        switch (pval.getEngValue().getType()) {
-        case DOUBLE:
-            process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
-            break;
-        case FLOAT:
-            process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
-            break;
-        case SINT32:
-            process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
-            break;
-        case SINT64:
-            process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
-            break;
-        case UINT32:
-            process(pval.getGenerationTime(), pval.getEngValue().getUint32Value() & 0xFFFFFFFFL);
-            break;
-        case UINT64:
-            process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
-            break;
-        default:
-            log.warn("Unexpected value type {}", pval.getEngValue().getType());
-        }
-
-    }
-
     public long lastSampleTime() {
         return lastSampleTime;
-    }
-
-    @Override
-    public void accept(ParameterValueArray t) {
-
-        ValueArray va = t.getEngValues();
-        long[] timestamps = t.getTimestamps();
-        int n = timestamps.length;
-        Type engType = t.getEngType();
-
-        switch (engType) {
-        case FLOAT:
-            float[] fv = va.getFloatArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], fv[i]);
-            }
-            break;
-        case DOUBLE:
-            double[] dv = va.getDoubleArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], dv[i]);
-            }
-            break;
-        case UINT32:
-            int[] iv = va.getIntArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], iv[i] & 0xFFFFFFFFL);
-            }
-            break;
-        case SINT32:
-            iv = va.getIntArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], iv[i]);
-            }
-            break;
-        case UINT64:
-            long[] lv = va.getLongArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], UnsignedLong.toDouble(lv[i]));
-            }
-            break;
-        case SINT64:
-            lv = va.getLongArray();
-            for (int i = 0; i < n; i++) {
-                process(timestamps[i], lv[i]);
-            }
-            break;
-        default:
-            log.debug("Ignoring value type {}", engType);
-        }
     }
 
     /**
      * A cumulative sample that keeps track of a rolling average among others.
      */
     public static class Sample {
-        long t;
+        final long t;
         double min;
         double max;
         double avg;
         int n;
+        long expireMillis; // Matching the 'last' value for this sample.
 
         // construct a gap
         Sample(long t) {
             this.t = t;
-            n = 0;
             min = avg = max = Double.NaN;
+            n = 0;
+            expireMillis = -1;
         }
 
         // sample with one value
-        public Sample(long t, double value) {
+        public Sample(long t, double value, long expireMillis) {
             this.t = t;
+            this.expireMillis = expireMillis;
             min = avg = max = value;
             n = 1;
         }
 
-        public void process(double value) {
+        public void process(double value, long expireMillis) {
+            this.expireMillis = expireMillis;
             if (value < min) {
                 min = value;
             }

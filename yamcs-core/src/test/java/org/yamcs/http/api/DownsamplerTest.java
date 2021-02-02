@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.http.api.Downsampler;
 import org.yamcs.http.api.Downsampler.Sample;
 
 public class DownsamplerTest {
@@ -17,7 +16,7 @@ public class DownsamplerTest {
         List<Sample> samples = sampler.collect();
         assertEquals(0, samples.size());
 
-        sampler.process(1, 5);
+        sampler.process(1, 5, -1);
 
         samples = sampler.collect();
         assertEquals(1, samples.size());
@@ -25,20 +24,20 @@ public class DownsamplerTest {
         assertEquals(1, samples.get(0).n);
 
         // Add to same bucket
-        sampler.process(2, 10);
+        sampler.process(2, 10, -1);
         assertEquals(1, samples.size());
         assertEquals((5 + 10) / 2., samples.get(0).avg, 1e-10);
         assertEquals(2, samples.get(0).n);
 
         // Add to same bucket
-        sampler.process(3, 7);
+        sampler.process(3, 7, -1);
         samples = sampler.collect();
         assertEquals(1, samples.size());
         assertEquals((5 + 10 + 7) / 3., samples.get(0).avg, 1e-10);
         assertEquals(3, samples.get(0).n);
 
         // Due to flooring, leads to a new bucket
-        sampler.process(4, 2);
+        sampler.process(4, 2, -1);
         samples = sampler.collect();
         assertEquals(2, samples.size());
 
@@ -52,19 +51,19 @@ public class DownsamplerTest {
         assertEquals(2, sample1.min, 1e-10);
         assertEquals(2, sample1.max, 1e-10);
     }
-    
+
     @Test
     public void testSamplingTooMany() {
         Downsampler sampler = new Downsampler(1, 2, 3);
-        sampler.process(1, 1);
-        sampler.process(2, 2);
-        sampler.process(2, 2.3);
+        sampler.process(1, 1, -1);
+        sampler.process(2, 2, -1);
+        sampler.process(2, 2.3, -1);
         List<Sample> samples = sampler.collect();
         assertEquals(1, samples.size());
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testSamplingInvalid() {
-       new Downsampler(2, 1, 3);
+        new Downsampler(2, 1, 3);
     }
 }
