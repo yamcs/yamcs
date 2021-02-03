@@ -12,8 +12,7 @@ export interface FileTransferCapabilities {
   upload: boolean;
   download: boolean;
   reliable: boolean;
-  multiSelection: boolean;
-  hideUploadDestinationFile : boolean;
+  remoteFolder : boolean;
 }
 
 export interface Entity {

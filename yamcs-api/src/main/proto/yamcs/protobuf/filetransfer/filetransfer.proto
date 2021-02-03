@@ -160,11 +160,8 @@ message FileTransferCapabilities {
 	//if true, yamcs-web will allow to chose reliable/non-reliable transfer 
 	optional bool reliability = 3;
 	
-	//if true, the upload dialog will allow multiple files to be selected (upload only). The received transfer contains all file names as objectName, separated with a pipe character ("|").
-	optional bool multiSelection = 4;
-	
-	//if true, hide the section with the destination file name or folder (upload only)
-	optional bool hideUploadDestinationFile = 5;
+	//if true, show the section with the destination file/folder name (upload only)
+	optional bool remoteFolder = 4;
 }
 
 
