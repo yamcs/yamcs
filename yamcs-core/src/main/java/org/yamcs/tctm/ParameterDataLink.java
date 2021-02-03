@@ -8,4 +8,5 @@ package org.yamcs.tctm;
  */
 public interface ParameterDataLink extends Link {
     public void setParameterSink(ParameterSink parameterSink);
+	public String getParameterStreamName();
 }

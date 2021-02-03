@@ -34,14 +34,16 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected long housekeepingInterval = 10000;
     private AggregatedDataLink parent = null;
-    
+    protected String tcStreamName;
    
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
         
         initPostprocessor(yamcsInstance, config);
-    }
+
+		tcStreamName = config.getString("stream", null);
+	}
 
     protected long getCurrentTime() {
         if (timeService != null) {
@@ -81,6 +83,11 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         this.commandHistoryPublisher = commandHistoryListener;
         cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
     }
+
+	@Override
+	public String getTcStreamName() {
+		return tcStreamName;
+	}
 
     @Override
     public long getDataInCount() {

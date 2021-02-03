@@ -169,28 +169,30 @@ public class LinkManager {
             linkArgs = YConfiguration.emptyConfig();
         }
 
-        Stream stream = null;
-        String streamName = linkArgs.getString("stream", null);
-        if (streamName != null) {
-            stream = ydb.getStream(streamName);
-            if (stream == null) {
-                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
-            }
-        }
-
         if (link instanceof TmPacketDataLink) {
-            if (stream != null) {
-                Stream streamf = stream;
-                TmPacketDataLink tmLink = (TmPacketDataLink) link;
-                InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
-            }
+			TmPacketDataLink tmLink = (TmPacketDataLink)link;
+
+			String streamName = tmLink.getTmStreamName();
+			if (streamName != null) {
+				Stream stream = ydb.getStream(streamName);
+				if (stream == null) {
+					throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+				}
+				Stream streamf = stream;
+				InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
+				tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+			}
         }
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
 
-            if (stream != null) {
+			String streamName = tcLink.getTcStreamName();
+			if (streamName != null) {
+				Stream stream = ydb.getStream(streamName);
+				if (stream == null) {
+					throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+				}
                 TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
                 if (tcs == null) {
                     tcs = new TcStreamSubscriber(true);
@@ -203,8 +205,15 @@ public class LinkManager {
         }
 
         if (link instanceof ParameterDataLink) {
-            if (stream != null) {
-                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
+			ParameterDataLink parameterLink = (ParameterDataLink) link;
+			
+			String streamName = parameterLink.getParameterStreamName();
+			if (streamName != null) {
+				Stream stream = ydb.getStream(streamName);
+				if (stream == null) {
+					throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+				}
+				parameterLink.setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
             }
         }
 

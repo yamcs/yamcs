@@ -52,6 +52,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
     YConfiguration config;
     String name;
+	protected String parameterStreamName;
 
     private ScheduledThreadPoolExecutor timer;
 
@@ -64,6 +65,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
         timeService = YamcsServer.getTimeService(instance);
         port = config.getInt("port");
         defaultRecordingGroup = config.getString("recordingGroup", "DEFAULT");
+		parameterStreamName = config.getString("stream", null);
     }
 
     @Override
@@ -221,6 +223,11 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     public void setParameterSink(ParameterSink parameterSink) {
         this.parameterSink = parameterSink;
     }
+	
+	@Override
+	public String getParameterStreamName() {
+		return parameterStreamName;
+	}
 
     @Override
     public YConfiguration getConfig() {

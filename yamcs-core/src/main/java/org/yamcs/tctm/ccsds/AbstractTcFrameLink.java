@@ -33,6 +33,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     boolean sendCltu;
     protected MasterChannelFrameMultiplexer multiplexer;
     List<Link> subLinks;
+	protected String tcStreamName;
 
     protected CommandHistoryPublisher commandHistoryPublisher;
     protected CltuGenerator cltuGenerator;
@@ -72,7 +73,9 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                 l.setParent(this);
             }
         }
-    }
+
+		tcStreamName = config.getString("stream", null);
+	}
 
     
     @Override
@@ -106,7 +109,12 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                 "This class cannot send command directly, please remove the stream associated to the main link");
     }
 
-    /**
+	@Override
+	public String getTcStreamName() {
+		return tcStreamName;
+	}
+
+	/**
      * Ack the BD frames
      * Note: the AD frames are acknowledged in the when the COP1 ack is received
      * 

@@ -181,7 +181,12 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         this.tmSink = tmSink;
     }
 
-    @Override
+	@Override
+	public String getTmStreamName() {
+		return null;
+	}
+
+	@Override
     public YConfiguration getConfig() {
         return vmp.config;
     }

@@ -14,4 +14,11 @@ public interface TcDataLink extends Link {
     void sendTc(PreparedCommand preparedCommand);
 
     void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher);
+
+	/**
+	 * Get the name of the stream to receive telecommands from.
+	 *
+	 * @return name of stream
+	 */
+	public String getTcStreamName();
 }

@@ -26,6 +26,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
     private TmSink tmSink;
+	protected String tmStreamName;
     protected boolean updateSimulationTime;
 
     public void init(String instance, String name, YConfiguration config) {
@@ -63,6 +64,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
             }
         }
 
+		tmStreamName = config.getString("stream", null);
     }
 
     @Override
@@ -93,6 +95,11 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     public void setTmSink(TmSink tmSink) {
         this.tmSink = tmSink;
     }
+	
+	@Override
+	public String getTmStreamName() {
+		return tmStreamName;
+	}
 
     /**
      * Sends the packet downstream for processing.

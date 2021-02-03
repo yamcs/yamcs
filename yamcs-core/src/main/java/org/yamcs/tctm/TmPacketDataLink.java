@@ -21,4 +21,11 @@ public interface TmPacketDataLink extends Link {
      * @param tmSink
      */
     public void setTmSink(TmSink tmSink);
+	
+	/**
+	 * Get the name of the stream to forward telemetry to.
+	 *
+	 * @return name of stream
+	 */
+	public String getTmStreamName();
 }

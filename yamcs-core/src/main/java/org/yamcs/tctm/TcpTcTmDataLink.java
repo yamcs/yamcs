@@ -29,7 +29,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -48,6 +47,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 	protected String host;
 	protected int port;
 	protected long initialDelay;
+	protected String tcStreamName;
 	
 	String packetInputStreamClassName;
 	YConfiguration packetInputStreamArgs;
@@ -80,57 +80,14 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 			m.put("initialBytesToStrip", 0);
 			this.packetInputStreamArgs = YConfiguration.wrap(m);
 		}
-		
+
+		tcStreamName = config.getString("tcStream", "tc_realtime");
+		tmStreamName = config.getString("tmStream", "tm_realtime");
+
 		// Setup tc postprocessor
 		initPostprocessor(yamcsInstance, config);
-		
-		// Subscribe to tc stream to receive telecommands
-		XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-		YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-		String tcStreamName = config.getString("tcStream", "tc_realtime");
-		Stream tcStream = ydb.getStream(tcStreamName);
-		if (tcStream == null) {
-			throw new ConfigurationException("Cannot find stream '" + tcStreamName + "'");
-		}
-		tcStream.addSubscriber(new StreamSubscriber() {
-			@Override
-			public void onTuple(Stream s, Tuple tuple) {
-				sendTc(PreparedCommand.fromTuple(tuple, xtcedb));
-			}
-			
-			@Override
-			public void streamClosed(Stream s) {
-				stopAsync();
-			}
-		});
-		
-		// Connect with telemetry stream
-		String tmStreamName = config.getString("tmStream", "tm_realtime");
-		Stream tmStream = ydb.getStream(tmStreamName);
-		if (tmStream == null) {
-			throw new ConfigurationException("Cannot find stream '" + tmStreamName + "'");
-		}
-		setTmSink(pwrt -> processTmPacket(pwrt, tmStream));
 	}
-	
-	// Method copied and modified from LinkManager
-	protected void processTmPacket(TmPacket pwrt, Stream stream) {
-		if (pwrt.isInvalid()) {
-			return;
-		}
-		
-		Instant ertime = pwrt.getEarthReceptionTime();
-		Tuple t = null;
-		if (ertime == Instant.INVALID_INSTANT) {
-			ertime = null;
-		}
-		Long obt = pwrt.getObt() == Long.MIN_VALUE ? null : pwrt.getObt();
-		Object[] columns = new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getStatus(), pwrt.getPacket(), ertime, obt, getName() };
-		assert(columns.length == StandardTupleDefinitions.TM.size());
-		t = new Tuple(StandardTupleDefinitions.TM, columns);
-		stream.emitTuple(t);
-	}
-	
+
 	protected synchronized void checkAndOpenSocket() throws IOException {
 		if (tmSocket != null) {
 			return;
@@ -241,7 +198,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 		}
 		return pwt;
 	}
-	
+
 	// MARK: - Stuff copied from AbstractTcDataLink
 
 	protected void initPostprocessor(String instance, YConfiguration config) throws ConfigurationException {
@@ -301,6 +258,11 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 		cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
 	}
 	
+	@Override
+	public String getTcStreamName() {
+		return tcStreamName;
+	}
+
 	/**Send to command history the failed command */
 	protected void failedCommand(CommandId commandId, String reason) {
 		log.debug("Failing command {}: {}", commandId, reason);
