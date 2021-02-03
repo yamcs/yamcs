@@ -14,9 +14,10 @@ import org.yamcs.xtce.util.DoubleRange;
 
 /**
  * Holds the value of a parameter.
- * 
+ * <p>
  * This class does not reference any parameter definition or name.
- * It doesn't have an aquisition time for parameters either
+ * <p>
+ * It does not have acquisition time for parameters either
  *
  */
 public class BasicParameterValue {
