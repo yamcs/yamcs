@@ -19,16 +19,19 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
     int numPackets;
     int packetSize;
     long interval;
+    double changePercent;
     final ColSimulator simulator;
     private static final Logger log = LoggerFactory.getLogger(PerfPacketGenerator.class);
     final public static int PERF_TEST_PACKET_ID = 1000; // the packet id of the packets used for performance testing
                                                         // start from here
 
-    public PerfPacketGenerator(ColSimulator simulator, int numPackets, int packetSize, long interval) {
+    public PerfPacketGenerator(ColSimulator simulator, int numPackets, int packetSize, long interval,
+            double changePercent) {
         this.simulator = simulator;
         this.numPackets = numPackets;
         this.packetSize = packetSize;
         this.interval = interval;
+        this.changePercent = changePercent;
     }
 
     @Override
@@ -46,14 +49,19 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
             }
             packets[i] = packet;
         }
-        int numParamChanging = packetSize / 40; // 10% of parameters are changing with each packet
 
+        int changeChunk = (int) (400 / changePercent);
+        if (changeChunk < 4) {
+            changeChunk = 4;
+        }
+        
         while (isRunning()) {
             for (int i = 0; i < numPackets; i++) {
                 ColumbusCcsdsPacket packet = packets[i];
                 ByteBuffer bb = packet.getUserDataBuffer();
-                for (int j = 0; j < numParamChanging; j++) {
-                    bb.putInt(r.nextInt(packetSize - 4), r.nextInt());
+                for (int j = 0; j < packetSize - changeChunk; j += changeChunk) {
+                    int offset = j + (changeChunk > 4 ? r.nextInt(changeChunk - 4) : 0);
+                    bb.putInt(offset, r.nextInt());
                 }
                 packet.setTime(TimeEncoding.getWallclockTime());
                 simulator.transmitRealtimeTM(packet);

@@ -26,6 +26,13 @@ import com.beust.jcommander.JCommander;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
 
+/**
+ * Starts the simulator.
+ * <p>
+ * This class is configured as a service inside Yamcs but it starts itself as an external process via the
+ * {@link #main(String[])} function.
+ *
+ */
 public class SimulatorCommander extends ProcessRunner {
 
     @Override
@@ -52,6 +59,7 @@ public class SimulatorCommander extends ProcessRunner {
         perfTestSpec.addOption("numPackets", OptionType.INTEGER);
         perfTestSpec.addOption("packetSize", OptionType.INTEGER);
         perfTestSpec.addOption("interval", OptionType.INTEGER);
+        perfTestSpec.addOption("changePercent", OptionType.FLOAT);
 
         Spec spec = new Spec();
         spec.addOption("telnet", OptionType.MAP).withSpec(telnetSpec);
@@ -119,9 +127,11 @@ public class SimulatorCommander extends ProcessRunner {
             if (numPackets > 0) {
                 int packetSize = yamcsArgs.getInt("packetSize", defaultOptions.perfPs);
                 long interval = yamcsArgs.getLong("interval", defaultOptions.perfMs);
+                double changePercent = yamcsArgs.getDouble("changePercent", defaultOptions.perfChangePercent);
                 cmdl.addAll(Arrays.asList("--perf-np", "" + numPackets,
                         "--perf-ps", "" + packetSize,
-                        "--perf-ms", "" + interval));
+                        "--perf-ms", "" + interval,
+                        "--perf-cp", "" + changePercent));
             }
         }
 
@@ -237,7 +247,7 @@ public class SimulatorCommander extends ProcessRunner {
 
             if (runtimeOptions.perfNp > 0) {
                 PerfPacketGenerator ppg = new PerfPacketGenerator(sim, runtimeOptions.perfNp, runtimeOptions.perfPs,
-                        runtimeOptions.perfMs);
+                        runtimeOptions.perfMs, runtimeOptions.perfChangePercent);
                 services.add(ppg);
             }
         }

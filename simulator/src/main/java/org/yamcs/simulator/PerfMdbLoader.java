@@ -18,6 +18,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
@@ -35,6 +36,8 @@ public class PerfMdbLoader implements SpaceSystemLoader {
     int packetSize;
     int numParam;
     int paramSizeInBits;
+    int numParamWithAlarmsPerPacket;
+    DoubleRange warningRange, criticalRange;
 
     static String PACKET_ID_PARA_NAME = "packet-id";
 
@@ -42,7 +45,32 @@ public class PerfMdbLoader implements SpaceSystemLoader {
         numPackets = config.getInt("numPackets");
         packetSize = config.getInt("packetSize");
         paramSizeInBits = config.getInt("paramSizeInBits", 32);
+        if (paramSizeInBits > 64 || paramSizeInBits < 1) {
+            throw new ConfigurationException("paramSizeInBits has to be between 1 and 64");
+        }
+        double percentangeParamWithAlarms = config.getDouble("percentangeParamWithAlarms", 5);
+        if (percentangeParamWithAlarms < 0 || percentangeParamWithAlarms > 100) {
+            throw new ConfigurationException("percentangeParamWithAlarms has to be between 0 and 100");
+        }
         numParam = packetSize * 8 / paramSizeInBits;
+        numParamWithAlarmsPerPacket = (int) (numParam * percentangeParamWithAlarms / 100);
+        double warningOolChance = config.getDouble("warningOolChance", 1e-3);
+        if (warningOolChance < 0 || warningOolChance > 1) {
+            throw new ConfigurationException("warningOolChance has to be between 0 and 1");
+        }
+        double criticalOolChance = config.getDouble("criticalOolChance", 1e-5);
+        if (criticalOolChance < 0 || criticalOolChance > 1) {
+            throw new ConfigurationException("criticalOolChance has to be between 0 and 1");
+        }
+
+        double maxParmValue = Math.pow(2, paramSizeInBits) - 1;
+        double warnMargin = maxParmValue * warningOolChance / 2;
+        double criticalMargin = maxParmValue * criticalOolChance / 2;
+
+        warningRange = new DoubleRange(config.getDouble("warningRangeMin", warnMargin),
+                config.getDouble("warningRangeMax", maxParmValue - warnMargin));
+        criticalRange = new DoubleRange(config.getDouble("criticalRangeMin", criticalMargin),
+                config.getDouble("criticalRangeMax", maxParmValue - criticalMargin));
     }
 
     @Override
@@ -63,14 +91,17 @@ public class PerfMdbLoader implements SpaceSystemLoader {
     @Override
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         SpaceSystem ss = new SpaceSystem("perf-data");
-        
-        IntegerParameterType.Builder ptypeb = new IntegerParameterType.Builder().setName("uint"+paramSizeInBits);
+        IntegerParameterType.Builder ptypeb = new IntegerParameterType.Builder().setName("uint" + paramSizeInBits);
         ptypeb.setSizeInBits(paramSizeInBits);
+        ptypeb.setSigned(false);
         IntegerDataEncoding.Builder ide = new IntegerDataEncoding.Builder().setSizeInBits(paramSizeInBits);
         ptypeb.setEncoding(ide);
-        IntegerParameterType ptype = ptypeb.build();
-        ss.addParameterType(ptype);
+        IntegerParameterType basicIntType = ptypeb.build();
+        ss.addParameterType(basicIntType);
+
+
         for (int j = 0; j < numPackets; j++) {
+            int numAlarms = 0;
             int pktId = PerfPacketGenerator.PERF_TEST_PACKET_ID + j;
             SequenceContainer sc = new SequenceContainer("pkt_" + pktId);
             UnresolvedNameReference unr = new UnresolvedNameReference("/YSS/ccsds-default", Type.SEQUENCE_CONTAINER);
@@ -81,11 +112,26 @@ public class PerfMdbLoader implements SpaceSystemLoader {
             });
             ss.addUnresolvedReference(unr);
             for (int i = 0; i < numParam; i++) {
-                Parameter p = new Parameter("p_" + pktId + "_"+ptype.getName()+"_" + i);
+                IntegerParameterType ptype;
+                Parameter p = new Parameter("p_" + pktId + "_" + basicIntType.getName() + "_" + i);
+                if (numAlarms < numParamWithAlarmsPerPacket) {
+                    ptypeb = new IntegerParameterType.Builder(basicIntType);
+                    ptypeb.setName("uint" + paramSizeInBits + "_" + j + "_" + i);
+                    ptypeb.addWarningAlarmRange(null, warningRange);
+                    ptypeb.addCriticalAlarmRange(null, criticalRange);
+                    ptype = ptypeb.build();
+                    ss.addParameterType(ptype);
+                    numAlarms++;
+                } else {
+                    ptype = basicIntType;
+                }
+
                 p.setParameterType(ptype);
-                ParameterEntry pe = new ParameterEntry(128 + paramSizeInBits * i, ReferenceLocationType.CONTAINER_START, p);
+                ParameterEntry pe = new ParameterEntry(128 + paramSizeInBits * i, ReferenceLocationType.CONTAINER_START,
+                        p);
                 sc.addEntry(pe);
                 ss.addParameter(p);
+
             }
             ss.addSequenceContainer(sc);
         }

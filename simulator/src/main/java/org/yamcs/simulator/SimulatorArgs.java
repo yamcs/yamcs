@@ -46,8 +46,11 @@ public class SimulatorArgs {
     @Parameter(names = "--perf-ps", description = "performance test: packet size")
     public int perfPs = 1400;
 
-    @Parameter(names = "--perf-ms", description = "performance test: interval in between packets in milliseconds")
+    @Parameter(names = "--perf-ms", description = "performance test: interval in between batch of packets in milliseconds")
     public long perfMs = 100l;
+
+    @Parameter(names = "--perf-cp", description = "performance test: percentange (0-100) of data changed between two subsequent versions of the same packet")
+    public float perfChangePercent = 10;
 
     @Parameter(names = "--type", description = "one of pus or columbus")
     public String type;
