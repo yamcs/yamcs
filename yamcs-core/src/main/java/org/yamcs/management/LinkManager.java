@@ -52,19 +52,17 @@ import com.google.common.util.concurrent.Service;
 import com.google.gson.Gson;
 
 /**
- * Service that manages all the data links
+ * Service that manages all the data links:
  *
- * <p>
- *
- * Compared to the old DataLinkInitializer this one:
  * <ul>
- * <li>is the endpoint for the /links API calls</li>
- * <li>takes care for the commanding links to subscribe/unsubscribe them from the streams whenever they are
- * enabled/disabled</li>
+ * <li>is endpoint for the /links API calls</li>
+ * <li>for the commanding links it will only send commands if the link is enabled. If no commanding link is enabled, a
+ * negative Sent ACK will be produced.</li>
  * <li>TODO: can set exclusive flags - i.e. only one link from a group can be enabled at a time</li>
  * </ul>
  *
  * The configuration of this service is done in the "dataLinks" sections of the yamcs.&lt;instance-name&gt;.yaml file.
+ *
  *
  * @author nm
  */
@@ -168,19 +166,18 @@ public class LinkManager {
         if (linkArgs == null) {
             linkArgs = YConfiguration.emptyConfig();
         }
+        // this is the old configuration where each link was configured one stream
+        Stream singleStream = getStream(linkArgs, "stream");
 
-        Stream stream = null;
-        String streamName = linkArgs.getString("stream", null);
-        if (streamName != null) {
-            stream = ydb.getStream(streamName);
-            if (stream == null) {
-                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
-            }
-        }
+        // this is the new configuration where one can specify one of each stream for a link
+        // such that we can have links doing both TC and TM
+        Stream tcStream = getStream(linkArgs, "tcStream");
+        Stream tmStream = getStream(linkArgs, "tmStream");
+        Stream ppStream = getStream(linkArgs, "ppStream");
 
         if (link instanceof TmPacketDataLink) {
-            if (stream != null) {
-                Stream streamf = stream;
+            Stream streamf = tmStream == null ? singleStream : tmStream;
+            if (streamf != null) {
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
                 InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
                 tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
@@ -189,6 +186,7 @@ public class LinkManager {
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
+            Stream stream = tcStream == null ? singleStream : tcStream;
 
             if (stream != null) {
                 TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
@@ -203,6 +201,7 @@ public class LinkManager {
         }
 
         if (link instanceof ParameterDataLink) {
+            Stream stream = ppStream == null ? singleStream : ppStream;
             if (stream != null) {
                 ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
             }
@@ -219,6 +218,17 @@ public class LinkManager {
         registerLink(link.getName(), json, link);
     }
 
+    Stream getStream(YConfiguration linkArgs, String configKey) {
+        Stream stream = null;
+        String streamName = linkArgs.getString(configKey, null);
+        if (streamName != null) {
+            stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+            }
+        }
+        return stream;
+    }
     private void processTmPacket(TmPacketDataLink tmLink, TmPacket tmPacket, Stream stream, InvalidPacketAction ipa) {
         if (tmPacket.isInvalid()) {
             if (ipa.action == Action.DROP) {

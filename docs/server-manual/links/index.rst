@@ -34,6 +34,16 @@ enabledAtStartup (boolean)
 stream (string)
     The name of the stream where the data is taken from or injected into.
 
+tmStream (string)
+    This is an alternative to *stream*; can be used for links serving more than one of TM, TC or PP (processed parameters).
+    
+tcStream (string)
+     This is an alternative to *stream*; can be used for links serving more than one of TM, TC or PP.
+    
+ppStream (string)
+     This is an alternative to *stream*; can be used for links serving more than one of TM, TC or PP.
+    
+
 invalidPackets (string)
     One of ``DROP``, ``PROCESS`` or ``DIVERT``. Used for TM links to specify what happens with the packets that the pre-processor decides are invalid:
 
