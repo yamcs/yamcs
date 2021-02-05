@@ -605,6 +605,7 @@ public class CfdpService extends AbstractYamcsService
                 .setDownload(false)
                 .setUpload(true)
                 .setReliability(true)
+                .setRemotePath(true)
                 .build();
     }
 }

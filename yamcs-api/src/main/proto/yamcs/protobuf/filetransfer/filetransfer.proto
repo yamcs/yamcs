@@ -158,7 +158,10 @@ message FileTransferCapabilities {
 	optional bool download = 2;
 	
 	//if true, yamcs-web will allow to chose reliable/non-reliable transfer 
-	optional bool reliability = 3;	 
+	optional bool reliability = 3;
+	
+    //if true, yamcs-web will show the section with the destination file/folder name (upload only)
+	optional bool remotePath = 4 ;
 }
 
 

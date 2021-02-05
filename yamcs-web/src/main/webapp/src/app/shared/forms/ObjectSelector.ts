@@ -27,6 +27,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   bucket: Bucket;
 
   @Input()
+  isMultiSelect: boolean;
+
+  @Input()
   path: string;
 
   @Output()
@@ -36,9 +39,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   dataSource = new MatTableDataSource<BrowseItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
-  selectedObject$ = new BehaviorSubject<BrowseItem | null>(null);
 
   private storageClient: StorageClient;
+  private selectedFileNames: Set<string> = new Set();
 
   private onChange = (_: string | null) => { };
   private onTouched = () => { };
@@ -47,13 +50,6 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
 
   constructor(yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
     this.storageClient = yamcs.createStorageClient();
-    this.selectionSubscription = this.selectedObject$.subscribe(item => {
-      if (item) {
-        return this.onChange(item.name);
-      } else {
-        return this.onChange(null);
-      }
-    });
   }
 
   ngOnChanges() {
@@ -85,7 +81,8 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   }
 
   private changedir(dir: ListObjectsResponse) {
-    this.selectedObject$.next(null);
+    this.selectedFileNames.clear();
+    this.updateFileNames();
     const items: BrowseItem[] = [];
     for (const prefix of dir.prefixes || []) {
       items.push({
@@ -108,11 +105,28 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
 
   selectFile(row: BrowseItem) {
     if (row.folder) {
-      this.selectedObject$.next(null);
       this.loadCurrentFolder(row.name);
     } else {
-      this.selectedObject$.next(row);
+      if (this.isMultiSelect) {
+        if (this.selectedFileNames.has(row.name)) {
+          this.selectedFileNames.delete(row.name);
+        } else {
+          this.selectedFileNames.add(row.name);
+        }
+      } else {
+        this.selectedFileNames.clear();
+        this.selectedFileNames.add(row.name);
+      }
+      this.updateFileNames();
     }
+  }
+
+  private updateFileNames() {
+    this.onChange(Array.from(this.selectedFileNames).join("|"));
+  }
+
+  isSelected(row: BrowseItem) {
+    return this.selectedFileNames.has(row.name);
   }
 
   selectParent() {
@@ -122,7 +136,8 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       const idx = withoutTrailingSlash.lastIndexOf('/');
       if (idx) {
         const parentPrefix = withoutTrailingSlash.substring(0, idx + 1);
-        this.selectedObject$.next(null);
+        this.selectedFileNames.clear();
+        this.updateFileNames();
         this.loadCurrentFolder(parentPrefix);
       }
     }

@@ -47,7 +47,7 @@ export class UploadFileDialog {
       object: ['', Validators.required],
     });
     this.remoteForm = formBuilder.group({
-      remotePath: ['', Validators.required],
+      remotePath: ['', this.service.capabilities.remotePath ? Validators.required : []],
       source: [firstSource, Validators.required],
       destination: [firstDestination, Validators.required],
       reliable: [true, []],
@@ -59,17 +59,21 @@ export class UploadFileDialog {
   }
 
   startTransfer() {
-    this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
-      direction: 'UPLOAD',
-      bucket: this.selectedBucket$.value!.name,
-      objectName: this.localForm.value['object'],
-      remotePath: this.remoteForm.value['remotePath'],
-      source: this.remoteForm.value['source'],
-      destination: this.remoteForm.value['destination'],
-      uploadOptions: {
-        reliable: this.remoteForm.value['reliable']
-      }
-    }).then(() => {
+    const objectNames:string[] = this.localForm.value['object'].split('|');
+    const promises = objectNames.map((name) => 
+      this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
+        direction: 'UPLOAD',
+        bucket: this.selectedBucket$.value!.name,
+        objectName: name,
+        remotePath: this.remoteForm.value['remotePath'],
+        source: this.remoteForm.value['source'],
+        destination: this.remoteForm.value['destination'],
+        uploadOptions: {
+          reliable: this.remoteForm.value['reliable']
+        }
+      })
+    );
+    Promise.all(promises).then(() => {
       this.dialogRef.close();
     });
   }
