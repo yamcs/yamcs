@@ -38,8 +38,7 @@
             ],
             "allowedCommonJsDependencies": [
               "brace/mode/javascript"
-            ],
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            ]
           },
           "configurations": {
             "production": {
