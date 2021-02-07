@@ -12,9 +12,10 @@
       </a>
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-      <button mat-button (click)="openInstanceDialog()">
-        <span class="selected-instance">{{ connectionInfo.instance?.name }}</span>
-        <mat-icon>arrow_drop_down</mat-icon>
+      <button class="selected-instance" mat-button (click)="openInstanceDialog()">
+        <mat-icon class="icon14" style="padding-right: 4px">scatter_plot</mat-icon>
+        {{ connectionInfo.instance?.name }}
+        <mat-icon class="icon14">arrow_drop_down</mat-icon>
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
@@ -42,29 +43,32 @@
                      style="margin-top: 8px"
                      matTooltip="Alarm State"></app-alarm-label>
 
-    <mat-menu #userMenu="matMenu" overlapTrigger="false">
+    <mat-menu #appMenu="matMenu" overlapTrigger="false" xPosition="before">
+      <a mat-menu-item routerLink="storage/buckets">
+        <mat-icon>storage</mat-icon>
+        Storage
+      </a>
+      <a mat-menu-item routerLink="admin" *ngIf="user | superuser">
+        <mat-icon>security</mat-icon>
+        Admin Area
+      </a>
+    </mat-menu>
+    <button mat-icon-button
+            [matMenuTriggerFor]="appMenu">
+      <mat-icon>apps</mat-icon>
+    </button>
+    <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before">
       <a mat-menu-item routerLink="profile">
         <mat-icon>account_box</mat-icon>
         Profile
       </a>
-      <ng-container *ngIf="user | superuser">
-        <mat-divider></mat-divider>
-        <a mat-menu-item routerLink="admin">
-          <mat-icon>security</mat-icon>
-          Admin Area
-        </a>
-      </ng-container>
-      <ng-container *ngIf="authInfo.requireAuthentication">
-        <mat-divider></mat-divider>
-        <a mat-menu-item (click)="logout()">
-          <mat-icon>exit_to_app</mat-icon>
-          Sign out
-        </a>
-      </ng-container>
+      <a mat-menu-item (click)="logout()" *ngIf="authInfo.requireAuthentication">
+        <mat-icon>exit_to_app</mat-icon>
+        Sign out
+      </a>
     </mat-menu>
     <button mat-button
-            [matMenuTriggerFor]="userMenu"
-            matTooltipPosition="left">
+            [matMenuTriggerFor]="userMenu">
       <mat-icon>support_agent</mat-icon>
       {{ user.getDisplayName() || user.getName() }}
     </button>

@@ -1,10 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
-import { CreateBucketDialog } from './buckets/CreateBucketDialog';
-import { RenameObjectDialog } from './buckets/RenameObjectDialog';
-import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
-import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { StreamDataComponent } from './databases/database/stream/StreamDataComponent';
 import { RecordComponent } from './databases/database/table/RecordComponent';
 import { ShowEnumDialog } from './databases/database/table/ShowEnumDialog';
@@ -42,9 +38,7 @@ const pipes = [
     AddRolesDialog,
     ApplicationCredentialsDialog,
     ChangeUserPasswordDialog,
-    CreateBucketDialog,
     RecordComponent,
-    RenameObjectDialog,
     ReplicationState,
     RouteDetail,
     ServiceState,
@@ -54,8 +48,6 @@ const pipes = [
     StreamDataComponent,
     ThreadsTable,
     TraceElement,
-    UploadObjectsDialog,
-    UploadProgressDialog,
     UsersTable,
   ],
 })

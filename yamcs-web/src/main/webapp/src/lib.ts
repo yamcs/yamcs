@@ -35,5 +35,6 @@ export * from './app/shared/forms/Select';
 export * from './app/shared/SharedModule';
 export * from './app/shared/template/InstancePage';
 export * as utils from './app/shared/utils';
+export * from './app/storage/StorageModule';
 export * from './app/telemetry/TelemetryModule';
 

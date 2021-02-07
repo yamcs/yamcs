@@ -41,7 +41,7 @@ export class UploadObjectsDialog {
       path = path.substring(0, path.length - 1);
     }
 
-    const files: { [key: string]: File } = this.filesInput.nativeElement.files;
+    const files: { [key: string]: File; } = this.filesInput.nativeElement.files;
 
     const uploads = [];
     for (const key in files) {

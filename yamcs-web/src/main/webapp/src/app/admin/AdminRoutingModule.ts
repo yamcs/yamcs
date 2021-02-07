@@ -3,9 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { BucketPage } from './buckets/BucketPage';
-import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
-import { BucketsPage } from './buckets/BucketsPage';
 import { ConnectionsPage } from './connections/ConnectionsPage';
 import { DatabasePage } from './databases/database/DatabasePage';
 import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
@@ -57,21 +54,6 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: AdminHomePage,
-      },
-      {
-        path: 'buckets',
-        pathMatch: 'full',
-        component: BucketsPage,
-      },
-      {
-        path: 'buckets/:instance/:name',
-        component: BucketPlaceholderPage,
-        children: [
-          {
-            path: '**',
-            component: BucketPage,
-          }
-        ],
       },
       {
         path: 'connections',
@@ -275,9 +257,6 @@ export class AdminRoutingModule { }
 
 export const routingComponents = [
   AdminHomePage,
-  BucketsPage,
-  BucketPage,
-  BucketPlaceholderPage,
   ConnectionsPage,
   CreateGroupPage,
   CreateServiceAccountPage,
