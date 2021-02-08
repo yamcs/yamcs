@@ -707,8 +707,8 @@ Expression Expression() throws StreamSqlException: {
     Expression retExpr;
 } {
     (
-        expr=AndExpression() {retExpr=expr;}
-        ["OR" expr=AndExpression() {retExpr=new OrExpression(retExpr,expr);} ]
+        expr = AndExpression() {retExpr=expr;}
+        ["OR" expr=AndExpression() {retExpr = new OrExpression(retExpr, expr);} ]
     )
     { 
         retExpr.setArgs(args);
@@ -718,25 +718,12 @@ Expression Expression() throws StreamSqlException: {
 
 Expression AndExpression() throws StreamSqlException: {
     Expression expr;
-    ArrayList<Expression> list=new ArrayList<Expression>();
+    ArrayList<Expression> list = new ArrayList<Expression>();
 } {
-    (
-        (
-            expr=UnaryLogicalExpression()
-            |
-            "(" expr=Expression() ")"
-        ) { list.add(expr); }
-        (
-            "AND"
-            (
-                expr=UnaryLogicalExpression()
-                |
-                "(" expr=Expression() ")"
-            ) { list.add(expr); }
-        )*
-    )
+      expr = UnaryLogicalExpression() { list.add(expr); }
+      ( "AND" expr=UnaryLogicalExpression() { list.add(expr); } )*
     {
-        if(list.size()==1) return list.get(0);
+        if(list.size() == 1) return list.get(0);
         else return new AndExpression(list);
     }
 }
@@ -745,7 +732,7 @@ Expression UnaryLogicalExpression() throws StreamSqlException: {
     boolean notset=false;
     Expression expr;
 } {
-    ["NOT" {notset=true;}] expr=RelationalExpression() 
+    ["NOT" {notset = true;}] expr = RelationalExpression() 
     {
 	if(notset) return new NotExpression(expr);
 	else return expr;
@@ -759,8 +746,8 @@ Expression RelationalExpression() throws StreamSqlException: {
     LikeClause likeClause;
     InClause inClause;
 } {
-    expr=SimpleExpression(){retExpr=expr;}
-    ( relOp=RelOp() expr=SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
+    expr = SimpleExpression() {retExpr=expr;}
+    ( relOp=RelOp() expr = SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
       |
       LOOKAHEAD(2) inClause=InClause() {retExpr=new InExpression(expr, inClause);}
       |
@@ -902,6 +889,7 @@ Expression PrimaryExpression() throws StreamSqlException: {
   | <S_FLOAT> {return new ValueExpression(Double.valueOf(token.image));}
   | <S_STRING> {return new ValueExpression(getNonEscapedString(token.image));}
   | <S_QMARK> {return nextArg();}
+  | LOOKAHEAD(3) "(" expr = SimpleExpression() ")" {return expr;}
   | "ARRAY" "[" exprList = ExpressionList() "]" {return new ArrayExpression(exprList); }
   | LOOKAHEAD(ObjectName() "(") expr=FunctionCall() {return expr;}
   | name=ObjectName() {return new ColumnExpression(name);}

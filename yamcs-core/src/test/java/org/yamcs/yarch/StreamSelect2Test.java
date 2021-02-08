@@ -53,6 +53,33 @@ public class StreamSelect2Test extends YarchTestCase {
     }
 
     @Test
+    public void testParanthesis() throws Exception {
+        createFeeder1();
+
+        execute("create stream stream_out1 as select (x+y) from stream_in");
+        List<Tuple> tlist = fetchAll("stream_out1");
+
+        assertEquals(n, tlist.size());
+        int k = 0;
+        for (Tuple tuple : tlist) {
+            int xpy = (Integer) tuple.getColumn(0);
+            assertEquals(3 * k, xpy);
+            k++;
+        }
+    }
+
+    @Test
+    public void testAnd() throws Exception {
+        createFeeder1();
+
+        execute("create stream stream_out1 as select * from stream_in where (x+3) >= y and x>2");
+        List<Tuple> tlist = fetchAll("stream_out1");
+        assertEquals(1, tlist.size());
+        Tuple t = tlist.get(0);
+        assertEquals(3, t.getIntColumn("x"));
+    }
+
+    @Test
     public void testWindow1() throws Exception {
         createFeeder1();
         execute("CREATE STREAM stream_out1 AS SELECT SUM(y) from stream_in[SIZE 5 ADVANCE 5 ON x]");
