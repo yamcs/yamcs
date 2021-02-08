@@ -69,6 +69,31 @@ public class StreamSelect2Test extends YarchTestCase {
     }
 
     @Test
+    public void testBitwiseAnd() throws Exception {
+        createFeeder1();
+
+        execute("create stream stream_out1 as select x, y<<1, y>>1, y^x, y|x from stream_in where x & 1 = 0");
+        List<Tuple> tlist = fetchAll("stream_out1");
+        assertEquals((n+1)/2, tlist.size());
+        int k = 0;
+        for (Tuple tuple : tlist) {
+            int x = (Integer) tuple.getColumn(0);
+            int y = 2 * x;
+            int yshiftLeft = (Integer) tuple.getColumn(1);
+            int yshiftRight = (Integer) tuple.getColumn(2);
+            int yxorx = (Integer) tuple.getColumn(3);
+            int yorx = (Integer) tuple.getColumn(4);
+            assertEquals(0, x & 1);
+            assertEquals(2 * k, x);
+            assertEquals(y << 1, yshiftLeft);
+            assertEquals(y >> 1, yshiftRight);
+            assertEquals(y ^ x, yxorx);
+            assertEquals(y | x, yorx);
+            k++;
+        }
+    }
+
+    @Test
     public void testAnd() throws Exception {
         createFeeder1();
 

@@ -811,12 +811,31 @@ void IsNullClause() throws StreamSqlException:{
 
 Expression SimpleExpression() throws StreamSqlException: {
     Expression expr;
-    AddOp addOp;
-    List<Expression>exprs=new ArrayList<Expression>();
-    List<AddOp> ops=new ArrayList<AddOp>();
+    BitwiseOp bitwiseOp;
+    List<Expression> exprs = new ArrayList<Expression>();
+    List<BitwiseOp> ops = new ArrayList<BitwiseOp>();
 } {
-    expr=MultiplicativeExpression() {exprs.add(expr);} 
-    ( addOp=AddOp() expr=MultiplicativeExpression() {exprs.add(expr); ops.add(addOp);} )* 
+    expr = AdditiveExpression() {exprs.add(expr);} 
+    ( LOOKAHEAD(2) bitwiseOp = BitwiseOp() expr = AdditiveExpression() {exprs.add(expr); ops.add(bitwiseOp);} )* 
+    {
+        if(ops.isEmpty()) {
+	     return exprs.get(0);
+        } else {
+	     return new BitwiseExpression(exprs, ops);
+        }
+    }
+}
+
+
+
+Expression AdditiveExpression() throws StreamSqlException: {
+    Expression expr;
+    AddOp addOp;
+    List<Expression>exprs = new ArrayList<Expression>();
+    List<AddOp> ops = new ArrayList<AddOp>();
+} {
+    expr = MultiplicativeExpression() {exprs.add(expr);} 
+    ( addOp=AddOp() expr = MultiplicativeExpression() {exprs.add(expr); ops.add(addOp);} )* 
     {
         if(ops.isEmpty()) {
 	     return exprs.get(0);
@@ -907,12 +926,23 @@ String ObjectName() throws StreamSqlException:
 }
 
 
+BitwiseOp BitwiseOp()  throws StreamSqlException: {
+} {
+    "&" {return BitwiseOp.AND;}
+  | "|" {return BitwiseOp.OR;}
+  | "^" {return BitwiseOp.XOR;}
+  | "<<" {return BitwiseOp.LSHIFT;}
+  | ">>" {return BitwiseOp.RSHIFT;}
+}
+
 AddOp AddOp()  throws StreamSqlException: {
 } {
     "+" {return AddOp.PLUS;}
   | "-" {return AddOp.MINUS;}
   | "||" {return AddOp.STRING_PLUS;}
 }
+
+
 
 MultOp MultOp() throws StreamSqlException: {
 } {

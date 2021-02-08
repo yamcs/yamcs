@@ -129,10 +129,18 @@ public abstract class Expression {
 
     protected void fillCode_InputDefVars( Collection<ColumnDefinition> inputs, StringBuilder code) {
         for (ColumnDefinition cd : inputs) {
+
             String javaColIdentifier = "col" + sanitizeName(cd.getName());
-            code.append("\t\t" + cd.getType().javaType() + " " + javaColIdentifier + 
-                    " =  (" + cd.getType().javaType() + ")tuple.getColumn(\""
+            DataType dtype = cd.getType();
+            if (dtype.isPrimitiveJavaType()) {
+                code.append("\t\t" + dtype.primitiveJavaType() + " " + javaColIdentifier +
+                        " =  (" + dtype.javaType() + ")tuple.getColumn(\""
                     + cd.getName() + "\");\n");
+            } else {
+                code.append("\t\t" + dtype.javaType() + " " + javaColIdentifier +
+                        " =  (" + dtype.javaType() + ")tuple.getColumn(\""
+                        + cd.getName() + "\");\n");
+            }
         }
     }
 

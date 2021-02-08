@@ -150,7 +150,7 @@ public class ColumnExpression extends Expression {
         return name;
     }
 
-    private String capitalizeFirstLetter(String original) {
+    public static String capitalizeFirstLetter(String original) {
         if (original == null || original.length() == 0) {
             return original;
         }

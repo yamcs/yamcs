@@ -79,7 +79,7 @@ public class DataType {
         if (name == null) {
             throw new NullPointerException();
         }
-        switch(name) {
+        switch (name) {
         case "BYTE":
             return BYTE;
         case "SHORT":
@@ -88,15 +88,15 @@ public class DataType {
             return INT;
         case "DOUBLE":
             return DOUBLE;
-        case"STRING":
+        case "STRING":
             return STRING;
-        case "BINARY": 
+        case "BINARY":
             return BINARY;
-        case "BOOLEAN": 
+        case "BOOLEAN":
             return BOOLEAN;
         case "TIMESTAMP":
             return TIMESTAMP;
-        case "ENUM": 
+        case "ENUM":
             return ENUM;
         case "LONG":
             return LONG;
@@ -194,7 +194,21 @@ public class DataType {
         default:
             throw new IllegalStateException("no primitive java type for " + val);
         }
+    }
 
+    public boolean isPrimitiveJavaType() {
+        switch (val) {
+        case BOOLEAN:
+        case BYTE:
+        case DOUBLE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case TIMESTAMP:
+            return true;
+        default:
+            return false;
+        }
     }
 
     @Override
