@@ -3,6 +3,7 @@ package org.yamcs.yarch.rocksdb;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Partition;
 
 public class RdbPartition extends Partition {
@@ -19,5 +20,11 @@ public class RdbPartition extends Partition {
         super(start, end, v);
         this.dir = dir;
         this.tbsIndex = tbsIndex;
+    }
+    
+    @Override
+    public String toString() {
+        return "Partition [start=" + TimeEncoding.toString(start) + ", end=" + TimeEncoding.toString(end) +
+                ", value=" + value + ", tbsIndex = " + tbsIndex + "]";
     }
 }

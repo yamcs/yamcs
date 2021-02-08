@@ -7,8 +7,8 @@ import org.yamcs.utils.TimeEncoding;
  *  It is subclassed by storage engines to store additional information 
  */
 public class Partition {
-    final long start,  end; //for time based partitioning 
-    final Object value; //for value based partitioning, otherwise null
+    final protected long start, end; // for time based partitioning
+    final protected Object value; // for value based partitioning, otherwise null
 
     public Partition(long start, long end, Object value) {
         this.start = start;
