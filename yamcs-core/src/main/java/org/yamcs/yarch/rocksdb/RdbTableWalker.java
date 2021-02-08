@@ -99,6 +99,9 @@ public class RdbTableWalker extends AbstractTableWalker {
             // create an iterator for each partitions
             for (Partition p : interval) {
                 p1 = (RdbPartition) p;
+                if (!ascending) {
+                    readOptions.setTotalOrderSeek(true);
+                }
                 RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
                 DbIterator it = getPartitionIterator(rocksIt, p1.tbsIndex, ascending, tableRange);
                 if (it.isValid()) {
