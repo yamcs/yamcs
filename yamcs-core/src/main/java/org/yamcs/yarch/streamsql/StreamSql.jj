@@ -207,13 +207,16 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 
 TOKEN : /* Numeric Constants */
 {
-    < S_INTEGER: ( <DIGIT> )+ >
+    < S_INTEGER: <DECIMAL_LITERAL> | <HEX_LITERAL> >
+  |  <#DECIMAL_LITERAL: (<DIGIT>)+>
+  |  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
   | < S_FLOAT:
         (<DIGIT>)* "." (<DIGIT>)+ (<EXPONENT>)?
       | (<DIGIT>)+ <EXPONENT>
     >
   | < #EXPONENT: ( <SIGN> )? ["e","E"] ( <DIGIT> )+ >
   | < #DIGIT: ["0" - "9"] >
+  | < #HEX_DIGIT: ["0" - "9", "a" - "h", "A" - "H"] >
   | < #SIGN: ["-","+"]>
   | < S_STRING: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
 }
@@ -900,9 +903,15 @@ Expression PrimaryExpression() throws StreamSqlException: {
 } {
     <S_INTEGER> 
       {
-         BigInteger bi=new BigInteger(token.image); 
-         if (bi.bitLength()<32) return new ValueExpression((Integer)bi.intValue());
-	 if (bi.bitLength()<64) return new ValueExpression((Long)bi.longValue());
+         String s = token.image;
+         BigInteger bi ;
+         if(s.startsWith("0x") || s.startsWith("0X")) {
+             bi = new BigInteger(s.substring(2), 16);
+         } else {
+             bi = new BigInteger(s);
+         }
+         if (bi.bitLength() < 32) return new ValueExpression((Integer)bi.intValue());
+	     if (bi.bitLength() < 64) return new ValueExpression((Long)bi.longValue());
          throw new ParseException("number too big for an int or a long: "+bi);
       }
   | <S_FLOAT> {return new ValueExpression(Double.valueOf(token.image));}
@@ -1045,11 +1054,11 @@ WindowSpecification WindowSpecification() throws StreamSqlException: {
 } {
     name=ObjectName() {wspec=new WindowSpecification(name);}
     |
-    "SIZE" size=NumericConstant() "ADVANCE" advance=NumericConstant()
-    ( "TIME" {wspec=new WindowSpecification(size,advance,WindowSpecification.Type.TIME);}
-    | "TUPLES" {wspec=new WindowSpecification(size,advance,WindowSpecification.Type.TUPLES);}
+    "SIZE" size = NumericConstant() "ADVANCE" advance = NumericConstant()
+    ( "TIME" {wspec = new WindowSpecification(size,advance,WindowSpecification.Type.TIME);}
+    | "TUPLES" {wspec = new WindowSpecification(size,advance,WindowSpecification.Type.TUPLES);}
     | "ON" 
-    field=ObjectName() {wspec=new WindowSpecification(size,advance,WindowSpecification.Type.FIELD,field);}
+    field=ObjectName() {wspec = new WindowSpecification(size,advance,WindowSpecification.Type.FIELD,field);}
     )
   {return wspec;}
 }
@@ -1060,11 +1069,11 @@ TupleSourceExpression TupleSourceExpression() throws StreamSqlException: {
     String name, histoColumn;
     BigDecimal mergeTime;
 } {
-    (name=ObjectName() {tsrc=new TupleSourceExpression(name);} 
-         [ <K_HISTOGRAM> "(" histoColumn=ObjectName() {tsrc.setHistogramColumn(histoColumn);} 
-          [ "," mergeTime=NumericConstant()  { tsrc.setHistogramMergeTime(mergeTime);}] 
+    (name=ObjectName() {tsrc = new TupleSourceExpression(name);} 
+         [ <K_HISTOGRAM> "(" histoColumn = ObjectName() {tsrc.setHistogramColumn(histoColumn);} 
+          [ "," mergeTime = NumericConstant()  { tsrc.setHistogramMergeTime(mergeTime);}] 
          ")" ]
-     | LOOKAHEAD(3) "(" expr=StreamExpression() ")" {tsrc=new TupleSourceExpression(expr);}
+     | LOOKAHEAD(3) "(" expr = StreamExpression() ")" {tsrc=new TupleSourceExpression(expr);}
     )
     {
 	return tsrc;

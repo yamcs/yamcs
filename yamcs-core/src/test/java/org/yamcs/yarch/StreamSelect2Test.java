@@ -69,10 +69,22 @@ public class StreamSelect2Test extends YarchTestCase {
     }
 
     @Test
+    public void testHexNumbers() throws Exception {
+        createFeeder1();
+
+        execute("create stream stream_out1 as select * from stream_in where x>40 and x<0x2A");
+        List<Tuple> tlist = fetchAll("stream_out1");
+
+        assertEquals(1, tlist.size());
+        Tuple t = tlist.get(0);
+        assertEquals(41, t.getIntColumn("x"));
+    }
+
+    @Test
     public void testBitwiseAnd() throws Exception {
         createFeeder1();
 
-        execute("create stream stream_out1 as select x, y<<1, y>>1, y^x, y|x from stream_in where x & 1 = 0");
+        execute("create stream stream_out1 as select x, y<<1, y>>1, y^x, y|x from stream_in where x & 0x1 = 0");
         List<Tuple> tlist = fetchAll("stream_out1");
         assertEquals((n+1)/2, tlist.size());
         int k = 0;

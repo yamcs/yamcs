@@ -231,29 +231,35 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int S_INTEGER = 114;
   /** RegularExpression Id. */
-  int S_FLOAT = 115;
+  int DECIMAL_LITERAL = 115;
   /** RegularExpression Id. */
-  int EXPONENT = 116;
+  int HEX_LITERAL = 116;
   /** RegularExpression Id. */
-  int DIGIT = 117;
+  int S_FLOAT = 117;
   /** RegularExpression Id. */
-  int SIGN = 118;
+  int EXPONENT = 118;
   /** RegularExpression Id. */
-  int S_STRING = 119;
+  int DIGIT = 119;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 120;
+  int HEX_DIGIT = 120;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 121;
+  int SIGN = 121;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 122;
+  int S_STRING = 122;
   /** RegularExpression Id. */
-  int LETTER = 123;
+  int LINE_COMMENT = 123;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 124;
+  int MULTI_LINE_COMMENT = 124;
   /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 125;
+  int S_IDENTIFIER = 125;
   /** RegularExpression Id. */
-  int S_QMARK = 126;
+  int LETTER = 126;
+  /** RegularExpression Id. */
+  int SPECIAL_CHARS = 127;
+  /** RegularExpression Id. */
+  int S_DOUBLE_QUOTED_IDENTIFIER = 128;
+  /** RegularExpression Id. */
+  int S_QMARK = 129;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -375,9 +381,12 @@ public interface StreamSqlParserConstants {
     "\"WHERE\"",
     "\"WITH\"",
     "<S_INTEGER>",
+    "<DECIMAL_LITERAL>",
+    "<HEX_LITERAL>",
     "<S_FLOAT>",
     "<EXPONENT>",
     "<DIGIT>",
+    "<HEX_DIGIT>",
     "<SIGN>",
     "<S_STRING>",
     "<LINE_COMMENT>",
