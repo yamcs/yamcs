@@ -31,6 +31,7 @@ import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.FileUtils;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -65,7 +66,7 @@ public class CfdpIntegrationTest {
         
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
-       // org.yamcs.LoggingUtils.enableLogging(java.util.logging.Level.FINE);
+        // org.yamcs.LoggingUtils.enableLogging(java.util.logging.Level.FINE);
     }
 
     @Before
@@ -257,8 +258,9 @@ public class CfdpIntegrationTest {
                     }
 
                     if (trsf == null) {
-                        trsf = new CfdpIncomingTransfer("test", 1, executor, config, packet.getHeader(), cfdpIn,
-                                incomingBucket, eventProducer, MyFileReceiver.this, Collections.emptyMap());
+                        trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,
+                                packet.getHeader(), cfdpIn, incomingBucket, eventProducer, MyFileReceiver.this,
+                                Collections.emptyMap());
                     }
                     // System.out.println("processing packet "+packet);
                     trsf.processPacket(packet);

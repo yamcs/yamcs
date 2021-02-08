@@ -39,7 +39,7 @@ export class FailedTransfersTab implements OnDestroy {
     this.syncSubscription = synchronizer.sync(() => {
       if (this.dirty) {
         const values = [...this.transfersById.values()];
-        values.sort((a, b) => a.transfer.startTime.localeCompare(b.transfer.startTime));
+        values.sort((a, b) => a.transfer.creationTime.localeCompare(b.transfer.creationTime));
         this.dataSource.data = values;
         this.dirty = false;
       }

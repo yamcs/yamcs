@@ -31,6 +31,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected final Log log;
     protected final long startTime;
     protected final long wallclockStartTime;
+    protected final long creationTime;
     
     final TransferMonitor monitor;
     final long destinationId;
@@ -67,7 +68,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     final Map<ConditionCode, FaultHandlingAction> faultHandlerActions;
 
-    public OngoingCfdpTransfer(String yamcsInstance, long id, ScheduledThreadPoolExecutor executor,
+    public OngoingCfdpTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, CfdpTransactionId cfdpTransactionId, long destinationId, Stream cfdpOut,
             EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
@@ -81,6 +82,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
         this.log = new Log(this.getClass(), yamcsInstance);
         this.id = id;
         this.destinationId = destinationId;
+        this.creationTime = creationTime;
         if (monitor == null) {
             throw new NullPointerException("the monitor cannot be null");
         }
@@ -249,5 +251,9 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     protected String toEventMsg(MetadataPacket packet) {
         return packet.toJson();
+    }
+
+    public long getCreationTime() {
+        return creationTime;
     }
 }

@@ -159,4 +159,15 @@ senderFaultHandlers (map)
 
 receiverFaultHandlers (map)
     Similar with ``senderFaultHandlers`` but applies when the service works as Receiver (i.e. for downlinks). 
-    
+
+maxNumPendingDownloads (integer)
+    The maximum number of allowed concurrent downloads. If this limit is reached, any PDU that would start a new dowload is dropped and an event message generated. Default: ``100``
+
+maxNumPendingUploads (integer)
+    The maximum number of allowed concurrent uploads. If this limit is reached, the new uploads are queued. Default: ``10``
+
+directoryTerminators (list)
+    When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]" ``
+
+allowConcurrentFileOverwrites (boolean)
+    If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case of multiple files are uploaded from the yamcs-web. Default: ``true``

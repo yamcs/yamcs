@@ -95,10 +95,10 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     MetadataPacket metadata;
     ConditionCode reasonForCancellation;
 
-    public CfdpOutgoingTransfer(String yamcsInstance, long id, ScheduledThreadPoolExecutor executor, PutRequest request,
+    public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor, PutRequest request,
             Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, executor, config, makeTransactionId(request.getSourceId(), config, id),
+        super(yamcsInstance, id, creationTime, executor, config, makeTransactionId(request.getSourceId(), config, id),
                 request.getDestinationId(), cfdpOut,
                 eventProducer, monitor, faultHandlerActions);
         this.request = request;
@@ -475,7 +475,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         return new MetadataPacket(
                 closureRequested, checksumType,
                 request.getFileLength(),
-                "", // no source file name, the data will come from a bucket
+                request.getObjectName(),
                 request.getTargetPath(),
                 new ArrayList<FileStoreRequest>(),
                 new ArrayList<MessageToUser>(), // no user messages

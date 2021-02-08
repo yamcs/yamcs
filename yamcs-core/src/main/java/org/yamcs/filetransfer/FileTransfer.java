@@ -15,6 +15,9 @@ public interface FileTransfer {
     TransferState getTransferState();
     boolean isReliable();
     String getFailuredReason();
+
+    long getCreationTime();
+
     long getStartTime();
     boolean pausable();
     boolean cancellable();

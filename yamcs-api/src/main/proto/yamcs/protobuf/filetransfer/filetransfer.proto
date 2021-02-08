@@ -184,6 +184,7 @@ message TransferInfo {
   //unique identifier assigned by the file transfer service
   optional uint64 id = 1;
   
+  //when the transfer has started. Note that this will not be set for QUEUED transfers.
   optional google.protobuf.Timestamp startTime = 2;
   optional TransferState state = 3;
 
@@ -206,6 +207,9 @@ message TransferInfo {
   // valid for CFDP: transaction id;
   // for the incoming transfers it is assigned by the remote peer so therefore might not be unique
   optional TransactionId transactionId = 12;
+  
+  // when the transfer has been created. 
+  optional google.protobuf.Timestamp creationTime = 13;
 }
 
 message CreateTransferRequest {

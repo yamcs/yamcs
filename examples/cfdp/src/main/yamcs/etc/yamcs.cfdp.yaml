@@ -40,6 +40,8 @@ services:
      # Decreasign this number will make the packets queue up in the TCP queue
      # and the CFDP sender will timeout waiting for the EOF ACK
      sleepBetweenPdus: 1000
+     #The simulator only supports one transfer at a time
+     maxNumPendingUploads: 1
      localEntities:
        - name: id11
          id: 11

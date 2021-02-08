@@ -72,7 +72,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 request.hasServiceName() ? request.getServiceName() : null);
 
         List<FileTransfer> transfers = new ArrayList<>(ftService.getTransfers());
-        Collections.sort(transfers, (a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
+        Collections.sort(transfers, (a, b) -> Long.compare(b.getCreationTime(), a.getCreationTime()));
 
         ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
         for (FileTransfer transfer : transfers) {
@@ -255,10 +255,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     }
 
     private static TransferInfo toTransferInfo(FileTransfer transfer) {
-        Timestamp startTime = TimeEncoding.toProtobufTimestamp(transfer.getStartTime());
         TransferInfo.Builder tib = TransferInfo.newBuilder()
                 .setId(transfer.getId())
-                .setStartTime(startTime)
                 .setState(transfer.getTransferState())
                 .setBucket(transfer.getBucketName())
                 .setObjectName(transfer.getObjectName())
@@ -269,8 +267,20 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 .setReliable(transfer.isReliable());
         if (transfer instanceof CfdpFileTransfer) {
             CfdpTransactionId txid = ((CfdpFileTransfer) transfer).getTransactionId();
-            tib.setTransactionId(toTransactionId(txid));
+            if (txid != null) {// queued transfers do not have a transaction id
+                tib.setTransactionId(toTransactionId(txid));
+            }
         }
+
+        if (transfer.getStartTime() != TimeEncoding.INVALID_INSTANT) {
+            tib.setStartTime(TimeEncoding.toProtobufTimestamp(transfer.getStartTime()));
+        }
+
+        // creation time should always be there in the current code but in older versions this didn't exist
+        if (transfer.getCreationTime() != TimeEncoding.INVALID_INSTANT) {
+            tib.setCreationTime(TimeEncoding.toProtobufTimestamp(transfer.getCreationTime()));
+        }
+
         String failureReason = transfer.getFailuredReason();
         if (failureReason != null) {
             tib.setFailureReason(failureReason);
