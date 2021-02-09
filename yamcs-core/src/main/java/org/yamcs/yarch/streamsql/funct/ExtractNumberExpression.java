@@ -18,13 +18,11 @@ public class ExtractNumberExpression extends Expression {
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-
-        String c0name = children[0].getColumnName();
         code.append("org.yamcs.utils.ByteArrayUtils.");
         code.append(fname);
         code.append("(");
-        code.append("col").append(c0name)
-            .append(", ");
+        children[0].fillCode_getValueReturn(code);
+        code.append(", ");
         children[1].fillCode_getValueReturn(code);
         code.append(")");
     }

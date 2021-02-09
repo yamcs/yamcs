@@ -1,7 +1,18 @@
 <div class="local-selector mat-typography">
+  <form [formGroup]="localForm" class="ya-form">
     <h2>Download File</h2>
     <div class="table-caption-wrapper">
       <label class="table-caption">Bucket</label>
+    </div>
+    <div class="table-breadcrumb" *ngIf="breadcrumb$ | async as breadcrumb">
+      <app-breadcrumb-trail>
+        <app-breadcrumb icon="account_tree" [action]="true"
+                        (click)="changePrefix('')"></app-breadcrumb>
+        <app-breadcrumb *ngFor="let item of breadcrumb"
+                        [label]="item.name"
+                        [action]="true"
+                        (click)="changePrefix(item.prefix)"></app-breadcrumb>
+      </app-breadcrumb-trail>
     </div>
     <div class="bucket-table-wrapper">
       <table mat-table [dataSource]="dataSource" class="ya-data-table">
@@ -18,14 +29,22 @@
             (click)="selectBucket(row)"></tr>
       </table>
     </div>
-    <div class="object-table-wrapper" style="border: none;">
-      The file will be saved with the source file name. Existing files will be overwritten.
+    <div class="object-table-wrapper">
+      <ng-container *ngIf="selectedBucket$ | async as bucket">
+        <app-object-selector #selector
+                             formControlName="object"
+                             [bucket]="bucket"
+                             [isMultiSelect]="false"
+                             [foldersOnly]="true"
+                             (prefixChange)="updateBreadcrumb($event)"></app-object-selector>
+      </ng-container>
     </div>
+  </form>
 </div>
 
 <div class="remote-selector mat-typography">
   <form [formGroup]="remoteForm" class="ya-form">
-    <h2 style="margin-top: 16px">Specify Source File</h2>
+    <h2 style="margin-top: 16px">Source File</h2>
     <label>
       Filename
       <input type="text" formControlName="remotePath"

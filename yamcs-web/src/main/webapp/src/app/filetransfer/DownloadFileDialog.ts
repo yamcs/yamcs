@@ -14,6 +14,7 @@ import { ObjectSelector } from '../shared/forms/ObjectSelector';
 })
 export class DownloadFileDialog {
 
+  localForm: FormGroup;
   remoteForm: FormGroup;
 
   service: FileTransferService;
@@ -42,6 +43,9 @@ export class DownloadFileDialog {
     this.storageClient.getBuckets('_global').then(buckets => {
       this.dataSource.data = buckets || [];
     });
+    this.localForm = formBuilder.group({
+      object: ['', []],
+    });
     this.remoteForm = formBuilder.group({
       remotePath: ['', Validators.required],
       source: [firstSource, Validators.required],
@@ -58,7 +62,7 @@ export class DownloadFileDialog {
     this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
       direction: 'DOWNLOAD',
       bucket: this.selectedBucket$.value!.name,
-      objectName: this.remoteForm.value['remotePath'],
+      objectName: this.objectSelector.currentPrefix$.value || "",
       remotePath: this.remoteForm.value['remotePath'],
       source: this.remoteForm.value['source'],
       destination: this.remoteForm.value['destination'],

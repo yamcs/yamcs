@@ -95,6 +95,21 @@ public class StreamSelectBinaryFunctionTest extends YarchTestCase {
     }
 
     @Test
+    public void testExtractUnhex() throws Exception {
+        createFeeder1();
+        execute("create stream stream_out1 as select extract_short(unhex('010203'), 1) + y as c_y from stream_in");
+        List<Tuple> l = fetchAll("stream_out1");
+        byte[] ic = new byte[4];
+        assertEquals(n, l.size());
+        for (int i = 0; i < n; i++) {
+            Tuple t = l.get(i);
+            ByteArrayUtils.encodeInt(i, ic, 0);
+            int cy = t.getIntColumn("c_y");
+            assertEquals(0x0203 + 2, cy);
+        }
+    }
+
+    @Test
     public void testBinaryColName() throws Exception {
         createFeeder1();
         execute("create stream stream_out1 as select x as binary from stream_in");

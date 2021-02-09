@@ -1,10 +1,12 @@
 package org.yamcs.cfdp.pdu;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cfdp.OngoingCfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
@@ -46,43 +48,71 @@ public abstract class CfdpPacket {
 
     public abstract int getDataFieldLength();
 
-    public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
-        CfdpHeader header = new CfdpHeader(buffer);
-        int limit = header.getLength() + CfdpHeader.getDataLength(buffer);
-        if (limit > buffer.limit()) {
-            throw new IllegalArgumentException("buffer too short, from header expected " + limit + " bytes, but only "
-                    + buffer.limit() + " bytes available");
+    /**
+     * Reads a CFDP PDU from the ByteBuffer which has to have the position set to 0.
+     * <p>
+     * The buffer can contain more data than one PDU, at the end of the call the position will be set to the end of the
+     * PDU.
+     * <p>
+     * In case of error (e.g. cannot decode header) a PduDecodingException is thrown and the position is undetermined.
+     */
+    public static CfdpPacket getCFDPPacket(ByteBuffer bb) throws PduDecodingException {
+        assert (bb.position() == 0);
+
+        CfdpHeader header;
+
+        try {
+            header = new CfdpHeader(bb);
+        } catch (BufferUnderflowException e) {
+            throw new PduDecodingException("short PDU, size: " + bb.limit(), getData(bb), e);
         }
-        buffer.limit(limit);
+
+        int pduSize = header.getLength() + CfdpHeader.getDataLength(bb);
+        if (pduSize > bb.limit()) {
+            throw new PduDecodingException(
+                    "buffer too short, from header expected PDU of size" + pduSize + " bytes, but only "
+                            + bb.limit() + " bytes available",
+                    getData(bb));
+        }
+        bb.limit(pduSize);
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
-            switch (FileDirectiveCode.readFileDirectiveCode(buffer)) {
-            case EOF:
-                toReturn = new EofPacket(buffer, header);
-                break;
-            case FINISHED:
-                toReturn = new FinishedPacket(buffer, header);
-                break;
-            case ACK:
-                toReturn = new AckPacket(buffer, header);
-                break;
-            case METADATA:
-                toReturn = new MetadataPacket(buffer, header);
-                break;
-            case NAK:
-                toReturn = new NakPacket(buffer, header);
-                break;
-            case PROMPT:
-                toReturn = new PromptPacket(buffer, header);
-                break;
-            case KEEP_ALIVE:
-                toReturn = new KeepAlivePacket(buffer, header);
-                break;
-            default:
-                break;
+            FileDirectiveCode fdc = FileDirectiveCode.readFileDirectiveCode(bb);
+            try {
+                switch (fdc) {
+                case EOF:
+                    toReturn = new EofPacket(bb, header);
+                    break;
+                case FINISHED:
+                    toReturn = new FinishedPacket(bb, header);
+                    break;
+                case ACK:
+                    toReturn = new AckPacket(bb, header);
+                    break;
+                case METADATA:
+                    toReturn = new MetadataPacket(bb, header);
+                    break;
+                case NAK:
+                    toReturn = new NakPacket(bb, header);
+                    break;
+                case PROMPT:
+                    toReturn = new PromptPacket(bb, header);
+                    break;
+                case KEEP_ALIVE:
+                    toReturn = new KeepAlivePacket(bb, header);
+                    break;
+                default:
+                    break;
+                }
+            } catch (BufferUnderflowException e) {
+                throw new PduDecodingException("short " + fdc + " PDU; size: " + pduSize, getData(bb), e);
             }
         } else {
-            toReturn = new FileDataPacket(buffer, header);
+            try {
+                toReturn = new FileDataPacket(bb, header);
+            } catch (BufferUnderflowException e) {
+                throw new PduDecodingException("short file data PDU; size: " + pduSize, getData(bb), e);
+            }
         }
         if (toReturn != null && header.withCrc()) {
             if (!toReturn.crcValid()) {
@@ -90,6 +120,13 @@ public abstract class CfdpPacket {
             }
         }
         return toReturn;
+    }
+
+    private static byte[] getData(ByteBuffer bb) {
+        byte[] data = new byte[bb.limit()];
+        bb.position(0);
+        bb.get(data);
+        return data;
     }
 
     public byte[] toByteArray() {
@@ -131,7 +168,7 @@ public abstract class CfdpPacket {
         if (tuple.hasColumn("pdu")) {
             return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("pdu"))));
         } else {
-            throw new IllegalStateException();
+            throw new ConfigurationException("no column named 'pdu' in the tuple");
         }
     }
 

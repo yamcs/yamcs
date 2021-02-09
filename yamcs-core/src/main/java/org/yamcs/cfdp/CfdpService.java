@@ -1,5 +1,7 @@
 package org.yamcs.cfdp;
 
+import static org.yamcs.cfdp.CompletedTransfer.TDEF;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,11 +22,6 @@ import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
-import org.yamcs.filetransfer.FileTransfer;
-import org.yamcs.filetransfer.FileTransferService;
-import org.yamcs.filetransfer.InvalidRequestException;
-import org.yamcs.filetransfer.TransferMonitor;
-import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -36,12 +33,19 @@ import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.PduDecodingException;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferService;
+import org.yamcs.filetransfer.InvalidRequestException;
+import org.yamcs.filetransfer.TransferMonitor;
+import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
@@ -54,8 +58,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 import com.google.common.collect.Streams;
-
-import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 /**
  * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
@@ -78,6 +80,7 @@ public class CfdpService extends AbstractYamcsService
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
     static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
     static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
+    static final String ETYPE_PDU_DECODING_ERROR = "PDU_DECODING_ERROR";
 
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
@@ -427,7 +430,15 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        CfdpPacket packet = CfdpPacket.fromTuple(tuple);
+        CfdpPacket packet;
+        try {
+            packet = CfdpPacket.fromTuple(tuple);
+        } catch (PduDecodingException e) {
+            log.warn("Error decoding PDU: {}, packet: {}", e.getMessage(),
+                    StringConverter.arrayToHexString(e.getData(), true));
+            eventProducer.sendInfo(ETYPE_PDU_DECODING_ERROR, "Error decoding CFDP PDU; " + e.getMessage());
+            return;
+        }
         CfdpTransactionId id = packet.getTransactionId();
 
         OngoingCfdpTransfer transfer = null;
@@ -524,10 +535,12 @@ public class CfdpService extends AbstractYamcsService
                 .orElse(null);
     }
 
+    @Override
     public void registerTransferMonitor(TransferMonitor listener) {
         transferListeners.add(listener);
     }
 
+    @Override
     public void unregisterTransferMonitor(TransferMonitor listener) {
         transferListeners.remove(listener);
     }
@@ -576,12 +589,14 @@ public class CfdpService extends AbstractYamcsService
         }
     }
 
+    @Override
     public List<EntityInfo> getLocalEntities() {
         return localEntities.values().stream()
                 .map(c -> EntityInfo.newBuilder().setName(c.name).setId(c.id).build())
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<EntityInfo> getRemoteEntities() {
         return remoteEntities.values().stream()
                 .map(c -> EntityInfo.newBuilder().setName(c.name).setId(c.id).build())
@@ -606,7 +621,7 @@ public class CfdpService extends AbstractYamcsService
                     .filter(trsf -> isRunning(trsf))
                     .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
                 throw new InvalidRequestException(
-                        "There is already a transfer ongoning to '" + absoluteDestinationPath
+                        "There is already a transfer ongoing to '" + absoluteDestinationPath
                                 + "' and allowConcurrentFileOverwrites is false");
             }
 
