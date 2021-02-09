@@ -29,10 +29,11 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         this.conditionCode = ConditionCode.readConditionCode(temp);
         this.fileChecksum = CfdpUtils.getUnsignedInt(buffer);
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
-
-        if (conditionCode != ConditionCode.NO_ERROR
-                && conditionCode != ConditionCode.RESERVED) {
-            this.faultLocation = TLV.readTLV(buffer);
+        if (buffer.hasRemaining()) {
+            if (conditionCode != ConditionCode.NO_ERROR
+                    && conditionCode != ConditionCode.RESERVED) {
+                this.faultLocation = TLV.readTLV(buffer);
+            }
         }
     }
 
@@ -56,11 +57,11 @@ public class EofPacket extends CfdpPacket implements FileDirective {
     public ConditionCode getConditionCode() {
         return conditionCode;
     }
-    
+
     public long getFileChecksum() {
         return this.fileChecksum;
     }
-    
+
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
         return FileDirectiveCode.EOF;
