@@ -39,11 +39,7 @@ public enum FileDirectiveCode {
     }
 
     public static FileDirectiveCode readFileDirectiveCode(ByteBuffer buffer) {
-        return readFileDirectiveCode(buffer.get());
-    }
-
-    public static FileDirectiveCode readFileDirectiveCode(byte b) {
-        return FileDirectiveCode.fromCode(b);
+        return FileDirectiveCode.fromCode(buffer.get());
     }
 
     // In the ACK packets, the ACKed packet File Directive is present as the first half of a byte

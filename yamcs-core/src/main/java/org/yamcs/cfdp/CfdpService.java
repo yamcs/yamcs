@@ -36,12 +36,14 @@ import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.PduDecodingException;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
@@ -78,6 +80,7 @@ public class CfdpService extends AbstractYamcsService
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
     static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
     static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
+    static final String ETYPE_PDU_DECODING_ERROR = "PDU_DECODING_ERROR";
 
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
@@ -427,7 +430,15 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        CfdpPacket packet = CfdpPacket.fromTuple(tuple);
+        CfdpPacket packet;
+        try {
+            packet = CfdpPacket.fromTuple(tuple);
+        } catch (PduDecodingException e) {
+            log.warn("Error decoding PDU: {}, packet: {}", e.getMessage(),
+                    StringConverter.arrayToHexString(e.getData(), true));
+            eventProducer.sendInfo(ETYPE_PDU_DECODING_ERROR, "Error decoding CFDP PDU; " + e.getMessage());
+            return;
+        }
         CfdpTransactionId id = packet.getTransactionId();
 
         OngoingCfdpTransfer transfer = null;
