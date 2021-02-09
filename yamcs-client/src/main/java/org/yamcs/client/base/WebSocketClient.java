@@ -19,6 +19,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.Observer;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
 import org.yamcs.protobuf.Reply;
@@ -201,7 +203,7 @@ public class WebSocketClient {
 
             @Override
             public void completeExceptionally(Throwable t) {
-                // TODO Auto-generated method stub
+                observer.completeExceptionally(t);
             }
 
             @Override
@@ -329,7 +331,9 @@ public class WebSocketClient {
                 call.assignCallId(message.getCall());
             } else {
                 ExceptionMessage err = reply.getException();
-                log.severe(String.format("Server error: %s: %s", err.getType(), err.getMsg()));
+                log.warning(String.format("Server error: %s: %s", err.getType(), err.getMsg()));
+                ExceptionData excData = new ExceptionData(err.getType(), err.getMsg(), err.getDetail());
+                call.serverObserver.completeExceptionally(new ClientException(excData));
             }
         } else {
             log.warning("Received a reply for an unknown call: " + reply);
