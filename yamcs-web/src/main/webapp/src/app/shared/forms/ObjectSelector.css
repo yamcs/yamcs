@@ -17,3 +17,7 @@ table {
 .hide {
   display: none;
 }
+
+.disabled {
+  color: LightGrey;
+}

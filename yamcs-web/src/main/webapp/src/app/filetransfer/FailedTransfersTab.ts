@@ -39,11 +39,18 @@ export class FailedTransfersTab implements OnDestroy {
     this.syncSubscription = synchronizer.sync(() => {
       if (this.dirty) {
         const values = [...this.transfersById.values()];
-        values.sort((a, b) => a.transfer.creationTime.localeCompare(b.transfer.creationTime));
+        values.sort((a, b) => this.compareTransfers(a.transfer, b.transfer));
         this.dataSource.data = values;
         this.dirty = false;
       }
     });
+  }
+
+  private compareTransfers(a: Transfer, b: Transfer) {
+    const time1 = a.creationTime || a.startTime || "";
+    const time2 = b.creationTime || b.startTime || "";
+    // most recent transfers on top
+    return time2.localeCompare(time1)
   }
 
   private switchService(service: string | null) {
