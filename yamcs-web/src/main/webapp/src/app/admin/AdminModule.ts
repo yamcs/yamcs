@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
-import { CreateBucketDialog } from './buckets/CreateBucketDialog';
-import { RenameObjectDialog } from './buckets/RenameObjectDialog';
-import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
-import { UploadProgressDialog } from './buckets/UploadProgressDialog';
+import { StreamDataComponent } from './databases/database/stream/StreamDataComponent';
+import { RecordComponent } from './databases/database/table/RecordComponent';
+import { ShowEnumDialog } from './databases/database/table/ShowEnumDialog';
+import { ColumnValuePipe } from './databases/pipes/ColumnValuePipe';
+import { Shell } from './databases/shell/Shell';
 import { AddMembersDialog } from './iam/AddMembersDialog';
 import { AddRolesDialog } from './iam/AddRolesDialog';
 import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
@@ -20,6 +21,7 @@ import { ThreadsTable } from './threads/ThreadsTable';
 import { TraceElement } from './threads/TraceElement';
 
 const pipes = [
+  ColumnValuePipe,
   MessageNamePipe,
 ];
 
@@ -36,16 +38,16 @@ const pipes = [
     AddRolesDialog,
     ApplicationCredentialsDialog,
     ChangeUserPasswordDialog,
-    CreateBucketDialog,
-    RenameObjectDialog,
+    RecordComponent,
     ReplicationState,
     RouteDetail,
     ServiceState,
     ServicesTable,
+    Shell,
+    ShowEnumDialog,
+    StreamDataComponent,
     ThreadsTable,
     TraceElement,
-    UploadObjectsDialog,
-    UploadProgressDialog,
     UsersTable,
   ],
 })

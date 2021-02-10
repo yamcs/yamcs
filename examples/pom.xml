@@ -30,6 +30,7 @@
   <modules>
     <module>ccsds-frames</module>
     <module>cfdp</module>
+    <module>perftest</module>
     <module>replication1</module>
     <module>replication2</module>
     <module>replication3</module>

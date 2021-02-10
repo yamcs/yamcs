@@ -13,7 +13,7 @@
       </ng-container>
       <ng-container *ngIf="!item.folder">
         <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
-        {{ item.name | filename }}
+        <span [ngClass]="foldersOnly ? 'disabled' : ''">{{ item.name | filename }}</span>
       </ng-container>
     </td>
   </ng-container>
@@ -21,14 +21,14 @@
   <ng-container cdkColumnDef="modified">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
     <td mat-cell *cdkCellDef="let item">
-      {{ (item.modified | datetime) || '-' }}
+      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.modified | datetime) || '-' }}</span>
     </td>
   </ng-container>
 
   <ng-container cdkColumnDef="size">
     <th mat-header-cell *cdkHeaderCellDef style="width: 70px">Size</th>
     <td mat-cell *cdkCellDef="let item">
-      {{ (item.size | formatBytes) || '-' }}
+      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.size | formatBytes) || '-' }}</span>
     </td>
   </ng-container>
 

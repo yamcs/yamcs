@@ -8,65 +8,18 @@ export class HexModel {
 
   readonly lines: Line[] = [];
 
-  readonly positionables = new Map<string, number>();
-
   constructor(raw: string) {
     this.bitlength = raw.length * 8;
     for (let i = 0; i < raw.length; i += 16) {
       this.lines.push(new Line(this, i, raw.substring(i, i + 16)));
     }
   }
-
-  private nextId(bitpos: number) {
-    const lineId = 'p' + seq++;
-    this.positionables.set(lineId, bitpos);
-    return lineId;
-  }
-
-  printHTML() {
-    let result = '';
-    for (const line of this.lines) {
-      result += `<div class="line" id="${line.id}">`;
-      result += `<span class="cnt">${line.charCountHex}: </span>`;
-      result += '<span class="hex">';
-      for (let i = 0; i < line.hexComponents.length; i++) {
-        const component = line.hexComponents[i];
-        if (component.type === 'word') {
-          result += `<span class="word" id="${this.nextId(component.bitpos)}">`;
-          for (const nibble of component.nibbles) {
-            result += `<span class="nibble" id="${nibble.id}">${nibble.content}</span>`;
-          }
-          result += '</span>';
-        } else if (component.type === 'filler') {
-          const classNames = (i === line.hexComponents.length - 1) ? 'filler last' : 'filler';
-          result += `<span class="${classNames}" id="${component.id}">${component.content}</span>`;
-        }
-      }
-      result += '</span>';
-      result += '<span class="ascii">';
-      for (let i = 0; i < line.asciiComponents.length; i++) {
-        const component = line.asciiComponents[i];
-        if (component.type === 'word') {
-          result += `<span class="word" id="${this.nextId(component.bitpos)}">`;
-          for (const c of component.chars) {
-            result += `<span class="char" id="${c.id}">${c.content}</span>`;
-          }
-          result += '</span>';
-        } else if (component.type === 'filler') {
-          const classNames = (i === line.asciiComponents.length - 1) ? 'filler last' : 'filler';
-          result += `<span class="${classNames}" id="${component.id}">${component.content}</span>`;
-        }
-      }
-      result += '</span>';
-      result += '</div>';
-    }
-    return result;
-  }
 }
 
 interface WordHex {
+  id: string;
   type: 'word';
-  bitpos: number;
+  range: BitRange;
   nibbles: NibbleHex[];
 }
 
@@ -85,6 +38,7 @@ interface Filler {
 }
 
 interface WordAscii {
+  id: string;
   type: 'word';
   bitpos: number;
   chars: CharAscii[];
@@ -103,12 +57,11 @@ export class Line {
   hexComponents: (WordHex | Filler)[] = [];
   asciiComponents: (WordAscii | Filler)[] = [];
 
-  private wordCount = 0;
+  wordCount = 0;
 
-  constructor(readonly model: HexModel, charCount: number, chars: string) {
+  constructor(readonly model: HexModel, charCount: number, readonly chars: string) {
     this.id = 'p' + seq++;
     this.range = new BitRange(charCount * 8, chars.length * 8);
-    this.model.positionables.set(this.id, this.range.start);
     this.charCountHex = this.lpad(charCount.toString(16), 4);
     for (let i = 0; i < chars.length; i += 2) {
       const last = (i + 2 >= chars.length);
@@ -124,7 +77,6 @@ export class Line {
         trailing: true,
       };
       this.asciiComponents.push(filler);
-      this.model.positionables.set(filler.id, filler.bitpos);
 
       let hexFiller = '';
       for (let j = 0; j < 32 - (2 * (chars.length % 16)); j++) {
@@ -144,8 +96,31 @@ export class Line {
         trailing: true,
       };
       this.hexComponents.push(filler);
-      this.model.positionables.set(filler.id, filler.bitpos);
     }
+  }
+
+  get hexLengthInChars(): number {
+    let result = 0;
+    for (const component of this.hexComponents) {
+      if (component.type === 'word') {
+        result += component.nibbles.length;
+      } else if (component.type === 'filler' && !component.trailing) {
+        result += component.content.length;
+      }
+    }
+    return result;
+  }
+
+  get asciiLengthInChars(): number {
+    let result = 0;
+    for (const component of this.asciiComponents) {
+      if (component.type === 'word') {
+        result += component.chars.length;
+      } else if (component.type === 'filler' && !component.trailing) {
+        result += component.content.length;
+      }
+    }
+    return result;
   }
 
   private lpad(hex: string, width: number) {
@@ -178,9 +153,13 @@ export class Line {
         content: hexChars[i],
       };
       nibbles.push(nibble);
-      this.model.positionables.set(nibble.id, nibble.range.start);
     }
-    this.hexComponents.push({ type: 'word', nibbles, bitpos });
+    this.hexComponents.push({
+      id: 'p' + seq++,
+      type: 'word',
+      nibbles,
+      range: new BitRange(bitpos, 4 * nibbles.length),
+    });
     if (word.length === 2) {
       const filler: Filler = {
         id: 'p' + seq++,
@@ -190,7 +169,6 @@ export class Line {
         trailing: last,
       };
       this.hexComponents.push(filler);
-      this.model.positionables.set(filler.id, filler.bitpos);
     }
 
     const asciiChars = ascii.split('');
@@ -202,9 +180,13 @@ export class Line {
         content: asciiChars[i],
       };
       chars.push(c);
-      this.model.positionables.set(c.id, c.range.start);
     }
-    this.asciiComponents.push({ type: 'word', chars, bitpos });
+    this.asciiComponents.push({
+      id: 'p' + seq++,
+      type: 'word',
+      chars,
+      bitpos,
+    });
     this.wordCount++;
   }
 

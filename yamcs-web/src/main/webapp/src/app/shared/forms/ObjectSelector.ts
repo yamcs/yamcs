@@ -30,6 +30,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   isMultiSelect: boolean;
 
   @Input()
+  foldersOnly: boolean;
+
+  @Input()
   path: string;
 
   @Output()
@@ -106,7 +109,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   selectFile(row: BrowseItem) {
     if (row.folder) {
       this.loadCurrentFolder(row.name);
-    } else {
+    } else if (!this.foldersOnly) {
       if (this.isMultiSelect) {
         if (this.selectedFileNames.has(row.name)) {
           this.selectedFileNames.delete(row.name);

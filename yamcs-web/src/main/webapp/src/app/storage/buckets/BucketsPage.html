@@ -1,5 +1,5 @@
-<app-admin-page>
-  <app-admin-toolbar>
+<app-storage-page>
+  <app-storage-toolbar>
     Buckets
     &nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -15,7 +15,7 @@
       <mat-icon>delete</mat-icon>
       DELETE
     </button>
-  </app-admin-toolbar>
+  </app-storage-toolbar>
 
   <div class="panel-content">
     <form [formGroup]="filterForm">
@@ -25,22 +25,22 @@
       </div>
     </form>
     <table mat-table
-           [dataSource]="dataSource"
-           class="ya-data-table"
-           matSort
-           matSortActive="name"
-           matSortDirection="asc"
-           matSortDisableClear>
+            [dataSource]="dataSource"
+            class="ya-data-table"
+            matSort
+            matSortActive="name"
+            matSortDirection="asc"
+            matSortDisableClear>
 
       <ng-container cdkColumnDef="select">
         <th mat-header-cell *cdkHeaderCellDef class="checkbox">
           <input type="checkbox" (change)="$event ? masterToggle() : null"
-                 [checked]="selection.hasValue() && isAllSelected()">
+                  [checked]="selection.hasValue() && isAllSelected()">
         </th>
         <td mat-cell *cdkCellDef="let row" class="checkbox">
           <input type="checkbox" (click)="$event.stopPropagation()"
-                 (change)="$event ? selection.toggle(row) : null"
-                 [checked]="selection.isSelected(row)">
+                  (change)="$event ? selection.toggle(row) : null"
+                  [checked]="selection.isSelected(row)">
         </td>
       </ng-container>
 
@@ -50,7 +50,7 @@
           <mat-icon class="icon12"
                     style="vertical-align: middle; margin-right: 7px">shopping_basket</mat-icon>
           <a [routerLink]="[instance, bucket.name]"
-             (click)="$event.stopPropagation()">{{ bucket.name }}</a>
+              (click)="$event.stopPropagation()">{{ bucket.name }}</a>
         </td>
       </ng-container>
 
@@ -71,4 +71,4 @@
           (click)="toggleOne(row)"></tr>
     </table>
   </div>
-</app-admin-page>
+</app-storage-page>

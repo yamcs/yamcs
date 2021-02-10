@@ -298,7 +298,7 @@ export class BucketPage implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: `/admin/buckets/${this.bucketInstance}/${this.name}` + path,
+        route: `/storage/buckets/${this.bucketInstance}/${this.name}` + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

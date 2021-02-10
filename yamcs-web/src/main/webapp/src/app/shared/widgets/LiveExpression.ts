@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormulaCompiler } from '@yamcs/opi';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Synchronizer } from 'src/app/core/services/Synchronizer';
 import { NamedObjectId, ParameterSubscription } from '../../client';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
 

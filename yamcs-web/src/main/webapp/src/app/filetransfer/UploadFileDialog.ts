@@ -4,6 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, FileTransferService, StorageClient } from '../client';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
 
@@ -33,6 +34,7 @@ export class UploadFileDialog {
     private dialogRef: MatDialogRef<UploadFileDialog>,
     readonly yamcs: YamcsService,
     formBuilder: FormBuilder,
+    private messageService: MessageService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
@@ -58,9 +60,9 @@ export class UploadFileDialog {
     this.selectedBucket$.next(bucket);
   }
 
-  startTransfer() {
-    const objectNames:string[] = this.localForm.value['object'].split('|');
-    const promises = objectNames.map((name) => 
+  async startTransfer() {
+    const objectNames: string[] = this.localForm.value['object'].split('|');
+    const promises = objectNames.map((name) =>
       this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
         direction: 'UPLOAD',
         bucket: this.selectedBucket$.value!.name,
@@ -73,9 +75,30 @@ export class UploadFileDialog {
         }
       })
     );
-    Promise.all(promises).then(() => {
-      this.dialogRef.close();
-    });
+
+    // Collect combined success/failure result
+    let anyError;
+    let errorCount = 0;
+    for (const promise of promises) {
+      try {
+        await promise;
+      } catch (err) {
+        anyError = err;
+        errorCount++;
+      }
+    }
+
+    if (anyError) {
+      if (errorCount === 1) {
+        this.messageService.showError(anyError);
+      } else if (errorCount === promises.length) {
+        this.messageService.showError('Failed to start any of the selected transfers. See server log.');
+      } else {
+        this.messageService.showError('Some of the transfers failed to start. See server log.');
+      }
+    }
+
+    this.dialogRef.close();
   }
 
   updateBreadcrumb(prefix: string) {

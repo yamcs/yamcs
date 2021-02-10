@@ -8,12 +8,9 @@
     <version>5.3.6-SNAPSHOT</version>
   </parent>
 
-  <artifactId>simulation</artifactId>
+  <artifactId>perftest</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs :: Examples :: Simulation</name>
-  <description>
-    All-in-one configuration example using an embedded simulator
-  </description>
+  <name>Yamcs :: Examples :: Perftest</name>
 
   <dependencies>
     <dependency>
