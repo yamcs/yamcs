@@ -19,3 +19,4 @@ Instance Services
     replication-master
     replication-slave
     cfdp
+    cfs-event-decoder
