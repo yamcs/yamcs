@@ -1,5 +1,15 @@
-Version 5.3.6
+Version 5.4.0 released 10-Feb-2020
 - Generalized file transfers: allow different than CFDP file transfer services to be implemented offering the same external API.
+- Added displayName/email attribute support to YamlAuthModule
+- Added queueing support to CFDP - files can be queued for later upload
+- Allow multi-purpose links (e.g. both TM and TC)
+- Added a perftest example useful to asses the performance of Yamcs
+- Added a bidirectional TCP TM/TC link
+- Save the link name in the tm table - this allows later to find out packets received via a certain link
+- The usage of time of flight estimatro (TOF) in the time correlation service (TOC) has been made optional (a config setting can be used to set the tof to a fixed value)
+- yamcs-web: show an view of the replication status
+- yamcs-web: moved the buckets out of the admin area
+- various other tweaks and fixes
 
 Version 5.3.5 released 20-Dec-2020
 - Fixed a bug related to CFDP transfer storage in archive (the entity id was not saved for the incoming transfers)
