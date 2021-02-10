@@ -2,7 +2,7 @@ import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '../../client';
+import { AuthInfo, HttpHandler, OpenIDConnectInfo, TokenResponse, UserInfo } from '../../client';
 import { User } from '../../shared/User';
 import { ConfigService } from './ConfigService';
 import { Synchronizer } from './Synchronizer';
@@ -277,7 +277,12 @@ export class AuthService implements OnDestroy {
       if (this.logoutRedirectUrl) {
         window.location.href = this.logoutRedirectUrl;
       } else {
-        this.router.navigate(['/login'], { queryParams: { next: '/' } });
+        const redirectURI = this.buildOpenIDRedirectURI();
+        window.location.href = this.buildRedirector({
+          clientId: 'yamcs-web',
+          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+          scope: 'openid',
+        }, redirectURI);
       }
     }
   }
@@ -288,6 +293,17 @@ export class AuthService implements OnDestroy {
 
   public buildServerSideOpenIDRedirectURI() {
     return `${location.protocol}//${location.host}${this.baseHref}oidc-browser-callback`;
+  }
+
+  private buildRedirector(openid: OpenIDConnectInfo, redirectURI: string) {
+    let url = openid.authorizationEndpoint;
+    url += `?client_id=${encodeURIComponent(openid.clientId)}`;
+    url += '&response_mode=query';
+    url += '&response_type=code';
+    url += `&scope=${encodeURIComponent(openid.scope)}`;
+    url += `&redirect_uri=${encodeURIComponent(redirectURI)}`;
+
+    return url;
   }
 
   private extractClaims(jwt: string): Claims {
