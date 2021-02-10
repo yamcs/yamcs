@@ -35,6 +35,7 @@ This file defines users, passwords and user roles. Note that Yamcs itself does n
       superuser: true
 
     someuser:
+      displayName: Some User
       password: somepassword
       roles: [ Operator ]
 
