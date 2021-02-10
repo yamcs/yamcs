@@ -15,8 +15,8 @@ export class ServerSideOpenIDCallbackGuard implements CanActivate {
     // Note: this callback usually gives us a "session_state" as well. We're ignoring
     // that as long as we don't have a need for it.
 
-    if (!oidcState || !oidcCode) {
-      console.error('Unexpected callback. Could not find query params: "state" and "code"');
+    if (!oidcCode) {
+      console.error('Unexpected callback. Could not find query param: "code"');
       return false;
     }
 
@@ -33,7 +33,11 @@ export class ServerSideOpenIDCallbackGuard implements CanActivate {
 
     // At this point, everything worked. Yamcs cookies are in place. And we
     // can navigate the user to the original attempted URL.
-    this.router.navigateByUrl(utils.fromBase64URL(oidcState));
+    if (oidcState) {
+      this.router.navigateByUrl(utils.fromBase64URL(oidcState));
+    } else {
+      this.router.navigateByUrl('/');
+    }
 
     return false;
   }

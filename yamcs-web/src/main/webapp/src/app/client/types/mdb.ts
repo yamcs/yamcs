@@ -343,6 +343,7 @@ export interface GetCommandsOptions {
   system?: string;
   pos?: number;
   limit?: number;
+  details?: boolean;
 }
 
 export interface CommandsPage {

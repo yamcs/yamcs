@@ -85,6 +85,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
     const options: GetCommandsOptions = {
       system: this.system || '/',
       noAbstract: true,
+      details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };

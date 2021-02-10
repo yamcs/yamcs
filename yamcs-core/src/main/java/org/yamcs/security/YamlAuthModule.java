@@ -83,7 +83,21 @@ public class YamlAuthModule implements AuthModule {
                     throw new AuthenticationException("Password does not match");
                 }
             }
-            return new AuthenticationInfo(this, username);
+
+            AuthenticationInfo authenticationInfo = new AuthenticationInfo(this, username);
+            authenticationInfo.addExternalIdentity(getClass().getName(), username);
+
+            String displayName = YConfiguration.getString(userDef, "displayName", "").trim();
+            if (!displayName.isEmpty()) {
+                authenticationInfo.setDisplayName(displayName);
+            }
+
+            String email = YConfiguration.getString(userDef, "email", "").trim();
+            if (!email.isEmpty()) {
+                authenticationInfo.setEmail(email);
+            }
+
+            return authenticationInfo;
         } else {
             return null;
         }
