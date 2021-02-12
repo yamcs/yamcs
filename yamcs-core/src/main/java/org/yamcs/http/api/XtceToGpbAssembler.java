@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -699,7 +700,9 @@ public class XtceToGpbAssembler {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
                 }
-                for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
+                List<ValueEnumeration> sortedEnumerations = new ArrayList<>(ept.getValueEnumerationList());
+                Collections.sort(sortedEnumerations, (a, b) -> Long.compare(a.getValue(), b.getValue()));
+                for (ValueEnumeration xtceValue : sortedEnumerations) {
                     infob.addEnumValue(toEnumValue(xtceValue));
                 }
             } else if (parameterType instanceof AbsoluteTimeParameterType) {
@@ -993,7 +996,8 @@ public class XtceToGpbAssembler {
         alarmInfob.setMinViolations(numericAlarm.getMinViolations());
         AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
         if (staticRanges.getWatchRange() != null) {
-            AlarmRange watchRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
+            AlarmRange watchRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH,
+                    staticRanges.getWatchRange());
             alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
