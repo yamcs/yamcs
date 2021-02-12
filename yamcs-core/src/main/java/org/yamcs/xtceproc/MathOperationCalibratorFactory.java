@@ -51,9 +51,11 @@ public class MathOperationCalibratorFactory {
                 Location l1 = new Location(null, (short) (l.getLineNumber() - 3), (short) (l.getColumnNumber() - 7));
                 msg = l1.toString() + ": " + msg.substring(l.toString().length() + 1);
             }
-            throw new IllegalArgumentException("Cannot compile math operation converted to java'" + expr + "': " + msg, e);
+            throw new IllegalArgumentException("Cannot compile math operation converted to java:\n"
+                    + expr + "\n" + msg, e);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot compile math operation converted to java '" + expr + "'", e);
+            throw new IllegalArgumentException("Cannot compile math operation converted to java:\n"
+                    + expr, e);
         }
     }
 
@@ -131,7 +133,6 @@ public class MathOperationCalibratorFactory {
         case DIV:
         case STAR:
         case MODULO:
-            return "(" + l + " " + op.xtceName() + " " + r + ")";
         case ACOS:
         case SIN:
         case ASIN:
@@ -161,6 +162,11 @@ public class MathOperationCalibratorFactory {
             return "(" + 1 + " / " + l + ")";
         case FACT:
             return "org.yamcs.utils.MathUtil.factorial(" + l + ")";
+        case LEFT_SHIFT:
+        case RIGHT_SHIFT:
+        case BITWISE_AND:
+        case BITWISE_OR:
+            return "((long)" + l + " " + op.xtceName() + " (long)" + r + ")";
         default:
             throw new UnsupportedOperationException(op + " not implemented");
         }

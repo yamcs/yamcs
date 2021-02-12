@@ -102,10 +102,11 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 Location l1 = new Location(null, (short) (l.getLineNumber() - 3), (short) (l.getColumnNumber() - 7));
                 msg = l1.toString() + ": " + msg.substring(l.toString().length() + 1);
             }
-            throw new IllegalArgumentException("Cannot compile math operation converted to java'" + expr + "': " + msg,
-                    e);
+            throw new IllegalArgumentException("Cannot compile math operation converted to java:\n"
+                    + expr + "" + msg, e);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot compile math operation converted to java '" + expr + "'", e);
+            throw new IllegalArgumentException("Cannot compile math operation converted to java:\n"
+                    + expr, e);
         }
     }
 

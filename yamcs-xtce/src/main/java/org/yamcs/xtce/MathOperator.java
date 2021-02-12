@@ -34,7 +34,11 @@ public enum MathOperator {
     DROP("drop", 1), //Remove top item from the stack (x -- )</documentation>
     DUP("dup", 1), //Duplicate top item on the stack (x -- x x)</documentation>
     OVER("over", 1), //Duplicate top item on the stack (x1 x2 -- x1 x2 x1)</documentation>
-    ABS("abs", 1); //Not sure if ABS is part of the XTCE but it appears in BogusSAT-1
+    ABS("abs", 1), // absolute value (x1 -- abs(x1))
+    LEFT_SHIFT("<<", 2), // bitwise right shift (x1 x2 -- x1 >> x2)
+    RIGHT_SHIFT(">>", 2), // bitwise left shift (x1 x2 -- x1 << x2)
+    BITWISE_OR("|", 2), // bitwise or (x1 x2 -- x1 | x2)
+    BITWISE_AND("&", 2); // bitwise and (x1 x2 -- x1 & x2)
     
     private final String xtceName;
     private final int arity;
