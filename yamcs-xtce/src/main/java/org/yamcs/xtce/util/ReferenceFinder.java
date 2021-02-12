@@ -156,8 +156,13 @@ public class ReferenceFinder {
                     PathElement[] aggregateMemberPath = getAggregateMemberPath(
                             Arrays.copyOfRange(path, i + 1, path.length));
                     if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
-                        logger.accept("Found eference to an aggregate member using path separator '/': "
-                                + nr.getReference() + ". Please use dot '.' separator instead.");
+                        /*
+                         * Strangely enough, references to aggregate members using dot are not valid according to XTCE.
+                         * 
+                         * logger.accept("Found reference to an aggregate member using path separator '/': "
+                         * + nr.getReference() + ". Please use dot '.' separator instead.");
+                         */
+
                         return new FoundReference(p, aggregateMemberPath);
                     }
                 }
