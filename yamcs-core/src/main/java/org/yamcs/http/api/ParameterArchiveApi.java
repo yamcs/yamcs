@@ -16,7 +16,9 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.http.api.ParameterRanger.MultiRange;
 import org.yamcs.http.api.ParameterRanger.Range;
+import org.yamcs.http.api.ParameterRanger.SingleRange;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
@@ -42,6 +44,7 @@ import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
@@ -223,6 +226,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         long minGap = request.hasMinGap() ? request.getMinGap() : 0;
         long maxGap = request.hasMaxGap() ? request.getMaxGap() : Long.MAX_VALUE;
+        long minRange = request.hasMinRange() ? request.getMinRange() : -1;
 
         ParameterArchive parchive = getParameterArchive(ysi);
 
@@ -233,7 +237,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             pcache = processor.getParameterCache();
         }
 
-        ParameterRanger ranger = new ParameterRanger(minGap, maxGap);
+        ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange);
 
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
         SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
@@ -485,10 +489,25 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     private static Ranges.Range toGPBRange(Range r) {
         Ranges.Range.Builder b = Ranges.Range.newBuilder();
-        b.setTimeStart(TimeEncoding.toString(r.start));
-        b.setTimeStop(TimeEncoding.toString(r.stop));
-        b.setEngValue(ValueUtility.toGbp(r.v));
-        b.setCount(r.count);
+        if(r instanceof SingleRange) {
+            SingleRange sr = (SingleRange) r;
+            b.setTimeStart(TimeEncoding.toString(sr.start));
+            b.setTimeStop(TimeEncoding.toString(sr.stop));
+            Yamcs.Value gbvalue = ValueUtility.toGbp(sr.value);
+            b.setEngValue(gbvalue);
+            b.setCount(sr.count);
+            b.addEngValues(gbvalue);
+            b.addCounts(sr.count);
+        } else {
+            MultiRange mr = (MultiRange) r;
+            b.setTimeStart(TimeEncoding.toString(mr.start));
+            b.setTimeStop(TimeEncoding.toString(mr.stop));
+            for(int i = 0; i < mr.valueCount(); i++) {
+                b.addEngValues(ValueUtility.toGbp(mr.getValue(i)));
+                b.addCounts(mr.getCount(i));
+            }
+        }
+
         return b.build();
     }
 }

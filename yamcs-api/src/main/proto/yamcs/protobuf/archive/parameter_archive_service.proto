@@ -158,4 +158,8 @@ message GetParameterRangesRequest {
   optional string processor = 8;
 
   optional string source = 9;
+  
+  // Time in milliseconds of the minimum range to be returned. If the data changes more often,
+  //a new range will not be created but the data will be added to the old range.
+  optional int64 minRange = 10; 
 }

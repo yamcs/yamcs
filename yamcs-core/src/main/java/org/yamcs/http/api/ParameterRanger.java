@@ -11,6 +11,7 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.IntArray;
 
 /**
  * builds ranges of parameters
@@ -29,6 +30,10 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
     // gap will be constructed
     final long maxGap;
 
+    // if the parameter value changes more often than this, a multi value range will be constructed
+    // if negative, it is not used
+    final long minRange;
+
     List<Range> ranges = new ArrayList<>();
 
     Range curRange = null;
@@ -36,9 +41,10 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
     ParameterStatus prevStatus;
     long prevTimestamp;
 
-    public ParameterRanger(long minGap, long maxGap) {
+    public ParameterRanger(long minGap, long maxGap, long minRange) {
         this.minGap = minGap;
         this.maxGap = maxGap;
+        this.minRange = minRange;
     }
 
     @Override
@@ -54,7 +60,7 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         int n = va.size();
         Type type = va.getType();
 
-        if (curRange != null && type != curRange.v.getType()) {
+        if (curRange != null && type != curRange.getValue(0).getType()) {
             ranges.add(curRange);
             curRange = null;
         }
@@ -65,27 +71,38 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             long timestamp = timestamps[i];
 
             if (curRange == null) {
-                curRange = new Range(timestamp, v);
+                curRange = new SingleRange(timestamp, v);
             } else {
                 long stop = checkDataInterruption(prevTimestamp, timestamp, prevStatus);
                 if (stop != Long.MIN_VALUE) {
                     curRange.stop = stop;
-
-                    ranges.add(curRange);
-                    curRange = new Range(timestamp, v);
+                    potentiallyCreateNewRange(timestamp, v);
                 } else if (!v.equals(prevValue)) {
                     curRange.stop = timestamp;
-
-                    ranges.add(curRange);
-                    curRange = new Range(timestamp, v);
+                    potentiallyCreateNewRange(timestamp, v);
                 } else {
-                    curRange.count++;
+                    curRange.add(v);
                     curRange.stop = timestamp;
                 }
             }
             prevValue = v;
             prevTimestamp = timestamp;
             prevStatus = status;
+        }
+    }
+
+    // create a new range unless the minRange parameter is in effect and the current range is too small, case in which
+    // create a multi value range and add to it
+    void potentiallyCreateNewRange(long timestamp, Value v) {
+        if (timestamp - curRange.start < minRange) {
+            if (curRange instanceof SingleRange) {
+                curRange = new MultiRange((SingleRange) curRange);
+            }
+            curRange.add(v);
+            curRange.stop = timestamp;
+        } else {
+            ranges.add(curRange);
+            curRange = new SingleRange(timestamp, v);
         }
     }
 
@@ -108,17 +125,92 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         return Long.MIN_VALUE;
     }
 
-    public static class Range {
-        Value v;
+    public abstract static class Range {
         long start;
         long stop;
+
+        public Range(long start, long stop) {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        public abstract void add(Value v);
+
+        public abstract int valueCount();
+
+        public abstract Value getValue(int idx);
+
+        public abstract int getCount(int idx);
+    }
+
+    public static class SingleRange extends Range {
+        Value value;
         int count;
 
-        Range(long start, Value v) {
-            this.start = start;
-            this.stop = start;
-            this.v = v;
+        SingleRange(long start, Value v) {
+            super(start, start);
+            this.value = v;
             this.count = 1;
+        }
+
+        public void add(Value v) {
+            count++;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        @Override
+        public int valueCount() {
+            return 1;
+        }
+
+        @Override
+        public Value getValue(int idx) {
+            return value;
+        }
+
+        @Override
+        public int getCount(int idx) {
+            return count;
+        }
+    }
+
+    public static class MultiRange extends Range {
+        List<Value> values = new ArrayList<>();
+        IntArray counts = new IntArray();
+
+        public MultiRange(SingleRange range) {
+            super(range.start, range.stop);
+            counts.add(range.count);
+            values.add(range.value);
+        }
+
+        @Override
+        public void add(Value v) {
+            int idx = values.indexOf(v);
+            if (idx < 0) {
+                values.add(v);
+                counts.add(1);
+            } else {
+                counts.set(idx, counts.get(idx) + 1);
+            }
+        }
+
+        @Override
+        public int valueCount() {
+            return counts.size();
+        }
+
+        @Override
+        public Value getValue(int idx) {
+            return values.get(idx);
+        }
+
+        @Override
+        public int getCount(int idx) {
+            return counts.get(idx);
         }
     }
 

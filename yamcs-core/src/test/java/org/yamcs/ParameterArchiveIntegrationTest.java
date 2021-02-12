@@ -176,8 +176,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/EnumerationPara1_1_4", start, stop).get();
         assertEquals(1, ranges.size());
         Range r0 = ranges.get(0);
-        assertEquals(20, r0.getCount());
-        assertEquals("zero_yep", r0.getEngValue().getStringValue());
+        assertEquals(20, r0.getCounts(0));
+        assertEquals("zero_yep", r0.getEngValues(0).getStringValue());
     }
 
     @Test
@@ -193,7 +193,9 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, ranges.size());
         Range r0 = ranges.get(0);
         assertEquals(1199, r0.getCount());
+        assertEquals(1199, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
+        assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
         assertEquals("2018-01-01T11:40:01.000Z", r0.getTimeStart());
         assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
 
@@ -204,8 +206,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
         assertEquals(1, ranges.size());
         r0 = ranges.get(0);
-        assertEquals(7200, r0.getCount());
-        assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
+        assertEquals(7200, r0.getCounts(0));
+        assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
 
         generatePkt13AndPps("2018-01-01T13:00:00", 3600);
 
@@ -213,13 +215,13 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals(2, ranges.size());
         r0 = ranges.get(0);
-        assertEquals(7200, r0.getCount());
+        assertEquals(7200, r0.getCounts(0));
 
         assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
         assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); // last parameter time plus expiration
 
         Range r1 = ranges.get(1);
-        assertEquals(3600, r1.getCount());
+        assertEquals(3600, r1.getCounts(0));
         assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
         assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
 
@@ -230,7 +232,15 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals(1, ranges.size());
         r0 = ranges.get(0);
-        assertEquals(7200 + 3600, r0.getCount());
+        assertEquals(7200 + 3600, r0.getCounts(0));
+        
+        
+        ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                RangeOptions.minimumRange(4 * 3600000l)).get();
+        assertEquals(1, ranges.size());
+        r0 = ranges.get(0);
+        assertEquals(7200 + 3600, r0.getCounts(0));
+
     }
 
     @Test

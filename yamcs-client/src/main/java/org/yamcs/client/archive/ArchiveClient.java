@@ -24,6 +24,7 @@ import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRealtimeOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRepeatOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.SourceOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumGapOption;
+import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumRangeOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.CommandOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.EventSourceOption;
@@ -736,6 +737,8 @@ public class ArchiveClient {
         for (RangeOption option : options) {
             if (option instanceof MinimumGapOption) {
                 requestb.setMinGap(((MinimumGapOption) option).millis);
+            } else if (option instanceof MinimumRangeOption) {
+                requestb.setMinRange(((MinimumRangeOption) option).millis);
             } else {
                 throw new IllegalArgumentException("Usupported option " + option.getClass());
             }
@@ -986,10 +989,22 @@ public class ArchiveClient {
             return new MinimumGapOption(millis);
         }
 
+        public static RangeOption minimumRange(long millis) {
+            return new MinimumRangeOption(millis);
+        }
+
         static final class MinimumGapOption implements RangeOption {
             final long millis;
 
             public MinimumGapOption(long millis) {
+                this.millis = millis;
+            }
+        }
+
+        static final class MinimumRangeOption implements RangeOption {
+            final long millis;
+
+            public MinimumRangeOption(long millis) {
                 this.millis = millis;
             }
         }
