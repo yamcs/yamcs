@@ -133,6 +133,7 @@ public class MathOperationCalibratorFactory {
         case DIV:
         case STAR:
         case MODULO:
+            return "(" + l + " " + op.xtceName() + " " + r + ")";
         case ACOS:
         case SIN:
         case ASIN:
