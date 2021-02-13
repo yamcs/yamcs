@@ -120,19 +120,21 @@ message Ranges {
     
         // the engineering value of the parameter in the interval ``[timeStart, timeStop)``
         // Time intervals have to be considered as closed at start and open at stop.
+        //
    		//Since Yamcs 5.4.1 the engValue and count are deprecated in favor of engValues and counts       
         optional Value engValue = 3 [deprecated = true];
 
         // Number of parameter values received in the interval.
         optional int32 count = 4 [deprecated = true];
         
-        //Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows to specify 
-        //the minimum length in time of the range returned (i.e. we guarantee that timeStop-timeStart >= minRange (mind the leap seconds!)).
-        // If the minRange parameter has been set, the returning ranges may include multiple values.
+        // Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows 
+        // specifying the minimum length of the range returned.
+        // Practically we guarantee that timeStop-timeStart >= minRange (mind the leap seconds!).
+        //
+        // If the minRange parameter is set, the returning ranges may include multiple values.
         // These are given by the engValues and counts below. 
         // 
-        // The size of engValues array will allways be equal to the size of the counts array.
-        // The counts correspond one to one to the values.
+        // The counts correspond one to one to the engValues, the two arrays will always have the same length.
         repeated Value engValues = 5;        
         //
         repeated int32 counts = 6;
