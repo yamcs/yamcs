@@ -29,6 +29,7 @@ service MdbApi {
   rpc ListSpaceSystems(ListSpaceSystemsRequest) returns (ListSpaceSystemsResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/space-systems"
+      field_mask_root: "spaceSystems"
     };
   }
   
@@ -43,6 +44,7 @@ service MdbApi {
   rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/parameters"
+      field_mask_root: "parameters"
     };
   }
   
@@ -65,6 +67,7 @@ service MdbApi {
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/containers"
+      field_mask_root: "containers"
     };
   }
   
@@ -79,6 +82,7 @@ service MdbApi {
   rpc ListCommands(ListCommandsRequest) returns (ListCommandsResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/commands"
+      field_mask_root: "commands"
     };
   }
   
@@ -93,6 +97,7 @@ service MdbApi {
   rpc ListAlgorithms(ListAlgorithmsRequest) returns (ListAlgorithmsResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/algorithms"
+      field_mask_root: "algorithms"
     };
   }
   

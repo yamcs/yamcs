@@ -3,13 +3,18 @@ package org.yamcs.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.yamcs.security.User;
 
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.util.FieldMaskUtil;
 import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
@@ -19,6 +24,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class RouteContext extends Context {
 
@@ -34,6 +40,7 @@ public class RouteContext extends Context {
     private Matcher regexMatch;
 
     private int maxBodySize;
+    private String fieldMaskRoot;
 
     RouteContext(HttpServer httpServer, ChannelHandlerContext nettyContext, User user, HttpRequest nettyRequest,
             Route route, Matcher regexMatch) {
@@ -44,6 +51,33 @@ public class RouteContext extends Context {
         maxBodySize = Math.max(httpServer.getConfig().getInt("maxContentLength"), route.getMaxBodySize());
 
         route.incrementRequestCount();
+
+        fieldMaskRoot = route.getFieldMaskRoot();
+        if (fieldMaskRoot == null) {
+            // If the response message looks like a list response, use the convention
+            // that the fieldmask applies to each repeated resource message.
+            Descriptor responseDescriptor = getResponsePrototype().getDescriptorForType();
+            if (responseDescriptor.getName().startsWith("List")) {
+                List<FieldDescriptor> repeatedFields = responseDescriptor.getFields().stream()
+                        .filter(f -> f.isRepeated())
+                        .collect(Collectors.toList());
+                if (repeatedFields.size() == 1) {
+                    fieldMaskRoot = repeatedFields.get(0).getName();
+                }
+            }
+        }
+
+        // Consider FieldMask, for response filtering
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(nettyRequest.uri());
+        List<String> fieldsParameter = qsDecoder.parameters().get("fields");
+        if (fieldsParameter != null && !fieldsParameter.isEmpty()) {
+            fieldMask = FieldMaskUtil.fromString(fieldsParameter.get(0));
+        } else {
+            String fieldsHeader = nettyRequest.headers().get("x-yamcs-fields");
+            if (fieldsHeader != null) {
+                fieldMask = FieldMaskUtil.fromString(fieldsHeader);
+            }
+        }
 
         // Track status for metric purposes
         requestFuture.whenComplete((channelFuture, e) -> {
@@ -85,6 +119,10 @@ public class RouteContext extends Context {
         return route.getBody();
     }
 
+    public String getFieldMaskRoot() {
+        return fieldMaskRoot;
+    }
+
     public int getMaxBodySize() {
         return maxBodySize;
     }
@@ -97,9 +135,9 @@ public class RouteContext extends Context {
         try {
             return regexMatch.group(name) != null;
         } catch (IllegalArgumentException e) {
-            // Could likely be improved, we need this catch in case of multiple @Route annotations
-            // for the same method. Because then above call could throw an error if the requested
-            // group is not present in one of the patterns
+            // Could likely be improved, we need this catch in case of multiple bindings
+            // for the same method. Because then above call could throw an error if the
+            // requested group is not present in one of the patterns
             return false;
         }
     }

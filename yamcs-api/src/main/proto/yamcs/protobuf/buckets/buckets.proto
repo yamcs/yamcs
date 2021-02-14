@@ -144,6 +144,7 @@ service BucketsApi {
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}/{bucketName}/objects"
+      field_mask_root: "objects"
     };
   }
   

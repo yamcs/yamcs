@@ -23,6 +23,7 @@ public class Route implements Comparable<Route> {
     private final boolean offloaded;
     private final boolean deprecated;
     private final String body;
+    private final String fieldMaskRoot;
     private final RpcDescriptor descriptor;
 
     // May be unspecified
@@ -71,6 +72,7 @@ public class Route implements Comparable<Route> {
         pattern = toPattern(uriTemplate);
 
         body = httpOptions.hasBody() ? httpOptions.getBody() : null;
+        fieldMaskRoot = httpOptions.hasFieldMaskRoot() ? httpOptions.getFieldMaskRoot() : null;
         if (httpOptions.hasMaxBodySize()) {
             maxBodySize = httpOptions.getMaxBodySize();
         }
@@ -117,6 +119,10 @@ public class Route implements Comparable<Route> {
 
     public String getBody() {
         return body;
+    }
+
+    public String getFieldMaskRoot() {
+        return fieldMaskRoot;
     }
 
     public int getMaxBodySize() {
