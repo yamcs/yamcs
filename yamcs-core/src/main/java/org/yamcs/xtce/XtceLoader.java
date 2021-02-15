@@ -49,7 +49,7 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  * <li>file: the XML file to be loaded. Can be an absolute path or relative to the server directory. Mandatory.
  * </li>
  * <li>autoTmPartitions: if true (default) all the <{@link SequenceContainer} will be automatically set as archive
- * partitions unless they have they have a parent in the hierarchy that is manually configured for TM partitions. The
+ * partitions unless they have a parent in the hierarchy that is manually configured for TM partitions. The
  * manual configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the
  * value UseAsArchivingPartition.
  * See <{@link SequenceContainer#useAsArchivePartition(boolean))}
