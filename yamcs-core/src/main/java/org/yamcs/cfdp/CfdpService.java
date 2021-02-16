@@ -167,6 +167,7 @@ public class CfdpService extends AbstractYamcsService
                 .withDefault(Arrays.asList(":", "/", "\\"));
         spec.addOption("maxNumPendingDownloads", OptionType.INTEGER).withDefault(100);
         spec.addOption("maxNumPendingUploads", OptionType.INTEGER).withDefault(10);
+        spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
 
         return spec;
     }
