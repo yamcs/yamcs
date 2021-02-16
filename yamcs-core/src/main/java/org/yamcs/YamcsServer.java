@@ -1112,6 +1112,8 @@ public class YamcsServer {
         spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
         spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
         spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("archive", OptionType.ANY);
+        spec.addOption("rdbConfig", OptionType.ANY);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {
