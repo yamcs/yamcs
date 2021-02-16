@@ -77,6 +77,8 @@ export class Hex implements AfterViewInit, OnChanges {
       this.drawAscii(line, y);
       y += this.fontSize;
     }
+
+    this.dirty = false;
   }
 
   private drawCharcount(line: Line, y: number) {
