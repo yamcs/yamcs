@@ -1340,7 +1340,7 @@ public class YamcsServer {
         String notifySocket = System.getenv("NOTIFY_SOCKET");
         if (notifySocket != null) {
             try {
-                String cmd = String.format("socat STDIO UNIX-SENDTO:%s <<< READY=1", notifySocket);
+                String cmd = String.format("echo 'READY=1' | socat STDIO UNIX-SENDTO:%s", notifySocket);
                 new ProcessBuilder("sh", "-c", cmd).inheritIO().start();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
