@@ -35,14 +35,14 @@ public class ParameterRangesTest {
         assertEquals(AcquisitionStatus.ACQUIRED, pv.getAcquisitionStatus());
 
         ByteBuffer.wrap(buf).putDouble(90.01);
-        extractor.processPacket(buf, now, now);
+        cpr = extractor.processPacket(buf, now, now);
         ParameterValue pv1 = cpr.getParameterResult()
                 .getFirstInserted(db.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv1.getAcquisitionStatus());
         
 
         ByteBuffer.wrap(buf).putDouble(-90.01);
-        extractor.processPacket(buf, now, now);
+        cpr = extractor.processPacket(buf, now, now);
         ParameterValue pv2 = cpr.getParameterResult()
                 .getFirstInserted(db.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv2.getAcquisitionStatus());
