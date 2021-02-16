@@ -1,8 +1,8 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Alarm, NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
+import { Alarm, NamedObjectId, ParameterSubscription, ParameterValue, Sample, Range } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { convertValueToNumber } from '../utils';
+import { convertValueToNumber, isEnumerationType } from '../utils';
 import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
@@ -87,6 +87,7 @@ export class DyDataSource {
     return this.updateWindow(this.visibleStart, this.visibleStop, [null, null]);
   }
 
+
   updateWindow(
     start: Date,
     stop: Date,
@@ -100,18 +101,28 @@ export class DyDataSource {
     const loadStop = new Date(stop.getTime() + delta);
 
     const promises: Promise<any>[] = [];
+    const parametersType: (string|undefined)[] = [];
     for (const parameter of this.parameters$.value) {
-      promises.push(
-        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
-          start: loadStart.toISOString(),
-          stop: loadStop.toISOString(),
-          count: 6000,
-        }),
-        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, {
-          start: loadStart.toISOString(),
-          stop: loadStop.toISOString(),
-        })
-      );
+      const args = {
+        start: loadStart.toISOString(),
+        stop: loadStop.toISOString()
+      };
+      if (isEnumerationType(parameter.type?.engType)) {
+        const minRange = Math.round((loadStop.getTime() - loadStart.getTime()) / 6000);
+        promises.push(
+          this.yamcs.yamcsClient.getParameterRanges(
+            this.yamcs.instance!, parameter.qualifiedName, {...args, minRange }
+          )
+        );
+      } else {
+        promises.push(
+          this.yamcs.yamcsClient.getParameterSamples(
+            this.yamcs.instance!, parameter.qualifiedName, {...args, count: 6000}
+          )
+        );
+      }
+      parametersType.push(parameter.type?.engType);
+      promises.push(this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, args));
     }
 
     const loadPromise = Promise.all(promises);
@@ -126,7 +137,11 @@ export class DyDataSource {
         this.visibleStop = stop;
         this.minValue = undefined;
         this.maxValue = undefined;
-        const dySamples = this.processSamples(results[0]);
+        
+        let dySamples = isEnumerationType(parametersType[0]) ? 
+          this.processEnumerations(results[0]) : 
+          this.processSamples(results[0]);
+
         const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
         for (let i = 1; i < this.parameters$.value.length; i++) {
           this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
@@ -244,6 +259,26 @@ export class DyDataSource {
       }
     }
     return dySamples;
+  }
+
+  private processEnumerations(ranges: Range[]) {
+    const x: DySample[] = [];
+    ranges.forEach((range: Range) => {
+      const start:Date = new Date(Date.parse(range.timeStart));
+      const end:Date = new Date(Date.parse(range.timeStop));
+      // if there was multiple values within the range, 
+      // we store all the registered values
+      if (range.engValues.length > 1) {
+        const countValueMap = range.counts.map((count, i) => ({count, stringValue: range.engValues[i].stringValue!}))
+        console.log(countValueMap);
+        const values: string[] = countValueMap.sort((a, b) => b.stringValue.localeCompare(a.stringValue)).map(v => v.stringValue!);
+        x.push([start, [0, values]], [end, [0, values]]);  
+      // otherwise, we store the only value
+      } else {
+        x.push([start, [0, range.engValue.stringValue!]], [end, [0, range.engValue.stringValue!]]);  
+      }
+    });
+    return x;
   }
 
   private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
