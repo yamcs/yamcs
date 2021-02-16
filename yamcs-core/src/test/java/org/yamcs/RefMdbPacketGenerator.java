@@ -276,11 +276,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
-    public ByteBuffer generate_PKT2() {
+    public byte[] generate_PKT2() {
         ByteBuffer bb = ByteBuffer.allocate(pkt2Length);
         fill_PKT2(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
     // Packets to test the boolean inheritance condition
@@ -319,11 +319,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb;
     }
 
-    public ByteBuffer generate_PKT1(int integerPara1_1, int packetType, short integerPara1_2) {
+    public byte[] generate_PKT1(int integerPara1_1, int packetType, short integerPara1_2) {
         ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
         fill_PKT1(bb, integerPara1_1, packetType, integerPara1_2);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
     public ByteBuffer generateContVerifCmdAck(short cmdId, byte stage, int result) {
@@ -367,12 +367,12 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      * block_para3 = 13 (8 bits)
      * block_para4 = 14 (8 bits)
      */
-    public ByteBuffer generate_PKT3() {
+    public byte[] generate_PKT3() {
         int pktLength = headerLength + 1 + 2 * 2 + 11;
         ByteBuffer bb = ByteBuffer.allocate(pktLength);
         fill_PKT3(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
     /**

@@ -45,8 +45,8 @@ public class BogusSat2Test {
                 0x35, 0x10, 0x20, 0x03, 0x05, // PUS_Data_Field_Header {Spare1 = 0, Version=3, Spare4=5, Service = 0x10,
                                               // Subservice=0x20, SeqCount = 3, Destination=5}
                 0, 0 };
-        extractor.processPacket(buf, now, now);
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(4, pvl.size());
         ParameterValue pushdr = pvl.getFirstInserted(db.getParameter("/BogusSAT/PUS_Data_Field_Header"));
         assertTrue(pushdr.getEngValue() instanceof AggregateValue);
@@ -67,8 +67,8 @@ public class BogusSat2Test {
                                          // Voltage_2=16
                 x[0], x[1], x[2], x[3], // Battery_Voltage
                 x[0], x[1], x[2], x[3] }; // Battery Current
-        extractor.processPacket(buf, now, now);
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(8, pvl.size());
         assertNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_1")));
         assertNotNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_2")));
@@ -131,8 +131,8 @@ public class BogusSat2Test {
                 (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xF9, // Basic_int32_onescomp
         };
 
-        extractor.processPacket(buf, now, now);
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(17, pvl.size());
 
         ParameterValue pv = pvl

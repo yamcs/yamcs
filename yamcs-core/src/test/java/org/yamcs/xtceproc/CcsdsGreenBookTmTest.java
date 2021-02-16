@@ -28,8 +28,8 @@ public class CcsdsGreenBookTmTest {
         byte[] buf = new byte[] {24, (byte)0x01, 0, 0, //Header1 SecH -> no secondary header
                         0, 0, //PBATMTEMP
                         0, 0}; //PSWHLTIMFLG
-        extractor.processPacket(buf, now, now);
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(6, pvl.size());
         ParameterValue pvSech = pvl.getFirstInserted(db.getParameter("/SpaceVehicle/SecH"));
         assertEquals(0, pvSech.getRawValue().getUint32Value());
@@ -46,9 +46,9 @@ public class CcsdsGreenBookTmTest {
                 0, 50, //Milliseconds
                 0, 0, //PBATMTEMP
                 0, 0}; //PSWHLTIMFLG
-        extractor.processPacket(buf, now, now);
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
 
-        ParameterValueList pvl = extractor.getParameterResult();
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(8, pvl.size());
         ParameterValue pvSec = pvl.getFirstInserted(db.getParameter("/SpaceVehicle/Seconds"));
         assertEquals("1970-01-01T00:00:00.000Z", pvSec.getEngValue().toString());
@@ -70,9 +70,9 @@ public class CcsdsGreenBookTmTest {
                 0, 50, //Milliseconds
                 0, 0, //PBATMTEMP
                 0, 0}; //PSWHLTIMFLG
-        extractor.processPacket(buf, now, now);
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
 
-        ParameterValueList pvl = extractor.getParameterResult();
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(6, pvl.size());
         ParameterValue pvSec = pvl.getFirstInserted(db.getParameter("/SpaceVehicle/Seconds"));
         assertEquals("1970-01-01T00:00:00.000Z", pvSec.getEngValue().toString());

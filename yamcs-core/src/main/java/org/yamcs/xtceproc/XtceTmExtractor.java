@@ -1,20 +1,16 @@
 package org.yamcs.xtceproc;
 
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ProcessorConfig;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 /**
  *
@@ -26,8 +22,6 @@ public class XtceTmExtractor {
     private static final Logger log = LoggerFactory.getLogger(XtceTmExtractor.class);
     protected final Subscription subscription;
     private ProcessingStatistics stats = new ProcessingStatistics();
-
-    private ContainerProcessingResult result;
 
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
@@ -103,30 +97,31 @@ public class XtceTmExtractor {
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public void processPacket(byte[] b, long generationTime, long acquisitionTime) {
-        processPacket(new BitBuffer(b), generationTime, acquisitionTime, rootContainer);
+    public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime) {
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime) {
-        processPacket(buf, generationTime, acquisitionTime, rootContainer);
+    public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime) {
+        return processPacket(buf, generationTime, acquisitionTime, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the specified container.
      */
-    public void processPacket(byte[] b, long generationTime, long acquisitionTime, SequenceContainer startContainer) {
-        processPacket(new BitBuffer(b), generationTime, acquisitionTime, startContainer);
-    }
-
-    /**
-     * Extract one packet, starting at the specified container.
-     */
-    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
+    public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime,
             SequenceContainer startContainer) {
-        result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, startContainer);
+    }
+
+    /**
+     * Extract one packet, starting at the specified container.
+     */
+    public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
+            SequenceContainer startContainer) {
+        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
         try {
             synchronized (subscription) {
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
@@ -138,6 +133,7 @@ public class XtceTmExtractor {
             pdata.eventProducer.sendWarning(e.toString());
             log.error("got exception in tmextractor ", e);
         }
+        return result;
     }
 
     public void resetStatistics() {
@@ -156,18 +152,6 @@ public class XtceTmExtractor {
 
     public void stopProviding(SequenceContainer sequenceContainer) {
         //not implemented; very unlikely to be called
-    }
-
-    public ParameterValueList getParameterResult() {
-        return result.params;
-    }
-
-    public List<ContainerExtractionResult> getContainerResult() {
-        return result.containers;
-    }
-
-    public String getPacketName() {
-        return result.getPacketName();
     }
 
     public Subscription getSubscription() {

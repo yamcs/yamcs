@@ -1,8 +1,6 @@
 package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.nio.ByteBuffer;
 
@@ -26,8 +24,8 @@ public class EmptyMatchCriteriaTest {
         ByteBuffer bb = ByteBuffer.wrap(buf);
         bb.putDouble(1.0);
         bb.putDouble(2.0);
-        extractor.processPacket(buf, now, now);
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
         ParameterValue pv = pvl.getFirstInserted(db.getParameter("/EMC/para2"));
         assertEquals(2.0, pv.getEngValue().getDoubleValue(), 1e-5);

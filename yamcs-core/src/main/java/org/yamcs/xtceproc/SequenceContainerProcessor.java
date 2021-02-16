@@ -13,7 +13,6 @@ import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
     ContainerProcessingContext pcontext;

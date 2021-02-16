@@ -44,6 +44,7 @@ import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ContainerProcessingResult;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
 import com.google.gson.JsonArray;
@@ -528,11 +529,11 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         final ListPacket packet = new ListPacket(buf, len);
         long gentime = data.getGenerationTime();
         packet.setGenerationTime(gentime);
-        tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime());
-        ParameterValueList pvlist = tmExtractor.getParameterResult();
+        ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime());
+        ParameterValueList pvlist = cpr.getParameterResult();
         packet.setColumnParameters(pvlist);
 
-        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = cpr.getContainerResult();
         String name = null;
         if (containers.isEmpty()) {
             name = "unknown";

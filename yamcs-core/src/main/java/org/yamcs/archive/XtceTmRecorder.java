@@ -20,6 +20,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ContainerProcessingResult;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmExtractor;
 import org.yamcs.yarch.DataType;
@@ -282,8 +283,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
             byte[] packet = (byte[]) t.getColumn(4);
             totalNumPackets++;
 
-            tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), rootSequenceContainer);
-            String packetName = tmExtractor.getPacketName();
+            ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
+                    rootSequenceContainer);
+            String packetName = cpr.getPacketName();
 
             try {
                 List<Object> c = t.getColumns();

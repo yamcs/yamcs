@@ -138,10 +138,11 @@ public class XtceTmProcessor extends AbstractProcessorService implements TmProce
             if (rectime == TimeEncoding.INVALID_INSTANT) {
                 rectime = TimeEncoding.getWallclockTime();
             }
-            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), rectime, sc);
+            ContainerProcessingResult result = tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(),
+                    rectime, sc);
 
-            ParameterValueList paramResult = tmExtractor.getParameterResult();
-            List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
+            ParameterValueList paramResult = result.params;
+            List<ContainerExtractionResult> containerResult = result.containers;
 
             if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
                 parameterRequestManager.update(paramResult);

@@ -31,8 +31,9 @@ public class RefXtceDecodingTest {
         extractor.provideAll();
         
         byte[] buf = new byte[] { 0x03, 0x01, 0x02, 0x03};
-        extractor.processPacket(buf, now, now, xtcedb.getSequenceContainer("/RefXtce/packet1"));
-        ParameterValueList pvl = extractor.getParameterResult();
+        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
+                xtcedb.getSequenceContainer("/RefXtce/packet1"));
+        ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
         ParameterValue pv = pvl.getFirstInserted(xtcedb.getParameter("/RefXtce/param1"));
         assertEquals("010203", StringConverter.arrayToHexString(pv.getEngValue().getBinaryValue()));
