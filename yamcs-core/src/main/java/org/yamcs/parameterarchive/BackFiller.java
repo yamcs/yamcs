@@ -252,7 +252,11 @@ public class BackFiller implements StreamSubscriber {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        long gentime = tuple.getTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        if (gentime == TimeEncoding.INVALID_INSTANT) {
+            log.warn("Ignorning tuple with invalid gentime {}", tuple);
+            return;
+        }
         long t0 = ParameterArchive.getIntervalStart(gentime);
         synchronized (streamUpdates) {
             streamUpdates.add(t0);
