@@ -67,6 +67,7 @@ service ParameterArchiveApi {
   rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameters/{name*}/samples"
+      field_mask_root: "sample"
     };
   }
   
@@ -83,6 +84,7 @@ service ParameterArchiveApi {
   rpc GetParameterRanges(GetParameterRangesRequest) returns (pvalue.Ranges) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameters/{name*}/ranges"
+      field_mask_root: "range"
     };
   }
   

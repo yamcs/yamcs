@@ -13,6 +13,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
@@ -45,6 +46,8 @@ public abstract class Context {
 
     private JsonFormat.Parser jsonParser;
     private JsonFormat.Printer jsonPrinter;
+
+    protected FieldMask fieldMask;
 
     /**
      * The request user.
@@ -108,6 +111,10 @@ public abstract class Context {
 
     public String printJson(Message message) throws InvalidProtocolBufferException {
         return jsonPrinter.print(message);
+    }
+
+    public FieldMask getFieldMask() {
+        return fieldMask;
     }
 
     /**

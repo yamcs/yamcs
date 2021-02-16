@@ -3,11 +3,11 @@ package org.yamcs.examples.snippets;
 import java.util.logging.LogManager;
 
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ContainerProcessingResult;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
@@ -43,12 +43,11 @@ public class XtceDecodingSnippet {
         }; // 4 Samples
 
         long t = TimeEncoding.getWallclockTime();
-        extractor.processPacket(new BitBuffer(p1), t, t);
+        ContainerProcessingResult result = extractor.processPacket(new BitBuffer(p1), t, t);
 
-        ParameterValueList result = extractor.getParameterResult();
         System.out.printf("%-30s %-15s %-15s\n", "Parameter", "Engineering", "Raw");
         System.out.printf("%-30s %-15s %-15s\n", "---------", "-----------", "---");
-        for (ParameterValue value : result) {
+        for (ParameterValue value : result.getParameterResult()) {
             String parameterName = value.getParameter().getName();
             Value engValue = value.getEngValue();
             Value rawValue = value.getRawValue();

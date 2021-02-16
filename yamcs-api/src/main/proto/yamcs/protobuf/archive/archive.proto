@@ -39,6 +39,7 @@ service StreamArchiveApi {
   rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
     option (yamcs.api.route) = {
       get: "/api/stream-archive/{instance}/parameters/{name*}/samples"
+      field_mask_root: "sample"
     };
   }
   

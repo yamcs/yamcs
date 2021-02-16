@@ -13,8 +13,11 @@ import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ExceptionUtil;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
+import com.google.protobuf.util.FieldMaskUtil;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -111,8 +114,40 @@ public class CallObserver implements Observer<Message> {
         });
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends Message> ChannelFuture sendMessageResponse(T responseMsg) {
         HttpRequest req = ctx.nettyRequest;
+
+        if (ctx.fieldMask != null) {
+            if (ctx.getFieldMaskRoot() == null) {
+                Builder builder = responseMsg.newBuilderForType();
+                FieldMaskUtil.merge(ctx.fieldMask, responseMsg, builder);
+                responseMsg = (T) builder.buildPartial();
+            } else {
+                FieldDescriptor maskRoot = responseMsg.getDescriptorForType()
+                        .findFieldByName(ctx.getFieldMaskRoot());
+                if (maskRoot != null) {
+                    Builder builder = responseMsg.toBuilder();
+                    builder.clearField(maskRoot);
+                    if (maskRoot.isRepeated()) {
+                        int n = responseMsg.getRepeatedFieldCount(maskRoot);
+                        for (int i = 0; i < n; i++) {
+                            Message repeatedMessage = (Message) responseMsg.getRepeatedField(maskRoot, i);
+                            Builder repeatedBuilder = repeatedMessage.newBuilderForType();
+                            FieldMaskUtil.merge(ctx.fieldMask, repeatedMessage, repeatedBuilder);
+                            builder.addRepeatedField(maskRoot, repeatedBuilder.buildPartial());
+                        }
+                        responseMsg = (T) builder.buildPartial();
+                    } else if (responseMsg.hasField(maskRoot)) {
+                        Message subMessage = (Message) responseMsg.getField(maskRoot);
+                        Builder subBuilder = responseMsg.newBuilderForType();
+                        FieldMaskUtil.merge(ctx.fieldMask, subMessage, subBuilder);
+                        builder.setField(maskRoot, subBuilder.buildPartial());
+                        responseMsg = (T) builder.buildPartial();
+                    }
+                }
+            }
+        }
 
         MediaType contentType = ctx.deriveTargetContentType();
         if (contentType != MediaType.JSON) {

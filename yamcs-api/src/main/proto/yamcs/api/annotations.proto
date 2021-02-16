@@ -47,6 +47,12 @@ message HttpRoute {
   // routes should do that).
   optional bool offloaded = 9;
   
+  // Name of the field in the response message where a user-specified field
+  // mask is applied to. If this indicates a repeated field, the field mask
+  // is applied to each of those messages.
+  // If unspecified, Yamcs will try to derive this itself.
+  optional string field_mask_root = 10;
+
   repeated HttpRoute additional_bindings = 11;
 }
 

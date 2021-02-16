@@ -1112,6 +1112,8 @@ public class YamcsServer {
         spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
         spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
         spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("archive", OptionType.ANY);
+        spec.addOption("rdbConfig", OptionType.ANY);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {
@@ -1340,7 +1342,7 @@ public class YamcsServer {
         String notifySocket = System.getenv("NOTIFY_SOCKET");
         if (notifySocket != null) {
             try {
-                String cmd = String.format("socat STDIO UNIX-SENDTO:%s <<< READY=1", notifySocket);
+                String cmd = String.format("echo 'READY=1' | socat STDIO UNIX-SENDTO:%s", notifySocket);
                 new ProcessBuilder("sh", "-c", cmd).inheritIO().start();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
