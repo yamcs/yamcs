@@ -1,4 +1,10 @@
-Version 5.4.0 released 10-Feb-2020
+Version 5.4.1 released 17-Feb-2021
+- CFDP: allow to configure the inactivityTimeout
+- changed yamcs systemd script to not depend on bash being the system shell
+- add support for web response filtering
+- added a minRange option to the parameter range request allowing to limit the number of ranges returned. This is done by aggregating data into multi value range.
+
+Version 5.4.0 released 10-Feb-2021
 - Generalized file transfers: allow different than CFDP file transfer services to be implemented offering the same external API.
 - Added displayName/email attribute support to YamlAuthModule
 - Added queueing support to CFDP - files can be queued for later upload
