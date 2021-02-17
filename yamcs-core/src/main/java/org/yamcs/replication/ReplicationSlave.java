@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,9 +15,11 @@ import javax.net.ssl.SSLException;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
@@ -56,7 +57,6 @@ public class ReplicationSlave extends AbstractYamcsService {
     SlaveChannelHandler slaveChannelHandler;
     List<String> streamNames;
     RandomAccessFile lastTxFile;
-    FileLock lastTxFileLock;
 
     Path txtfilePath;
     int localInstanceId;
@@ -98,28 +98,37 @@ public class ReplicationSlave extends AbstractYamcsService {
         String dataDir = YarchDatabase.getDataDir();
         Path replicationDir = Paths.get(dataDir).resolve(yamcsInstance).resolve("replication");
         replicationDir.toFile().mkdirs();
-        String lastTxFilename = config.getString("lastTxFile", "slave-lastid.txt");
+        String lastTxFilename = config.getString("lastTxFile", serviceName + "-lastid.txt");
 
         txtfilePath = replicationDir.resolve(lastTxFilename);
         try {
             lastTxFile = new RandomAccessFile(txtfilePath.toFile(), "rw");
-            lastTxFileLock = lastTxFile.getChannel().lock();
             String line = lastTxFile.readLine();
             if (line != null) {
                 lastTxId = Long.parseLong(line);
             } else {
                 lastTxId = -1;
             }
-        } catch (OverlappingFileLockException e) {
-            throw new InitException(
-                    "ERROR: cannot lock " + lastTxFilename + ". Is another replication slave running with this file?"
-                            + "Please consider using the lastTxFile option to specify a different filename");
         } catch (IOException e) {
             throw new InitException(e);
         } catch (NumberFormatException e) {
             throw new InitException("Cannot parse number from " + txtfilePath + ": " + e);
         }
 
+    }
+
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING).withRequired(true);
+        spec.addOption("tcpRole", OptionType.STRING);
+        spec.addOption("masterHost", OptionType.STRING);
+        spec.addOption("masterPort", OptionType.INTEGER);
+        spec.addOption("reconnectionIntervalSec", OptionType.INTEGER);
+        spec.addOption("enableTls", OptionType.BOOLEAN);
+        spec.addOption("masterInstance", OptionType.STRING);
+        spec.addOption("lastTxFile", OptionType.STRING);
+        return spec;
     }
 
     @Override
@@ -140,7 +149,6 @@ public class ReplicationSlave extends AbstractYamcsService {
         }
 
         try {
-            lastTxFileLock.close();
             lastTxFile.close();
         } catch (IOException e) {
             log.error("Failed to close the last TX id file");

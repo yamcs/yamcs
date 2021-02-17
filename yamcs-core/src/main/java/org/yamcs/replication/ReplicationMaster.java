@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.file.CopyOption;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,8 +27,10 @@ import javax.net.ssl.SSLException;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.StreamInfo;
@@ -57,7 +62,6 @@ import io.netty.handler.ssl.SslContextBuilder;
  *
  */
 public class ReplicationMaster extends AbstractYamcsService {
-    private static final Pattern FILE_PATTERN = Pattern.compile("RPL_([0-9A-Fa-f]{16})\\.dat");
 
     ConcurrentSkipListMap<Long, ReplFileAccess> replFiles = new ConcurrentSkipListMap<>();
     volatile ReplicationFile currentFile = null;
@@ -78,6 +82,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     SslContext sslCtx = null;
     // files not accessed longer than this will be closed
     private long fileCloseTime;
+    Pattern filePattern;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
@@ -95,6 +100,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             throw new InitException(
                     "maxFileSize has to be higher than header size which for maxPages=" + maxPages + " is " + hdrSize);
         }
+        this.filePattern = Pattern.compile(Pattern.quote(serviceName) + "_([0-9A-Fa-f]{16})\\.dat");
 
         fileCloseTime = config.getLong("fileCloseTimeSec", 300) * 1000;
         YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> closeUnusedFiles(), fileCloseTime,
@@ -141,6 +147,8 @@ public class ReplicationMaster extends AbstractYamcsService {
             throw new InitException("Cannot create the directory where replication files are stored " + replicationDir
                     + ": " + e.getMessage());
         }
+        renameOldReplicationFiles();
+
         scanFiles();
         try {
             initCurrentFile();
@@ -149,6 +157,29 @@ public class ReplicationMaster extends AbstractYamcsService {
         }
     }
 
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+
+        Spec slaveSpec = new Spec();
+        slaveSpec.addOption("host", OptionType.STRING);
+        slaveSpec.addOption("port", OptionType.INTEGER);
+        slaveSpec.addOption("instance", OptionType.STRING);
+        slaveSpec.addOption("enableTls", OptionType.BOOLEAN);
+
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING).withRequired(true);
+        spec.addOption("tcpRole", OptionType.STRING);
+        spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("expirationDays", OptionType.FLOAT);
+        spec.addOption("pageSize", OptionType.INTEGER);
+        spec.addOption("maxPages", OptionType.INTEGER);
+        spec.addOption("maxFileSizeKB", OptionType.INTEGER);
+        spec.addOption("fileCloseTimeSec", OptionType.INTEGER);
+        spec.addOption("reconnectionIntervalSec", OptionType.INTEGER);
+        spec.addOption("slaves", OptionType.LIST).withElementType(OptionType.MAP).withSpec(slaveSpec);
+
+        return spec;
+    }
     private void initCurrentFile() throws IOException, InitException {
         if (replFiles.isEmpty()) {
             openNewFile(null);
@@ -252,7 +283,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             List<Path> files = stream.collect(Collectors.toList());
             for (Path file : files) {
                 String name = file.getFileName().toString();
-                Matcher m = FILE_PATTERN.matcher(name);
+                Matcher m = filePattern.matcher(name);
                 if (m.matches()) {
                     long txId = Long.parseLong(m.group(1), 16);
                     replFiles.put(txId, new ReplFileAccess(file));
@@ -481,7 +512,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     Path getPath(long firstTxId) {
-        return replicationDir.resolve(String.format("RPL_%016x.dat", firstTxId));
+        return replicationDir.resolve(String.format("%s_%016x.dat", serviceName, firstTxId));
     }
 
     /**
@@ -523,7 +554,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             List<Path> files = stream.collect(Collectors.toList());
             for (Path file : files) {
                 String name = file.getFileName().toString();
-                Matcher m = FILE_PATTERN.matcher(name);
+                Matcher m = filePattern.matcher(name);
                 if (m.matches()) {
                     long txId = Long.parseLong(m.group(1), 16);
                     if (txId != currentFile.getFirstId()) {// never remove the current file
@@ -554,6 +585,27 @@ public class ReplicationMaster extends AbstractYamcsService {
                 // file is open for replay, put it on the list to be removed when it is closed
                 toDeleteList.add(rfa);
             }
+        }
+    }
+
+    // this is called at init starting with yamcs 5.4.2 when the replication files have been renamed to contain the
+    // service name.
+    // it renames the old replication files to the new names
+    // to be removed after a while
+    private void renameOldReplicationFiles() throws InitException {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(replicationDir)) {
+            for (Path path : stream) {
+                if (!Files.isDirectory(path)) {
+                    String name = path.getFileName().toString();
+                    if (name.matches("RPL_[0-9a-fA-F]{16}\\.dat")) {
+                        Path newPath = replicationDir.resolve(name.replace("RPL_", serviceName+"_"));
+                        log.info("Renaming {} to {}", path, newPath);
+                        Files.move(path, newPath, StandardCopyOption.ATOMIC_MOVE);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new InitException(e);
         }
     }
 

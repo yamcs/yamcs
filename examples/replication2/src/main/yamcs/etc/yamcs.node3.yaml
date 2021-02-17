@@ -26,16 +26,15 @@ services:
             enabled: true
             warmupTime: 60
   - class: org.yamcs.replication.ReplicationSlave
-    name: replication-node1
+    name: slave-to-node1
     args:
         tcpRole: client
         masterHost: localhost
         masterPort: 8099
         masterInstance: node1
         streams: ["tm_realtime"]
-        lastTxFile: "node1-lasttxid.txt"
   - class: org.yamcs.replication.ReplicationSlave
-    name: replication-node2
+    name: slave-to-node2
     enabledAtStartup: false
     args:
         tcpRole: client
@@ -43,7 +42,6 @@ services:
         masterPort: 8099
         masterInstance: node2
         streams: ["tm_realtime"]
-        lastTxFile: "node2-lasttxid.txt"
 
 
 
