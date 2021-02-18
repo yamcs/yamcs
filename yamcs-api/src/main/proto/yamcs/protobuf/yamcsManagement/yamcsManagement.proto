@@ -67,6 +67,17 @@ service ManagementApi {
       body: "*"
     };
   }
+
+  // Reconfigure a templated instance
+  //
+  // Regenerates the instance configuration based on the latest
+  // template source, and with optionally modified template variables.
+  rpc ReconfigureInstance(ReconfigureInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:reconfigure"
+      body: "*"
+    };
+  }
   
   // Start an instance
   //
@@ -469,6 +480,19 @@ message CreateInstanceRequest {
   // Labels assigned to this instance. Each entry is keyed by the tag name
   // of the label. The value represent the label value for that tag.
   map<string, string> labels = 4;
+}
+
+message ReconfigureInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Arguments for substitution in the template definition. Each entry is
+  // keyed by the argument name. The value must be a string.
+  map<string, string> templateArgs = 2;
+  
+  // Labels assigned to this instance. Each entry is keyed by the tag name
+  // of the label. The value represent the label value for that tag.
+  map<string, string> labels = 3;
 }
 
 message ListInstanceTemplatesResponse {

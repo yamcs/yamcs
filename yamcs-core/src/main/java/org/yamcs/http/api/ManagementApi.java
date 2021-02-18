@@ -63,6 +63,7 @@ import org.yamcs.protobuf.ListLinksRequest;
 import org.yamcs.protobuf.ListLinksResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.ServiceInfo;
@@ -218,6 +219,39 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
         observer.complete(enriched);
+    }
+
+    @Override
+    public void reconfigureInstance(Context ctx, ReconfigureInstanceRequest request, Observer<YamcsInstance> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.CreateInstances);
+        YamcsServer yamcs = YamcsServer.getServer();
+
+        String instanceName = verifyInstance(request.getInstance());
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
+        String templateName = instance.getTemplate();
+        if (templateName == null) {
+            throw new BadRequestException("This instance is not templated");
+        }
+
+        Map<String, Object> templateArgs = new HashMap<>(request.getTemplateArgsMap());
+        Map<String, String> labels = new HashMap<>(request.getLabelsMap());
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                yamcs.reconfigureInstance(instanceName, templateArgs, labels);
+                return yamcs.restartInstance(instanceName);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).whenComplete((v, error) -> {
+            YamcsServerInstance ysi = yamcs.getInstance(instanceName);
+            if (error == null) {
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                observer.complete(enriched);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                observer.completeExceptionally(t);
+            }
+        });
     }
 
     @Override

@@ -647,6 +647,41 @@ public class YamcsServer {
         return addInstance(name, metadata, false, instanceConfig);
     }
 
+    public synchronized YamcsServerInstance reconfigureInstance(String name, Map<String, Object> templateArgs,
+            Map<String, String> labels) throws IOException {
+        YamcsServerInstance ysi = instances.get(name);
+        if (ysi == null) {
+            throw new IllegalArgumentException(String.format("Unknown instance '%s'", name));
+        }
+
+        String templateName = ysi.getTemplate();
+        if (!instanceTemplates.containsKey(templateName)) {
+            throw new IllegalArgumentException(String.format("Unknown template '%s'", templateName));
+        }
+        Template template = instanceTemplates.get(templateName);
+
+        // Build instance metadata as a combination of internal properties and custom metadata from the caller
+        InstanceMetadata metadata = ysi.metadata;
+        metadata.setLabels(labels);
+        metadata.setTemplateArgs(templateArgs);
+        metadata.setTemplateSource(template.getSource());
+
+        String processed = template.process(metadata.getTemplateArgs());
+
+        Path confFile = instanceDefDir.resolve(configFileName(name));
+        try (Writer writer = Files.newBufferedWriter(confFile)) {
+            writer.write(processed);
+        }
+
+        Path metadataFile = instanceDefDir.resolve("yamcs." + name + ".metadata");
+        try (Writer writer = Files.newBufferedWriter(metadataFile)) {
+            Map<String, Object> metadataMap = metadata.toMap();
+            new Yaml().dump(metadataMap, writer);
+        }
+
+        return ysi;
+    }
+
     private String deriveServerId() {
         try {
             String id;
