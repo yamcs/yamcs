@@ -124,6 +124,15 @@
       </td>
     </ng-container>
 
+    <ng-container cdkColumnDef="template">
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Template</th>
+      <td mat-cell *cdkCellDef="let row">
+        {{ row.template || '-' }}
+        <mat-icon *ngIf="row.templateChanged"
+                  matTooltip="Template has changed">warning_amber</mat-icon>
+      </td>
+    </ng-container>
+
     <ng-container cdkColumnDef="state">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">State</th>
       <td mat-cell *cdkCellDef="let row">

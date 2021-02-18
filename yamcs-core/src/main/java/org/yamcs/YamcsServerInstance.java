@@ -135,8 +135,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
             xtceDb = XtceDbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
 
-            // create services before the link manager so that the pre-processors can find them 
-            //if required (even uninitialized)
+            // create services before the link manager so that the pre-processors can find them
+            // if required (even uninitialized)
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
             services = YamcsServer.createServices(name, serviceConfigs, log);
 
@@ -371,6 +371,18 @@ public class YamcsServerInstance extends YamcsInstanceService {
         }
         aib.putAllLabels(getLabels());
         return aib.build();
+    }
+
+    public String getTemplate() {
+        return metadata.getTemplate();
+    }
+
+    public String getTemplateSource() {
+        return metadata.getTemplateSource();
+    }
+
+    public Map<String, Object> getTemplateArgs() {
+        return metadata.getTemplateArgs();
     }
 
     public Object getMetadata(Object key) {

@@ -41,6 +41,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     'name',
     'processor',
     'labels',
+    'template',
     // 'state',
     'actions',
   ];

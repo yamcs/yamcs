@@ -10,9 +10,10 @@ public class InstanceMetadata {
 
     private static final String LABELS = "labels";
     private static final String TEMPLATE = "template";
+    private static final String TEMPLATE_SOURCE = "templateSource";
     private static final String TEMPLATE_ARGS = "templateArgs";
 
-    private static final List<String> RESERVED = Arrays.asList(LABELS, TEMPLATE, TEMPLATE_ARGS);
+    private static final List<String> RESERVED = Arrays.asList(LABELS, TEMPLATE, TEMPLATE_SOURCE, TEMPLATE_ARGS);
 
     private final Map<String, Object> map;
 
@@ -57,6 +58,14 @@ public class InstanceMetadata {
 
     public void setTemplate(String template) {
         map.put(TEMPLATE, template);
+    }
+
+    public String getTemplateSource() {
+        return (String) map.get(TEMPLATE_SOURCE);
+    }
+
+    public void setTemplateSource(String templateSource) {
+        map.put(TEMPLATE_SOURCE, templateSource);
     }
 
     @SuppressWarnings("unchecked")

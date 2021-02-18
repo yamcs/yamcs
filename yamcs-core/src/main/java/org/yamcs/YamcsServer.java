@@ -614,14 +614,16 @@ public class YamcsServer {
             throw new IllegalArgumentException(String.format("Unknown template '%s'", templateName));
         }
 
+        Template template = instanceTemplates.get(templateName);
+
         // Build instance metadata as a combination of internal properties and custom metadata from the caller
         InstanceMetadata metadata = new InstanceMetadata();
         metadata.setTemplate(templateName);
         metadata.setTemplateArgs(templateArgs);
+        metadata.setTemplateSource(template.getSource());
         metadata.setLabels(labels);
         customMetadata.forEach((k, v) -> metadata.put(k, v));
 
-        Template template = instanceTemplates.get(templateName);
         String processed = template.process(metadata.getTemplateArgs());
 
         Path confFile = instanceDefDir.resolve(configFileName(name));

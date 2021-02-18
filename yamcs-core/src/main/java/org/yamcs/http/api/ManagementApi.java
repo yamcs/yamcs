@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -753,17 +755,35 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
+        YamcsServer yamcs = YamcsServer.getServer();
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
-        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
+        YamcsServerInstance ysi = yamcs.getInstance(yamcsInstance.getName());
 
         if (ysi == null) {
             throw new BadRequestException("Invalid Yamcs instance " + yamcsInstance.getName());
         }
 
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
+            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
+            }
+        }
+
+        String template = ysi.getTemplate();
+        if (template != null) {
+            instanceb.setTemplate(template);
+            for (Entry<String, Object> arg : ysi.getTemplateArgs().entrySet()) {
+                if (arg.getValue() instanceof String) {
+                    instanceb.putTemplateArgs(arg.getKey(), (String) arg.getValue());
+                }
+            }
+
+            Template latestTemplate = yamcs.getInstanceTemplate(template);
+            instanceb.setTemplateAvailable(latestTemplate != null);
+            if (latestTemplate != null) {
+                boolean eq = Objects.equals(ysi.getTemplateSource(), latestTemplate.getSource());
+                instanceb.setTemplateChanged(!eq);
             }
         }
 
