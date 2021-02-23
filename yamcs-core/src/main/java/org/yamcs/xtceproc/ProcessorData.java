@@ -102,7 +102,7 @@ public class ProcessorData {
         } else {// instance can be null when running in test or as a library - in this case we don't generate events
             eventProducer = new QuietEventProducer();
         }
-        eventProducer.setSource("PROCESOR(" + procName + ")");
+        eventProducer.setSource("PROCESSOR(" + procName + ")");
         eventProducer.setRepeatedEventReduction(true, 10000);
 
         // populate last value cache with the default (initial) value for each parameter that has one
