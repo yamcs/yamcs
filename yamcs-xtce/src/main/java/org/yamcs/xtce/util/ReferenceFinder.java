@@ -1,18 +1,21 @@
 package org.yamcs.xtce.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.Container;
-import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.util.NameReference.Type;
+
 
 public class ReferenceFinder {
     Consumer<String> logger;
@@ -146,16 +149,13 @@ public class ReferenceFinder {
             SpaceSystem ss1 = ss.getSubsystem(path[i]);
 
             if ((ss1 == null) && nr.getType() == Type.PARAMETER) {
-                // check if it's an aggregate specified using path separator /
-                // This is not according to the XTCE 1.2 standard but was used in BogusSAT2 xml
-                // XTCE 1.1 standard did not specify how it should be done
-                // TODO: remove after a while
+                // check if it's an aggregate specified using path separator
                 Parameter p = ss.getParameter(path[i]);
                 if (p != null && p.getParameterType() instanceof AggregateParameterType) {
 
                     PathElement[] aggregateMemberPath = getAggregateMemberPath(
                             Arrays.copyOfRange(path, i + 1, path.length));
-                    if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
+                    if (verifyPath(p.getParameterType(), aggregateMemberPath)) {
                         /*
                          * Strangely enough, references to aggregate members using dot are not valid according to XTCE.
                          * 
@@ -184,11 +184,7 @@ public class ReferenceFinder {
         }
         switch (nr.getType()) {
         case PARAMETER:
-            if (name.contains(".")) {
-                return getAggregateReference(ss, name);
-            } else {
-                return getSimpleReference(ss.getParameter(name));
-            }
+            return getParameterReference(ss, name);
         case PARAMETER_TYPE:
             return getSimpleReference((NameDescription) ss.getParameterType(name));
         case SEQUENCE_CONTAINER:
@@ -210,38 +206,64 @@ public class ReferenceFinder {
         return null;
     }
 
-    private FoundReference getAggregateReference(SpaceSystem ss, String ref) {
-        String[] a = ref.split("\\.");
-        String pname = a[0];
-        PathElement[] aggregateMemberPath = getAggregateMemberPath(Arrays.copyOfRange(a, 1, a.length));
+    private FoundReference getParameterReference(SpaceSystem ss, String name) {
+        PathElement[] path = null;
+        
+        String pname = name;
+        int idx = findSeparator(name);
+        if (idx > 0) { // this is an array or aggregate element
+            path = parseReference(name.substring(idx));
+            pname = name.substring(0, idx);
+        }
+
         Parameter p = ss.getParameter(pname);
-        if (p == null) {
+        if(p==null) {
             return null;
         }
-        if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
-            return new FoundReference(p, aggregateMemberPath);
+        if (path != null && !verifyPath(p.getParameterType(), path)) {
+            return null;
         }
-        return null;
+        return new FoundReference(p, path);
     }
 
-    private static boolean checkReferenceToAggregateMember(Parameter p, PathElement[] path) {
-        AggregateParameterType apt = (AggregateParameterType) p.getParameterType();
-        for (int i = 0; i < path.length; i++) {
-            Member m = apt.getMember(path[i].getName());
-            if (m == null) {
-                return false;
-            }
-            if (i == path.length - 1) {
-                return true;
-            }
-            DataType ptype = m.getType();
-            if (ptype instanceof AggregateParameterType) {
-                apt = (AggregateParameterType) apt;
-            } else {
-                return false;
+    public static PathElement[] parseReference(String name) {
+        List<PathElement> tmp = new ArrayList<>();
+        String[] p = name.split("\\.");
+        for (String ps : p) {
+            if (!ps.isEmpty()) {
+                tmp.add(PathElement.fromString(ps));
             }
         }
-        return false;
+        return tmp.toArray(new PathElement[0]);
+    }
+
+
+    public static boolean verifyPath(ParameterType parameterType, PathElement[] path) {
+        ParameterType ptype = parameterType;
+        for (PathElement pe : path) {
+            if (pe.getName() != null) {
+                if (!(ptype instanceof AggregateParameterType)) {
+                    return false;
+                }
+                Member m = ((AggregateParameterType) ptype).getMember(pe.getName());
+                if (m == null) {
+                    return false;
+                }
+                ptype = (ParameterType) m.getType();
+            }
+            if (pe.getIndex() != null) {
+                int[] idx = pe.getIndex();
+                if (!(ptype instanceof ArrayParameterType)) {
+                    return false;
+                }
+                ArrayParameterType at = (ArrayParameterType) ptype;
+                if (at.getNumberOfDimensions() != idx.length) {
+                    return false;
+                }
+                ptype = (ParameterType) at.getElementType();
+            }
+        }
+        return true;
     }
 
     private static FoundReference getSimpleReference(NameDescription nd) {
@@ -292,5 +314,18 @@ public class ReferenceFinder {
         public String toString() {
             return nd.getName() + (aggregateMemberPath == null ? "" : "." + Arrays.toString(aggregateMemberPath));
         }
+    }
+
+    public static int findSeparator(String s) {
+        int found = -1;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (found == -1 && ((c == '.') || (c == '['))) {
+                found = i;
+            } else if (c == '/') {
+                found = -1;
+            }
+        }
+        return found;
     }
 }

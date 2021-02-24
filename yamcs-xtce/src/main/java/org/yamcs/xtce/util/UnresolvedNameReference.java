@@ -14,7 +14,7 @@ import org.yamcs.xtce.NameDescription;
  * @author nm
  *
  */
-public class UnresolvedNameReference extends NameReference {
+public class UnresolvedNameReference extends AbstractNameReference {
     List<ResolvedAction> actions = new ArrayList<>();
     CompletableFuture<NameDescription> cf = new CompletableFuture<NameDescription>();
     

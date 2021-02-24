@@ -22,12 +22,14 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
@@ -90,9 +92,24 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         // First time for an inputParameter, it will create a ValueBinding object.
         // Further calls will just update that object
         if (valueBinding == null) {
-            valueBinding = toValueBinding(newValue);
+            valueBinding = toValueBinding(inputParameter, newValue);
             functionArgs[position] = valueBinding;
         }
+        if (valueBinding == null) {
+            return;
+        }
+
+        ParameterInstanceRef pref = inputParameter.getParameterInstance();
+        if (pref.getMemberPath() != null) {
+            ParameterValue memberValue = AggregateUtil.extractMember(newValue, pref.getMemberPath());
+            if (memberValue == null) {
+                // this can happen for an array which does not have enough elements
+                log.debug("value {} does not have member path required by parameter reference {}", newValue, pref);
+                return;
+            }
+            newValue = memberValue;
+        }
+
         valueBinding.updateValue(newValue);
     }
 
@@ -214,9 +231,12 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return pval;
     }
 
-    private static ValueBinding toValueBinding(ParameterValue pval) {
+    private ValueBinding toValueBinding(InputParameter inputParameter, ParameterValue pval) {
         try {
-            Class<ValueBinding> clazz = getOrCreateValueBindingClass(pval);
+            Class<ValueBinding> clazz = getOrCreateValueBindingClass(inputParameter, pval);
+            if (clazz == null) {
+                return null;
+            }
             Constructor<ValueBinding> constructor = clazz.getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
@@ -224,7 +244,20 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    private static Class<ValueBinding> getOrCreateValueBindingClass(ParameterValue pval) {
+    private Class<ValueBinding> getOrCreateValueBindingClass(InputParameter inputParameter,
+            ParameterValue pval) {
+
+        ParameterInstanceRef pref = inputParameter.getParameterInstance();
+        if (pref.getMemberPath() != null) {
+            pval = AggregateUtil.extractMember(pval, pref.getMemberPath());
+            if (pval == null) {
+                eventProducer.sendWarning(getAlgorithm().getName(),
+                        "Algorithm refers to an member of an aggrgate but the received value does not contain the path to that member: "
+                                + inputParameter.getParameterInstance());
+                return null;
+            }
+        }
+
         String key;
         if (pval.getRawValue() == null) {
             key = "" + pval.getEngValue().getType().getNumber();

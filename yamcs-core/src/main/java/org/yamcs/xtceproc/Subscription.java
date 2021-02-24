@@ -11,9 +11,11 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.IndirectParameterRefEntry;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
@@ -116,6 +118,14 @@ public class Subscription {
         if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
             addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount())
                     .getParameterInstnaceRef().getParameter());
+        }
+        if (se instanceof ArrayParameterEntry) {
+            ArrayParameterEntry ape = (ArrayParameterEntry) se;
+            for (IntegerValue iv : ape.getSize()) {
+                if (iv instanceof DynamicIntegerValue) {
+                    addParameter(((DynamicIntegerValue) iv).getParameterInstnaceRef().getParameter());
+                }
+            }
         }
         if (!containerAlreadyAdded) {
             addSequenceContainer(se.getSequenceContainer());

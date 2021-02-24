@@ -5,6 +5,12 @@
 
 	<xtce:TelemetryMetaData>
 		<xtce:ParameterTypeSet>
+			<xtce:IntegerParameterType sizeInBits="32" signed="false" name="uint16">
+        		<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
+      		</xtce:IntegerParameterType>
+      		<xtce:FloatParameterType sizeInBits="32" name="float32">
+        		<xtce:FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32"/>
+      		</xtce:FloatParameterType>
 			<xtce:BinaryParameterType name="binary_param_type">
 				<xtce:BinaryDataEncoding>
 					<xtce:SizeInBits>
@@ -19,9 +25,18 @@
 					</xtce:FromBinaryTransformAlgorithm>
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryParameterType>
+			<xtce:AggregateParameterType name="aggregate_patam_type1">
+			<xtce:MemberList>
+				<xtce:Member name="m1" typeRef="float32"/>
+				<xtce:Member name="m2" typeRef="uint16"/>
+			</xtce:MemberList>
+			</xtce:AggregateParameterType>
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
 			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type" />
+			<xtce:Parameter name="param2" parameterTypeRef="aggregate_patam_type1" />
+			<xtce:Parameter name="param3" parameterTypeRef="float32" />
+			<xtce:Parameter name="param4" parameterTypeRef="float32" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -29,7 +44,38 @@
 					<xtce:ParameterRefEntry parameterRef="param1" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet2">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="param2" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
 		</xtce:ContainerSet>
+		 <xtce:AlgorithmSet>
+            <xtce:MathAlgorithm name="avg1">
+                <xtce:MathOperation outputParameterRef="param3">
+                    <xtce:ParameterInstanceRefOperand parameterRef="param2/m1"/>
+                    <xtce:ParameterInstanceRefOperand parameterRef="param2/m2"/>
+                    <xtce:Operator>+</xtce:Operator>
+                    <xtce:ValueOperand>2</xtce:ValueOperand>
+                    <xtce:Operator>/</xtce:Operator>
+                    <xtce:TriggerSet>
+                            <xtce:OnParameterUpdateTrigger parameterRef="param2"/>
+                    </xtce:TriggerSet>
+                </xtce:MathOperation>
+            </xtce:MathAlgorithm>
+            <xtce:CustomAlgorithm name="avg2">
+               <xtce:AlgorithmText language="JavaScript">
+                    avg.value = (m1.value+m2.value)/2
+                </xtce:AlgorithmText>
+                <xtce:InputSet>
+                    <xtce:InputParameterInstanceRef parameterRef="param2/m1" inputName="m1" />
+                    <xtce:InputParameterInstanceRef parameterRef="param2/m2" inputName="m2" />
+                </xtce:InputSet>
+                <xtce:OutputSet>
+                    <xtce:OutputParameterRef parameterRef="param4" outputName="avg"/>
+                </xtce:OutputSet>
+            </xtce:CustomAlgorithm>
+        </xtce:AlgorithmSet>
 	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>
 		<xtce:ArgumentTypeSet>

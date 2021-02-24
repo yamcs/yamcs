@@ -4,12 +4,15 @@ import java.io.Serializable;
 
 /**
  * A reference to an instance of a Parameter.
+ * <p>
  * Used when the value of a parameter is required for a calculation or as an index value.
+ * <p>
  * A positive value for instance is forward in time, a negative value for count is backward in time,
  * a 0 value for count means use the current value of the parameter or the first value in a container.
- * 
- * If the parameter is an aggregate or an array, the reference can be made to a member of the aggregate/arraty or more
+ * <p>
+ * If the parameter is an aggregate or an array, the reference can be made to a member of the aggregate/array or more
  * generally to a path inside the aggregate (if a hierarchy of aggregates/arrays)
+ * <p>
  * Thus the reference can be something like:
  * g1/g2/a[1]/g4[a3]/p7
  * 

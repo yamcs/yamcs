@@ -2,7 +2,7 @@ package org.yamcs.xtce.util;
 
 import java.util.Iterator;
 
-import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
 
 /**
@@ -13,43 +13,31 @@ import org.yamcs.xtce.PathElement;
  * @author nm
  *
  */
-public class UnresolvedParameterReference extends UnresolvedNameReference {
+public class UnresolvedParameterReference extends UnresolvedNameReference implements ParameterReference {
     public UnresolvedParameterReference(String ref) {
         super(ref, Type.PARAMETER);
     }
 
-    @FunctionalInterface
-    public interface ParameterResolvedAction extends ResolvedAction {
-        /**
-         * pushes the NameDescription through and returns true if the name reference is resolved and false otherwise
-         * 
-         * false can be returned in case the NameDescription refers to something which is not itself fully resolved
-         * 
-         * if path is not null, it means that the reference has been resolved to a path inside an aggregate parameter
-         */
-        public boolean resolved(NameDescription nd, PathElement[] path);
-
-        default boolean resolved(NameDescription nd) {
-            return resolved(nd, null);
-        }
-
-    }
-
-    public boolean resolved(NameDescription nd, PathElement[] path) {
+    public boolean tryResolve(Parameter param, PathElement[] path) {
         Iterator<ResolvedAction> it = actions.iterator();
         while (it.hasNext()) {
             ResolvedAction ra = it.next();
             boolean b = false;
             if (ra instanceof ParameterResolvedAction) {
-                b = ((ParameterResolvedAction) ra).resolved(nd, path);
+                b = ((ParameterResolvedAction) ra).resolved(param, path);
             } else {
-                b = ra.resolved(nd);
+                b = ra.resolved(param);
             }
             if (b) {
                 it.remove();
             }
         }
-        return actions.isEmpty();
+        if (actions.isEmpty()) {
+            cf.complete(param);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public UnresolvedParameterReference addResolvedAction(ParameterResolvedAction action) {

@@ -95,8 +95,35 @@ public class AggregateUtil {
                 ptype = (ParameterType) at.getElementType();
             }
         }
-
         return true;
+    }
+
+    public static ParameterType getMemberType(ParameterType parameterType, PathElement[] path) {
+        ParameterType ptype = parameterType;
+        for (PathElement pe : path) {
+            if (pe.getName() != null) {
+                if (!(ptype instanceof AggregateParameterType)) {
+                    return null;
+                }
+                Member m = ((AggregateParameterType) ptype).getMember(pe.getName());
+                if (m == null) {
+                    return null;
+                }
+                ptype = (ParameterType) m.getType();
+            }
+            if (pe.getIndex() != null) {
+                int[] idx = pe.getIndex();
+                if (!(ptype instanceof ArrayParameterType)) {
+                    return null;
+                }
+                ArrayParameterType at = (ArrayParameterType) ptype;
+                if (at.getNumberOfDimensions() != idx.length) {
+                    return null;
+                }
+                ptype = (ParameterType) at.getElementType();
+            }
+        }
+        return ptype;
     }
 
     /**

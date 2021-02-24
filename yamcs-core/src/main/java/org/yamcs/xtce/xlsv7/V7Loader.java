@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AbsoluteTimeDataType;
@@ -95,6 +96,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.ReferenceTime;
@@ -121,7 +123,9 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.ParameterReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
+import org.yamcs.xtce.util.UnresolvedParameterReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -2036,10 +2040,14 @@ public class V7Loader extends V7LoaderBase {
                         algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
                     inputParameterRefs.add(paraRefName);
-                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+                    ParameterReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
-                    paramRef.addResolvedAction(nd -> {
-                        parameterInstance.setParameter((Parameter) nd);
+
+                    SpreadsheetLoadContext ctx1 = ctx.copy();
+                    paramRef.addResolvedAction((p, path) -> {
+                        verifyScalarMember(ctx1, p, path);
+                        parameterInstance.setParameter(p);
+                        parameterInstance.setMemberPath(path);
                         return true;
                     });
 
@@ -2092,7 +2100,7 @@ public class V7Loader extends V7LoaderBase {
                             OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
                             triggerSet.addOnParameterUpdateTrigger(trigger);
                         } else {
-                            NameReference nr = new UnresolvedNameReference(s.trim(), Type.PARAMETER)
+                            NameReference nr = new UnresolvedParameterReference(s.trim())
                                     .addResolvedAction(nd -> {
                                         OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                         triggerSet.addOnParameterUpdateTrigger(trigger);
@@ -2121,7 +2129,7 @@ public class V7Loader extends V7LoaderBase {
                     if (para != null) {
                         triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
                     } else {
-                        NameReference nr = new UnresolvedNameReference(paraRef, Type.PARAMETER)
+                        NameReference nr = new UnresolvedParameterReference(paraRef)
                                 .addResolvedAction(nd -> {
                                     OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                     triggerSet.addOnParameterUpdateTrigger(trigger);
@@ -2139,6 +2147,20 @@ public class V7Loader extends V7LoaderBase {
 
             spaceSystem.addAlgorithm(algorithm);
             start = end;
+        }
+    }
+
+    private void verifyScalarMember(SpreadsheetLoadContext ctx, Parameter p, PathElement[] path) {
+        ParameterType ptype = p.getParameterType();
+        if (path != null) {
+            ptype = AggregateUtil.getMemberType(ptype, path);
+        }
+
+        if (ptype instanceof AggregateParameterType || ptype instanceof ArrayParameterType) {
+            String name = p.getName() + (path == null ? "" : "." + AggregateUtil.toString(path));
+            throw new SpreadsheetLoadException(ctx,
+                    "Cannot use " + name + " of type " + ptype.getClass().getSimpleName()
+                            + " as input to algorithms (reference to scalar members can be used instead)");
         }
     }
 

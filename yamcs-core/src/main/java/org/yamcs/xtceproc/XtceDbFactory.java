@@ -237,7 +237,7 @@ public class XtceDbFactory {
             if (rr.getAggregateMemberPath() == null) {
                 resolved = nr.tryResolve(rr.getNameDescription());
             } else {
-                resolved = ((UnresolvedParameterReference) nr).resolved(rr.getNameDescription(),
+                resolved = ((UnresolvedParameterReference) nr).tryResolve((Parameter) rr.getNameDescription(),
                         rr.getAggregateMemberPath());
             }
             if (resolved) {

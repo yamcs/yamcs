@@ -1,0 +1,10 @@
+services:
+  - class: org.yamcs.YarchChannel
+
+mdb:
+  - type: xtce
+    args:
+      file: "src/test/resources/xtce/ref-xtce.xml"
+
+streamConfig:
+  tm: ["tm_realtime"]

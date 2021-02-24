@@ -422,6 +422,35 @@ public class AlgorithmManagerTest {
 
         assertEquals("/REFMDB/SUBSYS1/PrependedSizeBinary1_length", pv1.getParameter().getQualifiedName());
         assertEquals(pv0.getEngValue().getBinaryValue().length, pv1.getEngValue().getUint32Value());
+    }
 
+    @Test
+    public void testAlgoAggrInput() throws InvalidIdentification, InterruptedException {
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoAggr1"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        proc.start();
+
+        tmGenerator.generate_PKT7();
+        assertEquals(1, params.size());
+        ParameterValue pv0 = params.get(0);
+        assertEquals("/REFMDB/SUBSYS1/AlgoAggr1", pv0.getParameter().getQualifiedName());
+        assertEquals(8.0, pv0.getEngValue().getDoubleValue(), 1e-5);
+    }
+
+    @Test
+    public void testAlgoArrayInput() throws InvalidIdentification, InterruptedException {
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoArray1"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        proc.start();
+
+        tmGenerator.generate_PKT8();
+        assertEquals(1, params.size());
+        ParameterValue pv0 = params.get(0);
+        assertEquals("/REFMDB/SUBSYS1/AlgoArray1", pv0.getParameter().getQualifiedName());
+        assertEquals(3.0, pv0.getEngValue().getDoubleValue(), 1e-5);
     }
 }

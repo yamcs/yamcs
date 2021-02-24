@@ -3,6 +3,8 @@ package org.yamcs.xtce.util;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 
 /**
  * Reference that is resolved since the beginning - it calls any action immediately.
@@ -15,11 +17,13 @@ import org.yamcs.xtce.NameDescription;
  * </ul>
  * 
  */
-public class ResolvedNameReference extends AbstractNameReference {
-    final NameDescription nd;
-    public ResolvedNameReference(String ref, Type type, NameDescription nd) {
-        super(ref, type);
-        this.nd = nd;
+public class ResolvedParameterReference extends AbstractNameReference implements ParameterReference {
+    final Parameter param;
+    PathElement[] path;
+
+    public ResolvedParameterReference(String ref, Parameter param) {
+        super(ref, Type.PARAMETER);
+        this.param = param;
     }
     @Override
     public boolean tryResolve(NameDescription nd) {
@@ -28,7 +32,7 @@ public class ResolvedNameReference extends AbstractNameReference {
     
     @Override
     public NameReference addResolvedAction(ResolvedAction action) {
-        action.resolved(nd);
+        action.resolved(param);
         return this;
     }
     @Override
@@ -38,6 +42,17 @@ public class ResolvedNameReference extends AbstractNameReference {
     
     @Override
     public CompletableFuture<NameDescription> getResolvedFuture() {
-        return CompletableFuture.completedFuture(nd);
+        return CompletableFuture.completedFuture(param);
+    }
+
+    @Override
+    public boolean tryResolve(Parameter param, PathElement[] path) {
+        return true;
+    }
+
+    @Override
+    public ParameterReference addResolvedAction(ParameterResolvedAction action) {
+        action.resolved(param, path);
+        return this;
     }
 }

@@ -18,7 +18,7 @@ import org.yamcs.xtce.NameDescription;
  *   <p>
  *    The ResolvedAction.resolved will be called once the reference is resolved.
  */
-public abstract class NameReference {
+public interface NameReference {
 
     public enum Type {SEQUENCE_CONTAINER, COMMAND_CONTAINER, PARAMETER, PARAMETER_TYPE, META_COMMAND, ALGORITHM, ARGUMENT_TYPE}
 
@@ -32,20 +32,13 @@ public abstract class NameReference {
         public boolean resolved(NameDescription nd);
         
     }
-    protected final String ref;
-    protected final Type type;
-
-    public NameReference(String ref, Type type) {
-        this.ref = ref;
-        this.type = type;
-    }
 
     /**
      * Execute all the actions (if not already executed) and return true if the reference has been resolved.
      * @param nd
      * @return true if the reference has been resolved
      */
-    public abstract boolean tryResolve(NameDescription nd);
+    public boolean tryResolve(NameDescription nd);
         
     /**
      * Adds an action to the list to be executed when the reference is resolved and returns this.
@@ -54,15 +47,12 @@ public abstract class NameReference {
      * @param action
      * @return this 
      */
-    public abstract NameReference addResolvedAction(ResolvedAction action);
+    public NameReference addResolvedAction(ResolvedAction action);
 
-    public String getReference() {
-        return ref;
-    }
+    public String getReference();
 
-    public Type getType() {
-        return type;
-    }
+    public Type getType();
+
     public abstract boolean isResolved();
     
 
@@ -73,9 +63,6 @@ public abstract class NameReference {
      */
    public abstract CompletableFuture<NameDescription> getResolvedFuture();
    
-   @Override
-   public String toString() {
-       return "name: "+ref+" type: "+type;
-   }
+
 
 }
