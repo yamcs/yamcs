@@ -25,7 +25,7 @@
 					</xtce:FromBinaryTransformAlgorithm>
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryParameterType>
-			<xtce:AggregateParameterType name="aggregate_patam_type1">
+			<xtce:AggregateParameterType name="aggregate_param_type1">
 			<xtce:MemberList>
 				<xtce:Member name="m1" typeRef="float32"/>
 				<xtce:Member name="m2" typeRef="uint16"/>
@@ -34,9 +34,11 @@
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
 			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type" />
-			<xtce:Parameter name="param2" parameterTypeRef="aggregate_patam_type1" />
+			<xtce:Parameter name="param2" parameterTypeRef="aggregate_param_type1" />
 			<xtce:Parameter name="param3" parameterTypeRef="float32" />
-			<xtce:Parameter name="param4" parameterTypeRef="float32" />
+			<xtce:Parameter name="param4" parameterTypeRef="float32" />			
+			<xtce:Parameter name="param5" parameterTypeRef="float32" initialValue="3.14" />
+			<xtce:Parameter name="param6" parameterTypeRef="float32" />	
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -75,6 +77,15 @@
                     <xtce:OutputParameterRef parameterRef="param4" outputName="avg"/>
                 </xtce:OutputSet>
             </xtce:CustomAlgorithm>
+            <xtce:MathAlgorithm name="copy_param5_into_param6">
+                <xtce:MathOperation outputParameterRef="param6">
+                    <xtce:ParameterInstanceRefOperand parameterRef="param5"/>                    
+                    <xtce:TriggerSet>
+                         <!--  we use this as a trigger to control it easier from unit tests-->
+                         <xtce:OnParameterUpdateTrigger parameterRef="param2"/>
+                    </xtce:TriggerSet>
+                </xtce:MathOperation>
+            </xtce:MathAlgorithm>
         </xtce:AlgorithmSet>
 	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>

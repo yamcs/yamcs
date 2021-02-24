@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -25,6 +24,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -106,6 +106,10 @@ public class AlgorithmManager extends AbstractProcessorService
         }
     }
 
+    public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
+        algorithmEngines.put(name, eng);
+    }
+
     @Override
     public void init(Processor processor, YConfiguration config, Object spec) {
         super.init(processor, config, spec);
@@ -126,9 +130,7 @@ public class AlgorithmManager extends AbstractProcessorService
         }
     }
     
-    public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
-        algorithmEngines.put(name, eng);
-    }
+
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
         for (OutputParameter oParam : algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
@@ -250,6 +252,14 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         execCtx.addAlgorithm(algorithm, executor);
+
+        // last value cache will contain the latest known values for all parameters
+        // including the initialValue
+        LastValueCache lvc = processor.getLastValueCache();
+        if(lvc != null) {        
+            executor.updateParameters(new ArrayList<>(lvc.getValues()));
+        }
+
         try {
             ArrayList<Parameter> newItems = new ArrayList<>();
             for (Parameter param : getParametersOfInterest(algorithm)) {
@@ -275,11 +285,15 @@ public class AlgorithmManager extends AbstractProcessorService
                     }
                 }
 
-                // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires going back in
-                // time
+                // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires
+                // going back in time
                 int lookbackSize = executor.getLookbackSize(param);
                 if (lookbackSize > 0) {
-                    execCtx.enableBuffer(param, lookbackSize);
+                    boolean enabled = execCtx.enableBuffer(param, lookbackSize);
+                    ParameterValue pv;
+                    if (enabled && lvc != null && (pv = lvc.getValue(param)) != null) {
+                        execCtx.updateHistoryWindow(pv);
+                    }
                 }
             }
             if (!newItems.isEmpty()) {

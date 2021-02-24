@@ -63,7 +63,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
 
         ParameterInstanceRef pref = inputParameter.getParameterInstance();
-        System.out.println("pref: " + pref);
 
         if (pref.getMemberPath() != null) {
             ParameterValue memberValue = AggregateUtil.extractMember(newValue, pref.getMemberPath());
@@ -82,7 +81,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
             log.warn("Received null value for input parameter {}", inputParameter);
             return;
         }
-        System.out.println("v: " + v);
 
         if (!ValueUtility.processAsDouble(v, d -> {
             input[idx] = d;
@@ -105,7 +103,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 .append("}\n");
         String expr = sb.toString();
         log.debug("Compiling math operation converted to java:\n {}", expr);
-        System.out.println("expr: " + expr);
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(expr);

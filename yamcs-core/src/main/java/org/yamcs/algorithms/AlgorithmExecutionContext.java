@@ -45,7 +45,8 @@ public class AlgorithmExecutionContext {
         this.procData = procData;
     }
 
-    public void enableBuffer(Parameter param, int lookbackSize) {
+    public boolean enableBuffer(Parameter param, int lookbackSize) {
+        boolean enabled = false;
         if (parent == null || param.getDataSource() == DataSource.COMMAND
                 || param.getDataSource() == DataSource.COMMAND_HISTORY) {
             if (buffersByParam.containsKey(param)) {
@@ -53,10 +54,12 @@ public class AlgorithmExecutionContext {
                 buf.expandIfNecessary(lookbackSize + 1);
             } else {
                 buffersByParam.put(param, new WindowBuffer(lookbackSize + 1));
+                enabled = true;
             }
         } else {
-            parent.enableBuffer(param, lookbackSize);
+            enabled = parent.enableBuffer(param, lookbackSize);
         }
+        return enabled;
     }
 
     public void updateHistoryWindows(List<ParameterValue> pvals) {
@@ -69,7 +72,7 @@ public class AlgorithmExecutionContext {
         }
     }
 
-    private void updateHistoryWindow(ParameterValue pval) {
+    public void updateHistoryWindow(ParameterValue pval) {
         if (buffersByParam.containsKey(pval.getParameter())) {
             buffersByParam.get(pval.getParameter()).update(pval);
         }

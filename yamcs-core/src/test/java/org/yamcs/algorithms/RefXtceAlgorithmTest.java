@@ -65,7 +65,17 @@ public class RefXtceAlgorithmTest {
         assertEquals(5.1, params.get(1).getEngValue().getFloatValue(), 1e-5);
     }
 
+    @Test
+    public void test2() {
+        Parameter param6 = db.getParameter("/RefXtce/param6");
+        final ArrayList<ParameterValue> params = new ArrayList<>();
 
+        prm.addRequest(param6, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        mpp.injectPacket(new byte[6], "/RefXtce/packet2");
+
+        assertEquals(1, params.size());
+        assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
+    }
 
     static class MyProcService extends AbstractService implements ParameterProvider {
         ParameterRequestManager prm;
