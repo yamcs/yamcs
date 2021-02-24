@@ -81,8 +81,8 @@ export class AppComponent implements OnDestroy {
 
   openInstanceDialog() {
     this.dialog.open(SelectInstanceDialog, {
-      width: '600px',
-      autoFocus: false,
+      width: '650px',
+      panelClass: ['select-instance-dialog'],
     });
   }
 
