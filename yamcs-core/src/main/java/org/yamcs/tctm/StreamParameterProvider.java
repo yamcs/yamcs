@@ -110,7 +110,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
             } else if (o instanceof ParameterValue) {
                 pv = (ParameterValue) o;
                 if (pv.getParameter() == null) {
-                    String fqn = pv.getParameterQualifiedNamed();
+                    String fqn = pv.getParameterQualifiedName();
                     Parameter ppdef = xtceDb.getParameter(fqn);
                     if (ppdef == null) {
                         if (XtceDb.isSystemParameter(fqn)) {

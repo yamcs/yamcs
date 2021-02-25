@@ -124,12 +124,12 @@ public class ParameterReplayHandler implements ReplayHandler {
                 log.warn("got unexpected value for column {}: {}", colName, o);
                 continue;
             }
-            Parameter p = xtceDb.getParameter(pv.getParameterQualifiedNamed());
+            Parameter p = xtceDb.getParameter(pv.getParameterQualifiedName());
             if (p == null) {
-                if (XtceDb.isSystemParameter(pv.getParameterQualifiedNamed())) {
-                    p = xtceDb.createSystemParameter(pv.getParameterQualifiedNamed());
+                if (XtceDb.isSystemParameter(pv.getParameterQualifiedName())) {
+                    p = xtceDb.createSystemParameter(pv.getParameterQualifiedName());
                 } else {
-                    log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedNamed());
+                    log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
                     continue;
                 }
             }

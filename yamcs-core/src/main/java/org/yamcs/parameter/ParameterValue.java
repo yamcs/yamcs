@@ -58,6 +58,15 @@ public class ParameterValue extends BasicParameterValue {
         return def;
     }
 
+    public String getParameterQualifiedName() {
+        return paramFqn;
+    }
+
+    /**
+     * @deprecated use {@link #getParameterQualifiedName()}
+     * @return
+     */
+    @Deprecated
     public String getParameterQualifiedNamed() {
         return paramFqn;
     }

@@ -176,7 +176,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
             if (t < first.intervalStart) {
                 continue;
             }
-            if (pv.getParameterQualifiedNamed() == null) {
+            if (pv.getParameterQualifiedName() == null) {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }

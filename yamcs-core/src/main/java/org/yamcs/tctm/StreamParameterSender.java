@@ -66,7 +66,7 @@ public class StreamParameterSender {
         cols.add(seqNum);
         cols.add(timeService.getMissionTime());
         for (ParameterValue pv : params) {
-            String qualifiedName = pv.getParameterQualifiedNamed();
+            String qualifiedName = pv.getParameterQualifiedName();
             int idx = tdef.getColumnIndex(qualifiedName);
             if (idx != -1) {
                 log.warn("duplicate value for {} \nfirst: {}" + "\n second: {} ", pv.getParameter(), cols.get(idx),

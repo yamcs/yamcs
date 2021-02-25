@@ -27,7 +27,7 @@ class BasicParameterList {
 
     // add the parameter to the list but also expand if it is an aggregate or array
     void add(ParameterValue pv) {
-        String fqn = pv.getParameterQualifiedNamed();
+        String fqn = pv.getParameterQualifiedName();
         add(fqn, pv);
     }
 

@@ -334,7 +334,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     private void updateAllSubscription(int subscriptionId, List<ParameterValue> items) {
         List<ParameterValueWithId> plist = new ArrayList<>(items.size());
         for(ParameterValue pv: items) {
-            plist.add(new ParameterValueWithId(pv, NamedObjectId.newBuilder().setName(pv.getParameterQualifiedNamed()).build()));
+            plist.add(new ParameterValueWithId(pv, NamedObjectId.newBuilder().setName(pv.getParameterQualifiedName()).build()));
         }
         listener.update(subscriptionId, plist);
     }

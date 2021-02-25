@@ -205,7 +205,7 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
                 log.error("Null parameter value encountered, skipping");
                 continue;
             }
-            String name = pv.getParameterQualifiedNamed();
+            String name = pv.getParameterQualifiedName();
             int idx = tdef.getColumnIndex(name);
             if (idx != -1) {
                 log.warn("duplicate value for {}\nfirst: {}\n second: {}", name, cols.get(idx), pv);

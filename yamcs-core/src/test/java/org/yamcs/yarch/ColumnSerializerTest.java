@@ -61,7 +61,7 @@ public class ColumnSerializerTest {
         verify(pv, pv1);
     }
     void verify(ParameterValue expected, ParameterValue actual) {
-        assertEquals(expected.getParameterQualifiedNamed(), actual.getParameterQualifiedNamed());
+        assertEquals(expected.getParameterQualifiedName(), actual.getParameterQualifiedName());
         assertEquals(expected.getGenerationTime(), actual.getGenerationTime());
         assertEquals(expected.getEngValue(), actual.getEngValue());
         

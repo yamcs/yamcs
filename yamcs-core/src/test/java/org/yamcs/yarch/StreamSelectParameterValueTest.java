@@ -49,7 +49,7 @@ public class StreamSelectParameterValueTest extends YarchTestCase {
         Tuple t0 = tlist.get(0);
         ParameterValue pv = (ParameterValue) t0.getColumn("pv");
         assertEquals(3.14, pv.getEngValue().getDoubleValue(), 1e-6);
-        assertEquals("/test/StreamSelectParameterValueTest", pv.getParameterQualifiedNamed());
+        assertEquals("/test/StreamSelectParameterValueTest", pv.getParameterQualifiedName());
     }
 
 }

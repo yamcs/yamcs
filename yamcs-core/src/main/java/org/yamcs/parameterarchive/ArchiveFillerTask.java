@@ -72,13 +72,13 @@ class ArchiveFillerTask implements ParameterConsumer {
                 continue;
             }
 
-            if (pv.getParameterQualifiedNamed() == null) {
+            if (pv.getParameterQualifiedName() == null) {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
             Value engValue = pv.getEngValue();
             if (engValue == null) {
-                log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
+                log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedName());
             }
             BasicParameterList l = m.computeIfAbsent(t, x -> new BasicParameterList(parameterIdMap));
             l.add(pv);
