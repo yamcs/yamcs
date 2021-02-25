@@ -60,7 +60,7 @@
     </ng-container>
     <label>
       Local Entity
-      <select formControlName="destination">
+      <select formControlName="source">
         <option *ngFor="let entity of service.localEntities"
                 [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
       </select>
@@ -68,7 +68,7 @@
     <br>
     <label>
       Remote Entity
-      <select formControlName="source">
+      <select formControlName="destination">
         <option *ngFor="let entity of service.remoteEntities"
                 [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
       </select>
