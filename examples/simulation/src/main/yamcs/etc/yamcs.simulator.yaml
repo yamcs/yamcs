@@ -118,9 +118,6 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
-        subLoaders:
-          - type: "xtce"
-            spec: "mdb/algo.xml"
   - type: "org.yamcs.xtce.TseLoader"
     subLoaders:
       - type: "sheet"
