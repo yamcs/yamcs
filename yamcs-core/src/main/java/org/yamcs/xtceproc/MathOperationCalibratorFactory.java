@@ -17,6 +17,7 @@ import org.yamcs.xtce.ParameterInstanceRef;
 
 public class MathOperationCalibratorFactory {
     protected static final Logger log = LoggerFactory.getLogger(MathOperationCalibratorFactory.class);
+
     /**
      * Compiles the math operation calibrator into an executable calibrator processor
      * 
@@ -29,11 +30,11 @@ public class MathOperationCalibratorFactory {
         StringBuilder sb = new StringBuilder();
         String className = "Expression" + c.hashCode();
         sb.append("package org.yamcs.xtceproc.mocf;\n")
-        .append("public class ").append(className).append(" implements org.yamcs.xtceproc.CalibratorProc {\n")
-        .append("   public double calibrate(double v) {\n")
-        .append("       return ").append(getJavaExpression(c, null)).append(";\n")
-        .append("   }\n")
-        .append("}\n");
+                .append("public class ").append(className).append(" implements org.yamcs.xtceproc.CalibratorProc {\n")
+                .append("   public double calibrate(double v) {\n")
+                .append("       return ").append(getJavaExpression(c, null)).append(";\n")
+                .append("   }\n")
+                .append("}\n");
         String expr = sb.toString();
         log.debug("Compiling math operation converted to java:\n {}", expr);
         try {
@@ -66,17 +67,19 @@ public class MathOperationCalibratorFactory {
             if (type == ElementType.OPERATOR) {
                 MathOperator mo = e.getOperator();
                 if (mo == MathOperator.SWAP) {
-                    String x1 = stack.pop();
+                    // x1 x2 -- x2 x1
                     String x2 = stack.pop();
-                    stack.push(x1);
+                    String x1 = stack.pop();
                     stack.push(x2);
+                    stack.push(x1);
                 } else if (mo == MathOperator.DROP) {
                     stack.pop();
                 } else if (mo == MathOperator.DUP) {
                     stack.push(stack.peek());
                 } else if (mo == MathOperator.OVER) {
-                    String x1 = stack.pop();
+                    // x1 x2 -- x1 x2 x1
                     String x2 = stack.pop();
+                    String x1 = stack.pop();
                     stack.push(x1);
                     stack.push(x2);
                     stack.push(x1);
@@ -92,21 +95,23 @@ public class MathOperationCalibratorFactory {
                         throw new IllegalStateException("Only arity 1 and 2 supported");
                     }
                 }
-            } else if(type == ElementType.THIS_PARAMETER_OPERAND) {
+            } else if (type == ElementType.THIS_PARAMETER_OPERAND) {
                 stack.push("v");
-            } else if(type == ElementType.VALUE_OPERAND) {
+            } else if (type == ElementType.VALUE_OPERAND) {
                 stack.push(e.toString());
-            }  else if(type == ElementType.PARAMETER_INSTANCE_REF_OPERAND) {
-                if(inputParams==null) {
-                    throw new IllegalArgumentException("Reference to parameter encountered but no input list was provided");
+            } else if (type == ElementType.PARAMETER_INSTANCE_REF_OPERAND) {
+                if (inputParams == null) {
+                    throw new IllegalArgumentException(
+                            "Reference to parameter encountered but no input list was provided");
                 }
                 int idx = findParameter(inputParams, e.getParameterInstanceRef());
-                if(idx==-1) {
-                    throw new IllegalArgumentException("Reference to parameter "+e.getParameterInstanceRef()+" encountered but that parameter is not in the input list: "+inputParams);
+                if (idx == -1) {
+                    throw new IllegalArgumentException("Reference to parameter " + e.getParameterInstanceRef()
+                            + " encountered but that parameter is not in the input list: " + inputParams);
                 }
-                stack.push("input["+idx+"]");
+                stack.push("input[" + idx + "]");
             } else {
-                throw new UnsupportedOperationException(" MathOperations operans of type "+type+" not supported");
+                throw new UnsupportedOperationException(" MathOperations operans of type " + type + " not supported");
             }
         }
 
@@ -118,8 +123,8 @@ public class MathOperationCalibratorFactory {
     }
 
     private static int findParameter(List<InputParameter> inputParams, ParameterInstanceRef parameterInstanceRef) {
-        for(int i=0; i<inputParams.size(); i++) {
-            if(inputParams.get(i).getParameterInstance() == parameterInstanceRef) {
+        for (int i = 0; i < inputParams.size(); i++) {
+            if (inputParams.get(i).getParameterInstance() == parameterInstanceRef) {
                 return i;
             }
         }
@@ -145,7 +150,7 @@ public class MathOperationCalibratorFactory {
         case SINH:
         case TAN:
             return "Math." + op.xtceName() + "(" + l + ")";
-        case ACOSH:       
+        case ACOSH:
         case ASINH:
         case ATANH:
             return "org.yamcs.utils.MathUtil." + op.xtceName() + "(" + l + ")";
@@ -172,6 +177,5 @@ public class MathOperationCalibratorFactory {
             throw new UnsupportedOperationException(op + " not implemented");
         }
     }
-
 
 }
