@@ -24,7 +24,7 @@ import org.yamcs.xtce.OutputParameter;
 /**
  * Handles the creation of algorithm executors for script algorithms for a given language and scriptEngine (currently
  * javascript or python are supported).
- * 
+ * <p>
  * Each algorithm is created as a function in the scriptEngine.
  * There might be multiple executors for the same algorithm: for example in the command verifier there will be one
  * algorithm executor for each command.
