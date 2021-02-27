@@ -38,7 +38,8 @@
 			<xtce:Parameter name="param3" parameterTypeRef="float32" />
 			<xtce:Parameter name="param4" parameterTypeRef="float32" />			
 			<xtce:Parameter name="param5" parameterTypeRef="float32" initialValue="3.14" />
-			<xtce:Parameter name="param6" parameterTypeRef="float32" />	
+			<xtce:Parameter name="param6" parameterTypeRef="float32" />
+			<xtce:Parameter name="param7" parameterTypeRef="float32" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -75,6 +76,17 @@
                 </xtce:InputSet>
                 <xtce:OutputSet>
                     <xtce:OutputParameterRef parameterRef="param4" outputName="avg"/>
+                </xtce:OutputSet>
+            </xtce:CustomAlgorithm>
+            <xtce:CustomAlgorithm name="avg3">
+               <xtce:AlgorithmText language="Java">
+                    org.yamcs.algorithms.RefXtceAlgorithmTest$AvgAlgorithm() 
+                </xtce:AlgorithmText>
+                <xtce:InputSet>
+                    <xtce:InputParameterInstanceRef parameterRef="param2"/>
+                </xtce:InputSet>
+                <xtce:OutputSet>
+                    <xtce:OutputParameterRef parameterRef="param7" outputName="avg"/>
                 </xtce:OutputSet>
             </xtce:CustomAlgorithm>
             <xtce:MathAlgorithm name="copy_param5_into_param6">

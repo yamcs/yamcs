@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,12 +14,15 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerProcessingResult;
@@ -49,11 +54,7 @@ public class RefXtceAlgorithmTest {
     public void test1() {
         Parameter param3 = db.getParameter("/RefXtce/param3");
         Parameter param4 = db.getParameter("/RefXtce/param4");
-
-        final ArrayList<ParameterValue> params = new ArrayList<>();
-
-        prm.addRequest(param3, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
-        prm.addRequest(param4, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        List<ParameterValue> params = subscribe(param3, param4);
 
         ByteBuffer buf = ByteBuffer.allocate(6);
         buf.putFloat(0.2f);
@@ -67,15 +68,32 @@ public class RefXtceAlgorithmTest {
 
     @Test
     public void test2() {
-        Parameter param6 = db.getParameter("/RefXtce/param6");
-        final ArrayList<ParameterValue> params = new ArrayList<>();
-
-        prm.addRequest(param6, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/param6"));
         mpp.injectPacket(new byte[6], "/RefXtce/packet2");
 
         assertEquals(1, params.size());
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
     }
+
+    @Test
+    public void test3() {
+        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/param7"));
+        ByteBuffer buf = ByteBuffer.allocate(6);
+        buf.putFloat(0.28f);
+        buf.putShort((short) 6);
+
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+
+        assertEquals(1, params.size());
+        assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
+    }
+
+    List<ParameterValue> subscribe(Parameter... plist) {
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(Arrays.asList(plist), (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        return params;
+    }
+
 
     static class MyProcService extends AbstractService implements ParameterProvider {
         ParameterRequestManager prm;
@@ -137,5 +155,27 @@ public class RefXtceAlgorithmTest {
         protected void doStop() {
             notifyStopped();
         }
+    }
+
+    public static class AvgAlgorithm extends AbstractAlgorithmExecutor {
+
+        public AvgAlgorithm(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
+            super(algorithmDef, execCtx);
+        }
+
+        @Override
+        public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+            AggregateValue v = (AggregateValue) inputValues.get(0).getEngValue();
+            float m1 = v.getMemberValue(0).getFloatValue();
+            int m2 = v.getMemberValue(1).getUint32Value();
+
+            ParameterValue pv = new ParameterValue(getOutputParameter(0));
+
+            pv.setEngineeringValue(ValueUtility.getFloatValue((m1 + m2) / 2));
+
+            return Arrays.asList(pv);
+        }
+
+
     }
 }

@@ -287,7 +287,7 @@ public class AlgorithmManager extends AbstractProcessorService
 
                 // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires
                 // going back in time
-                int lookbackSize = executor.getLookbackSize(param);
+                int lookbackSize = AlgorithmUtils.getLookbackSize(algorithm, param);
                 if (lookbackSize > 0) {
                     boolean enabled = execCtx.enableBuffer(param, lookbackSize);
                     ParameterValue pv;

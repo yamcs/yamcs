@@ -3949,7 +3949,9 @@ public class XtceStaxReader {
         final Location xmlLocation = xmlEvent.getLocation();
         
         ParameterReference nr = new UnresolvedParameterReference(paramRef).addResolvedAction((p, path) -> {
-            verifyScalarMember(p, path, xmlLocation);
+            if (!algo.getLanguage().equalsIgnoreCase("java")) {
+                verifyScalarMember(p, path, xmlLocation);
+            }
             instanceRef.setParameter(p);
             instanceRef.setMemberPath(path);
             return true;
@@ -4359,7 +4361,7 @@ public class XtceStaxReader {
         if (ptype instanceof AggregateParameterType || ptype instanceof ArrayParameterType) {
             String name = p.getName() + (path == null ? "" : "." + AggregateTypeUtil.toString(path));
             throw new IllegalArgumentException("Cannot use " + name + " of type " + ptype.getClass().getSimpleName()
-                    + " as input to algorithms (reference to scalar members can be used instead)");
+                    + " as input to algorithms (this is only supported for java algorithms; reference to scalar members can be used instead for other languages)");
         }
     }
 }

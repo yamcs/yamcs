@@ -7,14 +7,13 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 
 /**
- * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
- * its InputParameters.
+ * Represents the execution context of one algorithm.
+ * <p>
+ * An AlgorithmExecutor is reused upon each update of one or more of its InputParameters.
  * 
  */
 public interface AlgorithmExecutor {
     Algorithm getAlgorithm();
-
-    int getLookbackSize(Parameter parameter);
 
     /**
      * Update parameters and return true if the algorithm should run
@@ -34,7 +33,26 @@ public interface AlgorithmExecutor {
      */
     List<ParameterValue> runAlgorithm(long acqTime, long genTime);
 
+    /**
+     * Add a listener to be called each time the algorithm has run
+     * 
+     * @param listener
+     */
     void addExecListener(AlgorithmExecListener listener);
 
+    /**
+     * 
+     * @return the execution context in which the executor activates
+     */
     AlgorithmExecutionContext getExecutionContext();
+
+
+    /**
+     * the method has been removed because it has nothing to do here.
+     * The implementation from AbstractAlgorithmExecutor has been moved in {@link AlgorithmUtils}
+     */
+    @Deprecated
+    default int getLookbackSize(Parameter parameter) {
+        return 0;
+    }
 }

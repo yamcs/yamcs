@@ -109,6 +109,13 @@ public abstract class Algorithm extends NameDescription {
         return false;
     }
     
+    public Scope getScope() {
+        return scope;
+    }
+
+    public void setScope(Scope scope) {
+        this.scope = scope;
+    }
     public void print(PrintStream out) {
         out.print("Algorithm name: "+name);
         if(scope!=Scope.GLOBAL) {
@@ -125,15 +132,5 @@ public abstract class Algorithm extends NameDescription {
             out.println("\t\tOutputParameter "+p);
         }
         out.println("\t\tTriggers "+triggerSet);
-    }
-
-
-    public Scope getScope() {
-        return scope;
-    }
-
-
-    public void setScope(Scope scope) {
-        this.scope = scope;
     }
 }

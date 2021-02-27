@@ -24,10 +24,6 @@ public abstract class AbstractDataDecoder implements DataDecoder {
     public Set<Parameter> getRequiredParameters() {
         return null;
     }
-
-    public int getLookbackSize(Parameter parameter) {
-        return 0;
-    }
     
     /**
      * Update parameters and return true if the algorithm should run

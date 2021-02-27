@@ -18,7 +18,7 @@ public class JavaAlgorithmExecutorFactory implements AlgorithmExecutorFactory {
     public AlgorithmExecutor makeExecutor(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {
 
         Pattern p = Pattern.compile("([\\w\\$\\.]+)(\\(.*\\))?", Pattern.DOTALL);
-        Matcher m = p.matcher(alg.getAlgorithmText());
+        Matcher m = p.matcher(alg.getAlgorithmText().trim());
         if (!m.matches()) {
             log.warn("Cannot parse algorithm text '{}'", alg.getAlgorithmText());
             throw new IllegalArgumentException("Cannot parse algorithm text '" + alg.getAlgorithmText() + "'");
@@ -27,8 +27,8 @@ public class JavaAlgorithmExecutorFactory implements AlgorithmExecutorFactory {
 
         String s = m.group(2); // this includes the parentheses
         Object arg = null;
-        if (s != null && s.length() > 2) {// s.length>2 is to make sure there is something in between the
-            // parentheses
+        if (s != null && s.length() > 2) {
+            // s.length>2 is to make sure there is something in between the parentheses
             Yaml yaml = new Yaml();
             arg = yaml.load(s.substring(1, s.length() - 1));
         }

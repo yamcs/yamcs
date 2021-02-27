@@ -1145,7 +1145,9 @@ public class XtceAssembler {
             for (InputParameter inp : algorithm.getInputList()) {
                 doc.writeStartElement("InputParameterInstanceRef");
                 doc.writeAttribute("parameterRef", getNameReference(inp.getParameterInstance()));
-                doc.writeAttribute("inputName", inp.getInputName());
+                if (inp.getInputName() != null) {
+                    doc.writeAttribute("inputName", inp.getInputName());
+                }
                 doc.writeEndElement();
             }
             doc.writeEndElement();// InputSet

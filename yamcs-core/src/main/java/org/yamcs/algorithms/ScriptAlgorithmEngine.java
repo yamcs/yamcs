@@ -18,7 +18,7 @@ public class ScriptAlgorithmEngine implements AlgorithmEngine {
             libs = libraries.get(language);
         }
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        scriptEngineManager.put("Yamcs", new AlgorithmUtils(algorithmManager.getProcessor()));
+        scriptEngineManager.put("Yamcs", new AlgorithmFunctions(algorithmManager.getProcessor()));
 
         return new ScriptAlgorithmExecutorFactory(scriptEngineManager, language, libs);
 

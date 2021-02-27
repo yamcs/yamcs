@@ -2045,7 +2045,9 @@ public class V7Loader extends V7LoaderBase {
 
                     SpreadsheetLoadContext ctx1 = ctx.copy();
                     paramRef.addResolvedAction((p, path) -> {
-                        verifyScalarMember(ctx1, p, path);
+                        if (!"java".equalsIgnoreCase(algorithmLanguage)) {
+                            verifyScalarMember(ctx1, p, path);
+                        }
                         parameterInstance.setParameter(p);
                         parameterInstance.setMemberPath(path);
                         return true;

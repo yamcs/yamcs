@@ -17,8 +17,8 @@ import org.yamcs.xtce.TriggerSetType;
 
 /**
  * Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
- * 
- * - it collects all the inputs into an inputList and implements the triggering based on the mandatory parameters.
+ * <p>
+ * It collects all the inputs into an inputList and implements the triggering based on the mandatory parameters.
  * 
  */
 public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
@@ -60,7 +60,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                     continue;
                 }
                 if (pInstance.getParameter().equals(pval.getParameter())) {
-                    if (getLookbackSize(pInstance.getParameter()) == 0) {
+                    if (AlgorithmUtils.getLookbackSize(algorithmDef, pInstance.getParameter()) == 0) {
                         updateInput(k, inputParameter, pval);
                         inputValues.set(k, pval);
                     } else {
@@ -107,12 +107,26 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
 
     /**
      * Called when the given inputParameter receives a value. idx is the index of the inputParameter in the algorithm
-     * definition input list Note that all values are also collected in the inputList
+     * definition input list.
+     * <p>
+     * Can be used by subclasses to perform specific actions;
+     * <p>
+     * Note that all values are also collected in the inputList
      * 
      * @param inputParameter
      * @param newValue
      */
     protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
+    }
+
+    /**
+     * Returns the output parameter with the given index.
+     * 
+     * @param idx
+     * @return
+     */
+    protected Parameter getOutputParameter(int idx) {
+        return algorithmDef.getOutputSet().get(idx).getParameter();
     }
 
     protected void propagateToListeners(Object returnValue, List<ParameterValue> outputValues) {
@@ -129,19 +143,6 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     @Override
     public AlgorithmExecutionContext getExecutionContext() {
         return execCtx;
-    }
-
-    @Override
-    public int getLookbackSize(Parameter parameter) {
-        // e.g. [ -3, -2, -1, 0 ]
-        int min = 0;
-        for (InputParameter p : algorithmDef.getInputSet()) {
-            ParameterInstanceRef pInstance = p.getParameterInstance();
-            if (pInstance.getParameter().equals(parameter) && pInstance.getInstance() < min) {
-                min = p.getParameterInstance().getInstance();
-            }
-        }
-        return -min;
     }
 
     @Override

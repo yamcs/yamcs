@@ -2,8 +2,6 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.*;
 
-import java.nio.ByteBuffer;
-import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,7 +12,6 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.XtceDb;
 
 public class RefXtceDecodingTest {
