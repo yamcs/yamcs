@@ -47,6 +47,16 @@ export class OngoingTransfersTab implements OnDestroy {
   }
 
   private compareTransfers(a: Transfer, b: Transfer) {
+    // Transfer.state is the primary sort key (RUNNING state on top).
+    // Creation time or start time is secondary sort key.
+    if (a.state != b.state) {
+      if (a.state == 'RUNNING') {
+        return -1;
+      }
+      if (b.state == 'RUNNING') {
+        return 1;
+      }
+    }
     const time1 = a.creationTime || a.startTime || "";
     const time2 = b.creationTime || b.startTime || "";
     // most recent transfers on top
