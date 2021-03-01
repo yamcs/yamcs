@@ -53,6 +53,10 @@ public class PutRequest extends CfdpRequest {
     public String getTargetPath() {
         return targetPath;
     }
+	
+	public void setTargetPath(String path) {
+		targetPath = path;
+	}
 
     public int getFileLength() {
         return fileData.length;
