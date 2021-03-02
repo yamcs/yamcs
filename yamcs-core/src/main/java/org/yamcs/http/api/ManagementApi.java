@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -61,6 +63,7 @@ import org.yamcs.protobuf.ListLinksRequest;
 import org.yamcs.protobuf.ListLinksResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.ServiceInfo;
@@ -216,6 +219,39 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
         observer.complete(enriched);
+    }
+
+    @Override
+    public void reconfigureInstance(Context ctx, ReconfigureInstanceRequest request, Observer<YamcsInstance> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.CreateInstances);
+        YamcsServer yamcs = YamcsServer.getServer();
+
+        String instanceName = verifyInstance(request.getInstance());
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
+        String templateName = instance.getTemplate();
+        if (templateName == null) {
+            throw new BadRequestException("This instance is not templated");
+        }
+
+        Map<String, Object> templateArgs = new HashMap<>(request.getTemplateArgsMap());
+        Map<String, String> labels = new HashMap<>(request.getLabelsMap());
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                yamcs.reconfigureInstance(instanceName, templateArgs, labels);
+                return yamcs.restartInstance(instanceName);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).whenComplete((v, error) -> {
+            YamcsServerInstance ysi = yamcs.getInstance(instanceName);
+            if (error == null) {
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                observer.complete(enriched);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                observer.completeExceptionally(t);
+            }
+        });
     }
 
     @Override
@@ -753,17 +789,35 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
+        YamcsServer yamcs = YamcsServer.getServer();
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
-        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
+        YamcsServerInstance ysi = yamcs.getInstance(yamcsInstance.getName());
 
         if (ysi == null) {
             throw new BadRequestException("Invalid Yamcs instance " + yamcsInstance.getName());
         }
 
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
+            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
+            }
+        }
+
+        String template = ysi.getTemplate();
+        if (template != null) {
+            instanceb.setTemplate(template);
+            for (Entry<String, Object> arg : ysi.getTemplateArgs().entrySet()) {
+                if (arg.getValue() instanceof String) {
+                    instanceb.putTemplateArgs(arg.getKey(), (String) arg.getValue());
+                }
+            }
+
+            Template latestTemplate = yamcs.getInstanceTemplate(template);
+            instanceb.setTemplateAvailable(latestTemplate != null);
+            if (latestTemplate != null) {
+                boolean eq = Objects.equals(ysi.getTemplateSource(), latestTemplate.getSource());
+                instanceb.setTemplateChanged(!eq);
             }
         }
 

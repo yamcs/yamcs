@@ -26,3 +26,8 @@ mat-toolbar-row {
   border-radius: 40px;
   line-height: 24px;
 }
+
+::ng-deep .select-instance-dialog .mat-dialog-container {
+  padding: 0;
+  overflow: hidden;
+}

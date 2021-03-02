@@ -46,6 +46,7 @@ import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.ManagementApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.ServerApiClient;
 import org.yamcs.protobuf.ServiceInfo;
@@ -301,6 +302,12 @@ public class YamcsClient {
     public CompletableFuture<YamcsInstance> createInstance(CreateInstanceRequest request) {
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
         managementService.createInstance(null, request, new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<YamcsInstance> reconfigureInstance(ReconfigureInstanceRequest request) {
+        CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
+        managementService.reconfigureInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 

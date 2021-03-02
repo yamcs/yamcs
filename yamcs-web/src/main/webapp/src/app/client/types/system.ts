@@ -139,6 +139,10 @@ export interface Instance {
   labels?: { [key: string]: string; };
   missionTime: string;
   capabilities: string[];
+  template?: string;
+  templateArgs?: { [key: string]: string; };
+  templateAvailable: boolean;
+  templateChanged: boolean;
 }
 
 export interface InstanceTemplate {

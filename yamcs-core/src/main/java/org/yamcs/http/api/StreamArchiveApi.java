@@ -135,7 +135,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             throw new BadRequestException(
                     "Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString());
         }
-        
 
         long stop = TimeEncoding.getWallclockTime();
         long start = stop - (1000 * 60 * 60); // 1 hour
@@ -149,7 +148,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
-        
+
         int sampleCount = request.hasCount() ? request.getCount() : 500;
 
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
@@ -195,7 +194,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
-        
+
         for (NamedObjectId id : request.getIdsList()) {
             Parameter p = mdb.getParameter(id);
             if (p == null) {
@@ -258,13 +257,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         for (String id : request.getParametersList()) {
-            Parameter p = mdb.getParameter(id);
-            if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified " + id);
-            }
-
-            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
-            ids.add(XtceDb.toNamedObjectId(id));
+            ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
+            ids.add(paramWithId.getId());
         }
         if (request.hasNamespace()) {
             namespace = request.getNamespace();
@@ -287,7 +281,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
-        String filename = "parameter-data";
+        String filename = "parameter-data.csv";
 
         boolean addRaw = false;
         boolean addMonitoring = false;

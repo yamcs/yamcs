@@ -1,54 +1,75 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatSelectionList, MatSelectionListChange } from '@angular/material/list';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { Instance } from '../../client';
+import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-select-instance-dialog',
   templateUrl: './SelectInstanceDialog.html',
+  styleUrls: ['./SelectInstanceDialog.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectInstanceDialog implements AfterViewInit {
 
-  @ViewChild(MatSelectionList, { static: true })
-  selectionList: MatSelectionList;
+  filterControl = new FormControl();
 
-  instances$: Promise<Instance[]>;
+  @ViewChild(MatPaginator, { static: true })
+  paginator: MatPaginator;
+
+  dataSource = new MatTableDataSource<Instance>([]);
+  selection = new SelectionModel<Instance>();
+
+  displayedColumns = [
+    'selected',
+    'name',
+    'processor',
+  ];
 
   constructor(
     private dialogRef: MatDialogRef<SelectInstanceDialog>,
-    private changeDetector: ChangeDetectorRef,
-    private yamcs: YamcsService,
+    private authService: AuthService,
+    readonly yamcs: YamcsService,
+    private config: ConfigService,
   ) {
-    this.instances$ = yamcs.yamcsClient.getInstances({
+    this.dataSource.filterPredicate = (instance, filter) => {
+      return instance.name.toLowerCase().indexOf(filter) >= 0;
+    };
+
+    yamcs.yamcsClient.getInstances({
       filter: 'state=running',
+    }).then(instances => {
+      this.dataSource.data = instances;
     });
+  }
+
+  isCreateInstanceEnabled() {
+    const user = this.authService.getUser()!;
+    return this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances');
   }
 
   ngAfterViewInit() {
-    this.instances$.then(instances => {
-      this.changeDetector.detectChanges();
-      this.selectionList.options.forEach(option => {
-        if (option.value === this.yamcs.instance) {
-          option.selected = true;
-        }
-      });
-      this.changeDetector.detectChanges();
+    this.filterControl.valueChanges.subscribe(() => {
+      const value = this.filterControl.value || '';
+      this.dataSource.filter = value.toLowerCase();
     });
 
-    this.selectionList.selectionChange.subscribe((change: MatSelectionListChange) => {
-      this.selectionList.deselectAll();
-      change.option.selected = true;
-    });
+    this.dataSource.paginator = this.paginator;
   }
 
   applySelection() {
-    const selectedOption = this.selectionList.selectedOptions.selected[0];
-    const newInstance = selectedOption.value;
-    this.dialogRef.close();
-    if (this.yamcs.instance !== newInstance) {
-      this.yamcs.switchContext(newInstance);
+    const selected = this.selection.selected;
+    if (selected.length) {
+      const selectedInstance = this.selection.selected[0];
+      this.dialogRef.close();
+      if (this.yamcs.instance !== selectedInstance.name) {
+        this.yamcs.switchContext(selectedInstance.name);
+      }
     }
   }
 }
