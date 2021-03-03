@@ -204,7 +204,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         ManagementListener listener = new ManagementListener() {
             @Override
             public void instanceStateChanged(YamcsServerInstance ysi) {
-                observer.next(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
+                observer.next(enriched);
             }
         };
 
