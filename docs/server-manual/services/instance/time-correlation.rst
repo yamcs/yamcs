@@ -13,10 +13,10 @@ It takes into account the parameters:
 * ``onboardDelay`` - It covers any delay happening on-board (sampling time, radiation time)
 * ``tof`` - time of flight - the time it takes for the signal to reach the ground. This can be fixed or computed by dynamically interpolating from data provided by a flight dynamics system.
 
-Assuming that::
+Assuming that:
  ob_time = ert - (tof + onboardDelay)
 
-the service will compute ``m`` = gradient and ``c`` = offset such that::
+the service will compute ``m`` = gradient and ``c`` = offset such that:
  ob_time = m * obt + c
  
 Using the computed gradient and offset, the free running obt can be correlated  to the ground time. The process has to be repeated each time the on-board computer resets to 0 (this typically happens when the computer reboots). This method can compensate for a linear drift of the on-board clock.
