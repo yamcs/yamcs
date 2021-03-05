@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { GetParametersOptions } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option } from '../../shared/forms/Select';
 import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({
@@ -15,6 +16,12 @@ import { ParametersDataSource } from './ParametersDataSource';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {
+
+  filterForm = new FormGroup({
+    filter: new FormControl(),
+    type: new FormControl('ANY'),
+    source: new FormControl('ANY'),
+  });
 
   shortName = false;
   pageSize = 100;
@@ -28,17 +35,50 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  filterControl = new FormControl();
-
   dataSource: ParametersDataSource;
 
   displayedColumns = [
     'name',
+    'type',
+    'dataSource',
     'engValue',
     'shortDescription',
   ];
 
+  typeOptions: Option[] = [
+    { id: 'ANY', label: 'Any type' },
+    { id: 'aggregate', label: 'aggregate' },
+    { id: 'array', label: 'array' },
+    { id: 'binary', label: 'binary' },
+    { id: 'boolean', label: 'boolean' },
+    { id: 'enumeration', label: 'enumeration' },
+    { id: 'float', label: 'float' },
+    { id: 'integer', label: 'integer' },
+    { id: 'string', label: 'string' },
+    { id: 'time', label: 'time' },
+  ];
+
+  sourceOptions: Option[] = [
+    { id: 'ANY', label: 'Any source' },
+    { id: 'COMMAND', label: 'Command' },
+    { id: 'COMMAND_HISTORY', label: 'Command History' },
+    { id: 'CONSTANT', label: 'Constant' },
+    { id: 'DERIVED', label: 'Derived' },
+    { id: 'EXTERNAL1', label: 'External 1' },
+    { id: 'EXTERNAL2', label: 'External 2' },
+    { id: 'EXTERNAL3', label: 'External 3' },
+    { id: 'LOCAL', label: 'Local' },
+    { id: 'SYSTEM', label: 'System' },
+    { id: 'TELEMETERED', label: 'Telemetered' },
+  ];
+
   private queryParamMapSubscription: Subscription;
+
+  // Would prefer to use formGroup, but when using valueChanges this
+  // only is updated after the callback...
+  private type: string;
+  private source: string;
+  private filter: string;
 
   constructor(
     readonly yamcs: YamcsService,
@@ -52,18 +92,43 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.filterControl.setValue(this.route.snapshot.queryParamMap.get('filter'));
-    this.changeSystem(this.route.snapshot.queryParamMap);
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter = queryParams.get('filter') || '';
+      this.filterForm.get('filter')!.setValue(this.filter);
+    }
+    if (queryParams.has('type')) {
+      this.type = queryParams.get('type')!;
+      this.filterForm.get('type')!.setValue(this.type);
+    }
+    if (queryParams.has('source')) {
+      this.source = queryParams.get('source')!;
+      this.filterForm.get('source')!.setValue(this.source);
+    }
 
+    this.filterForm.get('filter')!.valueChanges.subscribe(filter => {
+      this.paginator.pageIndex = 0;
+      this.filter = filter;
+      this.updateDataSource();
+    });
+
+    this.filterForm.get('type')!.valueChanges.forEach(type => {
+      this.type = (type !== 'ANY') ? type : null;
+      this.updateDataSource();
+    });
+
+    this.filterForm.get('source')!.valueChanges.forEach(source => {
+      this.source = (source !== 'ANY') ? source : null;
+      this.updateDataSource();
+    });
+
+    this.changeSystem(this.route.snapshot.queryParamMap);
     this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
       if (map.get('system') !== this.system) {
         this.changeSystem(map);
       }
     });
-    this.filterControl.valueChanges.subscribe(() => {
-      this.paginator.pageIndex = 0;
-      this.updateDataSource();
-    });
+
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
       this.top.nativeElement.scrollIntoView();
@@ -79,6 +144,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     } else {
       this.paginator.pageIndex = 0;
     }
+
     this.updateDataSource();
   }
 
@@ -89,9 +155,14 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };
-    const filterValue = this.filterControl.value;
-    if (filterValue) {
-      options.q = filterValue.toLowerCase();
+    if (this.filter) {
+      options.q = this.filter;
+    }
+    if (this.type) {
+      options.type = this.type;
+    }
+    if (this.source) {
+      options.source = this.source;
     }
     this.dataSource.loadParameters(options).then(() => {
       this.updateBrowsePath();
@@ -99,12 +170,13 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   }
 
   private updateURL() {
-    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         page: this.paginator.pageIndex || null,
-        filter: filterValue || null,
+        filter: this.filter || null,
+        type: this.type || null,
+        source: this.source || null,
         system: this.system || null,
       },
       queryParamsHandling: 'merge',
@@ -131,6 +203,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     if (this.queryParamMapSubscription) {
       this.queryParamMapSubscription.unsubscribe();
     }
+    this.dataSource.disconnect();
   }
 }
 
