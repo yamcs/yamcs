@@ -67,7 +67,13 @@ public abstract class CfdpPacket {
             throw new PduDecodingException("short PDU, size: " + bb.limit(), getData(bb), e);
         }
 
-        int pduSize = header.getLength() + CfdpHeader.getDataLength(bb);
+        int dataLength = CfdpHeader.getDataLength(bb);
+
+        if (dataLength < 2) {
+            throw new PduDecodingException("data length is " + dataLength + " (expected at least 2)", getData(bb));
+        }
+
+        int pduSize = header.getLength() + dataLength;
         if (pduSize > bb.limit()) {
             throw new PduDecodingException(
                     "buffer too short, from header expected PDU of size" + pduSize + " bytes, but only "
@@ -165,10 +171,11 @@ public abstract class CfdpPacket {
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {
-        if (tuple.hasColumn("pdu")) {
-            return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("pdu"))));
-        } else {
+        byte[] pduData = tuple.getColumn("pdu");
+        if (pduData == null) {
             throw new ConfigurationException("no column named 'pdu' in the tuple");
+        } else {
+            return CfdpPacket.getCFDPPacket(ByteBuffer.wrap(pduData));
         }
     }
 

@@ -439,7 +439,11 @@ public class CfdpService extends AbstractYamcsService
                     StringConverter.arrayToHexString(e.getData(), true));
             eventProducer.sendInfo(ETYPE_PDU_DECODING_ERROR, "Error decoding CFDP PDU; " + e.getMessage());
             return;
+        } catch (Exception e) {
+            log.error("Unexpected errorr decoding pdu tuple", e);
+            return;
         }
+
         CfdpTransactionId id = packet.getTransactionId();
 
         OngoingCfdpTransfer transfer = null;
