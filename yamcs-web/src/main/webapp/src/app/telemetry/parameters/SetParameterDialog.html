@@ -2,72 +2,8 @@
 
 <mat-dialog-content class="mat-typography">
   <form [formGroup]="form" class="ya-form">
-    <ng-container [ngSwitch]="parameter?.type?.engType">
-
-      <ng-container *ngSwitchCase="'boolean'">
-        <input type="radio" name="value" formControlName="value" value="TRUE">true<br>
-        <input type="radio" name="value" formControlName="value" value="FALSE">false
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'string'">
-        <label>
-          Value
-          <input type="text" formControlName="value">
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'float'">
-        <label>
-          Value
-          <input type="number" formControlName="value">
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'double'">
-        <label>
-          Value
-          <input type="number" formControlName="value">
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'integer'">
-        <label>
-          Value
-          <input type="number" formControlName="value">
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'timestamp'">
-        <label>
-          Value
-          <app-date-time-input formControlName="value"></app-date-time-input>
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'enumeration'">
-        <label>
-          Value
-          <select formControlName="value">
-            <option selected></option>
-            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}
-            </option>
-          </select>
-        </label>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'aggregate'">
-        Setting aggregate values via this website is not yet supported.
-        <!--label>
-          Value
-          <input type="text" formControlName="value">
-        </label-->
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'array'">
-        Setting array values via this website is not yet supported.
-      </ng-container>
-
-    </ng-container>
+    <app-parameter-form [parameter]="parameter" [formGroup]="form">
+    </app-parameter-form>
   </form>
 </mat-dialog-content>
 
