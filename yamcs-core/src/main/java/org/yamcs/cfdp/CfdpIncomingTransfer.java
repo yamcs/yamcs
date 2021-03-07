@@ -424,7 +424,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
-            sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccesfully: " + failureReason);
+            sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + failureReason);
             changeState(TransferState.FAILED);
             if (failureReason != null) {
                 this.failureReason = failureReason;
