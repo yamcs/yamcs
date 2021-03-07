@@ -85,6 +85,22 @@ public class IntArray {
         return a[pos];
     }
 
+    /**
+     * Remove element at position shifting all subsequent elements to the left
+     * 
+     * @param pos
+     * @return the element removed
+     */
+    public int remove(int pos) {
+        rangeCheck(pos);
+        int r = a[pos];
+
+        System.arraycopy(a, pos + 1, a, pos, length - pos - 1);
+        length--;
+        return r;
+
+    }
+
     private void ensureCapacity(int minCapacity) {
         if (minCapacity <= a.length) {
             return;
@@ -153,20 +169,7 @@ public class IntArray {
         return a;
     }
 
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        int n = length - 1;
-        if (n == -1) {
-            return "[]";
-        }
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i]);
-            if (i == n)
-                return b.append(']').toString();
-            b.append(", ");
-        }
-    }
+
 
     /**
      * Assuming that the array is sorted, performs a binary search and returns the position of the found element.
@@ -272,6 +275,21 @@ public class IntArray {
         }
 
         return true;
+    }
+
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        int n = length - 1;
+        if (n == -1) {
+            return "[]";
+        }
+        b.append('[');
+        for (int i = 0;; i++) {
+            b.append(a[i]);
+            if (i == n)
+                return b.append(']').toString();
+            b.append(", ");
+        }
     }
 
 }

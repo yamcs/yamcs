@@ -121,11 +121,13 @@ message Ranges {
         // the engineering value of the parameter in the interval ``[timeStart, timeStop)``
         // Time intervals have to be considered as closed at start and open at stop.
         //
-   		//Since Yamcs 5.4.1 the engValue and count are deprecated in favor of engValues and counts       
+        //Since Yamcs 5.4.1 the engValue is deprecated in favor of engValues
         optional Value engValue = 3 [deprecated = true];
 
         // Number of parameter values received in the interval.
-        optional int32 count = 4 [deprecated = true];
+        // This is the total count of parameters in the interval.
+        // If the count does not match the sum(counts), it means that not all the values have been sent
+        optional int32 count = 4;
         
         // Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows 
         // specifying the minimum length of the range returned.
@@ -133,10 +135,16 @@ message Ranges {
         //
         // If the minRange parameter is set, the returning ranges may include multiple values.
         // These are given by the engValues and counts below. 
-        // 
-        // The counts correspond one to one to the engValues, the two arrays will always have the same length.
-        repeated Value engValues = 5;        
         //
+        // Since Yamcs 5.4.2 there is a new parameter maxValues which allows to limit the number 
+        // of distinct values returned across all the ranges.
+        // In order to not return ranges containing no value, each range will have at least one value even if
+        // that will cause the total number of range values returned to exceed the maxValues parameter
+        //
+        // The counts correspond one to one to the engValues, the two arrays will always have the same length.
+        repeated Value engValues = 5;
+
+        // The counts correspond one to one to the engValues
         repeated int32 counts = 6;
     }
     repeated Range range = 1;

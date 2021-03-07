@@ -11,4 +11,8 @@ public class MutableLong {
     public void setLong(long v) {
         this.v = v;
     }
+
+    public void increment() {
+        v++;
+    }
 }

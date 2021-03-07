@@ -68,6 +68,29 @@ public class IntArrayTest {
     }
     
     @Test
+    public void testRemove() {
+        int n = 10;
+        IntArray a = new IntArray();
+        for (int i = 0; i < n; i++) {
+            a.add(i);
+        }
+        List<Integer> l = toList(a);
+        a.remove(0);
+        l.remove(0);
+
+        assertEquals(l, toList(a));
+
+        a.remove(a.size() - 1);
+        l.remove(l.size() - 1);
+        assertEquals(l, toList(a));
+
+        a.remove(3);
+        l.remove(3);
+        assertEquals(l, toList(a));
+
+    }
+
+    @Test
     public void testBinarySearch() {
         IntArray s1 = IntArray.wrap(1,4,5);
         assertEquals(0, s1.binarySearch(1));
@@ -85,7 +108,6 @@ public class IntArrayTest {
                 assertTrue(a.get(i-1) <= a.get(i));
             }
         }
-        
     }
 
     List<Integer> toList(IntArray a) {

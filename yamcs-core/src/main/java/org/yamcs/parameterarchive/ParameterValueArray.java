@@ -13,7 +13,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
  */
 public class ParameterValueArray {
     final long[] timestamps;
-    // values is an array of primitives
+    // engValues and rawValues are arrays of primitives
     final ValueArray engValues;
     final ValueArray rawValues;
     final ParameterStatus[] paramStatus;
