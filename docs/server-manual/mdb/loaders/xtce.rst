@@ -14,16 +14,34 @@ The loader is configured in ``etc/mdb.yaml`` or in the instance configuration by
     - type: "xtce"
       args:
         file: "BogusSAT.xml"
-      
-      
-Since Yamcs 5.2, it is possible to load multiple XML files by using the ``fileset`` attribute:
-.. code-block:: yaml
+        autoTmPartitions: true
+        #fileset: ["a*.xml", "b.xml"]
+        
+**Configuration Options**
 
-    - type: "xtce"
-       args:
-          fileset: ["a*.xml", "b.xml"]
-          
-A glob pattern can be used to match multiple files and/or the files can be specified in the list. The ``**`` for matching directories recursively is not supported.
+file (string)
+   The filename to be loaded. Either this or the ``fileset`` attribute are required
+
+fileset (string or list of strings)
+   Available since Yamcs 5.2; can be used to load multiple XML files. A glob pattern can be used to match multiple files and/or the files can be specified in the list. The ``**`` for matching directories recursively is not supported. 
+   If the ``fileset`` option is used, the ``subLoader`` cannot be used to load child subsystems. This is because it is not possible to specify which subsystem will be the parent of the child.
+
+autoTmPartitions (boolean)
+   If true, Yamcs will automatically mark to be used as archive partitions all containers which do not have a parent.
+   If this option is false, the containers can still be manually marked by using the  ancillary data property ``UseAsArchivingPartition``:
+
+   .. code-block:: xml
+
+        </xtce:SequenceContainer>
+          ....
+          <xtce:AncillaryDataSet>
+              <xtce:AncillaryData name="Yamcs">
+                  UseAsArchivingPartition
+              </xtce:AncillaryData>
+           </xtce:AncillaryDataSet>
+        </xtce:SequenceContainer>    
+
+   Default: true
 
 
 
