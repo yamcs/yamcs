@@ -190,6 +190,11 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 tmQueue = new LinkedBlockingQueue<>(100000);
             }
             tmExtractor = new XtceTmExtractor(xtceDb);
+
+            // we do not want to get the containers which are included via container entry
+            // we only want the inherited from the root
+            tmExtractor.getOptions().setSubcontainerPartOfResult(false);
+
             subscribeContainers(rootSequenceContainer);
         }
 

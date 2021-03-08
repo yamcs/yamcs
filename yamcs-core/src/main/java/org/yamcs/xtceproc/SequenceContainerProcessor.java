@@ -27,8 +27,10 @@ public class SequenceContainerProcessor {
         ContainerProcessingResult result = pcontext.result;
         BitBuffer buf = pcontext.buffer;
         // First add it to the result
-        result.containers.add(new ContainerExtractionResult(seq, buf.array(),
-                buf.getPosition() + buf.offset() * 8, result.acquisitionTime, result.generationTime));
+        if (pcontext.provideContainerResult) {
+            result.containers.add(new ContainerExtractionResult(seq, buf.array(),
+                    buf.getPosition() + buf.offset() * 8, result.acquisitionTime, result.generationTime));
+        }
 
         RateInStream ris = seq.getRateInStream();
         if ((ris != null) && ris.getMaxInterval() > 0) {

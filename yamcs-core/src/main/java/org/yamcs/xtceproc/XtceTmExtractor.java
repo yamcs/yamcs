@@ -166,4 +166,8 @@ public class XtceTmExtractor {
     public void setOptions(ContainerProcessingOptions opts) {
         this.options = opts;
     }
+
+    public ContainerProcessingOptions getOptions() {
+        return options;
+    }
 }

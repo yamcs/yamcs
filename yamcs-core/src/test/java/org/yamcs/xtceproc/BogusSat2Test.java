@@ -1,9 +1,6 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -21,6 +18,7 @@ import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
@@ -180,5 +178,11 @@ public class BogusSat2Test {
         EnumeratedParameterType ept = (EnumeratedParameterType) db.getParameterType("/BogusSAT/LOG_MSGS/ERRORCODE_Type");
         ValueEnumeration ve = ept.enumValue(123l);
         assertEquals("Detailed description of error case A", ve.getDescription());
+    }
+
+    @Test
+    public void testArchivePartition() {
+        SequenceContainer seq = db.getSequenceContainer("/BogusSAT/SC001/Payload1/IncludedContainer1");
+        assertFalse(seq.useAsArchivePartition());
     }
 }

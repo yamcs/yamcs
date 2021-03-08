@@ -23,7 +23,7 @@ public class ContainerProcessingResult {
 
     public String getPacketName() {
         // Derives the archive partition based on a list of matched containers. The first container is the root
-        // container. Usually we have just two elements in the list.
+        // container.
         for (int i = containers.size() - 1; i >= 0; i--) {
             SequenceContainer sc = containers.get(i).getContainer();
             if (sc.useAsArchivePartition()) {

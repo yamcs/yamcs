@@ -65,6 +65,9 @@ public class SequenceEntryProcessor {
         BitBuffer buf1 = buf.slice();
         ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, buf1, pcontext.result,
                 pcontext.subscription, pcontext.options);
+        if (!pcontext.options.resultIncludesSubcontainers) {
+            cpc1.provideContainerResult = false;
+        }
         cpc1.sequenceContainerProcessor.extract(ce.getRefContainer());
         if (ce.getRefContainer().getSizeInBits() < 0)
             buf.setPosition(buf.getPosition() + buf1.getPosition());

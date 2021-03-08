@@ -227,7 +227,6 @@ public class XmlLoaderTest {
     @Test
     public void testAutoPart() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
-        assertTrue(db.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
         assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
         assertFalse(db.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
     }

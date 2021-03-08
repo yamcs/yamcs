@@ -189,6 +189,13 @@ public class XtceLoader implements SpaceSystemLoader {
 
     void collectAutoSeqCont(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
         for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
+            if (sc.getBaseContainer() == null) {
+                // do not set the flag on root containers because:
+                // 1. they will be used anyway as archive partitions if no child matches
+                // 2. if they appear as container entries, we do not want to use them
+                continue;
+            }
+
             boolean part = true;
             SequenceContainer sc1 = sc;
             while (sc1 != null) {

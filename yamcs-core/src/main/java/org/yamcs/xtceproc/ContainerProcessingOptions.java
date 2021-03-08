@@ -21,6 +21,13 @@ public class ContainerProcessingOptions {
      */
     double expirationTolerance = 1.9;
 
+    /**
+     * If this is false, the sub-containers appearing as part of container entries, are not included as part of
+     * container result. XtceTmRecorder does not want to use them as archiving partitions.
+     */
+    boolean resultIncludesSubcontainers = true;
+
+
     public ContainerProcessingOptions(YConfiguration config) {
         if (config != null) {
             ignoreOutOfContainerEntries = config.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false);
@@ -48,6 +55,14 @@ public class ContainerProcessingOptions {
 
     public void setExpirationTolerance(double expirationTolerance) {
         this.expirationTolerance = expirationTolerance;
+    }
+
+    public boolean isSubcontainerPartOfResult() {
+        return resultIncludesSubcontainers;
+    }
+
+    public void setSubcontainerPartOfResult(boolean resultIncludesSubcontainers) {
+        this.resultIncludesSubcontainers = resultIncludesSubcontainers;
     }
 
 }

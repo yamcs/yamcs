@@ -28,13 +28,12 @@ public class ContainerProcessingContext {
     ContainerProcessingResult result;
     ContainerProcessingOptions options;
 
-    // if set to true, out of packet parameters will be silently ignored, otherwise an exception will be thrown
-
     public final SequenceContainerProcessor sequenceContainerProcessor;
     public final SequenceEntryProcessor sequenceEntryProcessor;
     public final DataEncodingDecoder dataEncodingProcessor;
     public final ValueProcessor valueProcessor;
     public final CriteriaEvaluator criteriaEvaluator;
+    public boolean provideContainerResult = true;
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
             Subscription subscription, ContainerProcessingOptions options) {
