@@ -93,15 +93,11 @@ export class ParametersDataSource extends DataSource<ListItem> {
   }
 
   private processDelivery(delivery: ParameterValue[]) {
-    const byName: { [key: string]: ParameterValue; } = {};
     for (const pval of delivery) {
       const id = this.idMapping[pval.numericId];
-      byName[id.name] = pval;
-    }
-
-    for (const pval of delivery) {
-      const id = this.idMapping[pval.numericId];
-      this.latestValues.set(id.name, pval);
+      if (id) { // Can be unset, in case we get an old update, following a changed subscription
+        this.latestValues.set(id.name, pval);
+      }
     }
   }
 

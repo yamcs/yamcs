@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Parameter, ParameterType, Value } from '../../client';
-import { YamcsService } from '../../core/services/YamcsService';
+import { Member, Parameter, ParameterType, Value } from '../../client';
+import { requireFloat, requireInteger } from '../../shared/forms/validators';
 import * as utils from '../../shared/utils';
 
 @Component({
@@ -11,62 +11,57 @@ import * as utils from '../../shared/utils';
 })
 export class SetParameterDialog {
 
-  form: FormGroup;
+  form = new FormGroup({});
 
   parameter: Parameter;
 
   constructor(
     private dialogRef: MatDialogRef<SetParameterDialog>,
-    formBuilder: FormBuilder,
-    private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.parameter = data.parameter;
-    switch (this.parameter.type!.engType) {
-      case 'boolean':
-      case 'float':
-      case 'double':
-      case 'integer':
-      case 'string':
-        this.form = formBuilder.group({
-          value: [null, Validators.required]
-        });
-        break;
-      case 'timestamp':
-        this.form = formBuilder.group({
-          value: [null, Validators.required]
-        });
-        break;
-      case 'enumeration':
-        this.form = formBuilder.group({
-          value: [null, Validators.required]
-        });
-        break;
-      case 'aggregate':
-        this.form = formBuilder.group({
-          value: [null, Validators.pattern(/^\{.*\}$/)]
-        });
-        break;
-      case 'array':
-        this.form = formBuilder.group({
-          value: [null, Validators.pattern(/^\[.*\]$/)]
-        });
-        break;
-      default:
-        throw new Error(`Unexpected type ${this.parameter.type!.engType}`);
+    const validators = this.getValidatorsForType(this.parameter.type!);
+    if (this.parameter.type!.engType === 'aggregate') {
+      this.addMemberControls(this.parameter.name + '.', this.parameter.type!.member || []);
+    } else {
+      this.form.addControl(
+        this.parameter.name, new FormControl(null, validators));
     }
   }
 
+  private addMemberControls(prefix: string, members: Member[]) {
+    for (const member of members) {
+      if (member.type.engType === 'aggregate') {
+        this.addMemberControls(prefix + member.name + '.', member.type.member || []);
+      } else {
+        const controlName = prefix + member.name;
+        const validators = this.getValidatorsForType(member.type as ParameterType);
+        this.form.addControl(
+          controlName, new FormControl('', validators));
+      }
+    }
+  }
+
+  private getValidatorsForType(type: ParameterType) {
+    const validators = [Validators.required];
+    if (type.engType === 'integer') {
+      validators.push(requireInteger);
+    } else if (type.engType === 'float') {
+      validators.push(requireFloat);
+    }
+    return validators;
+  }
+
   save() {
-    const userValue = this.form.value.value;
-    const value = this.toValue(userValue, this.parameter.type!);
+    const value = this.toValue('', this.parameter);
     this.dialogRef.close(value);
   }
 
-  private toValue(userValue: any, type: ParameterType): Value {
-    switch (type.engType) {
+  private toValue(prefix: string, parameter: Parameter | Member): Value {
+    const userValue = this.form.value[prefix + parameter.name];
+    switch (parameter.type!.engType) {
       case 'boolean':
-        return { type: 'BOOLEAN', booleanValue: (userValue === 'TRUE') };
+        return { type: 'BOOLEAN', booleanValue: (userValue === 'true') };
       case 'float':
         return { type: 'FLOAT', floatValue: userValue };
       case 'double':
@@ -77,18 +72,20 @@ export class SetParameterDialog {
         return { type: 'SINT32', sint32Value: userValue };
       case 'string':
         return { type: 'STRING', stringValue: userValue };
-      case 'timestamp':
+      case 'time':
         return { type: 'TIMESTAMP', stringValue: utils.toISOString(userValue) };
+      case 'binary':
+        return { type: 'BINARY', binaryValue: utils.convertHexToBase64(userValue) };
       case 'aggregate':
-        // TODO use graphical value builder?
-        const values: Value[] = [
-          { type: 'STRING', stringValue: String(1) },
-          { type: 'STRING', stringValue: String(2) },
-          { type: 'STRING', stringValue: String(3) },
-        ];
-        return { type: 'AGGREGATE', aggregateValue: { name: ['member1', 'member2', 'member3'], value: values } };
+        const names: string[] = [];
+        const values: Value[] = [];
+        for (const member of (parameter.type!.member || [])) {
+          names.push(member.name);
+          values.push(this.toValue(prefix + parameter.name + '.', member));
+        }
+        return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
       default:
-        throw new Error(`Unexpected type: ${type.engType}`);
+        throw new Error(`Unexpected type: ${parameter.type!.engType}`);
     }
   }
 }

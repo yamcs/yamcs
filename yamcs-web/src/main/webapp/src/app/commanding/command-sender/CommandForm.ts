@@ -286,7 +286,7 @@ export class CommandForm implements OnChanges {
   private addMemberControls(prefix: string, members: Member[]) {
     for (const member of members) {
       if (member.type.engType === 'aggregate') {
-        this.addMemberControls(prefix + '.' + member.name + '.', member.type.member || []);
+        this.addMemberControls(prefix + member.name + '.', member.type.member || []);
       } else {
         const controlName = prefix + member.name;
         const validators = this.getValidatorsForType(member.type as ArgumentType);
