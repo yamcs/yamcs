@@ -18,4 +18,3 @@ Each processor is composed of a set of services with varying functionality.
     stream-parameter-provider
     stream-tc-command-releaser
     stream-tm-packet-provider
-    system-parameter-provider

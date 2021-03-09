@@ -19,8 +19,6 @@ realtime:
         stream: "pp_realtime"
     # implements XTCE algorithms
     - class: org.yamcs.algorithms.AlgorithmManager
-    # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)
-    - class: org.yamcs.parameter.SystemParametersProvider
     - class: org.yamcs.parameter.LocalParameterManager
   config:
     #subcribe by default to parameters from all providers (this means also process all incoming TM packets)
