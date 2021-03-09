@@ -16,6 +16,10 @@ public class ValueHelper {
         return Value.newBuilder().setType(Type.SINT32).setSint32Value(x).build();
     }
 
+    static public Value newUnsignedValue(int x) {
+        return Value.newBuilder().setType(Type.UINT32).setUint32Value(x).build();
+    }
+
     /**
      * returns a DOUBLE Value
      * @param x

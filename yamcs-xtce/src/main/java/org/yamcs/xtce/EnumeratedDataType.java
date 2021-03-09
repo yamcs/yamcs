@@ -87,6 +87,22 @@ public class EnumeratedDataType extends BaseDataType {
         return null;
     }
 
+    public String calibrate(long raw) {
+        ValueEnumeration v = enumeration.get(raw);
+        if (v != null) {
+            return v.label;
+        }
+
+        if (ranges != null) {
+            for (ValueEnumerationRange range : ranges) {
+                if (range.isValueInRange(raw)) {
+                    return range.label;
+                }
+            }
+        }
+        return "UNDEF";
+    }
+
     public boolean hasLabel(String label) {
         for (ValueEnumeration enumeration : enumerationList) {
             if (enumeration.getLabel().equals(label)) {

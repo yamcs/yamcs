@@ -34,12 +34,14 @@ public class AggregateValue extends Value {
     }
 
     /**
-     * Returns the value of the member with the given name or null if the parameter has no such member.
+     * Returns the value of the member with the given name
      * 
      * @param name
-     *            - the name of the aggregate member whos value has to be returned
+     *            the name of the aggregate member whos value has to be returned
      * 
      * @return the value of the member with the given name
+     * @throws IllegalArgumentException
+     *             if there is no member with that name
      */
     public Value getMemberValue(String name) {
         return values[idx(name)];
@@ -52,6 +54,15 @@ public class AggregateValue extends Value {
         values[idx] = value;
     }
 
+    /**
+     * Get the index of the member with the given name or -1 if there is no such member
+     * 
+     * @param name
+     * @return
+     */
+    public int getMemberIndex(String name) {
+        return names.indexOf(name);
+    }
     @Override
     public Type getType() {
         return Type.AGGREGATE;

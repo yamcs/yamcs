@@ -88,21 +88,6 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return contextAlarmList;
     }
 
-    public String calibrate(long raw) {
-        ValueEnumeration v = enumeration.get(raw);
-        if (v != null) {
-            return v.label;
-        }
-
-        if (ranges != null) {
-            for (ValueEnumerationRange range : ranges) {
-                if (range.isValueInRange(raw)) {
-                    return range.label;
-                }
-            }
-        }
-        return "UNDEF";
-    }
 
     public String getCalibrationDescription() {
         return "EnumeratedParameterType: " + enumeration;

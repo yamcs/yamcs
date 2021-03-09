@@ -3,7 +3,9 @@ package org.yamcs.parameter;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class BooleanValue extends Value {
-   final boolean v;
+    final boolean v;
+    public static final BooleanValue TRUE = new BooleanValue(true);
+    public static final BooleanValue FALSE = new BooleanValue(false);
     
     public BooleanValue(boolean v) {
         this.v = v;
