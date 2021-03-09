@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.InvalidIdentification;
@@ -23,13 +21,15 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.DataTypeProcessor;
 import org.yamcs.xtceproc.ParameterTypeUtils;
 
 /**
- * Implements software parameters - these are parameters that can be set from the clients.
+ * Implements local parameters - these are parameters that can be set from the clients.
  * 
- * 
+ * <p>
  * All the parameters are sent from the executor thread.
  * 
  * @author nm
@@ -121,57 +121,46 @@ public class LocalParameterManager extends AbstractProcessorService implements S
     }
 
     /**
-     * update the list of parameters. - resolves NamedObjectId -&gt; Parameter - sends the result to PRM
+     * update the list of parameters.
+     * <p>
+     * Converts the value to the target type and sends the result to PRM
      */
     @Override
     public void updateParameters(final List<ParameterValue> pvList) {
-        // replace partials (i.e. aggregates/arrays that have only values of certain members set)
-        boolean hasPartial = pvList.stream().anyMatch(pv -> pv instanceof PartialParameterValue);
-        List<ParameterValue> pvl = hasPartial ? replacePartials(pvList) : pvList;
-
-        // first validate that the names are software parameters and the types match
-        for (ParameterValue pv : pvl) {
-            checkAssignment(pv.getParameter(), pv.getEngValue());
+        List<ParameterValue> pvl = new ArrayList<>(pvList.size());
+        for(ParameterValue pv: pvList) {
+            pvl.add(transformValue(pv));
         }
         // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> doUpdate(pvl));
     }
 
-    // replace the partial values with full values (after from the cache
-    private List<ParameterValue> replacePartials(List<ParameterValue> pvList) {
-        Map<Parameter, List<ParameterValue>> pvmap = pvList.stream()
-                .collect(Collectors.groupingBy(ParameterValue::getParameter));
-        List<ParameterValue> r = new ArrayList<>();
-
-        for (Map.Entry<Parameter, List<ParameterValue>> me : pvmap.entrySet()) {
-            Parameter p = me.getKey();
-            List<ParameterValue> l = me.getValue();
-            r.add(replacePartial(p, l));
+    private ParameterValue transformValue(ParameterValue pv) {
+        Parameter p = pv.getParameter();
+        ParameterType ptype = p.getParameterType();
+        if (ptype == null) {
+            return pv;
         }
 
-        return r;
-    }
+        ParameterValue r;
 
-    private ParameterValue replacePartial(Parameter p, List<ParameterValue> pvList) {
-        boolean hasPartial = pvList.stream().anyMatch(pv -> pv instanceof PartialParameterValue);
-        if (!hasPartial) { // just some parameters (possibly overwriting each other -> get the last value only)
-            return pvList.get(pvList.size() - 1);
-        }
-        ParameterValue r = proc.getLastValueCache().getValue(p);
-        if (r == null) {
-            throw new IllegalArgumentException("Received request to partially update " + p.getQualifiedName()
-                    + " but has no value in the cache");
-        }
-        r = new ParameterValue(r);
-        for (ParameterValue pv : pvList) {
-            if (pv instanceof PartialParameterValue) {
-                AggregateUtil.updateMember(r, (PartialParameterValue) pv);
-            } else {
-                r = pv;
+        if (pv instanceof PartialParameterValue) {
+            ParameterValue oldValue = proc.getLastValueCache().getValue(p);
+            if (oldValue == null) {
+                throw new IllegalArgumentException("Received request to partially update " + p.getQualifiedName()
+                        + " but has no value in the cache");
             }
+            r = new ParameterValue(oldValue);
+            AggregateUtil.updateMember(r, (PartialParameterValue) pv);
+        } else {
+            Value v = DataTypeProcessor.convertEngValueForType(ptype, pv.getEngValue());
+            r = new ParameterValue(pv);
+            r.setEngineeringValue(v);
         }
+
         return r;
     }
+
 
     /**
      * Updates a parameter just with the engineering value

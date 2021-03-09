@@ -392,7 +392,7 @@ public class ParameterTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
 
         ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara1").get();
-        assertEquals(ValueHelper.newValue(5), value.getEngValue());
+        assertEquals(ValueHelper.newUnsignedValue(5), value.getEngValue());
     }
 
     @Test
@@ -403,7 +403,7 @@ public class ParameterTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
 
         ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara2").get();
-        assertEquals(ValueHelper.newValue(3.14), value.getEngValue());
+        assertEquals(ValueHelper.newValue(3.14f), value.getEngValue());
     }
 
     @Test
@@ -415,7 +415,7 @@ public class ParameterTest extends AbstractIntegrationTest {
                     ValueHelper.newArrayValue(v0)).get();
         } catch (ExecutionException e) {
             ClientException e1 = (ClientException) e.getCause();
-            assertTrue(e1.getMessage().contains("members don't match"));
+            assertTrue(e1.getMessage().contains("no value for member member3"));
             return;
         }
 
@@ -424,9 +424,9 @@ public class ParameterTest extends AbstractIntegrationTest {
 
     @Test
     public void testSetArrayParameter() throws Exception {
-        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
-                "member2", ValueHelper.newValue(1300),
-                "member3", ValueHelper.newValue(3.14));
+        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newUnsignedValue(10),
+                "member2", ValueHelper.newUnsignedValue(1300),
+                "member3", ValueHelper.newValue(3.14f));
         v0 = ValueHelper.newArrayValue(v0, v0);
 
         processorClient.setValue("/REFMDB/SUBSYS1/LocalArray1", v0).get();
@@ -440,9 +440,9 @@ public class ParameterTest extends AbstractIntegrationTest {
 
     @Test
     public void testSetParameter_Aggregate() throws Exception {
-        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
-                "member2", ValueHelper.newValue(1300),
-                "member3", ValueHelper.newValue(3.14));
+        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newUnsignedValue(10),
+                "member2", ValueHelper.newUnsignedValue(1300),
+                "member3", ValueHelper.newValue(3.14f));
 
         processorClient.setValue("/REFMDB/SUBSYS1/LocalAggregate1", v0).get();
 

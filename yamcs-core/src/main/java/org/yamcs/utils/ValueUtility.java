@@ -58,7 +58,7 @@ public class ValueUtility {
     }
 
     public static Value getBooleanValue(boolean b) {
-        return new BooleanValue(b);
+        return b ? BooleanValue.TRUE : BooleanValue.FALSE;
     }
 
     public static Value getFloatValue(float f) {
@@ -422,6 +422,7 @@ public class ValueUtility {
         }
     }
 
+
     /**
      * if the passed on value is float, double or integer invoke the function on the double value and return true
      * if v is of other types return false
@@ -476,7 +477,38 @@ public class ValueUtility {
         }
     }
 
-    public static Value getEnumeratedValue(long longValue, String stringValue) {
+    public static EnumeratedValue getEnumeratedValue(long longValue, String stringValue) {
         return new EnumeratedValue(longValue, stringValue);
+    }
+
+    /**
+     * 
+     * @param sizeInBits
+     * @param signed
+     * @param v
+     * @return
+     */
+    public static Value getIntValue(int sizeInBits, boolean signed, long v) {
+        if (signed) {
+            if (sizeInBits <= 32) {
+                return getSint32Value((int) v);
+            } else {
+                return getSint64Value(v);
+            }
+        } else {
+            if (sizeInBits <= 32) {
+                return getUint32Value((int) v);
+            } else {
+                return getUint64Value(v);
+            }
+        }
+    }
+
+    public static Value getFloatValue(int sizeInBits, double v) {
+        if (sizeInBits <= 32) {
+            return getFloatValue((float) v);
+        } else {
+            return getDoubleValue(v);
+        }
     }
 }
