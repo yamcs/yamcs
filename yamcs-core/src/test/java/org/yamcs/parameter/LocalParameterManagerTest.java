@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Parameter;
@@ -29,7 +30,7 @@ public class LocalParameterManagerTest {
     XtceDb xtceDb;
     MyParamConsumer consumer;
     LocalParameterManager localParamMgr;
-    Parameter p1, p2, p4, p7;
+    Parameter p1, p2, p4, p7, p9;
 
     @BeforeClass
     static public void setupTime() {
@@ -52,6 +53,7 @@ public class LocalParameterManagerTest {
 
         p4 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue4");
         p7 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue7");
+        p9 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaTime9");
 
         assertNotNull(p1);
         assertNotNull(p2);
@@ -142,6 +144,21 @@ public class LocalParameterManagerTest {
         ArrayValue rcvd = (ArrayValue) pvs.get(0).getEngValue();
         assertEquals(1, rcvd.getElementValue(0).getFloatValue(), 1e-5);
         assertEquals(2, rcvd.getElementValue(1).getFloatValue(), 1e-5);
+    }
+
+    @Test
+    public void testTypeConversion9() throws Exception {
+        String ts = "2020-03-09T12:09:00Z";
+
+        localParamMgr.startProviding(p9);
+        ParameterValue pv9 = new ParameterValue(p9);
+        pv9.setEngineeringValue(ValueUtility.getStringValue(ts));
+        localParamMgr.updateParameters(Arrays.asList(pv9));
+
+        List<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        assertEquals(1, pvs.size());
+        TimestampValue tv = (TimestampValue) pvs.get(0).getEngValue();
+        assertEquals(TimeEncoding.parse(ts), tv.getTimestampValue());
     }
 
     @Test(expected = IllegalArgumentException.class)

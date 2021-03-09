@@ -167,24 +167,11 @@ public class LocalParameterManager extends AbstractProcessorService implements S
      */
     @Override
     public void updateParameter(final Parameter p, final Value engValue) {
-        checkAssignment(p, engValue);
-        executor.submit(() -> {
-            ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(engValue);
-            long t = proc.getCurrentTime();
-            pv.setAcquisitionTime(t);
-            pv.setGenerationTime(t);
+        ParameterValue pv = new ParameterValue(p);
+        pv.setEngineeringValue(engValue);
 
-            List<ParameterValue> wrapped = Arrays.asList(pv);
-            parameterListeners.forEach(l -> l.update(wrapped));
-        });
-    }
-
-    private void checkAssignment(Parameter p, Value engValue) {
-        if (p.getDataSource() != DataSource.LOCAL) {
-            throw new IllegalArgumentException("DataSource of parameter " + p.getQualifiedName() + " is not local");
-        }
-        ParameterTypeUtils.checkEngValueAssignment(p, engValue);
+        List<ParameterValue> pvlist = Arrays.asList(pv);
+        updateParameters(pvlist);
     }
 
     @Override

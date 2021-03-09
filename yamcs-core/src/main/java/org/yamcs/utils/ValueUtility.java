@@ -346,7 +346,14 @@ public class ValueUtility {
         case STRING:
             return new StringValue(v.getStringValue());
         case TIMESTAMP:
-            return new TimestampValue(v.getTimestampValue());
+            if (v.hasTimestampValue()) {
+                return new TimestampValue(v.getTimestampValue());
+            } else if (v.hasStringValue()) {
+                return new TimestampValue(TimeEncoding.parse(v.getStringValue()));
+            } else {
+                throw new IllegalArgumentException("No string or timestamp value provided ");
+            }
+
         case UINT32:
             return new UInt32Value(v.getUint32Value());
         case UINT64:

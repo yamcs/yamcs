@@ -288,7 +288,10 @@ public class TimeEncoding {
      * parses an ISO 8601 UTC date into an instant
      * 
      * @param s
-     * @return
+     *            - string to be parsed
+     * @return - internal Yamcs timestamp
+     * @throws IllegalArgumentException
+     *             if the time cannot be parsed
      */
     public static long parse(String s) {
         TaiUtcConverter.DateTimeComponents dtc;

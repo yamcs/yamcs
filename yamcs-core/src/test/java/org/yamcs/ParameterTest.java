@@ -20,10 +20,12 @@ import org.yamcs.client.processor.ProcessorClient.GetOptions;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SubscribeParametersRequest;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 
 public class ParameterTest extends AbstractIntegrationTest {
@@ -404,6 +406,37 @@ public class ParameterTest extends AbstractIntegrationTest {
 
         ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalPara2").get();
         assertEquals(ValueHelper.newValue(3.14f), value.getEngValue());
+    }
+
+    @Test
+    public void testSetParameter9() throws Exception {
+        String ts = "2021-03-11T00:00:00.000Z";
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalParaTime9", ValueHelper.newValue(ts)).get();
+
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
+
+        ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalParaTime9").get();
+        Value tv = value.getEngValue();
+        assertEquals(Yamcs.Value.Type.TIMESTAMP, tv.getType());
+        assertEquals(ts, tv.getStringValue());
+        assertEquals(TimeEncoding.parse(ts), tv.getTimestampValue());
+    }
+
+    @Test
+    public void testSetParameter10() throws Exception {
+        String ts = "2021-03-11T00:00:00.000Z";
+        Value vsent = Value.newBuilder().setType(Type.TIMESTAMP).setStringValue(ts).build();
+        processorClient.setValue("/REFMDB/SUBSYS1/LocalParaTime9", vsent).get();
+
+        // parameter is set in another thread so it might not be immediately available
+        Thread.sleep(1000);
+
+        ParameterValue value = processorClient.getValue("/REFMDB/SUBSYS1/LocalParaTime9").get();
+        Value tv = value.getEngValue();
+        assertEquals(Yamcs.Value.Type.TIMESTAMP, tv.getType());
+        assertEquals(ts, tv.getStringValue());
+        assertEquals(TimeEncoding.parse(ts), tv.getTimestampValue());
     }
 
     @Test
