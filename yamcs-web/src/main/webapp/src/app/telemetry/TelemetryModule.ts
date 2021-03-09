@@ -20,6 +20,7 @@ import { CompareParameterDialog } from './parameters/CompareParameterDialog';
 import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
 import { ParameterAlarmsTable } from './parameters/ParameterAlarmsTable';
 import { ParameterDetail } from './parameters/ParameterDetail';
+import { ParameterForm } from './parameters/ParameterForm';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 import { SelectRangeDialog } from './parameters/SelectRangeDialog';
 import { SetParameterDialog } from './parameters/SetParameterDialog';
@@ -65,8 +66,9 @@ const viewers = [
     ExportArchiveDataDialog,
     ModifyParameterDialog,
     MultipleParameterTable,
-    ParameterDetail,
     ParameterAlarmsTable,
+    ParameterDetail,
+    ParameterForm,
     ParameterValuesTable,
     RenameDisplayDialog,
     ScrollingParameterTable,

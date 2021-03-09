@@ -50,6 +50,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'float', label: 'float' },
     { id: 'integer', label: 'integer' },
     { id: 'string', label: 'string' },
+    { id: 'time', label: 'time' },
   ];
 
   sourceOptions: Option[] = [

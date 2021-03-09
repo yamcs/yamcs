@@ -5,24 +5,29 @@
   <span #top></span>
 
   <div class="panel-content">
-    <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-      <app-breadcrumb-trail>
-        <ng-container *ngIf="breadcrumb.length">
-          <app-breadcrumb link="/telemetry/parameters"
-                          [queryParams]="{c: yamcs.context}"
-                          icon="account_tree"></app-breadcrumb>
-          <app-breadcrumb *ngFor="let item of breadcrumb"
-                          [link]="item.route"
-                          [queryParams]="item.queryParams"
-                          [label]="item.name"></app-breadcrumb>
-        </ng-container>
-        <app-search-filter [formControl]="filterControl"
-                           placeholder="Search by name"
-                           icon="search"
-                           [class.pullRight]="breadcrumb.length">
+    <form [formGroup]="filterForm">
+      <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+        <div class="filter-bar" *ngIf="breadcrumb.length">
+          <app-breadcrumb-trail>
+            <app-breadcrumb link="/telemetry/parameters"
+                            [queryParams]="{c: yamcs.context}"
+                            icon="account_tree"></app-breadcrumb>
+            <app-breadcrumb *ngFor="let item of breadcrumb"
+                            [link]="item.route"
+                            [queryParams]="item.queryParams"
+                            [label]="item.name"></app-breadcrumb>
+          </app-breadcrumb-trail>
+        </div>
+      </ng-container>
+      <div class="filter-bar">
+        <app-search-filter [formControl]="filterForm.controls['filter']"
+                            placeholder="Search by name"
+                            icon="search">
         </app-search-filter>
-      </app-breadcrumb-trail>
-    </ng-container>
+        <app-select [options]="typeOptions" formControlName="type"></app-select>
+        <app-select [options]="sourceOptions" formControlName="source"></app-select>
+      </div>
+    </form>
     <table mat-table
            *ngIf="dataSource"
            class="ya-data-table"
@@ -69,6 +74,12 @@
             <span *ngIf="item.pval?.rangeCondition === 'HIGH'">&#8593;</span>
           </app-expirable>
           <span *ngIf="!item.pval">-</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px">Type</th>
+        <td mat-cell *matCellDef="let item" style="font-family: monospace">{{ item.parameter?.type?.engType || '-' }}
         </td>
       </ng-container>
 

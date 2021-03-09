@@ -109,6 +109,18 @@ export function convertBase64ToHex(base64: string) {
   return result;
 }
 
+export function convertHexToBase64(hex: string) {
+  if (hex.length % 2) {
+    hex = '0' + hex;
+  }
+  const barr = [];
+  for (let i = 0; i < hex.length - 1; i += 2) {
+    barr.push(parseInt(hex.substr(i, 2), 16));
+  }
+  const str = String.fromCharCode.apply(String, barr);
+  return btoa(str);
+}
+
 export function convertValue(value: Value) {
   switch (value.type) {
     case 'FLOAT':
