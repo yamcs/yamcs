@@ -118,12 +118,6 @@ message Ranges {
         // ``maxGap``.
         optional string timeStop = 2;
     
-        // the engineering value of the parameter in the interval ``[timeStart, timeStop)``
-        // Time intervals have to be considered as closed at start and open at stop.
-        //
-        //Since Yamcs 5.4.1 the engValue is deprecated in favor of engValues
-        optional Value engValue = 3 [deprecated = true];
-
         // Number of parameter values received in the interval.
         // This is the total count of parameters in the interval.
         // If the count does not match the sum(counts), it means that not all the values have been sent

@@ -194,7 +194,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         Range r0 = ranges.get(0);
         assertEquals(1199, r0.getCount());
         assertEquals(1199, r0.getCounts(0));
-        assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
         assertEquals("2018-01-01T11:40:01.000Z", r0.getTimeStart());
         assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());

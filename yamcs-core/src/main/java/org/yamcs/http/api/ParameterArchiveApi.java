@@ -497,9 +497,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
             b.addCounts(r.getCount(i));
         }
-        if (r instanceof SingleRange) {// to remove
-            b.setEngValue(ValueUtility.toGbp(((SingleRange) r).value));
-        }
 
         return b.build();
     }
