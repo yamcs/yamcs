@@ -11,7 +11,7 @@ import org.yamcs.utils.TimeEncoding;
 
 /**
  * Parameter Group segment - keeps references to Time and Value segments for a given parameter group and segment.
- * 
+ * <p>
  * This class is used during the parameter archive buildup
  * 
  * @author nm

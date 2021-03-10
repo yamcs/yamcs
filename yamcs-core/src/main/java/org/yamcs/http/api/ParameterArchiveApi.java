@@ -16,9 +16,7 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.Downsampler.Sample;
-import org.yamcs.http.api.ParameterRanger.MultiRange;
 import org.yamcs.http.api.ParameterRanger.Range;
-import org.yamcs.http.api.ParameterRanger.SingleRange;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
@@ -33,18 +31,24 @@ import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
+import org.yamcs.parameterarchive.ParameterInfoRetrieval;
 import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.protobuf.AbstractParameterArchiveApi;
+import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
+import org.yamcs.protobuf.ArchivedParameterGroupResponse;
+import org.yamcs.protobuf.ArchivedParameterSegmentsResponse;
+import org.yamcs.protobuf.ArchivedParametersInfoResponse;
 import org.yamcs.protobuf.DeletePartitionsRequest;
-import org.yamcs.protobuf.GetArchivedParameterInfoRequest;
+import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
+import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
+import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
-import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
@@ -52,10 +56,12 @@ import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.MutableLong;
+import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.streamsql.ResourceNotFoundException;
 
 import com.google.protobuf.Empty;
 
@@ -128,20 +134,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         } catch (RocksDBException e) {
             throw new InternalServerErrorException(e.getMessage());
         }
-    }
-
-    @Override
-    public void getArchivedParameterInfo(Context ctx, GetArchivedParameterInfoRequest request,
-            Observer<StringMessage> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
-
-        String fqn = request.getName();
-        ParameterArchive parchive = getParameterArchive(ysi);
-        ParameterIdDb pdb = parchive.getParameterIdDb();
-        ParameterId[] pids = pdb.get(fqn);
-        StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
-        observer.complete(sm);
     }
 
     @Override
@@ -499,5 +491,138 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
 
         return b.build();
+    }
+
+    @Override
+    public void getArchivedParametersInfo(Context ctx, GetArchivedParametersInfoRequest request,
+            Observer<ArchivedParametersInfoResponse> observer) {
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        ParameterArchive parchive = getParameterArchive(ysi);
+        ParameterIdDb pdb = parchive.getParameterIdDb();
+        ParameterGroupIdDb pgdb = parchive.getParameterGroupIdDb();
+
+        ArchivedParametersInfoResponse.Builder respb = ArchivedParametersInfoResponse.newBuilder();
+        int limit = request.hasLimit() ? request.getLimit() : 100;
+
+        pdb.iterate((fqn, pid) -> {
+            if (request.hasSystem() && !fqn.startsWith(request.getSystem())) {
+                return true;
+            }
+            if (request.hasQ() && !fqn.contains(request.getQ())) {
+                return true;
+            }
+            ArchivedParameterInfo.Builder apib = ArchivedParameterInfo.newBuilder().setFqn(fqn).setPid(pid.pid);
+            if (pid.engType != null) {
+                apib.setEngType(pid.engType);
+            }
+            if (pid.getRawType() != null) {
+                apib.setRawType(pid.getRawType());
+            }
+            for (int gid : pgdb.getAllGroups(pid.pid)) {
+                apib.addGids(gid);
+            }
+
+            respb.addParameters(apib.build());
+            return respb.getParametersCount() < limit;
+        });
+
+        observer.complete(respb.build());
+    }
+
+    @Override
+    public void getArchivedParameterSegments(Context ctx, GetArchivedParameterSegmentsRequest request,
+            Observer<ArchivedParameterSegmentsResponse> observer) {
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        if (!request.hasPid()) {
+            throw new BadRequestException("id is mandatory");
+        }
+        int pid = request.getPid();
+
+        long start = 0;
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        long stop = ysi.getTimeService().getMissionTime();
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+
+        ParameterArchive parchive = getParameterArchive(ysi);
+        ParameterIdDb pdb = parchive.getParameterIdDb();
+
+        ArchivedParameterSegmentsResponse.Builder resp = ArchivedParameterSegmentsResponse.newBuilder();
+        ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder();
+
+        pdb.iterate((fqn, paraId) -> {
+            if (paraId.pid == pid) {
+                paraInfo.setFqn(fqn);
+                paraInfo.setEngType(paraId.getEngType());
+                paraInfo.setRawType(paraId.getRawType());
+                paraInfo.setPid(pid);
+                return false;
+            }
+            return true;
+        });
+        if (!paraInfo.hasFqn()) {
+            throw new NotFoundException("Unknown parameter id " + pid);
+        }
+        resp.setParameterInfo(paraInfo.build());
+
+        ParameterInfoRetrieval pir = new ParameterInfoRetrieval(parchive, pid, start, stop);
+
+        try {
+            pir.retrieve(segInfo -> resp.addSegments(segInfo));
+            observer.complete(resp.build());
+        } catch (RocksDBException | IOException e) {
+            log.error("Error retrieving parameter info", e);
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void getArchivedParameterGroup(Context ctx, GetArchivedParameterGroupRequest request,
+            Observer<ArchivedParameterGroupResponse> observer) {
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+        if (!request.hasGid()) {
+            throw new BadRequestException("gid is mandatory");
+        }
+        int gid = request.getGid();
+
+        ParameterArchive parchive = getParameterArchive(ysi);
+        ParameterIdDb pdb = parchive.getParameterIdDb();
+        ParameterGroupIdDb pgdb = parchive.getParameterGroupIdDb();
+        IntArray pids;
+
+        try {
+            pids = pgdb.getParameterGroup(gid);
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException("No such group " + gid);
+        }
+        SortedIntArray sortedPids = new SortedIntArray(pids);
+        ArchivedParameterGroupResponse.Builder resp = ArchivedParameterGroupResponse.newBuilder();
+
+        pdb.iterate((fqn, paraId) -> {
+            if (sortedPids.contains(paraId.pid)) {
+                ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder()
+                        .setFqn(fqn);
+                if (paraId.getEngType() != null) {
+                    paraInfo.setEngType(paraId.getEngType());
+                }
+                if (paraId.getRawType() != null) {
+                    paraInfo.setRawType(paraId.getRawType());
+                }
+
+                paraInfo.setPid(paraId.pid);
+
+                resp.addParameters(paraInfo.build());
+            }
+            return true;
+        });
+        observer.complete(resp.build());
     }
 }

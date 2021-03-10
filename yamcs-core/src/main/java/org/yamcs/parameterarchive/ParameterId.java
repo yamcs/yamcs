@@ -31,4 +31,8 @@ public class ParameterId {
     public Type getRawType() {
         return rawType;
     }
+
+    public Type getEngType() {
+        return engType;
+    }
 }

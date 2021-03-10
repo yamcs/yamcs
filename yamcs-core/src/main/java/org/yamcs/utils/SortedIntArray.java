@@ -50,6 +50,12 @@ public class SortedIntArray implements Serializable {
         Arrays.sort(a);
     }
 
+    public SortedIntArray(IntArray pids) {
+        length = pids.size();
+        a = Arrays.copyOf(pids.array(), length);
+        Arrays.sort(a);
+    }
+
     /**
      * Inserts value to the array and return the position on which has been inserted
      * 

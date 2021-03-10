@@ -14,7 +14,7 @@ import static org.yamcs.parameterarchive.ParameterArchive.INTERVAL_MASK;
 
 /**
  * TimeSegment stores timestamps relative to a segmentStart. The timestamps are stored in a sorted int array.
- * 
+ * <p>
  * The timestamps have to be larger than the segmentStart and have to be part of the same interval (see
  * {@link ParameterArchive#INTERVAL_MASK}.
  * 
@@ -89,9 +89,6 @@ public class SortedTimeSegment extends BaseSegment {
         return segmentStart;
     }
 
-    public String toString() {
-        return "[TimeSegment: id:" + segmentStart + ", relative times: " + tsarray.toString() + "]";
-    }
 
     /**
      * Encode the time array
@@ -204,4 +201,9 @@ public class SortedTimeSegment extends BaseSegment {
             segmentStart += diff;
         }
     }
+
+    public String toString() {
+        return "[TimeSegment: id:" + segmentStart + ", relative times: " + tsarray.toString() + "]";
+    }
+
 }
