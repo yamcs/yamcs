@@ -28,7 +28,7 @@ public class ReplicationClient {
     final Supplier<ChannelHandler> channelHandlerSupplier;
     final Log log;
     final long reconnectionInterval;
-
+    final int maxTupleSize;
     Channel channel;
     ScheduledFuture<?> reconnectFuture;
     Bootstrap bootstrap;
@@ -36,7 +36,7 @@ public class ReplicationClient {
     SslContext sslCtx = null;
 
     public ReplicationClient(String yamcsInstance, String host, int port, SslContext sslCtx,
-            long reconnectionInterval,
+            long reconnectionInterval, int maxTupleSize,
             Supplier<ChannelHandler> channelHandlerSupplier) {
         this.port = port;
         this.host = host;
@@ -44,6 +44,7 @@ public class ReplicationClient {
         this.reconnectionInterval = reconnectionInterval;
         log = new Log(getClass(), yamcsInstance);
         this.sslCtx = sslCtx;
+        this.maxTupleSize = maxTupleSize;
     }
 
     public void start() {
@@ -56,7 +57,7 @@ public class ReplicationClient {
                         if (sslCtx != null) {
                             ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
                         }
-                        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(8192, 1, 3));
+                        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(maxTupleSize, 1, 3));
                         ch.pipeline().addLast(channelHandlerSupplier.get());
                     }
                 });

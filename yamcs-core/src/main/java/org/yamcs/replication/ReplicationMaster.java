@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.file.CopyOption;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,6 +82,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     // files not accessed longer than this will be closed
     private long fileCloseTime;
     Pattern filePattern;
+    int maxTupleSize;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
@@ -95,6 +95,7 @@ public class ReplicationMaster extends AbstractYamcsService {
         pageSize = config.getInt("pageSize", 500);
         maxPages = config.getInt("maxPages", 500);
         maxFileSize = 1024 * config.getInt("maxFileSizeKB", 100 * 1024);
+        this.maxTupleSize = config.getInt("maxTupleSize");
         int hdrSize = ReplicationFile.headerSize(pageSize, maxPages);
         if (maxFileSize < hdrSize) {
             throw new InitException(
@@ -177,6 +178,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         spec.addOption("fileCloseTimeSec", OptionType.INTEGER);
         spec.addOption("reconnectionIntervalSec", OptionType.INTEGER);
         spec.addOption("slaves", OptionType.LIST).withElementType(OptionType.MAP).withSpec(slaveSpec);
+        spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(65536)
+                .withDescription("Maximum size of the serialized tuple");
 
         return spec;
     }
@@ -224,7 +227,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             // connect to all slaves
             for (SlaveServer sa : slaves) {
                 sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port,
-                        sa.enableTls ? sslCtx : null, reconnectionInterval,
+                        sa.enableTls ? sslCtx : null, reconnectionInterval, maxTupleSize,
                         () -> {
                             return new MasterChannelHandler(this, sa);
                         });

@@ -61,6 +61,7 @@ public class ReplicationSlave extends AbstractYamcsService {
     Path txtfilePath;
     int localInstanceId;
     SslContext sslCtx = null;
+    int maxTupleSize;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
@@ -99,6 +100,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         Path replicationDir = Paths.get(dataDir).resolve(yamcsInstance).resolve("replication");
         replicationDir.toFile().mkdirs();
         String lastTxFilename = config.getString("lastTxFile", serviceName + "-lastid.txt");
+        this.maxTupleSize = config.getInt("maxTupleSize");
 
         txtfilePath = replicationDir.resolve(lastTxFilename);
         try {
@@ -128,15 +130,16 @@ public class ReplicationSlave extends AbstractYamcsService {
         spec.addOption("enableTls", OptionType.BOOLEAN);
         spec.addOption("masterInstance", OptionType.STRING);
         spec.addOption("lastTxFile", OptionType.STRING);
+        spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(65536)
+                .withDescription("Maximum size of the serialized tuple");
         return spec;
     }
 
     @Override
     protected void doStart() {
         if (tcpRole == TcpRole.CLIENT) {
-            tcpClient = new ReplicationClient(yamcsInstance, host, port, sslCtx, reconnectionInterval, () -> {
-                return new SlaveChannelHandler(this);
-            });
+            tcpClient = new ReplicationClient(yamcsInstance, host, port, sslCtx, reconnectionInterval, maxTupleSize,
+                    () -> new SlaveChannelHandler(this));
             tcpClient.start();
         }
         notifyStarted();
