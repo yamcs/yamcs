@@ -34,18 +34,26 @@ public interface AlgorithmExecutor {
     List<ParameterValue> runAlgorithm(long acqTime, long genTime);
 
     /**
-     * Add a listener to be called each time the algorithm has run
+     * Add a listener to be called each time the algorithm runs
      * 
      * @param listener
      */
-    void addExecListener(AlgorithmExecListener listener);
+    default void addExecListener(AlgorithmExecListener listener) {
+    }
+
+    /**
+     * Remove the listener from the list to be called each time the algorithm runs
+     * 
+     * @param listener
+     */
+    default void removeExecListener(AlgorithmExecListener listener) {
+    }
 
     /**
      * 
      * @return the execution context in which the executor activates
      */
     AlgorithmExecutionContext getExecutionContext();
-
 
     /**
      * the method has been removed because it has nothing to do here.

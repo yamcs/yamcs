@@ -3,7 +3,6 @@ package org.yamcs.xtceproc;
 import java.util.List;
 import java.util.Set;
 
-import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
@@ -47,10 +46,6 @@ public abstract class AbstractDataEncoder implements DataEncoder {
      */
     public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
         return null;
-    }
-
-    public void addExecListener(AlgorithmExecListener listener) {
-        
     }
 
     public AlgorithmExecutionContext getExecutionContext() {

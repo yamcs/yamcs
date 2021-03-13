@@ -75,6 +75,10 @@ public class ParameterValue extends BasicParameterValue {
         return acquisitionTime;
     }
     
+    public org.yamcs.protobuf.Pvalue.ParameterValue toGpb() {
+        NamedObjectId id = NamedObjectId.newBuilder().setName(getParameterQualifiedName()).build();
+        return toProtobufParameterValue(Optional.of(id), OptionalInt.empty(), true);
+    }
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         Optional<NamedObjectId> optionalId = Optional.ofNullable(id);

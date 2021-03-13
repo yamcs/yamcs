@@ -74,7 +74,7 @@ public class AlgorithmWithContextTest {
         AlgorithmManager algm = prm.getParameterProvider(AlgorithmManager.class);
         AlgorithmExecutionContext ctx = algm.createContext("test");
         Algorithm alg = db.getAlgorithm("/REFMDB/SUBSYS1/ctx_param_test");
-        algm.activateAlgorithm(alg, ctx, (returnValue, outputValues) -> params.add(returnValue));
+        algm.activateAlgorithm(alg, ctx, (inputValues, returnValue, outputValues) -> params.add(returnValue));
 
         tmGenerator.generate_PKT1_1();
         Parameter p = db.getParameter("/yamcs/cmd/para1");

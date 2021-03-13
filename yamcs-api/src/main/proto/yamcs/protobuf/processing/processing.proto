@@ -122,6 +122,21 @@ service ProcessingApi {
       topic: "processors"
     };
   }
+
+  // Get the algorithm trace
+  rpc GetAlgorithmTrace(GetAlgorithmTraceRequest) returns (AlgorithmTrace) {
+    option (yamcs.api.route) = {
+      get: "/api/processors/{instance}/{processor}/algorithms/{name*}/trace"
+    };
+  }
+
+  // Enable/disable algorithm tracing
+  rpc EditAlgorithmTrace(EditAlgorithmTraceRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/processors/{instance}/{processor}/algorithms/{name*}/trace"
+      body: "*"
+    };
+  }
 }
 
 message ListProcessorTypesResponse {
@@ -145,7 +160,7 @@ message SubscribeTMStatisticsRequest {
 message SubscribeProcessorsRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  
+
   // Processor name.
   optional string processor = 2;
 }
@@ -159,7 +174,7 @@ message SubscribeParametersRequest {
   
   // Yamcs instance name.
   optional string instance = 1;
-  
+ 
   // Processor name.
   optional string processor = 2;
 
@@ -215,7 +230,7 @@ message DeleteProcessorRequest {
 message CreateProcessorRequest {
   // **Required.** The name of the Yamcs instance.
   optional string instance = 1;
-  
+
   // **Required.** The name of the processor. Must be unique for the Yamcs instance.
   optional string name = 2;
   
@@ -321,4 +336,46 @@ message BatchSetParameterValuesRequest {
   // Processor name.
   optional string processor = 3;
   repeated SetParameterValueRequest request = 1;
+}
+
+message GetAlgorithmTraceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Algorithm name.
+  optional string name = 3;
+}
+
+message EditAlgorithmTraceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Algorithm name.
+  optional string name = 3;
+
+  // Trace state: either ``enabled`` or ``disabled``.
+  optional string state = 4;
+}
+
+message AlgorithmTrace {
+  message Run {
+    optional google.protobuf.Timestamp time = 1;
+    repeated pvalue.ParameterValue inputs = 2;
+    repeated pvalue.ParameterValue outputs = 3;
+    optional string returnValue = 4;
+    optional string error = 5;
+  }
+  message Log {
+    optional google.protobuf.Timestamp time = 2;
+    optional string msg = 3;
+  }
+
+  repeated Run runs = 1;
+  repeated Log logs = 2;
 }

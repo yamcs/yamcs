@@ -25,11 +25,12 @@ public class AlgorithmFunctions {
     private final String yamcsInstance;
     private final ProcessorData processorData;
     private final String defaultSource = "CustomAlgorithm";
+    private final AlgorithmExecutionContext context;
 
     // can be null if the algorithms are not running inside a processor
     private final Processor processor;
 
-    public AlgorithmFunctions(Processor processor) {
+    public AlgorithmFunctions(Processor processor, AlgorithmExecutionContext context) {
         this.yamcsInstance = processor.getInstance();
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
@@ -37,6 +38,7 @@ public class AlgorithmFunctions {
         this.xtcedb = processor.getXtceDb();
         this.processorData = processor.getProcessorData();
         this.processor = processor;
+        this.context = context;
     }
 
     /**
@@ -74,8 +76,11 @@ public class AlgorithmFunctions {
         return new Throwable().getStackTrace()[2].getFileName();
     }
 
-    public void info(String type, String msg) {
+    public void log(String msg) {
+        context.logTrace(getAlgoName(), msg);
+    }
 
+    public void info(String type, String msg) {
         eventProducer.sendInfo(type, msg);
     }
 

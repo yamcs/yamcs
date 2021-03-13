@@ -131,13 +131,24 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
 
     protected void propagateToListeners(Object returnValue, List<ParameterValue> outputValues) {
         for (AlgorithmExecListener listener : execListeners) {
-            listener.algorithmRun(returnValue, outputValues);
+            listener.algorithmRun(inputValues, returnValue, outputValues);
+        }
+    }
+
+    protected void propagateErrorToListeners(String errorMsg) {
+        for (AlgorithmExecListener listener : execListeners) {
+            listener.algorithmError(inputValues, errorMsg);
         }
     }
 
     @Override
     public void addExecListener(AlgorithmExecListener listener) {
         execListeners.add(listener);
+    }
+
+    @Override
+    public void removeExecListener(AlgorithmExecListener listener) {
+        execListeners.remove(listener);
     }
 
     @Override

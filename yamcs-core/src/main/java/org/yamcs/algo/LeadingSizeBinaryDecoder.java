@@ -9,21 +9,23 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtceproc.AbstractDataDecoder;
 
 public class LeadingSizeBinaryDecoder extends AbstractDataDecoder {
-    
+
     int sizeInBitsOfSizeTag = 16;
+
     public LeadingSizeBinaryDecoder(CustomAlgorithm alg, AlgorithmExecutionContext ctx, Integer sizeInBitsOfSizeTag) {
         this.sizeInBitsOfSizeTag = sizeInBitsOfSizeTag;
     }
+
     @Override
     public Value extractRaw(DataEncoding de, BitBuffer buffer) {
         int sizeInBytes = (int) buffer.getBits(sizeInBitsOfSizeTag);
-      
+
         if (sizeInBytes > buffer.remainingBytes()) {
             throw new IndexOutOfBoundsException("Cannot extract binary parameter of size " + sizeInBytes
-                + ". Remaining in the buffer: " + buffer.remainingBytes());
+                    + ". Remaining in the buffer: " + buffer.remainingBytes());
         }
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
-        return ValueUtility.getBinaryValue(b);        
+        return ValueUtility.getBinaryValue(b);
     }
 }

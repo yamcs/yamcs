@@ -46,7 +46,9 @@ public abstract class AbstractDataDecoder implements DataDecoder {
     }
 
     public void addExecListener(AlgorithmExecListener listener) {
-        
+    }
+
+    public void removeExecListener(AlgorithmExecListener listener) {
     }
 
     public AlgorithmExecutionContext getExecutionContext() {

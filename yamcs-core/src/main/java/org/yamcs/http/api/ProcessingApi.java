@@ -22,6 +22,7 @@ import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
@@ -41,12 +42,15 @@ import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.AbstractProcessingApi;
+import org.yamcs.protobuf.AlgorithmTrace;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
+import org.yamcs.protobuf.EditAlgorithmTraceRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
+import org.yamcs.protobuf.GetAlgorithmTraceRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.GetProcessorRequest;
 import org.yamcs.protobuf.ListProcessorTypesResponse;
@@ -69,6 +73,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -411,6 +416,50 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         ManagementService.getInstance().addManagementListener(listener);
     }
 
+    @Override
+    public void editAlgorithmTrace(Context ctx, EditAlgorithmTraceRequest request, Observer<Empty> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
+
+        if (!request.hasState()) {
+            throw new BadRequestException("state is mandatory");
+        }
+        String state = request.getState();
+
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+
+
+        AlgorithmManager algMng = verifyAlgorithmManager(processor);
+        if ("enabled".equalsIgnoreCase(state)) {
+            algMng.enableTracing(a);
+        } else if ("disabled".equalsIgnoreCase(state)) {
+            algMng.disableTracing(a);
+        } else {
+            throw new BadRequestException("Invalid state '" + state + "'. Please use enabled or disabled");
+        }
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+
+    @Override
+    public void getAlgorithmTrace(Context ctx, GetAlgorithmTraceRequest request, Observer<AlgorithmTrace> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+        AlgorithmManager algMng = verifyAlgorithmManager(processor);
+
+        org.yamcs.algorithms.AlgorithmTrace trace = algMng.getTrace(a);
+        if (trace != null) {
+            observer.complete(trace.toProto());
+        } else {
+            observer.complete(AlgorithmTrace.newBuilder().build());
+        }
+
+    }
+
     private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
             boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
@@ -539,5 +588,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } else {
             return processor;
         }
+    }
+
+    private AlgorithmManager verifyAlgorithmManager(Processor processor) {
+        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
+        if (l.size() == 0) {
+            throw new BadRequestException("No AlgorithmManager available for this processor");
+        }
+        return l.get(0);
     }
 }

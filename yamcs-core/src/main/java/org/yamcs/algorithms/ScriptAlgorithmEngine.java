@@ -10,7 +10,8 @@ import org.yamcs.YConfiguration;
 public class ScriptAlgorithmEngine implements AlgorithmEngine {
 
     @Override
-    public AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language,
+    public AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager,
+            AlgorithmExecutionContext context, String language,
             YConfiguration config) {
         List<String> libs = null;
         Map<String, List<String>> libraries = (Map<String, List<String>>) config.get("libraries");
@@ -18,10 +19,9 @@ public class ScriptAlgorithmEngine implements AlgorithmEngine {
             libs = libraries.get(language);
         }
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        scriptEngineManager.put("Yamcs", new AlgorithmFunctions(algorithmManager.getProcessor()));
+        scriptEngineManager.put("Yamcs", new AlgorithmFunctions(algorithmManager.getProcessor(), context));
 
         return new ScriptAlgorithmExecutorFactory(scriptEngineManager, language, libs);
 
     }
-
 }

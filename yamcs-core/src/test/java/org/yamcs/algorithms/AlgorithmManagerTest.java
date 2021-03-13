@@ -1,9 +1,6 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,9 +28,12 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.protobuf.AlgorithmTrace.Log;
+import org.yamcs.protobuf.AlgorithmTrace.Run;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -51,6 +51,7 @@ public class AlgorithmManagerTest {
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
     private Queue<Event> q;
+    AlgorithmManager algMgr;
 
     @Before
     public void beforeEachTest() throws InitException, ProcessorException {
@@ -70,7 +71,7 @@ public class AlgorithmManagerTest {
         config.put("libraries", jslib);
 
 
-        AlgorithmManager algMgr = new AlgorithmManager();
+        algMgr = new AlgorithmManager();
         proc = ProcessorFactory.create("refmdb", "AlgorithmManagerTest",
                  getPwc(tmGenerator, YConfiguration.emptyConfig()),
                  getPwc(algMgr, YConfiguration.wrap(config)));
@@ -90,10 +91,8 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testFloatAdd() throws InvalidIdentification {
-        Parameter floatPara = prm
-                .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_1_2").build());
-        Parameter floatAddition = prm
-                .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition").build());
+        Parameter floatPara = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
+        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(floatPara, floatAddition),
@@ -102,16 +101,10 @@ public class AlgorithmManagerTest {
         proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(2, params.size());
-        for (ParameterValue pvwi : params) {
-            if (pvwi.getParameter().equals(floatPara)) {
-                assertEquals(0.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
-            } else if (pvwi.getParameter().equals(floatAddition)) {
-                assertEquals(2.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
-            } else {
-                fail("Unexpected parameter " + pvwi.getParameter());
-            }
-        }
+        verifyEqual(params.get(0), floatPara, 0.1672918f);
+        verifyEqual(params.get(1), floatAddition, 2.1672918f);
     }
+
 
     @Ignore
     @Test
@@ -119,8 +112,8 @@ public class AlgorithmManagerTest {
     // OpenJDK 7 is very fast.
     public void testJavascriptPerformanceFloatAdd() throws InvalidIdentification {
         List<Parameter> paraList = new ArrayList<>();
-        paraList.add(prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoYprFloat").build()));
-        paraList.add(prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_1_2").build()));
+        paraList.add(prm.getParameter("/REFMDB/SUBSYS1/AlgoYprFloat"));
+        paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(paraList, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
@@ -137,7 +130,7 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testSlidingWindow() throws InvalidIdentification, InterruptedException {
-        Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoWindowResult").build());
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoWindowResult");
         final List<ParameterValue> params = new ArrayList<>();
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
@@ -216,7 +209,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
         final ArrayList<ParameterValue> params = new ArrayList<>();
-        Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build());
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivision");
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
@@ -228,8 +221,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testAlgorithmChaining() throws InvalidIdentification {
         final ArrayList<ParameterValue> params = new ArrayList<>();
-        Parameter p = prm
-                .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build());
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatMultiplication");
         int subscriptionId = prm.addRequest(p, (ParameterConsumer) (subscriptionId1, items) -> params.addAll(items));
 
         proc.start();
@@ -452,5 +444,52 @@ public class AlgorithmManagerTest {
         ParameterValue pv0 = params.get(0);
         assertEquals("/REFMDB/SUBSYS1/AlgoArray1", pv0.getParameter().getQualifiedName());
         assertEquals(3.0, pv0.getEngValue().getDoubleValue(), 1e-5);
+    }
+
+    @Test
+    public void testTrace() throws InvalidIdentification {
+        Parameter floatPara = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
+        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
+
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(Arrays.asList(floatPara, floatAddition),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        proc.start();
+        Algorithm floatAddAlgo = db.getAlgorithm("/REFMDB/SUBSYS1/float_add");
+        algMgr.enableTracing(floatAddAlgo);
+
+        tmGenerator.generate_PKT1_1();
+        assertEquals(2, params.size());
+        verifyEqual(params.get(0), floatPara, 0.1672918f);
+        verifyEqual(params.get(1), floatAddition, 2.1672918f);
+
+        AlgorithmTrace trace = algMgr.getTrace(floatAddAlgo);
+        assertEquals(1, trace.runs.size());
+        Run run = trace.runs.getFirst();
+        assertEquals(2, run.getInputsCount());
+        assertEquals(1, run.getOutputsCount());
+
+        Pvalue.ParameterValue in0 = run.getInputs(0);
+        Pvalue.ParameterValue in1 = run.getInputs(1);
+
+        Pvalue.ParameterValue out0 = run.getOutputs(0);
+
+        assertEquals(0.1672918f, in0.getEngValue().getFloatValue(), 1e-5);
+        assertEquals(2f, in1.getEngValue().getFloatValue(), 1e-5);
+        assertEquals(2.1672918f, out0.getEngValue().getFloatValue(), 1e-5);
+
+        assertEquals(1, trace.logs.size());
+        Log traceLog = trace.logs.getFirst();
+        assertEquals("adding 0.1672918051481247 and 2", traceLog.getMsg());
+
+        algMgr.disableTracing(floatAddAlgo);
+        assertNull(algMgr.getTrace(floatAddAlgo));
+    }
+
+    void verifyEqual(ParameterValue pv, Parameter p, float v) {
+        assertEquals(p, pv.getParameter());
+        assertEquals(v, pv.getEngValue().getFloatValue(), 1e-5);
+
     }
 }

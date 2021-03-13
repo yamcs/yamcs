@@ -6,8 +6,8 @@ public class JavaAlgorithmEngine implements AlgorithmEngine {
     JavaAlgorithmExecutorFactory factory = new JavaAlgorithmExecutorFactory();
     
     @Override
-    public AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language,
-            YConfiguration config) {
+    public AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager,
+            AlgorithmExecutionContext context, String language, YConfiguration config) {
         return factory;
     }
 }

@@ -84,8 +84,11 @@ public class AlgorithmManager extends AbstractProcessorService
 
     final static Map<String, AlgorithmEngine> algorithmEngines = new HashMap<>();
 
+    // language -> algorithm factory
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
+
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
+
 
     static {
         registerScriptEngines();
@@ -227,7 +230,7 @@ public class AlgorithmManager extends AbstractProcessorService
                     eventProducer.sendCritical("no algorithm engine found for language '" + algLang + "'");
                     return;
                 }
-                factory = eng.makeExecutorFactory(this, algLang, config);
+                factory = eng.makeExecutorFactory(this, execCtx, algLang, config);
                 factories.put(algLang, factory);
                 for (String s : factory.getLanguages()) {
                     factories.put(s, factory);
@@ -492,6 +495,20 @@ public class AlgorithmManager extends AbstractProcessorService
         executionOrder.add(executor);
     }
 
+    public void enableTracing(Algorithm algo) {
+        log.debug("Enabling tracing for algorithm {}", algo);
+        globalCtx.enableTracing(algo);
+    }
+
+    public void disableTracing(Algorithm algo) {
+        log.debug("Disabling tracing for algorithm {}", algo);
+        globalCtx.disableTracing(algo);
+    }
+
+    public AlgorithmTrace getTrace(Algorithm algo) {
+        return globalCtx.getTrace(algo);
+    }
+
     /**
      * Returns all the parameters that this algorithm want to receive updates on. This includes not only the input
      * parameters, but also any parameters that are part of the trigger set.
@@ -507,4 +524,5 @@ public class AlgorithmManager extends AbstractProcessorService
             return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
         }
     }
+
 }

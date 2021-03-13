@@ -24,6 +24,6 @@ public interface AlgorithmEngine {
      *            - the configuration that was used for the AlgorithmManager in the processor.yaml
      * @return
      */
-    AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language,
-            YConfiguration config);
+    AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, AlgorithmExecutionContext context,
+            String language, YConfiguration config);
 }

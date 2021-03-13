@@ -58,7 +58,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     }
     
     @Override
-    public void algorithmRun(Object returnValue, List<ParameterValue> outputValues) {
+    public void algorithmRun(List<ParameterValue> inputValues, Object returnValue, List<ParameterValue> outputValues) {
         if(log.isTraceEnabled()) {
             CommandId cmdId = pc.getCommandId();
             log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}", 
@@ -84,4 +84,6 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.updateParameters(Arrays.asList(pv), algCtx);
     }
+
+
 }
