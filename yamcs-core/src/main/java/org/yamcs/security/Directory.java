@@ -248,7 +248,11 @@ public class Directory {
      */
     public boolean validateUserPassword(String username, char[] password) {
         User user = users.get(username);
-        return hasher.validatePassword(password, user.getHash());
+        if (user.getHash() != null) {
+            return hasher.validatePassword(password, user.getHash());
+        } else {
+            return false;
+        }
     }
 
     /**
