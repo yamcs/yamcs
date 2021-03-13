@@ -47,13 +47,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     @Test(expected = UnauthorizedException.class)
     public void testAuthenticationWebServices() throws ClientException {
-        yamcsClient.connect("baduser", "wrongpassword".toCharArray());
+        yamcsClient.login("baduser", "wrongpassword".toCharArray());
     }
 
     @Test
     public void testPermissionArchive() throws Exception {
         // testuser is allowed to replay integer parameters but no string parameters
-        yamcsClient.connect("testuser", "password".toCharArray());
+        yamcsClient.login("testuser", "password".toCharArray());
 
         // Check that integer parameter replay is ok
         generatePkt13AndPps("2015-03-02T10:00:00Z", 3600);
@@ -84,7 +84,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     @Test
     public void testPermissionGetParameter() throws Exception {
-        yamcsClient.connect("testuser", "password".toCharArray());
+        yamcsClient.login("testuser", "password".toCharArray());
 
         // Allowed to get Integer parameter from cache
         processorClient.getValues(Arrays.asList(
@@ -109,7 +109,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     @Test
     public void testPermissionSetParameter() throws Exception {
-        yamcsClient.connect("operator", "password".toCharArray());
+        yamcsClient.login("operator", "password".toCharArray());
         try {
             processorClient.setValue("/REFMDB/SUBSYS1/LocalPara1", ValueHelper.newValue(5)).get();
             fail("should have thrown an exception");
@@ -125,7 +125,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // testUser does not have the permission to update the command history
         // operator has the permission
 
-        yamcsClient.connect("testuser", "password".toCharArray());
+        yamcsClient.login("testuser", "password".toCharArray());
         try {
             processorClient.updateCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
                     "testKey1",
@@ -137,7 +137,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             assertEquals("ForbiddenException", excData.getType());
         }
 
-        yamcsClient.connect("operator", "password".toCharArray());
+        yamcsClient.login("operator", "password".toCharArray());
         processorClient.updateCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", "0-0",
                 "testKey1",
                 Value.newBuilder().setType(Type.STRING).setStringValue("testValue1").build())
