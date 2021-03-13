@@ -3,8 +3,12 @@ services:
     args: 
       inStream: cfdp_in
       outStream: cfdp_out
-      sourceId: 12
-      destinationId: 15
+      localEntities:
+        - name: local12
+          id: 12
+      remoteEntities:
+        - name: remote15
+          id: 15
       sleepBetweenPdus: 10
       eofAckTimeout: 500
       eofAckLimit: 1
