@@ -40,7 +40,6 @@ public class RdbStorageEngine implements StorageEngine {
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
- 
 
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
@@ -86,7 +85,6 @@ public class RdbStorageEngine implements StorageEngine {
     public void dropTable(YarchDatabaseInstance ydb, TableDefinition tbl) throws YarchException {
         Tablespace tablespace = getTablespace(ydb, tbl);
 
-
         log.info("Dropping table {}.{}", ydb.getName(), tbl.getName());
         try {
             tablespace.dropTable(tbl);
@@ -101,7 +99,6 @@ public class RdbStorageEngine implements StorageEngine {
         Tablespace tablespace = getTablespace(ydb, tblDef);
         return tablespace.newTableWriter(ydb, tblDef, insertMode);
     }
-
 
     @Override
     public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl,
@@ -126,6 +123,7 @@ public class RdbStorageEngine implements StorageEngine {
         return instance;
     }
 
+    @Override
     public RdbPartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         Tablespace tblsp = getTablespace(ydb, tblDef);
         return tblsp.getTable(tblDef).getPartitionManager();
@@ -274,6 +272,10 @@ public class RdbStorageEngine implements StorageEngine {
         tablespace.close();
     }
 
+    public void closeTagDb(String instanceName) {
+        tagDbs.remove(instanceName);
+    }
+
     public synchronized void shutdown() {
         for (Tablespace t : tablespaces.values()) {
             t.close();
@@ -292,6 +294,7 @@ public class RdbStorageEngine implements StorageEngine {
         }
     }
 
+    @Override
     public void migrateTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
         Tablespace tablespace = getTablespace(ydb);
         try {
