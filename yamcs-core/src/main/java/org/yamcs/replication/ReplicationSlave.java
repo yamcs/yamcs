@@ -3,7 +3,6 @@ package org.yamcs.replication;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -84,15 +83,7 @@ public class ReplicationSlave extends AbstractYamcsService {
             }
 
         } else {
-            List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
-            if (servers.isEmpty()) {
-                throw new InitException(
-                        "ReplicationSlave is defined with the role Server; that requires the ReplicationServer global service (yamcs.yaml) to be defined");
-            } else if (servers.size() > 1) {
-                log.warn("There are {} ReplicationServer services defined. Registering to the first one.",
-                        servers.size());
-            }
-            ReplicationServer server = servers.get(0);
+            ReplicationServer server = getReplicationServer();
             server.registerSlave(this);
         }
         masterInstance = config.getString("masterInstance", yamcsInstance);// by default we ask the same instance from
@@ -150,6 +141,18 @@ public class ReplicationSlave extends AbstractYamcsService {
         if (tcpClient != null) {
             tcpClient.stop();
         }
+        if (tcpRole == TcpRole.SERVER) {
+            try {
+                getReplicationServer().unregisterSlave(this);
+            } catch (InitException e) {
+                // shouldn't happen since we are already started
+                throw new RuntimeException(e);
+            }
+        }
+        if (slaveChannelHandler != null) {
+            slaveChannelHandler.shutdown();
+            slaveChannelHandler = null;
+        }
 
         try {
             lastTxFile.close();
@@ -176,6 +179,18 @@ public class ReplicationSlave extends AbstractYamcsService {
         } catch (IOException e) {
             log.warn("Failed to update the last tx file " + txtfilePath, e);
         }
+    }
+
+    private ReplicationServer getReplicationServer() throws InitException {
+        List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
+        if (servers.isEmpty()) {
+            throw new InitException(
+                    "ReplicationSlave is defined with the role Server; that requires the ReplicationServer global service (yamcs.yaml) to be defined");
+        } else if (servers.size() > 1) {
+            log.warn("There are {} ReplicationServer services defined. Registering to the first one.",
+                    servers.size());
+        }
+        return servers.get(0);
     }
 
     public List<String> getStreamNames() {

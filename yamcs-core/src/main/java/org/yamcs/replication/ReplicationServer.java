@@ -120,6 +120,10 @@ public class ReplicationServer extends AbstractYamcsService {
         slaves.put(replicationSlave.getYamcsInstance(), replicationSlave);
     }
 
+    public void unregisterSlave(ReplicationSlave replicationSlave) {
+        slaves.remove(replicationSlave.getYamcsInstance());
+    }
+
     public List<Channel> getActiveChannels(ReplicationMaster replicationMaster) {
         return activeChannels.stream().filter(ch -> {
             for (Entry<String, ChannelHandler> entry : ch.pipeline()) {
