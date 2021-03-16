@@ -1,0 +1,3 @@
+mdb:
+  - type: "sheet"
+    spec: "mdb/errmdb.xls"    

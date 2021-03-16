@@ -29,6 +29,7 @@ import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -42,6 +43,7 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.common.collect.Lists;
+import com.google.protobuf.util.Timestamps;
 
 /**
  * Manages the provision of requested parameters that require the execution of one or more XTCE algorithms.
@@ -71,10 +73,13 @@ public class AlgorithmManager extends AbstractProcessorService
     // Index of all available out params
     NamedDescriptionIndex<Parameter> outParamIndex = new NamedDescriptionIndex<>();
 
-    CopyOnWriteArrayList<AlgorithmExecutor> executionOrder = new CopyOnWriteArrayList<>();
+    CopyOnWriteArrayList<ActiveAlgorithm> executionOrder = new CopyOnWriteArrayList<>();
     HashSet<Parameter> requiredInParams = new HashSet<>(); // required by this class
     ArrayList<Parameter> requestedOutParams = new ArrayList<>(); // requested by clients
     ParameterRequestManager parameterRequestManager;
+
+    // this stores the algorithms which give an error at activation
+    Map<Algorithm, AlgorithmStatus> algorithmsInError = new HashMap<>();
 
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer;
@@ -88,7 +93,6 @@ public class AlgorithmManager extends AbstractProcessorService
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
 
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
-
 
     static {
         registerScriptEngines();
@@ -116,13 +120,13 @@ public class AlgorithmManager extends AbstractProcessorService
     @Override
     public void init(Processor processor, YConfiguration config, Object spec) {
         super.init(processor, config, spec);
-        
+
         this.eventProducer = processor.getProcessorData().getEventProducer();
         this.parameterRequestManager = processor.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
         xtcedb = processor.getXtceDb();
         timer = processor.getTimer();
-        
+
         globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData());
         subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 
@@ -132,7 +136,6 @@ public class AlgorithmManager extends AbstractProcessorService
             }
         }
     }
-    
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
         for (OutputParameter oParam : algo.getOutputSet()) {
@@ -151,13 +154,15 @@ public class AlgorithmManager extends AbstractProcessorService
             if (!timedTriggers.isEmpty()) {
                 // acts as a fixed-size pool
                 activateAlgorithm(algo, ctx, null);
-                final AlgorithmExecutor engine = ctx.getExecutor(algo);
-                for (OnPeriodicRateTrigger trigger : timedTriggers) {
-                    timer.scheduleAtFixedRate(() -> {
-                        long t = processor.getCurrentTime();
-                        List<ParameterValue> params = engine.runAlgorithm(t, t);
-                        parameterRequestManager.update(params);
-                    }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
+                final ActiveAlgorithm activeAlgo = ctx.getActiveAlgorithm(algo);
+                if (activeAlgo != null) {
+                    for (OnPeriodicRateTrigger trigger : timedTriggers) {
+                        timer.scheduleAtFixedRate(() -> {
+                            long t = processor.getCurrentTime();
+                            List<ParameterValue> params = activeAlgo.runAlgorithm(t, t);
+                            parameterRequestManager.update(params);
+                        }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
+                    }
                 }
             }
         }
@@ -206,14 +211,17 @@ public class AlgorithmManager extends AbstractProcessorService
      */
     public void activateAlgorithm(Algorithm algorithm, AlgorithmExecutionContext execCtx,
             AlgorithmExecListener listener) {
-        AlgorithmExecutor executor = execCtx.getExecutor(algorithm);
-        if (executor != null) {
+        ActiveAlgorithm activeAlgo = execCtx.getActiveAlgorithm(algorithm);
+        if (activeAlgo != null) {
             log.trace("Already activated algorithm {} in context {}", algorithm.getQualifiedName(), execCtx.getName());
             if (listener != null) {
-                executor.addExecListener(listener);
+                activeAlgo.addExecListener(listener);
             }
             return;
         }
+
+        AlgorithmExecutor executor;
+
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
@@ -240,8 +248,12 @@ public class AlgorithmManager extends AbstractProcessorService
                 executor = factory.makeExecutor(calg, execCtx);
             } catch (AlgorithmException e) {
                 log.warn("Failed to create algorithm executor", e);
-                eventProducer
-                        .sendCritical("Failed to create executor for algorithm " + calg.getQualifiedName() + ": " + e);
+                eventProducer.sendCritical("Failed to create executor for algorithm "
+                        + calg.getQualifiedName() + ": " + e);
+                AlgorithmStatus.Builder status = AlgorithmStatus.newBuilder()
+                        .setErrorMessage(e.getMessage())
+                        .setErrorTime(Timestamps.fromMillis(System.currentTimeMillis()));
+                algorithmsInError.put(algorithm, status.build());
                 return;
             }
         } else if (algorithm instanceof MathAlgorithm) {
@@ -250,16 +262,17 @@ public class AlgorithmManager extends AbstractProcessorService
             throw new UnsupportedOperationException(
                     "Algorithms of type " + algorithm.getClass() + " not yet implemented");
         }
-        if (listener != null) {
-            executor.addExecListener(listener);
-        }
 
-        execCtx.addAlgorithm(algorithm, executor);
+        activeAlgo = new ActiveAlgorithm(algorithm, execCtx, executor);
+        if (listener != null) {
+            activeAlgo.addExecListener(listener);
+        }
+        execCtx.addAlgorithm(activeAlgo);
 
         // last value cache will contain the latest known values for all parameters
         // including the initialValue
         LastValueCache lvc = processor.getLastValueCache();
-        if(lvc != null) {        
+        if (lvc != null) {
             executor.updateParameters(new ArrayList<>(lvc.getValues()));
         }
 
@@ -302,7 +315,7 @@ public class AlgorithmManager extends AbstractProcessorService
             if (!newItems.isEmpty()) {
                 parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
             }
-            executionOrder.add(executor); // Add at the back (dependent algorithms will come in front)
+            executionOrder.add(activeAlgo); // Add at the back (dependent algorithms will come in front)
         } catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}",
                     executor.getAlgorithm().getName(), e);
@@ -310,9 +323,9 @@ public class AlgorithmManager extends AbstractProcessorService
     }
 
     public void deactivateAlgorithm(Algorithm algorithm, AlgorithmExecutionContext execCtx) {
-        AlgorithmExecutor engine = execCtx.remove(algorithm);
-        if (engine != null) {
-            executionOrder.remove(engine);
+        ActiveAlgorithm activeAlgo = execCtx.remove(algorithm);
+        if (activeAlgo != null) {
+            executionOrder.remove(activeAlgo);
         }
     }
 
@@ -326,12 +339,12 @@ public class AlgorithmManager extends AbstractProcessorService
     @Override
     public void stopProviding(Parameter paramDef) {
         if (requestedOutParams.remove(paramDef)) {
-            // Remove algorithm engine (and any that are no longer needed as a consequence)
+            // Remove active algorithm (and any that are no longer needed as a consequence)
             // We need to clean-up three more internal structures: requiredInParams, executionOrder and
             // engineByAlgorithm
             HashSet<Parameter> stillRequired = new HashSet<>(); // parameters still required by any other algorithm
-            for (Iterator<AlgorithmExecutor> it = Lists.reverse(executionOrder).iterator(); it.hasNext();) {
-                AlgorithmExecutor engine = it.next();
+            for (Iterator<ActiveAlgorithm> it = Lists.reverse(executionOrder).iterator(); it.hasNext();) {
+                ActiveAlgorithm engine = it.next();
                 Algorithm algo = engine.getAlgorithm();
                 boolean keep = false;
 
@@ -420,11 +433,11 @@ public class AlgorithmManager extends AbstractProcessorService
         long genTime = items.get(0).getGenerationTime();
 
         ArrayList<ParameterValue> allItems = new ArrayList<>(items);
-        for (AlgorithmExecutor executor : executionOrder) {
-            if (ctx == globalCtx || executor.getExecutionContext() == ctx) {
-                boolean shouldRun = executor.updateParameters(allItems);
+        for (ActiveAlgorithm activeAlgo : executionOrder) {
+            if (ctx == globalCtx || activeAlgo.getExecutionContext() == ctx) {
+                boolean shouldRun = activeAlgo.updateParameters(allItems);
                 if (shouldRun) {
-                    List<ParameterValue> r = executor.runAlgorithm(acqTime, genTime);
+                    List<ParameterValue> r = activeAlgo.runAlgorithm(acqTime, genTime);
                     if (r != null) {
                         allItems.addAll(r);
                         newItems.addAll(r);
@@ -474,7 +487,7 @@ public class AlgorithmManager extends AbstractProcessorService
      * @param calg
      * @param text
      */
-    public void setAlgorithmText(CustomAlgorithm calg, String text) {
+    public void overrideAlgorithm(CustomAlgorithm calg, String text) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
         if (algOverr == null) {
             deactivateAlgorithm(calg, globalCtx);
@@ -489,10 +502,25 @@ public class AlgorithmManager extends AbstractProcessorService
         }
         algOverr = calg.copy();
         algOverr.setAlgorithmText(text);
-        AlgorithmExecutor executor = factory.makeExecutor(algOverr, globalCtx);
-        globalCtx.addAlgorithm(algOverr, executor);
+
+        try {
+            AlgorithmExecutor executor = factory.makeExecutor(algOverr, globalCtx);
+            ActiveAlgorithm activeAlgo = new ActiveAlgorithm(algOverr, globalCtx, executor);
+            globalCtx.addAlgorithm(activeAlgo);
+            executionOrder.add(activeAlgo);
+
+        } catch (AlgorithmException e) {
+            log.warn("Failed to create algorithm executor", e);
+            eventProducer.sendCritical("Failed to create executor for algorithm "
+                    + algOverr.getQualifiedName() + ": " + e);
+            AlgorithmStatus.Builder status = AlgorithmStatus.newBuilder()
+                    .setErrorMessage(e.getMessage())
+                    .setErrorTime(Timestamps.fromMillis(System.currentTimeMillis()));
+            algorithmsInError.put(algOverr, status.build());
+            return;
+        }
+
         algoOverrides.put(calg, algOverr);
-        executionOrder.add(executor);
     }
 
     public void enableTracing(Algorithm algo) {
@@ -507,6 +535,11 @@ public class AlgorithmManager extends AbstractProcessorService
 
     public AlgorithmTrace getTrace(Algorithm algo) {
         return globalCtx.getTrace(algo);
+    }
+
+    public AlgorithmStatus getAlgorithmStatus(Algorithm algo) {
+        AlgorithmStatus status = algorithmsInError.get(algo);
+        return status == null ? globalCtx.getAlgorithmStatus(algo) : status;
     }
 
     /**

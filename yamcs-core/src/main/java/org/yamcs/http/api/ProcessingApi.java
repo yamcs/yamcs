@@ -42,6 +42,7 @@ import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.AbstractProcessingApi;
+import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.AlgorithmTrace;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
@@ -50,6 +51,7 @@ import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
 import org.yamcs.protobuf.EditAlgorithmTraceRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
+import org.yamcs.protobuf.GetAlgorithmStatusRequest;
 import org.yamcs.protobuf.GetAlgorithmTraceRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.GetProcessorRequest;
@@ -417,6 +419,16 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
+    public void getAlgorithmStatus(Context ctx, GetAlgorithmStatusRequest request, Observer<AlgorithmStatus> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm alg = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+        AlgorithmManager algMng = verifyAlgorithmManager(processor);
+
+        observer.complete(algMng.getAlgorithmStatus(alg));
+    }
+
+    @Override
     public void editAlgorithmTrace(Context ctx, EditAlgorithmTraceRequest request, Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
@@ -457,7 +469,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } else {
             observer.complete(AlgorithmTrace.newBuilder().build());
         }
-
     }
 
     private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
@@ -597,4 +608,5 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
         return l.get(0);
     }
+
 }

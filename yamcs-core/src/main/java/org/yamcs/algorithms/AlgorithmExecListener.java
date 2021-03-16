@@ -9,8 +9,11 @@ public interface AlgorithmExecListener {
      * Called when the algorithm has run successfully
      * 
      * @param inputValues
+     *            - may be null if the algorithm does not have any input values or does not keep track of them
      * @param returnValue
+     *            - may be null if the algorithm does not return anything
      * @param outputValues
+     *            - may be empty if there is no output value
      */
     public void algorithmRun(List<ParameterValue> inputValues, Object returnValue, List<ParameterValue> outputValues);
 

@@ -28,6 +28,7 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.AlgorithmTrace.Log;
 import org.yamcs.protobuf.AlgorithmTrace.Run;
 import org.yamcs.protobuf.Pvalue;
@@ -486,6 +487,7 @@ public class AlgorithmManagerTest {
         algMgr.disableTracing(floatAddAlgo);
         assertNull(algMgr.getTrace(floatAddAlgo));
     }
+
 
     void verifyEqual(ParameterValue pv, Parameter p, float v) {
         assertEquals(p, pv.getParameter());

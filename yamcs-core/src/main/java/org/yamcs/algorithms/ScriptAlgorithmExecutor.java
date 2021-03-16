@@ -119,7 +119,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
      * @see org.yamcs.algorithms.AlgorithmExecutor#runAlgorithm(long, long)
      */
     @Override
-    public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+    public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime) {
         if (log.isTraceEnabled()) {
             log.trace(getRunningTraceString());
         }
@@ -137,20 +137,13 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                     outputValues.add(pv);
                 }
             }
-            propagateToListeners(returnValue, outputValues);
-
-            return outputValues;
+            return new AlgorithmExecutionResult(inputValues, returnValue, outputValues);
         } catch (ScriptException e) {
             String msg = getError(e);
-            log.warn("{}", msg);
-            eventProducer.sendWarning(msg);
-            propagateErrorToListeners(msg);
+            throw new AlgorithmException(inputValues, msg);
         } catch (NoSuchMethodException e) {
-            eventProducer.sendWarning("Error while executing algorithm: " + e.getMessage());
-            log.warn("Error while executing algorithm: " + e.getMessage(), e);
-            propagateErrorToListeners(e.getMessage());
+            throw new AlgorithmException("Error while executing algorithm: " + e.getMessage());
         }
-        return Collections.emptyList();
     }
 
     String getError(ScriptException e) {

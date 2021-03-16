@@ -35,7 +35,9 @@ public class AlgorithmTrace implements AlgorithmExecListener {
                 runs.removeLast();
             }
             org.yamcs.protobuf.AlgorithmTrace.Run.Builder runb = org.yamcs.protobuf.AlgorithmTrace.Run.newBuilder();
-            inputValues.forEach(pv -> runb.addInputs(pv.toGpb()));
+            if (inputValues != null) {
+                inputValues.forEach(pv -> runb.addInputs(pv.toGpb()));
+            }
             outputValues.forEach(pv -> runb.addOutputs(pv.toGpb()));
             runb.setTime(Timestamps.fromMillis(System.currentTimeMillis()));
             if (returnValue != null) {

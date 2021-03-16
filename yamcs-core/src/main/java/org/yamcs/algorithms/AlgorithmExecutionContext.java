@@ -7,12 +7,15 @@ import java.util.Map;
 
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ProcessorData;
+
+import com.google.protobuf.util.Timestamps;
 
 /**
  * Algorithms for command verifiers must execute in parallel in different contexts - meaning that each algorithm will
@@ -34,7 +37,7 @@ public class AlgorithmExecutionContext {
     final AlgorithmExecutionContext parent;
 
     // all the algorithms that run in this context
-    final HashMap<Algorithm, AlgorithmExecutor> executorByAlgorithm = new HashMap<>();
+    final HashMap<Algorithm, ActiveAlgorithm> activeAlgorithms = new HashMap<>();
 
     // algorithm tracers fqn -> AlgorithmTrace
     final Map<String, AlgorithmTrace> tracers = new HashMap<>();
@@ -99,23 +102,23 @@ public class AlgorithmExecutionContext {
     }
 
     public boolean containsAlgorithm(Algorithm algo) {
-        return executorByAlgorithm.containsKey(algo);
+        return activeAlgorithms.containsKey(algo);
     }
 
     public AlgorithmExecutor getExecutor(Algorithm algo) {
-        return executorByAlgorithm.get(algo);
+        return activeAlgorithms.get(algo).executor;
     }
 
-    public void addAlgorithm(Algorithm algorithm, AlgorithmExecutor engine) {
-        executorByAlgorithm.put(algorithm, engine);
+    public void addAlgorithm(ActiveAlgorithm activeAlgorithm) {
+        activeAlgorithms.put(activeAlgorithm.getAlgorithm(), activeAlgorithm);
     }
 
     public Collection<Algorithm> getAlgorithms() {
-        return executorByAlgorithm.keySet();
+        return activeAlgorithms.keySet();
     }
 
-    public AlgorithmExecutor remove(Algorithm algo) {
-        return executorByAlgorithm.remove(algo);
+    public ActiveAlgorithm remove(Algorithm algo) {
+        return activeAlgorithms.remove(algo);
     }
 
     public ProcessorData getProcessorData() {
@@ -137,9 +140,9 @@ public class AlgorithmExecutionContext {
         }
         AlgorithmTrace trace = new AlgorithmTrace();
         tracers.put(fqn, trace);
-        AlgorithmExecutor executor = getExecutor(algo);
-        if (executor != null) {
-            executor.addExecListener(trace);
+        ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+        if (activeAlgo != null) {
+            activeAlgo.addExecListener(trace);
         }
     }
 
@@ -148,8 +151,8 @@ public class AlgorithmExecutionContext {
         AlgorithmTrace trace = tracers.remove(fqn);
 
         if (trace != null) {
-            AlgorithmExecutor executor = getExecutor(algo);
-            executor.removeExecListener(trace);
+            ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+            activeAlgo.removeExecListener(trace);
         }
     }
 
@@ -162,6 +165,29 @@ public class AlgorithmExecutionContext {
         if (trace != null) {
             trace.addLog(msg);
         }
+    }
+
+    public ActiveAlgorithm getActiveAlgorithm(Algorithm algo) {
+        return activeAlgorithms.get(algo);
+    }
+
+    public AlgorithmStatus getAlgorithmStatus(Algorithm algo) {
+        ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+        if (activeAlgo == null) {
+            return AlgorithmStatus.newBuilder().setActive(false).build();
+        }
+
+        AlgorithmStatus.Builder statusb = AlgorithmStatus.newBuilder()
+                .setActive(true)
+                .setRunCount(activeAlgo.runCount)
+                .setErrorCount(activeAlgo.errorCount);
+        if (activeAlgo.errorMessage != null) {
+            statusb.setErrorMessage(activeAlgo.errorMessage);
+            statusb.setErrorTime(Timestamps.fromMillis(activeAlgo.errorTime));
+        }
+
+        statusb.setExecTimeNs(activeAlgo.totalExecTimeNs);
+        return statusb.build();
     }
 
 }

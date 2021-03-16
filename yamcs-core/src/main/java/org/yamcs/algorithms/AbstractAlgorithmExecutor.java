@@ -2,7 +2,6 @@ package org.yamcs.algorithms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,6 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected AlgorithmExecutionContext execCtx;
     final protected Algorithm algorithmDef;
 
-    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
     static protected final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
 
     // Collect all the input values here - the indexes match one to one the algorithm def input list
@@ -129,27 +127,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return algorithmDef.getOutputSet().get(idx).getParameter();
     }
 
-    protected void propagateToListeners(Object returnValue, List<ParameterValue> outputValues) {
-        for (AlgorithmExecListener listener : execListeners) {
-            listener.algorithmRun(inputValues, returnValue, outputValues);
-        }
-    }
 
-    protected void propagateErrorToListeners(String errorMsg) {
-        for (AlgorithmExecListener listener : execListeners) {
-            listener.algorithmError(inputValues, errorMsg);
-        }
-    }
-
-    @Override
-    public void addExecListener(AlgorithmExecListener listener) {
-        execListeners.add(listener);
-    }
-
-    @Override
-    public void removeExecListener(AlgorithmExecListener listener) {
-        execListeners.remove(listener);
-    }
 
     @Override
     public AlgorithmExecutionContext getExecutionContext() {

@@ -698,7 +698,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             }
             try {
                 log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
-                algMng.setAlgorithmText(calg, ai.getText());
+                algMng.overrideAlgorithm(calg, ai.getText());
             } catch (Exception e) {
                 throw new BadRequestException(e.getMessage());
             }
