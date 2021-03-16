@@ -138,18 +138,11 @@ public class YamcsClient {
         return new Builder(ServerURL.parse("http://" + host + ":" + port));
     }
 
-    /**
-     * Establish a live communication channel without logging in to the server.
-     */
-    public synchronized void connectAnonymously() throws ClientException {
-        connect(null, false);
+    public synchronized void loginWithKerberos() throws ClientException {
+        loginWithKerberos(System.getProperty("user.name"));
     }
 
-    public synchronized void connectWithKerberos() throws ClientException {
-        connectWithKerberos(System.getProperty("user.name"));
-    }
-
-    public synchronized void connectWithKerberos(String principal) throws ClientException {
+    public synchronized void loginWithKerberos(String principal) throws ClientException {
         pollServer();
         SpnegoInfo spnegoInfo = new SpnegoInfo(serverURL, verifyTls, principal);
         String authorizationCode;
@@ -174,14 +167,9 @@ public class YamcsClient {
         }
         Credentials creds = baseClient.getCredentials();
         creds.setSpnegoInfo(spnegoInfo); // Can get reused when the access token expires
-        String accessToken = creds.getAccessToken();
-        connect(accessToken, true);
     }
 
-    /**
-     * Login to the server with user/password credential, and establish a live communication channel.
-     */
-    public synchronized void connect(String username, char[] password) throws ClientException {
+    public synchronized void login(String username, char[] password) throws ClientException {
         pollServer();
         try {
             baseClient.login(username, password);
@@ -192,8 +180,6 @@ public class YamcsClient {
             log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
             throw e;
         }
-        String accessToken = baseClient.getCredentials().getAccessToken();
-        connect(accessToken, true);
     }
 
     /**
@@ -257,9 +243,22 @@ public class YamcsClient {
     }
 
     /**
+     * Establish a live communication channel.
+     */
+    public synchronized void connectWebSocket() throws ClientException {
+        Credentials creds = baseClient.getCredentials();
+        if (creds == null) {
+            connect(null, false);
+        } else {
+            String accessToken = creds.getAccessToken();
+            connect(accessToken, true);
+        }
+    }
+
+    /**
      * Establish a live communication channel using a previously acquired access token.
      */
-    public synchronized void connect(String accessToken, boolean bypassUpCheck) throws ClientException {
+    private synchronized void connect(String accessToken, boolean bypassUpCheck) throws ClientException {
         if (!bypassUpCheck) {
             pollServer();
         }
@@ -604,6 +603,7 @@ public class YamcsClient {
         private boolean verifyTls = true;
         private Path caCertFile;
         private String userAgent;
+        private Credentials credentials;
 
         private int connectionAttempts = 1;
         private long retryDelay = 5000;
@@ -644,6 +644,11 @@ public class YamcsClient {
 
         public Builder withRetryDelay(long retryDelay) {
             this.retryDelay = retryDelay;
+            return this;
+        }
+
+        public Builder withCredentials(Credentials credentials) {
+            this.credentials = credentials;
             return this;
         }
 

@@ -90,7 +90,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
         checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NOK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK, 
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK,
                 "Transmission constraints check failed");
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.NOK,
@@ -323,7 +323,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testPermissionSendCommand() throws Exception {
-        yamcsClient.connect("testuser", "password".toCharArray());
+        yamcsClient.login("testuser", "password".toCharArray());
 
         // Command INT_ARG_TC is allowed
         Command command = processorClient.prepareCommand("/REFMDB/SUBSYS1/INT_ARG_TC")
@@ -423,11 +423,11 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
         assertEquals(message == null ? 2 : 3, cmdhist.getAttrCount());
-        
+
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
         assertEquals(name + "_Status", cha.getName());
         assertEquals(ack.name(), cha.getValue().getStringValue());
-        
+
         cha = cmdhist.getAttr(1);
         assertEquals(name + "_Time", cha.getName());
 

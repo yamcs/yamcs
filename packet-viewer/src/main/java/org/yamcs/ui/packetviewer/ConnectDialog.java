@@ -492,9 +492,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 .build();
 
         if (usernameTextField.getText().isEmpty()) {
-            client.connectAnonymously();
+            client.pollServer();
         } else {
-            client.connect(usernameTextField.getText(), passwordTextField.getPassword());
+            client.login(usernameTextField.getText(), passwordTextField.getPassword());
         }
 
         return client;

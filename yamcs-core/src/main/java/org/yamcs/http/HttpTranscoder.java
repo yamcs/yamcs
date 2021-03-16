@@ -137,17 +137,19 @@ public class HttpTranscoder {
             throw new HttpTranscodeException("No file upload was found in multipart/form data");
         }
 
-        try (InputStream bufOut = new ByteBufInputStream(fup.content())) {
-            ByteString data = ByteString.readFrom(bufOut);
-            bodyb.setData(data);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
         if (fup.getContentType() != null) {
             bodyb.setContentType(fup.getContentType());
         }
         if (fup.getFilename() != null) {
             bodyb.setFilename(fup.getFilename());
+        }
+        try (InputStream bufOut = new ByteBufInputStream(fup.content())) {
+            ByteString data = ByteString.readFrom(bufOut);
+            bodyb.setData(data);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            fup.delete();
         }
         return bodyb.build();
     }

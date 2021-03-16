@@ -51,7 +51,7 @@ public class LongWebsocketFrameTest {
         client.addConnectionListener(connectionListener);
 
         try {
-            client.connectAnonymously();
+            client.connectWebSocket();
             assertTrue(connectionListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
 
             SubscribeParametersRequest.Builder requestb = SubscribeParametersRequest.newBuilder()

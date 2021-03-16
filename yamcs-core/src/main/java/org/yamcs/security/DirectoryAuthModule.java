@@ -17,7 +17,7 @@ public class DirectoryAuthModule implements AuthModule {
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        //no config for this module
+        // no config for this module
     }
 
     @Override
@@ -26,7 +26,7 @@ public class DirectoryAuthModule implements AuthModule {
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getPrincipal();
             User user = directory.getUser(username);
-            if (user != null && !user.isExternallyManaged()) {
+            if (user != null && !user.isExternallyManaged() && user.getHash() != null) {
                 char[] password = ((UsernamePasswordToken) token).getPassword();
                 if (directory.validateUserPassword(username, password)) {
                     return new AuthenticationInfo(this, user.getName());

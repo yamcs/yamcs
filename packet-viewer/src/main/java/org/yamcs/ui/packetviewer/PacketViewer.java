@@ -818,11 +818,10 @@ public class PacketViewer extends JFrame implements ActionListener,
                 .build();
         client.addConnectionListener(this);
         try {
-            if (connectData.username == null) {
-                client.connectAnonymously();
-            } else {
-                client.connect(connectData.username, connectData.password);
+            if (connectData.username != null) {
+                client.login(connectData.username, connectData.password);
             }
+            client.connectWebSocket();
         } catch (ClientException e) {
             log.error("Error while connecting", e);
         }
@@ -1214,7 +1213,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     private PacketInputStream getPacketInputStream(InputStream inputStream) throws IOException {
-        PacketInputStream packetInputStream= YObjectLoader.loadObject(packetInputStreamClassName);
+        PacketInputStream packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName);
         packetInputStream.init(inputStream, packetInputStreamArgs);
         return packetInputStream;
     }

@@ -50,7 +50,7 @@ public abstract class AbstractIntegrationTest {
     static YamcsServer yamcs;
 
     static {
-//         LoggingUtils.enableLogging();
+        // LoggingUtils.enableLogging();
     }
 
     @BeforeClass
@@ -69,8 +69,9 @@ public abstract class AbstractIntegrationTest {
                 .build();
         yamcsClient.addConnectionListener(connectionListener);
         if (!yamcs.getSecurityStore().getGuestUser().isActive()) {
-            yamcsClient.connect(adminUsername, adminPassword);
+            yamcsClient.login(adminUsername, adminPassword);
         }
+        yamcsClient.connectWebSocket();
 
         packetGenerator = PacketProvider.instance[0].mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
@@ -345,13 +346,13 @@ public abstract class AbstractIntegrationTest {
             return name;
         }
     }
-    
 
     public static class TcDataLink extends AbstractTcDataLink {
         static short seqNum = 5000;
         static volatile TcDataLink[] instance = new TcDataLink[4];
-        
-        List<PreparedCommand> commands = new ArrayList<PreparedCommand>();
+
+        List<PreparedCommand> commands = new ArrayList<>();
+
         @Override
         public void init(String yamcsInstance, String name, YConfiguration config) {
             super.init(yamcsInstance, name, config);
