@@ -1,10 +1,14 @@
+Version 5.4.3 released 16-Mar-2021
+- Added some REST calls for getting more detailed information about parameter archive (can be used to investigate problems of missing data). 
+- Added possibility to trace algorithm executions.
+- minor tweaks and fixes
+
 Version 5.4.2 released 9-Mar-2021
 - Fixed the container name used as partition in the tm table. XtceTmRecorder will only use as partition (pname column in the tm table) the containers directly inherited from the root container defined on the stream on which the TM packet is received. Previously, if a container included another container inside, this last one would have been used as partition and also appear as the name of the packet in the home page of yamcs-web.
 - Added a maxValues parameter to the parameter range request
 - Added an API for instance reconfiguration  - the instances created from templates can now be updated following template changes, or with modified template variables.
 - Allow aggregate values (not only members) to be used in Java algorithms (not yet available in Python or Javascript algorithms - these have to make reference to aggregate members)
 - minor tweaks and fixes
-
 
 Version 5.4.1 released 17-Feb-2021
 - CFDP: allow to configure the inactivityTimeout
