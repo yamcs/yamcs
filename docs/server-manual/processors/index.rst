@@ -10,7 +10,8 @@ Each processor is composed of a set of services with varying functionality.
     :maxdepth: 1
     :caption: Table of Contents
 
-    processor-configuration
+    tm-processing
+    processor-configuration    
     alarm-reporter
     algorithm-manager
     local-parameter-manager
