@@ -17,9 +17,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -160,6 +162,8 @@ public class XtceDbFactory {
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
 
+            addTmPartitions(rootSs);
+
             // set the root sequence container as the first root sequence container found in the sub-systems.
             for (SpaceSystem ss : rootSs.getSubSystems()) {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
@@ -254,6 +258,48 @@ public class XtceDbFactory {
             }
         }
         return n;
+    }
+
+    static private void addTmPartitions(SpaceSystem spaceSystem) {
+        Set<SequenceContainer> scset = new HashSet<>();
+        collectAutoPartition(spaceSystem, scset);
+
+        for (SequenceContainer sc : scset) {
+            sc.useAsArchivePartition(true);
+        }
+    }
+
+    static void collectAutoPartition(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
+        for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
+            if (!sc.isAutoPartition()) {
+                continue;
+            }
+            System.out.println("sc: " + sc.getName() + " basecontainer: " + sc.getBaseContainer());
+            if (sc.getBaseContainer() == null) {
+                // do not set the flag on root containers because:
+                // 1. they will be used anyway as archive partitions if no child matches
+                // 2. if they appear as container entries, we do not want to use them
+                continue;
+            }
+
+            boolean part = true;
+            SequenceContainer sc1 = sc;
+            while (sc1 != null) {
+                if (sc1.useAsArchivePartition()) {
+                    part = false;
+                    break;
+                }
+                sc1 = sc1.getBaseContainer();
+            }
+            if (part) {
+                scset.add(sc);
+            }
+        }
+
+        for (SpaceSystem ss : spaceSystem.getSubSystems()) {
+            collectAutoPartition(ss, scset);
+        }
+
     }
 
     static SystemParameter createSystemParameter(SpaceSystem rootSs, NameReference nr) {

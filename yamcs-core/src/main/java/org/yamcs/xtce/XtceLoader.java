@@ -172,48 +172,21 @@ public class XtceLoader implements SpaceSystemLoader {
         SpaceSystem spaceSystem = xtceReader.readXmlDocument(xtceFileName);
 
         if (autoTmPartitions) {
-            addTmPartitions(spaceSystem);
+            markAutoPartition(spaceSystem);
         }
 
         return spaceSystem;
     }
 
-    private void addTmPartitions(SpaceSystem spaceSystem) {
-        Set<SequenceContainer> scset = new HashSet<>();
-        collectAutoSeqCont(spaceSystem, scset);
-
-        for (SequenceContainer sc : scset) {
-            sc.useAsArchivePartition(true);
-        }
-    }
-
-    void collectAutoSeqCont(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
+    private void markAutoPartition(SpaceSystem spaceSystem) {
         for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
-            if (sc.getBaseContainer() == null) {
-                // do not set the flag on root containers because:
-                // 1. they will be used anyway as archive partitions if no child matches
-                // 2. if they appear as container entries, we do not want to use them
-                continue;
-            }
-
-            boolean part = true;
-            SequenceContainer sc1 = sc;
-            while (sc1 != null) {
-                if (sc1.useAsArchivePartition()) {
-                    part = false;
-                    break;
-                }
-                sc1 = sc1.getBaseContainer();
-            }
-            if (part) {
-                scset.add(sc);
+            if (!sc.useAsArchivePartition()) {
+                sc.setAutoPartition(true);
             }
         }
-
         for (SpaceSystem ss : spaceSystem.getSubSystems()) {
-            collectAutoSeqCont(ss, scset);
+            markAutoPartition(ss);
         }
-
     }
 
     @Override

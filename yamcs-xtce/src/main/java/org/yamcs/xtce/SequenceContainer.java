@@ -34,6 +34,12 @@ public class SequenceContainer extends Container {
      */
     private boolean useAsArchivePartition = false;
 
+    /**
+     * If this is true, the {@link #useAsArchivePartition} flag will be set automatically after all the MDB has been
+     * loaded.
+     */
+    private boolean autoPartition = false;
+
     @Override
     public void addAncillaryData(AncillaryData data) {
         super.addAncillaryData(data);
@@ -167,6 +173,14 @@ public class SequenceContainer extends Container {
     @Override
     public String toString() {
         return "SequenceContainer(name=" + name + ")";
+    }
+
+    public boolean isAutoPartition() {
+        return autoPartition;
+    }
+
+    public void setAutoPartition(boolean autoPartition) {
+        this.autoPartition = autoPartition;
     }
 
 }
