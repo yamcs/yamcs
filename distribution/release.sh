@@ -22,9 +22,8 @@ fi
 
 if [[ $pomversion == *-SNAPSHOT ]]; then
     snapshot=1
-    d=`date +%Y%m%d%H%M%S`
     version=${pomversion/-SNAPSHOT/}
-    release=SNAPSHOT$d
+    release="0.$(date '+%Y%m%d%H%M%S')"  # Generate unique sortable releases (for upgrade reasons)
 else
     snapshot=0
     version=$pomversion
