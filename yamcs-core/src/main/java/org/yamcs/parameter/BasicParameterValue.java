@@ -198,13 +198,6 @@ public class BasicParameterValue {
         status.setRangeCondition(rangeCondition);
     }
 
-    public void setProcessingStatus(boolean p) {
-        if (status.getProcessingStatus() != p) {
-            changeNominalStatus();
-        }
-        status.setProcessingStatus(p);
-    }
-
     public void setAcquisitionStatus(AcquisitionStatus a) {
         if (status.getAcquisitionStatus() != a) {
             changeNominalStatus();
@@ -242,10 +235,6 @@ public class BasicParameterValue {
 
     public AcquisitionStatus getAcquisitionStatus() {
         return status.getAcquisitionStatus();
-    }
-
-    public boolean getProcessingStatus() {
-        return status.getProcessingStatus();
     }
 
     public MonitoringResult getDeltaMonitoringResult() {
@@ -318,10 +307,6 @@ public class BasicParameterValue {
 
         if (gpv.hasRangeCondition()) {
             pv.setRangeCondition(gpv.getRangeCondition());
-        }
-
-        if (gpv.hasProcessingStatus()) {
-            pv.setProcessingStatus(gpv.getProcessingStatus());
         }
 
         if (gpv.hasRawValue()) {

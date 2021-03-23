@@ -103,8 +103,7 @@ public class ParameterValue extends BasicParameterValue {
 
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())
-                .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime))
-                .setProcessingStatus(getProcessingStatus());
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime));
         if (id.isPresent()) {
             gpvb.setId(id.get());
         }

@@ -11,7 +11,6 @@ public class ParameterStatus {
 
 
     private AcquisitionStatus acquisitionStatus = AcquisitionStatus.ACQUIRED;
-    private boolean processingStatus = true;
     private MonitoringResult monitoringResult;
     private MonitoringResult deltaMonitoringResult;
     private RangeCondition rangeCondition;
@@ -31,12 +30,7 @@ public class ParameterStatus {
     public void setAcquisitionStatus(AcquisitionStatus acquisitionStatus) {
         this.acquisitionStatus = acquisitionStatus;
     }
-    public boolean getProcessingStatus() {
-        return processingStatus;
-    }
-    public void setProcessingStatus(boolean processingStatus) {
-        this.processingStatus = processingStatus;
-    }
+
     public MonitoringResult getMonitoringResult() {
         return monitoringResult;
     }
@@ -104,7 +98,6 @@ public class ParameterStatus {
         result = prime * result + ((distressRange == null) ? 0 : distressRange.hashCode());
         result = prime * result + (int) (expireMillis ^ (expireMillis >>> 32));
         result = prime * result + ((monitoringResult == null) ? 0 : monitoringResult.hashCode());
-        result = prime * result + (processingStatus ? 1231 : 1237);
         result = prime * result + ((rangeCondition == null) ? 0 : rangeCondition.hashCode());
         result = prime * result + ((severeRange == null) ? 0 : severeRange.hashCode());
         result = prime * result + ((warningRange == null) ? 0 : warningRange.hashCode());
@@ -139,8 +132,6 @@ public class ParameterStatus {
         if (expireMillis != other.expireMillis)
             return false;
         if (monitoringResult != other.monitoringResult)
-            return false;
-        if (processingStatus != other.processingStatus)
             return false;
         if (rangeCondition != other.rangeCondition)
             return false;

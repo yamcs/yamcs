@@ -101,10 +101,6 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
             pv.setRangeCondition(gpv.getRangeCondition());
         }
 
-        if (gpv.hasProcessingStatus()) {
-            pv.setProcessingStatus(gpv.getProcessingStatus());
-        }
-
         if (gpv.hasRawValue()) {
             pv.setRawValue(ValueUtility.fromGpb(gpv.getRawValue()));
         }
@@ -116,8 +112,7 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
 
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder()
                 .setAcquisitionStatus(pv.getAcquisitionStatus())
-                .setGenerationTime(pv.getGenerationTime())
-                .setProcessingStatus(pv.getProcessingStatus());
+                .setGenerationTime(pv.getGenerationTime());
 
         if (pv.getAcquisitionTime() != TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(pv.getAcquisitionTime());

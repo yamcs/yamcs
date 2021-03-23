@@ -44,7 +44,11 @@ message ParameterValue {
     optional google.protobuf.Timestamp acquisitionTime = 4;
     optional google.protobuf.Timestamp generationTime = 5;
     optional AcquisitionStatus acquisitionStatus = 6;
-    optional bool processingStatus = 7;
+    
+    //this field has been originally created for compatibility with Airbus CGS/CD-MCS system
+    //when it was set to false, then the acquisitionStatus was also set to INVALID;
+    //it has been therefore removed from yamcs
+    optional bool processingStatus = 7 [deprecated = true];
     optional MonitoringResult monitoringResult = 8;
     optional RangeCondition rangeCondition = 9;
 

@@ -56,7 +56,6 @@ export interface ParameterValue {
   generationTime: string;
 
   acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
-  processingStatus: boolean;
   monitoringResult: MonitoringResult;
   alarmRange: AlarmRange[];
   rangeCondition?: 'LOW' | 'HIGH';
