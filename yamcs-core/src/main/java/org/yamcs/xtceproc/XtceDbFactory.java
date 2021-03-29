@@ -274,7 +274,6 @@ public class XtceDbFactory {
             if (!sc.isAutoPartition()) {
                 continue;
             }
-            System.out.println("sc: " + sc.getName() + " basecontainer: " + sc.getBaseContainer());
             if (sc.getBaseContainer() == null) {
                 // do not set the flag on root containers because:
                 // 1. they will be used anyway as archive partitions if no child matches
