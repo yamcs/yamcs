@@ -251,10 +251,12 @@
     <tr>
       <th>Member</th>
       <th>Type</th>
+      <th>Description</th>
     </tr>
     <tr *ngFor="let member of parameter.type?.member">
       <td>{{ member.name }}</td>
-      <td>{{ member.type?.engType || '-' }}</td>
+      <td style="font-family: monospace">{{ member.type?.engType || '-' }}</td>
+      <td>{{ member.shortDescription || '-' }}</td>
     </tr>
   </table>
 </ng-container>
