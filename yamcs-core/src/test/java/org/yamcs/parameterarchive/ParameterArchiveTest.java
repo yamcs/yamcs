@@ -266,9 +266,8 @@ public class ParameterArchiveTest {
         List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
                 new int[] { pg1id }, true);
         assertEquals(2, params.size());
-        ParameterIdValueList pidvl = params.get(0);
+        System.out.println("params(0): " + params.get(0));
         checkEquals(params.get(0), 100, pv1_0);
-
     }
 
     List<ParameterValueArray> retrieveSingleParamSingleGroup(long start, long stop, int parameterId,
@@ -278,7 +277,7 @@ public class ParameterArchiveTest {
         SingleValueConsumer c = new SingleValueConsumer();
         ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEngValues, retrieveRawValues,
                 retriveParamStatus);
-        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId,
+        SingleParameterRetrieval spdr = new SingleParameterRetrieval(parchive, parameterId,
                 new int[] { parameterGroupId }, spvr);
         spdr.retrieve(c);
         return c.list;
@@ -438,7 +437,7 @@ public class ParameterArchiveTest {
             boolean retrieveStatus) throws RocksDBException, DecodingException, IOException {
         ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEng, retrieveRaw, retrieveStatus);
 
-        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId,
+        SingleParameterRetrieval spdr = new SingleParameterRetrieval(parchive, parameterId,
                 parameterGroupIds, spvr);
         SingleValueConsumer svc = new SingleValueConsumer();
         spdr.retrieve(svc);
@@ -458,6 +457,7 @@ public class ParameterArchiveTest {
         ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
+        System.out.println("aat the beginning p1id: " + p1id);
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
 
         int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id));
@@ -549,6 +549,7 @@ public class ParameterArchiveTest {
         // descending retrieving two para
         List<ParameterIdValueList> l4d = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
                 new int[] { p2id, p1id }, new int[] { pg1id, pg1id }, false);
+        System.out.println("expecting t3: " + t3);
         assertEquals(3, l4d.size());
         checkEquals(l4d.get(0), t3, pv1_4, pv2_2);
         checkEquals(l4d.get(1), t2, pv1_3, pv2_1);
@@ -620,15 +621,14 @@ public class ParameterArchiveTest {
         String[] parameterNames = new String[parameterIds.length];
         for (int i = 0; i < parameterIds.length; i++) {
             parameterNames[i] = "p" + parameterIds[i];
-            ;
         }
         BitSet retrieveRawValues = new BitSet();
         retrieveRawValues.set(0, parameterIds.length);
-        MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, parameterNames,
-                parameterIds, parameterGroupIds, retrieveRawValues, ascending);
+        MultipleParameterRequest mpvr = new MultipleParameterRequest(start, stop, parameterNames,
+                parameterIds, parameterGroupIds, ascending, true, retrieveRawValues, true);
         mpvr.setLimit(limit);
 
-        MultiParameterDataRetrieval mpdr = new MultiParameterDataRetrieval(parchive, mpvr);
+        MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
         MultiValueConsumer c = new MultiValueConsumer();
         mpdr.retrieve(c);
         return c.list;

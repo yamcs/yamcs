@@ -42,12 +42,13 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 
 /**
  * 
- * The parameter archive stores data in partitions -> intervals -> segments. A partition covers one year and each
- * partition has its own RocksDB database
- * 
+ * The parameter archive stores data in partitions(optional) -> intervals -> segments.
+ * <p>
+ * A partition covers one year/month/day and each partition has its own RocksDB database.
+ * <p>
  * An interval covers 2^23 millisec =~ 139 minutes
- * 
- * An segment covers at most maxSegmentSize values for one parameter
+ * <p>
+ * An segment covers at most maxSegmentSize samples for one parameter
  * 
  * 
  * 
@@ -81,14 +82,16 @@ public class ParameterArchive extends AbstractYamcsService {
     YConfiguration backFillerConfig;
     boolean realtimeFillerEnabled;
     boolean backFillerEnabled;
+    int maxSegmentSize;
 
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("backFiller", OptionType.ANY);
-        spec.addOption("realtimeFiller", OptionType.ANY);
+        spec.addOption("backFiller", OptionType.MAP).withSpec(BackFiller.getSpec());
+        spec.addOption("realtimeFiller", OptionType.MAP).withSpec(RealtimeArchiveFiller.getSpec());
         spec.addOption("partitioningSchema", OptionType.STRING).withDefault("YYYY")
                 .withChoices("YYYY/DOY", "YYYY/MM", "YYYY", "none");
+        spec.addOption("maxSegmentSize", OptionType.INTEGER).withDefault(5000);
 
         return spec;
     }
@@ -100,6 +103,7 @@ public class ParameterArchive extends AbstractYamcsService {
         timeService = YamcsServer.getTimeService(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
+        this.maxSegmentSize = config.getInt("maxSegmentSize");
 
         if (config.containsKey("backFiller")) {
             backFillerConfig = config.getConfig("backFiller");
@@ -202,7 +206,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
-        Partition p = createAndGetPartition(pgs.getSegmentStart());
+        Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             writeToBatch(writeBatch, p, pgs);
             tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
@@ -251,7 +255,6 @@ public class ParameterArchive extends AbstractYamcsService {
                     SegmentKey.TYPE_ENG_VALUE).encode();
             byte[] engValue = vsEncoder.encode(vs);
             writeBatch.put(engKey, engValue);
-
             if (STORE_RAW_VALUES && consolidatedRawValues != null) {
                 BaseSegment rvs = consolidatedRawValues.get(i);
                 if (rvs != null) {
@@ -349,7 +352,7 @@ public class ParameterArchive extends AbstractYamcsService {
         }
         if (realtimeFillerEnabled) {
             realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
-            realtimeFiller.startAsync();
+            realtimeFiller.start();
         }
         notifyStarted();
     }
@@ -363,8 +366,13 @@ public class ParameterArchive extends AbstractYamcsService {
         }
 
         if (realtimeFiller != null) {
-            realtimeFiller.stopAsync();
-            realtimeFiller.awaitTerminated();
+            try {
+                realtimeFiller.shutDown();
+            } catch (Exception e) {
+                log.error("Error stopping realtime filler", e);
+                notifyFailed(e);
+                return;
+            }
         }
         notifyStopped();
     }
@@ -428,12 +436,16 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     /**
-     * returns the intervalStart where this instant could fit.
+     * returns the interval (instant) where this instant could fit.
      * 
      * @param instant
      * @return
      */
     public static long getIntervalStart(long instant) {
+        return getInterval(instant);
+    }
+
+    public static long getInterval(long instant) {
         return instant & INTERVAL_MASK;
     }
 
@@ -484,4 +496,11 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    int getMaxSegmentSize() {
+        return maxSegmentSize;
+    }
+
+    public RealtimeArchiveFiller getRealtimeFiller() {
+        return realtimeFiller;
+    }
 }

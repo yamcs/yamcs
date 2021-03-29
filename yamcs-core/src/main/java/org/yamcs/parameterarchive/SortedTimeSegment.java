@@ -10,7 +10,7 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.VarIntUtil;
 
-import static org.yamcs.parameterarchive.ParameterArchive.INTERVAL_MASK;
+import static org.yamcs.parameterarchive.ParameterArchive.*;
 
 /**
  * TimeSegment stores timestamps relative to a segmentStart. The timestamps are stored in a sorted int array.
@@ -44,9 +44,9 @@ public class SortedTimeSegment extends BaseSegment {
      * @param instant
      */
     public int add(long instant) {
-        if ((instant & INTERVAL_MASK) != (segmentStart & INTERVAL_MASK)) {
+        if (getIntervalStart(instant) != getIntervalStart(segmentStart)) {
             throw new IllegalArgumentException("This timestamp does not fit into this interval;"
-                    + " intervalStart: " + TimeEncoding.toString(ParameterArchive.getIntervalStart(segmentStart))
+                    + " intervalStart: " + TimeEncoding.toString(getIntervalStart(segmentStart))
                     + ", instant: " + TimeEncoding.toString(instant));
         }
         if (instant < segmentStart) {
@@ -68,14 +68,21 @@ public class SortedTimeSegment extends BaseSegment {
 
     /**
      * performs a binary search in the time segment and returns the position of t or where t would fit in.
+     * <p>
+     * Note that this works even if the value would not fit in the same interval, which would cause a subsequent add
+     * operation to fail.
      * 
      * @see java.util.Arrays#binarySearch(int[], int)
      * @param instant
      * @return
      */
     public int search(long instant) {
-        if ((instant & INTERVAL_MASK) != (segmentStart & INTERVAL_MASK)) {
-            throw new IllegalArgumentException("This timestamp does not fit into this segment");
+        if (getInterval(segmentStart) != getInterval(instant)) {
+            if (instant < segmentStart) {
+                return -1;
+            } else {
+                return -tsarray.size() - 1;
+            }
         }
 
         return tsarray.search((int) (instant - segmentStart));
@@ -88,7 +95,6 @@ public class SortedTimeSegment extends BaseSegment {
     public long getSegmentStart() {
         return segmentStart;
     }
-
 
     /**
      * Encode the time array
@@ -174,7 +180,12 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     public long getSegmentEnd() {
-        return getTime(tsarray.size() - 1);
+        int size = tsarray.size();
+        if (size == 0) {
+            return segmentStart;
+        } else {
+            return getTime(size - 1);
+        }
     }
 
     public long[] getRange(int posStart, int posStop, boolean ascending) {

@@ -14,7 +14,7 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.parameterarchive.SingleParameterArchiveRetrieval;
+import org.yamcs.parameterarchive.SingleParameterRetrieval;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.MutableLong;
@@ -63,7 +63,7 @@ public class SingleParameterRetriever {
             }
         }
         
-        SingleParameterArchiveRetrieval spar = new SingleParameterArchiveRetrieval(parchive, pid.getQualifiedName(), spvr1);
+        SingleParameterRetrieval spar = new SingleParameterRetrieval(parchive, pid.getQualifiedName(), spvr1);
         MutableLong lastTime = new MutableLong(Long.MAX_VALUE);
         try {
             spar.retrieve(pva -> {

@@ -3,6 +3,7 @@ package org.yamcs.parameterarchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.rocksdb.RocksDBException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ArrayValue;
@@ -103,11 +105,11 @@ public class ArrayAndAggregatesTest {
         return pv;
     }
 
-    static class MyFiller extends ArchiveFillerTask {
+    static class MyFiller extends BackFillerTask {
         List<ParameterValue> pvlist = new ArrayList<>();
 
         public MyFiller(ParameterArchive parameterArchive) {
-            super(parameterArchive, ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
+            super(parameterArchive);
         }
 
         public MyFiller addParameter(ParameterValue pv) {
@@ -116,7 +118,7 @@ public class ArrayAndAggregatesTest {
         }
 
         @Override
-        public void flush() {
+        public void flush() throws RocksDBException, IOException {
             processParameters(pvlist);
             super.flush();
         }

@@ -13,12 +13,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
+import org.yamcs.Spec;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.archive.ReplayOptions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
@@ -58,8 +60,6 @@ public class BackFiller implements StreamSubscriber {
     // how often (in seconds) the fillup based on the stream monitoring is started
     long streamUpdateFillFrequency;
 
-    private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
-
     BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
         this.log = new Log(BackFiller.class, parchive.getYamcsInstance());
@@ -73,18 +73,34 @@ public class BackFiller implements StreamSubscriber {
 
     }
 
+    public static Spec getSpec() {
+        Spec spec = new Spec();
+
+        spec.addOption("enabled", OptionType.BOOLEAN);
+        spec.addOption("warmupTime", OptionType.INTEGER).withDefault(60);
+        spec.addOption("monitorStreams", OptionType.LIST).withElementType(OptionType.STRING);
+
+        Spec schedSpec = new Spec();
+        schedSpec.addOption("startInterval", OptionType.INTEGER);
+        schedSpec.addOption("numIntervals", OptionType.INTEGER);
+
+        spec.addOption("schedule", OptionType.MAP).withSpec(schedSpec);
+
+        return spec;
+
+    }
     void start() {
         if (schedules != null && !schedules.isEmpty()) {
             int c = 0;
             for (Schedule s : schedules) {
-                if (s.interval == -1) {
+                if (s.frequency == -1) {
                     c++;
                     continue;
                 }
 
                 executor.scheduleAtFixedRate(() -> {
                     runSchedule(s);
-                }, 0, s.interval, TimeUnit.SECONDS);
+                }, 0, s.frequency, TimeUnit.SECONDS);
             }
             if (c > 0) {
                 long now = timeService.getMissionTime();
@@ -104,7 +120,6 @@ public class BackFiller implements StreamSubscriber {
 
     private void parseConfig(YConfiguration config) {
         warmupTime = 1000L * config.getInt("warmupTime", 60);
-        maxSegmentSize = config.getInt("maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
 
         if (config.containsKey("schedule")) {
             List<YConfiguration> l = config.getConfigList("schedule");
@@ -153,8 +168,8 @@ public class BackFiller implements StreamSubscriber {
             start = ParameterArchive.getIntervalStart(start);
             stop = ParameterArchive.getIntervalEnd(stop) + 1;
 
-            ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
-            aft.setCollectionSegmentStart(start);
+            BackFillerTask aft = new BackFillerTask(parchive);
+            aft.setCollectionStart(start);
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
             log.info("Starting parameter archive fillup for interval {}", timePeriod);
 
@@ -181,14 +196,14 @@ public class BackFiller implements StreamSubscriber {
 
     private void runSchedule(Schedule s) {
         long start, stop;
-        long segmentDuration = ParameterArchive.getIntervalDuration();
-        if (s.interval == -1) {
-            start = t0 + (runCount - s.segmentStart) * segmentDuration;
-            stop = start + s.numSegments * segmentDuration - 1;
+        long intervalDuration = ParameterArchive.getIntervalDuration();
+        if (s.frequency == -1) {
+            start = t0 + (runCount - s.intervalStart) * intervalDuration;
+            stop = start + s.numIntervals * intervalDuration - 1;
         } else {
             long now = timeService.getMissionTime();
-            start = now - s.segmentStart * segmentDuration;
-            stop = start + s.numSegments * segmentDuration - 1;
+            start = now - s.intervalStart * intervalDuration;
+            stop = start + s.numIntervals * intervalDuration - 1;
         }
         runTask(start, stop);
     }
@@ -222,7 +237,7 @@ public class BackFiller implements StreamSubscriber {
     // runs all schedules with interval -1
     private void runSegmentSchedules() {
         for (Schedule s : schedules) {
-            if (s.interval == -1) {
+            if (s.frequency == -1) {
                 runSchedule(s);
             }
         }
@@ -230,15 +245,15 @@ public class BackFiller implements StreamSubscriber {
     }
 
     static class Schedule {
-        public Schedule(int segmentStart, int numSegments, long interval) {
-            this.segmentStart = segmentStart;
-            this.numSegments = numSegments;
-            this.interval = interval;
+        public Schedule(int intervalStart, int numIntervals, long frequency) {
+            this.intervalStart = intervalStart;
+            this.numIntervals = numIntervals;
+            this.frequency = frequency;
         }
 
-        int segmentStart;
-        int numSegments;
-        long interval;
+        int intervalStart;
+        int numIntervals;
+        long frequency;
     }
 
     public void stop() {
@@ -267,4 +282,5 @@ public class BackFiller implements StreamSubscriber {
     public void streamClosed(Stream stream) {
         log.debug("Stream {} closed", stream.getName());
     }
+
 }

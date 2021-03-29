@@ -10,7 +10,6 @@ public class ParameterRequest {
     
     public ParameterRequest(long start, long stop, boolean ascending,
             boolean retrieveEngineeringValues, boolean retrieveRawValues, boolean retrieveParameterStatus) {
-        super();
         this.start = start;
         this.stop = stop;
         this.ascending = ascending;
@@ -57,5 +56,12 @@ public class ParameterRequest {
 
     public void setRetrieveParameterStatus(boolean retrieveParameterStatus) {
         this.retrieveParameterStatus = retrieveParameterStatus;
+    }
+
+    public ParameterRequest copy() {
+        ParameterRequest req1 = new ParameterRequest(start, stop, ascending, retrieveEngineeringValues,
+                retrieveRawValues, retrieveParameterStatus);
+
+        return req1;
     }
 }

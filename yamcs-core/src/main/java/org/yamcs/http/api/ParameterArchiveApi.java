@@ -23,8 +23,8 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameterarchive.ConsumerAbortException;
-import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
-import org.yamcs.parameterarchive.MultipleParameterValueRequest;
+import org.yamcs.parameterarchive.MultiParameterRetrieval;
+import org.yamcs.parameterarchive.MultipleParameterRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
@@ -315,8 +315,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, requestedParamWithId.getQualifiedName());
-        MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(),
-                pgidArray.toArray(), retrieveRawValues, ascending);
+        MultipleParameterRequest mpvr = new MultipleParameterRequest(start, stop, pnames, pidArray.toArray(),
+                pgidArray.toArray(), ascending, true, retrieveRawValues, true);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
         // filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
@@ -376,7 +376,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     }
 
     private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
-            MultipleParameterValueRequest mpvr, ParameterReplayListener replayListener)
+            MultipleParameterRequest mpvr, ParameterReplayListener replayListener)
             throws RocksDBException, DecodingException, IOException {
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
@@ -397,7 +397,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 }
             }
         };
-        MultiParameterDataRetrieval mpdr = new MultiParameterDataRetrieval(parchive, mpvr);
+        MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
         mpdr.retrieve(consumer);
 
         // now add some data from cache

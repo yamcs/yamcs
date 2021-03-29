@@ -1,25 +1,31 @@
 package org.yamcs.parameterarchive;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
-public class MultipleParameterValueRequest {
+import org.yamcs.utils.TimeEncoding;
+
+public class MultipleParameterRequest {
+
     final String[] parameterNames;
     final int[] parameterIds;
     final int[] parameterGroupIds;
     final long start;
     final long stop;
     final boolean ascending;
+    final boolean retrieveEngValues;
+    final boolean retrieveParamStatus;
+
+    // this is a bitset matching one to one to the parameterIds and parameterGroupIds arrays
+    // the reason is not a simple boolean as it is requested by the user is that not all parameters have a raw value
+    // before calling this, the code will check if the parameter has a raw value and set the
+    // corresponding bit to false if it does not, otherwise the eng value will be returned as raw value
     final BitSet retrieveRawValues;
-    
-    //these shall also be considered final - just that I didn't want the constructor to get very long
-    boolean retrieveEngValues = true;
-    boolean retrieveParamStatus = true;
-    
     
     int limit = -1;
     
-    public MultipleParameterValueRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds, 
-            BitSet retrieveRawValues, boolean ascending) {
+    public MultipleParameterRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds, 
+            boolean ascending, boolean retrieveEngValues, BitSet retrieveRawValues, boolean retrieveParamStatus) {
         if(parameterGroupIds.length != parameterIds.length) {
             throw new IllegalArgumentException("Different number of parameter ids than parameter group ids");
         }
@@ -34,23 +40,18 @@ public class MultipleParameterValueRequest {
         this.stop = stop;
         this.ascending = ascending;
         this.retrieveRawValues = retrieveRawValues;
+        this.retrieveEngValues = retrieveEngValues;
+        this.retrieveParamStatus = retrieveParamStatus;
     }
     
     public boolean isRetrieveEngValues() {
         return retrieveEngValues;
     }
 
-    public void setRetrieveEngValues(boolean retrieveEngValues) {
-        this.retrieveEngValues = retrieveEngValues;
-    }
-
     public boolean isRetrieveParamStatus() {
         return retrieveParamStatus;
     }
 
-    public void setRetrieveParamStatus(boolean retrieveParamStatus) {
-        this.retrieveParamStatus = retrieveParamStatus;
-    }
 
 
     public String[] getParameterNames() {
@@ -90,4 +91,14 @@ public class MultipleParameterValueRequest {
     public void setLimit(int limit) {
         this.limit = limit;
     }
+
+    @Override
+    public String toString() {
+        return "MultipleParameterRequest [parameterNames=" + Arrays.toString(parameterNames) + ", parameterIds="
+                + Arrays.toString(parameterIds) + ", parameterGroupIds=" + Arrays.toString(parameterGroupIds)
+                + ", start=" + TimeEncoding.toString(start) + ", stop=" + TimeEncoding.toString(stop) + ", ascending="
+                + ascending + ", retrieveRawValues=" + retrieveRawValues + ", retrieveEngValues=" + retrieveEngValues
+                + ", retrieveParamStatus=" + retrieveParamStatus + ", limit=" + limit + "]";
+    }
+
 }

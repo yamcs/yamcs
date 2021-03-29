@@ -8,8 +8,8 @@ import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.DbIterator;
 
 /**
- * Iterates over the segments of one partition for a parameter_id,
- * ParameterGroup_id, between a start and stop
+ * Iterates over the segments of one partition for a
+ * (parameter_id, ParameterGroup_id), between a start and stop
  * 
  * @author nm
  *
@@ -17,7 +17,6 @@ import org.yamcs.yarch.rocksdb.DbIterator;
 public class PartitionIterator {
     private SegmentKey currentKey;
     private final int parameterId, parameterGroupId;
-    private final long start, stop;
     private final boolean ascending;
     SegmentEncoderDecoder segmentEncoder = new SegmentEncoderDecoder();
     private byte[] currentEngValueSegment;
@@ -33,8 +32,6 @@ public class PartitionIterator {
             boolean ascending, boolean retrieveEngValue, boolean retrieveRawValue, boolean retrieveParameterStatus) {
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
-        this.start = start;
-        this.stop = stop;
         this.ascending = ascending;
         this.retrieveEngValue = retrieveEngValue;
         this.retrieveRawValue = retrieveRawValue;
