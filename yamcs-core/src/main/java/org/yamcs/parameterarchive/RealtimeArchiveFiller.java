@@ -170,7 +170,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
      * The {@link ArchiveIterator} does that.
      * 
      * 
-     * @param pid
+     * @param parameterId
      * @param parameterGroupId
      * @param ascending
      * @return
