@@ -15,13 +15,13 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 
 /**
- * Stores a map between
- * (parameter_fqn, type) and parameter_id
+ * Stores a map (parameter_fqn, type) -> parameter_id
+ * <p>
  * type is a 32 bit assigned corresponding (engType, rawType)
- * 
- * engType and rawType are one of the types from protobuf Value.Type - we use the numbers assuming that no more than
+ * <p>
+ * engType and rawType are one of the types from protobuf Value.Type - the numbers are used assuming that no more than
  * 2^15 will ever exist.
- * 
+ * <p>
  * 
  * Backed by RocksDB
  * 
