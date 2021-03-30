@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
-
-import org.yamcs.tctm.ccsds.TcTransferFrame;
 import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.RateLimiter;

@@ -194,6 +194,16 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         boolean tcBypassFlag = isBypass(pc);
         log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getId(), tcBypassFlag,
                 bypassAll);
+        int framingLength = frameFactory.getFramingLength(vmp.vcId);
+        int pcLength = cmdPostProcessor.getBinaryLength(pc);
+        if (framingLength + pcLength > vmp.maxFrameLength) {
+            log.warn("Command {} does not fit into frame ({} + {} > {})", pc.getId(), framingLength, pcLength,
+                    vmp.maxFrameLength);
+            failedCommand(pc.getCommandId(),
+                    "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
+                    + vmp.maxFrameLength + "; frame overhead: " + framingLength);
+            return;
+        }
         if (!cop1Active) {
             sendSingleTc(pc, bypassAll || tcBypassFlag);
         } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
@@ -285,7 +295,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 continue;
             }
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
-            if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
+            if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
                 l.add(pc);
                 dataLength += pcLength;
                 if (!vmp.multiplePacketsPerFrame) {
