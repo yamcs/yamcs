@@ -41,7 +41,7 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     public UdpTcFrameLink(ColSimulator simulator, int port) {
         this.simulator = simulator;
         this.port = port;
-        datagram = new DatagramPacket(new byte[1024], 1024);
+        datagram = new DatagramPacket(new byte[2048], 2048);
         vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
