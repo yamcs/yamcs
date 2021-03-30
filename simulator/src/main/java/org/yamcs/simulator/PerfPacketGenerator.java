@@ -39,15 +39,12 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         Random r = new Random();
         log.info("Starting performance data sending thread with {} packets of {} size spaced at {} ms intervals",
                 numPackets, packetSize, interval);
-        ColumbusCcsdsPacket[] packets = new ColumbusCcsdsPacket[numPackets];
+        byte[][] pktData = new byte[numPackets][];
 
         for (int i = 0; i < numPackets; i++) {
-            ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(ColSimulator.PERF_TEST_APID, packetSize, PERF_TEST_PACKET_ID + i);
-            ByteBuffer bb = packet.getUserDataBuffer();
-            while (bb.remaining() > 4) {
-                bb.putInt(r.nextInt());
-            }
-            packets[i] = packet;
+            byte[] p = new byte[packetSize];
+            r.nextBytes(p);
+            pktData[i] = p;
         }
 
         int changeChunk = (int) (400 / changePercent);
@@ -57,24 +54,19 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         
         while (isRunning()) {
             for (int i = 0; i < numPackets; i++) {
-                ColumbusCcsdsPacket packet = packets[i];
+                ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(ColSimulator.PERF_TEST_APID, packetSize,
+                        PERF_TEST_PACKET_ID + i);
                 ByteBuffer bb = packet.getUserDataBuffer();
+                bb.put(pktData[i]);
                 for (int j = 0; j < packetSize - changeChunk; j += changeChunk) {
                     int offset = j + (changeChunk > 4 ? r.nextInt(changeChunk - 4) : 0);
                     bb.putInt(offset, r.nextInt());
                 }
                 packet.setTime(TimeEncoding.getWallclockTime());
+
                 simulator.transmitRealtimeTM(packet);
-                packets[i] = duplicate(packet);
             }
             Thread.sleep(interval);
         }
     }
-
-    private ColumbusCcsdsPacket duplicate(ColumbusCcsdsPacket packet) {
-        ByteBuffer bb = ByteBuffer.allocate(packet.getLength());
-        bb.put(packet.getBytes());
-        return new ColumbusCcsdsPacket(bb);
-    }
-
 }
