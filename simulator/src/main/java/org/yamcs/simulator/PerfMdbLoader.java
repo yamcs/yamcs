@@ -104,6 +104,7 @@ public class PerfMdbLoader implements SpaceSystemLoader {
             int numAlarms = 0;
             int pktId = PerfPacketGenerator.PERF_TEST_PACKET_ID + j;
             SequenceContainer sc = new SequenceContainer("pkt_" + pktId);
+            sc.useAsArchivePartition(true);
             UnresolvedNameReference unr = new UnresolvedNameReference("/YSS/ccsds-default", Type.SEQUENCE_CONTAINER);
 
             unr.addResolvedAction(nd -> {
