@@ -29,7 +29,6 @@ This is a global service defined in ``etc/yamcs.yaml``. Example:
             writeBufferWaterMark:
               low: 32768
               high: 65536
-            maxDrops: 5
           cors:
             allowOrigin: "*"
             allowCredentials: false
@@ -74,9 +73,6 @@ writeBufferWaterMark (map)
     Water marks for the write buffer of each WebSocket connection. When the buffer is full, messages are dropped. High values lead to increased memory use, but connections will be more resilient against unstable networks (i.e. high jitter). Increasing the values also help if a large number of messages are generated in bursts. The map requires keys ``low`` and ``high`` indicating the low/high water mark in bytes.
 
     Default: ``{ low: 32768, high: 65536}``
-
-maxDrops (integer)
-    Allowed number of message drops before closing the connection. Default: ``5``
 
 
 CORS sub-configuration

@@ -24,6 +24,14 @@ message ClientMessage {
   // This should be used when the client is streaming multiple messages
   // handled by the same call.
   int32 call = 4;
+  
+  // If set, permit the server to keep a WebSocket connection despite frame writes
+  // getting dropped (channel not open or not writable). If unset the default is 0,
+  // meaning that if the server can't write a frame, it will close the connection
+  // (impacting all calls on that connection).
+  //
+  // This attribute is only applied when it is set on the first message of a call.
+  int32 maxDroppedWrites = 5;
 }
 
 message ServerMessage {

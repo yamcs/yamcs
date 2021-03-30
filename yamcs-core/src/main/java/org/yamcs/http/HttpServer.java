@@ -155,6 +155,8 @@ public class HttpServer extends AbstractYamcsService {
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
         websocketSpec.addOption("maxDrops", OptionType.INTEGER)
                 .withAliases("connectionCloseNumDroppedMsg")
+                .withDeprecationMessage(
+                        "This property is ignored. Set maxDroppedWrites on the first message of a call instead")
                 .withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65536);
 
