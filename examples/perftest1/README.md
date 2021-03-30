@@ -10,18 +10,14 @@ Settings which can be adjusted:
 
 
 In the current configuration:
- numPackets: 200
+ numPackets: 100
  interval: 100 (millisec)
  paramSizeInBits: 32
  packetSize: 1476 (+16 bytes headers)
 
 resulting in 
-TM packet rate: 2000 packets/second, about 22Mbps incoming data rate
-TM parameter rate: 369 x 200 = 73800 parameters sampled at 10Hz -> 738000 samples/sec 
+TM packet rate: 1000 packets/second, about 12Mbps incoming data rate
+TM parameter rate: 369 x 100 = 36900 parameters sampled at 10Hz -> 369000 samples/sec 
 
 The simulator sends data via TCP so it might slow down if the server is not able to process all the packets. The yamcs-web frontend page will show the actual data rates.
 
-The configuratin requires a lot of memory for the Parameter Cache. 
-TBW:
- - how much memory is required and how to reduce it.
- - how to increase the packet ingestion rate by disabling or postponing some processing (if the data comes in bursts during satellite visibility).

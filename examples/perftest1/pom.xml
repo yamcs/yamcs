@@ -8,9 +8,9 @@
     <version>5.4.4-SNAPSHOT</version>
   </parent>
 
-  <artifactId>perftest</artifactId>
+  <artifactId>perftest1</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs :: Examples :: Perftest</name>
+  <name>Yamcs :: Examples :: Perftest1</name>
 
   <dependencies>
     <dependency>

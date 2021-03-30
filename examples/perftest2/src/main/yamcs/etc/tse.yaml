@@ -1,0 +1,31 @@
+tctm:
+  port: 8135
+
+telnet:
+  port: 8023
+
+instruments:
+  - name: tenma
+    class: org.yamcs.tse.SerialPortDriver
+    args:
+      path: /dev/tty.usbmodem14141
+      # Note: this instrument does not terminate responses.
+      # Use a very short timeout to compensate (still within spec)
+      # responseTermination: "\n"
+      responseTimeout: 100
+
+  - name: simulator
+    class: org.yamcs.tse.TcpIpDriver
+    args:
+      host: localhost
+      port: 10023
+      responseTermination: "\r\n"
+      interceptors:
+        - class: org.yamcs.tse.LoggingInterceptor
+
+  - name: rigol
+    class: org.yamcs.tse.TcpIpDriver
+    args:
+      host: 192.168.88.185
+      port: 5555
+      responseTermination: "\n"

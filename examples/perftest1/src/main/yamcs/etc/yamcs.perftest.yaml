@@ -20,11 +20,11 @@ services:
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
+      maxSegmentSize: 1000
       realtimeFiller: 
-        enabled: false
-      backFiller:
         enabled: true
-        warmupTime: 60
+      backFiller:
+        enabled: false
   - class: org.yamcs.simulator.SimulatorCommander
     args:
       telnet:
@@ -38,7 +38,7 @@ services:
       # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
       # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
       perfTest: 
-        numPackets: 200 
+        numPackets: 100
         packetSize: 1476 #length of the performance testing packets
         interval: 100 #how many milliseconds to wait in between sending each batch of numPackets packets
         changePercent: 10 #percentange (0-100) of data changed between two subsequent versions of the same packet
@@ -126,7 +126,7 @@ mdb:
   #Loads the performance testing mission database
   - type: "org.yamcs.simulator.PerfMdbLoader"
     args:
-      numPackets: 200
+      numPackets: 100
       packetSize: 1476
       
 
