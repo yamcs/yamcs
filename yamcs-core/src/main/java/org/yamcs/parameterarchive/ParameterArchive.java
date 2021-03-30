@@ -363,19 +363,17 @@ public class ParameterArchive extends AbstractYamcsService {
     @Override
     protected void doStop() {
         log.debug("Stopping ParameterArchive service for instance {}", yamcsInstance);
-
-        if (backFiller != null) {
-            backFiller.stop();
-        }
-
-        if (realtimeFiller != null) {
-            try {
-                realtimeFiller.shutDown();
-            } catch (Exception e) {
-                log.error("Error stopping realtime filler", e);
-                notifyFailed(e);
-                return;
+        try {
+            if (backFiller != null) {
+                backFiller.shutDown();
             }
+            if (realtimeFiller != null) {
+                realtimeFiller.shutDown();
+            }
+        } catch (Exception e) {
+            log.error("Error stopping realtime filler", e);
+            notifyFailed(e);
+            return;
         }
         notifyStopped();
     }

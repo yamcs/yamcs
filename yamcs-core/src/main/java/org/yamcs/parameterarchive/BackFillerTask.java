@@ -9,12 +9,7 @@ import org.yamcs.Processor;
 
 import static org.yamcs.parameterarchive.ParameterArchive.*;
 
-/**
- *
- */
 class BackFillerTask extends AbstractArchiveFiller {
-
-
     // ParameterGroup_id -> PGSegment
     protected Map<Integer, PGSegment> pgSegments = new HashMap<>();
 
@@ -28,16 +23,15 @@ class BackFillerTask extends AbstractArchiveFiller {
 
     public BackFillerTask(ParameterArchive parameterArchive) {
         super(parameterArchive);
-        log.debug("Archive filler task maxSegmentSize: {} ", maxSegmentSize);
     }
 
     void setCollectionStart(long collectionStart) {
         this.collectionStart = collectionStart;
     }
 
-    void flush() throws RocksDBException, IOException {
+    void flush() {
         for (PGSegment seg : pgSegments.values()) {
-            parameterArchive.writeToArchive(seg);
+            writeToArchive(seg);
         }
     }
 
@@ -48,12 +42,16 @@ class BackFillerTask extends AbstractArchiveFiller {
 
     protected void writeToArchive(PGSegment pgSegment) {
         try {
+            long t0 = System.nanoTime();
             parameterArchive.writeToArchive(pgSegment);
+            long d = System.nanoTime() - t0;
+            log.debug("Wrote segment {} to archive in {} millisec", pgSegment, d / 1000_000);
         } catch (RocksDBException | IOException e) {
             log.error("Error writing segment to archive", e);
             throw new ParameterArchiveException("Error writing segment to arcive", e);
         }
     }
+
 
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {

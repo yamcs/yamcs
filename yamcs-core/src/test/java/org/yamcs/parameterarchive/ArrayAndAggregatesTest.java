@@ -118,7 +118,7 @@ public class ArrayAndAggregatesTest {
         }
 
         @Override
-        public void flush() throws RocksDBException, IOException {
+        public void flush() {
             processParameters(pvlist);
             super.flush();
         }

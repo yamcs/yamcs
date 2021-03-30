@@ -79,6 +79,7 @@ public class BackFiller implements StreamSubscriber {
         spec.addOption("enabled", OptionType.BOOLEAN);
         spec.addOption("warmupTime", OptionType.INTEGER).withDefault(60);
         spec.addOption("monitorStreams", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("streamUpdateFillFrequency", OptionType.INTEGER).withDefault(600);
 
         Spec schedSpec = new Spec();
         schedSpec.addOption("startInterval", OptionType.INTEGER);
@@ -168,26 +169,27 @@ public class BackFiller implements StreamSubscriber {
             start = ParameterArchive.getIntervalStart(start);
             stop = ParameterArchive.getIntervalEnd(stop) + 1;
 
-            BackFillerTask aft = new BackFillerTask(parchive);
-            aft.setCollectionStart(start);
+            BackFillerTask bft = new BackFillerTask(parchive);
+            bft.setCollectionStart(start);
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
-            log.info("Starting parameter archive fillup for interval {}", timePeriod);
-
+            log.debug("Starting parameter archive fillup for interval {}", timePeriod);
+            long t0 = System.nanoTime();
             ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop);
             Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
                     rrb);
-            aft.setProcessor(proc);
-            proc.getParameterRequestManager().subscribeAll(aft);
+            bft.setProcessor(proc);
+            proc.getParameterRequestManager().subscribeAll(bft);
 
             proc.start();
             proc.awaitTerminated();
-            if (aft.aborted) {
+            if (bft.aborted) {
                 log.warn("Parameter archive fillup for interval {} aborted", timePeriod);
             } else {
-                aft.flush();
-                log.info("Parameter archive fillup for interval {} finished, processed samples: {}",
-                        timePeriod, aft.getNumProcessedParameters());
+                bft.flush();
+                long t1 = System.nanoTime();
+                log.debug("Parameter archive fillup for interval {} finished, processed {} samples in {} millisec",
+                        timePeriod, bft.getNumProcessedParameters(), (t1 - t0) / 1_000_000);
             }
         } catch (Exception e) {
             log.error("Error when running the archive filler task", e);
@@ -256,13 +258,14 @@ public class BackFiller implements StreamSubscriber {
         long frequency;
     }
 
-    public void stop() {
+    public void shutDown() throws InterruptedException {
         if (subscribedStreams != null) {
             for (Stream s : subscribedStreams) {
                 s.removeSubscriber(this);
             }
         }
-        executor.shutdownNow();
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -282,5 +285,4 @@ public class BackFiller implements StreamSubscriber {
     public void streamClosed(Stream stream) {
         log.debug("Stream {} closed", stream.getName());
     }
-
 }
