@@ -186,6 +186,7 @@ public class IntArray {
         return Arrays.binarySearch(a, 0, length, x);
     }
 
+
     /**
      * Sort the array concurrently swapping the elements in the list such that the
      * correspondence is kept.
@@ -198,39 +199,42 @@ public class IntArray {
         if (list.size() != length) {
             throw new IllegalArgumentException("The list has not the same number of elements as the array");
         }
+        if (length == 0) {
+            return;
+        }
         quickSort(0, length - 1, list);
     }
 
     private void quickSort(int lo, int hi, List<?> list) {
-        while (lo < hi) {
-            int pi = partition(lo, hi, list);
-            if (pi - lo < hi - pi) {
-                quickSort(lo, pi - 1, list);
-                lo = pi + 1;
-            } else {
-                quickSort(pi + 1, hi, list);
-                hi = pi - 1;
-            }
+        int pi = partition(lo, hi, list);
+        if (lo < pi - 1) {
+            quickSort(lo, pi - 1, list);
+        }
+        if(pi<hi) {
+            quickSort(pi, hi, list);
         }
     }
 
-    public int count = 0;
-
     private int partition(int lo, int hi, List<?> list) {
-        int pivot = a[hi];
-        int i = lo - 1;
+        int pivot = a[(lo + hi) >>> 1];
 
-        for (int j = lo; j < hi; j++) {
-            count++;
-            if (a[j] < pivot) {
+        int i = lo, j = hi;
+
+        while (i <= j) {
+            while (a[i] < pivot)
                 i++;
+
+            while (a[j] > pivot)
+                j--;
+
+            if (i <= j) {
                 swap(i, j, list);
+                i++;
+                j--;
             }
         }
 
-        swap(i + 1, hi, list);
-
-        return i + 1;
+        return i;
     }
 
     private void swap(int i, int j, List<?> list) {
