@@ -218,7 +218,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getParameterCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         parameters.addAll(spaceSystem.getParameters());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -349,7 +352,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getSequenceContainerCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         containers.addAll(spaceSystem.getSequenceContainers());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -443,7 +449,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getMetaCommandCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         commands.addAll(spaceSystem.getMetaCommands());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -519,7 +528,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getAlgorithmCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         algorithms.addAll(spaceSystem.getAlgorithms());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
