@@ -225,6 +225,20 @@ public class XmlLoaderTest {
     }
     
     @Test
+    public void testTransmissionConstraint() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint");
+        List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
+        assertEquals(1, tcList.size());
+        TransmissionConstraint tc0 = tcList.get(0);
+        assertEquals(12340, tc0.getTimeout());
+        ComparisonList matchCriteria= (ComparisonList) tc0.getMatchCriteria();
+        assertEquals(1, matchCriteria.getComparisonList().size());
+        Comparison c0 = matchCriteria.getComparisonList().get(0);
+        assertEquals(db.getParameter("/RefXtce/param3"), c0.getParameter());
+    }
+
+    @Test
     public void testAutoPart() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
         assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());

@@ -213,6 +213,24 @@
 				</xtce:CommandContainer>
 				<xtce:DefaultSignificance reasonForWarning="no particular reason" consequenceLevel="vital" />
 			</xtce:MetaCommand>
+			
+			<xtce:MetaCommand name="cmd_with_constraint">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_constraint">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:TransmissionConstraintList>
+					<xtce:TransmissionConstraint timeOut="PT12.34S">
+						<xtce:ComparisonList>
+							<xtce:Comparison value="3.14" parameterRef="param3"/>
+						</xtce:ComparisonList>
+					</xtce:TransmissionConstraint>
+				</xtce:TransmissionConstraintList>
+			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>
 </xtce:SpaceSystem>

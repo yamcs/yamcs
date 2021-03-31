@@ -138,6 +138,7 @@ import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.TriggeredMathOperation;
 import org.yamcs.xtce.UnitType;
@@ -312,6 +313,8 @@ public class XtceStaxReader {
     private static final String XTCE_OR_CONDITIONS = "ORedConditions";
     private static final String XTCE_COMPARISON_OPERATOR = "ComparisonOperator";
     private static final String XTCE_VALUE = "Value";
+    private static final String XTCE_TRANSMISSION_CONSTRAINT = "TransmissionConstraint";
+    private static final String XTCE_TRANSMISSION_CONSTRAINT_LIST = "TransmissionConstraintList";
 
     /**
      * Logging subsystem
@@ -3458,6 +3461,8 @@ public class XtceStaxReader {
                 readVerifierSet(spaceSystem, mc);
             } else if (isStartElementWithName(XTCE_DEFAULT_SIGNIFICANCE)) {
                 mc.setDefaultSignificance(readSignificance(spaceSystem));
+            } else if (isStartElementWithName(XTCE_TRANSMISSION_CONSTRAINT_LIST)) {
+                readTransmissionConstraintList(spaceSystem, mc);
             } else if (isEndElementWithName(XTCE_META_COMMAND)) {
                 return mc;
             } else {
@@ -4014,6 +4019,31 @@ public class XtceStaxReader {
             }
         }
     }
+
+    private void readTransmissionConstraintList(SpaceSystem spaceSystem, MetaCommand metaCmd)
+            throws XMLStreamException {
+        log.trace(XTCE_TRANSMISSION_CONSTRAINT_LIST);
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_TRANSMISSION_CONSTRAINT)) {
+                TransmissionConstraint trc = readTransmissionConstraint(spaceSystem);
+                metaCmd.addTransmissionConstrain(trc);
+            } else if (isEndElementWithName(XTCE_TRANSMISSION_CONSTRAINT_LIST)) {
+                return;
+            }
+        }
+    }
+
+    TransmissionConstraint readTransmissionConstraint(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_TRANSMISSION_CONSTRAINT);
+        StartElement element = xmlEvent.asStartElement();
+        String timeouts = readAttribute("timeOut", element, null);
+        long timeout = timeouts == null ? 0 : parseDuration(timeouts);
+        MatchCriteria matchCriteria = readMatchCriteria(spaceSystem);
+        return new TransmissionConstraint(matchCriteria, timeout);
+    }
+
 
     private OutputParameter readOutputParameterRef(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_OUTPUT_PARAMETER_REF);
