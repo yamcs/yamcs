@@ -266,7 +266,6 @@ public class ParameterArchiveTest {
         List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
                 new int[] { pg1id }, true);
         assertEquals(2, params.size());
-        System.out.println("params(0): " + params.get(0));
         checkEquals(params.get(0), 100, pv1_0);
     }
 
@@ -457,7 +456,6 @@ public class ParameterArchiveTest {
         ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
-        System.out.println("aat the beginning p1id: " + p1id);
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
 
         int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id));
@@ -549,7 +547,6 @@ public class ParameterArchiveTest {
         // descending retrieving two para
         List<ParameterIdValueList> l4d = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
                 new int[] { p2id, p1id }, new int[] { pg1id, pg1id }, false);
-        System.out.println("expecting t3: " + t3);
         assertEquals(3, l4d.size());
         checkEquals(l4d.get(0), t3, pv1_4, pv2_2);
         checkEquals(l4d.get(1), t2, pv1_3, pv2_1);
