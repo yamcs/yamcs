@@ -70,10 +70,10 @@ class BackFillerTask extends AbstractArchiveFiller {
 
             pgs.addRecord(t, pvList.getValues());
             if (pgs.size() >= maxSegmentSize) {
-                parameterArchive.writeToArchive(pgs);
+                writeToArchive(pgs);
                 pgSegments.remove(parameterGroupId);
             }
-        } catch (RocksDBException | IOException e) {
+        } catch (RocksDBException e) {
             log.error("Error writing to the parameter archive", e);
         }
     }
