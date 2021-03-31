@@ -22,7 +22,10 @@
           <app-search-filter [formControl]="filterControl"
                              placeholder="Search by name"
                              icon="search"
-                             [class.pullRight]="breadcrumb.length">
+                             [class.pullRight]="breadcrumb.length"
+                             (onArrowDown)="selectNext()"
+                             (onArrowUp)="selectPrevious()"
+                             (onEnter)="applySelection()">
           </app-search-filter>
         </app-breadcrumb-trail>
       </ng-container>
@@ -54,9 +57,14 @@
               <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
               <a [routerLink]="['/commanding/send', item.command.qualifiedName]"
                 [queryParams]="{c: yamcs.context}">
-                <ng-container *ngIf="!system">{{ item.command.qualifiedName }}</ng-container>
-                <ng-container *ngIf="system">{{ item.command.qualifiedName | slice:(system!.length + 1) }}
-                </ng-container>
+                <app-highlight *ngIf="!system"
+                              [text]="item.command.qualifiedName"
+                              [term]="filterControl.value">
+                </app-highlight>
+                <app-highlight *ngIf="system"
+                              [text]="item.command.qualifiedName | slice:(system!.length + 1)"
+                              [term]="filterControl.value">
+                </app-highlight>
               </a>
             </ng-container>
           </td>
@@ -71,7 +79,8 @@
 
         <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
         <tr mat-row
-            *cdkRowDef="let row; columns: displayedColumns;"></tr>
+            *cdkRowDef="let row; columns: displayedColumns;"
+            [class.selected]="selection.isSelected(row)"></tr>
       </table>
 
       <mat-paginator [pageSize]="pageSize"

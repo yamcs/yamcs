@@ -21,8 +21,11 @@
       </ng-container>
       <div class="filter-bar">
         <app-search-filter [formControl]="filterForm.controls['filter']"
-                            placeholder="Search by name"
-                            icon="search">
+                           placeholder="Search by name"
+                           icon="search"
+                           (onArrowDown)="selectNext()"
+                           (onArrowUp)="selectPrevious()"
+                           (onEnter)="applySelection()">
         </app-search-filter>
         <app-select [options]="typeOptions" formControlName="type"></app-select>
         <app-select [options]="sourceOptions" formControlName="source"></app-select>
@@ -48,9 +51,14 @@
             <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
             <a [routerLink]="['/telemetry/parameters', item.parameter.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
-              <ng-container *ngIf="!system">{{ item.parameter.qualifiedName }}</ng-container>
-              <ng-container *ngIf="system">{{ item.parameter.qualifiedName | slice:(system!.length + 1) }}
-              </ng-container>
+              <app-highlight *ngIf="!system"
+                             [text]="item.parameter.qualifiedName"
+                             [term]="filterForm.value.filter">
+              </app-highlight>
+              <app-highlight *ngIf="system"
+                             [text]="item.parameter.qualifiedName | slice:(system!.length + 1)"
+                             [term]="filterForm.value.filter">
+              </app-highlight>
             </a>
           </ng-container>
         </td>
@@ -97,7 +105,8 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"></tr>
     </table>
 
     <mat-paginator [pageSize]="pageSize"

@@ -60,6 +60,7 @@ import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { Hex } from './hex/Hex';
+import { Highlight } from './highlight/Highlight';
 import { AgoPipe } from './pipes/AgoPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
@@ -188,6 +189,7 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  Highlight,
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,

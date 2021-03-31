@@ -106,7 +106,9 @@
 
       <ng-container cdkColumnDef="message">
         <th mat-header-cell *cdkHeaderCellDef>Message</th>
-        <td mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message || '-' }}</td>
+        <td mat-cell *cdkCellDef="let row" style="white-space: pre">
+          <app-highlight [text]="row.message || '-'" [term]="filterForm.value.filter"></app-highlight>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="type">
