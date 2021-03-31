@@ -1,10 +1,10 @@
 package org.yamcs.xtceproc;
 
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
+import org.yamcs.Spec.OptionType;
 
 public class ContainerProcessingOptions {
-    private static final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
-    private static final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
     /**
      * If set to true, the entries that fit outside the packet definition, will not be even logged.
      * If set to false, a log message at WARNING level will be printed for the first entry that fits outside the binary
@@ -27,13 +27,26 @@ public class ContainerProcessingOptions {
      */
     boolean resultIncludesSubcontainers = true;
 
+    int maxArraySize = 10000;
+
 
     public ContainerProcessingOptions(YConfiguration config) {
         if (config != null) {
-            ignoreOutOfContainerEntries = config.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false);
-            expirationTolerance = config.getDouble(CONFIG_KEY_expirationTolerance, expirationTolerance);
+            ignoreOutOfContainerEntries = config.getBoolean("ignoreOutOfContainerEntries", false);
+            expirationTolerance = config.getDouble("expirationTolerance", expirationTolerance);
+            maxArraySize = config.getInt("maxArraySize", maxArraySize);
         }
     }
+
+    public static Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("ignoreOutOfContainerEntries", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("expirationTolerance", OptionType.FLOAT).withDefault(1.9);
+        spec.addOption("maxArraySize", OptionType.INTEGER).withDefault(10000);
+
+        return spec;
+    }
+
     /**
      * Default configuration
      */
@@ -65,4 +78,7 @@ public class ContainerProcessingOptions {
         this.resultIncludesSubcontainers = resultIncludesSubcontainers;
     }
 
+    public int getMaxArraySize() {
+        return maxArraySize;
+    }
 }

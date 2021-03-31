@@ -64,12 +64,11 @@ public class ProcessorFactory {
             targetLog.setContext(name);
             serviceList = createServices(yamcsInstance, conf.getServiceConfigList("services"), targetLog);
 
-            if (conf.containsKey("config")) {
-                pc = conf.getConfig("config");
-            }
+            pc = conf.getConfigOrEmpty("config");
         } catch (IOException e) {
             throw new ConfigurationException("Cannot load service", e);
         }
+        pc = ProcessorConfig.getSpec().validate(pc);
         ProcessorConfig processorConfig = new ProcessorConfig(pc);
         return create(yamcsInstance, name, type, serviceList, creator, processorConfig, spec);
     }

@@ -26,11 +26,23 @@
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryParameterType>
 			<xtce:AggregateParameterType name="aggregate_param_type1">
-			<xtce:MemberList>
-				<xtce:Member name="m1" typeRef="float32"/>
-				<xtce:Member name="m2" typeRef="uint16"/>
-			</xtce:MemberList>
+			    <xtce:MemberList>
+				    <xtce:Member name="m1" typeRef="float32"/>
+				    <xtce:Member name="m2" typeRef="uint16"/>
+			    </xtce:MemberList>
 			</xtce:AggregateParameterType>
+			<xtce:ArrayParameterType name="array_param_type" arrayTypeRef="uint16" >
+			<xtce:DimensionList>
+			    <xtce:Dimension>
+			       <xtce:StartingIndex>
+			           <xtce:FixedValue>0</xtce:FixedValue>
+			       </xtce:StartingIndex>
+			       <xtce:EndingIndex>
+			           <xtce:FixedValue>3</xtce:FixedValue>
+			       </xtce:EndingIndex>
+			    </xtce:Dimension>
+			</xtce:DimensionList>
+			</xtce:ArrayParameterType>
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
 			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type" />
@@ -40,6 +52,7 @@
 			<xtce:Parameter name="param5" parameterTypeRef="float32" initialValue="3.14" />
 			<xtce:Parameter name="param6" parameterTypeRef="float32" />
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
+			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -50,6 +63,11 @@
 			<xtce:SequenceContainer name="packet2">
 				<xtce:EntryList>
 					<xtce:ParameterRefEntry parameterRef="param2" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet3">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="param8" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
 		</xtce:ContainerSet>

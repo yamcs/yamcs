@@ -11,7 +11,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.AggregateDataType;
-import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
@@ -30,7 +29,6 @@ import org.yamcs.xtce.XtceDb;
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
     ContainerProcessingContext pcontext;
-    static final int MAX_ARRAY_SIZE = 10000;
 
     SequenceEntryProcessor(ContainerProcessingContext pcontext) {
         this.pcontext = pcontext;
@@ -109,37 +107,12 @@ public class SequenceEntryProcessor {
 
     private void extractArrayParameterEntry(ArrayParameterEntry pe) {
         List<IntegerValue> size = pe.getSize();
-        int[] isize = new int[size.size()];
-        ValueProcessor valueproc = pcontext.valueProcessor;
-        for (int i = 0; i < size.size(); i++) {
-            IntegerValue iv = size.get(i);
-            Long l = valueproc.getValue(iv);
-            if (l == null) {
-                throw new XtceProcessingException("Cannot compute value of " + iv
-                        + " necessary to determine the size of the array " + pe.getParameter());
-            }
-            int ds = l.intValue();
-            if (ds == 0) { // zero size array, just skip over it
-                return;
-            }
-            isize[i] = ds;
+        if (size == null) {
+            size = pe.getSize();
         }
-        int ts = ArrayValue.flatSize(isize);
-        if (ts > MAX_ARRAY_SIZE) {
-            throw new XtceProcessingException("Resulted size of the array " + pe.getParameter()
-                    + " exceeds the max allowed: " + ts + " > " + MAX_ARRAY_SIZE);
-        }
-        ArrayParameterType aptype = (ArrayParameterType) pe.getParameter().getParameterType();
-        ParameterType elementType = (ParameterType) aptype.getElementType();
         int offset = pcontext.buffer.getPosition();
-        Value rv1 = extract(elementType);
-
-        ArrayValue rv = new ArrayValue(isize, rv1.getType());
-        rv.setElementValue(0, rv1);
-        for (int i = 1; i < ts; i++) {
-            rv1 = extract(elementType);
-            rv.setElementValue(i, rv1);
-        }
+        ArrayValue rv = extractArray((ArrayParameterType) pe.getParameter().getParameterType(),
+                size);
 
         ContainerParameterValue pv = new ContainerParameterValue(pe.getParameter());
         pv.setRawValue(rv);
@@ -154,6 +127,42 @@ public class SequenceEntryProcessor {
         pv.setSequenceEntry(pe);
 
         pcontext.result.params.add(pv);
+    }
+
+    private ArrayValue extractArray(ArrayParameterType aptype, List<IntegerValue> size) {
+        int[] isize = new int[size.size()];
+        ValueProcessor valueproc = pcontext.valueProcessor;
+        for (int i = 0; i < size.size(); i++) {
+            IntegerValue iv = size.get(i);
+            Long l = valueproc.getValue(iv);
+            if (l == null) {
+                throw new XtceProcessingException("Cannot compute value of " + iv
+                        + " necessary to determine the size of the array " + aptype.getName());
+            }
+            int ds = l.intValue();
+            if (ds == 0) { // zero size array, just skip over it
+                return null;
+            }
+            isize[i] = ds;
+        }
+
+        ParameterType elementType = (ParameterType) aptype.getElementType();
+
+        int ts = ArrayValue.flatSize(isize);
+        int max = pcontext.options.getMaxArraySize();
+        if (ts > max) {
+            throw new XtceProcessingException("Resulted size of the array " + aptype.getName()
+                    + " exceeds the max allowed: " + ts + " > " + max);
+        }
+        Value rv0 = extract(elementType);
+
+        ArrayValue rv = new ArrayValue(isize, rv0.getType());
+        rv.setElementValue(0, rv0);
+        for (int i = 1; i < ts; i++) {
+            rv0 = extract(elementType);
+            rv.setElementValue(i, rv0);
+        }
+        return rv;
     }
 
     private void extractIndirectParameterRefEntry(IndirectParameterRefEntry se) {
@@ -187,9 +196,9 @@ public class SequenceEntryProcessor {
             return extractBaseDataType((BaseDataType) ptype);
         } else if (ptype instanceof AggregateDataType) {
             return extractAggregateDataType((AggregateDataType) ptype);
-        } else if (ptype instanceof ArrayDataType) {
-            throw new IllegalStateException(
-                    ptype.getName() + ": array parameter can only be referenced inside an ArrayParameterEntry");
+        } else if (ptype instanceof ArrayParameterType) {
+            ArrayParameterType aptype = (ArrayParameterType) ptype;
+            return extractArray(aptype, aptype.getSize());
         } else {
             throw new IllegalStateException("Unknonwn parameter type " + ptype.getClass());
         }

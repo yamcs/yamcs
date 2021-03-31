@@ -42,6 +42,7 @@ public class SequenceContainerProcessor {
         SortedSet<SequenceEntry> entries = pcontext.subscription.getEntries(seq);
         if (entries != null) {
             for (SequenceEntry se : entries) {
+                int position = buf.getPosition();
                 try {
 
                     if (se.getIncludeCondition() != null
@@ -62,6 +63,10 @@ public class SequenceContainerProcessor {
                         break;
                     }
 
+                    // remember the position where the entry has started because the extract() below may move it and
+                    // then throw an exception
+                    position = buf.getPosition();
+                    
                     if (se.getRepeatEntry() == null) {
                         pcontext.sequenceEntryProcessor.extract(se);
                     } else { // this entry is repeated several times
@@ -82,13 +87,13 @@ public class SequenceContainerProcessor {
                         ParameterEntry pe = (ParameterEntry) se;
                         log.warn("Could not extract parameter " + pe.getParameter().getQualifiedName()
                                 + " from container " + se.getContainer().getQualifiedName()
-                                + " at position " + buf.getPosition()
+                                + " at position " + position
                                 + " because it falls beyond the end of the container. Container size in bits: "
                                 + buf.sizeInBits());
                     } else {
                         log.warn("Could not extract entry " + se + "of size "
                                 + buf.sizeInBits() + "bits from container " + se.getContainer().getQualifiedName()
-                                + " position " + buf.getPosition()
+                                + " position " + position
                                 + "because it falls beyond the end of the container. Container size in bits: "
                                 + buf.sizeInBits());
                     }

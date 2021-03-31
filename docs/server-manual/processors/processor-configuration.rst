@@ -128,6 +128,9 @@ ignoreOutOfContainerEntries (boolean)
 expirationTolerance (double)
     The Mission Database can define an expected rate in stream for packets (containers) - that means how often a packet is expected to be sent by the remote system. The rate in stream property will cause Yamcs to set an expiration time for the parameters extracted from that packet. The expiration of parameters is used to warn the operators that they are potentially looking at stale data in the displays. 
     Yamcs will compute the expiration time as the rate in stream defined in the Mission Databae multiplied by this configuration option. The tolerenace is needed in order to avoid generating false expiration warnings.
+
+maxArraySize (integer)
+    The maximum size of arrays extracted from TM packets. The arrays can be dynamically sized (meaning the size is given by a parameter in the packet) and this option configures the maximum size allowed. Default: ``10000``.
     
     
     

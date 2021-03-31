@@ -1,5 +1,6 @@
 package org.yamcs;
 
+import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.xtceproc.ContainerProcessingOptions;
@@ -98,6 +99,24 @@ public class ProcessorConfig {
 
     }
 
+    public static Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption(CONFIG_KEY_ALARM, OptionType.ANY);
+        spec.addOption(CONFIG_KEY_SUBSCRIBE_ALL, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_PARAMETER_CACHE, OptionType.ANY);
+        spec.addOption(CONFIG_KEY_TM_PROCESSOR, OptionType.MAP).withSpec(ContainerProcessingOptions.getSpec());
+        spec.addOption(CONFIG_KEY_RECORD_INITIAL_VALUES, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_RECORD_LOCAL_VALUES, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_GENERATE_EVENTS, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_MAX_TC_SIZE, OptionType.INTEGER).withDefault(4096);
+        spec.addOption(CONFIG_KEY_CONTAINERLESS_CMDS, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_CHECK_COMMAND_CLEARANCE, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
+        spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
+
+
+        return spec;
+    }
     /**
      * Default configuration
      */

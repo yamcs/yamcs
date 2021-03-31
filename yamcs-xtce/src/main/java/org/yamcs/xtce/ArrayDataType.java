@@ -96,6 +96,34 @@ public class ArrayDataType extends NameDescription implements DataType {
     }
 
     /**
+     * 
+     * @return true if all dimensions are of fixed size
+     */
+    public boolean isFixedSize() {
+        for (IntegerValue iv : dim) {
+            if (!(iv instanceof FixedIntegerValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * If {@link #isFixedSize()} returns true, this method can be used to get the array flat size
+     * 
+     * @return
+     */
+    public int[] getFixedSize() {
+        int[] r = new int[dim.size()];
+        for (int i = 0; i < dim.size(); i++) {
+            FixedIntegerValue fiv = (FixedIntegerValue) dim.get(i);
+            if (fiv instanceof FixedIntegerValue) {
+                r[i] = (int) ((FixedIntegerValue) fiv).getValue();
+            }
+        }
+        return r;
+    }
+    /**
      * Parse an initial value as an json array
      */
     @Override
@@ -137,6 +165,8 @@ public class ArrayDataType extends NameDescription implements DataType {
     public Object[] getInitialValue() {
         return initialValue;
     }
+
+
 
     public static abstract class Builder<T extends Builder<T>> extends NameDescription.Builder<T>
             implements DataType.Builder<T> {
@@ -187,4 +217,5 @@ public class ArrayDataType extends NameDescription implements DataType {
             return type != null;
         }
     }
+
 }
