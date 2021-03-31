@@ -70,6 +70,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
+import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { HexPipe } from './pipes/HexPipe';
@@ -232,6 +233,7 @@ const pipes = [
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,
+  EntryForOffsetPipe,
   HexPipe,
   NvlPipe,
   OperatorPipe,

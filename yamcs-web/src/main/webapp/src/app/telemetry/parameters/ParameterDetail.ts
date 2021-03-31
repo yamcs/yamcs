@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/c
 import { BehaviorSubject } from 'rxjs';
 import { Member, Parameter, ParameterValue } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { EntryForOffsetPipe } from '../pipes/EntryForOffsetPipe';
+import { EntryForOffsetPipe } from '../../shared/pipes/EntryForOffsetPipe';
 
 @Component({
   selector: 'app-parameter-detail',

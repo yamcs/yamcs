@@ -27,14 +27,12 @@ import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
-import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { PacketDownloadLinkPipe } from './pipes/PacketDownloadLinkPipe';
 import { routingComponents, TelemetryRoutingModule } from './TelemetryRoutingModule';
 
 const pipes = [
   DisplayTypePipe,
   PacketDownloadLinkPipe,
-  EntryForOffsetPipe,
 ];
 
 const directives = [
@@ -80,9 +78,6 @@ const viewers = [
     Thickness,
     UploadFilesDialog,
   ],
-  providers: [
-    pipes, // Make pipes available in components too
-  ]
 })
 export class TelemetryModule {
 }
