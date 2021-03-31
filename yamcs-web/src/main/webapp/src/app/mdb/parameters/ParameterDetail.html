@@ -18,11 +18,11 @@
     <dd>{{ alias.name }}</dd>
   </ng-container>
 
-  <dt>Description</dt>
-  <dd>{{ parameter.longDescription || parameter.shortDescription || '-' }}</dd>
-
   <dt>Type</dt>
   <dd style="font-family: monospace">{{ parameter.type?.engType || '-' }}</dd>
+
+  <dt>Description</dt>
+  <dd>{{ parameter.longDescription || parameter.shortDescription || '-' }}</dd>
 
   <dt>Source</dt>
   <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>

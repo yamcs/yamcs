@@ -116,7 +116,7 @@ body {
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.ya-data-table td.mono, .ya-data-table th.mono {
+.ya-data-table td.mono, .ya-data-table th.mono, .mono {
   font-family: 'Roboto Mono', monospace;
 }
 

@@ -69,6 +69,7 @@ export interface NamedObjectId {
 
 export interface ParameterType {
   engType: string;
+  arrayInfo?: ArrayInfo;
   dataEncoding?: DataEncoding;
   unitSet?: UnitInfo[];
   defaultAlarm: AlarmInfo;
@@ -76,6 +77,11 @@ export interface ParameterType {
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: Member[];
+}
+
+export interface ArrayInfo {
+  type: ParameterType;
+  dimensions: number;
 }
 
 export interface Member {
