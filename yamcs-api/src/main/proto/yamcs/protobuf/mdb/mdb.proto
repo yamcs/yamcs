@@ -294,7 +294,6 @@ message AbsoluteTimeInfo {
 
 message MemberInfo {
   optional string name = 1;
-  optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;
@@ -303,7 +302,6 @@ message MemberInfo {
 
 message ArgumentMemberInfo {
   optional string name = 1;
-  optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;

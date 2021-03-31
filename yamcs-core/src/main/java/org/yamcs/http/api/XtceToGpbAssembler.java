@@ -620,9 +620,6 @@ public class XtceToGpbAssembler {
             for (Member member : apt.getMemberList()) {
                 MemberInfo.Builder memberb = MemberInfo.newBuilder();
                 memberb.setName(member.getName());
-                if (member.getQualifiedName() != null) {
-                    memberb.setQualifiedName(member.getQualifiedName());
-                }
                 if (member.getType() instanceof ParameterType) {
                     ParameterType ptype = (ParameterType) member.getType();
                     memberb.setType(toParameterTypeInfo(ptype, detail));
@@ -786,9 +783,6 @@ public class XtceToGpbAssembler {
             for (Member member : aat.getMemberList()) {
                 ArgumentMemberInfo.Builder memberb = ArgumentMemberInfo.newBuilder();
                 memberb.setName(member.getName());
-                if (member.getQualifiedName() != null) {
-                    memberb.setQualifiedName(member.getQualifiedName());
-                }
                 if (member.getType() instanceof ArgumentType) {
                     ArgumentType ptype = (ArgumentType) member.getType();
                     memberb.setType(toArgumentTypeInfo(ptype));
