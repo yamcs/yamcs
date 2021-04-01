@@ -3,13 +3,13 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
-import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
+import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { AlgorithmsPage, AlgorithmStatus, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
 import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -876,6 +876,12 @@ export default class YamcsClient implements HttpHandler {
       body: JSON.stringify(value),
       method: 'PUT',
     });
+  }
+
+  async getAlgorithmStatus(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/status`;
+    const response = await this.doFetch(url);
+    return await response.json() as AlgorithmStatus;
   }
 
   async getParameterSamples(instance: string, qualifiedName: string, options: GetParameterSamplesOptions = {}): Promise<Sample[]> {

@@ -1,0 +1,13 @@
+<app-led *ngIf="status.active && !status.errorMessage"
+         matTooltip="Active"
+         [color]="onColor"
+         [fade]="false"
+         ></app-led>
+<app-led *ngIf="!status.active && !status.errorMessage"
+         matTooltip="Inactive"
+         [color]="offColor"
+         [fade]="false"></app-led>
+<app-led *ngIf="status.errorMessage"
+         [matTooltip]="status.errorMessage"
+         color="red"
+         [fade]="false"></app-led>

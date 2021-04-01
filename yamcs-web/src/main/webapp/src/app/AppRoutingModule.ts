@@ -59,6 +59,10 @@ const routes: Routes = [
         loadChildren: () => import('src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),
         canActivate: [AuthGuard],
       }, {
+        path: 'algorithms',
+        loadChildren: () => import('src/app/algorithms/AlgorithmsModule').then(m => m.AlgorithmsModule),
+        canActivate: [AuthGuard],
+      }, {
         path: 'archive',
         loadChildren: () => import('src/app/archive/ArchiveModule').then(m => m.ArchiveModule),
         canActivate: [AuthGuard],

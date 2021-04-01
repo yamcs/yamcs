@@ -234,13 +234,24 @@ export interface AlarmRange {
 }
 
 export interface Algorithm extends NameDescription {
-  scope: 'GLOBAL' | 'COMMAND_VERIFICATION';
+  scope: 'GLOBAL' | 'COMMAND_VERIFICATION' | 'CONTAINER_PROCESSING';
   language: string;
   text: string;
   inputParameter: InputParameter[];
   outputParameter: OutputParameter[];
   onParameterUpdate: Parameter[];
   onPeriodicRate: number[];
+}
+
+export interface AlgorithmStatus {
+  active: boolean;
+  traceEnabled: boolean;
+  runCount: number;
+  lastRun?: string;
+  errorCount: number;
+  execTimeNs: number;
+  errorMessage?: string;
+  errorTime?: string;
 }
 
 export interface InputParameter {
@@ -316,6 +327,7 @@ export interface ParametersPage {
 }
 
 export interface GetAlgorithmsOptions {
+  scope?: string;
   q?: string;
   system?: string;
   pos?: number;

@@ -75,6 +75,7 @@ import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { HexPipe } from './pipes/HexPipe';
+import { NanosDurationPipe } from './pipes/NanosDurationPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
@@ -237,6 +238,7 @@ const pipes = [
   FormatBytesPipe,
   EntryForOffsetPipe,
   HexPipe,
+  NanosDurationPipe,
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
