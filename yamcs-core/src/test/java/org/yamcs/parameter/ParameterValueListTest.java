@@ -4,15 +4,24 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 
 public class ParameterValueListTest {
+    @BeforeClass
+    public static void beforeClass() {
+        TimeEncoding.setUp();
+    }
+
     @Test
     public void test1() {
 	int n = 10000;
@@ -191,6 +200,37 @@ public class ParameterValueListTest {
 	assertEquals(pv1, it.next());
 	assertFalse(it.hasNext());
     }
+
+    @Test
+    public void testTailIterator() {
+        Parameter p = new Parameter("p1");
+        ParameterValue pv1 = new ParameterValue(p);
+        pv1.setStringValue("pv1");
+
+        ParameterValue pv2 = new ParameterValue(p);
+        pv2.setStringValue("pv2");
+
+        ParameterValueList pvlist = new ParameterValueList();
+
+        Iterator<ParameterValue> it = pvlist.tailIterator();
+        assertFalse(it.hasNext());
+
+        pvlist.add(pv1);
+
+        assertTrue(it.hasNext());
+        assertEquals(pv1, it.next());
+        assertFalse(it.hasNext());
+
+
+        pvlist.add(pv2);
+        pvlist.add(pv1);
+
+        assertTrue(it.hasNext());
+        assertEquals(pv2, it.next());
+        assertTrue(it.hasNext());
+        assertEquals(pv1, it.next());
+        assertFalse(it.hasNext());
+    }
     @Test
     public void testIterator1() {
 	int n = 10000;
@@ -229,4 +269,5 @@ public class ParameterValueListTest {
 	
 	assertFalse(it.hasNext());
     }
+
 }

@@ -124,7 +124,7 @@ public class SequenceContainerProcessor {
             }
         }
         buf.setPosition(maxposition);
-        // Finaly update the stats. We add the packet into the statistics only if it doesn't have a derived container
+        // Finally update the stats. We add the packet into the statistics only if it doesn't have a derived container
         if (!hasDerived && (result.stats != null)) {
             String pname = result.getPacketName();
             result.stats.newPacket(pname, (entries == null) ? 0 : entries.size(),

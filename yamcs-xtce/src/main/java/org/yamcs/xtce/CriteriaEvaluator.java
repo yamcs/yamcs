@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.xtce.MatchCriteria.MatchResult;
+
 public interface CriteriaEvaluator {
-	boolean evaluate(OperatorType op, Object lValueRef, Object rValueRef);
+    MatchResult evaluate(OperatorType op, Object lValueRef, Object rValueRef);
 }

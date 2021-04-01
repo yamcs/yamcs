@@ -1,11 +1,11 @@
 package org.yamcs.commanding;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
@@ -47,7 +47,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         } else {
             AlgorithmManager algMgr = cvh.getAlgorithmManager();
             algMgr.activateAlgorithm(alg, algCtx, this);
-            algMgr.updateParameters(pvList, algCtx);
+            algMgr.updateDelivery(new ParameterValueList(pvList), algCtx);
         }
     }
     
@@ -82,7 +82,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     @Override
     public void updatedCommandHistoryParam(ParameterValue pv) {
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.updateParameters(Arrays.asList(pv), algCtx);
+        algMgr.updateDelivery(ParameterValueList.asList(pv), algCtx);
     }
 
 

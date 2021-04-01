@@ -71,7 +71,7 @@ public class Cop1TcPacketHandlerTest {
 
         fop1ph = new Cop1TcPacketHandler("test", "test", tcParams.getVcParams(0), executor);
         fop1ph.addMonitor(monitor);
-        fop1ph.setCommandHistoryPublisher(new TcpTcDataLinkTest.MyPublisher(new Semaphore(0)));
+        fop1ph.setCommandHistoryPublisher(new TcpTcDataLinkTest.MyCmdHistPublisher(new Semaphore(0)));
 
         dataAvailable = new Semaphore(0);
         fop1ph.setDataAvailableSemaphore(dataAvailable);

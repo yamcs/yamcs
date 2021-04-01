@@ -3,7 +3,6 @@ package org.yamcs.algorithms;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -45,7 +45,7 @@ public class XtceAlgorithmTest {
         prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
-        prm.update(Arrays.asList(pv));
+        prm.update(ParameterValueList.asList(pv));
         assertEquals(1, params.size());
 
         pv = params.get(0);
@@ -61,7 +61,7 @@ public class XtceAlgorithmTest {
         prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
-        prm.update(Arrays.asList(pv));
+        prm.update(ParameterValueList.asList(pv));
         assertEquals(1, params.size());
 
         pv = params.get(0);

@@ -12,6 +12,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.CriteriaEvaluator;
+import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
@@ -41,23 +42,24 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     }
 
     @Override
-    public boolean evaluate(OperatorType op, Object lValueRef, Object rValueRef) {
+    public MatchResult evaluate(OperatorType op, Object lValueRef, Object rValueRef) {
         ResolvedValue lValue = resolveValue(lValueRef);
         ResolvedValue rValue = resolveValue(rValueRef);
         
         if ((lValue == null) || (rValue == null)) {
-            return false;
+            return MatchResult.UNDEF;
         }
+        boolean result = false;
 
         if (lValue.evaluator == rValue.evaluator) {
-            return lValue.evaluator.evaluate(op, lValue, rValue);
+            result = lValue.evaluator.evaluate(op, lValue, rValue);
         } else {
             if ((lValue.evaluator == intEvaluator) && (lValue.evaluator == floatEvaluator)) {
                 lValue.value = (double) ((long) lValue.value);
-                return floatEvaluator.evaluate(op, lValue, rValue);
+                result = floatEvaluator.evaluate(op, lValue, rValue);
             } else if ((lValue.evaluator == floatEvaluator) && (lValue.evaluator == intEvaluator)) {
                 rValue.value = (double) ((long) rValue.value);
-                return floatEvaluator.evaluate(op, lValue, rValue);
+                result = floatEvaluator.evaluate(op, lValue, rValue);
             } else {
                 LOG.error("Comparing values of incompatible types: "
                         + lValue.evaluator.getComparedType()
@@ -65,7 +67,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
             }
         }
 
-        return false;
+        return result ? MatchResult.OK : MatchResult.NOK;
     }
 
     private ResolvedValue resolveValue(Object valueRef) {
@@ -142,6 +144,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         case BOOLEAN:
             return new ResolvedValue(v.getBooleanValue(), false, booleanEvaluator);
         default:
+            LOG.error("Unknown value type '" + v.getType() + "' while evaluating condition");
             return null;
         }
     }

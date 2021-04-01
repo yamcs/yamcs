@@ -17,7 +17,6 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
 import org.yamcs.AbstractProcessorService;
-import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
@@ -29,6 +28,7 @@ import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Algorithm;
@@ -62,13 +62,10 @@ import com.google.protobuf.util.Timestamps;
  * javascript will be automatically registered as well as python if available.
  */
 public class AlgorithmManager extends AbstractProcessorService
-        implements ParameterProvider, DVParameterConsumer, ProcessorService {
+        implements ParameterProvider, ProcessorService {
     static final String KEY_ALGO_NAME = "algoName";
 
     XtceDb xtcedb;
-
-    // the id used for subscribing to the parameterManager
-    int subscriptionId;
 
     // Index of all available out params
     NamedDescriptionIndex<Parameter> outParamIndex = new NamedDescriptionIndex<>();
@@ -123,12 +120,14 @@ public class AlgorithmManager extends AbstractProcessorService
 
         this.eventProducer = processor.getProcessorData().getEventProducer();
         this.parameterRequestManager = processor.getParameterRequestManager();
+
         this.parameterRequestManager.addParameterProvider(this);
+        this.parameterRequestManager.setAlgortihmManager(this);
+
         xtcedb = processor.getXtceDb();
         timer = processor.getTimer();
 
         globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData());
-        subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {
             if (algo.getScope() == Algorithm.Scope.GLOBAL) {
@@ -160,16 +159,12 @@ public class AlgorithmManager extends AbstractProcessorService
                         timer.scheduleAtFixedRate(() -> {
                             long t = processor.getCurrentTime();
                             List<ParameterValue> params = activeAlgo.runAlgorithm(t, t);
-                            parameterRequestManager.update(params);
+                            parameterRequestManager.update(new ParameterValueList(params));
                         }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
                     }
                 }
             }
         }
-    }
-
-    public int getSubscriptionId() {
-        return subscriptionId;
     }
 
     @Override
@@ -273,7 +268,7 @@ public class AlgorithmManager extends AbstractProcessorService
         // including the initialValue
         LastValueCache lvc = processor.getLastValueCache();
         if (lvc != null) {
-            executor.updateParameters(new ArrayList<>(lvc.getValues()));
+            executor.updateParameters(new ParameterValueList(lvc.getValues()));
         }
 
         try {
@@ -313,7 +308,7 @@ public class AlgorithmManager extends AbstractProcessorService
                 }
             }
             if (!newItems.isEmpty()) {
-                parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
+                parameterRequestManager.subscribeToProviders(newItems);
             }
             executionOrder.add(activeAlgo); // Add at the back (dependent algorithms will come in front)
         } catch (InvalidRequestIdentification e) {
@@ -413,40 +408,36 @@ public class AlgorithmManager extends AbstractProcessorService
         }
     }
 
-    @Override
-    public List<ParameterValue> updateParameters(int subscriptionId, List<ParameterValue> items) {
-        return updateParameters(items, globalCtx);
+    public void updateDelivery(ParameterValueList pvList) {
+        updateDelivery(pvList, globalCtx);
     }
 
     /**
      * Update parameters in context and run the affected algorithms
      *
-     * @param items
+     * <p>
+     * Add the result of the algorithms to the currentDelivery
+     * 
+     * @param currentDelivery
      * @param ctx
-     * @return the parameters resulting from running the algorithms
      */
-    public List<ParameterValue> updateParameters(List<ParameterValue> items, AlgorithmExecutionContext ctx) {
-        ArrayList<ParameterValue> newItems = new ArrayList<>();
-
-        ctx.updateHistoryWindows(items);
+    public void updateDelivery(ParameterValueList currentDelivery, AlgorithmExecutionContext ctx) {
+        ctx.updateHistoryWindows(currentDelivery);
         long acqTime = processor.getCurrentTime();
-        long genTime = items.get(0).getGenerationTime();
+        long genTime = currentDelivery.getFirst().getGenerationTime();
 
-        ArrayList<ParameterValue> allItems = new ArrayList<>(items);
         for (ActiveAlgorithm activeAlgo : executionOrder) {
             if (ctx == globalCtx || activeAlgo.getExecutionContext() == ctx) {
-                boolean shouldRun = activeAlgo.updateParameters(allItems);
+                boolean shouldRun = activeAlgo.updateParameters(currentDelivery);
                 if (shouldRun) {
                     List<ParameterValue> r = activeAlgo.runAlgorithm(acqTime, genTime);
                     if (r != null) {
-                        allItems.addAll(r);
-                        newItems.addAll(r);
-                        ctx.updateHistoryWindows(r);
+                        currentDelivery.addAll(r);
+                        ctx.updateHistoryWindows(new ParameterValueList(r));
                     }
                 }
             }
         }
-        return newItems;
     }
 
     @Override

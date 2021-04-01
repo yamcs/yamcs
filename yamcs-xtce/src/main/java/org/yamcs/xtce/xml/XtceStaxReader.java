@@ -3643,7 +3643,6 @@ public class XtceStaxReader {
         CommandVerifier cmdVerifier = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
             if (isStartElementWithName(XTCE_CONTAINER_REF)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.CONTAINER, stage);
                 readContainerRef(spaceSystem, cmdVerifier);
@@ -3652,6 +3651,18 @@ public class XtceStaxReader {
                 CustomAlgorithm algo = readCustomAlgorithm(spaceSystem);
                 algo.setScope(Scope.COMMAND_VERIFICATION);
                 cmdVerifier.setAlgorithm(algo);
+            } else if (isStartElementWithName(XTCE_COMPARISON)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
+                MatchCriteria matchCriteria = readComparison(spaceSystem);
+                cmdVerifier.setMatchCriteria(matchCriteria);
+            } else if (isStartElementWithName(XTCE_COMPARISON_LIST)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
+                MatchCriteria matchCriteria = readComparisonList(spaceSystem);
+                cmdVerifier.setMatchCriteria(matchCriteria);
+            } else if (isStartElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
+                MatchCriteria matchCriteria = readBooleanExpression(spaceSystem);
+                cmdVerifier.setMatchCriteria(matchCriteria);
             } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
                 CheckWindow cw = readCheckWindow(spaceSystem);
                 if (cmdVerifier != null) {
@@ -3704,17 +3715,12 @@ public class XtceStaxReader {
         long timeToStopChecking = parseDuration(readMandatoryAttribute("timeToStopChecking", element));
 
         v = readAttribute("timeWindowIsRelativeTo", element, "timeLastVerifierPassed");
-        CheckWindow.TimeWindowIsRelativeToType timeWindowIsRelativeTo;
-        if ("timeLastVerifierPassed".equals(v)) {
-            timeWindowIsRelativeTo = TimeWindowIsRelativeToType.LastVerifier;
-        } else if ("commandRelease".equals(v)) {
-            timeWindowIsRelativeTo = TimeWindowIsRelativeToType.CommandRelease;
-        } else {
+        try {
+            CheckWindow.TimeWindowIsRelativeToType timeWindowIsRelativeTo = TimeWindowIsRelativeToType.fromXtce(v);
+            return new CheckWindow(timeToStartChecking, timeToStopChecking, timeWindowIsRelativeTo);
+        } catch (IllegalArgumentException e) {
             throw new XMLStreamException("Invalid value '" + v + "' for timeWindowIsRelativeTo");
         }
-
-        return new CheckWindow(timeToStartChecking, timeToStopChecking, timeWindowIsRelativeTo);
-
     }
 
     long parseDuration(String v) {

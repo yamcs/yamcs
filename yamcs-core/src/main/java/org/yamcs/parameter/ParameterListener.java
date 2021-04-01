@@ -1,9 +1,5 @@
 package org.yamcs.parameter;
 
-import java.util.Collection;
-
-import org.yamcs.parameter.ParameterValue;
-
 /**
  * This is the interface implemented by the ParameterRequestManager to receive parameters from 
  * the different parameter providers.  
@@ -18,5 +14,5 @@ public interface ParameterListener {
      * @param params
      *            - new delivered parameter values
      */
-    public abstract void update(Collection<ParameterValue> params);
+    public abstract void update(ParameterValueList params);
 }

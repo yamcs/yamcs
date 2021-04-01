@@ -1,8 +1,10 @@
 package org.yamcs.algorithms;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 
@@ -16,13 +18,34 @@ public interface AlgorithmExecutor {
     Algorithm getAlgorithm();
 
     /**
-     * Update parameters and return true if the algorithm should run
+     * use the method below instead which provides a list indexed by parameter
+     * <p>
+     * (the list can be large as it contains all parameters that are part of a delivery
+     * (for example all parameters extracted from one packet)!)
      * 
      * @param paramList
-     *            - list of input parameters
+     * @return
+     */
+    @Deprecated
+    default boolean updateParameters(List<ParameterValue> paramList) {
+        return false;
+    }
+
+    /**
+     * This method is called each time new parameters are received (for example extracting them from a packet).
+     * <p>
+     * The list can be large, it can contain all parameters extracted from one packet.
+     * <p>
+     * The executor should copy its inputs if updated or should use the list to determine if it should
+     * run.
+     * 
+     * @param currentDelivery
+     *            - list of parameters part of the current delivery
      * @return true if the algorithm should run
      */
-    boolean updateParameters(List<ParameterValue> paramList);
+    default boolean updateParameters(ParameterValueList currentDelivery) {
+        return updateParameters(new ArrayList<>(currentDelivery));
+    }
 
     /**
      * Runs the associated algorithm with the latest InputParameters.

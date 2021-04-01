@@ -18,7 +18,9 @@ public class CommandVerifier implements Serializable {
     private static final long serialVersionUID = 2L;
 
     public enum Type {
-        CONTAINER, ALGORITHM
+        CONTAINER, ALGORITHM,
+        /* this covers XTCE comparison and comparison list */
+        MATCH_CRITERIA
     };
 
     private final Type type;
@@ -55,12 +57,17 @@ public class CommandVerifier implements Serializable {
      */
     SequenceContainer containerRef;
     Algorithm algorithm;
+    MatchCriteria matchCriteria;
+
+    // valid for matchCriteria - if true the first time the condition can be checked (i.e. all input parameters
+    // available) and the condition does not match, the verifier will fail.
+    // if false, the verifier will keep checking until timeout (it will never fail)
+    boolean verifierFailOnFirstFailedMatch = false;
 
     // NOT implemented from XTCE
     /*
-     * comparisonList;
      * ParameterValueChange
-     * BooleanExpression
+     * 
      */
 
     public CommandVerifier(Type type, String stage) {
@@ -83,6 +90,7 @@ public class CommandVerifier implements Serializable {
         this.onSuccess = cv.onSuccess;
         this.onFail = cv.onFail;
         this.onTimeout = cv.onTimeout;
+        this.matchCriteria = cv.matchCriteria;
     }
 
     public String getStage() {
@@ -107,6 +115,13 @@ public class CommandVerifier implements Serializable {
 
     public void setAlgorithm(Algorithm algo) {
         this.algorithm = algo;
+    }
+
+    public void setMatchCriteria(MatchCriteria matchCriteria) {
+        if (type != Type.MATCH_CRITERIA) {
+            throw new IllegalStateException("This verifier is of type " + type);
+        }
+        this.matchCriteria = matchCriteria;
     }
 
     public CheckWindow getCheckWindow() {
@@ -141,6 +156,13 @@ public class CommandVerifier implements Serializable {
         this.onSuccess = onSuccess;
     }
 
+    public MatchCriteria getMatchCriteria() {
+        return matchCriteria;
+    }
+
+    public boolean failOnFirstFailedMatch() {
+        return verifierFailOnFirstFailedMatch;
+    }
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{stage: ").append(stage);
@@ -150,7 +172,11 @@ public class CommandVerifier implements Serializable {
         if (algorithm != null) {
             sb.append(", algorithm: ").append(algorithm.getName());
         }
+        if (matchCriteria != null) {
+            sb.append(", matchCriteria: ").append(matchCriteria);
+        }
         sb.append(", checkWindow: ").append(checkWindow.toString()).append("}");
         return sb.toString();
     }
+
 }

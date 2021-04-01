@@ -2,11 +2,11 @@ package org.yamcs.algorithms;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
@@ -70,13 +70,15 @@ public class AlgorithmExecutionContext {
         return enabled;
     }
 
-    public void updateHistoryWindows(List<ParameterValue> pvals) {
-        for (ParameterValue pval : pvals) {
-            if (buffersByParam.containsKey(pval.getParameter())) {
-                buffersByParam.get(pval.getParameter()).update(pval);
-            } else if (parent != null) {
-                parent.updateHistoryWindow(pval);
+    public void updateHistoryWindows(ParameterValueList currentDelivery) {
+        for (Map.Entry<Parameter, WindowBuffer> me : buffersByParam.entrySet()) {
+            ParameterValue pval = currentDelivery.getFirstInserted(me.getKey());
+            if (pval != null) {
+                me.getValue().update(pval);
             }
+        }
+        if (parent != null) {
+            parent.updateHistoryWindows(currentDelivery);
         }
     }
 

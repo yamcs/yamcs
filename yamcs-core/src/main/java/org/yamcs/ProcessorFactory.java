@@ -85,10 +85,12 @@ public class ProcessorFactory {
      * @return
      * @throws ProcessorException
      * @throws ConfigurationException
+     * @throws ValidationException
      **/
     public static Processor create(String instance, String name, String type,
             List<ProcessorServiceWithConfig> serviceList,
-            String creator, ProcessorConfig config, Object spec) throws ProcessorException, ConfigurationException, InitException {
+            String creator, ProcessorConfig config, Object spec)
+            throws ProcessorException, ConfigurationException, InitException, ValidationException {
         if (config == null) {
             throw new NullPointerException("config cannot be null");
         }
@@ -103,9 +105,11 @@ public class ProcessorFactory {
 
     /**
      * creates a processor with the services already instantiated. used from unit tests
+     * 
+     * @throws ValidationException
      */
     public static Processor create(String yamcsInstance, String name, ProcessorService... services)
-            throws ProcessorException, ConfigurationException, InitException {
+            throws ProcessorException, ConfigurationException, InitException, ValidationException {
         List<ProcessorServiceWithConfig> serviceList = new ArrayList<>();
         for (ProcessorService service : services) {
             serviceList.add(
@@ -117,9 +121,11 @@ public class ProcessorFactory {
     
     /**
      * creates a processor with the services already instantiated. used from unit tests
+     * 
+     * @throws ValidationException
      */
     public static Processor create(String yamcsInstance, String name, ProcessorServiceWithConfig... serviceList)
-            throws ProcessorException, ConfigurationException, InitException {
+            throws ProcessorException, ConfigurationException, InitException, ValidationException {
         return create(yamcsInstance, name, "test", Arrays.asList(serviceList), "test", new ProcessorConfig(), null);
     }
 

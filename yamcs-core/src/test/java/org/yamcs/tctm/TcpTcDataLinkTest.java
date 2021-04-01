@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -121,7 +122,7 @@ public class TcpTcDataLinkTest {
         TcpTcDataLink dataLink = new TcpTcDataLink();
         dataLink.init("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
-        MyPublisher mypub = new MyPublisher(semaphore);
+        MyCmdHistPublisher mypub = new MyCmdHistPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);
 
         dataLink.startAsync();
@@ -152,7 +153,7 @@ public class TcpTcDataLinkTest {
         TcpTcDataLink dataLink = new TcpTcDataLink();
         dataLink.init("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
-        MyPublisher mypub = new MyPublisher(semaphore);
+        MyCmdHistPublisher mypub = new MyCmdHistPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);
 
         dataLink.startAsync();
@@ -178,13 +179,13 @@ public class TcpTcDataLinkTest {
         return pc;
     }
 
-    public static class MyPublisher implements CommandHistoryPublisher {
+    public static class MyCmdHistPublisher extends AbstractProcessorService implements CommandHistoryPublisher {
         Map<Integer, Long> sentTime = new HashMap<>();
         List<Integer> successful = new ArrayList<>();
         List<Integer> failed = new ArrayList<>();
         Semaphore semaphore;
 
-        public MyPublisher(Semaphore semaphore) {
+        public MyCmdHistPublisher(Semaphore semaphore) {
             this.semaphore = semaphore;
         }
 
@@ -217,6 +218,15 @@ public class TcpTcDataLinkTest {
 
         @Override
         public void addCommand(PreparedCommand pc) {
+        }
+
+        @Override
+        protected void doStart() {
+
+        }
+
+        @Override
+        protected void doStop() {
         }
     }
 }

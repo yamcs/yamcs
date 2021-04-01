@@ -1,11 +1,12 @@
 package org.yamcs.xtceproc;
 
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.parameter.LastValueCache;
@@ -40,15 +41,13 @@ public class ParameterAlarmChecker {
 
     private AlarmServer<Parameter, ParameterValue> alarmServer;
 
-    private final int subscriptionId;
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     LastValueCache lastValueCache;
     final ProcessorData pdata;
 
-    public ParameterAlarmChecker(ParameterRequestManager prm, ProcessorData pdata, int subscriptionId) {
-        this.subscriptionId = subscriptionId;
+    public ParameterAlarmChecker(ParameterRequestManager prm, ProcessorData pdata) {
         this.prm = prm;
         this.lastValueCache = prm.getLastValueCache();
         this.pdata = pdata;
@@ -65,18 +64,20 @@ public class ParameterAlarmChecker {
             return;
         }
         Set<Parameter> params = ptype.getDependentParameters();
-        for (Parameter p1 : params) {
-            prm.addItemsToRequest(subscriptionId, p1);
-        }
+        prm.subscribeToProviders(params);
     }
 
     /**
-     * Updates the supplied ParameterValues with monitoring (out of limits)
+     * Updates the iterator supplied ParameterValues with monitoring (out of limits)
      * information.
+     * <p>
+     * The method is called once before the algorithms are run and once after the algorithms to also check
+     * the new values.
      */
-    public void performAlarmChecking(Collection<ParameterValue> pvals) {
-        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(null, lastValueCache);
-        for (ParameterValue pval : pvals) {
+    public void performAlarmChecking(ParameterValueList currentDelivery, Iterator<ParameterValue> it) {
+        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(currentDelivery, lastValueCache);
+        while (it.hasNext()) {
+            ParameterValue pval = it.next();
             ParameterType ptype = pdata.getParameterType(pval.getParameter());
             if (ptype != null && ptype.hasAlarm()) {
                 performAlarmChecking(pval, ptype, criteriaEvaluator);
@@ -338,9 +339,5 @@ public class ParameterAlarmChecker {
         if (alarmServer != null) {
             alarmServer.update(pv, minViolations, autoAck, latching);
         }
-    }
-
-    public int getSubscriptionId() {
-        return subscriptionId;
     }
 }

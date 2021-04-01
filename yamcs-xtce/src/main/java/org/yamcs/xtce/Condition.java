@@ -56,7 +56,7 @@ public class Condition implements BooleanExpression {
     }
 
     @Override
-    public boolean isMet(CriteriaEvaluator evaluator) {
+    public MatchResult matches(CriteriaEvaluator evaluator) {
         return evaluator.evaluate(comparisonOperator, lValueRef, rValueRef);
     }
 

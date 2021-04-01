@@ -178,7 +178,6 @@ public class XtceAssemblerTest {
                 f.setAccessible(true);
                 Object o1c = f.get(o1);
                 Object o2c = f.get(o2);
-                // System.out.println("comparring "+o1.getClass());
                 if (o1c == null) {
                     assertNull(name + " " + o1 + " field: " + f.getName(), o2c);
                 } else if (o2c == null) {

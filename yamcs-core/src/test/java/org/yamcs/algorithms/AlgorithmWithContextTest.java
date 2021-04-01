@@ -13,16 +13,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -44,7 +43,7 @@ public class AlgorithmWithContextTest {
     }
 
     @Before
-    public void beforeEachTest() throws InitException, ProcessorException {
+    public void beforeEachTest() throws Exception {
         db = XtceDbFactory.getInstance("refmdb");
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
@@ -80,7 +79,7 @@ public class AlgorithmWithContextTest {
         Parameter p = db.getParameter("/yamcs/cmd/para1");
         ParameterValue pv = new ParameterValue(p);
         pv.setEngineeringValue(ValueUtility.getUint32Value(10));
-        algm.updateParameters(Arrays.asList(pv), ctx);
+        algm.updateDelivery(ParameterValueList.asList(pv), ctx);
 
         assertEquals(2, params.size());
         assertNull(params.get(0));

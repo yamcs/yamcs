@@ -23,7 +23,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -88,6 +87,7 @@ import org.yamcs.client.YamcsClient;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.SubscribePacketsRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.CcsdsPacketInputStream;
@@ -858,7 +858,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void update(final Collection<ParameterValue> params) {
+    public void update(final ParameterValueList params) {
         SwingUtilities.invokeLater(new Runnable() {
             Hashtable<String, TreeContainer> containers = new Hashtable<>();
 

@@ -7,6 +7,20 @@ import java.util.logging.Logger;
 
 public interface MatchCriteria extends Serializable {
 
+    public enum MatchResult {
+        /**
+         * condition matches
+         */
+        OK,
+        /**
+         * condition does not match
+         */
+        NOK,
+        /**
+         * matching cannot be determined because not all inputs are availalbe
+         */
+        UNDEF;
+    }
     /**
      * Return the set of parameters which are required in order to evaluate the match criteria. If no parameter is
      * required, return an empty set.
@@ -21,7 +35,11 @@ public interface MatchCriteria extends Serializable {
      * @param evaluator
      * @return
      */
-    boolean isMet(CriteriaEvaluator evaluator);
+    default boolean isMet(CriteriaEvaluator evaluator) {
+        return matches(evaluator) == MatchResult.OK;
+    }
+
+    MatchResult matches(CriteriaEvaluator evaluator);
 
     public String toExpressionString();
 
@@ -80,8 +98,8 @@ public interface MatchCriteria extends Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public boolean isMet(CriteriaEvaluator evaluator) {
-            return true;
+        public MatchResult matches(CriteriaEvaluator evaluator) {
+            return MatchResult.OK;
         }
 
         @Override

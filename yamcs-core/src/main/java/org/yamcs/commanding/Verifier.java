@@ -1,11 +1,14 @@
 package org.yamcs.commanding;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.CommandVerifier;
 
 abstract class Verifier {
     final protected CommandVerifier cv;
     final protected CommandVerificationHandler cvh;
+    final ScheduledThreadPoolExecutor timer;
 
     enum State {
         NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
@@ -18,6 +21,7 @@ abstract class Verifier {
     Verifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         this.cv = cv;
         this.cvh = cvh;
+        this.timer = cvh.timer;
     }
 
     void start() {
@@ -49,6 +53,14 @@ abstract class Verifier {
         }
         state = result ? State.OK : State.NOK;
         cvh.onVerifierFinished(this, failureReason);
+    }
+
+    void finishOK() {
+        finished(true, null);
+    }
+
+    void finishNOK() {
+        finished(false, null);
     }
 
     abstract void doStart();

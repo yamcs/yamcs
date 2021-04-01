@@ -5,14 +5,22 @@ import java.util.stream.Collectors;
 public class ANDedConditions extends ExpressionList {
     private static final long serialVersionUID = 6301730763127090210L;
 
+
     @Override
-    public boolean isMet(CriteriaEvaluator evaluator) {
+    public MatchResult matches(CriteriaEvaluator evaluator) {
+        MatchResult result = MatchResult.OK;
+
         for (BooleanExpression exp : expressions) {
-            if (!exp.isMet(evaluator)) {
-                return false;
+            MatchResult r = exp.matches(evaluator);
+            if (r == MatchResult.NOK) {
+                result = r;
+                break;
+            } else if (r == MatchResult.UNDEF) {
+                result = r;
+                // continue checking maybe a comparison will return NOK
             }
         }
-        return true;
+        return result;
     }
 
     @Override

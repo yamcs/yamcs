@@ -14,10 +14,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorService;
 import org.yamcs.ProcessorServiceWithConfig;
@@ -28,7 +26,6 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.yarch.protobuf.Db.Event;
-import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.AlgorithmTrace.Log;
 import org.yamcs.protobuf.AlgorithmTrace.Run;
 import org.yamcs.protobuf.Pvalue;
@@ -55,7 +52,7 @@ public class AlgorithmManagerTest {
     AlgorithmManager algMgr;
 
     @Before
-    public void beforeEachTest() throws InitException, ProcessorException {
+    public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
         q = EventProducerFactory.getMockupQueue();
 

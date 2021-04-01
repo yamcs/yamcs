@@ -17,6 +17,7 @@ import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
@@ -94,7 +95,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
      */
     @Override
     public void onTuple(Stream s, Tuple tuple) {// the definition of the tuple is in PpProviderAdapter
-        List<ParameterValue> params = new ArrayList<>();
+        ParameterValueList params = new ParameterValueList();
         for (int i = 4; i < tuple.size(); i++) {
             Object o = tuple.getColumn(i);
             ParameterValue pv;

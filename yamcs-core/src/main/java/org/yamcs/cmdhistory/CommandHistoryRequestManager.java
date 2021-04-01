@@ -2,7 +2,6 @@ package org.yamcs.cmdhistory;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +11,6 @@ import org.yamcs.Processor;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -130,6 +128,11 @@ public class CommandHistoryRequestManager extends AbstractService {
      * Called when a new command has to be added to the command history (i.e. when a users sends a telecommand)
      */
     public void addCommand(PreparedCommand pc) {
+        if (activeCommands.containsKey(pc.getCommandId())) {
+            // this happens since Yamcs 5.4.4 - the StreamCommandHistoryProvider will send the command here but also
+            // comes directly from the command queue manager
+            return;
+        }
         log.debug("addCommand cmdId={}", pc);
         CommandHistoryEntry che = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).build();
 

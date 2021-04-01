@@ -76,7 +76,7 @@ public class Comparison implements MatchCriteria {
     }
 
     @Override
-    public boolean isMet(CriteriaEvaluator evaluator) {
+    public MatchResult matches(CriteriaEvaluator evaluator) {
         return evaluator.evaluate(comparisonOperator, instanceRef, value);
     }
 

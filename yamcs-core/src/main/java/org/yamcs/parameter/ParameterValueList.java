@@ -1,11 +1,11 @@
 package org.yamcs.parameter;
 
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Parameter;
 
 /**
@@ -28,6 +28,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
     int size;
     int threshold;
     float loadFactor = 0.75f;
+    private int rmCount = 0;
 
     public ParameterValueList() {
         size = 0;
@@ -192,6 +193,12 @@ public class ParameterValueList implements Collection<ParameterValue> {
         return r;
     }
 
+    /**
+     * Returns first inserted parameter value for the given parameter or null if there is none
+     * 
+     * @param p
+     * @return
+     */
     public ParameterValue getFirstInserted(Parameter p) {
         int index = getHash(p) & (table.length - 1);
         ParameterValue r = null;
@@ -250,6 +257,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
         if (r == null) {
             return null;
         }
+        rmCount++;
 
         size--;
         if (table[index] == r) {
@@ -296,7 +304,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
         if (r == null) {
             return null;
         }
-
+        rmCount++;
         size--;
         if (table[index] == r) {
             table[index] = r.next;
@@ -324,9 +332,21 @@ public class ParameterValueList implements Collection<ParameterValue> {
         return v;
     }
 
+    /**
+     * Creates an iterator which is positioned on the end of the list but returns all the elements added after the
+     * iterator has been created.
+     * <p>
+     * Removing elements will invalidate the iterator.
+     * 
+     * @return
+     */
+    public Iterator<ParameterValue> tailIterator() {
+        return new Iter(true);
+    }
+
     @Override
     public Iterator<ParameterValue> iterator() {
-        return new Iter();
+        return new Iter(false);
     }
 
     /**
@@ -464,7 +484,11 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     static class Entry {
         final ParameterValue pv;
-        Entry next, before, after;
+        // next value for the same parameter
+        Entry next;
+
+        // ordering in the linked list
+        Entry before, after;
 
         Entry(ParameterValue pv) {
             this.pv = pv;
@@ -472,28 +496,42 @@ public class ParameterValueList implements Collection<ParameterValue> {
     }
 
     private final class Iter implements Iterator<ParameterValue> {
-        Entry next = head.after;
+        Entry cur;
+        int expectedRmCount;
 
+        public Iter(boolean tail) {
+            cur = tail ? head.before : head;
+            expectedRmCount = rmCount;
+        }
         @Override
         public boolean hasNext() {
-            return next != head;
+            return cur.after != head;
         }
 
         @Override
         public ParameterValue next() {
-            if (next == head) {
+            if (cur.after == head) {
                 throw new NoSuchElementException();
             }
+            if (rmCount != expectedRmCount) {
+                throw new ConcurrentModificationException();
+            }
+            cur = cur.after;
 
-            Entry r = next;
-            next = r.after;
-
-            return r.pv;
+            return cur.pv;
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public static ParameterValueList asList(ParameterValue... pvs) {
+        ParameterValueList pvl = new ParameterValueList();
+        for (ParameterValue pv : pvs) {
+            pvl.add(pv);
+        }
+        return pvl;
     }
 }

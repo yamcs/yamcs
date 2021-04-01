@@ -34,11 +34,6 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
     public void init(Processor proc, YConfiguration config, Object spec) {
         super.init(proc, config, spec);
         readStreamConfig();
-        try {
-            proc.setCommandReleaser(this);
-        } catch (ValidationException e) {
-            throw new ConfigurationException(e.getMessage());
-        }
         this.processor = proc;
         this.commandHistoryPublisher = proc.getCommandHistoryPublisher();
     }

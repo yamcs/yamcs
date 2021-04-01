@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -42,40 +43,41 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     /**
      * update the parameters and return true if the algorithm should run
      * 
-     * @param items
+     * @param currentDelivery
      * @return true if the algorithm should run
      */
     @Override
-    public synchronized boolean updateParameters(List<ParameterValue> items) {
+    public synchronized boolean updateParameters(ParameterValueList currentDelivery) {
         boolean skipRun = false;
         List<InputParameter> l = algorithmDef.getInputList();
 
         for (int k = 0; k < l.size(); k++) {
             InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
-            for (ParameterValue pval : items) {
-                if (pval.getAcquisitionStatus() == AcquisitionStatus.INVALID) {
-                    continue;
-                }
-                if (pInstance.getParameter().equals(pval.getParameter())) {
-                    if (AlgorithmUtils.getLookbackSize(algorithmDef, pInstance.getParameter()) == 0) {
-                        updateInput(k, inputParameter, pval);
-                        inputValues.set(k, pval);
-                    } else {
-                        ParameterValue historicValue = execCtx.getHistoricValue(pInstance);
-                        if (historicValue != null) {
-                            updateInput(k, inputParameter, historicValue);
-                            inputValues.set(k, historicValue);
-                        }
+
+            // FIXME deal with multiple values of the same parameter in the same delivery
+            ParameterValue pval = currentDelivery.getFirstInserted(pInstance.getParameter());
+
+            if (pval != null && pval.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED) {
+                if (AlgorithmUtils.getLookbackSize(algorithmDef, pInstance.getParameter()) == 0) {
+                    updateInput(k, inputParameter, pval);
+                    inputValues.set(k, pval);
+                } else {
+                    ParameterValue historicValue = execCtx.getHistoricValue(pInstance);
+                    if (historicValue != null) {
+                        updateInput(k, inputParameter, historicValue);
+                        inputValues.set(k, historicValue);
                     }
                 }
-            }
-            if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
-                log.trace("Not running algorithm {} because mandatory input {} is not present", algorithmDef.getName(),
-                        inputParameter.getInputName());
-                skipRun = true;
+                if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
+                    log.trace("Not running algorithm {} because mandatory input {} is not present",
+                            algorithmDef.getName(),
+                            inputParameter.getInputName());
+                    skipRun = true;
+                }
             }
         }
+
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered = false;
         TriggerSetType triggerSet = algorithmDef.getTriggerSet();
@@ -83,14 +85,10 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             triggered = true;
         } else {
             for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
-                if (triggered) {
+                ParameterValue pval = currentDelivery.getFirstInserted(trigger.getParameter());
+                if (pval != null) {
+                    triggered = true;
                     break;
-                }
-                for (ParameterValue pval : items) {
-                    if (pval.getParameter().equals(trigger.getParameter())) {
-                        triggered = true;
-                        break;
-                    }
                 }
             }
             if (!skipRun && !triggered && log.isTraceEnabled()) {
@@ -126,8 +124,6 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     protected Parameter getOutputParameter(int idx) {
         return algorithmDef.getOutputSet().get(idx).getParameter();
     }
-
-
 
     @Override
     public AlgorithmExecutionContext getExecutionContext() {

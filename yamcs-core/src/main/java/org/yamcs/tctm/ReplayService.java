@@ -29,6 +29,7 @@ import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -99,7 +100,6 @@ public class ReplayService extends AbstractProcessorService
             excludeParameterGroups = args.getList("excludeParameterGroups");
         }
         this.tmProcessor = proc.getTmProcessor();
-        proc.setCommandHistoryProvider(this);
         parameterRequestManager = proc.getParameterRequestManager();
         proc.setPacketProvider(this);
         parameterRequestManager.addParameterProvider(this);
@@ -152,7 +152,7 @@ public class ReplayService extends AbstractProcessorService
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
                 replayTime = pvals.get(0).getGenerationTime();
-                parameterRequestManager.update(calibrate(pvals));
+                parameterRequestManager.update(new ParameterValueList(calibrate(pvals)));
             }
             break;
         case CMD_HISTORY:

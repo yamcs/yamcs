@@ -1,6 +1,5 @@
 package org.yamcs.algorithms;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -9,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Algorithm;
 
 /**
@@ -101,7 +101,7 @@ public class ActiveAlgorithm {
         return context;
     }
 
-    public boolean updateParameters(ArrayList<ParameterValue> paramList) {
+    public boolean updateParameters(ParameterValueList paramList) {
         return executor.updateParameters(paramList);
     }
 

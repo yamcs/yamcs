@@ -46,8 +46,7 @@ public class CcsdsGreenBookCommandEncodingTest {
 
         List<CommandVerifier> vl = mc.getCommandVerifiers();
 
-        // TODO should be two here but we do not support yet the parameter comparison verifier
-        assertEquals(1, vl.size());
+        assertEquals(2, vl.size());
         CommandVerifier cv = vl.get(0);
         assertEquals(CommandVerifier.Type.CONTAINER, cv.getType());
         CheckWindow cw = cv.getCheckWindow();

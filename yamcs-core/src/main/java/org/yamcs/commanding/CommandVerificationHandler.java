@@ -30,7 +30,6 @@ import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 /**
@@ -84,17 +83,25 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
 
         for (CommandVerifier cv : cmdVerifiers) {
-            SequenceContainer c = cv.getContainerRef();
             Verifier verifier;
 
-            if (c != null) {
-                verifier = new ContainerVerifier(this, cv, c);
-            } else {
+            switch (cv.getType()) {
+            case ALGORITHM:
                 if (algorithmCtx == null) {
                     createAlgorithmContext();
                 }
                 verifier = new AlgorithmVerifier(this, cv);
+                break;
+            case CONTAINER:
+                verifier = new ContainerVerifier(this, cv, cv.getContainerRef());
+                break;
+            case MATCH_CRITERIA:
+                verifier = new MatchCriteriaVerifier(this, cv, log);
+                break;
+            default:
+                throw new IllegalStateException("Command verifier of type " + cv.getType() + " not implemented");
             }
+
             CheckWindow checkWindow = cv.getCheckWindow();
             boolean scheduleNow = true;
 

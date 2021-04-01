@@ -10,6 +10,7 @@ import org.yamcs.ErrorInCommand;
 import org.yamcs.Processor;
 import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
+import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -32,6 +33,7 @@ public class CommandingManager extends AbstractService {
     private Processor processor;
     private CommandQueueManager commandQueueManager;
     final MetaCommandProcessor metaCommandProcessor;
+    private CommandHistoryRequestManager cmdHistoryManager;
 
     /**
      * Keeps a reference to the channel and creates the queue manager
@@ -44,6 +46,7 @@ public class CommandingManager extends AbstractService {
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(),
                 commandQueueManager);
         metaCommandProcessor = new MetaCommandProcessor(proc.getProcessorData());
+        cmdHistoryManager = proc.getCommandHistoryManager();
     }
 
     public CommandQueueManager getCommandQueueManager() {
@@ -79,6 +82,7 @@ public class CommandingManager extends AbstractService {
      */
     public CommandQueue sendCommand(User user, PreparedCommand pc) {
         log.debug("sendCommand commandSource={}", pc.getSource());
+        cmdHistoryManager.addCommand(pc);
         return commandQueueManager.addCommand(user, pc);
     }
 
@@ -88,6 +92,10 @@ public class CommandingManager extends AbstractService {
 
     public Processor getProcessor() {
         return processor;
+    }
+
+    public MetaCommandProcessor getMetaCommandProcessor() {
+        return metaCommandProcessor;
     }
 
     @Override

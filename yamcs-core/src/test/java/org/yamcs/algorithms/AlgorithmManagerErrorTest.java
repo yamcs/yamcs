@@ -1,30 +1,27 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
 import java.util.logging.Level;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.LoggingUtils;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
+import org.yamcs.ValidationException;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -51,7 +48,7 @@ public class AlgorithmManagerErrorTest {
     Parameter p1, p2;
 
     @Before
-    public void beforeEachTest() throws InitException, ProcessorException {
+    public void beforeEachTest() throws InitException, ProcessorException, ConfigurationException, ValidationException {
         EventProducerFactory.setMockup(true);
 
         db = XtceDbFactory.getInstance(instance);
@@ -87,7 +84,7 @@ public class AlgorithmManagerErrorTest {
         ParameterValue pv1 = new ParameterValue(p1);
         pv1.setEngineeringValue(ValueUtility.getUint32Value(3));
         
-        algMgr.updateParameters(0, Arrays.asList(pv1));
+        algMgr.updateDelivery(ParameterValueList.asList(pv1));
         status1 = algMgr.getAlgorithmStatus(errAlg1);
         // errAlg1 doesn't run at all
         assertEquals(status1.getRunCount(), 0);

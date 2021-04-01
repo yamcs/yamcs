@@ -53,6 +53,9 @@
 			<xtce:Parameter name="param6" parameterTypeRef="float32" />
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
 			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
+			<xtce:Parameter name="local_para1" parameterTypeRef="uint16">
+				<xtce:ParameterProperties dataSource="local"/>
+			</xtce:Parameter>
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -223,13 +226,29 @@
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
 				</xtce:CommandContainer>
-				<xtce:TransmissionConstraintList>
-					<xtce:TransmissionConstraint timeOut="PT12.34S">
+			 	<xtce:TransmissionConstraintList>
+					<xtce:TransmissionConstraint timeOut="PT1.234S">
 						<xtce:ComparisonList>
-							<xtce:Comparison value="3.14" parameterRef="param3"/>
+							<xtce:Comparison value="42" parameterRef="local_para1"/>
 						</xtce:ComparisonList>
 					</xtce:TransmissionConstraint>
 				</xtce:TransmissionConstraintList>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_verifier">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_verifier">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+					<xtce:CompleteVerifier>
+						<xtce:Comparison value="47" parameterRef="local_para1"/>
+						<xtce:CheckWindow timeToStartChecking="PT0.1S" timeToStopChecking="PT1S"/>
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
 			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>

@@ -11,6 +11,9 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import javax.xml.XMLConstants;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -23,6 +26,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
+import org.yamcs.xtce.CommandVerifier.Type;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
@@ -43,8 +48,17 @@ public class XtceAssembler {
     private static final Log log = new Log(XtceAssembler.class);
     boolean emitYamcsNamespace = false;
     private SpaceSystem currentSpaceSystem;
+    final DatatypeFactory dataTypeFactory;
 
     XtceDb xtceDb;
+
+    public XtceAssembler() {
+        try {
+            dataTypeFactory = DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public final String toXtce(XtceDb xtceDb) {
         return toXtce(xtceDb, "/", fqn -> true);
@@ -1058,10 +1072,26 @@ public class XtceAssembler {
         if (command.getDefaultSignificance() != null) {
             writeSignificance(doc, command.getDefaultSignificance(), "DefaultSignificance");
         }
-        doc.writeEndElement();//MetaCommand
+        if (command.hasTransmissionConstraints()) {
+            doc.writeStartElement("TransmissionConstraintList");
+            for (TransmissionConstraint constraint : command.getTransmissionConstraintList()) {
+                writeTransmisisonContraint(doc, constraint);
+            }
+            doc.writeEndElement();
+        }
+
+        if (command.hasCommandVerifiers()) {
+            doc.writeStartElement("VerifierSet");
+            for (CommandVerifier verifier : command.getCommandVerifiers()) {
+                writeCommandVerifier(doc, verifier);
+            }
+            doc.writeEndElement();
+        }
+        doc.writeEndElement();// MetaCommand
     }
 
-    private void writeSignificance(XMLStreamWriter doc, Significance significance, String elementName) throws XMLStreamException {
+    private void writeSignificance(XMLStreamWriter doc, Significance significance, String elementName)
+            throws XMLStreamException {
         doc.writeStartElement(elementName);
         doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
         doc.writeAttribute("consequenceLevel", significance.getConsequenceLevel().xtceAlias());
@@ -1325,6 +1355,55 @@ public class XtceAssembler {
         doc.writeEndElement();// CommandContainer
     }
 
+    private void writeTransmisisonContraint(XMLStreamWriter doc, TransmissionConstraint constraint)
+            throws XMLStreamException {
+        doc.writeStartElement("TransmissionConstraint");
+        if (constraint.getTimeout() > 0) {
+            Duration d = dataTypeFactory.newDuration(constraint.getTimeout());
+            doc.writeAttribute("timeOut", d.toString());
+            writeMatchCriteria(doc, constraint.getMatchCriteria());
+        }
+        doc.writeEndElement();// TransmissionConstraint
+    }
+
+    private void writeCommandVerifier(XMLStreamWriter doc, CommandVerifier verifier)
+            throws XMLStreamException {
+        doc.writeStartElement(verifier.getStage() + "Verifier");
+        switch (verifier.getType()) {
+        case MATCH_CRITERIA:
+            writeMatchCriteria(doc, verifier.getMatchCriteria());
+            break;
+        case CONTAINER:
+            doc.writeStartElement("ContainerRef");
+            doc.writeAttribute("containerRef", getNameReference(verifier.getContainerRef()));
+            doc.writeEndElement();
+            break;
+        case ALGORITHM:
+            writeCustomAlgorithm(doc, (CustomAlgorithm) verifier.getAlgorithm(), "CustomAlgorithm");
+            break;
+        }
+
+        writeCheckWindow(doc, verifier.getCheckWindow());
+        doc.writeEndElement();// verifier name (stage)
+    }
+
+    private void writeCheckWindow(XMLStreamWriter doc, CheckWindow cw) throws XMLStreamException {
+        doc.writeStartElement("CheckWindow");
+
+        if (cw.getTimeToStartChecking() > 0) {
+            doc.writeAttribute("timeToStartChecking",
+                    dataTypeFactory.newDuration(cw.getTimeToStartChecking()).toString());
+        }
+
+        doc.writeAttribute("timeToStopChecking",
+                dataTypeFactory.newDuration(cw.getTimeToStopChecking()).toString());
+
+        if (cw.getTimeWindowIsRelativeTo() != TimeWindowIsRelativeToType.LastVerifier) {
+            doc.writeAttribute("timeWindowIsRelativeTo", cw.getTimeWindowIsRelativeTo().toXtce());
+        }
+        doc.writeEndElement();// CheckWindow
+    }
+
     private String getNameReference(ParameterInstanceRef pinstRef) {
         StringBuilder sb = new StringBuilder();
         sb.append(getNameReference(pinstRef.getParameter()));
@@ -1373,4 +1452,5 @@ public class XtceAssembler {
             doc.writeCharacters(text);
         }
     }
+
 }

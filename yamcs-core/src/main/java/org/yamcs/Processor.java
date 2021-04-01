@@ -115,8 +115,8 @@ public class Processor extends AbstractService {
         log = new Log(Processor.class, yamcsInstance);
         log.info("Creating new processor '{}' of type '{}'", name, type);
         log.setContext(name);
-        timer = new ScheduledThreadPoolExecutor(1, 
-                new ThreadFactoryBuilder().setNameFormat("Processor-"+yamcsInstance+"."+name).build());
+        timer = new ScheduledThreadPoolExecutor(1,
+                new ThreadFactoryBuilder().setNameFormat("Processor-" + yamcsInstance + "." + name).build());
     }
 
     /**
@@ -139,10 +139,11 @@ public class Processor extends AbstractService {
      * @param spec
      *            - configuration passed from the client when creating the processor
      * @throws ProcessorException
+     * @throws ValidationException
      * @throws ConfigurationException
      */
     void init(List<ProcessorServiceWithConfig> serviceList, ProcessorConfig config, Object spec)
-            throws ProcessorException, InitException {
+            throws ProcessorException, InitException, ValidationException {
         log.debug("Initialzing the processor with the configuration {}", config);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -175,13 +176,38 @@ public class Processor extends AbstractService {
         parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
 
         for (ProcessorServiceWithConfig swc : serviceList) {
+            if (swc.service instanceof CommandHistoryPublisher) {
+                commandHistoryPublisher = (CommandHistoryPublisher) swc.service;
+            }
+
+            if (swc.service instanceof CommandHistoryProvider) {
+                setCommandHistoryProvider((CommandHistoryProvider) swc.service);
+            }
+            if (swc.service instanceof CommandReleaser) {
+                this.commandReleaser = (CommandReleaser) swc.service;
+            }
+        }
+        if (commandReleaser != null) {
+            if (commandHistoryPublisher == null) {
+                commandHistoryPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
+            }
+            if (commandHistoryProvider == null) {
+                setCommandHistoryProvider(new StreamCommandHistoryProvider(yamcsInstance));
+            }
+
+            commandingManager = new CommandingManager(this);
+            commandReleaser.setCommandHistory(commandHistoryPublisher);
+        }
+        for (ProcessorServiceWithConfig swc : serviceList) {
             ProcessorService service = (ProcessorService) swc.service;
             service.init(this, swc.getConfig(), spec);
         }
 
+
         parameterRequestManager.init();
 
         listeners.forEach(l -> l.processorAdded(this));
+
     }
 
     public void setPacketProvider(TmPacketProvider tpp) {
@@ -189,20 +215,6 @@ public class Processor extends AbstractService {
             throw new IllegalStateException("There is already a packet provider");
         }
         tmPacketProvider = tpp;
-    }
-
-    public void setCommandReleaser(CommandReleaser cr) throws ValidationException {
-        if (commandReleaser != null) {
-            throw new IllegalStateException("There is already a command releaser");
-        }
-        commandReleaser = cr;
-        // maybe we should un-hardcode these two and make them services
-        commandHistoryPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
-        setCommandHistoryProvider(new StreamCommandHistoryProvider(yamcsInstance));
-
-        commandingManager = new CommandingManager(this);
-        commandReleaser.setCommandHistory(commandHistoryPublisher);
-
     }
 
     public void setCommandHistoryProvider(CommandHistoryProvider chp) {

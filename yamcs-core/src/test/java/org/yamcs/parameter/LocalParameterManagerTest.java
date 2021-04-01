@@ -173,7 +173,7 @@ public class LocalParameterManagerTest {
         BlockingQueue<List<ParameterValue>> received = new LinkedBlockingQueue<>();
 
         @Override
-        public void update(Collection<ParameterValue> params) {
+        public void update(ParameterValueList params) {
             try {
                 received.put(new ArrayList<>(params));
             } catch (InterruptedException e) {

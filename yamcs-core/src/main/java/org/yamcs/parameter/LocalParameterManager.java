@@ -24,7 +24,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.DataTypeProcessor;
-import org.yamcs.xtceproc.ParameterTypeUtils;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -35,7 +34,8 @@ import org.yamcs.xtceproc.ParameterTypeUtils;
  * @author nm
  *
  */
-public class LocalParameterManager extends AbstractProcessorService implements SoftwareParameterManager, ParameterProvider {
+public class LocalParameterManager extends AbstractProcessorService
+        implements SoftwareParameterManager, ParameterProvider {
 
     ExecutorService executor;
     private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();

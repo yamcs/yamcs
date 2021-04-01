@@ -12,10 +12,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
@@ -47,7 +45,7 @@ public class AlgorithmManagerPyTest {
     private ParameterRequestManager prm;
 
     @Before
-    public void beforeEachTest() throws InitException, ProcessorException {
+    public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
 
         db = XtceDbFactory.getInstance(instance);

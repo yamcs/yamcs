@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
+import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.DataSource;
@@ -30,10 +30,19 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Keeps track of which parameters are part of which subscriptions.
+ * Makes the connection between {@link ParameterProvider} and {@link ParameterConsumer}
+ * <p>
+ * The consumers will subscribe to parameters, this class (we call it PRM) will subscribe itself to providers and send
+ * to consumers each time the providers provide some values.
+ * <p>
+ * A special case is the AlgorithmManager which provides parameters that are computed based on others. The
+ * AlgorithmManager is not invoking itself the PRM; instead the PRM calls it each time one of the other providers
+ * sent some parameters.
  * 
- * There are two types of subscriptions: - subscribe all - subscribe to a set Both types have an unique id associated
- * but different methods work with them
+ * <p>
+ * For the consumers there are two types of subscriptions: - subscribe all - subscribe to a set. Both types have an
+ * unique id associated but different methods work with them.
+ * <p>
  * 
  */
 public class ParameterRequestManager extends AbstractService implements ParameterListener {
@@ -46,15 +55,12 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     // Maps the request (subscription id) to the consumer
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
-    // these are the consumers that may update the list of parameters
-    // they are delivered with priority such that in one update cycle the algorithms (or derived values) are also
-    // computed
-    private Map<Integer, DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<>();
-
     // contains subscribe all
     private SubscriptionArray subscribeAll = new SubscriptionArray();
 
     private ParameterAlarmChecker alarmChecker;
+    private AlgorithmManager algorithmManager;
+
     private Map<Class<?>, ParameterProvider> parameterProviders = new LinkedHashMap<>();
 
     private static AtomicInteger lastSubscriptionId = new AtomicInteger();
@@ -84,8 +90,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
-            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData(),
-                    lastSubscriptionId.incrementAndGet());
+            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData());
         }
         if (yproc.hasAlarmServer()) {
             parameterAlarmServer = new AlarmServer<>(yproc.getInstance(), yproc.getTimer());
@@ -129,7 +134,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * subscribes to all parameters
+     * called by a consumer to subscribe to all parameters
      */
     public int subscribeAll(ParameterConsumer consumer) {
         int id = lastSubscriptionId.incrementAndGet();
@@ -145,7 +150,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * removes the subscription to all parameters
+     * called by a consumer to remove a "subscribe all" subscription
      * 
      * return true of the subscription has been removed or false if it was not there
      * 
@@ -156,15 +161,22 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return subscribeAll.remove(subscriptionId);
     }
 
-    public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) {
 
+    /**
+     * Called by a consumer to create a new subscription
+     * 
+     * @param paraList
+     * @param tpc
+     * @return the newly created subscription id
+     */
+    public int addRequest(final Collection<Parameter> paraList, final ParameterConsumer tpc) {
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} with {} items", id, paraList.size());
         subscribeToProviders(paraList);
 
-        for (int i = 0; i < paraList.size(); i++) {
-            log.trace("adding to subscriptionID: {} item:{} ", id, paraList.get(i).getQualifiedName());
-            addItemToRequest(id, paraList.get(i));
+        for (Parameter p : paraList) {
+            log.trace("adding to subscriptionID: {} item:{} ", id, p.getQualifiedName());
+            addItemToRequest(id, p);
         }
 
         request2ParameterConsumerMap.put(id, tpc);
@@ -172,11 +184,11 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Creates a request with one parameter
+     * Called by a consumer to create a subscription with one parameter
      * 
      * @param para
      * @param tpc
-     * @return
+     * @return the newly created subscription id
      */
     public int addRequest(final Parameter para, final ParameterConsumer tpc) {
 
@@ -189,29 +201,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return id;
     }
 
-    /**
-     * Creates a new request with a list of parameters
-     * 
-     * @param paraList
-     * @param dvtpc
-     * @return subscription id
-     */
-    public int addRequest(List<Parameter> paraList, DVParameterConsumer dvtpc) {
-        int id = lastSubscriptionId.incrementAndGet();
-        log.debug("new request with subscriptionId {} for itemList={}", id, paraList);
-
-        subscribeToProviders(paraList);
-        for (int i = 0; i < paraList.size(); i++) {
-            log.trace("adding to subscriptionID:{} item:{}", id, paraList.get(i));
-            addItemToRequest(id, paraList.get(i));
-        }
-        request2DVParameterConsumerMap.put(id, dvtpc);
-        return id;
-    }
 
     /**
-     * Create request with a given id. This is called when switching yprocessors, the id is coming from the other
-     * channel.
+     * Called by a consumer to create request with a given id. This is called when switching processors, the id is
+     * coming from the other processor.
      * 
      * @param subscriptionId
      *            - subscription id
@@ -228,7 +221,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Add items to an request id.
+     * Called by a consumer to add a parameter to an existing subscription.
      * 
      * @param subscriptionId
      * @param para
@@ -236,10 +229,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para.getName());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
-        if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
-                && alarmChecker != null && alarmChecker.getSubscriptionId() != subscriptionId) {
-            log.error(" addItemsToRequest called with an invalid subscriptionId={}\n current subscr:\n{}dv "
-                    + "subscr:\n {}", subscriptionId, request2ParameterConsumerMap, request2DVParameterConsumerMap);
+        if (consumer == null) {
             throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
         }
         subscribeToProviders(para);
@@ -247,7 +237,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Add items to a subscription.
+     * Called by a consumer to add parameters to an existing subscription.
      * 
      * @param subscriptionId
      * @param paraList
@@ -258,10 +248,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: {} items ", subscriptionId, paraList.size());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
-        if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
-            log.error(" addItemsToRequest called with an invalid subscriptionId={}\n current "
-                    + "subscr:\ndv subscr:\n{}", subscriptionId, request2ParameterConsumerMap,
-                    request2DVParameterConsumerMap);
+        if (consumer == null) {
             throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
         }
         subscribeToProviders(paraList);
@@ -271,7 +258,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Removes a parameter from a rquest. If it is not part of the request, the operation will have no effect.
+     * Called by a consumer to remove a parameter from a subscription.
+     * <p>
+     * If the parameter is not part of the subscription, the operation will have no effect.
      * 
      * @param subscriptionID
      * @param param
@@ -281,8 +270,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Removes a list of parameters from a request. Any parameter specified that is not in the subscription will be
-     * ignored.
+     * Called by a consumer to remove parameters from a subscription.
+     * <p>
+     * Any parameter that is not in the subscription will be ignored.
      * 
      * @param subscriptionID
      * @param paraList
@@ -293,13 +283,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         }
     }
 
-    /**
-     * Adds a new item to an existing request. There is no check if the item is already there, so there can be
-     * duplicates (observed in the CGS CIS). This call also works with a new id
-     * 
-     * @param id
-     * @param para
-     */
     private void addItemToRequest(int id, Parameter para) {
         if (!param2RequestMap.containsKey(para)) {
             // this parameter is not requested by any other request
@@ -336,8 +319,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Removes all the items from this subscription and returns them into an List. The result is usually used in the
-     * TelemetryImpl to move this subscription to a different ParameterRequestManager
+     * Removes all the parameters from a subscription and returns them into an List.
+     * 
      */
     public List<Parameter> removeRequest(int subscriptionId) {
         log.debug("removing request for subscriptionId {}", subscriptionId);
@@ -364,7 +347,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             }
         }
         request2ParameterConsumerMap.remove(subscriptionId);
-        request2DVParameterConsumerMap.remove(subscriptionId);
         return result;
     }
 
@@ -386,12 +368,20 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
     }
 
-    private void subscribeToProviders(List<Parameter> itemList) {
+    /**
+     * Called to subscribe to providers for the given parameters.
+     * <p>
+     * Unless already subscribed, the PRM will start delivering from now on those parameters.
+     * 
+     * 
+     * @param itemList
+     */
+    public void subscribeToProviders(Collection<Parameter> itemList) {
         if (shouldSubcribeAllParameters) {
             return;
         }
-        for (int i = 0; i < itemList.size(); i++) {
-            subscribeToProviders(itemList.get(i));
+        for (Parameter p : itemList) {
+            subscribeToProviders(p);
         }
     }
 
@@ -421,38 +411,46 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         throw new InvalidIdentification(paraId);
     }
 
+    /**
+     * Called by a provider with a list of provided parameters called "current delivery".
+     * <p>
+     * The PRM will take ownership of the current delivery (and modify it!).
+     * 
+     * <p>
+     * The following steps are performed (in the provider thread, possible by multiple providers in parallel!):
+     * <ol>
+     * <li>Run algorithms. All results from algorithms are also added to the list.</li>
+     * <li>Check alarms.</li>
+     * <li>Distribute to subscribers.</li>
+     * <li>Add to parameter cache (if enabled).</li>
+     * <li>Add to the last value cache.</li>
+     * </ol>
+     * 
+     * 
+     */
     @Override
-    public void update(Collection<ParameterValue> params) {
-        log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
+    public void update(ParameterValueList currentDelivery) {
+        log.trace("ParamRequestManager.update with {} parameters", currentDelivery.size());
 
-        lastValueCache.update(params);
-        // maps subscription id to a list of (value,id) to be delivered for that subscription
-        HashMap<Integer, ArrayList<ParameterValue>> delivery = new HashMap<>();
-
-        // so first we add to the delivery the parameters just received
-        updateDelivery(delivery, params);
-
-        // then if the delivery updates some of the parameters required by the derived values
-        // compute the derived values
-        for (Map.Entry<Integer, DVParameterConsumer> entry : request2DVParameterConsumerMap.entrySet()) {
-            Integer subscriptionId = entry.getKey();
-            if (delivery.containsKey(subscriptionId)) {
-                List<ParameterValue> pvList = entry.getValue().updateParameters(subscriptionId,
-                        delivery.get(subscriptionId));
-                lastValueCache.update(pvList);
-                updateDelivery(delivery, pvList);
-            }
+        if (alarmChecker != null) {
+            alarmChecker.performAlarmChecking(currentDelivery, currentDelivery.iterator());
         }
 
-        // and finally deliver the delivery :)
-        for (Map.Entry<Integer, ArrayList<ParameterValue>> entry : delivery.entrySet()) {
+        Iterator<ParameterValue> tailIt = currentDelivery.tailIterator();
+        if (algorithmManager != null) {
+            algorithmManager.updateDelivery(currentDelivery);
+        }
+
+        if (alarmChecker != null) {
+            alarmChecker.performAlarmChecking(currentDelivery, tailIt);
+        }
+
+        // build the customised lists for the subscribers and send it to them
+        HashMap<Integer, ArrayList<ParameterValue>> subscription = new HashMap<>();
+        updateSubscription(subscription, currentDelivery);
+
+        for (Map.Entry<Integer, ArrayList<ParameterValue>> entry : subscription.entrySet()) {
             Integer subscriptionId = entry.getKey();
-            if (request2DVParameterConsumerMap.containsKey(subscriptionId)) {
-                continue;
-            }
-            if (alarmChecker != null && alarmChecker.getSubscriptionId() == subscriptionId) {
-                continue;
-            }
 
             ArrayList<ParameterValue> al = entry.getValue();
             ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
@@ -463,21 +461,25 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                 consumer.updateItems(subscriptionId, al);
             }
         }
+        if (parameterCache != null) {
+            parameterCache.update(currentDelivery);
+        }
+        lastValueCache.update(currentDelivery);
     }
 
     /**
-     * adds the passed parameters to the delivery
+     * adds the passed parameters to the subscription
      * 
-     * @param delivery
-     * @param params
+     * @param subscription
+     * @param currentDelivery
      */
-    private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery,
-            Collection<ParameterValue> params) {
-        if (params == null) {
+    private void updateSubscription(HashMap<Integer, ArrayList<ParameterValue>> subscription,
+            Collection<ParameterValue> currentDelivery) {
+        if (currentDelivery == null) {
             return;
         }
 
-        for (Iterator<ParameterValue> it = params.iterator(); it.hasNext();) {
+        for (Iterator<ParameterValue> it = currentDelivery.iterator(); it.hasNext();) {
             ParameterValue pv = it.next();
             Parameter pDef = pv.getParameter();
             SubscriptionArray cowal = param2RequestMap.get(pDef);
@@ -487,10 +489,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             }
 
             for (int s : cowal.getArray()) {
-                ArrayList<ParameterValue> al = delivery.get(s);
+                ArrayList<ParameterValue> al = subscription.get(s);
                 if (al == null) {
                     al = new ArrayList<>();
-                    delivery.put(s, al);
+                    subscription.put(s, al);
                 }
                 al.add(pv);
             }
@@ -498,30 +500,28 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
         // update the subscribeAll subscriptions
         for (int id : subscribeAll.getArray()) {
-            ArrayList<ParameterValue> al = delivery.get(id);
+            ArrayList<ParameterValue> al = subscription.get(id);
 
             if (al == null) {
                 al = new ArrayList<>();
-                delivery.put(id, al);
+                subscription.put(id, al);
             }
 
-            for (ParameterValue pv : params) {
+            for (ParameterValue pv : currentDelivery) {
                 al.add(pv);
             }
         }
+    }
+
+    void checkAlarms(ParameterValueList pvlist, Iterator<ParameterValue> it) {
         if (alarmChecker != null) {
             try {
-                alarmChecker.performAlarmChecking(params);
+                alarmChecker.performAlarmChecking(pvlist, it);
             } catch (Exception e) {
                 log.error("Error when performing alarm checking ", e);
             }
         }
-
-        if (parameterCache != null) {
-            parameterCache.update(params);
-        }
     }
-
     /**
      * 
      * @return the SoftwareParameterManager associated to the DataSource or null if not configured
@@ -651,5 +651,12 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             throw new IllegalStateException("There is already a soft parameter manager for " + ds);
         }
         spm.put(ds, swParameterManager);
+    }
+
+    public void setAlgortihmManager(AlgorithmManager algmgr) {
+        if (algorithmManager != null) {
+            throw new IllegalStateException("There is already one algorithm manager");
+        }
+        algorithmManager = algmgr;
     }
 }

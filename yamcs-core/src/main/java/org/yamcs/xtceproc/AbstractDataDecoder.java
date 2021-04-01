@@ -6,6 +6,7 @@ import java.util.Set;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 
@@ -31,7 +32,7 @@ public abstract class AbstractDataDecoder implements DataDecoder {
      * @param paramList - list of input parameters
      * @return true if the algorithm should run
      */
-    public boolean updateParameters(List<ParameterValue> paramList) {
+    public boolean updateParameters(ParameterValueList paramList) {
         return false;
     }
   

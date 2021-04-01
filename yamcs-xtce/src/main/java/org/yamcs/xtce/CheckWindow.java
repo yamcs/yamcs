@@ -3,29 +3,50 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
- * From XTCE: Holds a time to stop checking and optional time to start checking and whether window is relative to command release or last verifier.
+ * From XTCE: Holds a time to stop checking and optional time to start checking and whether window is relative to
+ * command release or last verifier.
  * 
  * @author nm
  *
  */
-public class CheckWindow implements Serializable{
+public class CheckWindow implements Serializable {
     private static final long serialVersionUID = 2L;
-    
-    
-    public enum TimeWindowIsRelativeToType {CommandRelease, LastVerifier};
-    
-   
-    final private long timeToStartChecking; //time to start checking in milliseconds (if -1 - it means not defined)
-    final private long timeToStopChecking; //time to stop checking in milliseconds
-    
+
+    public enum TimeWindowIsRelativeToType {
+        CommandRelease, LastVerifier;
+        
+        static public TimeWindowIsRelativeToType fromXtce(String xtceAttr) {
+            if ("timeLastVerifierPassed".equals(xtceAttr)) {
+                return TimeWindowIsRelativeToType.LastVerifier;
+            } else if ("commandRelease".equals(xtceAttr)) {
+                return TimeWindowIsRelativeToType.CommandRelease;
+            } else {
+                throw new IllegalArgumentException("Invalid value '" + xtceAttr + "' for timeWindowIsRelativeTo");
+            }
+        }
+
+        public String toXtce() {
+            if (this == CommandRelease) {
+                return "commandRelease";
+            } else {
+                return "timeLastVerifierPassed";
+            }
+        }
+    };
+
+    final private long timeToStartChecking; // time to start checking in milliseconds (if -1 - it means not defined)
+    final private long timeToStopChecking; // time to stop checking in milliseconds
+
     final private TimeWindowIsRelativeToType timeWindowIsRelativeTo;
-    
-    public CheckWindow(long timeToStartChecking, long timeToStopChecking,  TimeWindowIsRelativeToType timeWindowIsRelativeTo) {
+
+    public CheckWindow(long timeToStartChecking, long timeToStopChecking,
+            TimeWindowIsRelativeToType timeWindowIsRelativeTo) {
         super();
         this.timeToStartChecking = timeToStartChecking;
         this.timeToStopChecking = timeToStopChecking;
         this.timeWindowIsRelativeTo = timeWindowIsRelativeTo;
     }
+
 
 
     public long getTimeToStartChecking() {
@@ -41,11 +62,11 @@ public class CheckWindow implements Serializable{
     }
 
     public boolean hasStart() {
-        return timeToStartChecking!=-1;
+        return timeToStartChecking != -1;
     }
-    
-    
+
+
     public String toString() {
-        return timeWindowIsRelativeTo+"["+timeToStartChecking+","+timeToStopChecking+"]";
+        return timeWindowIsRelativeTo + "[" + timeToStartChecking + "," + timeToStopChecking + "]";
     }
 }

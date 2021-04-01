@@ -44,6 +44,9 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
     @Override
     public void onTuple(Stream s, Tuple tuple) {
         if (tuple.hasColumn(PreparedCommand.CNAME_SOURCE)) {
+            // From yamcs 5.4.4 it is not anymore necessary because the CommandingManager will send directly the command
+            // to the CommandHistoryRequestManager.
+            // This maybe necessary if a new command is put on the stream from somewhere else.
             XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             chrm.addCommand(pc);

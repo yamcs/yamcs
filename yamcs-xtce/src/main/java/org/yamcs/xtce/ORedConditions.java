@@ -6,13 +6,20 @@ public class ORedConditions extends ExpressionList implements BooleanExpression 
     private static final long serialVersionUID = -971897455552714465L;
 
     @Override
-    public boolean isMet(CriteriaEvaluator evaluator) {
+    public MatchResult matches(CriteriaEvaluator evaluator) {
+        MatchResult result = MatchResult.NOK;
+
         for (BooleanExpression exp : expressions) {
-            if (exp.isMet(evaluator)) {
-                return true;
+            MatchResult r = exp.matches(evaluator);
+            if (r == MatchResult.OK) {
+                result = r;
+                break;
+            } else if (r == MatchResult.UNDEF) {
+                result = r;
+                // continue checking maybe a expression will return OK
             }
         }
-        return false;
+        return result;
     }
 
     @Override
