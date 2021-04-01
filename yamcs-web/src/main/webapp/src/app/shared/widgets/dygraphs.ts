@@ -1,6 +1,6 @@
 import { NamedParameterType } from './NamedParameterType';
 
-export type CustomBarsValue = [number, number, number] | null;
+export type CustomBarsValue = [number, number, number] | [number, string | string[]] | null;
 
 /**
  * Sample for a time-based plot.
@@ -30,6 +30,7 @@ export type DyAnnotation = {
 };
 
 export type DyLegendData = {
+  dygraph: Dygraph;
   series: DyLegendSeries[];
   x: number;
   xHTML: string;

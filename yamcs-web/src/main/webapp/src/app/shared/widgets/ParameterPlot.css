@@ -133,3 +133,15 @@
   text-align: center;
   transform: rotate(-90deg);
 }
+
+::ng-deep .dygraph-custom-legend {
+  font-size: 12px;
+  padding: 10px;
+}
+
+::ng-deep .dygraph-legend .enum-color {
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  display: inline-block;
+}

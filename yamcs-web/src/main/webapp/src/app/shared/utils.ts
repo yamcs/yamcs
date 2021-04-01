@@ -358,3 +358,18 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
   const payload = toBase64URL(JSON.stringify(claims));
   return `${joseHeader}.${payload}.`;
 }
+
+export function isEnumerationType(parameterType: string | undefined) {
+  return parameterType === 'enumeration';
+}
+
+/**
+ * Generates a random color.
+ */
+export function generateColor() {
+  const randomTone = () => {
+    Math.random();
+    return Math.round(Math.random()*255);
+  };
+  return `rgba(${randomTone()}, ${randomTone()}, ${randomTone()}, 0.75)`;
+}

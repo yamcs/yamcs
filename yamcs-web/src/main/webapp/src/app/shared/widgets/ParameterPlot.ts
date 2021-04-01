@@ -4,10 +4,10 @@ import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
 import { Parameter } from '../../client';
 import { ModifyParameterDialog } from '../../telemetry/parameters/ModifyParameterDialog';
-import { subtractDuration } from '../utils';
+import { generateColor, isEnumerationType, subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
-import { analyzeStaticValueRanges, DyLegendData, TimestampTrackerData } from './dygraphs';
+import { analyzeStaticValueRanges, CustomBarsValue, DyLegendData, DySample, TimestampTrackerData } from './dygraphs';
 import GridPlugin from './GridPlugin';
 import { NamedParameterType } from './NamedParameterType';
 import { ParameterSeries } from './ParameterSeries';
@@ -91,6 +91,10 @@ export class ParameterPlot implements AfterViewInit {
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
   timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
+  // contains all the metadata related to a value (key: engValue, value: (color, numLine, count)
+  valuesInfo: any = new Map();
+  numLine: number = 0;
+
   constructor(private dialog: MatDialog) {
   }
 
@@ -167,6 +171,57 @@ export class ParameterPlot implements AfterViewInit {
 
     this.dataSource.updateWindow(start, stop, [null, null]);
     this.applyTheme();
+  }
+
+  private drawEnumerationValues(ctx: CanvasRenderingContext2D, g: any) {
+    const points = g.rawData_;
+    const idxEngValues = 1;
+    const idxStringValues = 1;
+    for (let i = 0; i < points.length; i++) {
+      if (points[i][idxEngValues]) {
+        const isLast = i + 1 === points.length;
+        const nextPoint = isLast ? i : i + 1;
+        // has multiple values within the range?
+        if (Array.isArray(points[i][idxEngValues][idxStringValues]) && points[i][idxEngValues][idxStringValues].length > 1) {
+          const nbValues = points[i][idxEngValues][idxStringValues].length;
+          for (let j = 0; j < nbValues; j++) {
+            const value = points[i][idxEngValues][idxStringValues][j];
+
+            // we map the color to a value
+            if (!this.valuesInfo.has(value)) {
+              this.valuesInfo.set(value, { color: generateColor(), numLine: this.numLine++, count: 0 });
+            }
+
+            const left = g.toDomXCoord(new Date(points[i][0]));
+            const right = g.toDomXCoord(isLast ? new Date() : new Date(points[nextPoint][0]));
+            const width = right - left;
+            const numLine = this.valuesInfo.get(value).numLine;
+            const bottom = g.toDomYCoord(0.45 + numLine / 10);
+            const height = g.toDomYCoord(0.45 + (numLine + 1) / 10) - bottom;
+
+            ctx.fillStyle = this.valuesInfo.get(value).color;
+            ctx.fillRect(left, bottom, width, height);
+          }
+        } else {
+
+          const left = g.toDomXCoord(new Date(points[i][0]));
+          const right = g.toDomXCoord(isLast ? new Date() : new Date(points[nextPoint][0]));
+          const width = right - left;
+
+          const value = points[i][idxEngValues][idxStringValues];
+          if (!this.valuesInfo.has(value)) {
+            this.valuesInfo.set(value, { color: generateColor(), numLine: this.numLine++, count: 0 });
+          }
+
+          const numLine = this.valuesInfo.get(value).numLine;
+          const bottom = g.toDomYCoord(0.45 + numLine / 10);
+          const height = g.toDomYCoord(0.45 + (numLine + 1) / 10) - bottom;
+
+          ctx.fillStyle = this.valuesInfo.get(value).color;
+          ctx.fillRect(left, bottom, width, height);
+        }
+      }
+    }
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
@@ -350,6 +405,13 @@ export class ParameterPlot implements AfterViewInit {
             );
           }
         }
+
+        // draw enumeration type
+        const parameter = this.parameters.find(p => p.qualifiedName === primaryConfig.parameter);
+        if (isEnumerationType(parameter?.type?.engType)) {
+          this.drawEnumerationValues(ctx, g);
+        }
+
         ctx.restore();
       },
       drawHighlightPointCallback: (
@@ -361,6 +423,7 @@ export class ParameterPlot implements AfterViewInit {
         color: any,
         radius: number,
       ) => {
+
         // Only draw for point of first series, because otherwise the line may
         // get drawn on top of other points.
         if ((primaryConfig.label || primaryConfig.parameter) === seriesName) {
@@ -402,12 +465,33 @@ export class ParameterPlot implements AfterViewInit {
           if (trace.y === undefined) {
             const rtValue = this.dataSource.latestRealtimeValues.get(trace.label);
             if (rtValue) {
-              trace.y = rtValue[1];
+              trace.y = Number(rtValue[1]);
               trace.yHTML = String(rtValue[1]);
             }
+
+          } else if (typeof trace.y === 'string') { // if it is a single enumeration value
+            trace.yHTML = trace.y;
+          } else if (Array.isArray(trace.y)) { // if it is a multi-value enumeration
+            trace.yHTML = trace.y.join(', ');
           }
         }
+
         this.legendData$.next(data);
+
+        const parameter = this.parameters.find(p => p.qualifiedName === primaryConfig.parameter);
+        if (isEnumerationType(parameter?.type?.engType)) {
+          return (
+            `<div class="dygraph-custom-legend">
+              ${Array.from(this.valuesInfo, ([value, infos]) => (
+              `<div>
+                  <span class="enum-color" style="background-color: ${infos.color}"></span>
+                  <span style="color: ${infos.color}">${value}</span>
+              </div>
+              `)).join('')}
+            </div>`
+          );
+        }
+
         return '';
       },
       plugins: [

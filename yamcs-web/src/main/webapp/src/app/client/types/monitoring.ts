@@ -74,7 +74,9 @@ export interface Range {
   timeStart: string;
   timeStop: string;
   engValue: Value;
+  engValues: Value[];
   count: number;
+  counts: number[];
 }
 
 export interface IssueCommandOptions {
@@ -206,6 +208,7 @@ export interface GetParameterRangesOptions {
   stop?: string;
   minGap?: number;
   maxGap?: number;
+  minRange?: number;
 }
 
 export interface GetPacketIndexOptions {
