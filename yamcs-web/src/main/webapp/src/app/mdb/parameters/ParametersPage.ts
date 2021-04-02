@@ -1,9 +1,10 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParametersOptions } from '../../client';
+import { GetParametersOptions, Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
@@ -66,6 +67,8 @@ export class ParametersPage implements AfterViewInit {
     { id: 'SYSTEM', label: 'System' },
     { id: 'TELEMETERED', label: 'Telemetered' },
   ];
+
+  private selection = new SelectionModel<Parameter>(false);
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
@@ -139,7 +142,9 @@ export class ParametersPage implements AfterViewInit {
     if (this.source) {
       options.source = this.source;
     }
-    this.dataSource.loadParameters(options);
+    this.dataSource.loadParameters(options).then(() => {
+      this.selection.clear();
+    });
   }
 
   private updateURL() {
@@ -153,5 +158,41 @@ export class ParametersPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  selectNext() {
+    const items = this.dataSource.parameters$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.parameters$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue()) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.parameters$.value;
+      if (items.indexOf(item) !== -1) {
+        this.router.navigate(['/mdb/parameters', item.qualifiedName], {
+          queryParams: { c: this.yamcs.context }
+        });
+      }
+    }
   }
 }

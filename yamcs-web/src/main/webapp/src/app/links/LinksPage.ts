@@ -77,6 +77,12 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       this.updateURL();
       const value = this.filterControl.value || '';
       this.dataSource.filter = value.toLowerCase();
+
+      for (const item of this.selection.selected) {
+        if (this.dataSource.filteredData.indexOf(item) === -1) {
+          this.selection.deselect(item);
+        }
+      }
     });
 
     // Fetch with REST first, otherwise may take up to a second
@@ -269,6 +275,41 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  selectNext() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue() && this.selection.selected.length === 1) {
+      const item = this.selection.selected[0];
+      this.router.navigate(['/links', item.link.name], {
+        queryParams: { c: this.yamcs.context }
+      });
+    }
   }
 
   ngOnDestroy() {

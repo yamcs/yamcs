@@ -1,0 +1,157 @@
+<dl class="dl-horizontal no-lead">
+  <dt>Algorithm</dt>
+  <dd>{{ algorithm.qualifiedName | shortName }}</dd>
+
+  <dt>Space System</dt>
+  <dd>
+    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/algorithms"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
+    </ng-container>
+  </dd>
+
+  <ng-container *ngFor="let alias of algorithm.alias">
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
+  </ng-container>
+
+  <dt>Description</dt>
+  <dd>{{ algorithm.longDescription || algorithm.shortDescription || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Scope</dt>
+  <dd>{{ algorithm.scope || '-' }}</dd>
+
+  <dt>Language</dt>
+  <dd>{{ algorithm.language || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal" *ngIf="status">
+  <dt>Status</dt>
+  <dd>
+    <app-algorithm-status [status]="status"></app-algorithm-status>&nbsp;
+    <ng-container *ngIf="status.active && !status.errorMessage">ACTIVE</ng-container>
+    <ng-container *ngIf="!status.active && !status.errorMessage">INACTIVE</ng-container>
+    <ng-container *ngIf="status.errorMessage">ERROR: {{ status.errorMessage }}</ng-container>
+  </dd>
+
+  <dt>Run count</dt>
+  <dd>{{ (status.runCount | number) || '-' }}</dd>
+
+  <dt>Total run time</dt>
+  <dd>
+    {{ (status.execTimeNs | nanosDuration) || '-' }}
+  </dd>
+
+  <dt>Average run time</dt>
+  <dd>
+    <span *ngIf="status.runCount">
+      {{ (status.execTimeNs / status.runCount) | nanosDuration }}
+    </span>
+    <span *ngIf="!status.runCount">-</span>
+  </dd>
+
+  <dt>Last run</dt>
+  <dd>{{ (status.lastRun | datetime) || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Text</dt>
+  <dd>
+    <div #text style="height: 300px;">{{ algorithm.text }}</div>
+  </dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Input Parameters</dt>
+  <dd>
+    <table yaDataTable *ngIf="algorithm.inputParameter">
+      <tr>
+        <th>Input Name</th>
+        <th>Parameter</th>
+        <th>Instance</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr *ngFor="let inputParameter of algorithm.inputParameter">
+        <td>{{ inputParameter.inputName }}</td>
+        <td>
+          <a [routerLink]="['/telemetry/parameters/', inputParameter.parameter.qualifiedName]"
+             [queryParams]="{c: yamcs.context}">
+            {{ inputParameter.parameter.qualifiedName }}
+          </a>
+        </td>
+        <td style="text-align: center">
+          {{ inputParameter.parameterInstance }}
+        </td>
+        <td style="text-align: center">
+          <mat-icon *ngIf="inputParameter.mandatory">check</mat-icon>
+          <mat-icon *ngIf="!inputParameter.mandatory">close</mat-icon>
+        </td>
+      </tr>
+    </table>
+    <span *ngIf="!algorithm.inputParameter">-</span>
+  </dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Output Parameters</dt>
+  <dd>
+    <table yaDataTable *ngIf="algorithm.outputParameter">
+      <tr>
+        <th>Output Name</th>
+        <th>Parameter</th>
+      </tr>
+      <tr *ngFor="let outputParameter of algorithm.outputParameter">
+        <td>{{ outputParameter.outputName }}</td>
+        <td>
+          <a [routerLink]="['/telemetry/parameters/', outputParameter.parameter.qualifiedName]"
+             [queryParams]="{c: yamcs.context}">
+            {{ outputParameter.parameter.qualifiedName }}
+          </a>
+        </td>
+      </tr>
+    </table>
+    <span *ngIf="!algorithm.outputParameter">-</span>
+  </dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Triggers</dt>
+  <dd>
+    <table yaDataTable>
+      <tr>
+        <th>Type</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let trigger of algorithm.onParameterUpdate">
+        <td>OnParameterUpdate</td>
+        <td>
+          <a [routerLink]="['/telemetry/parameters/', trigger.qualifiedName]"
+             [queryParams]="{c: yamcs.context}">
+            {{ trigger.qualifiedName }}
+          </a>
+        </td>
+      </tr>
+      <tr *ngIf="algorithm.onPeriodicRate">
+        <td>OnPeriodicRate</td>
+        <td>{{ algorithm.onPeriodicRate }} ms</td>
+      </tr>
+    </table>
+  </dd>
+</dl>

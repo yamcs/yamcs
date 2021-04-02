@@ -48,21 +48,17 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private boolean protobuf;
     private User user;
 
-    // after how many consecutive dropped writes will the connection be closed
-    private int maxDrops;
-
     private SocketAddress remoteAddress;
     private WriteBufferWaterMark writeBufferWaterMark;
 
     private List<TopicContext> contexts = new ArrayList<>();
     private Map<Integer, Observer<Message>> clientObserversByCall = new HashMap<>();
 
-    public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int maxDrops,
+    public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user,
             WriteBufferWaterMark writeBufferWaterMark) {
         this.httpServer = httpServer;
         this.nettyRequest = req;
         this.user = user;
-        this.maxDrops = maxDrops;
         this.writeBufferWaterMark = writeBufferWaterMark;
     }
 
@@ -195,12 +191,15 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             throws InvalidProtocolBufferException {
         if (clientMessage.hasOptions()) {
             CancelOptions options = clientMessage.getOptions().unpack(CancelOptions.class);
-            int callId = options.getCall();
-            for (TopicContext ctx : new ArrayList<>(contexts)) {
-                if (ctx.getId() == callId) {
-                    ctx.close();
-                    clientObserversByCall.remove(callId);
-                }
+            cancelCall(nettyContext, options.getCall());
+        }
+    }
+
+    private void cancelCall(ChannelHandlerContext nettyContext, int callId) {
+        for (TopicContext ctx : new ArrayList<>(contexts)) {
+            if (ctx.getId() == callId) {
+                ctx.close();
+                clientObserversByCall.remove(callId);
             }
         }
     }

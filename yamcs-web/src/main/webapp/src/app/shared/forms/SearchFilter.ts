@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { fromEvent, merge, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
@@ -32,6 +32,15 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
 
   @Input()
   icon = 'filter_list';
+
+  @Output()
+  onArrowDown = new EventEmitter<string>();
+
+  @Output()
+  onArrowUp = new EventEmitter<string>();
+
+  @Output()
+  onEnter = new EventEmitter<string>();
 
   showClear$ = new Subject<boolean>();
 
@@ -68,6 +77,23 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
   }
 
   registerOnTouched(fn: any) {
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    switch (event.key) {
+      case 'ArrowDown':
+        this.onArrowDown.emit((event.target as HTMLInputElement).value);
+        event.preventDefault();
+        return false;
+      case 'ArrowUp':
+        this.onArrowUp.emit((event.target as HTMLInputElement).value);
+        event.preventDefault();
+        return false;
+      case 'Enter':
+        this.onEnter.emit((event.target as HTMLInputElement).value);
+        event.preventDefault();
+        return false;
+    }
   }
 
   ngOnDestroy() {

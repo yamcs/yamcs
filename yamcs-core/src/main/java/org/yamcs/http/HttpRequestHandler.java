@@ -380,7 +380,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         pipeline.addLast(new HttpObjectAggregator(65536));
 
         int maxFrameLength = wsConfig.getInt("maxFrameLength");
-        int maxDropped = wsConfig.getInt("maxDrops");
         int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
         int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
         WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
@@ -390,7 +389,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String subprotocols = "json, protobuf";
         pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, true, maxFrameLength));
 
-        pipeline.addLast(new WebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
+        pipeline.addLast(new WebSocketFrameHandler(httpServer, req, user, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         nettyContext.fireChannelRead(req);
@@ -408,7 +407,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
         int maxFrameLength = wsConfig.getInt("maxFrameLength");
-        int maxDropped = wsConfig.getInt("maxDrops");
         int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
         int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
         WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
@@ -422,7 +420,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setProcessor(processor);
         originalRequestInfo.setUser(user);
-        ctx.pipeline().addLast(new LegacyWebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
+        ctx.pipeline().addLast(new LegacyWebSocketFrameHandler(originalRequestInfo, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);

@@ -14,7 +14,10 @@
   <div class="filter-bar">
     <app-search-filter [formControl]="filterControl"
                        placeholder="Filter instances"
-                       width="100%">
+                       width="100%"
+                       (onArrowDown)="selectNext()"
+                       (onArrowUp)="selectPrevious()"
+                       (onEnter)="applySelection()">
     </app-search-filter>
   </div>
   <div class="scrollpane">

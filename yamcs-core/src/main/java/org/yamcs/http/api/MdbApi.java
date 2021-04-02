@@ -70,6 +70,7 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -218,7 +219,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getParameterCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         parameters.addAll(spaceSystem.getParameters());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -349,7 +353,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getSequenceContainerCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         containers.addAll(spaceSystem.getSequenceContainers());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -443,7 +450,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getMetaCommandCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         commands.addAll(spaceSystem.getMetaCommands());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -519,7 +529,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                 }
             } else { // get direct children of the system
-                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getAlgorithmCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         algorithms.addAll(spaceSystem.getAlgorithms());
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -538,6 +551,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
         algorithms = algorithms.stream().filter(a -> {
             if (matcher != null && !matcher.matches(a)) {
                 return false;
+            }
+            if (request.hasScope()) {
+                Scope requestScope = Scope.valueOf(request.getScope().name());
+                if (requestScope != a.getScope()) {
+                    return false;
+                }
             }
             return true;
         }).collect(Collectors.toList());
