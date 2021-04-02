@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 
 
 @Component({
@@ -54,6 +55,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private config: ConfigService,
+    private defaultProcessorPipe: DefaultProcessorPipe,
   ) {
     title.setTitle('Instances');
 
@@ -73,6 +75,12 @@ export class HomePage implements AfterViewInit, OnDestroy {
       this.updateURL();
       const value = this.filterControl.value || '';
       this.dataSource.filter = value.toLowerCase();
+
+      for (const item of this.selection.selected) {
+        if (this.dataSource.filteredData.indexOf(item) === -1) {
+          this.selection.deselect(item);
+        }
+      }
     });
 
     this.yamcs.yamcsClient.getInstances().then(instances => {
@@ -199,6 +207,50 @@ export class HomePage implements AfterViewInit, OnDestroy {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  selectNext() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue() && this.selection.selected.length === 1) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.data;
+      if (items.indexOf(item) !== -1 && item.state !== 'OFFLINE') {
+        if (item.processors?.length) {
+          this.router.navigate(['/instance'], {
+            queryParams: { c: item.name + '__' + this.defaultProcessorPipe.transform(item) }
+          });
+        } else {
+          this.router.navigate(['/instance'], {
+            queryParams: { c: item.name }
+          });
+        }
+      }
+    }
   }
 
   ngOnDestroy() {

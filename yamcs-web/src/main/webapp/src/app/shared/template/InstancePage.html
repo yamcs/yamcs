@@ -51,6 +51,13 @@
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
+      <app-sidebar-nav-item *ngIf="showAlgorithmsItem()"
+                            routerLink="/algorithms"
+                            [queryParams]="{c: yamcs.context}">
+        <mat-icon class="item-icon">transform</mat-icon>
+        Algorithms
+      </app-sidebar-nav-item>
+
       <app-sidebar-nav-item *ngIf="showEventsItem()"
                             routerLink="/events"
                             [queryParams]="{c: yamcs.context}">

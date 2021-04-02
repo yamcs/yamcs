@@ -1,9 +1,10 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetContainersOptions } from '../../client';
+import { Container, GetContainersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ContainersDataSource } from './ContainersDataSource';
@@ -35,6 +36,8 @@ export class ContainersPage implements AfterViewInit {
     { id: 'restrictionCriteria', label: 'Restriction Criteria', visible: true },
     { id: 'shortDescription', label: 'Description' },
   ];
+
+  private selection = new SelectionModel<Container>(false);
 
   constructor(
     readonly yamcs: YamcsService,
@@ -75,7 +78,9 @@ export class ContainersPage implements AfterViewInit {
     if (filterValue) {
       options.q = filterValue.toLowerCase();
     }
-    this.dataSource.loadContainers(options);
+    this.dataSource.loadContainers(options).then(() => {
+      this.selection.clear();
+    });
   }
 
   private updateURL() {
@@ -88,5 +93,41 @@ export class ContainersPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
+  }
+
+  selectNext() {
+    const items = this.dataSource.containers$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.containers$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue()) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.containers$.value;
+      if (items.indexOf(item) !== -1) {
+        this.router.navigate(['/mdb/containers', item.qualifiedName], {
+          queryParams: { c: this.yamcs.context }
+        });
+      }
+    }
   }
 }

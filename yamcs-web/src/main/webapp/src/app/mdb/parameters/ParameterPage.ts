@@ -14,6 +14,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class ParameterPage {
 
   parameter$ = new BehaviorSubject<Parameter | null>(null);
+  offset$ = new BehaviorSubject<string | null>(null);
 
   constructor(
     route: ActivatedRoute,
@@ -31,7 +32,16 @@ export class ParameterPage {
   changeParameter(qualifiedName: string) {
     this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
-      this.title.setTitle(parameter.name);
+
+      let offset;
+      if (qualifiedName !== parameter.qualifiedName) {
+        offset = qualifiedName.substring(parameter.qualifiedName.length);
+      } else {
+        offset = null;
+      }
+      this.offset$.next(offset);
+
+      this.title.setTitle(parameter.name + (offset || ''));
     });
   }
 }

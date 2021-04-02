@@ -1,5 +1,6 @@
 export * from './app/admin/AdminModule';
 export * from './app/alarms/AlarmsModule';
+export * from './app/algorithms/AlgorithmsModule';
 export * from './app/appbase/AppBaseModule';
 export * from './app/appbase/pages/AppComponent';
 export * from './app/appbase/pages/ContextSwitchPage';

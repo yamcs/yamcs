@@ -1,3 +1,4 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -6,7 +7,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { CommandsDataSource } from './CommandsDataSource';
+import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
   templateUrl: './SendCommandPage.html',
@@ -39,6 +40,8 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   ];
 
   private queryParamMapSubscription: Subscription;
+
+  private selection = new SelectionModel<ListItem>(false);
 
   constructor(
     title: Title,
@@ -95,6 +98,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
       options.q = filterValue.toLowerCase();
     }
     this.dataSource.loadCommands(options).then(() => {
+      this.selection.clear();
       this.updateBrowsePath();
     });
   }
@@ -126,6 +130,42 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
       }
     }
     this.breadcrumb$.next(breadcrumb);
+  }
+
+  selectNext() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue()) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.items$.value;
+      if (item.command && items.indexOf(item) !== -1) {
+        this.router.navigate(['/commanding/send', item.command?.qualifiedName], {
+          queryParams: { c: this.yamcs.context }
+        });
+      }
+    }
   }
 
   ngOnDestroy() {

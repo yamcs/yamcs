@@ -1,3 +1,4 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -8,7 +9,7 @@ import { GetParametersOptions } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
-import { ParametersDataSource } from './ParametersDataSource';
+import { ListItem, ParametersDataSource } from './ParametersDataSource';
 
 @Component({
   templateUrl: './ParametersPage.html',
@@ -73,6 +74,8 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   ];
 
   private queryParamMapSubscription: Subscription;
+
+  private selection = new SelectionModel<ListItem>(false);
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
@@ -165,6 +168,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
       options.source = this.source;
     }
     this.dataSource.loadParameters(options).then(() => {
+      this.selection.clear();
       this.updateBrowsePath();
     });
   }
@@ -197,6 +201,42 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
       }
     }
     this.breadcrumb$.next(breadcrumb);
+  }
+
+  selectNext() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue()) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.items$.value;
+      if (item.parameter && items.indexOf(item) !== -1) {
+        this.router.navigate(['/telemetry/parameters', item.parameter?.qualifiedName], {
+          queryParams: { c: this.yamcs.context }
+        });
+      }
+    }
   }
 
   ngOnDestroy() {

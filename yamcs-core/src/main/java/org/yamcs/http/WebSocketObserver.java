@@ -21,6 +21,8 @@ public class WebSocketObserver implements Observer<Message> {
     private WebSocketFrameHandler frameHandler;
 
     private int messageCount = 0;
+    private int dropCount = 0;
+    private int maxDrops = 0;
     private boolean cancelled;
     private boolean completed;
     private Runnable cancelHandler;
@@ -31,6 +33,7 @@ public class WebSocketObserver implements Observer<Message> {
     public WebSocketObserver(TopicContext ctx, WebSocketFrameHandler frameHandler) {
         this.ctx = ctx;
         this.frameHandler = frameHandler;
+        this.maxDrops = ctx.getMaxDroppedWrites();
         log = new Log(WebSocketObserver.class);
         log.setContext(ctx.toString());
 
@@ -64,23 +67,27 @@ public class WebSocketObserver implements Observer<Message> {
         }
 
         // Increase even if it not sent.
-        // TODO this was originally designed for some calls (like parameter subscription)
-        // which do not guarantee all messages to arrive (e.g. because the channel is
-        // temporarily not writable). But this is perhaps a property that should be made
-        // specific to the call. It may cause problems for other calls that require all
-        // messages to arrive.
         messageCount++;
 
-        if (!ctx.nettyContext.channel().isOpen()) {
-            log.warn("Skipping frame because channel is not open");
-            return;
-        }
-        if (!ctx.nettyContext.channel().isWritable()) {
-            log.warn("Skipping frame because channel is not writable");
+        boolean isOpen = ctx.nettyContext.channel().isOpen();
+        boolean isWritable = ctx.nettyContext.channel().isWritable();
+        if (!isOpen || !isWritable) {
+            dropCount++;
+            if (!isOpen) {
+                log.warn("Skipping frame because channel is not open");
+            } else {
+                log.warn("Skipping frame because channel is not writable");
+            }
+            if (dropCount >= maxDrops) {
+                log.warn("Too many ({}) dropped messages. Forcing disconnect", dropCount);
+                ctx.cancel(null); // Cancel the call first, to avoid log messages going beyond maxDrops
+                ctx.nettyContext.close();
+            }
             return;
         }
 
         sendMessage(ctx.getTopic().getName(), message);
+        dropCount = 0;
     }
 
     private void sendMessage(String type, Message data) {

@@ -60,6 +60,7 @@ import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { Hex } from './hex/Hex';
+import { Highlight } from './highlight/Highlight';
 import { AgoPipe } from './pipes/AgoPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
@@ -70,9 +71,11 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
+import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { HexPipe } from './pipes/HexPipe';
+import { NanosDurationPipe } from './pipes/NanosDurationPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
@@ -187,6 +190,7 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  Highlight,
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,
@@ -232,7 +236,9 @@ const pipes = [
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,
+  EntryForOffsetPipe,
   HexPipe,
+  NanosDurationPipe,
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,

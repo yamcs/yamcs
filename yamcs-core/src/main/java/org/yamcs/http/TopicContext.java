@@ -64,6 +64,11 @@ public class TopicContext extends Context {
         return topic;
     }
 
+    public int getMaxDroppedWrites() {
+        int maxDroppedWrites = clientMessage.getMaxDroppedWrites();
+        return (maxDroppedWrites >= 0) ? maxDroppedWrites : 0;
+    }
+
     public void close() {
         cancel(null);
     }

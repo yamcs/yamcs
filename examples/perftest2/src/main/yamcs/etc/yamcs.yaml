@@ -20,4 +20,4 @@ incomingDir: /storage/yamcs-incoming
 secretKey: "changeme"
 
 yamcs-web:
-  tag: "Example: simulation"
+  tag: "Example: perftest2"

@@ -57,9 +57,40 @@ export class SelectInstanceDialog implements AfterViewInit {
     this.filterControl.valueChanges.subscribe(() => {
       const value = this.filterControl.value || '';
       this.dataSource.filter = value.toLowerCase();
+
+      if (this.selection.hasValue()) {
+        const item = this.selection.selected[0];
+        if (this.dataSource.filteredData.indexOf(item) === -1) {
+          this.selection.clear();
+        }
+      }
     });
 
     this.dataSource.paginator = this.paginator;
+  }
+
+  selectNext() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
   }
 
   applySelection() {

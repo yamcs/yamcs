@@ -5,7 +5,10 @@
   <div class="panel-content">
     <div class="filter-bar">
       <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter commands">
+                         placeholder="Filter commands"
+                         (onArrowDown)="selectNext()"
+                         (onArrowUp)="selectPrevious()"
+                         (onEnter)="applySelection()">
       </app-search-filter>
       <app-column-chooser #columnChooser
                           [columns]="columns"
@@ -30,7 +33,9 @@
           <td mat-cell *matCellDef="let command">
             <a [routerLink]="['/mdb/commands', command.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
-              {{ shortName ? command.name : command.qualifiedName }}
+              <app-highlight [text]="shortName ? command.name : command.qualifiedName"
+                             [term]="filterControl.value">
+              </app-highlight>
             </a>
           </td>
         </ng-container>
@@ -49,7 +54,8 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
+            [class.selected]="selection.isSelected(row)"></tr>
       </table>
 
       <mat-paginator [pageSize]="pageSize"
