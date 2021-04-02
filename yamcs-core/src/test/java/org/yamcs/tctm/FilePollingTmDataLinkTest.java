@@ -6,6 +6,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,8 +26,6 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.utils.TimeEncoding;
-
-import com.google.common.io.Files;
 
 @RunWith(Parameterized.class)
 public class FilePollingTmDataLinkTest {
@@ -48,7 +47,7 @@ public class FilePollingTmDataLinkTest {
 
     @Test
     public void test1() throws Exception {
-        File incomingDir = Files.createTempDir();
+        File incomingDir = Files.createTempDirectory("FilePollingTmDataLinkTest").toFile();
         File f1 = new File(incomingDir, "f1");
         
         CcsdsPacket p1 = new CcsdsPacket(new byte[50]);

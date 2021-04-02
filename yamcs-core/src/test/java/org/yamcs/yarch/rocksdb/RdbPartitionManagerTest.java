@@ -3,6 +3,7 @@ package org.yamcs.yarch.rocksdb;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -23,7 +24,6 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 
-import com.google.common.io.Files;
 
 public class RdbPartitionManagerTest {
 
@@ -73,7 +73,7 @@ public class RdbPartitionManagerTest {
     @Test
     public void createAndIteratePartitions() throws Exception {
         Tablespace tablespace = new Tablespace("test");
-        String tmpdir = Files.createTempDir().getAbsolutePath();
+        String tmpdir = Files.createTempDirectory("RdbPartitionManagerTest").toString();
         tablespace.setCustomDataDir(tmpdir);
 
         tablespace.loadDb(false);
@@ -132,7 +132,7 @@ public class RdbPartitionManagerTest {
     @Test
     public void createAndIteratePartitions1() throws Exception {
         Tablespace tablespace = new Tablespace("test");
-        String tmpdir = Files.createTempDir().getAbsolutePath();
+        String tmpdir = Files.createTempDirectory("RdbPartitionManagerTest").toString();
         tablespace.setCustomDataDir(tmpdir);
 
         tablespace.loadDb(false);
