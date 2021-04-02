@@ -1,20 +1,19 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import * as utils from '../utils';
 
 @Pipe({ name: 'nanosDuration' })
 export class NanosDurationPipe implements PipeTransform {
 
-  transform(totalNanos: number | null): string | null {
-    if (totalNanos == null) {
+  transform(nanos: number | null): string | null {
+    if (nanos == null) {
       return null;
     }
-    totalNanos = Math.floor(totalNanos);
-    const totalMillis = Math.floor(totalNanos / 1000);
-    const totalSeconds = Math.floor(totalMillis / 1000);
+    nanos = Math.floor(nanos);
+    const totalSeconds = Math.floor(nanos / 1000 / 1000 / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
     const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
-    const millis = totalMillis - (totalSeconds * 1000);
-    const nanos = totalNanos - (totalMillis * 1000);
+    const subseconds = nanos - (totalSeconds * 1000 * 1000 * 1000);
     if (hours) {
       if (minutes) {
         return `${hours}h ${minutes}m`;
@@ -27,20 +26,9 @@ export class NanosDurationPipe implements PipeTransform {
       } else {
         return `${minutes}m`;
       }
-    } else if (seconds) {
-      if (millis) {
-        return `${seconds}s ${millis}ms`;
-      } else {
-        return `${seconds}s`;
-      }
-    } else if (millis) {
-      if (nanos) {
-        return `${millis}ms ${nanos}ns`;
-      } else {
-        return `${nanos}ns`;
-      }
     } else {
-      return `${nanos}ns`;
+      const formatted = utils.lpad(subseconds, 9);
+      return `${seconds}.${formatted} s`;
     }
   }
 }
