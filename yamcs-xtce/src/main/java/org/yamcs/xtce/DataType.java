@@ -61,8 +61,11 @@ public interface DataType {
 
     public String getLongDescription();
     
+    public String getQualifiedName();
+
     public interface Builder<T extends Builder<T>> {
         public T setName(String name);
+        public T setQualifiedName(String fqn);
         public T setInitialValue(String initialValue);
         public T setShortDescription(String shortDescription);
         public T setLongDescription(String longDescription);

@@ -191,8 +191,9 @@ public class ArrayDataType extends NameDescription implements DataType {
          * 
          * @param type
          */
-        public void setElementType(DataType type) {
+        public T setElementType(DataType type) {
             this.type = type;
+            return self();
         }
 
         public void setSize(List<IntegerValue> list) {

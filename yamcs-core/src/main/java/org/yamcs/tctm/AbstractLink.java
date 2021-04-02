@@ -11,9 +11,12 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Parameter;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -33,7 +36,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     protected EventProducer eventProducer;
     protected YConfiguration config;
     protected AtomicBoolean disabled = new AtomicBoolean(false);
-    private String sv_linkStatus_id, sp_dataOutCount_id, sp_dataInCount_id;
+    private Parameter spLinkStatus, spDataOutCount, spDataInCount;
     protected TimeService timeService;
 
     /**
@@ -140,10 +143,10 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     }
 
     @Override
-    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
-        sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
-        sp_dataOutCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataOutCount";
-        sp_dataInCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataInCount";
+    public void setupSystemParameters(SystemParametersService sysParamCollector) {
+        spLinkStatus = sysParamCollector.createSystemParameter(linkName + "/linkStatus", Type.ENUMERATED);
+        spDataOutCount = sysParamCollector.createSystemParameter(linkName + "/dataOutCount", Type.UINT64);
+        spDataInCount = sysParamCollector.createSystemParameter(linkName + "/dataInCount", Type.UINT64);
     }
 
     @Override
@@ -168,9 +171,11 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
      * @param list
      */
     protected void collectSystemParameters(long time, List<ParameterValue> list) {
-        list.add(SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name()));
-        list.add(SystemParametersCollector.getPV(sp_dataOutCount_id, time, getDataOutCount()));
-        list.add(SystemParametersCollector.getPV(sp_dataInCount_id, time, getDataInCount()));
+        State state = state();
+        list.add(SystemParametersService.getPV(spLinkStatus, time,
+                ValueUtility.getEnumeratedValue(state.ordinal(), state.name())));
+        list.add(SystemParametersService.getPV(spDataOutCount, time, getDataOutCount()));
+        list.add(SystemParametersService.getPV(spDataInCount, time, getDataInCount()));
     }
 
 }

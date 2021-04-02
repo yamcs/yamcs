@@ -13,7 +13,9 @@ import org.yamcs.events.QuietEventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
@@ -24,6 +26,7 @@ import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MathOperationCalibrator;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.NumericDataEncoding;
@@ -34,6 +37,7 @@ import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
 
+import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
  * usable when not a full blown processor is available (e.g. XTCE packet processing)
@@ -131,9 +135,12 @@ public class ProcessorData {
 
     }
 
-    private ParameterValue getProcessorPV(XtceDb xtceDb, long time, String name, String value) {
-        ParameterValue pv = new ParameterValue(
-                xtceDb.createSystemParameter((XtceDb.YAMCS_SPACESYSTEM_NAME + "/processor/" + name)));
+    private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value) {
+        String fqn = NameDescription.qualifiedName(YAMCS_SPACESYSTEM_NAME, "processor", name);
+        Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING);
+
+        ParameterValue pv = new ParameterValue(p);
+
         pv.setAcquisitionTime(time);
         pv.setGenerationTime(time);
         pv.setStringValue(value);

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -127,7 +128,8 @@ public class ParameterReplayHandler implements ReplayHandler {
             Parameter p = xtceDb.getParameter(pv.getParameterQualifiedName());
             if (p == null) {
                 if (XtceDb.isSystemParameter(pv.getParameterQualifiedName())) {
-                    p = xtceDb.createSystemParameter(pv.getParameterQualifiedName());
+                    p = SystemParametersService.createSystemParameter(xtceDb, pv.getParameterQualifiedName(),
+                            pv.getEngValue().getType());
                 } else {
                     log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
                     continue;

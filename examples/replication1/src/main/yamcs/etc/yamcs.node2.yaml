@@ -9,7 +9,7 @@ services:
       streams:
         - tm_realtime
         - tm_dump
-  - class: org.yamcs.parameter.SystemParametersCollector
+  - class: org.yamcs.parameter.SystemParametersService
     args:
       provideJvmVariables: true
       provideFsVariables: true

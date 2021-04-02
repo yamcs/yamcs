@@ -22,9 +22,10 @@ import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Clcw;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.Cop1Config;
 import org.yamcs.protobuf.Cop1State;
 import org.yamcs.protobuf.Cop1Status;
@@ -34,6 +35,10 @@ import org.yamcs.tctm.ccsds.Cop1Monitor.AlertType;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.Member;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
 /**
@@ -161,10 +166,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     String clcwStreamName;
     ClcwStreamHelper clcwHelper;
 
-    protected String sv_cop1Status_id;
+    protected Parameter spCop1Status;
     private volatile ParameterValue cop1Status;
-    final static AggregateMemberNames cop1StatusMembers = AggregateMemberNames.get(new String[] { "cop1Active",
-            "state", "waitQueueNumTC", "sentQueueNumFrames", "vS", "nnR" });
 
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
             TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
@@ -1191,10 +1194,19 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
-        super.setupSystemParameters(sysParamCollector);
+    public void setupSystemParameters(SystemParametersService sysParamsService) {
+        super.setupSystemParameters(sysParamsService);
 
-        sv_cop1Status_id = sysParamCollector.getNamespace() + "/" + linkName + "/cop1Status";
+        AggregateParameterType aggrType = new AggregateParameterType.Builder().setName("Cop1Status")
+                .addMember(new Member("cop1Active", sysParamsService.getBasicType(Type.BOOLEAN)))
+                .addMember(new Member("state", sysParamsService.getBasicType(Type.ENUMERATED)))
+                .addMember(new Member("waitQueueNumTC", sysParamsService.getBasicType(Type.UINT32)))
+                .addMember(new Member("sentQueueNumFrames", sysParamsService.getBasicType(Type.UINT32)))
+                .addMember(new Member("vS", sysParamsService.getBasicType(Type.UINT32)))
+                .addMember(new Member("nnR", sysParamsService.getBasicType(Type.UINT32)))
+                .build();
+
+        spCop1Status = sysParamsService.createSystemParameter(linkName + "/cop1Status", aggrType);
 
         addMonitor(new Cop1Monitor() {
             int prevClcw = INVALID_CLCW;
@@ -1233,20 +1245,19 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             };
 
             void updatePv() {
-                AggregateValue tmp = new AggregateValue(cop1StatusMembers);
+                AggregateValue tmp = new AggregateValue(aggrType.getMemberNames());
                 tmp.setMemberValue("cop1Active", ValueUtility.getBooleanValue(cop1Active));
-
-                if (suspendState > 0) {
-                    tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.SUSPENDED.name()));
-                } else {
-                    tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.forNumber(state).name()));
-                }
+                Cop1State c1state = suspendState > 0 ? Cop1State.SUSPENDED : Cop1State.forNumber(state);
+                tmp.setMemberValue("state", ValueUtility.getEnumeratedValue(c1state.getNumber(), c1state.name()));
                 tmp.setMemberValue("waitQueueNumTC", ValueUtility.getUint32Value(waitQueue.size()));
                 tmp.setMemberValue("sentQueueNumFrames", ValueUtility.getUint32Value(sentQueueSize()));
                 tmp.setMemberValue("vS", ValueUtility.getUint32Value(vS));
                 tmp.setMemberValue("nnR", ValueUtility.getUint32Value(nnR));
 
-                cop1Status = SystemParametersCollector.getPV(sv_cop1Status_id, getCurrentTime(), tmp);
+                ParameterValue pv = new ParameterValue(spCop1Status);
+                pv.setGenerationTime(getCurrentTime());
+                pv.setEngineeringValue(tmp);
+                cop1Status = pv;
             }
 
         });

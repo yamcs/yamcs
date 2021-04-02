@@ -1,4 +1,4 @@
-System Parameters Collector
+System Parameters Service
 ===========================
 
 Collects system parameters from any Yamcs component at a frequency of 1Hz. Parameter values are emitted to the ``sys_var`` stream.
@@ -7,7 +7,7 @@ Collects system parameters from any Yamcs component at a frequency of 1Hz. Param
 Class Name
 ----------
 
-:javadoc:`org.yamcs.parameter.SystemParametersCollector`
+:javadoc:`org.yamcs.parameter.SystemParametersService`
 
 
 Configuration
@@ -18,7 +18,7 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
 .. code-block:: yaml
 
     services:
-      - class: org.yamcs.parameter.SystemParametersCollector
+      - class: org.yamcs.parameter.SystemParametersService
         args:
           provideJvmVariables: true
 

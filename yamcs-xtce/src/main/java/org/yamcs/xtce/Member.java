@@ -19,6 +19,10 @@ public class Member extends NameDescription {
         super(name);
     }
 
+    public Member(String name, DataType type) {
+        super(name);
+        this.type = type;
+    }
     /**
      * Used to set the initial calibrated values of Parameters.
      * Will overwrite an initial value defined for the DataType

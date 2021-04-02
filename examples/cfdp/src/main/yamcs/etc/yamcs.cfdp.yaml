@@ -4,7 +4,7 @@ services:
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
-  - class: org.yamcs.parameter.SystemParametersCollector
+  - class: org.yamcs.parameter.SystemParametersService
     args:
       provideJvmVariables: true
       provideFsVariables: true

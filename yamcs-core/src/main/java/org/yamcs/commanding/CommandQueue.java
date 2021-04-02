@@ -10,12 +10,14 @@ import java.util.concurrent.ScheduledFuture;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.User;
 import org.yamcs.xtce.Significance.Levels;
+import org.yamcs.xtce.SystemParameter;
 
 public class CommandQueue {
 
@@ -36,10 +38,7 @@ public class CommandQueue {
     int stateExpirationRemainingS = -1;
     ScheduledFuture<?> stateExpirationJob = null;
 
-    String spQueueState;
-    String spNumSentCommands;
-    String spNumRejectedCommands;
-    String spNumCommands;
+    SystemParameter spQueueState, spNumSentCommands, spNumRejectedCommands, spNumCommands;
 
     CommandQueue(Processor channel, String name, QueueState state) {
         this.processor = channel;
@@ -49,11 +48,11 @@ public class CommandQueue {
     }
 
     void setupSysParameters() {
-        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
-        spQueueState = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/state";
-        spNumCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numCommands";
-        spNumSentCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numSentCommands";
-        spNumRejectedCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numRejectedCommands";
+        SystemParametersService sps = SystemParametersService.getInstance(processor.getInstance());
+        spQueueState = sps.createSystemParameter("cmdQueue/" + name + "/state", Type.ENUMERATED);
+        spNumCommands = sps.createSystemParameter("cmdQueue/" + name + "/numCommands", Type.SINT32);
+        spNumSentCommands = sps.createSystemParameter("cmdQueue/" + name + "/numSentCommands", Type.UINT32);
+        spNumRejectedCommands = sps.createSystemParameter("cmdQueue/" + name + "/numRejectedCommands", Type.UINT32);
     }
 
     public ConcurrentLinkedQueue<PreparedCommand> getCommands() {
@@ -194,9 +193,9 @@ public class CommandQueue {
     }
 
     void fillInSystemParameters(List<ParameterValue> params, long time) {
-        params.add(SystemParametersCollector.getPV(spQueueState, time, state.name()));
-        params.add(SystemParametersCollector.getPV(spNumCommands, time, commands.size()));
-        params.add(SystemParametersCollector.getPV(spNumSentCommands, time, nbSentCommands));
-        params.add(SystemParametersCollector.getPV(spNumRejectedCommands, time, nbRejectedCommands));
+        params.add(SystemParametersService.getPV(spQueueState, time, state.name()));
+        params.add(SystemParametersService.getPV(spNumCommands, time, commands.size()));
+        params.add(SystemParametersService.getPV(spNumSentCommands, time, nbSentCommands));
+        params.add(SystemParametersService.getPV(spNumRejectedCommands, time, nbRejectedCommands));
     }
 }

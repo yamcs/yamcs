@@ -14,7 +14,7 @@ realtime:
         stream: "tc_realtime"
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
-    # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)
+    # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService)
     - class: org.yamcs.parameter.LocalParameterManager
   config:
     subscribeAll: true

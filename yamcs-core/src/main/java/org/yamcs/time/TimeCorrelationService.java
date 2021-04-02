@@ -19,14 +19,16 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.external.SimpleRegression;
 import org.yamcs.parameter.ParameterStatus;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.TcoConfig;
 import org.yamcs.protobuf.TcoSample;
 import org.yamcs.protobuf.TcoStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -171,7 +173,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
     Stream tcoStream;
     EventProducer eventProducer;
-    private String spDeviationId;
+    private SystemParameter spDeviationId;
     private ParameterValue deviationPv;
     String tableName;
 
@@ -458,7 +460,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         }
         long time = timeService.getMissionTime();
         double dabs = Math.abs(deviation);
-        ParameterValue pv = SystemParametersCollector.getPV(spDeviationId, time, deviation);
+        ParameterValue pv = SystemParametersService.getPV(spDeviationId, time, deviation);
         if (dabs > validity) {
             pv.setStatus(warningStatus);
         } else if (dabs > accuracy) {
@@ -508,10 +510,10 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     }
 
     void setupSystemParameters() {
-        SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
+        SystemParametersService collector = SystemParametersService.getInstance(yamcsInstance);
         if (collector != null) {
             makeParameterStatus();
-            spDeviationId = collector.getNamespace() + "/" + serviceName + "/deviation";
+            spDeviationId = collector.createSystemParameter(serviceName + "/deviation", Type.DOUBLE);
             collector.registerProducer(this);
         }
     }

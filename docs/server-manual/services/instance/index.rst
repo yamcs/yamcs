@@ -13,7 +13,7 @@ Instance Services
     parameter-recorder
     processor-creator-service
     replay-server
-    system-parameters-collector
+    system-parameters-service
     xtce-tm-recorder
     time-correlation
     replication-master

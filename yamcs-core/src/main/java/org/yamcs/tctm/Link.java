@@ -2,7 +2,7 @@ package org.yamcs.tctm;
 
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
 
 /**
@@ -90,13 +90,13 @@ public interface Link {
     }
 
     /**
-     * Called by the LinkManager before startup if the {@link SystemParametersCollector} service is enabled,
+     * Called by the LinkManager before startup if the {@link SystemParametersService} service is enabled,
      * to setup necessary things for later parameter collection.
      * <p>
      * The method is called only on the links that implement the {@link SystemParametersProducer} interface; they are
-     * also registered with the {@link SystemParametersCollector} to be called regularly after the start.
+     * also registered with the {@link SystemParametersService} to be called regularly after the start.
      */
-    default void setupSystemParameters(SystemParametersCollector sysParamCollector) {
+    default void setupSystemParameters(SystemParametersService sysParamCollector) {
     }
     
     /**

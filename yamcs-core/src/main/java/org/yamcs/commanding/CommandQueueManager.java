@@ -29,7 +29,7 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -192,7 +192,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             log.debug("No parameter required for post transmission contraint check");
         }
 
-        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
+        SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             for (CommandQueue cq : queues.values()) {
                 cq.setupSysParameters();
@@ -204,7 +204,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     @Override
     public void doStop() {
-        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
+        SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             sysParamCollector.unregisterProducer(this);
         }

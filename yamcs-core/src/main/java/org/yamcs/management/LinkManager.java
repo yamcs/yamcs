@@ -27,7 +27,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.LinkInfo;
@@ -278,7 +278,7 @@ public class LinkManager {
     }
 
     public void startLinks() {
-        SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
+        SystemParametersService collector = SystemParametersService.getInstance(yamcsInstance);
 
         if (collector != null) {
             linksByName.forEach((name, link) -> {

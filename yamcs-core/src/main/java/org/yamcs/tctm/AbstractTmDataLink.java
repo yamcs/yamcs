@@ -7,11 +7,13 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.SimulationTimeService;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.Parameter;
 
 public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
     protected AtomicLong packetCount = new AtomicLong(0);
@@ -22,7 +24,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     YConfiguration packetPreprocessorArgs;
     protected PacketPreprocessor packetPreprocessor;
 
-    private String spDataRate, spPacketRate;
+    private Parameter spDataRate, spPacketRate;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
     private TmSink tmSink;
@@ -66,17 +68,17 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     }
 
     @Override
-    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
-        super.setupSystemParameters(sysParamCollector);
-        spDataRate = sysParamCollector.getNamespace() + "/" + linkName + "/dataRate";
-        spPacketRate = sysParamCollector.getNamespace() + "/" + linkName + "/packetRate";
+    public void setupSystemParameters(SystemParametersService sysParamService) {
+        super.setupSystemParameters(sysParamService);
+        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.FLOAT);
+        spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.FLOAT);
     }
 
     @Override
     protected void collectSystemParameters(long time, List<ParameterValue> list) {
         super.collectSystemParameters(time, list);
-        list.add(SystemParametersCollector.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate()));
-        list.add(SystemParametersCollector.getPV(spPacketRate, time, packetRateMeter.getFiveSecondsRate()));
+        list.add(SystemParametersService.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate()));
+        list.add(SystemParametersService.getPV(spPacketRate, time, packetRateMeter.getFiveSecondsRate()));
     }
 
     @Override

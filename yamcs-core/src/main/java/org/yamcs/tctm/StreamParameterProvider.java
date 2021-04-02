@@ -12,14 +12,14 @@ import org.yamcs.Processor;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
-import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
@@ -115,11 +115,8 @@ public class StreamParameterProvider extends AbstractProcessorService implements
                     Parameter ppdef = xtceDb.getParameter(fqn);
                     if (ppdef == null) {
                         if (XtceDb.isSystemParameter(fqn)) {
-                            ppdef = xtceDb.createSystemParameter(fqn);
-                            if(pv.getEngValue() instanceof AggregateValue) {
-                                //we have to set a type for the parameter, otherwise it won't be possible to subscribe to individual members
-                                ppdef.setParameterType(AggregateUtil.createParameterType(ppdef.getName(), (AggregateValue) pv.getEngValue()));    
-                            }
+                            Value engValue = pv.getEngValue();
+                            ppdef = SystemParametersService.createSystemParameter(xtceDb, fqn, engValue);
                         } else {
                             log.trace("Ignoring unknown parameter {}", fqn);
                             continue;

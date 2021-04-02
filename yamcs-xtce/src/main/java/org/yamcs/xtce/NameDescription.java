@@ -177,6 +177,24 @@ public class NameDescription implements Serializable {
     }
 
     /**
+     * Concatenates the root with the subsystems and returns a qualified name
+     * @param root
+     */
+    public static String qualifiedName(String root, String... subsystems) {
+        if (root.charAt(0) != PATH_SEPARATOR) {
+            throw new IllegalArgumentException("root has to start with "+PATH_SEPARATOR);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(root);
+        for (String s : subsystems) {
+            if (s.charAt(0) != PATH_SEPARATOR) {
+                sb.append(PATH_SEPARATOR);
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+    /**
      * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
      *
      * @return OPS Name alias if defined, otherwise name in the default namespace
@@ -254,6 +272,11 @@ public class NameDescription implements Serializable {
 
         public T setName(String name) {
             this.name = name;
+            return self();
+        }
+
+        public T setQualifiedName(String fqn) {
+            this.qualifiedName = fqn;
             return self();
         }
 

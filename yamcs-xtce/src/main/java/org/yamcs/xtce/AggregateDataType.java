@@ -238,12 +238,14 @@ public class AggregateDataType extends NameDescription implements DataType {
 
         }
 
-        public void addMember(Member memberType) {
+        public T addMember(Member memberType) {
             memberList.add(memberType);
+            return self();
         }
 
-        public void addMembers(List<Member> memberList) {
+        public T addMembers(List<Member> memberList) {
             this.memberList.addAll(memberList);
+            return self();
         }
 
         public List<Member> getMemberList() {

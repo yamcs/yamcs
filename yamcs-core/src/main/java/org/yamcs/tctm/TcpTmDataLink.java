@@ -10,7 +10,6 @@ import java.net.Socket;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
 
 public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
@@ -19,8 +18,6 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     protected String host;
     protected int port;
     protected long initialDelay;
-
-    ParameterValue svConnectionStatus;
 
     String packetInputStreamClassName;
     YConfiguration packetInputStreamArgs;
