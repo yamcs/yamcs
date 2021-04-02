@@ -1,0 +1,26 @@
+.extra-bar-container {
+  padding: 12px;
+  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+}
+
+.extra-bar {
+  height: 24px;
+  line-height: 24px;
+}
+
+.separator {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+table.logs {
+  line-height: 12px;
+}
+
+table.logs td {
+  font-size: 12px;
+  color: rgba(0, 0, 0, .654);
+}
+
+table.logs td.time {
+  color: rgba(0, 0, 0, 0.35);
+}

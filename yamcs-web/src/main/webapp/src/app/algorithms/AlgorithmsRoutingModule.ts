@@ -5,6 +5,8 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { AlgorithmPage } from './AlgorithmPage';
 import { AlgorithmsPage } from './AlgorithmsPage';
+import { AlgorithmSummaryTab } from './AlgorithmSummaryTab';
+import { AlgorithmTraceTab } from './AlgorithmTraceTab';
 
 const routes: Routes = [
   {
@@ -21,6 +23,19 @@ const routes: Routes = [
       }, {
         path: ':qualifiedName',
         component: AlgorithmPage,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'summary',
+          }, {
+            path: 'summary',
+            component: AlgorithmSummaryTab,
+          }, {
+            path: 'trace',
+            component: AlgorithmTraceTab,
+          }
+        ]
       }
     ]
   }
@@ -35,4 +50,6 @@ export class AlgorithmsRoutingModule { }
 export const routingComponents = [
   AlgorithmsPage,
   AlgorithmPage,
+  AlgorithmSummaryTab,
+  AlgorithmTraceTab,
 ];

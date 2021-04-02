@@ -9,7 +9,7 @@ import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, Ge
 import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { AlgorithmsPage, AlgorithmStatus, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
 import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -882,6 +882,28 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/status`;
     const response = await this.doFetch(url);
     return await response.json() as AlgorithmStatus;
+  }
+
+  async getAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    const response = await this.doFetch(url);
+    return await response.json() as AlgorithmTrace;
+  }
+
+  async startAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    return this.doFetch(url, {
+      body: JSON.stringify({ "state": "enabled" }),
+      method: 'PATCH',
+    });
+  }
+
+  async stopAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    return this.doFetch(url, {
+      body: JSON.stringify({ "state": "disabled" }),
+      method: 'PATCH',
+    });
   }
 
   async getParameterSamples(instance: string, qualifiedName: string, options: GetParameterSamplesOptions = {}): Promise<Sample[]> {

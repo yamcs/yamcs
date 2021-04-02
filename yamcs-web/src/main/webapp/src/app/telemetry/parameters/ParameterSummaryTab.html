@@ -1,10 +1,8 @@
-<div class="scrollpane">
-  <div class="panel-content">
-    <ng-container *ngIf="parameter$ | async as parameter">
-      <app-parameter-detail [parameter]="parameter"
-                            [offset]="offset$ | async"
-                            [pval]="pval$ | async">
-      </app-parameter-detail>
-    </ng-container>
-  </div>
+<div class="panel-content">
+  <ng-container *ngIf="parameter$ | async as parameter">
+    <app-parameter-detail [parameter]="parameter"
+                          [offset]="offset$ | async"
+                          [pval]="pval$ | async">
+    </app-parameter-detail>
+  </ng-container>
 </div>

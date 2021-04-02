@@ -1,3 +1,5 @@
+import { ParameterValue } from './monitoring';
+
 export interface MissionDatabase {
   configName: string;
   name: string;
@@ -252,6 +254,24 @@ export interface AlgorithmStatus {
   execTimeNs: number;
   errorMessage?: string;
   errorTime?: string;
+}
+
+export interface AlgorithmTrace {
+  runs: AlgorithmRun[];
+  logs: AlgorithmLog[];
+}
+
+export interface AlgorithmRun {
+  time: string;
+  inputs: ParameterValue[];
+  outputs: ParameterValue[];
+  returnValue: string;
+  error: string;
+}
+
+export interface AlgorithmLog {
+  time: string;
+  msg: string;
 }
 
 export interface InputParameter {

@@ -1,17 +1,16 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { AlgorithmStatus } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './AlgorithmPage.html',
+  styleUrls: ['./AlgorithmPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmPage {
 
   algorithm$: Promise<Algorithm>;
-  status$: Promise<AlgorithmStatus | null>;
 
   constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
@@ -19,11 +18,5 @@ export class AlgorithmPage {
     this.algorithm$.then(algorithm => {
       title.setTitle(algorithm.name);
     });
-
-    if (this.yamcs.processor) {
-      this.status$ = yamcs.yamcsClient.getAlgorithmStatus(this.yamcs.instance!, this.yamcs.processor, qualifiedName);
-    } else {
-      this.status$ = Promise.resolve(null);
-    }
   }
 }
