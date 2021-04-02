@@ -197,7 +197,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         sampleQueue = new ArrayDeque<>(numSamples);
         accuracy = config.getDouble("accuracy", 0.1);
         validity = config.getDouble("validity", 0.2);
-        defaultTof = config.getDouble("deafaultTof", 0.0);        
+        defaultTof = config.getDouble("defaultTof", 0.0);
 
         boolean saveCoefficients = config.getBoolean("saveCoefficients", true);
         boolean saveTofPolynomials = config.getBoolean("saveTofPolynomials", true);
