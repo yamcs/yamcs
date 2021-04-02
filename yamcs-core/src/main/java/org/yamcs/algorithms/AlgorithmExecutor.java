@@ -34,7 +34,7 @@ public interface AlgorithmExecutor {
     /**
      * This method is called each time new parameters are received (for example extracting them from a packet).
      * <p>
-     * The list can be large, it can contain all parameters extracted from one packet.
+     * The list can be large, it will contain all parameters extracted from one packet but it is indexed per parameter.
      * <p>
      * The executor should copy its inputs if updated or should use the list to determine if it should
      * run.

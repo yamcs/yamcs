@@ -43,7 +43,7 @@ public class ActiveAlgorithm {
     /**
      * when the algorithm ran the last time
      * <p>
-     * This is system (wall clock) time not mission time
+     * This is system (wall clock) time as returned by currentTimeMillis
      */
     long lastRun;
 
@@ -136,7 +136,6 @@ public class ActiveAlgorithm {
 
         return output;
     }
-
 
     private void propagateResultToListeners(AlgorithmExecutionResult result) {
         try {
