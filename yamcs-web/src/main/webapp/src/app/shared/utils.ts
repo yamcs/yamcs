@@ -358,3 +358,7 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
   const payload = toBase64URL(JSON.stringify(claims));
   return `${joseHeader}.${payload}.`;
 }
+
+export function lpad(nr: number, n: number) {
+  return Array(n - String(nr).length + 1).join('0') + nr;
+}
