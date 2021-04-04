@@ -260,7 +260,10 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      * used after making an appropriate {@link AggregateParameterType}
      * 
      * @param relativeName
-     * @param type
+     *            - the relative name of the parameter, can contain multiple subsystems but cannot start with "/"
+     * 
+     * @param basicType
+     *            - any type except aggregate and array
      * @return
      */
     public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType) {
