@@ -38,8 +38,6 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.util.AggregateMemberNames;
 
 /**
  * Assembles TC packets into TC frames as per CCSDS 232.0-B-3 and sends them out via FOP1
