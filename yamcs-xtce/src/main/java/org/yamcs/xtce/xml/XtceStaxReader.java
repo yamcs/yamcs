@@ -40,110 +40,14 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.xtce.ANDedConditions;
-import org.yamcs.xtce.AbsoluteTimeArgumentType;
-import org.yamcs.xtce.AbsoluteTimeDataType;
-import org.yamcs.xtce.AbsoluteTimeParameterType;
-import org.yamcs.xtce.AggregateArgumentType;
-import org.yamcs.xtce.AggregateParameterType;
-import org.yamcs.xtce.AlarmLevels;
-import org.yamcs.xtce.AlarmRanges;
-import org.yamcs.xtce.AlarmType;
-import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.*;
 import org.yamcs.xtce.Algorithm.Scope;
-import org.yamcs.xtce.AncillaryData;
-import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.ArgumentAssignment;
-import org.yamcs.xtce.ArgumentEntry;
-import org.yamcs.xtce.ArgumentType;
-import org.yamcs.xtce.ArrayParameterEntry;
-import org.yamcs.xtce.ArrayParameterType;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.BinaryArgumentType;
-import org.yamcs.xtce.BinaryDataEncoding;
-import org.yamcs.xtce.BinaryParameterType;
-import org.yamcs.xtce.BooleanArgumentType;
-import org.yamcs.xtce.BooleanExpression;
-import org.yamcs.xtce.BooleanParameterType;
-import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
-import org.yamcs.xtce.CommandContainer;
-import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.Comparison;
-import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.Condition;
-import org.yamcs.xtce.Container;
-import org.yamcs.xtce.ContainerEntry;
-import org.yamcs.xtce.ContextCalibrator;
-import org.yamcs.xtce.CustomAlgorithm;
-import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.DynamicIntegerValue;
-import org.yamcs.xtce.EnumeratedArgumentType;
-import org.yamcs.xtce.EnumeratedDataType;
-import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.EnumerationAlarm;
-import org.yamcs.xtce.EnumerationContextAlarm;
-import org.yamcs.xtce.FixedIntegerValue;
-import org.yamcs.xtce.FixedValueEntry;
-import org.yamcs.xtce.FloatArgumentType;
-import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatDataEncoding.Encoding;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatValidRange;
-import org.yamcs.xtce.Header;
-import org.yamcs.xtce.InputParameter;
-import org.yamcs.xtce.IntegerArgumentType;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.IntegerRange;
-import org.yamcs.xtce.IntegerValidRange;
-import org.yamcs.xtce.IntegerValue;
-import org.yamcs.xtce.MatchCriteria;
-import org.yamcs.xtce.MathAlgorithm;
-import org.yamcs.xtce.MathOperation;
-import org.yamcs.xtce.MathOperationCalibrator;
-import org.yamcs.xtce.MathOperator;
-import org.yamcs.xtce.Member;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.NumericAlarm;
-import org.yamcs.xtce.NumericContextAlarm;
-import org.yamcs.xtce.ORedConditions;
-import org.yamcs.xtce.OnParameterUpdateTrigger;
-import org.yamcs.xtce.OnPeriodicRateTrigger;
-import org.yamcs.xtce.OperatorType;
-import org.yamcs.xtce.OutputParameter;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.ParameterInstanceRef;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.PathElement;
-import org.yamcs.xtce.PolynomialCalibrator;
-import org.yamcs.xtce.RateInStream;
-import org.yamcs.xtce.ReferenceTime;
-import org.yamcs.xtce.Repeat;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.SplineCalibrator;
-import org.yamcs.xtce.SplinePoint;
-import org.yamcs.xtce.StringArgumentType;
-import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
-import org.yamcs.xtce.StringParameterType;
-import org.yamcs.xtce.TimeEpoch;
-import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtce.TriggerSetType;
-import org.yamcs.xtce.TriggeredMathOperation;
-import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.util.AggregateTypeUtil;
 import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.DoubleRange;
@@ -315,6 +219,8 @@ public class XtceStaxReader {
     private static final String XTCE_VALUE = "Value";
     private static final String XTCE_TRANSMISSION_CONSTRAINT = "TransmissionConstraint";
     private static final String XTCE_TRANSMISSION_CONSTRAINT_LIST = "TransmissionConstraintList";
+    private static final String XTCE_PARAMETER_VALUE_CHANGE = "ParameterValueChange";
+    private static final String XTCE_CHANGE = "Change";
 
     /**
      * Logging subsystem
@@ -348,7 +254,7 @@ public class XtceStaxReader {
      * @throws IOException
      * 
      */
-    public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException {
+    public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException, XtceLoadException {
         this.fileName = fileName;
         log.info("Parsing XTCE file {}", fileName);
         xmlEvent = null;
@@ -394,11 +300,7 @@ public class XtceStaxReader {
             log.info("XTCE file parsing finished, loaded: {} parameters, {} tm containers, {} commands",
                     spaceSystem.getParameterCount(true), spaceSystem.getSequenceContainerCount(true),
                     spaceSystem.getMetaCommandCount(true));
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace(); ///
-            throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
         }
-
         // try to resolve some internal references
         ReferenceFinder refFinder = new ReferenceFinder(s -> log.warn(s));
         while (resolveReferences(spaceSystem, spaceSystem, refFinder) > 0) {
@@ -906,8 +808,7 @@ public class XtceStaxReader {
             NameReference nr = new UnresolvedNameReference(baseType, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
                 ParameterType ptype = (ParameterType) nd;
                 if (!(ptype instanceof BaseDataType)) {
-                    throw new IllegalArgumentException(
-                            element.getLocation() + ": cannot use " + ptype.getName() + " as a baseType");
+                    throwException(element.getLocation(), "cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
                 return true;
@@ -931,8 +832,7 @@ public class XtceStaxReader {
             NameReference nr = new UnresolvedNameReference(baseType, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
                 ArgumentType ptype = (ArgumentType) nd;
                 if (!(ptype instanceof BaseDataType)) {
-                    throw new IllegalArgumentException(
-                            element.getLocation() + ": cannot use " + ptype.getName() + " as a baseType");
+                    throwException(element.getLocation(), "cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
                 return true;
@@ -2420,6 +2320,49 @@ public class XtceStaxReader {
         }
     }
 
+    private ParameterValueChange readParameterValueChange(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_PARAMETER_VALUE_CHANGE);
+        checkStartElementPreconditions();
+        ParameterValueChange pvc = new ParameterValueChange();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_PARAMETER_REF)) {
+                Location xmlLocation = xmlEvent.getLocation();
+                CompletableFuture<ParameterInstanceRef> cf = new CompletableFuture<>();
+                pvc.setParameterRef(readParameterRef(spaceSystem, cf));
+                cf.thenAccept(ref -> {
+                    ParameterType ptype = ref.getParameter().getParameterType();
+                    if (ref.getMemberPath() != null) {
+                        ptype = AggregateTypeUtil.getMemberType(ptype, ref.getMemberPath());
+                    }
+
+                    if (!(ptype instanceof NumericParameterType)) {
+                        throwException(xmlLocation, "Invalid parameter of type " + ptype
+                                + " used in ParameterValuChange verifier; expecting a numeric parameter");
+                    }
+                });
+            } else if (isStartElementWithName(XTCE_CHANGE)) {
+                double delta = readDoubleAttribute("value", xmlEvent.asStartElement());
+                if (delta == 0) {
+                    throwException(xmlEvent.getLocation(), "change value cannot be 0");
+                }
+                pvc.setDelta(delta);
+            } else if (isEndElementWithName(XTCE_PARAMETER_VALUE_CHANGE)) {
+                if (pvc.getParameterRef() == null) {
+                    throw new XMLStreamException("ParameterValueChange has to contain a reference to a parameter",
+                            xmlEvent.getLocation());
+                }
+                if (pvc.getDelta() == 0) {
+                    throw new XMLStreamException("ParameterValueChange has to contain a change value",
+                            xmlEvent.getLocation());
+                }
+                return pvc;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
     private Condition readCondition(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_CONDITION);
         checkStartElementPreconditions();
@@ -2428,7 +2371,7 @@ public class XtceStaxReader {
         OperatorType comparisonOperator = null;
         String rvalue = null;
 
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        CompletableFuture<ParameterInstanceRef> cf = new CompletableFuture<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
@@ -2875,26 +2818,67 @@ public class XtceStaxReader {
     }
 
     // if resolveCf is not null, it will be called when the parameter reference has been resolved
-    private ParameterInstanceRef readParameterInstanceRef(SpaceSystem spaceSystem, CompletableFuture<Void> resolvedCf)
+    private ParameterInstanceRef readParameterInstanceRef(SpaceSystem spaceSystem,
+            CompletableFuture<ParameterInstanceRef> resolvedCf)
             throws XMLStreamException {
         log.trace(XTCE_PARAMETER_INSTANCE_REF);
 
-        String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
-        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
+        StartElement startElement = checkStartElementPreconditions();
+
+        String paramRef = readMandatoryAttribute("parameterRef", startElement);
+        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
+        int instance = readIntAttribute("instance", startElement, 0);
+
+        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
+        instanceRef.setInstance(instance);
 
         ParameterReference nr = new UnresolvedParameterReference(paramRef)
                 .addResolvedAction((para, path) -> {
-            if (para.getParameterType() == null) {
-                return false;
-            }
-            instanceRef.setParameter(para);
-            instanceRef.setMemberPath(path);
+                    if (para.getParameterType() == null) {
+                        return false;
+                    }
+                    instanceRef.setParameter(para);
+                    instanceRef.setMemberPath(path);
 
-            if (resolvedCf != null) {
-                resolvedCf.complete(null);
+                    if (resolvedCf != null) {
+                        resolvedCf.complete(instanceRef);
+                    }
+                    return true;
+                });
+
+        Parameter parameter = spaceSystem.getParameter(paramRef);
+        if (parameter != null) {
+            if (!nr.tryResolve(parameter)) {
+                spaceSystem.addUnresolvedReference(nr);
             }
-            return true;
-        });
+        } else {
+            spaceSystem.addUnresolvedReference(nr);
+        }
+        return instanceRef;
+    }
+
+    // if resolveCf is not null, it will be called when the parameter reference has been resolved
+    private ParameterInstanceRef readParameterRef(SpaceSystem spaceSystem,
+            CompletableFuture<ParameterInstanceRef> resolvedCf)
+            throws XMLStreamException {
+        log.trace(XTCE_PARAMETER_REF);
+
+        String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
+        final ParameterInstanceRef instanceRef = new ParameterInstanceRef();
+
+        ParameterReference nr = new UnresolvedParameterReference(paramRef)
+                .addResolvedAction((para, path) -> {
+                    if (para.getParameterType() == null) {
+                        return false;
+                    }
+                    instanceRef.setParameter(para);
+                    instanceRef.setMemberPath(path);
+
+                    if (resolvedCf != null) {
+                        resolvedCf.complete(instanceRef);
+                    }
+                    return true;
+                });
 
         Parameter parameter = spaceSystem.getParameter(paramRef);
         if (parameter != null) {
@@ -3663,6 +3647,10 @@ public class XtceStaxReader {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
                 MatchCriteria matchCriteria = readBooleanExpression(spaceSystem);
                 cmdVerifier.setMatchCriteria(matchCriteria);
+            } else if (isStartElementWithName(XTCE_PARAMETER_VALUE_CHANGE)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.PARAMETER_VALUE_CHANGE, stage);
+                ParameterValueChange paraValueChange = readParameterValueChange(spaceSystem);
+                cmdVerifier.setParameterValueChange(paraValueChange);
             } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
                 CheckWindow cw = readCheckWindow(spaceSystem);
                 if (cmdVerifier != null) {
@@ -3958,7 +3946,7 @@ public class XtceStaxReader {
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
         instanceRef.setInstance(instance);
         final Location xmlLocation = xmlEvent.getLocation();
-        
+
         ParameterReference nr = new UnresolvedParameterReference(paramRef).addResolvedAction((p, path) -> {
             if (!algo.getLanguage().equalsIgnoreCase("java")) {
                 verifyScalarMember(p, path, xmlLocation);
@@ -3979,7 +3967,6 @@ public class XtceStaxReader {
         }
         algo.addInput(inputParameter);
     }
-
 
     private List<OutputParameter> readOutputSet(SpaceSystem spaceSystem) throws XMLStreamException {
         checkStartElementPreconditions();
@@ -4049,7 +4036,6 @@ public class XtceStaxReader {
         MatchCriteria matchCriteria = readMatchCriteria(spaceSystem);
         return new TransmissionConstraint(matchCriteria, timeout);
     }
-
 
     private OutputParameter readOutputParameterRef(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_OUTPUT_PARAMETER_REF);
@@ -4396,8 +4382,12 @@ public class XtceStaxReader {
 
         if (ptype instanceof AggregateParameterType || ptype instanceof ArrayParameterType) {
             String name = p.getName() + (path == null ? "" : "." + AggregateTypeUtil.toString(path));
-            throw new IllegalArgumentException("Cannot use " + name + " of type " + ptype.getClass().getSimpleName()
+            throwException(xmlLocation, "Cannot use " + name + " of type " + ptype.getClass().getSimpleName()
                     + " as input to algorithms (this is only supported for java algorithms; reference to scalar members can be used instead for other languages)");
         }
+    }
+
+    void throwException(Location location, String message) {
+        throw new XtceLoadException(fileName, location, message);
     }
 }

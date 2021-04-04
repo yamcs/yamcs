@@ -14,7 +14,12 @@ import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
 
 /**
- * Verifies commands by checking XTCE comparisons
+ * Verifies commands by checking {@link MatchCriteria}. It implements the following XTCE verifier types:
+ * <ul>
+ * <li>ComparisonList</li>
+ * <li>BooleanExpression</li>
+ * <li>Comparison</li>
+ * </ul>
  * 
  * @author nm
  *
@@ -53,6 +58,7 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
 
         // serialize the result in the timer, just in case two conflicting deliveries happen at the same time
         timer.execute(() -> {
+            unsubscribe();
             if (r == MatchResult.OK) {
                 finishOK();
             } else if (r == MatchResult.NOK && cv.failOnFirstFailedMatch()) {
@@ -63,11 +69,15 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
 
     @Override
     void doCancel() {
-        if (subscriptionId != 0) {
-            proc.getParameterRequestManager().unsubscribeAll(subscriptionId);
-        }
+        unsubscribe();
     }
 
+    private synchronized void unsubscribe() {
+        if (subscriptionId != -1) {
+            proc.getParameterRequestManager().unsubscribeAll(subscriptionId);
+            subscriptionId = -1;
+        }
+    }
     @Override
     public void updateItems(int subscriptionId, final List<ParameterValue> items) {
         ParameterValueList pvlist = new ParameterValueList(items);

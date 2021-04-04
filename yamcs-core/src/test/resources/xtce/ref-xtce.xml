@@ -234,11 +234,11 @@
 					</xtce:TransmissionConstraint>
 				</xtce:TransmissionConstraintList>
 			</xtce:MetaCommand>
-			<xtce:MetaCommand name="cmd_with_verifier">
+			<xtce:MetaCommand name="cmd_with_verifier1">
 				<xtce:ArgumentList>
 					<xtce:Argument name="arg1" argumentTypeRef="u32" />
 				</xtce:ArgumentList>
-				<xtce:CommandContainer name="cmd_with_verifier">
+				<xtce:CommandContainer name="cmd_with_verifier1">
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
@@ -247,6 +247,25 @@
 					<xtce:CompleteVerifier>
 						<xtce:Comparison value="47" parameterRef="local_para1"/>
 						<xtce:CheckWindow timeToStartChecking="PT0.1S" timeToStopChecking="PT1S"/>
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_verifier2">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_verifier2">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+					<xtce:CompleteVerifier>
+						<xtce:ParameterValueChange>
+							<xtce:ParameterRef parameterRef="local_para1"/>
+							<xtce:Change value="10"/>
+						</xtce:ParameterValueChange>
+						<xtce:CheckWindow timeToStopChecking="PT1S"/>
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>

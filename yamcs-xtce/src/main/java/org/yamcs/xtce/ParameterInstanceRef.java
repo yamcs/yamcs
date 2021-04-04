@@ -39,6 +39,10 @@ public class ParameterInstanceRef implements Serializable {
         this.parameter = para;
     }
 
+    public ParameterInstanceRef(Parameter para, PathElement[] path) {
+        this.parameter = para;
+        this.path = path;
+    }
     public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
         this.parameter = para;
         this.useCalibratedValue = useCalibratedValue;

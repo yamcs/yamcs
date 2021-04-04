@@ -66,7 +66,6 @@ The following concepts are *not supported*:
 * ``ParameterToSuspendAlarmsOnSet``
 * ``RestrictionCriteria/NextContainer``
 * ``CommandVerifierType/(Comparison, BooleanExpression,ComparisonList)``
-* ``CommandVerifierType/ParameterValueChange``
 
 The other elements are supported one way or another, exceptions or changes from the specs are given in the sections below.
 

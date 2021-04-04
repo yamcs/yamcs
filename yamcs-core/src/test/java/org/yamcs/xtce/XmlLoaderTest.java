@@ -241,7 +241,7 @@ public class XmlLoaderTest {
     @Test
     public void testCommandVerification() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
-        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_verifier");
+        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_verifier1");
         List<CommandVerifier> cvList = mc.getCommandVerifiers();
         assertEquals(1, cvList.size());
         CommandVerifier cv0 = cvList.get(0);

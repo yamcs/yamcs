@@ -797,6 +797,12 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement(elementName);
         doc.writeAttribute("parameterRef", getNameReference(pinstRef));
+        if (pinstRef.getInstance() != 0) {
+            doc.writeAttribute("instance", Integer.toString(pinstRef.getInstance()));
+        }
+        if (!pinstRef.useCalibratedValue()) {
+            doc.writeAttribute("useCalibratedValue", "false");
+        }
         doc.writeEndElement();
     }
 
@@ -1380,6 +1386,15 @@ public class XtceAssembler {
             break;
         case ALGORITHM:
             writeCustomAlgorithm(doc, (CustomAlgorithm) verifier.getAlgorithm(), "CustomAlgorithm");
+            break;
+        case PARAMETER_VALUE_CHANGE:
+            ParameterValueChange pvc = verifier.getParameterValueChange();
+            doc.writeStartElement("ParameterValueChange");
+            writeParameterInstanceRef(doc, "ParameterRef", pvc.getParameterRef());
+            doc.writeStartElement("Change");
+            doc.writeAttribute("value", Double.toString(pvc.getDelta()));
+            doc.writeEndElement();
+            doc.writeEndElement();// ParameterValueChange
             break;
         }
 

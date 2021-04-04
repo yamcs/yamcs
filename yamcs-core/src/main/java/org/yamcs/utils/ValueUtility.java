@@ -432,10 +432,13 @@ public class ValueUtility {
 
     /**
      * if the passed on value is float, double or integer invoke the function on the double value and return true
+     * <p>
      * if v is of other types return false
      * 
      * @param v
+     *            - the value to be processed
      * @param c
+     *            - the function to be invoked with the value transformed to a primitive double
      * @return
      */
     public static boolean processAsDouble(Value v, DoubleConsumer c) {

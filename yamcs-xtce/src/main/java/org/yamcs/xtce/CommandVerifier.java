@@ -18,9 +18,14 @@ public class CommandVerifier implements Serializable {
     private static final long serialVersionUID = 2L;
 
     public enum Type {
-        CONTAINER, ALGORITHM,
-        /* this covers XTCE comparison and comparison list */
-        MATCH_CRITERIA
+        /** verifier succeeds if a container is received */
+        CONTAINER,
+        /** an algorithm runs to decide if the verifier succeeds or fails */
+        ALGORITHM,
+        /** succeeds when some conditions are met */
+        MATCH_CRITERIA,
+        /** succeeds when a parameter changes with a delta above a threshold */
+        PARAMETER_VALUE_CHANGE
     };
 
     private final Type type;
@@ -51,24 +56,17 @@ public class CommandVerifier implements Serializable {
      */
     private CheckWindow checkWindow;
 
-    /**
-     * When verification is a new instance of the referenced Container; this verifier return true when the referenced
-     * container has been received and processed.
-     */
     SequenceContainer containerRef;
     Algorithm algorithm;
     MatchCriteria matchCriteria;
+    ParameterValueChange paraValueChange;
 
     // valid for matchCriteria - if true the first time the condition can be checked (i.e. all input parameters
     // available) and the condition does not match, the verifier will fail.
     // if false, the verifier will keep checking until timeout (it will never fail)
     boolean verifierFailOnFirstFailedMatch = false;
 
-    // NOT implemented from XTCE
-    /*
-     * ParameterValueChange
-     * 
-     */
+
 
     public CommandVerifier(Type type, String stage) {
         this.type = type;
@@ -160,6 +158,14 @@ public class CommandVerifier implements Serializable {
         return matchCriteria;
     }
 
+    public ParameterValueChange getParameterValueChange() {
+        return paraValueChange;
+    }
+
+    public void setParameterValueChange(ParameterValueChange paraValueChange) {
+        this.paraValueChange = paraValueChange;
+    }
+
     public boolean failOnFirstFailedMatch() {
         return verifierFailOnFirstFailedMatch;
     }
@@ -178,5 +184,6 @@ public class CommandVerifier implements Serializable {
         sb.append(", checkWindow: ").append(checkWindow.toString()).append("}");
         return sb.toString();
     }
+
 
 }

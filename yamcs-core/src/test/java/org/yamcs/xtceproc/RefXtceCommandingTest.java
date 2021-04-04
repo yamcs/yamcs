@@ -181,8 +181,8 @@ public class RefXtceCommandingTest {
     }
 
     @Test
-    public void testVerifierTimeout() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier");
+    public void testVerifier1Timeout() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier1");
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
         // localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
@@ -200,8 +200,8 @@ public class RefXtceCommandingTest {
     }
 
     @Test
-    public void testVerifierOK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier");
+    public void testVerifier1OK() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier1");
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
 
@@ -215,6 +215,55 @@ public class RefXtceCommandingTest {
 
         verifyCmdHist("Verifier_Complete", "PENDING");
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
+
+        verifyCmdHist("Verifier_Complete", "OK");
+    }
+
+    @Test
+    public void testVerifier2Timeout() throws Exception {
+        // set first a value
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
+
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier2");
+
+        List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
+        PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+
+        commandingManager.sendCommand(user, pc);
+
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
+        verifyCmdHist(TransmissionContraints_KEY, "NA");
+        verifyCmdHist("Verifier_Complete", "PENDING");
+        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        assertNotNull(cmdReleaser.getCmd(2000));
+        // update the value
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(31));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(33));
+
+        verifyCmdHist("Verifier_Complete", "TIMEOUT");
+    }
+
+    @Test
+    public void testVerifier2OK() throws Exception {
+        // set first a value
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
+
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier2");
+
+        List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
+        PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+
+        commandingManager.sendCommand(user, pc);
+
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
+        verifyCmdHist(TransmissionContraints_KEY, "NA");
+        verifyCmdHist("Verifier_Complete", "PENDING");
+        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        assertNotNull(cmdReleaser.getCmd(2000));
+        // update the value
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
 
         verifyCmdHist("Verifier_Complete", "OK");
     }
