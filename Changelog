@@ -1,3 +1,6 @@
+Version 5.4.5 released 5-Apr-2021
+- Fixed a bug causing the rejection of command arguments of type aggregates with members enumerations
+
 Version 5.4.4 released 2-Apr-2021
 - Fixed a bug in the TM partitioning flags causing the homepage of Yamcs to not display the packets beyond the top level.
 - Fixed a typo in reading the TCO configuration causing the defaultTof option to be ignored.
