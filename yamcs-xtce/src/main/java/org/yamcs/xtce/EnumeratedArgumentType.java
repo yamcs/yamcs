@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-import org.yamcs.xtce.BooleanArgumentType.Builder;
 
 public class EnumeratedArgumentType extends EnumeratedDataType implements ArgumentType {
     private static final long serialVersionUID = 1;
@@ -60,6 +59,5 @@ public class EnumeratedArgumentType extends EnumeratedDataType implements Argume
         }
         
     }
-
   
 }
