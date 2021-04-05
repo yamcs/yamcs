@@ -157,7 +157,13 @@ public class AggregateDataType extends NameDescription implements DataType {
         Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
             if (jobj.has(memb.getName())) {
-                String v = jobj.remove(memb.getName()).toString();
+                JsonElement jsel = jobj.remove(memb.getName());
+                String v;
+                if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
+                    v = jsel.getAsString();
+                } else {
+                    v = jsel.toString();
+                }
                 r.put(memb.getName(), memb.getType().parseString(v));
             } else {
                 Object v = memb.getInitialValue();
@@ -172,12 +178,12 @@ public class AggregateDataType extends NameDescription implements DataType {
             }
         }
         if (jobj.size() > 0) {
-            throw new IllegalArgumentException(
-                    "Unknown members " + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+            throw new IllegalArgumentException("Unknown members "
+                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
         }
         return r;
-
     }
+
 
     @Override
     public Map<String, Object> getInitialValue() {

@@ -451,4 +451,18 @@ public class RefMdbCommandEncodingTest {
         assertEquals(TimeEncoding.toGpsTimeMillisec(tlong)/1000, gpsTime);
         
     }
+
+    @Test
+    public void testAggregateArg() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
+        assertNotNull(mc);
+
+        List<ArgumentAssignment> aaList = Arrays.asList(
+                new ArgumentAssignment("arg1", "{member1: 3, member2: 'value2'}"));
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
+
+        byte[] cmdb = cbr.getCmdPacket();
+        assertEquals("0380", StringConverter.arrayToHexString(cmdb));
+
+    }
 }
