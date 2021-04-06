@@ -58,14 +58,12 @@ The following concepts are *not supported*:
 * ``Message``
 * ``ParameterSegmentRefEntry``
 * ``ContainerSegmentRefEntry``
-* ``BooleanExpression``
 * ``DiscreteLookupList``
 * ``ErrorDetectCorrectType``. Note that error detection/correction is implemented directly into the Yamcs data links.
 * ``ContextSignificanceList``
 * ``ParameterToSetList``
 * ``ParameterToSuspendAlarmsOnSet``
 * ``RestrictionCriteria/NextContainer``
-* ``CommandVerifierType/(Comparison, BooleanExpression,ComparisonList)``
 
 The other elements are supported one way or another, exceptions or changes from the specs are given in the sections below.
 

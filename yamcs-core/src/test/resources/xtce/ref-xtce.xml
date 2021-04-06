@@ -269,6 +269,36 @@
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>
+				<xtce:MetaCommand name="cmd_with_verifier3">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_verifier3">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+                     <xtce:CompleteVerifier>
+                     	<xtce:BooleanExpression>
+                     		<xtce:Condition>
+                     		<!-- the special /yamcs/cmd/arg namespace means that this is the value of an command argument,
+                     		(including those set via command inheritance in BaseCommand -> ArgumentAssignmentList -> ArgumentAssignment)
+                     		 The argument value is not like a parameter because it only exists in a command verifier context, 
+                     		 multiple commands can run in parallel each with its own context (different argument values).
+                     		 
+                     		 The condition below ways that the command is verified if the local_para1 takes the same value as the arg1 argument.
+                     		 The arg1 could be an id which uniquely identifies the command.
+                     		  -->
+                     			<xtce:ParameterInstanceRef parameterRef="/yamcs/cmd/arg/arg1"/>
+                     			<xtce:ComparisonOperator>==</xtce:ComparisonOperator>
+                     			<xtce:ParameterInstanceRef parameterRef="local_para1"/>
+                     		</xtce:Condition>
+                     	</xtce:BooleanExpression>
+						<xtce:CheckWindow timeToStartChecking="PT0.1S" timeToStopChecking="PT1S"/>
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
+			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>
 </xtce:SpaceSystem>

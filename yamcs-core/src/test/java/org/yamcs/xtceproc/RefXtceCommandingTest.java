@@ -158,10 +158,10 @@ public class RefXtceCommandingTest {
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
         commandingManager.sendCommand(user, pc);
 
-        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "PENDING");
-        verifyCmdHist(TransmissionContraints_KEY, "NOK");
-        verifyCmdHist(AcknowledgeReleased_KEY, "NOK");
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "PENDING",
+                TransmissionContraints_KEY, "NOK",
+                AcknowledgeReleased_KEY, "NOK");
         assertNull(cmdReleaser.getCmd(2000));
     }
 
@@ -189,14 +189,15 @@ public class RefXtceCommandingTest {
 
         commandingManager.sendCommand(user, pc);
 
-        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "NA");
-        verifyCmdHist("Verifier_Complete", "SCHEDULED");
-        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "SCHEDULED",
+                AcknowledgeReleased_KEY, "OK");
+
         assertNotNull(cmdReleaser.getCmd(2000));
 
-        verifyCmdHist("Verifier_Complete", "PENDING");
-        verifyCmdHist("Verifier_Complete", "TIMEOUT");
+        verifyCmdHist("Verifier_Complete", "PENDING",
+                "Verifier_Complete", "TIMEOUT");
     }
 
     @Test
@@ -207,10 +208,10 @@ public class RefXtceCommandingTest {
 
         commandingManager.sendCommand(user, pc);
 
-        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "NA");
-        verifyCmdHist("Verifier_Complete", "SCHEDULED");
-        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "SCHEDULED",
+                AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
 
         verifyCmdHist("Verifier_Complete", "PENDING");
@@ -231,10 +232,10 @@ public class RefXtceCommandingTest {
 
         commandingManager.sendCommand(user, pc);
 
-        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "NA");
-        verifyCmdHist("Verifier_Complete", "PENDING");
-        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "PENDING",
+                AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
         // update the value
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(31));
@@ -256,10 +257,10 @@ public class RefXtceCommandingTest {
 
         commandingManager.sendCommand(user, pc);
 
-        verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "NA");
-        verifyCmdHist("Verifier_Complete", "PENDING");
-        verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "PENDING",
+                AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
         // update the value
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
@@ -268,13 +269,40 @@ public class RefXtceCommandingTest {
         verifyCmdHist("Verifier_Complete", "OK");
     }
 
-    private void verifyCmdHist(String key, String value) throws InterruptedException {
-        CmdHistEntry status = cmdHistPublisher.getCmdHist(3000);
-        assertEquals(key + "_Status", status.key);
-        assertEquals(value, status.value);
+    @Test
+    public void testVerifier3OK() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier3");
 
-        CmdHistEntry time = cmdHistPublisher.getCmdHist(1000);
-        assertEquals(key + "_Time", time.key);
+        List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "101"));
+        PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+        commandingManager.sendCommand(user, pc);
+
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "PENDING",
+                AcknowledgeReleased_KEY, "OK");
+        assertNotNull(cmdReleaser.getCmd(2000));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
+
+        verifyCmdHist("Verifier_Complete", "OK");
+    }
+
+    private void verifyCmdHist(String... keyValue) throws InterruptedException {
+        if (keyValue.length % 2 != 0) {
+            throw new IllegalArgumentException(
+                    "An array with an even number of elements [ke1,value1, key2,value2...] is needed");
+        }
+        for (int i = 0; i < keyValue.length; i++) {
+            String key = keyValue[i];
+            String value = keyValue[i + 1];
+            CmdHistEntry status = cmdHistPublisher.getCmdHist(3000);
+            assertEquals(key + "_Status", status.key);
+            assertEquals(value, status.value);
+
+            CmdHistEntry time = cmdHistPublisher.getCmdHist(1000);
+            assertEquals(key + "_Time", time.key);
+
+        }
 
     }
 
