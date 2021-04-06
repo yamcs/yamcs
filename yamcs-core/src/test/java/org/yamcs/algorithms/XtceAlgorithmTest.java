@@ -37,7 +37,7 @@ public class XtceAlgorithmTest {
     }
 
     @Test
-    public void test1() {
+    public void test1() throws Exception {
         Parameter bv = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
         Parameter bsoc = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge");
         final ArrayList<ParameterValue> params = new ArrayList<>();
@@ -47,7 +47,6 @@ public class XtceAlgorithmTest {
         pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
         prm.update(ParameterValueList.asList(pv));
         assertEquals(1, params.size());
-
         pv = params.get(0);
         assertEquals(1.0d, pv.getEngValue().getFloatValue(), 1e-5);
     }

@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +29,8 @@ import org.yamcs.xtce.XtceDb;
  *
  */
 public class Subscription {
-    // Maps the packet definitions to the entries we actually need from these packets
-    private final Map<SequenceContainer, TreeSet<SequenceEntry>> container2EntryMap = new HashMap<>();
-
-    // For each container list the derived containers which have to be processed also
-    private final Map<SequenceContainer, HashSet<SequenceContainer>> container2InheritingContainerMap = new HashMap<>();
-    Logger log = LoggerFactory.getLogger(Subscription.class);
+    private final Map<SequenceContainer, SubscribedContainer> containers = new HashMap<>();
+    final static Logger log = LoggerFactory.getLogger(Subscription.class);
 
     XtceDb xtcedb;
 
@@ -44,15 +38,25 @@ public class Subscription {
         this.xtcedb = xtcedb;
     }
 
-    public void addSequenceContainer(SequenceContainer seq) {
+
+    public SubscribedContainer addSequenceContainer(SequenceContainer containerDef) {
+        SubscribedContainer subscribedContainer = containers.get(containerDef);
+        if (subscribedContainer != null) {
+            return subscribedContainer;
+        }
+
+        subscribedContainer = new SubscribedContainer(containerDef);
+        containers.put(containerDef, subscribedContainer);
+
         // if there is a base container, add that one to the subscription and the parameters which have to be
         // extracted from the base in order to know if the inheritance condition applies
-        if (seq.getBaseContainer() != null) {
-            addContainer2InheritingContainer(seq.getBaseContainer(), seq);
-            // it can be that the inheritance condition parameters are not from the baseContainer, so we need to add
-            // it explicitly
-            addSequenceContainer(seq.getBaseContainer());
-            MatchCriteria mc = seq.getRestrictionCriteria();
+        SequenceContainer base = containerDef.getBaseContainer();
+        if (base != null) {
+            SubscribedContainer bases = addSequenceContainer(base);
+
+            MatchCriteria mc = containerDef.getRestrictionCriteria();
+            bases.addIneriting(subscribedContainer);
+
             if (mc != null) {
                 for (Parameter p : mc.getDependentParameters()) {
                     addParameter(p);
@@ -62,16 +66,17 @@ public class Subscription {
         }
         // if this container is part of another containers through aggregation, then add those
 
-        List<ContainerEntry> entries = xtcedb.getContainerEntries(seq);
+        List<ContainerEntry> entries = xtcedb.getContainerEntries(containerDef);
         if (entries != null) {
             for (ContainerEntry ce : entries) {
                 addSequenceEntry(ce);
             }
-            if (seq.getSizeInBits() < 0) {
+            if (containerDef.getSizeInBits() < 0) {
                 // desperately add all parameters from this container in order for the parent to know the size
-                addAll(seq);
+                addAll(containerDef);
             }
         }
+        return subscribedContainer;
     }
 
     /**
@@ -81,8 +86,10 @@ public class Subscription {
      * @param seq
      */
     public void addAll(SequenceContainer seq) {
+        SubscribedContainer subscr = containers.computeIfAbsent(seq, k -> new SubscribedContainer(k));
+        subscr.addAllEntries();
+
         for (SequenceEntry se : seq.getEntryList()) {
-            addContainer2Entry(seq, se);
             if (se instanceof ContainerEntry) {
                 addAll(((ContainerEntry) se).getRefContainer());
             }
@@ -90,16 +97,18 @@ public class Subscription {
         List<SequenceContainer> inheriting = xtcedb.getInheritingContainers(seq);
         if (inheriting != null) {
             for (SequenceContainer sc : inheriting) {
-                addContainer2InheritingContainer(seq, sc);
                 addAll(sc);
+                subscr.addIneriting(containers.get(sc));
             }
         }
     }
 
     public void addSequenceEntry(SequenceEntry se) {
-        boolean containerAlreadyAdded = container2EntryMap.containsKey(se.getSequenceContainer());
+        addSequenceContainer(se.getSequenceContainer());
 
-        addContainer2Entry(se.getSequenceContainer(), se);
+        SubscribedContainer subscr = containers.get(se.getSequenceContainer());
+        subscr.addEntry(se);
+
         SequenceContainer sctmp = se.getSequenceContainer();
         // if this entry's location is relative to the previous one, then we have to add also that one in the list
         if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY) {
@@ -127,9 +136,6 @@ public class Subscription {
                 }
             }
         }
-        if (!containerAlreadyAdded) {
-            addSequenceContainer(se.getSequenceContainer());
-        }
     }
 
     /**
@@ -156,24 +162,6 @@ public class Subscription {
         }
     }
 
-    private void addContainer2Entry(SequenceContainer sc, SequenceEntry se) {
-        TreeSet<SequenceEntry> ts = container2EntryMap.computeIfAbsent(sc, k -> new TreeSet<SequenceEntry>());
-        ts.add(se);
-    }
-
-    private void addContainer2InheritingContainer(SequenceContainer container, SequenceContainer inheritedContainer) {
-        HashSet<SequenceContainer> hs = container2InheritingContainerMap.computeIfAbsent(container,
-                k -> new HashSet<>());
-        hs.add(inheritedContainer);
-    }
-
-    public SortedSet<SequenceEntry> getEntries(SequenceContainer container) {
-        return container2EntryMap.get(container);
-    }
-
-    public Set<SequenceContainer> getInheritingContainers(SequenceContainer container) {
-        return container2InheritingContainerMap.get(container);
-    }
 
     /**
      * Get the set of all containers subscribed
@@ -182,11 +170,7 @@ public class Subscription {
      */
     public Collection<SequenceContainer> getContainers() {
         Set<SequenceContainer> r = new HashSet<SequenceContainer>();
-        r.addAll(container2InheritingContainerMap.keySet());
-        for (HashSet<SequenceContainer> hs : container2InheritingContainerMap.values()) {
-            r.addAll(hs);
-        }
-        r.addAll(container2EntryMap.keySet());
+        r.addAll(containers.keySet());
         return r;
     }
 
@@ -194,27 +178,17 @@ public class Subscription {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Current list of parameter subscribed:\n");
-        for (Map.Entry<SequenceContainer, TreeSet<SequenceEntry>> me : container2EntryMap.entrySet()) {
-            SequenceContainer sc = me.getKey();
-            sb.append(sc);
-            sb.append(" with entries:\n");
-            for (SequenceEntry se : me.getValue()) {
-                sb.append("\t").append(se).append("\n");
-            }
+        for (SubscribedContainer subscr : containers.values()) {
+            sb.append(subscr.toString());
         }
         sb.append("-----------------------------------\n");
-        sb.append("Container inheritance dependency\n");
-        for (Map.Entry<SequenceContainer, HashSet<SequenceContainer>> me : container2InheritingContainerMap
-                .entrySet()) {
-            SequenceContainer sc = me.getKey();
-            sb.append(sc.getName());
-            sb.append("-->");
-            for (SequenceContainer sc1 : me.getValue()) {
-                sb.append(sc1.getName() + " ");
-            }
-            sb.append("\n\n");
-        }
+
         return sb.toString();
+    }
+
+
+    public SubscribedContainer getSubscribedContainer(SequenceContainer containerDef) {
+        return containers.get(containerDef);
     }
 
 }

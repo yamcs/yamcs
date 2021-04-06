@@ -4,7 +4,6 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.XtceDb;
@@ -24,15 +23,14 @@ public class ContainerProcessingContext {
     // with respect to the primary container where the processing started
     int containerAbsoluteByteOffset;
 
-    Subscription subscription;
-    ContainerProcessingResult result;
-    ContainerProcessingOptions options;
+    final Subscription subscription;
+    final ContainerProcessingResult result;
+    final ContainerProcessingOptions options;
 
     public final SequenceContainerProcessor sequenceContainerProcessor;
     public final SequenceEntryProcessor sequenceEntryProcessor;
     public final DataEncodingDecoder dataEncodingProcessor;
     public final ValueProcessor valueProcessor;
-    public final CriteriaEvaluator criteriaEvaluator;
     public boolean provideContainerResult = true;
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
@@ -40,7 +38,6 @@ public class ContainerProcessingContext {
         this.pdata = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
-        this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params, pdata.getLastValueCache());
         this.result = result;
         this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
 

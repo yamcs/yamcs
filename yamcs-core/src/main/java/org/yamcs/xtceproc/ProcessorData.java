@@ -13,18 +13,19 @@ import org.yamcs.events.QuietEventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
-import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.JavaExpressionCalibrator;
+import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
@@ -36,6 +37,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.MatchCriteria.MatchResult;
 
 import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 /**
@@ -55,6 +57,7 @@ public class ProcessorData {
     private Map<Calibrator, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
     private Map<DataEncoding, DataEncoder> encoders = new HashMap<>();
+    private Map<MatchCriteria, MatchCriteriaEvaluator> evaluators = new HashMap<>();
 
     final XtceDb xtcedb;
     final Log log;
@@ -172,23 +175,25 @@ public class ProcessorData {
      * returns a calibrator processor for the given data encoding. Can be null if the DataEncoding does not define a
      * calibrator.
      * 
+     * @param pvalues
+     *            - the current list of parameters being extracted (not yet added to the lastValueCache). They are used
+     *            when evaluating contexts matches and have priority over the parameters in the lastValueCache.
+     *            <p>
+     *            Could be null if the calibration is not running as part of packet processing.
      * @return a calibrator processor or null
      */
-    public CalibratorProc getCalibrator(CriteriaEvaluator contextEvaluator, DataEncoding de) {
+    public CalibratorProc getCalibrator(ParameterValueList pvalues, DataEncoding de) {
         if (de instanceof NumericDataEncoding) {
             NumericDataEncoding nde = (NumericDataEncoding) de;
             Calibrator c = nde.getDefaultCalibrator();
 
             List<ContextCalibrator> clist = nde.getContextCalibratorList();
             if (clist != null) {
-                if (contextEvaluator == null) {
-                    log.warn("For {} : context calibrators without a context evaluator", de);
-                } else {
-                    for (ContextCalibrator cc : clist) {
-                        if (cc.getContextMatch().isMet(contextEvaluator)) {
-                            c = cc.getCalibrator();
-                            break;
-                        }
+                for (ContextCalibrator cc : clist) {
+                    MatchCriteriaEvaluator evaluator = getEvaluator(cc.getContextMatch());
+                    if (evaluator.evaluate(pvalues, lastValueCache) == MatchResult.OK) {
+                        c = cc.getCalibrator();
+                        break;
                     }
                 }
             }
@@ -227,6 +232,11 @@ public class ProcessorData {
             calibrators.put(c, calibrator);
         }
         return calibrator;
+    }
+
+    public MatchCriteriaEvaluator getEvaluator(MatchCriteria mc) {
+        return evaluators.computeIfAbsent(mc,
+                k -> MatchCriteriaEvaluatorFactory.getEvaluator(k));
     }
 
     public DataDecoder getDataDecoder(DataEncoding de) {

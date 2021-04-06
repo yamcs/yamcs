@@ -17,10 +17,10 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
-import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
+import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
@@ -75,12 +75,11 @@ public class ParameterAlarmChecker {
      * the new values.
      */
     public void performAlarmChecking(ParameterValueList currentDelivery, Iterator<ParameterValue> it) {
-        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(currentDelivery, lastValueCache);
         while (it.hasNext()) {
             ParameterValue pval = it.next();
             ParameterType ptype = pdata.getParameterType(pval.getParameter());
             if (ptype != null && ptype.hasAlarm()) {
-                performAlarmChecking(pval, ptype, criteriaEvaluator);
+                performAlarmChecking(currentDelivery, pval, ptype);
             } else if (pval.getMonitoringResult() != null) {
                 // monitoring result set already - either processed parameters or some service like the
                 // TimeCorrelationService
@@ -103,18 +102,18 @@ public class ParameterAlarmChecker {
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
      */
-    private void performAlarmChecking(ParameterValue pv, ParameterType ptype, CriteriaEvaluator criteriaEvaluator) {
+    private void performAlarmChecking(ParameterValueList currentDelivery, ParameterValue pv, ParameterType ptype) {
         if (ptype instanceof FloatParameterType) {
-            performAlarmCheckingFloat((FloatParameterType) ptype, pv, criteriaEvaluator);
+            performAlarmCheckingFloat(currentDelivery, (FloatParameterType) ptype, pv);
         } else if (ptype instanceof EnumeratedParameterType) {
-            performAlarmCheckingEnumerated((EnumeratedParameterType) ptype, pv, criteriaEvaluator);
+            performAlarmCheckingEnumerated(currentDelivery, (EnumeratedParameterType) ptype, pv);
         } else if (ptype instanceof IntegerParameterType) {
-            performAlarmCheckingInteger((IntegerParameterType) ptype, pv, criteriaEvaluator);
+            performAlarmCheckingInteger(currentDelivery, (IntegerParameterType) ptype, pv);
         }
     }
 
-    private void performAlarmCheckingInteger(IntegerParameterType ipt, ParameterValue pv,
-            CriteriaEvaluator criteriaEvaluator) {
+    private void performAlarmCheckingInteger(ParameterValueList currentDelivery,
+            IntegerParameterType ipt, ParameterValue pv) {
         long intCalValue = 0;
         if (pv.getEngValue().getType() == Type.SINT32) {
             intCalValue = pv.getEngValue().getSint32Value();
@@ -137,7 +136,8 @@ public class ParameterAlarmChecker {
         boolean latching = false;
         if (ipt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
-                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
+                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -174,8 +174,8 @@ public class ParameterAlarmChecker {
         }
     }
 
-    private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv,
-            CriteriaEvaluator criteriaEvaluator) {
+    private void performAlarmCheckingFloat(ParameterValueList currentDelivery,
+            FloatParameterType fpt, ParameterValue pv) {
         double doubleCalValue = 0;
         if (pv.getEngValue().getType() == Type.FLOAT) {
             doubleCalValue = pv.getEngValue().getFloatValue();
@@ -195,8 +195,8 @@ public class ParameterAlarmChecker {
         boolean latching = false;
         if (fpt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
-
-                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
+                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -281,8 +281,8 @@ public class ParameterAlarmChecker {
         pv.setSevereRange(severeRange);
     }
 
-    private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv,
-            CriteriaEvaluator criteriaEvaluator) {
+    private void performAlarmCheckingEnumerated(ParameterValueList currentDelivery,
+            EnumeratedParameterType ept, ParameterValue pv) {
         pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
         String s = pv.getEngValue().getStringValue();
 
@@ -290,7 +290,8 @@ public class ParameterAlarmChecker {
         int minViolations = (alarm == null) ? 1 : alarm.getMinViolations();
         if (ept.getContextAlarmList() != null) {
             for (EnumerationContextAlarm nca : ept.getContextAlarmList()) {
-                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
+                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
                     alarm = nca;
                     minViolations = nca.getMinViolations();
                     break;

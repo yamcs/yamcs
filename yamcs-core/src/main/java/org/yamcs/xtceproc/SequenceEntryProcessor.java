@@ -50,30 +50,39 @@ public class SequenceEntryProcessor {
     }
 
     private void extractContainerEntry(ContainerEntry ce) {
+
         BitBuffer buf = pcontext.buffer;
-        if (buf.getPosition() % 8 != 0)
-            log.warn(
-                    "Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}",
-                    ce, buf.getPosition());
+        if (buf.getPosition() % 8 != 0) {
+            log.warn("Container Entry that doesn't start at byte boundary is not supported. "
+                    + "{} is supposed to start at bit {}", ce, buf.getPosition());
+            return;
+        }
         if (buf.getPosition() > buf.sizeInBits()) {
             log.warn("Container Entry that doesn't fit in the buffer: {} is supposed to start at bit {}"
                     + " while the packet buffer has capacity {} bits", ce, buf.getPosition(), buf.sizeInBits());
             return;
         }
-        BitBuffer buf1 = buf.slice();
-        ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, buf1, pcontext.result,
-                pcontext.subscription, pcontext.options);
-        if (!pcontext.options.resultIncludesSubcontainers) {
-            cpc1.provideContainerResult = false;
+        SubscribedContainer subsribedContainer = pcontext.subscription.getSubscribedContainer(ce.getRefContainer());
+        if (subsribedContainer != null) {
+            BitBuffer buf1 = buf.slice();
+
+            ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, buf1, pcontext.result,
+                    pcontext.subscription, pcontext.options);
+            if (!pcontext.options.resultIncludesSubcontainers) {
+                cpc1.provideContainerResult = false;
+            }
+
+            cpc1.sequenceContainerProcessor.extract(subsribedContainer);
+            if (ce.getRefContainer().getSizeInBits() < 0)
+                buf.setPosition(buf.getPosition() + buf1.getPosition());
+            else
+                buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
         }
-        cpc1.sequenceContainerProcessor.extract(ce.getRefContainer());
-        if (ce.getRefContainer().getSizeInBits() < 0)
-            buf.setPosition(buf.getPosition() + buf1.getPosition());
-        else
-            buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
     }
 
     private ContainerParameterValue extractParameter(Parameter param) {
+        ContainerProcessingResult result = pcontext.result;
+
         ParameterType ptype = param.getParameterType();
         if (ptype == null) {
             throw new XtceProcessingException(
@@ -93,9 +102,9 @@ public class SequenceEntryProcessor {
 
         pcontext.pdata.parameterTypeProcessor.calibrate(pcontext, pv);
 
-        pv.setAcquisitionTime(pcontext.result.acquisitionTime);
-        pv.setGenerationTime(pcontext.result.generationTime);
-        pv.setExpireMillis(pcontext.result.expireMillis);
+        pv.setAcquisitionTime(result.acquisitionTime);
+        pv.setGenerationTime(result.generationTime);
+        pv.setExpireMillis(result.expireMillis);
         return pv;
     }
 

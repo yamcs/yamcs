@@ -7,23 +7,6 @@ public class ANDedConditions extends ExpressionList {
 
 
     @Override
-    public MatchResult matches(CriteriaEvaluator evaluator) {
-        MatchResult result = MatchResult.OK;
-
-        for (BooleanExpression exp : expressions) {
-            MatchResult r = exp.matches(evaluator);
-            if (r == MatchResult.NOK) {
-                result = r;
-                break;
-            } else if (r == MatchResult.UNDEF) {
-                result = r;
-                // continue checking maybe a comparison will return NOK
-            }
-        }
-        return result;
-    }
-
-    @Override
     public String toExpressionString() {
         if (expressions.size() == 1) {
             return expressions.get(0).toExpressionString();

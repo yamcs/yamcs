@@ -523,6 +523,12 @@ public class XtceDb implements Serializable {
         }
     }
 
+    /**
+     * Get the list of containers inheriting from the given container
+     * 
+     * @param container
+     * @return
+     */
     public List<SequenceContainer> getInheritingContainers(SequenceContainer container) {
         return sequenceContainer2InheritingContainerMap.get(container);
     }

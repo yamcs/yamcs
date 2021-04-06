@@ -1,7 +1,6 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -28,18 +27,6 @@ public interface MatchCriteria extends Serializable {
      * @return
      */
     public Set<Parameter> getDependentParameters();
-
-    /**
-     * Return true if the condition matches
-     * 
-     * @param evaluator
-     * @return
-     */
-    default boolean isMet(CriteriaEvaluator evaluator) {
-        return matches(evaluator) == MatchResult.OK;
-    }
-
-    MatchResult matches(CriteriaEvaluator evaluator);
 
     public String toExpressionString();
 
@@ -92,24 +79,4 @@ public interface MatchCriteria extends Serializable {
             log.fine(indent + ")");
         }
     }
-
-    public static final MatchCriteria ALWAYS_MATCH = new MatchCriteria() {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public MatchResult matches(CriteriaEvaluator evaluator) {
-            return MatchResult.OK;
-        }
-
-        @Override
-        public Set<Parameter> getDependentParameters() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public String toExpressionString() {
-            return "true";
-        }
-    };
 }

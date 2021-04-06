@@ -20,10 +20,7 @@ public class Comparison implements MatchCriteria {
 
     OperatorType comparisonOperator;
 
-    // the string is used to create the object and then is changed to the other type, depending on the valueType
     String stringValue;
-
-    private Object value;
 
     /**
      * Makes a new comparison with a generic stringValue at this step the paraRef could be pointing to an unknown
@@ -39,7 +36,6 @@ public class Comparison implements MatchCriteria {
         }
         this.instanceRef = paraRef;
         this.stringValue = stringValue;
-        this.value = stringValue;
         this.comparisonOperator = op;
 
         checkParaRef(paraRef);
@@ -47,24 +43,7 @@ public class Comparison implements MatchCriteria {
 
     public Comparison(ParameterInstanceRef paraRef, int intValue, OperatorType op) {
         this.instanceRef = paraRef;
-        this.value = intValue;
         this.stringValue = Integer.toString(intValue);
-        this.comparisonOperator = op;
-        checkParaRef(paraRef);
-    }
-
-    public Comparison(ParameterInstanceRef paraRef, long longValue, OperatorType op) {
-        this.instanceRef = paraRef;
-        this.value = longValue;
-        this.stringValue = Long.toString(longValue);
-        this.comparisonOperator = op;
-        checkParaRef(paraRef);
-    }
-
-    public Comparison(ParameterInstanceRef paraRef, double doubleValue, OperatorType op) {
-        this.instanceRef = paraRef;
-        this.value = doubleValue;
-        this.stringValue = Double.toString(doubleValue);
         this.comparisonOperator = op;
         checkParaRef(paraRef);
     }
@@ -76,22 +55,17 @@ public class Comparison implements MatchCriteria {
     }
 
     @Override
-    public MatchResult matches(CriteriaEvaluator evaluator) {
-        return evaluator.evaluate(comparisonOperator, instanceRef, value);
-    }
-
-    @Override
     public String toExpressionString() {
         return printExpressionReference(instanceRef) + " "
                 + comparisonOperator + " "
-                + printExpressionValue(value);
+                + printExpressionValue(stringValue);
     }
 
     /**
      * Called when the type of the parameter used for comparison is known, so we have to find the value from stringValue
      * that we can compare to it
      */
-    public void resolveValueType() {
+    public void validateValueType() {
         boolean useCalibratedValue = instanceRef.useCalibratedValue();
         ParameterType ptype = instanceRef.getParameter().getParameterType();
 
@@ -109,9 +83,9 @@ public class Comparison implements MatchCriteria {
         }
         try {
             if (useCalibratedValue) {
-                value = ptype.parseString(stringValue);
+                ptype.parseString(stringValue);
             } else {
-                value = ptype.parseStringForRawValue(stringValue);
+                ptype.parseStringForRawValue(stringValue);
             }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Cannot parse value required for comparing with "
@@ -140,10 +114,6 @@ public class Comparison implements MatchCriteria {
 
     ParameterInstanceRef getParameterInstanceRef() {
         return instanceRef;
-    }
-
-    public Object getValue() {
-        return value;
     }
 
     public String getStringValue() {

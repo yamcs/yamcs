@@ -37,14 +37,14 @@ import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.CriteriaEvaluator;
-import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
+import org.yamcs.xtce.MatchCriteria.MatchResult;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator;
+import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -570,7 +570,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *            the new state of the queue
      * @return the queue whose state has been changed or null if no queue by the name exists
      */
-    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
+    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/* , boolean rebuild */) {
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
             if (q.getName().equals(queueName)) {
@@ -720,7 +720,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             if (aggregateStatus != TCStatus.PENDING) {
                 return;
             }
-            CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList, lastValueCache);
 
             aggregateStatus = TCStatus.OK;
             long scheduleNextCheck = Long.MAX_VALUE;
@@ -737,21 +736,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                         aggregateStatus = TCStatus.TIMED_OUT;
                         break;
                     } else {
-                        MatchCriteria mc = tcs.constraint.getMatchCriteria();
-                        try {
-                            if (!mc.isMet(condEvaluator)) {
-                                if (timeRemaining > 0) {
-                                    aggregateStatus = TCStatus.PENDING;
-                                    if (timeRemaining < scheduleNextCheck) {
-                                        scheduleNextCheck = timeRemaining;
-                                    }
-                                } else {
-                                    aggregateStatus = TCStatus.TIMED_OUT;
-                                    break;
+                        if (tcs.evaluator.evaluate(null, lastValueCache) != MatchResult.OK) {
+                            if (timeRemaining > 0) {
+                                aggregateStatus = TCStatus.PENDING;
+                                if (timeRemaining < scheduleNextCheck) {
+                                    scheduleNextCheck = timeRemaining;
                                 }
+                            } else {
+                                aggregateStatus = TCStatus.TIMED_OUT;
+                                break;
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
                     }
 
@@ -770,10 +764,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         TransmissionConstraint constraint;
         TCStatus status;
         long expirationTime;
+        MatchCriteriaEvaluator evaluator;
 
         public TransmissionConstraintStatus(TransmissionConstraint tc) {
             this.constraint = tc;
             status = TCStatus.PENDING;
+            evaluator = MatchCriteriaEvaluatorFactory.getEvaluator(tc.getMatchCriteria());
         }
     }
 

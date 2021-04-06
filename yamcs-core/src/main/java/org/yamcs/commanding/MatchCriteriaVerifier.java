@@ -8,10 +8,10 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MatchCriteria.MatchResult;
-import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator;
+import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 /**
  * Verifies commands by checking {@link MatchCriteria}. It implements the following XTCE verifier types:
@@ -29,12 +29,14 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
     final MatchCriteria matchCriteria;
     int subscriptionId = -1;
     Log log;
+    MatchCriteriaEvaluator evaluator;
 
     MatchCriteriaVerifier(CommandVerificationHandler cvh, CommandVerifier cv, Log log) {
         super(cvh, cv);
         this.proc = cvh.getProcessor();
         this.matchCriteria = cv.getMatchCriteria();
         this.log = log;
+        this.evaluator = proc.getProcessorData().getEvaluator(cv.getMatchCriteria());
     }
 
     @Override
@@ -52,8 +54,7 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
         if (state != State.RUNNING) {
             return;
         }
-        CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList, proc.getLastValueCache());
-        MatchResult r = matchCriteria.matches(condEvaluator);
+        MatchResult r = evaluator.evaluate(pvList, proc.getLastValueCache());
         log.debug("Condition check result: {}", r);
 
         // serialize the result in the timer, just in case two conflicting deliveries happen at the same time

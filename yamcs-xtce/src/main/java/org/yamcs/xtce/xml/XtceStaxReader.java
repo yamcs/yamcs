@@ -2399,7 +2399,7 @@ public class XtceStaxReader {
                 } else {
                     throw new XMLStreamException("Condition without right value", xmlEvent.getLocation());
                 }
-                cf.thenAccept(v -> cond.resolveValueType());
+                cf.thenAccept(v -> cond.validateValueType());
                 return cond;
             } else {
                 logUnknown();
@@ -2834,7 +2834,7 @@ public class XtceStaxReader {
 
         ParameterReference nr = new UnresolvedParameterReference(paramRef)
                 .addResolvedAction((para, path) -> {
-                    if (para.getParameterType() == null) {
+                    if (para.getParameterType() == null && para.getDataSource() != DataSource.SYSTEM) {
                         return false;
                     }
                     instanceRef.setParameter(para);
@@ -2951,13 +2951,14 @@ public class XtceStaxReader {
             instanceRef.setMemberPath(path);
 
             if (p.getParameterType() == null) {
-                return false;
+                // allow an exception for system parameters
+                return p.getDataSource() == DataSource.SYSTEM;
             }
             if (path != null && DataTypeUtil.getMemberType(p.getParameterType(), path) == null) {
                 return false;
             }
 
-            comparison.resolveValueType();
+            comparison.validateValueType();
             return true;
         });
 

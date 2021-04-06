@@ -124,9 +124,10 @@ public class XtceTmExtractor {
         ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
         try {
             synchronized (subscription) {
+                SubscribedContainer subscribedContainer = subscription.addSequenceContainer(startContainer);
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
                         options);
-                cpc.sequenceContainerProcessor.extract(startContainer);
+                cpc.sequenceContainerProcessor.extract(subscribedContainer);
             }
         } catch (Exception e) {
             // send warning as events and in the log file.

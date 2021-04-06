@@ -82,8 +82,7 @@ public class GbpToXtceAssembler {
     // spaceSystemName is the name of the space system used to lookup parameters which may be part of context
     // specification in string format
     public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, String spaceSystemName,
-            List<ContextCalibratorInfo> ccl)
-            throws BadRequestException {
+            List<ContextCalibratorInfo> ccl) throws BadRequestException {
         List<ContextCalibrator> l = new ArrayList<>(ccl.size());
         for (ContextCalibratorInfo cci : ccl) {
             l.add(toContextCalibrator(xtcedb, spaceSystemName, cci));
@@ -92,8 +91,7 @@ public class GbpToXtceAssembler {
     }
 
     public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, String spaceSystemName,
-            ContextCalibratorInfo cci)
-            throws BadRequestException {
+            ContextCalibratorInfo cci) throws BadRequestException {
         MatchCriteria mc = null;
         if (cci.hasContext()) {
             mc = toMatchCriteria(xtcedb, spaceSystemName, cci.getContext());
@@ -102,16 +100,13 @@ public class GbpToXtceAssembler {
         } else {
             throw new BadRequestException("No context provided in the ContextAlarmInfo");
         }
-        toMatchCriteria(xtcedb, cci.getComparisonList());
         return new ContextCalibrator(mc, toCalibrator(cci.getCalibrator()));
     }
 
     private static MatchCriteria toMatchCriteria(XtceDb xtcedb, List<ComparisonInfo> comparisonList)
             throws BadRequestException {
         int n = comparisonList.size();
-        if (n == 0) {
-            return MatchCriteria.ALWAYS_MATCH;
-        } else if (n == 1) {
+        if (n == 1) {
             return toComparison(xtcedb, comparisonList.get(0));
         } else {
             ComparisonList cl = new ComparisonList();
@@ -137,7 +132,7 @@ public class GbpToXtceAssembler {
 
         ParameterInstanceRef pir = new ParameterInstanceRef(p);
         Comparison c = new Comparison(pir, ci.getValue(), toOperatorType(ci.getOperator()));
-        c.resolveValueType();
+        c.validateValueType();
         return c;
     }
 

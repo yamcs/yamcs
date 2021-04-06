@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.yamcs.xtce.MatchCriteria.MatchResult;
-
 /**
  * All comparisons must be true.
  * 
@@ -30,24 +28,6 @@ public class ComparisonList implements MatchCriteria {
             pset.addAll(c.getDependentParameters());
         }
         return pset;
-    }
-
-    @Override
-    public MatchResult matches(CriteriaEvaluator evaluator) {
-        MatchResult result = MatchResult.OK;
-
-        for (Comparison c : comparisons) {
-            MatchResult r = c.matches(evaluator);
-            if (r == MatchResult.NOK) {
-                result = r;
-                break;
-            } else if (r == MatchResult.UNDEF) {
-                result = r;
-                // continue checking maybe a comparison will return NOK
-            }
-        }
-
-        return result;
     }
 
     public List<Comparison> getComparisonList() {

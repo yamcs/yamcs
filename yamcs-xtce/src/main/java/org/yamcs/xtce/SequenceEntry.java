@@ -3,10 +3,15 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
+ * 
  * An abstract type used by sequence containers.
+ * <p>
  * An entry contains a location in the container. The location may be either fixed or dynamic,
  * absolute (to the start or end of the enclosing container, or relative (to either the previous or subsequent entry).
+ * <p>
  * Entries may also repeat.
+ * <p>
+ * These entries have an index which is defining the order of the entry in the container.
  * 
  * @author nm
  *

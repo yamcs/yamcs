@@ -187,7 +187,7 @@ public class ConditionParser {
         NameReference pref = prefFactory.getReference(lParamName);
         pref.addResolvedAction(nd -> {
             lParamRef.setParameter((Parameter) nd);
-            cond.resolveValueType();
+            cond.validateValueType();
             return true;
         });
 
@@ -238,7 +238,7 @@ public class ConditionParser {
         NameReference pref = prefFactory.getReference(pname);
         pref.addResolvedAction(nd -> {
             pInstRef.setParameter((Parameter) nd);
-            ucomp.resolveValueType();
+            ucomp.validateValueType();
             return true;
         });
 

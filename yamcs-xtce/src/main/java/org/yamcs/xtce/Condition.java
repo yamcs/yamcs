@@ -41,23 +41,20 @@ public class Condition implements BooleanExpression {
     }
 
     /**
-     * Called when the type of the parameter used for comparison is known, so we have to find the value from stringValue
-     * that we can compare to it
+     * If the type of the parameter used for comparison is known, can parse the stringValue to see if it can be compared
+     * with the type
      */
-    public void resolveValueType() {
+    public void validateValueType() {
         if (((rValueRef == null) || (!(rValueRef instanceof ParameterInstanceRef))) && (stringValue != null)) {
             ParameterType ptype = lValueRef.getParameter().getParameterType();
-            if (lValueRef.useCalibratedValue()) {
-                rValueRef = ptype.parseString(stringValue);
-            } else {
-                rValueRef = ptype.parseStringForRawValue(stringValue);
+            if (ptype != null) {
+                if (lValueRef.useCalibratedValue()) {
+                    rValueRef = ptype.parseString(stringValue);
+                } else {
+                    rValueRef = ptype.parseStringForRawValue(stringValue);
+                }
             }
         }
-    }
-
-    @Override
-    public MatchResult matches(CriteriaEvaluator evaluator) {
-        return evaluator.evaluate(comparisonOperator, lValueRef, rValueRef);
     }
 
     @Override
@@ -121,5 +118,9 @@ public class Condition implements BooleanExpression {
 
     public OperatorType getComparisonOperator() {
         return comparisonOperator;
+    }
+
+    public String getStringValue() {
+        return stringValue;
     }
 }
