@@ -1,11 +1,17 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { NamedObjectId } from './mdb';
+import { AlgorithmStatus, NamedObjectId } from './mdb';
 import { ParameterValue } from './monitoring';
 import { Service, ServiceState } from './system';
 
 export interface SubscribeTMStatisticsRequest {
   instance: string;
   processor: string;
+}
+
+export interface SubscribeAlgorithmStatusRequest {
+  instance: string;
+  processor: string;
+  name: string;
 }
 
 export interface Statistics {
@@ -73,6 +79,8 @@ export interface ReplaySpeed {
 }
 
 export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
+
+export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatusRequest, AlgorithmStatus>;
 
 export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;
 
