@@ -33,8 +33,9 @@
       <dt>Type</dt>
       <dd>{{ link.type }}</dd>
       <dt>Status</dt>
-      <dd>
-        <app-link-status [link]="link"></app-link-status> {{ link.status }}
+      <dd style="display: flex; align-items: center">
+        <app-link-status [link]="link"></app-link-status>&nbsp;
+        {{ link.status }}
       </dd>
       <dt>In counter</dt>
       <dd>{{ link.dataInCount | number }}</dd>
