@@ -86,6 +86,7 @@ export interface ListDatabasesResponse {
 export interface Route {
   service: string;
   method: string;
+  description: string;
   inputType: string;
   outputType: string;
   deprecated: boolean;
