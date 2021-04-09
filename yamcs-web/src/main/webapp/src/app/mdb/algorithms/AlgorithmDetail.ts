@@ -38,7 +38,7 @@ export class AlgorithmDetail implements AfterViewInit {
         this.editor.getSession().setMode('ace/mode/javascript');
         break;
       case 'python':
-        this.editor.getSession().setMode('ace/mode/javascript');
+        this.editor.getSession().setMode('ace/mode/python');
         break;
       default:
         console.warn(`Unexpected language ${this.algorithm.language}`);

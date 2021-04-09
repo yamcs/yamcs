@@ -9,7 +9,7 @@ import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, Ge
 import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
 import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -902,6 +902,33 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
     return this.doFetch(url, {
       body: JSON.stringify({ "state": "disabled" }),
+      method: 'PATCH',
+    });
+  }
+
+  async updateAlgorithmText(instance: string, processorName: string, qualifiedName: string, text: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    return this.doFetch(url, {
+      body: JSON.stringify({
+        action: 'SET',
+        algorithm: { text },
+      }),
+      method: 'PATCH',
+    });
+  }
+
+  async getAlgorithmOverrides(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb-overrides/${instance}/${processorName}/algorithms${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as AlgorithmOverrides;
+  }
+
+  async revertAlgorithmText(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    return this.doFetch(url, {
+      body: JSON.stringify({
+        action: 'RESET',
+      }),
       method: 'PATCH',
     });
   }

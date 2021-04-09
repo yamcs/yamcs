@@ -1,6 +1,7 @@
 package org.yamcs.algorithms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -535,6 +536,14 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         algoOverrides.put(calg, algOverr);
+    }
+
+    public Collection<CustomAlgorithm> getAlgorithmOverrides() {
+        return algoOverrides.values();
+    }
+
+    public CustomAlgorithm getAlgorithmOverride(Algorithm algo) {
+        return algoOverrides.get(algo);
     }
 
     public void enableTracing(Algorithm algo) {

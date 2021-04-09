@@ -274,6 +274,15 @@ export interface AlgorithmLog {
   msg: string;
 }
 
+export interface AlgorithmOverrides {
+  textOverride?: AlgorithmTextOverride;
+}
+
+export interface AlgorithmTextOverride {
+  algorithm: string;
+  text: string;
+}
+
 export interface InputParameter {
   parameter: Parameter;
   inputName: string;

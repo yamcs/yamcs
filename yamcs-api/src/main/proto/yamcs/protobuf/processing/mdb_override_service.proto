@@ -1,0 +1,70 @@
+syntax="proto2";
+
+package yamcs.protobuf.processing;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "MdbOverrideServiceProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+
+// Groups operations that support runtime changes to some parts of the MDB.
+//
+// These changes are always scoped to a processor, and do not persist across
+// server restarts.
+service MdbOverrideApi {
+
+  // List MDB overrides
+  rpc ListMdbOverrides(ListMdbOverridesRequest) returns (ListMdbOverridesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb-overrides/{instance}/{processor}"
+    };
+  }
+  
+  // Get overrides for an algorithm
+  rpc GetAlgorithmOverrides(GetAlgorithmOverridesRequest) returns (GetAlgorithmOverridesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb-overrides/{instance}/{processor}/algorithms/{name*}"
+    };
+  }
+}
+
+message ListMdbOverridesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Processor name.
+  optional string processor = 2;
+}
+
+message ListMdbOverridesResponse {
+  repeated MdbOverrideInfo overrides = 1;
+}
+
+message GetAlgorithmOverridesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Processor name.
+  optional string processor = 2;
+
+  // Algorithm name.
+  optional string name = 3;
+}
+
+message GetAlgorithmOverridesResponse {
+  optional AlgorithmTextOverride textOverride = 1;
+}
+
+message MdbOverrideInfo {
+  enum OverrideType {
+    ALGORITHM_TEXT = 0;
+  }
+  optional OverrideType type = 1;
+  optional AlgorithmTextOverride algorithmTextOverride = 2;
+}
+
+message AlgorithmTextOverride {
+  optional string algorithm = 1;
+  optional string text = 2;
+}
