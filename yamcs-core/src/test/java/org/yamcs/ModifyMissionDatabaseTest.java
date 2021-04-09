@@ -12,7 +12,6 @@ import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
-import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType;
@@ -246,10 +245,8 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
         assertEquals(2.16729187, values.get(0).getEngValue().getFloatValue(), 1e-5);
 
         // change the algorithm
-        AlgorithmInfo definition = AlgorithmInfo.newBuilder()
-                .setText("AlgoFloatAddition.value = 10 + f0.value + f1.value")
-                .build();
-        processorClient.updateAlgorithm("/REFMDB/SUBSYS1/float_add", definition).get();
+        String text = "AlgoFloatAddition.value = 10 + f0.value + f1.value";
+        processorClient.updateAlgorithm("/REFMDB/SUBSYS1/float_add", text).get();
 
         packetGenerator.generate_PKT1_1();
         values = captor.expectTimely();
