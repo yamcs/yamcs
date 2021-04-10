@@ -18,12 +18,10 @@ public class NameDescriptionSearchMatcher {
             boolean match = false;
             if (nameDescription.getQualifiedName().toLowerCase().contains(term)) {
                 match = true;
-            }
-            if (nameDescription.getShortDescription() != null
+            } else if (nameDescription.getShortDescription() != null
                     && nameDescription.getShortDescription().toLowerCase().contains(term)) {
                 match = true;
-            }
-            if (nameDescription.getAliasSet() != null) {
+            } else if (nameDescription.getAliasSet() != null) {
                 for (String alias : nameDescription.getAliasSet().getAliases().values()) {
                     if (alias.toLowerCase().contains(term)) {
                         match = true;

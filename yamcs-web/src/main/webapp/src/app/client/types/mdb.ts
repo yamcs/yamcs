@@ -53,6 +53,7 @@ export interface Parameter extends NameDescription {
 
   type?: ParameterType;
   usedBy?: UsedByInfo;
+  path?: string[];
 }
 
 export interface UsedByInfo {
@@ -344,6 +345,7 @@ export interface GetParametersOptions {
   source?: string;
   q?: string;
   system?: string;
+  searchMembers?: boolean;
   pos?: number;
   limit?: number;
 }

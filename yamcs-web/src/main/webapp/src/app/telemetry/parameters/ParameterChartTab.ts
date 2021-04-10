@@ -30,7 +30,12 @@ export class ParameterChartTab implements OnDestroy {
   customStart$ = new BehaviorSubject<Date | null>(null);
   customStop$ = new BehaviorSubject<Date | null>(null);
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private dialog: MatDialog, synchronizer: Synchronizer) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+    private dialog: MatDialog,
+    synchronizer: Synchronizer,
+  ) {
     this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new DyDataSource(yamcs, synchronizer);
@@ -87,9 +92,11 @@ export class ParameterChartTab implements OnDestroy {
       if (result) {
         this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, result.qualifiedName).then(parameter => {
           const parameterConfig = new ParameterSeries();
-          parameterConfig.parameter = parameter.qualifiedName;
+          parameterConfig.parameter = result.qualifiedName;
           parameterConfig.color = result.color;
           parameterConfig.strokeWidth = result.thickness;
+          // Override qualified name for possible array or aggregate offsets
+          parameter.qualifiedName = result.qualifiedName;
           this.plot.addParameter(parameter, parameterConfig);
         });
       }

@@ -18,8 +18,9 @@
                           class="ya-autocomplete"
                           panelWidth="400px"
                           (optionSelected)="onSearchSelect($event)">
-          <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
-            {{ option.qualifiedName }}
+          <mat-option *ngFor="let option of filteredOptions | async"
+                      [value]="option | memberPath">
+            {{ option | memberPath}}
           </mat-option>
         </mat-autocomplete>
       </mat-toolbar-row>

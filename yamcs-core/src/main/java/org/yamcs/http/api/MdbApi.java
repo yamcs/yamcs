@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.yamcs.YamcsServer;
@@ -20,6 +21,7 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.MdbPageBuilder.MdbPage;
+import org.yamcs.http.api.MdbSearchHelpers.EntryMatch;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterWithId;
@@ -63,6 +65,7 @@ import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
@@ -187,27 +190,31 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
-    public void listParameters(Context ctx, ListParametersRequest request,
-            Observer<ListParametersResponse> observer) {
+    public void listParameters(Context ctx, ListParametersRequest request, Observer<ListParametersResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
+        Predicate<Parameter> hasPrivilege = p -> {
+            return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+        };
+
+        // Determine search scope within the tree
         List<SpaceSystem> spaceSystems = new ArrayList<>();
-        List<Parameter> parameters = new ArrayList<>();
+        final List<Parameter> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                for (Parameter parameter : mdb.getParameters()) {
+                mdb.getParameters().stream().filter(hasPrivilege).forEach(parameter -> {
                     if (parameter.getQualifiedName().startsWith(request.getSystem())) {
-                        parameters.add(parameter);
+                        candidates.add(parameter);
                     }
-                }
+                });
             } else { // get direct children of the system
                 List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
                         .filter(spaceSystem -> spaceSystem.getParameterCount(true) > 0)
                         .collect(Collectors.toList());
                 for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
-                        parameters.addAll(spaceSystem.getParameters());
+                        spaceSystem.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
@@ -216,31 +223,36 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            parameters = new ArrayList<>(mdb.getParameters());
+            candidates.addAll(mdb.getParameters());
         }
 
+        // Now do the actual brute-force search
+        List<Parameter> filteredCandidates = candidates.stream()
+                .filter(p -> parameterTypeMatches((Parameter) p, request.getTypeList()))
+                .filter(p -> !request.hasSource() || parameterSourceMatches((Parameter) p, request.getSource()))
+                .collect(Collectors.toList());
+
+        // Match parameters
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+        List<NameDescription> matches = filteredCandidates.stream()
+                .filter(item -> matcher == null || matcher.matches(item))
+                .collect(Collectors.toList());
 
-        parameters = parameters.stream().filter(p -> {
-            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-                return false;
+        // If requested, match also member paths inside parameters
+        if (request.getSearchMembers() && request.hasQ()) {
+            List<NameDescription> memberMatches = new ArrayList<>();
+            for (Parameter parameter : filteredCandidates) {
+                memberMatches.addAll(MdbSearchHelpers.searchEntries(parameter, request.getQ()));
             }
-            if (matcher != null && !matcher.matches(p)) {
-                return false;
-            }
-            if (parameterTypeMatches(p, request.getTypeList())) {
-                if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
-                    return true;
-                }
-            }
-            return false;
-        }).collect(Collectors.toList());
+            matches.addAll(memberMatches);
+        }
 
-        MdbPageBuilder<Parameter> pageBuilder = new MdbPageBuilder<>(spaceSystems, parameters);
+        // We got the results now, only response formatting remaining
+        MdbPageBuilder<NameDescription> pageBuilder = new MdbPageBuilder<>(spaceSystems, matches);
         pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
         pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
         pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
-        MdbPage<Parameter> page = pageBuilder.buildPage();
+        MdbPage<NameDescription> page = pageBuilder.buildPage();
 
         ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder()
                 .setTotalSize(page.getTotalSize());
@@ -248,8 +260,21 @@ public class MdbApi extends AbstractMdbApi<Context> {
             responseb.addSpaceSystems(s.getQualifiedName());
         }
         DetailLevel detail = request.getDetails() ? DetailLevel.FULL : DetailLevel.SUMMARY;
-        for (Parameter p : page.getItems()) {
-            responseb.addParameters(XtceToGpbAssembler.toParameterInfo(p, detail));
+        for (NameDescription item : page.getItems()) {
+            if (item instanceof Parameter) {
+                responseb.addParameters(XtceToGpbAssembler.toParameterInfo((Parameter) item, detail));
+            } else if (item instanceof EntryMatch) {
+                EntryMatch match = (EntryMatch) item;
+                Parameter parameter = match.parameter;
+                ParameterInfo.Builder entryb = ParameterInfo
+                        .newBuilder(XtceToGpbAssembler.toParameterInfo(parameter, detail));
+                for (PathElement el : match.entryPath) {
+                    if (el.getName() != null || el.getIndex() != null) {
+                        entryb.addPath(el.toString());
+                    }
+                }
+                responseb.addParameters(entryb);
+            }
         }
         if (page.getContinuationToken() != null) {
             responseb.setContinuationToken(page.getContinuationToken());
@@ -262,10 +287,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(ctx, mdb, request.getName());
+        ParameterWithId match = verifyParameterWithId(ctx, mdb, request.getName());
 
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, DetailLevel.FULL);
-        List<ParameterEntry> parameterEntries = mdb.getParameterEntries(p);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(match, DetailLevel.FULL);
+
+        List<ParameterEntry> parameterEntries = mdb.getParameterEntries(match.getParameter());
         if (parameterEntries != null) {
             ParameterInfo.Builder pinfob = ParameterInfo.newBuilder(pinfo);
             Set<SequenceContainer> usingContainers = new HashSet<>();
@@ -763,7 +789,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
 
         if (p != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-            throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
+            throw new ForbiddenException("Insufficient privileges to access parameter " + p.getQualifiedName());
         }
         if (p == null) {
             throw new NotFoundException("No parameter named " + pathName);

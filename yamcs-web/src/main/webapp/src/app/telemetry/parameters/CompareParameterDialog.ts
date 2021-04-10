@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
+import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
 import { ColorPalette } from './ColorPalette';
 import { Thickness } from './Thickness';
 
@@ -29,6 +30,7 @@ export class CompareParameterDialog implements OnInit {
     private dialogRef: MatDialogRef<CompareParameterDialog>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
+    private memberPathPipe: MemberPathPipe,
   ) { }
 
   ngOnInit() {
@@ -38,12 +40,14 @@ export class CompareParameterDialog implements OnInit {
       switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
         q: val,
         limit: 10,
+        searchMembers: true,
       })),
       map(page => page.parameters || []),
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {
-            if (excludedParameter.qualifiedName === candidate.qualifiedName) {
+            const qualifiedName = this.memberPathPipe.transform(candidate);
+            if (excludedParameter.qualifiedName === qualifiedName) {
               return false;
             }
           }

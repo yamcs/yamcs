@@ -262,7 +262,10 @@ message ParameterTypeInfo {
 }
 
 message GetContainerRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Container name.
   optional string name = 2;
 }
 
@@ -310,6 +313,10 @@ message ParameterInfo {
   optional DataSourceType dataSource = 7;
   optional UsedByInfo usedBy = 8;
   map<string, AncillaryDataInfo> ancillaryData = 9;
+  
+  // Operations that return aggregate members or array entries
+  // may use this field to indicate the path within the parameter.   
+  repeated string path = 10;
 }
 
 message AncillaryDataInfo {
@@ -503,10 +510,21 @@ message AlgorithmInfo {
 }
 
 message ListSpaceSystemsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // The search keywords. This supports searching on the namespace or name.
   optional string q = 2;
+  
+  // Continuation token returned by a previous page response.
   optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: ``0``
   optional int32 pos = 8;
+  
+  // The maximum number of returned containers per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: ``100``
   optional int32 limit = 9;
 }
 
@@ -525,6 +543,8 @@ message ListContainersRequest {
   // When ``system`` and ``q`` are used together, matching containers at any
   // depth are returned, starting from the specified space system.
   optional string system = 10;
+  
+  // Continuation token returned by a previous page response.
   optional string next = 7;
   
   // The zero-based row number at which to start outputting results. Default: ``0``
@@ -552,6 +572,7 @@ message ListAlgorithmsRequest {
   // depth are returned, starting from the specified space system.
   optional string system = 10;
 
+  // Continuation token returned by a previous page response.
   optional string next = 7;
   
   // The zero-based row number at which to start outputting results. Default: ``0``
@@ -583,6 +604,8 @@ message ListCommandsRequest {
   optional string system = 11;
 
   optional bool details = 4;
+  
+  // Continuation token returned by a previous page response.
   optional string next = 7;
   
   // The zero-based row number at which to start outputting results. Default: ``0``
@@ -598,7 +621,10 @@ message ListCommandsRequest {
 }
 
 message GetParameterRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Parameter name.
   optional string name = 2;
 }
 
@@ -609,6 +635,12 @@ message ListParametersRequest {
   // The search keywords. This supports searching on namespace or name.
   optional string q = 2;
   
+  // When used together with ``q``, include also aggregate members (at any depth)
+  // in the search.
+  //
+  // Note that this method returns only parameters. Members are part of the type definition.
+  optional bool searchMembers = 12;
+  
   // Include details on each returned parameter (this includes long
   // descriptions, aliases, and detailed type information).
   // If unset, only summary information is returned.
@@ -618,6 +650,8 @@ message ListParametersRequest {
   // ``binary``, ``enumeration``, ``float``, ``integer`` or ``string``.
   // If unspecified, parameters of all types will be included.
   repeated string type = 5;
+  
+  // Include only parameters of the specified source.
   optional DataSourceType source = 10;
   
   // List only direct child sub-systems or parameters of the specified system.
@@ -628,6 +662,8 @@ message ListParametersRequest {
   // When ``system`` and ``q`` are used together, matching parameters at any
   // depth are returned, starting from the specified space system.
   optional string system = 11;
+  
+  // Continuation token returned by a previous page response.
   optional string next = 7;
   
   // The zero-based row number at which to start outputting results. Default: ``0``
@@ -642,7 +678,13 @@ message ListParametersRequest {
 message ListParametersResponse {
   repeated string spaceSystems = 4;
   repeated ParameterInfo parameters = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
   optional int32 totalSize = 3;
 }
 
@@ -662,21 +704,39 @@ message BatchGetParametersResponse {
 message ListContainersResponse {
   repeated string spaceSystems = 4;
   repeated ContainerInfo containers = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
   optional int32 totalSize = 3;
 }
 
 message ListCommandsResponse {
   repeated string spaceSystems = 4;
   repeated CommandInfo commands = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
   optional int32 totalSize = 3;
 }
 
 message ListAlgorithmsResponse {
   repeated string spaceSystems = 4;
   repeated AlgorithmInfo algorithms = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
   optional int32 totalSize = 3;
 }
 
@@ -700,7 +760,13 @@ message ExportJavaMissionDatabaseRequest {
 
 message ListSpaceSystemsResponse {
   repeated SpaceSystemInfo spaceSystems = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
   optional int32 totalSize = 3;
 }
 
@@ -713,7 +779,10 @@ message GetSpaceSystemRequest {
 }
 
 message GetCommandRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Command name.
   optional string name = 2;
 }
 
