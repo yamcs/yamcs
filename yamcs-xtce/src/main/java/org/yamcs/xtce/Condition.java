@@ -14,44 +14,48 @@ import java.util.Set;
  */
 public class Condition implements BooleanExpression {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    ParameterInstanceRef lValueRef;
-    Object rValueRef;
+    // ParameterInstanceRef or ArgumentInstanceRef
+    ParameterOrArgumentRef leftRef;
+
+    // Only one of these two can be set
+    ParameterOrArgumentRef rightRef;
+    String rightValue;
 
     OperatorType comparisonOperator;
 
-    // the string is used to create the object and then is changed to the other type, depending on the valueType
-    String stringValue;
 
-    public Condition(OperatorType comparisonOperator, ParameterInstanceRef lValueRef, ParameterInstanceRef rValueRef) {
+    public Condition(OperatorType comparisonOperator, ParameterOrArgumentRef leftRef, ParameterOrArgumentRef rightRef) {
         super();
-        this.lValueRef = lValueRef;
+
+        this.leftRef = leftRef;
         this.comparisonOperator = comparisonOperator;
-        this.rValueRef = rValueRef;
-        this.stringValue = null;
+        this.rightRef = rightRef;
     }
 
-    public Condition(OperatorType comparisonOperator, ParameterInstanceRef lValueRef, String stringValue) {
+    public Condition(OperatorType comparisonOperator, ParameterOrArgumentRef leftRef, String rightValue) {
         super();
-        this.lValueRef = lValueRef;
+
+        this.leftRef = leftRef;
         this.comparisonOperator = comparisonOperator;
-        this.stringValue = stringValue;
-        this.rValueRef = null;
+        this.rightValue = rightValue;
     }
+
+
 
     /**
      * If the type of the parameter used for comparison is known, can parse the stringValue to see if it can be compared
      * with the type
      */
     public void validateValueType() {
-        if (((rValueRef == null) || (!(rValueRef instanceof ParameterInstanceRef))) && (stringValue != null)) {
-            ParameterType ptype = lValueRef.getParameter().getParameterType();
+        if (rightValue != null) {
+            DataType ptype = leftRef.getDataType();
             if (ptype != null) {
-                if (lValueRef.useCalibratedValue()) {
-                    rValueRef = ptype.parseString(stringValue);
+                if (leftRef.useCalibratedValue()) {
+                    ptype.parseString(rightValue);
                 } else {
-                    rValueRef = ptype.parseStringForRawValue(stringValue);
+                    ptype.parseStringForRawValue(rightValue);
                 }
             }
         }
@@ -60,67 +64,54 @@ public class Condition implements BooleanExpression {
     @Override
     public Set<Parameter> getDependentParameters() {
         Set<Parameter> pset = new HashSet<>();
-
-        pset.add(lValueRef.getParameter());
-        if (rValueRef instanceof ParameterInstanceRef) {
-            pset.add(((ParameterInstanceRef) rValueRef).getParameter());
+        if (leftRef instanceof ParameterInstanceRef) {
+            ParameterInstanceRef pref = ((ParameterInstanceRef) leftRef);
+            pset.add(pref.getParameter());
         }
+        if (rightRef instanceof ParameterInstanceRef) {
+            ParameterInstanceRef pref = ((ParameterInstanceRef) rightRef);
+            pset.add(pref.getParameter());
+        }
+
         return pset;
     }
 
     @Override
     public String toExpressionString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(printExpressionReference(lValueRef));
+        buf.append(printExpressionReference(leftRef));
         buf.append(" ");
         buf.append(comparisonOperator);
         buf.append(" ");
 
-        if (rValueRef instanceof ParameterInstanceRef) {
-            buf.append(printExpressionReference((ParameterInstanceRef) rValueRef));
+        if (rightValue!=null) {
+            buf.append(printExpressionValue(rightValue));
         } else {
-            buf.append(printExpressionValue(rValueRef));
+            buf.append(printExpressionReference(rightRef));
         }
         return buf.toString();
     }
 
     @Override
     public String toString() {
-        String rValue = stringValue;
-        if (stringValue == null) {
-            if (((ParameterInstanceRef) rValueRef).getParameter() == null) {
-                rValue = "paraName(unresolved)";
-            } else {
-                rValue = "paramName(" + ((ParameterInstanceRef) rValueRef).getParameter().getName() + ")";
-            }
-        }
-
-        String lValue = "paraName(unresolved)";
-        if (lValueRef.getParameter() != null) {
-            lValue = "paraName(" + lValueRef.getParameter().getName() + ")";
-        }
-
-        return "Condition: " + lValue + comparisonOperator + rValue;
+        return "Condition: " + leftRef + comparisonOperator + (rightValue == null ? rightRef : rightValue);
 
     }
 
-    public ParameterInstanceRef getlValueRef() {
-        return lValueRef;
+    public ParameterOrArgumentRef getLeftRef() {
+        return leftRef;
     }
 
-    /**
-     * 
-     * @return right value reference - could be itself an ParameterInstanceRef
-     */
-    public Object getrValueRef() {
-        return rValueRef;
+    public ParameterOrArgumentRef getRightRef() {
+        return rightRef;
     }
 
     public OperatorType getComparisonOperator() {
         return comparisonOperator;
     }
 
-    public String getStringValue() {
-        return stringValue;
+    public String getRightValue() {
+        return rightValue;
     }
+
 }

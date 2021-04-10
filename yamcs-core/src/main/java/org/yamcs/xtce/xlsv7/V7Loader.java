@@ -38,6 +38,7 @@ import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayArgumentType;
 import org.yamcs.xtce.ArrayDataType;
@@ -88,6 +89,7 @@ import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OutputParameter;
@@ -119,6 +121,7 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -127,6 +130,8 @@ import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
+
+import static org.yamcs.xtce.XtceDb.*;
 
 import com.google.common.primitives.UnsignedLongs;
 import com.google.gson.JsonElement;
@@ -189,7 +194,7 @@ public class V7Loader extends V7LoaderBase {
     final static String NAME_PATTERN = "[^./:\\[\\] ]+";
     final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
     final static Pattern REF_PATTERN = Pattern.compile("ref\\(\\s*([^,]+),\\s*(.+)?\\s*\\)");
-    final static Pattern ARRAY_PATTERN = Pattern.compile("("+NAME_PATTERN+")((\\["+NAME_PATTERN+"\\])+)");
+    final static Pattern ARRAY_PATTERN = Pattern.compile("(" + NAME_PATTERN + ")((\\[" + NAME_PATTERN + "\\])+)");
 
     protected SpaceSystem rootSpaceSystem;
 
@@ -594,7 +599,7 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Data type " + name
                         + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
             }
-            for (ValueEnumeration ve: enumeration.values) {
+            for (ValueEnumeration ve : enumeration.values) {
                 edtype.addEnumerationValue(ve);
             }
         } else if (dtypeb instanceof AbsoluteTimeDataType.Builder<?>) {
@@ -1565,11 +1570,12 @@ public class V7Loader extends V7LoaderBase {
                 } else {
                     final MetaCommand mc = cmd;
                     final CommandContainer mcc = container;
-                    NameReference nr = new UnresolvedNameReference(parent, Type.META_COMMAND).addResolvedAction(nd -> {
-                        mc.setBaseMetaCommand((MetaCommand) nd);
-                        mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
-                        return true;
-                    });
+                    UnresolvedNameReference nr = new UnresolvedNameReference(parent, Type.META_COMMAND)
+                            .addResolvedAction(nd -> {
+                                mc.setBaseMetaCommand((MetaCommand) nd);
+                                mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
+                                return true;
+                            });
                     spaceSystem.addUnresolvedReference(nr);
                 }
 
@@ -1847,11 +1853,14 @@ public class V7Loader extends V7LoaderBase {
                         cmdVerifier.setContainerRef(container);
                     } else if (type == CommandVerifier.Type.ALGORITHM) {
                         String algoName = getContent(cells, CN_CMDVERIF_TEXT);
-                        Algorithm algo = spaceSystem.getAlgorithm(algoName);
+                        CustomAlgorithm algo = (CustomAlgorithm) spaceSystem.getAlgorithm(algoName);
                         if (algo == null) {
-                            throw new SpreadsheetLoadException(ctx,
-                                    "Cannot find algorithm '" + algoName + "' required for the verifier");
+                            throw new SpreadsheetLoadException(ctx, "Cannot find algorithm '"
+                                    + algoName + "' required for the verifier");
                         }
+                        // duplicate algorithm to set references to arguments
+                        algo = makeAlgoVerifier(spaceSystem, cmd, algo);
+
                         cmdVerifier.setAlgorithm(algo);
                     } else {
                         throw new SpreadsheetLoadException(ctx,
@@ -1886,6 +1895,42 @@ public class V7Loader extends V7LoaderBase {
                 i++;
             }
         }
+    }
+
+    // duplicates an algorithm to be used as a verifier.
+    // Each verifier has an algorithm tailored to the command it is attached to because it possibly has references to
+    // the command arguments
+    private CustomAlgorithm makeAlgoVerifier(SpaceSystem spaceSystem, MetaCommand cmd, CustomAlgorithm algo0) {
+        CustomAlgorithm algo = new CustomAlgorithm(algo0);
+        List<InputParameter> inputList = new ArrayList<>(algo.getInputList());
+        for (int i = 0; i < inputList.size(); i++) {
+            InputParameter inputPara0 = inputList.get(i);
+            ParameterInstanceRef pref = inputPara0.getParameterInstance();
+            String qn = null;
+            if (pref.getParameter() != null) {
+                qn = pref.getParameter().getQualifiedName();
+            }
+            if (qn != null && qn.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)) {
+                String argRef = qn.substring(YAMCS_CMDARG_SPACESYSTEM_NAME.length() + 1);
+
+                ArgumentInstanceRef argInstRef = new ArgumentInstanceRef();
+                ArgumentReference ref = ArgumentReference.getReference(cmd, argRef);
+
+                ref.addResolvedAction(nd -> {
+                            argInstRef.setArgument((Argument) nd);
+                            return true;
+                        });
+
+                spaceSystem.addUnresolvedReference(ref);
+                argInstRef.setUseCalibratedValue(pref.useCalibratedValue());
+                argInstRef.setMemberPath(pref.getMemberPath());
+
+                InputParameter inputPara1 = new InputParameter(argInstRef, inputPara0.getDefinedInputName());
+                inputList.set(i, inputPara1);
+            }
+            algo.setInputList(inputList);
+        }
+        return algo;
     }
 
     private List<ArgumentAssignment> toArgumentAssignmentList(String argAssignment) {
@@ -2023,7 +2068,7 @@ public class V7Loader extends V7LoaderBase {
             Set<String> inputParameterRefs = new HashSet<>();
             for (int j = start + 1; j < end; j++) {
                 cells = jumpToRow(sheet, j);
-                String paraRefName = getContent(cells, CN_ALGO_PARA_REF);
+                String refName = getContent(cells, CN_ALGO_PARA_REF);
                 if (hasColumn(cells, CN_ALGO_PARA_INOUT)) {
                     paraInout = getContent(cells, CN_ALGO_PARA_INOUT);
                 }
@@ -2034,23 +2079,33 @@ public class V7Loader extends V7LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 }
                 if ("in".equalsIgnoreCase(paraInout)) {
-                    if (paraRefName.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME)
-                            || paraRefName.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
+                    if (refName.startsWith(YAMCS_CMD_SPACESYSTEM_NAME)
+                            || refName.startsWith(YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
                         algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
-                    inputParameterRefs.add(paraRefName);
-                    ParameterReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
 
-                    SpreadsheetLoadContext ctx1 = ctx.copy();
-                    paramRef.addResolvedAction((p, path) -> {
-                        if (!"java".equalsIgnoreCase(algorithmLanguage)) {
-                            verifyScalarMember(ctx1, p, path);
-                        }
+                    if (refName.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)) {
+                        // make a temporary parameter. The algorithm will be duplicated for each command and the
+                        // parameter will be replaced with an argument when loading the verifier in makeAlgoVerifier
+                        // function
+                        Parameter p = new Parameter(NameDescription.getName(refName));
+                        p.setQualifiedName(refName);
                         parameterInstance.setParameter(p);
-                        parameterInstance.setMemberPath(path);
-                        return true;
-                    });
+                    } else {
+                        inputParameterRefs.add(refName);
+                        ParameterReference paramRef = getParameterReference(spaceSystem, refName, false);
+
+                        SpreadsheetLoadContext ctx1 = ctx.copy();
+                        paramRef.addResolvedAction((p, path) -> {
+                            if (!"java".equalsIgnoreCase(algorithmLanguage)) {
+                                verifyScalarMember(ctx1, p, path);
+                            }
+                            parameterInstance.setParameter(p);
+                            parameterInstance.setMemberPath(path);
+                            return true;
+                        });
+                    }
 
                     if (hasColumn(cells, CN_ALGO_PARA_INSTANCE)) {
                         int instance = Integer.valueOf(getContent(cells, CN_ALGO_PARA_INSTANCE));
@@ -2070,7 +2125,7 @@ public class V7Loader extends V7LoaderBase {
                     }
                     algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
-                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+                    NameReference paramRef = getParameterReference(spaceSystem, refName, false);
                     OutputParameter outputParameter = new OutputParameter();
                     paramRef.addResolvedAction(nd -> {
                         Parameter param = (Parameter) nd;
@@ -2145,6 +2200,10 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Trigger '" + triggerText + "' not supported.");
             }
             algorithm.setTriggerSet(triggerSet);
+
+            if (spaceSystem.getAlgorithm(name) != null) {
+                throw new SpreadsheetLoadException(ctx, "Duplicate algorithm named '" + name + "'");
+            }
 
             spaceSystem.addAlgorithm(algorithm);
             start = end;

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
@@ -24,6 +25,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     final XtceDb xtcedb;
 
     final Processor yproc;
+
     AlgorithmVerifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         super(cvh, cv);
         alg = cv.getAlgorithm();
@@ -36,54 +38,51 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
 
     @Override
     void doStart() {
-        log.debug("Starting verifier for command {} alg: {} stage: {} ", 
+        log.debug("Starting verifier for command {} alg: {} stage: {} ",
                 StringConverter.toString(pc.getCommandId()), alg.getName(), cv.getStage());
-      
-        //push all the command parameters
-        List<ParameterValue> pvList = cvh.getCommandParameters(); 
+        AlgorithmManager algMgr = cvh.getAlgorithmManager();
+        algMgr.activateAlgorithm(alg, algCtx, this);
 
-        if(pvList.isEmpty()) {
-            log.debug("No CMD information PV to be sent to the Algorithm");
-        } else {
-            AlgorithmManager algMgr = cvh.getAlgorithmManager();
-            algMgr.activateAlgorithm(alg, algCtx, this);
+        // send command arguments
+        algMgr.processArguments(cvh.getCommandArguments(), algCtx);
+
+        // push all the command parameters
+        List<ParameterValue> pvList = cvh.getCommandParameters();
+        if (!pvList.isEmpty()) {
             algMgr.updateDelivery(new ParameterValueList(pvList), algCtx);
         }
     }
-    
+
     @Override
     void doCancel() {
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.deactivateAlgorithm(alg, algCtx);
     }
-    
+
     @Override
-    public void algorithmRun(List<ParameterValue> inputValues, Object returnValue, List<ParameterValue> outputValues) {
-        if(log.isTraceEnabled()) {
+    public void algorithmRun(List<RawEngValue> inputValues, Object returnValue, List<ParameterValue> outputValues) {
+        if (log.isTraceEnabled()) {
             CommandId cmdId = pc.getCommandId();
-            log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}", 
+            log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}",
                     StringConverter.toString(cmdId), alg.getName(), cv.getStage(), returnValue, outputValues);
         }
-        if(returnValue==null) {
+        if (returnValue == null) {
             log.trace("Algorithm {} run but did not return a result.", alg.getName());
             return;
         }
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.deactivateAlgorithm(alg, algCtx);
-        
-        if(returnValue instanceof Boolean) {
+
+        if (returnValue instanceof Boolean) {
             finished((Boolean) returnValue, null);
         } else {
             finished(false, returnValue.toString());
         }
     }
 
-   
     @Override
     public void updatedCommandHistoryParam(ParameterValue pv) {
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.updateDelivery(ParameterValueList.asList(pv), algCtx);
     }
-
-
 }

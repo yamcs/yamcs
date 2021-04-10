@@ -2,6 +2,7 @@ package org.yamcs.xtceproc;
 
 import java.util.Map;
 
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
@@ -19,7 +20,7 @@ public class TcProcessingContext {
     final BitBuffer bitbuf;
 
     // arguments and their values
-    final private Map<Argument, Value> argValues;
+    final private Map<Argument, ArgumentValue> argValues;
     
     //context parameters and their values
     final private Map<Parameter, Value> paramValues;
@@ -29,7 +30,8 @@ public class TcProcessingContext {
     final DataEncodingEncoder deEncoder;
     public int size;
 
-    public TcProcessingContext(ProcessorData pdata, Map<Argument, Value> argValues, Map<Parameter, Value> paramValues,
+    public TcProcessingContext(ProcessorData pdata, Map<Argument, ArgumentValue> argValues,
+            Map<Parameter, Value> paramValues,
             BitBuffer bitbuf, int bitPosition) {
         this.bitbuf = bitbuf;
         this.pdata = pdata;
@@ -39,7 +41,7 @@ public class TcProcessingContext {
         this.deEncoder = new DataEncodingEncoder(this);
     }
 
-    public Value getArgumentValue(Argument arg) {
+    public ArgumentValue getArgumentValue(Argument arg) {
         return argValues.get(arg);
     }
 

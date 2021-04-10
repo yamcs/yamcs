@@ -40,7 +40,7 @@ public class UnresolvedNameReference extends AbstractNameReference {
     }
 
     @Override
-    public NameReference addResolvedAction(ResolvedAction action) {
+    public UnresolvedNameReference addResolvedAction(ResolvedAction action) {
         actions.add(action);
         return this;
     }

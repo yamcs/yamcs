@@ -17,8 +17,10 @@ import javax.script.ScriptException;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -29,7 +31,7 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
@@ -78,16 +80,20 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         // Set empty output bindings so that algorithms can write their attributes
         for (int k = 0; k < numOutputs; k++) {
             functionArgs[numInputs + k] = new OutputValueBinding();
-            ;
         }
     }
 
     @Override
     protected void updateInput(int position, InputParameter inputParameter, ParameterValue newValue) {
-        if (log.isTraceEnabled()) {
-            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(),
-                    ScriptAlgorithmExecutorFactory.getArgName(inputParameter), newValue);
-        }
+        doUpdateInput(position, inputParameter, newValue);
+    }
+
+    @Override
+    protected void updateInputArgument(int position, InputParameter inputParameter, ArgumentValue newValue) {
+        doUpdateInput(position, inputParameter, newValue);
+    }
+
+    private void doUpdateInput(int position, InputParameter inputParameter, RawEngValue newValue) {
         ValueBinding valueBinding = (ValueBinding) functionArgs[position];
         // First time for an inputParameter, it will create a ValueBinding object.
         // Further calls will just update that object
@@ -99,17 +105,21 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return;
         }
 
-        ParameterInstanceRef pref = inputParameter.getParameterInstance();
+        ParameterOrArgumentRef pref = inputParameter.getRef();
         if (pref.getMemberPath() != null) {
-            ParameterValue memberValue = AggregateUtil.extractMember(newValue, pref.getMemberPath());
+            RawEngValue memberValue = AggregateUtil.extractMember(newValue, pref.getMemberPath());
             if (memberValue == null) {
                 // this can happen for an array which does not have enough elements
-                log.debug("value {} does not have member path required by parameter reference {}", newValue, pref);
+                log.debug("value {} does not have member path required by reference {}", newValue, pref);
                 return;
             }
             newValue = memberValue;
         }
 
+        if (log.isTraceEnabled()) {
+            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(),
+                    inputParameter.getInputName(), newValue);
+        }
         valueBinding.updateValue(newValue);
     }
 
@@ -187,7 +197,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if (pos != 0) {
                 sb.append(", ");
             }
-            sb.append(ScriptAlgorithmExecutorFactory.getArgName(p)).append(": ")
+            sb.append(p.getInputName()).append(": ")
                     .append(String.valueOf(functionArgs[pos]));
             pos++;
         }
@@ -220,13 +230,13 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                         + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + ptype);
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             } else {
-                pval.setEngineeringValue(v);
+                pval.setEngValue(v);
             }
         }
         return pval;
     }
 
-    private ValueBinding toValueBinding(InputParameter inputParameter, ParameterValue pval) {
+    private ValueBinding toValueBinding(InputParameter inputParameter, RawEngValue pval) {
         try {
             Class<ValueBinding> clazz = getOrCreateValueBindingClass(inputParameter, pval);
             if (clazz == null) {
@@ -240,15 +250,19 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     }
 
     private Class<ValueBinding> getOrCreateValueBindingClass(InputParameter inputParameter,
-            ParameterValue pval) {
+            RawEngValue pval) {
 
-        ParameterInstanceRef pref = inputParameter.getParameterInstance();
-        if (pref.getMemberPath() != null) {
-            pval = AggregateUtil.extractMember(pval, pref.getMemberPath());
+        ParameterOrArgumentRef ref = inputParameter.getParameterInstance();
+        if (ref == null) {
+            ref = inputParameter.getArgumentRef();
+        }
+
+        if (ref.getMemberPath() != null) {
+            pval = AggregateUtil.extractMember(pval, ref.getMemberPath());
             if (pval == null) {
                 eventProducer.sendWarning(getAlgorithm().getName(),
                         "Algorithm refers to an member of an aggrgate but the received value does not contain the path to that member: "
-                                + inputParameter.getParameterInstance());
+                                + ref);
                 return null;
             }
         }
@@ -266,9 +280,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             String className = "ValueBinding" + key;
             StringBuilder source = new StringBuilder();
             source.append("package org.yamcs.algorithms;\n");
-            source.append("import " + ParameterValue.class.getName() + ";\n")
+            source.append("import " + RawEngValue.class.getName() + ";\n")
                     .append("public class " + className + " extends ValueBinding {\n");
-            StringBuilder updateValueSource = new StringBuilder("  public void updateValue(ParameterValue v) {\n")
+            StringBuilder updateValueSource = new StringBuilder("  public void updateValue(RawEngValue v) {\n")
                     .append("    super.updateValue(v);\n");
             if (pval.getRawValue() != null) {
                 updateValueSource.append(addValueType(source, pval.getRawValue(), true));

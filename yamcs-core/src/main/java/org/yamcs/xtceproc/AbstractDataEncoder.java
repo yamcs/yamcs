@@ -1,10 +1,9 @@
 package org.yamcs.xtceproc;
 
-import java.util.List;
 import java.util.Set;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.algorithms.AlgorithmExecutionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -41,12 +40,9 @@ public abstract class AbstractDataEncoder implements DataEncoder {
   
     /**
      * Runs the associated algorithm with the latest InputParameters
-     * @param acqTime 
-     * @param genTime 
-     * @return the outputted parameters, if any
      */
-    public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
-        return null;
+    public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+        throw new IllegalStateException("Cannot run this method on a data encoder");
     }
 
     public AlgorithmExecutionContext getExecutionContext() {

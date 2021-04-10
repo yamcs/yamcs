@@ -20,8 +20,9 @@ import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtce.util.DoubleRange;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
@@ -136,8 +137,9 @@ public class ParameterAlarmChecker {
         boolean latching = false;
         if (ipt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
+                EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
+                if (evaluator.evaluate(input) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -194,9 +196,10 @@ public class ParameterAlarmChecker {
         boolean autoAck = false;
         boolean latching = false;
         if (fpt.getContextAlarmList() != null) {
+            EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
+                if (evaluator.evaluate(input) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -289,9 +292,10 @@ public class ParameterAlarmChecker {
         EnumerationAlarm alarm = ept.getDefaultAlarm();
         int minViolations = (alarm == null) ? 1 : alarm.getMinViolations();
         if (ept.getContextAlarmList() != null) {
+            EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
             for (EnumerationContextAlarm nca : ept.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(currentDelivery, lastValueCache) == MatchResult.OK) {
+                if (evaluator.evaluate(input) == MatchResult.OK) {
                     alarm = nca;
                     minViolations = nca.getMinViolations();
                     break;

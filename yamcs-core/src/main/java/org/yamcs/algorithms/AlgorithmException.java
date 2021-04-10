@@ -2,17 +2,15 @@ package org.yamcs.algorithms;
 
 import java.util.List;
 
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 
 /**
  * exception thrown when unexpected things happen during the loading and execution of algorithms.
  * 
- * @author nm
- *
  */
 @SuppressWarnings("serial")
 public class AlgorithmException extends RuntimeException {
-    List<ParameterValue> inputValues;
+    List<RawEngValue> inputValues;
 
     public AlgorithmException(String message) {
         super(message);
@@ -24,8 +22,9 @@ public class AlgorithmException extends RuntimeException {
      * @param inputValues
      * @param message
      */
-    public AlgorithmException(List<ParameterValue> inputValues, String message) {
+    public AlgorithmException(List<RawEngValue> inputValues, String message) {
         super(message);
+        this.inputValues = inputValues;
     }
 
     public AlgorithmException(String message, Throwable cause) {

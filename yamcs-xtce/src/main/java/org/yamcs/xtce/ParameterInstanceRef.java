@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.io.Serializable;
-
 /**
  * A reference to an instance of a Parameter.
  * <p>
@@ -19,13 +17,10 @@ import java.io.Serializable;
  * @author nm
  *
  */
-public class ParameterInstanceRef implements Serializable {
-    private static final long serialVersionUID = 200906191236L;
+public class ParameterInstanceRef extends ParameterOrArgumentRef {
+    private static final long serialVersionUID = 1;
     private Parameter parameter;
-
-    private boolean useCalibratedValue = true;
     private int instance = 0;
-    private PathElement[] path;
 
     /**
      * Constructor to be used when the parameter is not yet known.
@@ -43,6 +38,7 @@ public class ParameterInstanceRef implements Serializable {
         this.parameter = para;
         this.path = path;
     }
+
     public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
         this.parameter = para;
         this.useCalibratedValue = useCalibratedValue;
@@ -60,14 +56,6 @@ public class ParameterInstanceRef implements Serializable {
         return parameter;
     }
 
-    public boolean useCalibratedValue() {
-        return useCalibratedValue;
-    }
-
-    public void setUseCalibratedValue(boolean useCalibratedValue) {
-        this.useCalibratedValue = useCalibratedValue;
-    }
-
     public void setInstance(int instance) {
         this.instance = instance;
     }
@@ -82,32 +70,25 @@ public class ParameterInstanceRef implements Serializable {
         return instance;
     }
 
-    /**
-     * If the parameter is an aggregate or an array (or a nested structure of these), return the path
-     * to the referenced member inside the structure.
-     * 
-     * @return the path to the referenced member of the aggregate or array or null if this reference refers to the
-     *         parameter itself
-     */
-    public PathElement[] getMemberPath() {
-        return path;
+    public DataType getDataType() {
+        return parameter == null ? null : parameter.getParameterType();
     }
 
-    public void setMemberPath(PathElement[] path) {
-        this.path = path;
+    @Override
+    public String getName() {
+        return parameter == null ? null : parameter.getQualifiedName();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if(parameter!=null) {
+        if (parameter != null) {
             sb.append(parameter.getQualifiedName());
         }
-        if(path!=null) {
+        if (path != null) {
             sb.append("/");
             sb.append(PathElement.pathToString(path));
         }
         return sb.toString();
     }
-
 }

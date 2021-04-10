@@ -227,7 +227,7 @@ public class XmlLoaderTest {
     @Test
     public void testTransmissionConstraint() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
-        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint");
+        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint1");
         List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
         assertEquals(1, tcList.size());
         TransmissionConstraint tc0 = tcList.get(0);
@@ -235,7 +235,7 @@ public class XmlLoaderTest {
         ComparisonList matchCriteria= (ComparisonList) tc0.getMatchCriteria();
         assertEquals(1, matchCriteria.getComparisonList().size());
         Comparison c0 = matchCriteria.getComparisonList().get(0);
-        assertEquals(db.getParameter("/RefXtce/local_para1"), c0.getParameter());
+        assertEquals(db.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
     }
 
     @Test
@@ -249,7 +249,7 @@ public class XmlLoaderTest {
         assertEquals(1000, cv0.getCheckWindow().getTimeToStopChecking());
 
         Comparison c0 = (Comparison) cv0.getMatchCriteria();
-        assertEquals(db.getParameter("/RefXtce/local_para1"), c0.getParameter());
+        assertEquals(db.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
     }
 
     @Test

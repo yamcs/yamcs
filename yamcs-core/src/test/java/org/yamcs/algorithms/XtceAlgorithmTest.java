@@ -44,7 +44,7 @@ public class XtceAlgorithmTest {
 
         prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
-        pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
+        pv.setEngValue(ValueUtility.getFloatValue(12.6f));
         prm.update(ParameterValueList.asList(pv));
         assertEquals(1, params.size());
         pv = params.get(0);
@@ -59,7 +59,7 @@ public class XtceAlgorithmTest {
 
         prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
-        pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
+        pv.setEngValue(ValueUtility.getFloatValue(12.6f));
         prm.update(ParameterValueList.asList(pv));
         assertEquals(1, params.size());
 

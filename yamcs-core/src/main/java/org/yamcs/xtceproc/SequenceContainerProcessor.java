@@ -7,11 +7,12 @@ import java.util.List;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtceproc.SubscribedContainer.InheritingContainer;
 
 public class SequenceContainerProcessor {
@@ -47,10 +48,10 @@ public class SequenceContainerProcessor {
         for (SequenceEntry se : entries) {
             int position = buf.getPosition();
             try {
-
                 if (se.getIncludeCondition()!=null) {
                     MatchCriteriaEvaluator evaluator = pdata.getEvaluator(se.getIncludeCondition());
-                    if (evaluator.evaluate(result.params, pdata.getLastValueCache()) != MatchResult.OK) {
+                    EvaluatorInput input = new EvaluatorInput(result.params, pdata.getLastValueCache());
+                    if (evaluator.evaluate(input) != MatchResult.OK) {
                         continue;
                     }
                 }

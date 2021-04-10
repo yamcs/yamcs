@@ -164,16 +164,16 @@ public class RefXtceAlgorithmTest {
         }
 
         @Override
-        public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
             AggregateValue v = (AggregateValue) inputValues.get(0).getEngValue();
             float m1 = v.getMemberValue(0).getFloatValue();
             int m2 = v.getMemberValue(1).getUint32Value();
 
             ParameterValue pv = new ParameterValue(getOutputParameter(0));
 
-            pv.setEngineeringValue(ValueUtility.getFloatValue((m1 + m2) / 2));
+            pv.setEngValue(ValueUtility.getFloatValue((m1 + m2) / 2));
 
-            return Arrays.asList(pv);
+            return new AlgorithmExecutionResult(pv);
         }
 
 

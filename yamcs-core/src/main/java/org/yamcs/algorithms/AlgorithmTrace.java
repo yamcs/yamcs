@@ -3,7 +3,9 @@ package org.yamcs.algorithms;
 import java.util.ArrayDeque;
 import java.util.List;
 
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 
 import com.google.protobuf.util.Timestamps;
 
@@ -28,7 +30,7 @@ public class AlgorithmTrace implements AlgorithmExecListener {
     }
 
     @Override
-    public void algorithmRun(List<ParameterValue> inputValues, Object returnValue,
+    public void algorithmRun(List<RawEngValue> inputValues, Object returnValue,
             List<ParameterValue> outputValues) {
         synchronized (runs) {
             if (runs.size() >= MAX_RUNS) {
@@ -36,7 +38,13 @@ public class AlgorithmTrace implements AlgorithmExecListener {
             }
             org.yamcs.protobuf.AlgorithmTrace.Run.Builder runb = org.yamcs.protobuf.AlgorithmTrace.Run.newBuilder();
             if (inputValues != null) {
-                inputValues.forEach(pv -> runb.addInputs(pv.toGpb()));
+                for (RawEngValue rev : inputValues) {
+                    if (rev instanceof ParameterValue) {
+                        runb.addInputs(((ParameterValue) rev).toGpb());
+                    } else {
+                        runb.addInputs(((ArgumentValue) rev).toGpb());
+                    }
+                }
             }
             outputValues.forEach(pv -> runb.addOutputs(pv.toGpb()));
             runb.setTime(Timestamps.fromMillis(System.currentTimeMillis()));
@@ -48,13 +56,13 @@ public class AlgorithmTrace implements AlgorithmExecListener {
     }
 
     @Override
-    public void algorithmError(List<ParameterValue> inputValues, String errorMsg) {
+    public void algorithmError(List<RawEngValue> inputValues, String errorMsg) {
         synchronized (runs) {
             if (runs.size() >= MAX_RUNS) {
                 runs.removeLast();
             }
             org.yamcs.protobuf.AlgorithmTrace.Run.Builder runb = org.yamcs.protobuf.AlgorithmTrace.Run.newBuilder();
-            inputValues.forEach(pv -> runb.addInputs(pv.toGpb()));
+            // inputValues.forEach(pv -> runb.addInputs(pv.toGpb()));
             runb.setError(errorMsg);
             runb.setTime(Timestamps.fromMillis(System.currentTimeMillis()));
 

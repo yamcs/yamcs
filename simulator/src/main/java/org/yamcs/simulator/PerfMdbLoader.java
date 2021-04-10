@@ -145,7 +145,8 @@ public class PerfMdbLoader implements SpaceSystemLoader {
                 ParameterEntry pe = (ParameterEntry) se;
                 if (PACKET_ID_PARA_NAME.equals(pe.getParameter().getName())) {
                     Parameter packetIdParam = pe.getParameter();
-                    Comparison c = new Comparison(new ParameterInstanceRef(packetIdParam), id, OperatorType.EQUALITY);
+                    Comparison c = new Comparison(new ParameterInstanceRef(packetIdParam), Integer.toString(id),
+                            OperatorType.EQUALITY);
                     sc.setBaseContainer(ccsds);
                     sc.setRestrictionCriteria(c);
                     return;

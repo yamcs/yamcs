@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
@@ -18,6 +19,7 @@ import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterInstanceRef;
 
 public class MetaCommandProcessor {
     final ProcessorData pdata;
@@ -37,7 +39,7 @@ public class MetaCommandProcessor {
             throw new ErrorInCommand("Will not build command " + mc.getQualifiedName() + " because it is abstract");
         }
 
-        Map<Argument, Value> args = new HashMap<>();
+        Map<Argument, ArgumentValue> args = new HashMap<>();
         Map<String, String> argAssignment = new HashMap<>();
         for (ArgumentAssignment aa : argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
@@ -86,7 +88,7 @@ public class MetaCommandProcessor {
      * @param argAssignment
      * @throws ErrorInCommand
      */
-    private static void collectAndCheckArguments(MetaCommand mc, Map<Argument, Value> args,
+    private static void collectAndCheckArguments(MetaCommand mc, Map<Argument, ArgumentValue> args,
             Map<String, String> argAssignment) throws ErrorInCommand {
         List<Argument> argList = mc.getArgumentList();
         if (argList != null) {
@@ -121,7 +123,7 @@ public class MetaCommandProcessor {
                 } catch (Exception e) {
                     throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                 }
-                args.put(a, argValue);
+                args.put(a, new ArgumentValue(a, argValue));
             }
         }
 
@@ -152,7 +154,7 @@ public class MetaCommandProcessor {
                 ComparisonList cl = (ComparisonList) cr;
                 for (Comparison c : cl.getComparisonList()) {
                     if (c.getComparisonOperator() == OperatorType.EQUALITY) {
-                        Parameter param = c.getParameter();
+                        Parameter param = ((ParameterInstanceRef) c.getRef()).getParameter();
                         if (param != null) {
                             try {
                                 Value v = ParameterTypeUtils.parseString(param.getParameterType(), c.getStringValue());
@@ -170,9 +172,9 @@ public class MetaCommandProcessor {
 
     static public class CommandBuildResult {
         byte[] cmdPacket;
-        Map<Argument, Value> args;
+        Map<Argument, ArgumentValue> args;
 
-        public CommandBuildResult(byte[] b, Map<Argument, Value> args) {
+        public CommandBuildResult(byte[] b, Map<Argument, ArgumentValue> args) {
             this.cmdPacket = b;
             this.args = args;
         }
@@ -181,7 +183,7 @@ public class MetaCommandProcessor {
             return cmdPacket;
         }
 
-        public Map<Argument, Value> getArgs() {
+        public Map<Argument, ArgumentValue> getArgs() {
             return args;
         }
     }

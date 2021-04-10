@@ -91,10 +91,10 @@ public class RefXtceCommandingTest {
         
         List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring), new ArgumentAssignment("t2", tstring));
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
-        Value v1 = cbr.args.get(mc.getArgument("t1"));
+        Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
         assertEquals(tlong, v1.getTimestampValue());
         
-        Value v2 = cbr.args.get(mc.getArgument("t2"));
+        Value v2 = cbr.args.get(mc.getArgument("t2")).getEngValue();
         assertEquals(tlong, v2.getTimestampValue());
         
         byte[] cmdb = cbr.getCmdPacket();
@@ -152,8 +152,8 @@ public class RefXtceCommandingTest {
     }
 
     @Test
-    public void testTransmissionConstraintFail() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint");
+    public void testTransmissionConstraint1Fail() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
         commandingManager.sendCommand(user, pc);
@@ -166,8 +166,8 @@ public class RefXtceCommandingTest {
     }
 
     @Test
-    public void testTransmissionConstraintOK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint");
+    public void testTransmissionConstraint1OK() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
@@ -177,6 +177,19 @@ public class RefXtceCommandingTest {
         verifyCmdHist(AcknowledgeQueued_KEY, "OK");
         verifyCmdHist(TransmissionContraints_KEY, "OK");
         verifyCmdHist(AcknowledgeReleased_KEY, "OK");
+        assertNotNull(cmdReleaser.getCmd(2000));
+    }
+
+    @Test
+    public void testTransmissionConstraint2OK() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint2");
+        List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "15"));
+        PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+        commandingManager.sendCommand(user, pc);
+
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "OK",
+                AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
     }
 
@@ -287,12 +300,30 @@ public class RefXtceCommandingTest {
         verifyCmdHist("Verifier_Complete", "OK");
     }
 
+    @Test
+    public void testVerifier4OK() throws Exception {
+        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier4");
+
+        List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "101"));
+        PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+        commandingManager.sendCommand(user, pc);
+
+        verifyCmdHist(AcknowledgeQueued_KEY, "OK",
+                TransmissionContraints_KEY, "NA",
+                "Verifier_Complete", "PENDING",
+                AcknowledgeReleased_KEY, "OK");
+        assertNotNull(cmdReleaser.getCmd(2000));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
+
+        verifyCmdHist("Verifier_Complete", "OK");
+    }
+
     private void verifyCmdHist(String... keyValue) throws InterruptedException {
         if (keyValue.length % 2 != 0) {
             throw new IllegalArgumentException(
                     "An array with an even number of elements [ke1,value1, key2,value2...] is needed");
         }
-        for (int i = 0; i < keyValue.length; i++) {
+        for (int i = 0; i < keyValue.length; i += 2) {
             String key = keyValue[i];
             String value = keyValue[i + 1];
             CmdHistEntry status = cmdHistPublisher.getCmdHist(3000);

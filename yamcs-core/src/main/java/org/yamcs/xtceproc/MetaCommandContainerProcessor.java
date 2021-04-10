@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
@@ -96,13 +97,14 @@ public class MetaCommandContainerProcessor {
 
     private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {
         Argument arg = argEntry.getArgument();
-        Value argValue = pcontext.getArgumentValue(arg);
+        ArgumentValue argValue = pcontext.getArgumentValue(arg);
         if (argValue == null) {
             throw new IllegalStateException("No value for argument " + arg.getName());
         }
-
+        Value engValue = argValue.getEngValue();
         ArgumentType atype = arg.getArgumentType();
-        Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
+        Value rawValue = argumentTypeProcessor.decalibrate(atype, engValue);
+        argValue.setRawValue(rawValue);
         encodeRawValue(arg.getName(), atype, rawValue, pcontext);
     }
 

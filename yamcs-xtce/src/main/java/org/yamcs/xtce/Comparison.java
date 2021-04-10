@@ -3,22 +3,23 @@ package org.yamcs.xtce;
 import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
 import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.yamcs.xtce.util.DataTypeUtil;
 
 /**
- * A simple ParameterInstanceRef to value comparison. DIFFERS_FROM_XTCE: 1) in xtce the value is stored as a string and
- * it's not very clear how it's compared with an integer 2) in xtce Comparison extends ParameterInstanceRef, and
- * MatchCriteria is a choice of Comparison, ComparisonList, ...
+ * This corresponds to XTCE Comparison or ArgumentComparison
  */
 public class Comparison implements MatchCriteria {
 
-    private static final long serialVersionUID = 9L;
-    ParameterInstanceRef instanceRef;
+    private static final long serialVersionUID = 10L;
 
-    OperatorType comparisonOperator;
+    // only one of paraRef and argRef is set, the other is null
+    private ParameterOrArgumentRef ref;
+
+    private OperatorType comparisonOperator;
 
     String stringValue;
 
@@ -34,18 +35,20 @@ public class Comparison implements MatchCriteria {
         if (stringValue == null) {
             throw new NullPointerException("stringValue");
         }
-        this.instanceRef = paraRef;
+        this.ref = paraRef;
         this.stringValue = stringValue;
         this.comparisonOperator = op;
 
         checkParaRef(paraRef);
     }
 
-    public Comparison(ParameterInstanceRef paraRef, int intValue, OperatorType op) {
-        this.instanceRef = paraRef;
-        this.stringValue = Integer.toString(intValue);
+    public Comparison(ArgumentInstanceRef argRef, String stringValue, OperatorType op) {
+        if (stringValue == null) {
+            throw new NullPointerException("stringValue");
+        }
+        this.ref = argRef;
+        this.stringValue = stringValue;
         this.comparisonOperator = op;
-        checkParaRef(paraRef);
     }
 
     private void checkParaRef(ParameterInstanceRef paraRef) {
@@ -56,7 +59,7 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public String toExpressionString() {
-        return printExpressionReference(instanceRef) + " "
+        return printExpressionReference(ref) + " "
                 + comparisonOperator + " "
                 + printExpressionValue(stringValue);
     }
@@ -66,35 +69,36 @@ public class Comparison implements MatchCriteria {
      * that we can compare to it
      */
     public void validateValueType() {
-        boolean useCalibratedValue = instanceRef.useCalibratedValue();
-        ParameterType ptype = instanceRef.getParameter().getParameterType();
 
-        if (ptype instanceof AggregateParameterType) {
-            if (instanceRef.getMemberPath() == null) {
+        boolean useCalibratedValue = ref.useCalibratedValue;
+        DataType dtype = ref.getDataType();
+
+        if (dtype instanceof AggregateDataType) {
+            if (ref.getMemberPath() == null) {
                 throw new IllegalArgumentException(
-                        "Reference to an aggregate parameter type " + ptype.getName() + " without speciyfing the path");
+                        "Reference to an aggregate parameter type " + dtype.getName() + " without speciyfing the path");
             }
-            ParameterType ptype1 = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
-            if (ptype1 == null) {
-                throw new IllegalArgumentException("reference " + PathElement.pathToString(instanceRef.getMemberPath())
-                        + " points to a nonexistent member inside the parameter type " + ptype.getName());
+            DataType dtype1 = DataTypeUtil.getMemberType(dtype, ref.getMemberPath());
+            if (dtype1 == null) {
+                throw new IllegalArgumentException("reference " + PathElement.pathToString(ref.getMemberPath())
+                        + " points to a nonexistent member inside the parameter type " + dtype.getName());
             }
-            ptype = ptype1;
+            dtype = dtype1;
         }
         try {
             if (useCalibratedValue) {
-                ptype.parseString(stringValue);
+                dtype.parseString(stringValue);
             } else {
-                ptype.parseStringForRawValue(stringValue);
+                dtype.parseStringForRawValue(stringValue);
             }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Cannot parse value required for comparing with "
-                    + instanceRef.getParameter().getName() + ": " + e.getMessage(), e);
+                    + ref.getName() + ": " + e.getMessage(), e);
         }
     }
 
-    public ParameterInstanceRef getParameterRef() {
-        return instanceRef;
+    public ParameterOrArgumentRef getRef() {
+        return ref;
     }
 
     public OperatorType getComparisonOperator() {
@@ -103,17 +107,14 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset = new HashSet<>();
-        pset.add(instanceRef.getParameter());
-        return pset;
-    }
+        if (ref instanceof ParameterInstanceRef) {
+            Set<Parameter> pset = new HashSet<>();
+            pset.add(((ParameterInstanceRef) ref).getParameter());
+            return pset;
+        } else {
+            return Collections.emptySet();
+        }
 
-    public Parameter getParameter() {
-        return instanceRef.getParameter();
-    }
-
-    ParameterInstanceRef getParameterInstanceRef() {
-        return instanceRef;
     }
 
     public String getStringValue() {
@@ -122,13 +123,7 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public String toString() {
-        if (instanceRef.getParameter() != null) {
-            return "Comparison: paraName(" + instanceRef.getParameter().getName()
-                    + (instanceRef.useCalibratedValue() ? ".eng" : ".raw") + ")" +
-                    comparisonOperator + stringValue;
-        } else {
-            return "Comparison: paraName(unresolved)" +
-                    comparisonOperator + stringValue;
-        }
+        return "Comparison: " + ref +
+                comparisonOperator + stringValue;
     }
 }

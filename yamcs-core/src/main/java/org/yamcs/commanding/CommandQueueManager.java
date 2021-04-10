@@ -24,7 +24,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
-import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -42,8 +41,9 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -82,7 +82,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
-    private final LastValueCache lastValueCache;
+
 
     private TimeService timeService;
 
@@ -108,7 +108,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.instance = processor.getInstance();
         this.processorName = processor.getName();
         this.timer = processor.getTimer();
-        this.lastValueCache = processor.getLastValueCache();
         timeService = YamcsServer.getTimeService(processor.getInstance());
 
         if (YConfiguration.isDefined("command-queue")) {
@@ -185,6 +184,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
             }
         }
+        paramsToSubscribe.removeIf(p -> p.getDataSource() == DataSource.COMMAND
+                || p.getDataSource() == DataSource.COMMAND_HISTORY);
         if (!paramsToSubscribe.isEmpty()) {
             ParameterRequestManager prm = processor.getParameterRequestManager();
             paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
@@ -696,6 +697,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         final PreparedCommand pc;
         final CommandQueue queue;
         TCStatus aggregateStatus = TCStatus.INIT;
+        final MatchCriteriaEvaluator.EvaluatorInput matchCriteriaInput;
+
 
         public TransmissionConstraintChecker(CommandQueue queue, PreparedCommand pc) {
             this.pc = pc;
@@ -705,6 +708,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 TransmissionConstraintStatus tcs = new TransmissionConstraintStatus(tc);
                 tcsList.add(tcs);
             }
+            matchCriteriaInput = new MatchCriteriaEvaluator.EvaluatorInput(processor.getLastValueCache(),
+                    pc.getArgAssignment(), pc.getAttributesAsParameters(processor.getXtceDb()));
         }
 
         public void check() {
@@ -736,7 +741,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                         aggregateStatus = TCStatus.TIMED_OUT;
                         break;
                     } else {
-                        if (tcs.evaluator.evaluate(null, lastValueCache) != MatchResult.OK) {
+                        if (tcs.evaluator.evaluate(matchCriteriaInput) != MatchResult.OK) {
                             if (timeRemaining > 0) {
                                 aggregateStatus = TCStatus.PENDING;
                                 if (timeRemaining < scheduleNextCheck) {

@@ -37,7 +37,8 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 
 import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 /**
@@ -126,7 +127,7 @@ public class ProcessorData {
                 if (o != null) {
                     Value v = DataTypeProcessor.getValueForType(ptype, o);
                     ParameterValue pv = new ParameterValue(p);
-                    pv.setEngineeringValue(v);
+                    pv.setEngValue(v);
                     pv.setGenerationTime(genTime);
                     pv.setAcquisitionTime(genTime);
                     lastValueCache.put(p, pv);
@@ -189,9 +190,10 @@ public class ProcessorData {
 
             List<ContextCalibrator> clist = nde.getContextCalibratorList();
             if (clist != null) {
+                EvaluatorInput input = new EvaluatorInput(pvalues, lastValueCache);
                 for (ContextCalibrator cc : clist) {
                     MatchCriteriaEvaluator evaluator = getEvaluator(cc.getContextMatch());
-                    if (evaluator.evaluate(pvalues, lastValueCache) == MatchResult.OK) {
+                    if (evaluator.evaluate(input) == MatchResult.OK) {
                         c = cc.getCalibrator();
                         break;
                     }

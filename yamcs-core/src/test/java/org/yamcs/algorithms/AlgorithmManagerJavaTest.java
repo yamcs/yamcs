@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -114,12 +113,12 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
-            pv.setEngineeringValue(ValueUtility.getDoubleValue(v));
-            return Arrays.asList(pv);
+            pv.setEngValue(ValueUtility.getDoubleValue(v));
+            return new AlgorithmExecutionResult(pv);
         }
 
         @Override
@@ -138,12 +137,12 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
-            pv.setEngineeringValue(ValueUtility.getDoubleValue(x + v));
-            return Arrays.asList(pv);
+            pv.setEngValue(ValueUtility.getDoubleValue(x + v));
+            return new AlgorithmExecutionResult(Arrays.asList(pv));
         }
 
         @Override
@@ -166,12 +165,12 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
-            pv.setEngineeringValue(ValueUtility.getDoubleValue(a + b + c.length() + v));
-            return Arrays.asList(pv);
+            pv.setEngValue(ValueUtility.getDoubleValue(a + b + c.length() + v));
+            return new AlgorithmExecutionResult(pv);
         }
 
         @Override

@@ -1,7 +1,6 @@
 package org.yamcs.algorithms;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.codehaus.commons.compiler.LocatedException;
 import org.codehaus.commons.compiler.Location;
@@ -42,7 +41,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     }
 
     @Override
-    public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime) {
         ParameterValue pv = new ParameterValue(outParam);
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
@@ -54,9 +53,9 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
                             + "'" + value + "' into " + outParam.getParameterType());
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
         } else {
-            pv.setEngineeringValue(engValue);
+            pv.setEngValue(engValue);
         }
-        return Arrays.asList(pv);
+        return new AlgorithmExecutionResult(Arrays.asList(pv));
     }
 
     @Override

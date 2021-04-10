@@ -7,9 +7,9 @@ import java.util.List;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.MatchCriteria;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 
 public class SubscribedContainer {
     final SequenceContainer conainerDef;
@@ -67,7 +67,7 @@ public class SubscribedContainer {
         }
 
         public MatchResult matches(ParameterValueList params, LastValueCache lastValueCache) {
-            return criteriaEvaluator.evaluate(params, lastValueCache);
+            return criteriaEvaluator.evaluate(new MatchCriteriaEvaluator.EvaluatorInput(params, lastValueCache));
         }
     }
 }

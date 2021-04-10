@@ -45,18 +45,22 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     final Processor processor;
     final PreparedCommand preparedCommand;
     final ScheduledThreadPoolExecutor timer;
+    final Map<Argument, ArgumentValue> cmdArguments;
+
     private List<Verifier> verifiers = Collections.synchronizedList(new ArrayList<>());
     private final Log log;
     AlgorithmExecutionContext algorithmCtx;
 
-    // accumulate here all command attributes, arguments and command history events
+    // accumulate here all command attributes and command history events
     List<ParameterValue> cmdParameters = new ArrayList<>();
+
 
     public CommandVerificationHandler(Processor proc, PreparedCommand pc) {
         this.processor = proc;
         this.preparedCommand = pc;
         this.timer = proc.getTimer();
         log = new Log(this.getClass(), proc.getInstance());
+        this.cmdArguments = preparedCommand.getArgAssignment();
     }
 
     public void start() {
@@ -135,24 +139,9 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             Parameter p = xtcedb.getParameter(fqn);
 
             ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(ValueUtility.fromGpb(cha.getValue()));
+            pv.setEngValue(ValueUtility.fromGpb(cha.getValue()));
             cmdParameters.add(pv);
         }
-        Map<Argument, Value> argAssignment = preparedCommand.getArgAssignment();
-        for (Map.Entry<Argument, Value> e : argAssignment.entrySet()) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/arg/" + e.getKey().getName();
-            if (xtcedb.getParameter(fqn) == null) {
-                // if it was required in the algorithm, it would be already in the SystemParameterdb
-                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
-                continue;
-            }
-            Parameter p = xtcedb.getParameter(fqn);
-
-            ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(e.getValue());
-            cmdParameters.add(pv);
-        }
-
     }
 
     /**
@@ -360,7 +349,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         } else {
             Parameter p = xtcedb.getParameter(fqn);
             ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(value);
+            pv.setEngValue(value);
             cmdParameters.add(pv);
             for (Verifier v : verifiers) {
                 v.updatedCommandHistoryParam(pv);
@@ -376,7 +365,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     /**
-     * Returns the collected list of pseudo parameter values related to command: command properties, command arguments
+     * Returns the collected list of pseudo parameter values related to command: command properties
      * and command history events.
      * 
      * Additional command history events may come later via updatedCommandHistoryParam
@@ -384,5 +373,14 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
      */
     public List<ParameterValue> getCommandParameters() {
         return cmdParameters;
+    }
+
+    /**
+     * Returns the list of command arguments
+     * 
+     * @return
+     */
+    public Map<Argument, ArgumentValue> getCommandArguments() {
+        return cmdArguments;
     }
 }

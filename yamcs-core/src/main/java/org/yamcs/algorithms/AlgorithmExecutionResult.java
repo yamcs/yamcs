@@ -1,8 +1,10 @@
 package org.yamcs.algorithms;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 
 /**
  * The result of the algorithm execution consists of:
@@ -20,11 +22,11 @@ import org.yamcs.parameter.ParameterValue;
  *
  */
 public class AlgorithmExecutionResult {
-    final List<ParameterValue> inputValues;
+    final List<RawEngValue> inputValues;
     final List<ParameterValue> outputValues;
     final Object returnValue;
 
-    public AlgorithmExecutionResult(List<ParameterValue> inputValues, Object returnValue,
+    public AlgorithmExecutionResult(List<RawEngValue> inputValues, Object returnValue,
             List<ParameterValue> outputValues) {
         this.inputValues = inputValues;
         this.returnValue = returnValue;
@@ -36,5 +38,14 @@ public class AlgorithmExecutionResult {
     }
     public AlgorithmExecutionResult(List<ParameterValue> outputValues) {
         this(null, null, outputValues);
+    }
+
+    /**
+     * Constructor for an algorithm result which returns exactly one value
+     * 
+     * @param outputValue
+     */
+    public AlgorithmExecutionResult(ParameterValue outputValue) {
+        this(null, null, Arrays.asList(outputValue));
     }
 }

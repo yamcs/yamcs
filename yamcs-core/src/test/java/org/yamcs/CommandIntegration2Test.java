@@ -15,7 +15,7 @@ import org.yamcs.protobuf.SubscribeCommandsRequest;
  * @author nm
  *
  */
-public class CommandIntegrationTest2 extends AbstractIntegrationTest {
+public class CommandIntegration2Test extends AbstractIntegrationTest {
 
     private ProcessorClient processorClient;
     private CommandSubscription subscription;

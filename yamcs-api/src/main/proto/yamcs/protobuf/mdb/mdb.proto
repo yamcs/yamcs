@@ -385,6 +385,7 @@ message ComparisonInfo {
   optional ParameterInfo parameter = 1;
   optional OperatorType operator = 2;
   optional string value = 3;
+  optional ArgumentInfo argument = 4;
 }
 
 message TransmissionConstraintInfo {
@@ -491,6 +492,7 @@ message InputParameterInfo {
   optional string inputName = 2;
   optional int32 parameterInstance = 3;
   optional bool mandatory = 4;
+  optional ArgumentInfo argument = 5;
 }
 
 message OutputParameterInfo {

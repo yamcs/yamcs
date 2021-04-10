@@ -6,20 +6,7 @@ import java.util.logging.Logger;
 
 public interface MatchCriteria extends Serializable {
 
-    public enum MatchResult {
-        /**
-         * condition matches
-         */
-        OK,
-        /**
-         * condition does not match
-         */
-        NOK,
-        /**
-         * matching cannot be determined because not all inputs are availalbe
-         */
-        UNDEF;
-    }
+
     /**
      * Return the set of parameters which are required in order to evaluate the match criteria. If no parameter is
      * required, return an empty set.
@@ -30,11 +17,11 @@ public interface MatchCriteria extends Serializable {
 
     public String toExpressionString();
 
-    static String printExpressionReference(ParameterInstanceRef ref) {
+    static String printExpressionReference(ParameterOrArgumentRef ref) {
         if (!ref.useCalibratedValue()) {
-            return "'raw://" + ref.getParameter().getQualifiedName() + "'";
+            return "'raw://" + ref.getName() + "'";
         } else {
-            return "'" + ref.getParameter().getQualifiedName() + "'";
+            return "'" + ref.getName() + "'";
         }
     }
 

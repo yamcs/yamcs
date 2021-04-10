@@ -65,6 +65,7 @@ import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
@@ -120,6 +121,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.PolynomialCalibrator;
@@ -139,6 +141,7 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.XtceDb;
 
 import com.google.gson.Gson;
 
@@ -406,6 +409,7 @@ public class XtceToGpbAssembler {
         if (xtceArgument.getInitialValue() != null) {
             b.setInitialValue(xtceArgument.getInitialValue().toString());
         }
+
         if (xtceArgument.getArgumentType() != null) {
             ArgumentType xtceType = xtceArgument.getArgumentType();
             b.setType(toArgumentTypeInfo(xtceType));
@@ -416,6 +420,22 @@ public class XtceToGpbAssembler {
                     b.setInitialValue(initialValue);
                 }
             }
+        }
+        return b.build();
+    }
+
+    public static ArgumentInfo toArgumentInfo(ArgumentInstanceRef ref) {
+        ArgumentInfo.Builder b = ArgumentInfo.newBuilder();
+        Argument arg = ref.getArgument();
+        PathElement[] path = ref.getMemberPath();
+        if (path == null) {
+            b.setName(arg.getName());
+        } else {
+            String memberPath = "";
+            for (PathElement el : path) {
+                memberPath += "." + el.toString();
+            }
+            b.setName(arg.getName() + memberPath);
         }
         return b.build();
     }
@@ -479,7 +499,12 @@ public class XtceToGpbAssembler {
 
     public static ComparisonInfo toComparisonInfo(Comparison xtceComparison) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
-        b.setParameter(toParameterInfo(xtceComparison.getParameterRef()));
+        ParameterOrArgumentRef ref = xtceComparison.getRef();
+        if(ref instanceof ParameterInstanceRef) {
+            b.setParameter(toParameterInfo((ParameterInstanceRef) ref));
+        } else {
+            b.setArgument(toArgumentInfo((ArgumentInstanceRef) ref));
+        }
         b.setOperator(toOperatorType(xtceComparison.getComparisonOperator()));
         b.setValue(xtceComparison.getStringValue());
         return b.build();
@@ -1138,12 +1163,16 @@ public class XtceToGpbAssembler {
 
     public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
-        resultb.setParameter(
-                toParameterInfo(xtceInput.getParameterInstance().getParameter(), DetailLevel.SUMMARY));
-        if (xtceInput.getInputName() != null) {
-            resultb.setInputName(xtceInput.getInputName());
+        ParameterInstanceRef pref = xtceInput.getParameterInstance();
+        if (pref != null) {
+            resultb.setParameter(toParameterInfo(pref.getParameter(), DetailLevel.SUMMARY));
+            resultb.setParameterInstance(pref.getInstance());
+        } else {
+            resultb.setArgument(toArgumentInfo(xtceInput.getArgumentRef().getArgument()));
         }
-        resultb.setParameterInstance(xtceInput.getParameterInstance().getInstance());
+        if (xtceInput.getDefinedInputName() != null) {
+            resultb.setInputName(xtceInput.getDefinedInputName());
+        }
         resultb.setMandatory(xtceInput.isMandatory());
         return resultb.build();
     }

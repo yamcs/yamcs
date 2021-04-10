@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
+<!-- 
+   This file contains several examples on how to use Yamcs with XTCE. 
+   There are a few extensions which make the file incompatible with the XTCE 1.2 schema. 
+   They are documented as such. 
+-->
 <xtce:SpaceSystem name="RefXtce" xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
 
@@ -217,11 +222,11 @@
 				<xtce:DefaultSignificance reasonForWarning="no particular reason" consequenceLevel="vital" />
 			</xtce:MetaCommand>
 			
-			<xtce:MetaCommand name="cmd_with_constraint">
+			<xtce:MetaCommand name="cmd_with_constraint1">
 				<xtce:ArgumentList>
 					<xtce:Argument name="arg1" argumentTypeRef="u32" />
 				</xtce:ArgumentList>
-				<xtce:CommandContainer name="cmd_with_constraint">
+				<xtce:CommandContainer name="cmd_with_constraint1">
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
@@ -230,6 +235,23 @@
 					<xtce:TransmissionConstraint timeOut="PT1.234S">
 						<xtce:ComparisonList>
 							<xtce:Comparison value="42" parameterRef="local_para1"/>
+						</xtce:ComparisonList>
+					</xtce:TransmissionConstraint>
+				</xtce:TransmissionConstraintList>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_constraint2">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_constraint2">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			 	<xtce:TransmissionConstraintList>
+					<xtce:TransmissionConstraint timeOut="PT1S">
+						<xtce:ComparisonList>
+							<xtce:Comparison value="15" parameterRef="/yamcs/cmd/arg/arg1"/>
 						</xtce:ComparisonList>
 					</xtce:TransmissionConstraint>
 				</xtce:TransmissionConstraintList>
@@ -269,7 +291,7 @@
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>
-				<xtce:MetaCommand name="cmd_with_verifier3">
+			<xtce:MetaCommand name="cmd_with_verifier3">
 				<xtce:ArgumentList>
 					<xtce:Argument name="arg1" argumentTypeRef="u32" />
 				</xtce:ArgumentList>
@@ -285,9 +307,9 @@
                      		<!-- the special /yamcs/cmd/arg namespace means that this is the value of an command argument,
                      		(including those set via command inheritance in BaseCommand -> ArgumentAssignmentList -> ArgumentAssignment)
                      		 The argument value is not like a parameter because it only exists in a command verifier context, 
-                     		 multiple commands can run in parallel each with its own context (different argument values).
+                     		 same command can run in parallel multiple times each with its own context (different argument values).
                      		 
-                     		 The condition below ways that the command is verified if the local_para1 takes the same value as the arg1 argument.
+                     		 The condition below says that the command is verified if the local_para1 takes the same value as the arg1 argument.
                      		 The arg1 could be an id which uniquely identifies the command.
                      		  -->
                      			<xtce:ParameterInstanceRef parameterRef="/yamcs/cmd/arg/arg1"/>
@@ -295,7 +317,31 @@
                      			<xtce:ParameterInstanceRef parameterRef="local_para1"/>
                      		</xtce:Condition>
                      	</xtce:BooleanExpression>
-						<xtce:CheckWindow timeToStartChecking="PT0.1S" timeToStopChecking="PT1S"/>
+						<xtce:CheckWindow timeToStartChecking="PT0S" timeToStopChecking="PT1S"/>
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_verifier4">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_verifier4">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+                     <xtce:CompleteVerifier>
+                     	<xtce:BooleanExpression>
+                     		<xtce:Condition>
+                     		    <!--  This is not valid according to XTCE but we think it should be made part of the standard.
+                     		    It achieves the same as the example above without using the false /yamcs/cmd/arg  parameter reference.-->
+                     			<xtce:ArgumentInstanceRef argumentRef="arg1"/>
+                     			<xtce:ComparisonOperator>==</xtce:ComparisonOperator>
+                     			<xtce:ParameterInstanceRef parameterRef="local_para1"/>
+                     		</xtce:Condition>
+                     	</xtce:BooleanExpression>
+						<xtce:CheckWindow timeToStartChecking="PT0S" timeToStopChecking="PT1S"/>
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>

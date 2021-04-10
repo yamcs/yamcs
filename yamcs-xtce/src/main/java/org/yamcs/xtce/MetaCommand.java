@@ -160,6 +160,8 @@ public class MetaCommand extends NameDescription {
 
     /**
      * returns an argument based on name or null if it doesn't exist
+     * <p>
+     * The argument is only looked up in the current meta command, not in its parent.
      * 
      * @param argumentName
      * @return

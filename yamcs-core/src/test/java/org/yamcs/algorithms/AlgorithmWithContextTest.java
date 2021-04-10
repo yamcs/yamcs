@@ -78,7 +78,7 @@ public class AlgorithmWithContextTest {
         tmGenerator.generate_PKT1_1();
         Parameter p = db.getParameter("/yamcs/cmd/para1");
         ParameterValue pv = new ParameterValue(p);
-        pv.setEngineeringValue(ValueUtility.getUint32Value(10));
+        pv.setEngValue(ValueUtility.getUint32Value(10));
         algm.updateDelivery(ParameterValueList.asList(pv), ctx);
 
         assertEquals(2, params.size());

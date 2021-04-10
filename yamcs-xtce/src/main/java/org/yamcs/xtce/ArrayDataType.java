@@ -147,6 +147,26 @@ public class ArrayDataType extends NameDescription implements DataType {
     }
 
     @Override
+    public Object parseStringForRawValue(String stringValue) {
+        Object[] r;
+        try {
+            JsonElement el = new JsonParser().parse(stringValue);
+            if (!(el instanceof JsonArray)) {
+                throw new IllegalArgumentException("Expected an array but got a : " + el.getClass());
+            }
+
+            JsonArray jarr = (JsonArray) el;
+            r = new Object[jarr.size()];
+            for (int i = 0; i < jarr.size(); i++) {
+                r[i] = type.parseStringForRawValue(jarr.get(i).getAsString());
+            }
+        } catch (JsonParseException e) {
+            throw new IllegalArgumentException("Cannot parse string as json: " + e.getMessage());
+        }
+        return r;
+    }
+
+    @Override
     public String toString(Object v) {
         if (v instanceof Object[]) {
             Object[] v1 = (Object[]) v;

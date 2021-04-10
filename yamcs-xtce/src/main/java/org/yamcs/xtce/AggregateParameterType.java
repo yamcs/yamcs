@@ -30,11 +30,6 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
         return false;
     }
 
-    @Override
-    public Object parseStringForRawValue(String stringValue) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public Builder toBuilder() {

@@ -12,6 +12,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.time.TimeService;
@@ -147,9 +148,9 @@ public class TseDataLink extends AbstractLink {
                 .setId(pc.getCommandId())
                 .setInstrument(subsystem.getName());
 
-        for (Entry<Argument, Value> entry : pc.getArgAssignment().entrySet()) {
+        for (Entry<Argument, ArgumentValue> entry : pc.getArgAssignment().entrySet()) {
             String name = entry.getKey().getName();
-            Value v = entry.getValue();
+            Value v = entry.getValue().getEngValue();
             switch (name) {
             case TseLoader.ARG_COMMAND:
                 msgb.setCommand(v.getStringValue());

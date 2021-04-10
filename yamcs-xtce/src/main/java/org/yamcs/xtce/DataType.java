@@ -34,6 +34,14 @@ public interface DataType {
     Object parseString(String v);
 
     /**
+     * parses the string into a java object according to the parameter encoding
+     * 
+     * @param stringValue
+     * @return
+     */
+    Object parseStringForRawValue(String stringValue);
+
+    /**
      * Converts a value to a string. This should be the reverse of {@link #parseString(String)}.
      * 
      * @param v

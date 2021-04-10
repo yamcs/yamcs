@@ -442,7 +442,7 @@ public class RefMdbCommandEncodingTest {
         
         List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring));
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
-        Value v1 = cbr.args.get(mc.getArgument("t1"));
+        Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
         
         assertEquals(tlong, v1.getTimestampValue());
         byte[] cmdb = cbr.getCmdPacket();

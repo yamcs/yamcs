@@ -2,13 +2,18 @@ package org.yamcs.algorithms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
@@ -28,7 +33,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     static protected final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
 
     // Collect all the input values here - the indexes match one to one the algorithm def input list
-    final protected List<ParameterValue> inputValues;
+    final protected List<RawEngValue> inputValues;
 
     public AbstractAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
         this.algorithmDef = algorithmDef;
@@ -54,6 +59,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         for (int k = 0; k < l.size(); k++) {
             InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
+            if (pInstance == null) { // this happens when the input references an argument
+                continue;
+            }
 
             // FIXME deal with multiple values of the same parameter in the same delivery
             ParameterValue pval = currentDelivery.getFirstInserted(pInstance.getParameter());
@@ -69,12 +77,12 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                         inputValues.set(k, historicValue);
                     }
                 }
-                if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
-                    log.trace("Not running algorithm {} because mandatory input {} is not present",
-                            algorithmDef.getName(),
-                            inputParameter.getInputName());
-                    skipRun = true;
-                }
+            }
+            if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
+                log.trace("Not running algorithm {} because mandatory input {} is not present",
+                        algorithmDef.getName(),
+                        inputParameter.getInputName());
+                skipRun = true;
             }
         }
 
@@ -101,9 +109,48 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return shouldRun;
     }
 
+    public synchronized boolean updateArguments(Map<Argument, ArgumentValue> args) {
+        boolean skipRun = false;
+        List<InputParameter> l = algorithmDef.getInputList();
+
+        for (int k = 0; k < l.size(); k++) {
+            InputParameter inputParameter = l.get(k);
+            ArgumentInstanceRef argRef = inputParameter.getArgumentRef();
+            if (argRef == null) {
+                if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
+                    log.trace("Not running algorithm {} because mandatory input {} is not present",
+                            algorithmDef.getName(),
+                            inputParameter.getInputName());
+                    skipRun = true;
+                }
+                continue;
+            }
+
+            ArgumentValue aval = args.get(argRef.getArgument());
+            if (aval == null) {
+                log.error("Cannot find value for argument " + argRef.getArgument());
+                continue;
+            }
+            updateInputArgument(k, inputParameter, aval);
+            inputValues.set(k, aval);
+
+        }
+        boolean triggered = algorithmDef.getTriggerSet() == null;
+
+        if (!skipRun && !triggered && log.isTraceEnabled()) {
+            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
+                    algorithmDef.getName(),
+                    algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
+        }
+        boolean shouldRun = (!skipRun && triggered);
+        return shouldRun;
+    }
+
     /**
      * Called when the given inputParameter receives a value. idx is the index of the inputParameter in the algorithm
      * definition input list.
+     * <p>
+     * newValue can be either a {@link ParameterValue} or a {@link ArgumentValue}
      * <p>
      * Can be used by subclasses to perform specific actions;
      * <p>
@@ -113,6 +160,18 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
      * @param newValue
      */
     protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
+    }
+
+    /**
+     * Called when the given inputParameter which contains a reference to an argument receives an argument value.
+     * <p>
+     * idx is the index of the inputParameter in the algorithm.
+     *
+     * @param idx
+     * @param inputParameter
+     * @param newValue
+     */
+    protected void updateInputArgument(int idx, InputParameter inputParameter, ArgumentValue newValue) {
     }
 
     /**

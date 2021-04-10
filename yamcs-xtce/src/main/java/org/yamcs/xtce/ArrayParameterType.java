@@ -48,12 +48,6 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     }
 
     @Override
-    public Object parseStringForRawValue(String stringValue) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Builder toBuilder() {
         return new Builder(this);
     }

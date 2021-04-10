@@ -2,14 +2,18 @@ package org.yamcs.algorithms;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Argument;
 
 /**
  * This class stores some info related to one active algorithm
@@ -105,6 +109,10 @@ public class ActiveAlgorithm {
         return executor.updateParameters(paramList);
     }
 
+    public boolean updateArguments(Map<Argument, ArgumentValue> args) {
+        return executor.updateArguments(args);
+    }
+
     public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
         runCount++;
         List<ParameterValue> output;
@@ -145,7 +153,7 @@ public class ActiveAlgorithm {
         }
     }
 
-    protected void propagateErrorToListeners(List<ParameterValue> inputValues, String errorMsg) {
+    protected void propagateErrorToListeners(List<RawEngValue> inputValues, String errorMsg) {
         try {
             execListeners.forEach(l -> l.algorithmError(inputValues, errorMsg));
         } catch (Exception e) {
@@ -166,4 +174,5 @@ public class ActiveAlgorithm {
         return "AlgorithmStatus [runCount=" + runCount + ", lastRun=" + lastRun + ", errorMessage=" + errorMessage
                 + ", errorCount=" + errorCount + ", errorTime=" + errorTime + "]";
     }
+
 }

@@ -1,6 +1,7 @@
 package org.yamcs.commanding;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.logging.Log;
@@ -8,10 +9,12 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MatchCriteria;
-import org.yamcs.xtce.MatchCriteria.MatchResult;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
 
 /**
  * Verifies commands by checking {@link MatchCriteria}. It implements the following XTCE verifier types:
@@ -30,6 +33,7 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
     int subscriptionId = -1;
     Log log;
     MatchCriteriaEvaluator evaluator;
+    EvaluatorInput evaluatorInput;
 
     MatchCriteriaVerifier(CommandVerificationHandler cvh, CommandVerifier cv, Log log) {
         super(cvh, cv);
@@ -37,26 +41,33 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
         this.matchCriteria = cv.getMatchCriteria();
         this.log = log;
         this.evaluator = proc.getProcessorData().getEvaluator(cv.getMatchCriteria());
+        PreparedCommand pc = cvh.getPreparedCommand();
+        this.evaluatorInput = new EvaluatorInput(proc.getLastValueCache(), pc.getArgAssignment(),
+                pc.getAttributesAsParameters(proc.getXtceDb()));
+        this.evaluatorInput.setCmdHistParams(new ParameterValueList());
     }
 
     @Override
     void doStart() {
         try {
-            subscriptionId = proc.getParameterRequestManager()
-                    .addRequest(matchCriteria.getDependentParameters(), this);
+            List<Parameter> params = matchCriteria.getDependentParameters()
+                    .stream()
+                    .filter(p-> p.getDataSource()!=DataSource.COMMAND && p.getDataSource()!=DataSource.COMMAND_HISTORY)
+                    .collect(Collectors.toList());
+
+            subscriptionId = proc.getParameterRequestManager().addRequest(params, this);
         } catch (Exception e) {
             log.warn("Failed to subscribe to parameters", e);
         }
-        check(new ParameterValueList());
+        check();
     }
 
-    private void check(ParameterValueList pvList) {
+    private void check() {
         if (state != State.RUNNING) {
             return;
         }
-        MatchResult r = evaluator.evaluate(pvList, proc.getLastValueCache());
-        log.debug("Condition check result: {}", r);
-
+        MatchResult r = evaluator.evaluate(evaluatorInput);
+        log.debug("Condition check result with parameters {}: {}", evaluatorInput, r);
         // serialize the result in the timer, just in case two conflicting deliveries happen at the same time
         timer.execute(() -> {
             unsubscribe();
@@ -80,8 +91,13 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
         }
     }
     @Override
-    public void updateItems(int subscriptionId, final List<ParameterValue> items) {
-        ParameterValueList pvlist = new ParameterValueList(items);
-        check(pvlist);
+    public void updateItems(int subscriptionId, final List<ParameterValue> params) {
+        evaluatorInput.setParams(new ParameterValueList(params));
+        check();
     }
+
+    public void updatedCommandHistoryParam(ParameterValue pv) {
+        evaluatorInput.getCmdHistParams().add(pv);
+    }
+
 }

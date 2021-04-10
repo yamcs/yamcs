@@ -22,6 +22,7 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterListener;
@@ -32,6 +33,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MathAlgorithm;
@@ -440,6 +442,27 @@ public class AlgorithmManager extends AbstractProcessorService
         }
     }
 
+    public void processArguments(Map<Argument, ArgumentValue> args, AlgorithmExecutionContext ctx) {
+        long time = processor.getCurrentTime();
+        ParameterValueList pvlist = new ParameterValueList();
+
+        for (ActiveAlgorithm activeAlgo : executionOrder) {
+            if (ctx == globalCtx || activeAlgo.getExecutionContext() == ctx) {
+                boolean shouldRun = activeAlgo.updateArguments(args);
+                if (shouldRun) {
+                    List<ParameterValue> r = activeAlgo.runAlgorithm(time, time);
+                    if (r != null) {
+                        pvlist.addAll(r);
+                        ctx.updateHistoryWindows(new ParameterValueList(r));
+                    }
+                }
+            }
+        }
+        if (!pvlist.isEmpty()) {
+            parameterRequestManager.update(pvlist);
+        }
+    }
+
     @Override
     public void setParameterListener(ParameterListener parameterRequestManager) {
         // do nothing, we're more interested in a ParameterRequestManager, which we're
@@ -539,7 +562,8 @@ public class AlgorithmManager extends AbstractProcessorService
      */
     private static Set<Parameter> getParametersOfInterest(Algorithm algorithm) {
         Stream<Parameter> inputParams = algorithm.getInputList().stream()
-                .map(ip -> ip.getParameterInstance().getParameter());
+                .filter(ip -> ip.getParameterInstance() != null).map(ip -> ip.getParameterInstance()
+                        .getParameter());
         if (algorithm.getTriggerSet() == null) {
             return inputParams.collect(Collectors.toSet());
         } else {

@@ -27,7 +27,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
-import org.yamcs.xtce.CommandVerifier.Type;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
@@ -806,6 +805,16 @@ public class XtceAssembler {
         doc.writeEndElement();
     }
 
+    // write a parameter reference as an argument reference
+    private void writeParameterInstanceRef(XMLStreamWriter doc, String elementName, ArgumentInstanceRef pref)
+            throws XMLStreamException {
+        doc.writeStartElement(elementName);
+        doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + pref.getName());
+        if (!pref.useCalibratedValue()) {
+            doc.writeAttribute("useCalibratedValue", "false");
+        }
+        doc.writeEndElement();
+    }
     private void writeDataEncoding(XMLStreamWriter doc, DataEncoding encoding) throws XMLStreamException {
         if (encoding instanceof IntegerDataEncoding) {
             writeIntegerDataEncoding(doc, (IntegerDataEncoding) encoding);
@@ -1180,9 +1189,16 @@ public class XtceAssembler {
             doc.writeStartElement("InputSet");
             for (InputParameter inp : algorithm.getInputList()) {
                 doc.writeStartElement("InputParameterInstanceRef");
-                doc.writeAttribute("parameterRef", getNameReference(inp.getParameterInstance()));
-                if (inp.getInputName() != null) {
-                    doc.writeAttribute("inputName", inp.getInputName());
+                ParameterInstanceRef pref = inp.getParameterInstance();
+                if (pref != null) {
+                    doc.writeAttribute("parameterRef", getNameReference(pref));
+                } else {// TODO - this should be written as part of an InputArgumentInstanceRef but only such a section
+                        // is valid in XTCE
+                    ArgumentInstanceRef aref = inp.getArgumentRef();
+                    doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
+                }
+                if (inp.getDefinedInputName() != null) {
+                    doc.writeAttribute("inputName", inp.getDefinedInputName());
                 }
                 doc.writeEndElement();
             }
@@ -1309,7 +1325,9 @@ public class XtceAssembler {
         } else if (mc instanceof ComparisonList) {
             writeComparisonList(doc, (ComparisonList) mc);
         } else if (mc instanceof BooleanExpression) {
-            // TODO
+            doc.writeStartElement("BooleanExpression");
+            writeBooleanExpression(doc, (BooleanExpression) mc);
+            doc.writeEndElement();
         }
     }
 
@@ -1323,15 +1341,71 @@ public class XtceAssembler {
 
     private void writeComparison(XMLStreamWriter doc, Comparison comparison) throws XMLStreamException {
         doc.writeStartElement("Comparison");
+        ParameterOrArgumentRef ref = comparison.getRef();
+        if (ref instanceof ParameterInstanceRef) {
+            ParameterInstanceRef pref = (ParameterInstanceRef) ref;
+            doc.writeAttribute("parameterRef", getNameReference(pref));
+            if (pref.getInstance() != 0) {
+                doc.writeAttribute("instance", Integer.toString(pref.getInstance()));
+            }
+        } else {
+            doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + ref.getName());
+        }
 
-        doc.writeAttribute("parameterRef", getNameReference(comparison.getParameterInstanceRef()));
-        boolean ucv = comparison.getParameterInstanceRef().useCalibratedValue();
+        boolean ucv = comparison.getRef().useCalibratedValue();
         if (!ucv) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
         doc.writeAttribute("value", comparison.getStringValue());
         if (comparison.getComparisonOperator() != OperatorType.EQUALITY) {
             doc.writeAttribute("comparisonOperator", comparison.getComparisonOperator().getSymbol());
+        }
+        doc.writeEndElement();
+    }
+
+    private void writeBooleanExpression(XMLStreamWriter doc, BooleanExpression boolExpr) throws XMLStreamException {
+        if (boolExpr instanceof Condition) {
+            writeCondition(doc, (Condition) boolExpr);
+        } else if (boolExpr instanceof ANDedConditions) {
+            writeANDedCondition(doc, (ANDedConditions) boolExpr);
+        } else if (boolExpr instanceof ORedConditions) {
+            writeORedCondition(doc, (ORedConditions) boolExpr);
+        }
+    }
+    private void writeCondition(XMLStreamWriter doc, Condition condition) throws XMLStreamException {
+        doc.writeStartElement("Condition");
+        ParameterOrArgumentRef ref = condition.getLeftRef();
+        if (ref instanceof ParameterInstanceRef) {
+            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ParameterInstanceRef) ref);
+        } else {
+            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ArgumentInstanceRef) ref);
+        }
+
+        doc.writeStartElement("ComparisonOperator");
+        doc.writeCharacters(condition.getComparisonOperator().getSymbol());
+        doc.writeEndElement();
+
+        ref = condition.getRightRef();
+        if (ref instanceof ParameterInstanceRef) {
+            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ParameterInstanceRef) ref);
+        } else {
+            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ArgumentInstanceRef) ref);
+        }
+        doc.writeEndElement();
+    }
+
+    private void writeANDedCondition(XMLStreamWriter doc, ANDedConditions condition) throws XMLStreamException {
+        doc.writeStartElement("ANDedConditions");
+        for (BooleanExpression boolExpr : condition.getExpressionList()) {
+            writeBooleanExpression(doc, boolExpr);
+        }
+        doc.writeEndElement();
+    }
+
+    private void writeORedCondition(XMLStreamWriter doc, ORedConditions condition) throws XMLStreamException {
+        doc.writeStartElement("ORedConditions");
+        for (BooleanExpression boolExpr : condition.getExpressionList()) {
+            writeBooleanExpression(doc, boolExpr);
         }
         doc.writeEndElement();
     }
@@ -1405,7 +1479,7 @@ public class XtceAssembler {
     private void writeCheckWindow(XMLStreamWriter doc, CheckWindow cw) throws XMLStreamException {
         doc.writeStartElement("CheckWindow");
 
-        if (cw.getTimeToStartChecking() > 0) {
+        if (cw.getTimeToStartChecking() >= 0) {
             doc.writeAttribute("timeToStartChecking",
                     dataTypeFactory.newDuration(cw.getTimeToStartChecking()).toString());
         }

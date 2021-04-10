@@ -12,6 +12,8 @@ import java.util.UUID;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -23,6 +25,7 @@ import org.yamcs.utils.ValueHelper;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -55,11 +58,14 @@ public class PreparedCommand {
     boolean disableCommandVerifiers = false;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
-    private Map<Argument, Value> argAssignment;
+    private Map<Argument, ArgumentValue> argAssignment;
     private Set<String> userAssignedArgumentNames;
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
     private Map<String, VerifierConfig> verifierConfig = new HashMap<>();
+
+    // same as attributes but converted to parameters for usage in verifiers and transmission constraints
+    private volatile ParameterValueList cmdParams;
 
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
@@ -194,10 +200,10 @@ public class PreparedCommand {
 
         AssignmentInfo.Builder assignmentb = AssignmentInfo.newBuilder();
         if (getArgAssignment() != null) {
-            for (Entry<Argument, Value> entry : getArgAssignment().entrySet()) {
+            for (Entry<Argument, ArgumentValue> entry : getArgAssignment().entrySet()) {
                 assignmentb.addAssignment(Assignment.newBuilder()
                         .setName(entry.getKey().getName())
-                        .setValue(ValueUtility.toGbp(entry.getValue()))
+                        .setValue(ValueUtility.toGbp(entry.getValue().getEngValue()))
                         .setUserInput(userAssignedArgumentNames.contains(entry.getKey().getName()))
                         .build());
             }
@@ -223,6 +229,29 @@ public class PreparedCommand {
 
     public List<CommandHistoryAttribute> getAttributes() {
         return attributes;
+    }
+
+    public ParameterValueList getAttributesAsParameters(XtceDb xtcedb) {
+        if (cmdParams != null) {
+            return cmdParams;
+        }
+        ParameterValueList pvlist = new ParameterValueList();
+
+        for (CommandHistoryAttribute cha : attributes) {
+            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
+            Parameter p = xtcedb.getParameter(fqn);
+
+            if (p == null) {
+                // if it was required in the algorithm, it would be already in the system parameter db
+                continue;
+            }
+
+            ParameterValue pv = new ParameterValue(p);
+            pv.setEngValue(ValueUtility.fromGpb(cha.getValue()));
+            pvlist.add(pv);
+        }
+        cmdParams = pvlist;
+        return cmdParams;
     }
 
     public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
@@ -253,7 +282,9 @@ public class PreparedCommand {
             for (Assignment assignment : assignments.getAssignmentList()) {
                 Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
                 Value v = ValueUtility.fromGpb(assignment.getValue());
-                pc.argAssignment.put(arg, v);
+                ArgumentValue argv = new ArgumentValue(arg);
+                argv.setEngValue(v);
+                pc.argAssignment.put(arg, argv);
             }
         }
         return pc;
@@ -340,12 +371,15 @@ public class PreparedCommand {
         this.transmissionContraintCheckStart = transmissionContraintCheckStart;
     }
 
-    public void setArgAssignment(Map<Argument, Value> argAssignment, Set<String> userAssignedArgumentNames) {
+    public void setArgAssignment(Map<Argument, ArgumentValue> argAssignment, Set<String> userAssignedArgumentNames) {
         this.argAssignment = argAssignment;
         this.userAssignedArgumentNames = userAssignedArgumentNames;
     }
 
-    public Map<Argument, Value> getArgAssignment() {
+    public ArgumentValue getArgAssignment(Argument arg) {
+        return argAssignment.get(arg);
+    }
+    public Map<Argument, ArgumentValue> getArgAssignment() {
         return argAssignment;
     }
 

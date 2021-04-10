@@ -3,47 +3,76 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
- * Input parameters for algorithms
- * @author nm
- *
+ * Input parameters for algorithms.
+ * <p>
+ * Although they are called input parameters they can also reference command arguments
+ * for algorithms running part of command transmission constraints or command verifiers.
  */
 public class InputParameter implements Serializable {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
-    private ParameterInstanceRef parameterInstance;
+    // one of these two is null and other one not
+    private final ParameterInstanceRef parameterInstance;
+    private final ArgumentInstanceRef argumentRef;
+
     private String inputName; // Optional friendly name
-    //if this input parameter is not set, the algorithm will not trigger
+    // if this input parameter is not set, the algorithm will not trigger
     private boolean mandatory = false;
-    
-    public InputParameter() {
-        
-    }
-    public InputParameter(ParameterInstanceRef parameterInstance) {
+
+    private InputParameter(ParameterInstanceRef parameterInstance, ArgumentInstanceRef argRef, String inputName) {
         this.parameterInstance = parameterInstance;
-    }
-    
-    public InputParameter(ParameterInstanceRef parameterInstance, String inputName) {
-        this.parameterInstance = parameterInstance;
+        this.argumentRef = argRef;
         this.inputName = inputName;
     }
-    
+
+    public InputParameter(ParameterInstanceRef parameterInstance) {
+        this(parameterInstance, null, null);
+    }
+
+    public InputParameter(ParameterInstanceRef parameterInstance, String inputName) {
+        this(parameterInstance, null, inputName);
+    }
+
+    public InputParameter(ArgumentInstanceRef argumentRef, String inputName) {
+        this(null, argumentRef, inputName);
+    }
+
+    /**
+     * @return the reference to the parameter or null if this references an argument instead
+     */
     public ParameterInstanceRef getParameterInstance() {
         return parameterInstance;
     }
-    
-    public void setParameterInstance(ParameterInstanceRef parameterInstance) {
-        this.parameterInstance = parameterInstance;
+
+    /**
+     * @return the reference to the command argument or null if this references a parameter instead
+     */
+    public ArgumentInstanceRef getArgumentRef() {
+        return argumentRef;
     }
-    
-    public String getInputName() {
+
+    public ParameterOrArgumentRef getRef() {
+        return parameterInstance == null ? argumentRef : parameterInstance;
+    }
+
+    public String getDefinedInputName() {
         return inputName;
     }
-    
+
+    public String getInputName() {
+        if (inputName != null) {
+            return inputName;
+        }
+        if (parameterInstance != null) {
+            return parameterInstance.getParameter().getName();
+        }
+        return argumentRef.getArgument().getName();
+    }
+
     public void setInputName(String inputName) {
         this.inputName = inputName;
     }
 
- 
     public boolean isMandatory() {
         return mandatory;
     }
@@ -54,7 +83,9 @@ public class InputParameter implements Serializable {
 
     @Override
     public String toString() {
-        if(inputName==null) return parameterInstance.toString()+(mandatory?"[M]":"");
-        else return parameterInstance+" inputName:"+inputName+(mandatory?"[M]":"");
+        if (inputName == null)
+            return parameterInstance.toString() + (mandatory ? "[M]" : "");
+        else
+            return parameterInstance + " inputName:" + inputName + (mandatory ? "[M]" : "");
     }
 }

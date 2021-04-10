@@ -26,7 +26,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         super(builder);
 
         this.memberList = builder.memberList;
-        
+
     }
 
     public AggregateDataType(String name) {
@@ -139,7 +139,7 @@ public class AggregateDataType extends NameDescription implements DataType {
      * 
      */
     public Map<String, Object> parseString(String initialValue) {
-        // first try to parse it as json
+        // parse it as json
         try {
             JsonElement je = new JsonParser().parse(initialValue);
             if (je instanceof JsonObject) {
@@ -150,7 +150,6 @@ public class AggregateDataType extends NameDescription implements DataType {
         } catch (JsonParseException jpe) {
             throw new IllegalArgumentException(jpe.toString());
         }
-
     }
 
     private Map<String, Object> fromJson(JsonObject jobj) {
@@ -184,6 +183,43 @@ public class AggregateDataType extends NameDescription implements DataType {
         return r;
     }
 
+    @Override
+    public Object parseStringForRawValue(String stringValue) {
+        // parse it as json
+        try {
+            JsonElement je = new JsonParser().parse(stringValue);
+            if (je instanceof JsonObject) {
+                return fromJsonRaw((JsonObject) je);
+            } else {
+                throw new IllegalArgumentException("Expected JSON object but found " + je.getClass());
+            }
+        } catch (JsonParseException jpe) {
+            throw new IllegalArgumentException(jpe.toString());
+        }
+    }
+
+    private Map<String, Object> fromJsonRaw(JsonObject jobj) {
+        Map<String, Object> r = new HashMap<>();
+        for (Member memb : memberList) {
+            if (jobj.has(memb.getName())) {
+                JsonElement jsel = jobj.remove(memb.getName());
+                String v;
+                if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
+                    v = jsel.getAsString();
+                } else {
+                    v = jsel.toString();
+                }
+                r.put(memb.getName(), memb.getType().parseStringForRawValue(v));
+            } else {
+                throw new IllegalArgumentException("No value for member '" + memb.getName()+"'");
+            }
+        }
+        if (jobj.size() > 0) {
+            throw new IllegalArgumentException("Unknown members "
+                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+        }
+        return r;
+    }
 
     @Override
     public Map<String, Object> getInitialValue() {

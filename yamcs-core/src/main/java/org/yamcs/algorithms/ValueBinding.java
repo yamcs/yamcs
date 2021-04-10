@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -22,17 +23,19 @@ public abstract class ValueBinding {
     protected MonitoringResult monitoringResult;
     protected RangeCondition rangeCondition;
 
-    public void updateValue(ParameterValue newValue) {
-        acquisitionStatus = newValue.getAcquisitionStatus();
-        monitoringResult = newValue.getMonitoringResult();
-        rangeCondition = newValue.getRangeCondition();
+    public void updateValue(RawEngValue newValue) {
+        if(newValue instanceof ParameterValue) {
+            ParameterValue pv = (ParameterValue) newValue;
+            acquisitionStatus = pv.getAcquisitionStatus();
+            monitoringResult = pv.getMonitoringResult();
+            rangeCondition = pv.getRangeCondition();
 
-        if (newValue.hasAcquisitionTime()) {
-            Calendar cal = TimeEncoding.toCalendar(newValue.getAcquisitionTime());
-            acquisitionTime = cal.getTime();
+            if (pv.hasAcquisitionTime()) {
+                Calendar cal = TimeEncoding.toCalendar(pv.getAcquisitionTime());
+                acquisitionTime = cal.getTime();
+            }
+            acquisitionTimeMs = pv.getAcquisitionTime();
         }
-        acquisitionTimeMs = newValue.getAcquisitionTime();
-
         if (newValue.hasGenerationTime()) {
             Calendar cal = TimeEncoding.toCalendar(newValue.getGenerationTime());
             generationTime = cal.getTime();

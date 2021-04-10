@@ -3,10 +3,13 @@ package org.yamcs.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.commanding.ArgumentValue;
+import org.yamcs.commanding.PartialArgumentValue;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.PartialParameterValue;
+import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
@@ -131,13 +134,13 @@ public class AggregateUtil {
      * 
      * Returns null if there is no such member.
      * 
-     * @param pv
+     * @param rev
      * @param path
      * @return
      */
-    public static PartialParameterValue extractMember(ParameterValue pv, PathElement[] path) {
-        Value engValue = pv.getEngValue();
-        Value rawValue = pv.getRawValue();
+    public static <T extends RawEngValue> T extractMember(T rev, PathElement[] path) {
+        Value engValue = rev.getEngValue();
+        Value rawValue = rev.getRawValue();
         for (PathElement pe : path) {
             if (pe.getName() != null) {
                 engValue = ((AggregateValue) engValue).getMemberValue(pe.getName());
@@ -160,14 +163,23 @@ public class AggregateUtil {
                 }
             }
         }
-        PartialParameterValue pv1 = new PartialParameterValue(pv.getParameter(), path);
-        pv1.setEngineeringValue(engValue);
-        pv1.setRawValue(rawValue);
-        pv1.setGenerationTime(pv.getGenerationTime());
-        pv1.setAcquisitionTime(pv.getAcquisitionTime());
-        pv1.setExpireMillis(pv.getExpireMills());
-        
-        return pv1;
+        if (rev instanceof ParameterValue) {
+            ParameterValue pv = (ParameterValue) rev;
+            PartialParameterValue pv1 = new PartialParameterValue(pv.getParameter(), path);
+            pv1.setEngValue(engValue);
+            pv1.setRawValue(rawValue);
+            pv1.setGenerationTime(rev.getGenerationTime());
+            pv1.setAcquisitionTime(pv.getAcquisitionTime());
+            pv1.setExpireMillis(pv.getExpireMills());
+            return (T) pv1;
+        } else {
+            ArgumentValue av = (ArgumentValue) rev;
+            PartialArgumentValue av1 = new PartialArgumentValue(av.getArgument(), path);
+            av1.setEngValue(engValue);
+            av1.setRawValue(rawValue);
+            av1.setGenerationTime(rev.getGenerationTime());
+            return (T) av;
+        }
     }
 
     /**
@@ -283,7 +295,7 @@ public class AggregateUtil {
                 sb.append(".").append(pe.getName());
             }
             if (pe.getIndex() != null) {
-                for(int x: pe.getIndex()) {
+                for (int x : pe.getIndex()) {
                     sb.append("[").append(x).append("]");
                 }
             }
@@ -295,7 +307,7 @@ public class AggregateUtil {
         AggregateParameterType.Builder apt = new AggregateParameterType.Builder();
         apt.setName(name);
         AggregateMemberNames amn = v.getMemberNames();
-        for(int i=0; i<amn.size(); i++) {
+        for (int i = 0; i < amn.size(); i++) {
             apt.addMember(new Member(amn.get(i)));
         }
         return apt.build();

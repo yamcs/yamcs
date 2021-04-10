@@ -41,6 +41,7 @@ public class XtceDb implements Serializable {
      */
     public static final String YAMCS_SPACESYSTEM_NAME = "/yamcs";
     public static final String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
+    public static final String YAMCS_CMDARG_SPACESYSTEM_NAME = "/yamcs/cmd/arg";
     public static final String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
 
     transient static Logger log = LoggerFactory.getLogger(XtceDb.class);
@@ -930,7 +931,10 @@ public class XtceDb implements Serializable {
     private static void removeNonOrphaned(SpaceSystem ss, Set<Parameter> orphanedParameters) {
         for (Algorithm a : ss.getAlgorithms()) {
             for (InputParameter p : a.getInputSet()) {
-                orphanedParameters.remove(p.getParameterInstance().getParameter());
+                ParameterInstanceRef pref = p.getParameterInstance();
+                if (pref != null) {
+                    orphanedParameters.remove(pref.getParameter());
+                }
             }
             for (OutputParameter p : a.getOutputSet()) {
                 orphanedParameters.remove(p.getParameter());

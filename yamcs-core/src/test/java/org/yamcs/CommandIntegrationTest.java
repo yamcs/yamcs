@@ -34,6 +34,8 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
 
+import com.google.protobuf.util.Timestamps;
+
 public class CommandIntegrationTest extends AbstractIntegrationTest {
 
     private ProcessorClient processorClient;
@@ -182,11 +184,10 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.OK);
 
         // check commands histogram
-        Instant start = Instant.parse(cmdhist.getGenerationTimeUTC()).minusMillis(1);
+        Instant start = Instant.ofEpochMilli(Timestamps.toMillis(cmdhist.getGenerationTime())).minusMillis(1);
         Page<IndexGroup> page = archiveClient.listCommandIndex(start, Instant.now()).get();
         List<IndexGroup> allItems = new ArrayList<>();
         page.iterator().forEachRemaining(allItems::add);
-
         assertEquals(1, allItems.size());
         IndexGroup item = allItems.get(0);
         assertEquals(1, item.getEntryCount());
@@ -203,7 +204,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
                 .issue()
                 .get();
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", command.getSource());
-
         CommandHistoryEntry cmdhist = captor.expectTimely();
 
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdhist.getCommandName());

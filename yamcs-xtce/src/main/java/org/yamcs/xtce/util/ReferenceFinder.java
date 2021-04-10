@@ -5,13 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
-import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.Container;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -28,10 +29,7 @@ public class ReferenceFinder {
      * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in
      * the parent hierarchy if relative reference
      *
-     * @param rootSs
-     * @param nr
-     * @param ss
-     * @return
+     * @return null if the reference has not been found
      */
     public FoundReference findReference(SpaceSystem rootSs, NameReference nr, SpaceSystem ss) {
         String ref = nr.getReference();
@@ -63,11 +61,11 @@ public class ReferenceFinder {
         }
     }
 
+
     /**
      * looks in the SpaceSystem ss for a namedObject with the given alias. Prints a warning in case multiple references
      * are found and returns the first one.
      * 
-     * If none is found, returns null.
      * 
      * @param ss
      * @param nr
@@ -238,29 +236,29 @@ public class ReferenceFinder {
     }
 
 
-    public static boolean verifyPath(ParameterType parameterType, PathElement[] path) {
-        ParameterType ptype = parameterType;
+    public static boolean verifyPath(DataType dataType, PathElement[] path) {
+        DataType ptype = dataType;
         for (PathElement pe : path) {
             if (pe.getName() != null) {
-                if (!(ptype instanceof AggregateParameterType)) {
+                if (!(ptype instanceof AggregateDataType)) {
                     return false;
                 }
-                Member m = ((AggregateParameterType) ptype).getMember(pe.getName());
+                Member m = ((AggregateDataType) ptype).getMember(pe.getName());
                 if (m == null) {
                     return false;
                 }
-                ptype = (ParameterType) m.getType();
+                ptype = m.getType();
             }
             if (pe.getIndex() != null) {
                 int[] idx = pe.getIndex();
-                if (!(ptype instanceof ArrayParameterType)) {
+                if (!(ptype instanceof ArrayDataType)) {
                     return false;
                 }
-                ArrayParameterType at = (ArrayParameterType) ptype;
+                ArrayDataType at = (ArrayDataType) ptype;
                 if (at.getNumberOfDimensions() != idx.length) {
                     return false;
                 }
-                ptype = (ParameterType) at.getElementType();
+                ptype = at.getElementType();
             }
         }
         return true;

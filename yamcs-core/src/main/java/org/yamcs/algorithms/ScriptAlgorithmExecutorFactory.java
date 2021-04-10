@@ -117,7 +117,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         boolean firstParam = true;
         for (InputParameter inputParameter : algorithmDef.getInputList()) {
             // Default-define all input values to null to prevent ugly runtime errors
-            String argName = getArgName(inputParameter);
+            String argName = inputParameter.getInputName();
             if (firstParam) {
                 firstParam = false;
             } else {
@@ -156,14 +156,6 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
             sb.append("}");
         }
         return sb.toString();
-    }
-
-    static String getArgName(InputParameter inputParameter) {
-        String r = inputParameter.getInputName();
-        if (r == null) {
-            r = inputParameter.getParameterInstance().getParameter().getName();
-        }
-        return r;
     }
 
     @Override

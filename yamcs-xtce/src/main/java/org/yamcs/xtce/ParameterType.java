@@ -23,20 +23,6 @@ public interface ParameterType extends DataType {
     boolean hasAlarm();
 
     /**
-     * parses the string into a java object according to the parameter type
-     * @param stringValue
-     * @return
-     */
-    Object parseString(String stringValue);
-
-    /**
-     * parses the string into a java object according to the parameter encoding
-     * @param stringValue
-     * @return
-     */
-    Object parseStringForRawValue(String stringValue);
-
-    /**
      * Get the data encoding for the parameter type.
      * <br>
      * For arrays and aggregates types that do not have encoding;

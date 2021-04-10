@@ -12,7 +12,7 @@ public class AlgorithmUtils {
         int min = 0;
         for (InputParameter p : algorithmDef.getInputSet()) {
             ParameterInstanceRef pInstance = p.getParameterInstance();
-            if (pInstance.getParameter().equals(parameter) && pInstance.getInstance() < min) {
+            if (pInstance != null && pInstance.getParameter().equals(parameter) && pInstance.getInstance() < min) {
                 min = p.getParameterInstance().getInstance();
             }
         }

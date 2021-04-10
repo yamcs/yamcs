@@ -27,9 +27,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DatabaseLoadException;
@@ -43,6 +45,7 @@ import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
@@ -154,9 +157,9 @@ public class XtceDbFactory {
             while ((n = resolveReferences(rootSs, rootSs, refFinder)) > 0) {
             }
 
-            StringBuilder sb = new StringBuilder();
-            collectUnresolvedReferences(rootSs, sb);
             if (n == 0) {
+                StringBuilder sb = new StringBuilder();
+                collectUnresolvedReferences(rootSs, sb);
                 throw new DatabaseLoadException("Cannot resolve (circular?) references: " + sb.toString());
             }
             setQualifiedNames(rootSs, "");
@@ -223,26 +226,32 @@ public class XtceDbFactory {
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
+            boolean resolved = false;
 
-            FoundReference rr = refFinder.findReference(rootSs, nr, ss);
-            if (rr == null && nr.getType() == Type.PARAMETER
-                    && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
-                // Special case for system parameters: they are created on the fly
-                SystemParameter sp = createSystemParameter(rootSs, nr);
-                rr = new FoundReference(sp);
-            }
-            if (rr == null) { // look for aliases up the hierarchy
-                rr = refFinder.findAliasReference(rootSs, nr, ss);
-            }
-            if (rr == null) {
-                throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
-            }
-            boolean resolved;
-            if (rr.getAggregateMemberPath() == null) {
-                resolved = nr.tryResolve(rr.getNameDescription());
+            if (nr.getType() == Type.ARGUMENT) {
+                resolved = resolveArgumentReference((ArgumentReference) nr);
             } else {
-                resolved = ((UnresolvedParameterReference) nr).tryResolve((Parameter) rr.getNameDescription(),
-                        rr.getAggregateMemberPath());
+                FoundReference foundReference = refFinder.findReference(rootSs, nr, ss);
+                if (foundReference == null && nr.getType() == Type.PARAMETER
+                        && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
+                    // Special case for system parameters: they are created on the fly
+                    SystemParameter sp = createSystemParameter(rootSs, nr);
+                    foundReference = new FoundReference(sp);
+                }
+                if (foundReference == null) { // look for aliases up the hierarchy
+                    foundReference = refFinder.findAliasReference(rootSs, nr, ss);
+                }
+                if (foundReference == null) {
+                    throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
+                }
+
+                if (foundReference.getAggregateMemberPath() == null) {
+                    resolved = nr.tryResolve(foundReference.getNameDescription());
+                } else {
+                    resolved = ((UnresolvedParameterReference) nr).tryResolve(
+                            (Parameter) foundReference.getNameDescription(),
+                            foundReference.getAggregateMemberPath());
+                }
             }
             if (resolved) {
                 n++;
@@ -258,6 +267,29 @@ public class XtceDbFactory {
             }
         }
         return n;
+    }
+
+    // argument references are references used in verifiers or transmission constraints.
+    // they refer to arguments that are from a parent command which was not loaded (defined in a different file) at the
+    // time when the command was created.
+    private static boolean resolveArgumentReference(ArgumentReference nr) {
+        Argument arg = null;
+        MetaCommand cmd = nr.getMetaCommand();
+        while (arg == null && cmd != null) {
+            arg = cmd.getArgument(nr.getArgName());
+            cmd = cmd.getBaseMetaCommand();
+        }
+        if (arg == null || arg.getArgumentType() == null) {
+            return false;
+        }
+
+        if (nr.getPath() != null) {
+            if (!ReferenceFinder.verifyPath(arg.getArgumentType(), nr.getPath())) {
+                throw new DatabaseLoadException("Invalid aggregate member '" + AggregateUtil.toString(nr.getPath())
+                        + " for argument '" + arg.getName());
+            }
+        }
+        return nr.tryResolve(arg, nr.getPath());
     }
 
     static private void addTmPartitions(SpaceSystem spaceSystem) {

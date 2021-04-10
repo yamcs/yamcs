@@ -1,6 +1,7 @@
 package org.yamcs.xtce.xml;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +50,7 @@ import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.util.AggregateTypeUtil;
+import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.HexUtils;
@@ -60,6 +62,8 @@ import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
+
+import static org.yamcs.xtce.XtceDb.*;
 
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
@@ -159,6 +163,7 @@ public class XtceStaxReader {
     private static final String XTCE_SPLINE_POINT = "SplinePoint";
     private static final String XTCE_COUNT = "Count";
     private static final String XTCE_PARAMETER_INSTANCE_REF = "ParameterInstanceRef";
+    private static final String XTCE_ARGUMENT_INSTANCE_REF = "ArgumentInstanceRef";
     private static final String XTCE_STATIC_ALARM_RANGES = "StaticAlarmRanges";
     private static final String XTCE_DEFAULT_ALARM = "DefaultAlarm";
     private static final String XTCE_FIXED = "Fixed";
@@ -192,6 +197,7 @@ public class XtceStaxReader {
     private static final String XTCE_OUTPUT_SET = "OutputSet";
     private static final String XTCE_INPUT_SET = "InputSet";
     private static final String XTCE_INPUT_PARAMETER_INSTANCE_REF = "InputParameterInstanceRef";
+    private static final String XTCE_INPUT_ARGUMENT_INSTANCE_REF = "InputArgumentInstanceRef";
     private static final String XTCE_CONSTANT = "Constant";
     private static final String XTCE_OUTPUT_PARAMETER_REF = "OutputParameterRef";
     private static final String XTCE_ALGORITHM_TEXT = "AlgorithmText";
@@ -1094,7 +1100,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
-                nca.setContextMatch(readMatchCriteria(spaceSystem));
+                nca.setContextMatch(readMatchCriteria(spaceSystem, null));
             } else if (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT) {
                 readNumericAlarmElement(nca);
             } else if (isEndElementWithName(XTCE_CONTEXT_ALARM)) {
@@ -1266,9 +1272,9 @@ public class XtceStaxReader {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
             } else if (isStartElementWithName("FromBinaryTransformAlgorithm")) {
-                binaryDataEncoding.setFromBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem));
+                binaryDataEncoding.setFromBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem, null));
             } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
-                binaryDataEncoding.setToBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem));
+                binaryDataEncoding.setToBinaryTransformAlgorithm(readCustomAlgorithm(spaceSystem, null));
             } else if (isEndElementWithName(tag)) {
                 return binaryDataEncoding;
             }
@@ -1687,7 +1693,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
-                context = readMatchCriteria(spaceSystem);
+                context = readMatchCriteria(spaceSystem, null);
             } else if (isStartElementWithName(XTCE_CALIBRATOR)) {
                 calibrator = readCalibrator(spaceSystem);
             } else if (isEndElementWithName(XTCE_CONTEXT_CALIBRATOR)) {
@@ -1926,7 +1932,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
-                eca.setContextMatch(readMatchCriteria(spaceSystem));
+                eca.setContextMatch(readMatchCriteria(spaceSystem, null));
             } else if (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT) {
                 EnumerationAlarm a = readEnumerationAlarm(enumParamType);
                 eca.setAlarmList(a.getAlarmList());
@@ -2190,7 +2196,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_VALIDITY_CONDITION)) {
-                readMatchCriteria(spaceSystem);
+                readMatchCriteria(spaceSystem, null);
             } else if (isStartElementWithName(XTCE_PHYSICAL_ADDRESS_SET)) {
                 skipXtceSection(XTCE_PHYSICAL_ADDRESS_SET);
             } else if (isStartElementWithName(XTCE_SYSTEM_NAME)) {
@@ -2251,7 +2257,9 @@ public class XtceStaxReader {
         return ris;
     }
 
-    private MatchCriteria readMatchCriteria(SpaceSystem spaceSystem) throws XMLStreamException {
+    // if metaCmd is not null, it means this is referenced from a command verifier or transmission constraint and it can
+    // reference command arguments or command history parameters
+    private MatchCriteria readMatchCriteria(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace("MatchCriteria");
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
@@ -2260,11 +2268,11 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_COMPARISON)) {
-                criteria = readComparison(spaceSystem);
+                criteria = readComparison(spaceSystem, metaCmd);
             } else if (isStartElementWithName(XTCE_COMPARISON_LIST)) {
-                criteria = readComparisonList(spaceSystem);
+                criteria = readComparisonList(spaceSystem, metaCmd);
             } else if (isStartElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
-                criteria = readBooleanExpression(spaceSystem);
+                criteria = readBooleanExpression(spaceSystem, metaCmd);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
                 skipXtceSection(XTCE_CUSTOM_ALGORITHM);
             } else if (isEndElementWithName(tag)) {
@@ -2275,7 +2283,9 @@ public class XtceStaxReader {
         }
     }
 
-    private ComparisonList readComparisonList(SpaceSystem spaceSystem) throws XMLStreamException {
+    // if metaCmd is not null, it means this is part of a command verifier or constraint so references to arguments and
+    // command history are possible
+    private ComparisonList readComparisonList(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace(XTCE_COMPARISON_LIST);
         checkStartElementPreconditions();
 
@@ -2285,7 +2295,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_COMPARISON)) {
-                list.addComparison(readComparison(spaceSystem));
+                list.addComparison(readComparison(spaceSystem, metaCmd));
             } else if (isEndElementWithName(XTCE_COMPARISON_LIST)) {
                 return list;
             } else {
@@ -2294,7 +2304,8 @@ public class XtceStaxReader {
         }
     }
 
-    private BooleanExpression readBooleanExpression(SpaceSystem spaceSystem) throws XMLStreamException {
+    private BooleanExpression readBooleanExpression(SpaceSystem spaceSystem, MetaCommand metaCmd)
+            throws XMLStreamException {
         log.trace(XTCE_BOOLEAN_EXPRESSION);
         checkStartElementPreconditions();
         BooleanExpression expr = null;
@@ -2302,11 +2313,11 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONDITION)) {
-                expr = readCondition(spaceSystem);
+                expr = readCondition(spaceSystem, metaCmd);
             } else if (isStartElementWithName(XTCE_AND_CONDITIONS)) {
-                expr = readAndCondition(spaceSystem);
+                expr = readAndCondition(spaceSystem, metaCmd);
             } else if (isStartElementWithName(XTCE_OR_CONDITIONS)) {
-                expr = readOrCondition(spaceSystem);
+                expr = readOrCondition(spaceSystem, metaCmd);
             } else if (isEndElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
                 if (expr == null) {
                     throw new XMLStreamException(
@@ -2363,22 +2374,37 @@ public class XtceStaxReader {
         }
     }
 
-    private Condition readCondition(SpaceSystem spaceSystem) throws XMLStreamException {
+    // if metaCmd is not null, it means this is part of a command verifier or constraint so references to arguments and
+    // command history are possible
+    private Condition readCondition(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace(XTCE_CONDITION);
         checkStartElementPreconditions();
 
-        ParameterInstanceRef lValueRef = null, rValueRef = null;
+        ParameterOrArgumentRef lValueRef = null, rValueRef = null;
         OperatorType comparisonOperator = null;
         String rvalue = null;
 
-        CompletableFuture<ParameterInstanceRef> cf = new CompletableFuture<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
+                String paraRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
+
+                ParameterOrArgumentRef ref = paraRef.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)
+                        ? readArgumentInstanceRef(spaceSystem, metaCmd)
+                        : readParameterInstanceRef(spaceSystem, null);
+
                 if (lValueRef == null) {
-                    lValueRef = readParameterInstanceRef(spaceSystem, cf);
+                    lValueRef = ref;
                 } else {
-                    rValueRef = readParameterInstanceRef(spaceSystem, null);
+                    rValueRef = ref;
+                }
+            } else if (isStartElementWithName(XTCE_ARGUMENT_INSTANCE_REF)) {
+                ArgumentInstanceRef ref = readArgumentInstanceRef(spaceSystem, metaCmd);
+
+                if (lValueRef == null) {
+                    lValueRef = ref;
+                } else {
+                    rValueRef = ref;
                 }
             } else if (isStartElementWithName(XTCE_COMPARISON_OPERATOR)) {
                 comparisonOperator = readComparisonOperator();
@@ -2399,7 +2425,6 @@ public class XtceStaxReader {
                 } else {
                     throw new XMLStreamException("Condition without right value", xmlEvent.getLocation());
                 }
-                cf.thenAccept(v -> cond.validateValueType());
                 return cond;
             } else {
                 logUnknown();
@@ -2407,7 +2432,7 @@ public class XtceStaxReader {
         }
     }
 
-    private ORedConditions readOrCondition(SpaceSystem spaceSystem) throws XMLStreamException {
+    private ORedConditions readOrCondition(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace(XTCE_OR_CONDITIONS);
         checkStartElementPreconditions();
         ORedConditions cond = new ORedConditions();
@@ -2415,9 +2440,9 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONDITION)) {
-                cond.addConditionExpression(readCondition(spaceSystem));
+                cond.addConditionExpression(readCondition(spaceSystem, metaCmd));
             } else if (isStartElementWithName(XTCE_AND_CONDITIONS)) {
-                cond.addConditionExpression(readAndCondition(spaceSystem));
+                cond.addConditionExpression(readAndCondition(spaceSystem, metaCmd));
             } else if (isEndElementWithName(XTCE_OR_CONDITIONS)) {
                 return cond;
             } else {
@@ -2426,7 +2451,7 @@ public class XtceStaxReader {
         }
     }
 
-    private ANDedConditions readAndCondition(SpaceSystem spaceSystem) throws XMLStreamException {
+    private ANDedConditions readAndCondition(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace(XTCE_CONDITION);
         checkStartElementPreconditions();
         ANDedConditions cond = new ANDedConditions();
@@ -2434,9 +2459,9 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONDITION)) {
-                cond.addConditionExpression(readCondition(spaceSystem));
+                cond.addConditionExpression(readCondition(spaceSystem, metaCmd));
             } else if (isStartElementWithName(XTCE_OR_CONDITIONS)) {
-                cond.addConditionExpression(readOrCondition(spaceSystem));
+                cond.addConditionExpression(readOrCondition(spaceSystem, metaCmd));
             } else if (isEndElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
                 return cond;
             } else {
@@ -2548,7 +2573,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_RESTRICTION_CRITERIA)) {
-                MatchCriteria criteria = readMatchCriteria(spaceSystem);
+                MatchCriteria criteria = readMatchCriteria(spaceSystem, null);
                 seqContainer.setRestrictionCriteria(criteria);
             } else if (isEndElementWithName(XTCE_BASE_CONTAINER)) {
                 return;
@@ -2628,7 +2653,7 @@ public class XtceStaxReader {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_INCLUDE_CONDITION)) {
-                parameterEntry.setIncludeCondition(readMatchCriteria(spaceSystem));
+                parameterEntry.setIncludeCondition(readMatchCriteria(spaceSystem, null));
             } else if (isStartElementWithName(XTCE_DIMENSION_LIST)) {
                 parameterEntry.setSize(readDimensionList(spaceSystem));
             } else if (isEndElementWithName(XTCE_ARRAY_PARAMETER_REF_ENTRY)) {
@@ -2714,7 +2739,7 @@ public class XtceStaxReader {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_INCLUDE_CONDITION)) {
-                parameterEntry.setIncludeCondition(readMatchCriteria(spaceSystem));
+                parameterEntry.setIncludeCondition(readMatchCriteria(spaceSystem, null));
             } else if (isEndElementWithName(XTCE_PARAMETER_REF_ENTRY)) {
                 return parameterEntry;
             } else {
@@ -2753,7 +2778,7 @@ public class XtceStaxReader {
                 Repeat r = readRepeatEntry(spaceSystem);
                 containerEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_INCLUDE_CONDITION)) {
-                containerEntry.setIncludeCondition(readMatchCriteria(spaceSystem));
+                containerEntry.setIncludeCondition(readMatchCriteria(spaceSystem, null));
             } else if (isEndElementWithName(XTCE_CONTAINER_REF_ENTRY)) {
                 return containerEntry;
             } else {
@@ -2834,7 +2859,7 @@ public class XtceStaxReader {
 
         ParameterReference nr = new UnresolvedParameterReference(paramRef)
                 .addResolvedAction((para, path) -> {
-                    if (para.getParameterType() == null && para.getDataSource() != DataSource.SYSTEM) {
+                    if (para.getParameterType() == null && !(para instanceof SystemParameter)) {
                         return false;
                     }
                     instanceRef.setParameter(para);
@@ -2855,6 +2880,40 @@ public class XtceStaxReader {
             spaceSystem.addUnresolvedReference(nr);
         }
         return instanceRef;
+    }
+
+    private ArgumentInstanceRef readArgumentInstanceRef(SpaceSystem spaceSystem, MetaCommand metaCmd)
+            throws XMLStreamException {
+
+        StartElement startElement = checkStartElementPreconditions();
+        String argRef;
+        if (XTCE_PARAMETER_INSTANCE_REF.equals(startElement.getName().getLocalPart())
+                || XTCE_INPUT_PARAMETER_INSTANCE_REF.equals(startElement.getName().getLocalPart())) {
+            // special case: treat /yamcs/cmd/arg/<argName> as argument reference
+            // because XTCE does not allow argument references in command verifiers and transmission checks
+            argRef = readMandatoryAttribute("parameterRef", startElement)
+                    .substring(YAMCS_CMDARG_SPACESYSTEM_NAME.length() + 1);
+        } else {
+            argRef = readMandatoryAttribute("argumentRef", startElement);
+        }
+        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
+
+        ArgumentInstanceRef argInstRef = new ArgumentInstanceRef();
+        ArgumentReference ref = ArgumentReference.getReference(metaCmd, argRef);
+
+        ref.addResolvedAction((arg, path) -> {
+            argInstRef.setArgument(arg);
+            argInstRef.setMemberPath(path);
+            return true;
+        });
+
+        if (!ref.isResolved()) {
+            spaceSystem.addUnresolvedReference(ref);
+        }
+
+        argInstRef.setUseCalibratedValue(useCalibrated);
+
+        return argInstRef;
     }
 
     // if resolveCf is not null, it will be called when the parameter reference has been resolved
@@ -2925,11 +2984,11 @@ public class XtceStaxReader {
         }
     }
 
-    private Comparison readComparison(SpaceSystem spaceSystem) throws XMLStreamException {
+    private Comparison readComparison(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         log.trace(XTCE_COMPARISON);
         checkStartElementPreconditions();
 
-        String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
+        String ref = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
         String value = readAttribute("comparisonOperator", xmlEvent.asStartElement(), null);
         if (value == null) {
@@ -2942,36 +3001,50 @@ public class XtceStaxReader {
         theValue = readMandatoryAttribute("value", xmlEvent.asStartElement());
 
         boolean useCalibratedValue = readBooleanAttribute("useCalibratedValue", xmlEvent.asStartElement(), true);
+        Comparison comparison;
 
-        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibratedValue);
-        Comparison comparison = new Comparison(instanceRef, theValue, optype);
-
-        UnresolvedParameterReference nr = new UnresolvedParameterReference(paramRef).addResolvedAction((p, path) -> {
-            instanceRef.setParameter(p);
-            instanceRef.setMemberPath(path);
-
-            if (p.getParameterType() == null) {
-                // allow an exception for system parameters
-                return p.getDataSource() == DataSource.SYSTEM;
+        if (ref.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)) {
+            if (metaCmd == null) {
+                throw new XtceLoadException(fileName, xmlEvent.getLocation(),
+                        "Cannot use reference to command arguments in comparisons not linked to commands");
             }
-            if (path != null && DataTypeUtil.getMemberType(p.getParameterType(), path) == null) {
-                return false;
+            String argName = ref.substring(YAMCS_CMDARG_SPACESYSTEM_NAME.length() + 1);
+            Argument arg = metaCmd.getArgument(argName);
+            if (arg == null) {
+                throw new XtceLoadException(fileName, xmlEvent.getLocation(),
+                        "No argument named '" + argName + "' for command" + metaCmd.getName());
             }
+            ArgumentInstanceRef instanceRef = new ArgumentInstanceRef(arg);
+            comparison = new Comparison(instanceRef, theValue, optype);
+        } else {
+            final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibratedValue);
+            comparison = new Comparison(instanceRef, theValue, optype);
 
-            comparison.validateValueType();
-            return true;
-        });
+            UnresolvedParameterReference nr = new UnresolvedParameterReference(ref).addResolvedAction((p, path) -> {
+                instanceRef.setParameter(p);
+                instanceRef.setMemberPath(path);
+                if (p.getParameterType() == null) {
+                    // allow an exception for system parameters
+                    return p instanceof SystemParameter;
+                }
+                if (path != null && DataTypeUtil.getMemberType(p.getParameterType(), path) == null) {
+                    return false;
+                }
 
-        Parameter parameter = spaceSystem.getParameter(paramRef);
+                comparison.validateValueType();
+                return true;
+            });
 
-        if (parameter != null) {
-            if (!nr.tryResolve(parameter)) {
+            Parameter parameter = spaceSystem.getParameter(ref);
+
+            if (parameter != null) {
+                if (!nr.tryResolve(parameter)) {
+                    spaceSystem.addUnresolvedReference(nr);
+                }
+            } else {
                 spaceSystem.addUnresolvedReference(nr);
             }
-        } else {
-            spaceSystem.addUnresolvedReference(nr);
         }
-
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isEndElementWithName(XTCE_COMPARISON)) {
@@ -3025,7 +3098,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_MATH_ALGORITHM)) {
                 algo = readMathAlgorithm(spaceSystem);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
-                algo = readCustomAlgorithm(spaceSystem);
+                algo = readCustomAlgorithm(spaceSystem, null);
             } else if (isEndElementWithName(XTCE_ALGORITHM_SET)) {
                 return;
             }
@@ -3604,7 +3677,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (xmlEvent.isStartElement() && xmlEvent.asStartElement().getName().getLocalPart().endsWith("Verifier")) {
-                CommandVerifier cmdVerifier = readVerifier(spaceSystem);
+                CommandVerifier cmdVerifier = readVerifier(spaceSystem, mc);
                 if (cmdVerifier != null) {
                     mc.addVerifier(cmdVerifier);
                 }
@@ -3616,7 +3689,7 @@ public class XtceStaxReader {
         }
     }
 
-    private CommandVerifier readVerifier(SpaceSystem spaceSystem) throws XMLStreamException {
+    private CommandVerifier readVerifier(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
         StartElement element = checkStartElementPreconditions();
 
         String tag = element.getName().getLocalPart();
@@ -3633,20 +3706,20 @@ public class XtceStaxReader {
                 readContainerRef(spaceSystem, cmdVerifier);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.ALGORITHM, stage);
-                CustomAlgorithm algo = readCustomAlgorithm(spaceSystem);
+                CustomAlgorithm algo = readCustomAlgorithm(spaceSystem, metaCmd);
                 algo.setScope(Scope.COMMAND_VERIFICATION);
                 cmdVerifier.setAlgorithm(algo);
             } else if (isStartElementWithName(XTCE_COMPARISON)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
-                MatchCriteria matchCriteria = readComparison(spaceSystem);
+                MatchCriteria matchCriteria = readComparison(spaceSystem, metaCmd);
                 cmdVerifier.setMatchCriteria(matchCriteria);
             } else if (isStartElementWithName(XTCE_COMPARISON_LIST)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
-                MatchCriteria matchCriteria = readComparisonList(spaceSystem);
+                MatchCriteria matchCriteria = readComparisonList(spaceSystem, metaCmd);
                 cmdVerifier.setMatchCriteria(matchCriteria);
             } else if (isStartElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.MATCH_CRITERIA, stage);
-                MatchCriteria matchCriteria = readBooleanExpression(spaceSystem);
+                MatchCriteria matchCriteria = readBooleanExpression(spaceSystem, metaCmd);
                 cmdVerifier.setMatchCriteria(matchCriteria);
             } else if (isStartElementWithName(XTCE_PARAMETER_VALUE_CHANGE)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.PARAMETER_VALUE_CHANGE, stage);
@@ -3788,7 +3861,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_RESTRICTION_CRITERIA)) {
-                MatchCriteria criteria = readMatchCriteria(spaceSystem);
+                MatchCriteria criteria = readMatchCriteria(spaceSystem, null);
                 mcContainer.setRestrictionCriteria(criteria);
             } else if (isEndElementWithName(XTCE_BASE_CONTAINER)) {
                 return;
@@ -3862,14 +3935,13 @@ public class XtceStaxReader {
     }
 
     /**
-     * Just skips the whole section.
-     * 
-     * @return
-     * @throws IllegalStateException
-     * @throws XMLStreamException
+     * builds a custom algorithm
+     * <p>
+     * If metaCmd is not null, the algorithm is used as part of a command verifier and can have command arguments and
+     * command history parameters as inputs
      */
-    private CustomAlgorithm readCustomAlgorithm(SpaceSystem spaceSystem)
-            throws IllegalStateException, XMLStreamException {
+    private CustomAlgorithm readCustomAlgorithm(SpaceSystem spaceSystem, MetaCommand metaCmd)
+            throws XMLStreamException {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
@@ -3889,7 +3961,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_OUTPUT_SET)) {
                 algo.setOutputSet(readOutputSet(spaceSystem));
             } else if (isStartElementWithName(XTCE_INPUT_SET)) {
-                addInputSet(spaceSystem, algo);
+                addInputSet(spaceSystem, algo, metaCmd);
             } else if (isEndElementWithName(tag)) {
                 return algo;
             } else {
@@ -3916,7 +3988,8 @@ public class XtceStaxReader {
         }
     }
 
-    private void addInputSet(SpaceSystem spaceSystem, CustomAlgorithm algo) throws XMLStreamException {
+    private void addInputSet(SpaceSystem spaceSystem, CustomAlgorithm algo, MetaCommand metaCmd)
+            throws XMLStreamException {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
@@ -3925,7 +3998,14 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_INPUT_PARAMETER_INSTANCE_REF)) {
-                addInputParameterInstanceRef(spaceSystem, algo);
+                addInputParameterInstanceRef(spaceSystem, algo, metaCmd);
+            } else if (isStartElementWithName(XTCE_INPUT_ARGUMENT_INSTANCE_REF)) {
+                if (metaCmd == null) {
+                    throw new XtceLoadException(fileName, xmlEvent.getLocation(),
+                            "Argument references can only be used in algorithms related to commands");
+                }
+
+                addInputArgumentInstanceRef(spaceSystem, algo, metaCmd);
             } else if (isStartElementWithName(XTCE_CONSTANT)) {
                 throw new XMLStreamException("Constant input parameters not supported", xmlEvent.getLocation());
             } else if (isEndElementWithName(tag)) {
@@ -3936,29 +4016,23 @@ public class XtceStaxReader {
         }
     }
 
-    private void addInputParameterInstanceRef(SpaceSystem spaceSystem, CustomAlgorithm algo) throws XMLStreamException {
+    private void addInputParameterInstanceRef(SpaceSystem spaceSystem, CustomAlgorithm algo, MetaCommand metaCmd)
+            throws XMLStreamException {
         log.trace(XTCE_INPUT_PARAMETER_INSTANCE_REF);
         String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
         String inputName = readAttribute("inputName", xmlEvent.asStartElement(), null);
-        int instance = readIntAttribute("instance", xmlEvent.asStartElement(), 0);
-        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", xmlEvent.asStartElement(), true);
 
-        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
-        instanceRef.setInstance(instance);
-        final Location xmlLocation = xmlEvent.getLocation();
+        InputParameter inputParameter;
 
-        ParameterReference nr = new UnresolvedParameterReference(paramRef).addResolvedAction((p, path) -> {
-            if (!algo.getLanguage().equalsIgnoreCase("java")) {
-                verifyScalarMember(p, path, xmlLocation);
-            }
-            instanceRef.setParameter(p);
-            instanceRef.setMemberPath(path);
-            return true;
-        });
+        if (paramRef.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)) {
+            ArgumentInstanceRef argRef = readArgumentInstanceRef(spaceSystem, metaCmd);
+            inputParameter = new InputParameter(argRef, inputName);
+        } else {
+            ParameterInstanceRef instanceRef = readParameterInstanceRef(spaceSystem, null);
+            inputParameter = new InputParameter(instanceRef, inputName);
+        }
 
-        spaceSystem.addUnresolvedReference(nr);
-        InputParameter inputParameter = new InputParameter(instanceRef, inputName);
         List<AncillaryData> adlist = algo.getAncillaryData();
         if (adlist != null) {
             boolean mandatory = algo.getAncillaryData().stream()
@@ -3966,6 +4040,15 @@ public class XtceStaxReader {
                             && Objects.equals(ad.getValue(), inputName));
             inputParameter.setMandatory(mandatory);
         }
+        algo.addInput(inputParameter);
+    }
+
+    private void addInputArgumentInstanceRef(SpaceSystem spaceSystem, CustomAlgorithm algo, MetaCommand metaCmd)
+            throws XMLStreamException {
+        log.trace(XTCE_INPUT_ARGUMENT_INSTANCE_REF);
+        String inputName = readAttribute("inputName", xmlEvent.asStartElement(), null);
+        ArgumentInstanceRef argRef = readArgumentInstanceRef(spaceSystem, metaCmd);
+        InputParameter inputParameter = new InputParameter(argRef, inputName);
         algo.addInput(inputParameter);
     }
 
@@ -4021,7 +4104,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_TRANSMISSION_CONSTRAINT)) {
-                TransmissionConstraint trc = readTransmissionConstraint(spaceSystem);
+                TransmissionConstraint trc = readTransmissionConstraint(spaceSystem, metaCmd);
                 metaCmd.addTransmissionConstrain(trc);
             } else if (isEndElementWithName(XTCE_TRANSMISSION_CONSTRAINT_LIST)) {
                 return;
@@ -4029,12 +4112,13 @@ public class XtceStaxReader {
         }
     }
 
-    TransmissionConstraint readTransmissionConstraint(SpaceSystem spaceSystem) throws XMLStreamException {
+    TransmissionConstraint readTransmissionConstraint(SpaceSystem spaceSystem, MetaCommand metaCmd)
+            throws XMLStreamException {
         log.trace(XTCE_TRANSMISSION_CONSTRAINT);
         StartElement element = xmlEvent.asStartElement();
         String timeouts = readAttribute("timeOut", element, null);
         long timeout = timeouts == null ? 0 : parseDuration(timeouts);
-        MatchCriteria matchCriteria = readMatchCriteria(spaceSystem);
+        MatchCriteria matchCriteria = readMatchCriteria(spaceSystem, metaCmd);
         return new TransmissionConstraint(matchCriteria, timeout);
     }
 

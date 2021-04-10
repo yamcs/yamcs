@@ -3,6 +3,7 @@ package org.yamcs.algorithms;
 import java.util.List;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.RawEngValue;
 
 public interface AlgorithmExecListener {
     /**
@@ -15,7 +16,7 @@ public interface AlgorithmExecListener {
      * @param outputValues
      *            - may be empty if there is no output value
      */
-    public void algorithmRun(List<ParameterValue> inputValues, Object returnValue, List<ParameterValue> outputValues);
+    public void algorithmRun(List<RawEngValue> inputValues, Object returnValue, List<ParameterValue> outputValues);
 
     /**
      * Called when the algorithm produced an error
@@ -23,7 +24,7 @@ public interface AlgorithmExecListener {
      * @param inputValues
      * @param errorMsg
      */
-    default public void algorithmError(List<ParameterValue> inputValues, String errorMsg) {
+    default public void algorithmError(List<RawEngValue> inputValues, String errorMsg) {
 
     }
 
