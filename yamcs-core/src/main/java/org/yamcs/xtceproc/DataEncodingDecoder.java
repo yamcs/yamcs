@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
@@ -21,7 +22,7 @@ import org.yamcs.xtce.StringDataEncoding;
  * Decodes TM data according to the specification of the DataEncoding
  * This is a generic catch all decoder, relies on specific custom decoders implementing
  * the DataDecoder interface when necessary.
- * 
+ *
  * @see org.yamcs.xtceproc.DataDecoder
  *
  * @author nm
@@ -43,11 +44,28 @@ public class DataEncodingDecoder {
 
     /**
      * Extracts the raw uncalibrated parameter value from the buffer.
-     * 
+     *
      * @return the extracted value or null if something went wrong - in this case the parameter will be marked with
      *         aquisitionStatus = INVALID
      */
     public Value extractRaw(DataEncoding de) {
+        return extractRaw(de, null);
+    }
+
+    /**
+     * Extract the raw, uncalibrated parameter value from the buffer, using the
+     * provider context to find referenced parameter values for variable- sized
+     * objects.
+     *
+     * @param de the data encoding
+     * @param pcontext the processing context, or null if the context is
+     *     unknown
+     * @return the extracted value, or null if something went wrong - in this
+     *     case the parameter will be marked with aquisitionStatus = INVALID
+     */
+    public Value extractRaw(DataEncoding de,
+            ContainerProcessingContext pcontext) {
+
         if (de.getFromBinaryTransformAlgorithm() != null) { // custom algorithm
             DataDecoder dd = pdata.getDataDecoder(de);
             return dd.extractRaw(de, buffer);
@@ -62,7 +80,7 @@ public class DataEncodingDecoder {
             } else if (de instanceof BooleanDataEncoding) {
                 rv = extractRawBoolean((BooleanDataEncoding) de);
             } else if (de instanceof BinaryDataEncoding) {
-                rv = extractRawBinary((BinaryDataEncoding) de);
+                rv = extractRawBinary((BinaryDataEncoding) de, pcontext);
             } else {
                 log.error("DataEncoding {} not implemented", de);
                 throw new IllegalArgumentException("DataEncoding " + de + " not implemented");
@@ -150,13 +168,13 @@ public class DataEncodingDecoder {
             if(sde.getSizeInBits()==-1) {
                 while (buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                }    
+                }
                 extraBytes = 1;
             } else {
                 int maxSize = sde.getSizeInBits() >> 3;
                 while (sizeInBytes<maxSize && buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                } 
+                }
                 extraBytes = maxSize - sizeInBytes;
             }
             buffer.setPosition(position);
@@ -193,7 +211,7 @@ public class DataEncodingDecoder {
             return ValueUtility.getDoubleValue(Double.longBitsToDouble(buffer.getBits(64)));
         }
     }
-    
+
     private Value extractRawMILSTD_1750A(FloatDataEncoding de) {
         buffer.setByteOrder(de.getByteOrder());
 
@@ -208,7 +226,9 @@ public class DataEncodingDecoder {
         return ValueUtility.getBooleanValue(buffer.getBits(1) != 0);
     }
 
-    private Value extractRawBinary(BinaryDataEncoding bde) {
+    private Value extractRawBinary(BinaryDataEncoding bde,
+            ContainerProcessingContext pcontext) {
+
         if (buffer.getPosition() % 8 != 0) {
             log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", buffer);
             return null;
@@ -221,6 +241,28 @@ public class DataEncodingDecoder {
             break;
         case LEADING_SIZE:
             sizeInBytes = (int) buffer.getBits(bde.getSizeInBitsOfSizeTag());
+            break;
+        case DYNAMIC:
+            String sizeParameter = bde.getSizeReference().getName();
+            ParameterValue sizeValue = null;
+            for (ParameterValue pv : pcontext.result.getParameterResult()) {
+                if (pv.getParameter().getQualifiedName()
+                        .equals(sizeParameter)) {
+                    sizeValue = pv;
+                }
+            }
+            if (sizeValue == null) {
+                throw new IllegalStateException(
+                        "Missing value for variable size in bits parameter: "
+                                + sizeParameter);
+            }
+            int sizeInBits = sizeValue.getEngValue().getSint32Value();
+            if (sizeInBits % 8 != 0) {
+                throw new IllegalArgumentException(
+                        "Variable size in bits parameter is not a multiple of 8: "
+                                + sizeInBits);
+            }
+            sizeInBytes = sizeInBits / 8;
             break;
         default: // shouldn't happen
             throw new IllegalStateException();
@@ -236,7 +278,7 @@ public class DataEncodingDecoder {
 
     /**
      * return the nominal Value.Type of a raw value corresponding to the given XTCE data encoding definition
-     * 
+     *
      * @param encoding
      * @return
      */

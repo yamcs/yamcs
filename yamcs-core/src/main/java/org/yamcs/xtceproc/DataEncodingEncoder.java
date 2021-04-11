@@ -4,11 +4,13 @@ import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
@@ -18,7 +20,7 @@ import org.yamcs.xtce.StringDataEncoding;
 
 /**
  * Encodes TC data according to the DataEncoding definition
- * 
+ *
  * @author nm
  *
  */
@@ -34,6 +36,21 @@ public class DataEncodingEncoder {
      * Encode the raw value of the argument into the packet.
      */
     public void encodeRaw(DataEncoding de, Value rawValue) {
+        encodeRaw(de, rawValue, null);
+    }
+
+    /**
+     * Encode the raw value of the argument into the packet, using the
+     * specified processing context to look up referenced arguments, if
+     * necessary.
+     *
+     * @param de the data encoding
+     * @param rawValue the raw value to encode
+     * @param pcontext the telecommand processing context
+     */
+    public void encodeRaw(DataEncoding de, Value rawValue,
+            TcProcessingContext pcontext) {
+
         pcontext.bitbuf.setByteOrder(de.getByteOrder());
 
         if (de.getToBinaryTransformAlgorithm() != null) {
@@ -47,7 +64,7 @@ public class DataEncodingEncoder {
             } else if (de instanceof StringDataEncoding) {
                 encodeRawString((StringDataEncoding) de, rawValue);
             } else if (de instanceof BinaryDataEncoding) {
-                encodeRawBinary((BinaryDataEncoding) de, rawValue);
+                encodeRawBinary((BinaryDataEncoding) de, rawValue, pcontext);
             } else {
                 log.error("DataEncoding {} not implemented", de);
                 throw new IllegalArgumentException("DataEncoding " + de + " not implemented");
@@ -243,7 +260,9 @@ public class DataEncodingEncoder {
         }
     }
 
-    private void encodeRawBinary(BinaryDataEncoding bde, Value rawValue) {
+    private void encodeRawBinary(BinaryDataEncoding bde, Value rawValue,
+            TcProcessingContext pcontext) {
+
         byte[] v;
         if (rawValue.getType() == Type.BINARY) {
             v = rawValue.getBinaryValue();
@@ -268,6 +287,30 @@ public class DataEncodingEncoder {
             bitbuf.putBits(v.length, bde.getSizeInBitsOfSizeTag()); // bde.getSizeInBitsOfSizeTag() can be 0 but bitbuf
                                                                     // won't mind
             bitbuf.put(v);
+            break;
+        case DYNAMIC:
+            String sizeName = bde.getSizeReference().getName();
+            ArgumentValue sizeValue = pcontext.getArgumentValue(sizeName);
+            if (sizeValue == null) {
+                throw new IllegalStateException(
+                        "No argument supplied for binary variable size: "
+                                + sizeName);
+            }
+            ValueUtility.processAsLong(sizeValue.getEngValue(), sizeInBits -> {
+                if (sizeInBits % 8 != 0) {
+                    throw new IllegalArgumentException(
+                            "Binary variable size argument is not a multiple of 8: "
+                                    + sizeInBits);
+                }
+                int dynSizeInBytes = (int) (sizeInBits / 8);
+                int dataSizeInBytes = Math.min(dynSizeInBytes, v.length);
+                bitbuf.put(v, 0, dataSizeInBytes);
+                if (dynSizeInBytes > v.length) {
+                    // Fill with nulls to reach the required size.
+                    byte[] nuls = new byte[dynSizeInBytes - dataSizeInBytes];
+                    bitbuf.put(nuls);
+                }
+            });
             break;
         default:
             throw new IllegalStateException("Unsupported size type " + bde.getType());

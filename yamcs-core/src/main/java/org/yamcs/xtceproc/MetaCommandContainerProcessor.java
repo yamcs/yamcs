@@ -7,7 +7,21 @@ import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.xtce.*;
+import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.Container;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.FixedValueEntry;
+import org.yamcs.xtce.Member;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.SequenceEntry;
 
 public class MetaCommandContainerProcessor {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -115,7 +129,7 @@ public class MetaCommandContainerProcessor {
                 throw new CommandEncodingException("No encoding available for type '" + atype.getName()
                         + "' used for argument '" + argName + "'");
             }
-            pcontext.deEncoder.encodeRaw(encoding, rawValue);
+            pcontext.deEncoder.encodeRaw(encoding, rawValue, pcontext);
         } else if (atype instanceof AggregateArgumentType) {
             AggregateArgumentType aggtype = (AggregateArgumentType) atype;
             AggregateValue aggRawValue = (AggregateValue)rawValue;

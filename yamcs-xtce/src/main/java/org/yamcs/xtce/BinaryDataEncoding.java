@@ -1,7 +1,7 @@
 package org.yamcs.xtce;
 
 /**
- * 
+ *
  * Although XTCE suggests that this class could be used to encode/decode integer/float/string data, In Yamcs this is
  * used just for
  * encoding binary data (i.e. binary to binary). See {@link DataEncoding} for how to use the other classes to
@@ -17,7 +17,7 @@ public class BinaryDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 2L;
 
     public enum Type {
-        FIXED_SIZE, LEADING_SIZE, CUSTOM
+        FIXED_SIZE, LEADING_SIZE, CUSTOM, DYNAMIC
     }
 
     int sizeInBitsOfSizeTag = 16; // this is used when type is LEADING_SIZE to encod the length of the value before the
@@ -26,7 +26,7 @@ public class BinaryDataEncoding extends DataEncoding {
 
     /**
      * copy constructor
-     * 
+     *
      * @param bde
      */
     public BinaryDataEncoding(BinaryDataEncoding bde) {
@@ -58,6 +58,7 @@ public class BinaryDataEncoding extends DataEncoding {
         }
     }
 
+    @Override
     public Builder toBuilder() {
         return new Builder(this);
     }
@@ -107,6 +108,7 @@ public class BinaryDataEncoding extends DataEncoding {
             super();
         }
 
+        @Override
         public BinaryDataEncoding build() {
             return new BinaryDataEncoding(this);
         }

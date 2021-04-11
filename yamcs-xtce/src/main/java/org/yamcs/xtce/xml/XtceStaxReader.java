@@ -67,9 +67,9 @@ import static org.yamcs.xtce.XtceDb.*;
 
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
- * 
+ *
  * @author mu
- * 
+ *
  */
 public class XtceStaxReader {
 
@@ -252,13 +252,13 @@ public class XtceStaxReader {
 
     /**
      * Reading of the XML XTCE file
-     * 
+     *
      * @param fileName
-     * 
+     *
      * @return returns the SpaceSystem read from the XML file
      * @throws XMLStreamException
      * @throws IOException
-     * 
+     *
      */
     public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException, XtceLoadException {
         this.fileName = fileName;
@@ -317,7 +317,7 @@ public class XtceStaxReader {
 
     /**
      * * resolves references in ss by going recursively to all sub-space systems (in the first call ss=topSs)
-     * 
+     *
      * Return the number of reference resolved or -1 if there was nothing to resolve
      * <p>
      * Do not resolve references that start with the root container ("/a/b/c")
@@ -371,7 +371,7 @@ public class XtceStaxReader {
     /**
      * Method called on start document event. Currently just logs the information contained in the xml preamble of the
      * parsed file.
-     * 
+     *
      * @param start
      *            Start document event object
      */
@@ -382,7 +382,7 @@ public class XtceStaxReader {
     /**
      * Start of reading at the root of the document. According to the XTCE schema the root element is
      * &lt;SpaceSystem&gt;
-     * 
+     *
      * @throws XMLStreamException
      */
     private SpaceSystem readSpaceSystem() throws XMLStreamException {
@@ -433,7 +433,7 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the AliasSet section Current implementation does nothing, just skips whole section
-     * 
+     *
      * @return Set of aliases defined for the object
      * @throws XMLStreamException
      */
@@ -460,7 +460,7 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the AliasSet section Current implementation does nothing, just skips whole section
-     * 
+     *
      * @throws XMLStreamException
      */
     private void readAlias(XtceAliasSet aliasSet) throws XMLStreamException {
@@ -532,9 +532,9 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the Header section Current implementation does nothing, just skips whole section
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @throws XMLStreamException
      */
     private void readHeader(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -571,9 +571,9 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the TelemetryMetaData section
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @throws XMLStreamException
      */
     private void readTelemetryMetaData(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -1268,6 +1268,11 @@ public class XtceStaxReader {
                 IntegerValue v = readIntegerValue(spaceSystem);
                 if (v instanceof FixedIntegerValue) {
                     binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
+                } else if (v instanceof DynamicIntegerValue) {
+                    binaryDataEncoding.setSizeReference(
+                            ((DynamicIntegerValue) v).getDynamicInstanceRef());
+                    binaryDataEncoding
+                            .setType(BinaryDataEncoding.Type.DYNAMIC);
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -1711,7 +1716,7 @@ public class XtceStaxReader {
 
     /**
      * Instantiate the SplineCalibrator element.
-     * 
+     *
      * @return
      * @throws XMLStreamException
      */
@@ -1734,7 +1739,7 @@ public class XtceStaxReader {
 
     /**
      * Instantiate SplinePoint element. This element has two required attributes: raw, calibrated
-     * 
+     *
      * @return
      * @throws XMLStreamException
      */
@@ -2094,7 +2099,7 @@ public class XtceStaxReader {
 
     /**
      * @param spaceSystem
-     * 
+     *
      */
     private void readParameterSet(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_PARAMETER_SET);
@@ -2116,7 +2121,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * 
+     *
      * @return Parameter instance
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -2482,9 +2487,9 @@ public class XtceStaxReader {
 
     /**
      * Reads the definition of the containers
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -2831,6 +2836,9 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
                 v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
+            } else if (isStartElementWithName(XTCE_ARGUMENT_INSTANCE_REF)) {
+                v = new DynamicIntegerValue(
+                        readArgumentInstanceRef(spaceSystem, null));
             } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
                 if (v == null) {
                     throw new XMLStreamException("No " + XTCE_PARAMETER_INSTANCE_REF + " section found");
@@ -2899,16 +2907,25 @@ public class XtceStaxReader {
         boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
 
         ArgumentInstanceRef argInstRef = new ArgumentInstanceRef();
-        ArgumentReference ref = ArgumentReference.getReference(metaCmd, argRef);
+        // If we are not in the context of a metacommand, such as an argument
+        // that is used as the size of another argument type, then do not try
+        // to resolve the argument. Instead, the name alone will be used to
+        // look up the argument in context when needed.
+        if (metaCmd == null) {
+            argInstRef.setArgument(new Argument(argRef));
+        } else {
+            ArgumentReference ref = ArgumentReference.getReference(metaCmd,
+                    argRef);
 
-        ref.addResolvedAction((arg, path) -> {
-            argInstRef.setArgument(arg);
-            argInstRef.setMemberPath(path);
-            return true;
-        });
+            ref.addResolvedAction((arg, path) -> {
+                argInstRef.setArgument(arg);
+                argInstRef.setMemberPath(path);
+                return true;
+            });
 
-        if (!ref.isResolved()) {
-            spaceSystem.addUnresolvedReference(ref);
+            if (!ref.isResolved()) {
+                spaceSystem.addUnresolvedReference(ref);
+            }
         }
 
         argInstRef.setUseCalibratedValue(useCalibrated);
@@ -3057,7 +3074,7 @@ public class XtceStaxReader {
 
     /**
      * Just skips the whole section.
-     * 
+     *
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -3069,7 +3086,7 @@ public class XtceStaxReader {
 
     /**
      * Just skips the whole section.
-     * 
+     *
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -3081,9 +3098,9 @@ public class XtceStaxReader {
 
     /**
      * Just skips the whole section.
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -3133,9 +3150,9 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the TelemetryMetaData section
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @throws XMLStreamException
      */
     private void readCommandMetaData(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -3451,9 +3468,9 @@ public class XtceStaxReader {
 
     /**
      * Reads the definition of the command containers
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @return
      * @throws IllegalStateException
      */
@@ -3463,9 +3480,9 @@ public class XtceStaxReader {
 
     /**
      * Reads the definition of the metacommand containers
-     * 
+     *
      * @param spaceSystem
-     * 
+     *
      * @return
      * @throws IllegalStateException
      */
@@ -3614,7 +3631,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * 
+     *
      * @return Parameter instance
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -4141,7 +4158,7 @@ public class XtceStaxReader {
 
     /**
      * Increase the skip statistics for the section.
-     * 
+     *
      * @param xtceSectionName
      *            Name of the skipped section.
      */
@@ -4169,7 +4186,7 @@ public class XtceStaxReader {
 
     /**
      * Skips whole section in the document.
-     * 
+     *
      * @param sectionName
      *            name of the section to skip
      * @throws XMLStreamException
@@ -4222,7 +4239,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * 
+     *
      * @param filename
      * @return
      * @throws FileNotFoundException
@@ -4243,7 +4260,7 @@ public class XtceStaxReader {
 
     /**
      * Examines element for presence of attributes
-     * 
+     *
      * @param element
      *            Element to be examined, should not be null
      * @return True, if the element contains attributes, otherwise false
@@ -4259,7 +4276,7 @@ public class XtceStaxReader {
 
     /**
      * Check if xml element is a start element with particular name
-     * 
+     *
      * @param localName
      *            Name of the element
      * @return True if element is start element with the given name, otherwise false
@@ -4301,7 +4318,7 @@ public class XtceStaxReader {
     /**
      * Test if the xmlEvent is of type END_ELEMENT and has particular local name. This test is used to identify the end
      * of section.
-     * 
+     *
      * @param localName
      *            Local name of the element (we neglect namespace for now)
      * @return True if current xmlEvent is of type END_ELEMENT and has particular local name, otherwise false
@@ -4313,9 +4330,9 @@ public class XtceStaxReader {
 
     /**
      * Checks preconditions before the dedicated code for section reading will run
-     * 
+     *
      * @return
-     * 
+     *
      * @throws IllegalStateException
      *             If the conditions are not met
      */
@@ -4337,7 +4354,7 @@ public class XtceStaxReader {
 
     /**
      * Get attribute values as string
-     * 
+     *
      * @param attName
      *            Name of the attribute
      * @param element

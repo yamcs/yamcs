@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  name="VariableBinaryTest"
+  shortDescription="Test of binary parameter and argument with variable size"
+  xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType name="SizeType" sizeInBits="16">
+        <IntegerDataEncoding sizeInBits="16" byteOrder="mostSignificantByteFirst"
+          encoding="unsigned" />
+      </IntegerParameterType>
+      <FloatParameterType name="FloatType" sizeInBits="32">
+        <FloatDataEncoding sizeInBits="32" byteOrder="mostSignificantByteFirst"
+          encoding="IEEE754_1985"/>
+      </FloatParameterType>
+      <BinaryParameterType name="BinaryType">
+        <BinaryDataEncoding>
+          <SizeInBits>
+            <DynamicValue>
+              <ParameterInstanceRef parameterRef="size"/>
+            </DynamicValue>
+          </SizeInBits>
+        </BinaryDataEncoding>
+      </BinaryParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter parameterTypeRef="SizeType" name="size"/>
+      <Parameter parameterTypeRef="BinaryType" name="data"/>
+      <Parameter parameterTypeRef="FloatType" name="value"/>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="Packet">
+        <EntryList>
+          <ParameterRefEntry parameterRef="size"/>
+          <ParameterRefEntry parameterRef="data"/>
+          <ParameterRefEntry parameterRef="value"/>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <IntegerArgumentType name="SizeType" sizeInBits="16" signed="false">
+        <IntegerDataEncoding sizeInBits="16" byteOrder="mostSignificantByteFirst" encoding="unsigned"/>
+      </IntegerArgumentType>
+      <BinaryArgumentType name="BinaryType">
+        <BinaryDataEncoding>
+          <SizeInBits>
+            <DynamicValue>
+              <ArgumentInstanceRef argumentRef="size"/>
+            </DynamicValue>
+          </SizeInBits>
+        </BinaryDataEncoding>
+      </BinaryArgumentType>
+      <FloatArgumentType name="FloatType" sizeInBits="32">
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"/>
+      </FloatArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="Command">
+        <ArgumentList>
+          <Argument argumentTypeRef="SizeType" name="size"/>
+          <Argument argumentTypeRef="BinaryType" name="data"/>
+          <Argument argumentTypeRef="FloatType" name="value"/>
+        </ArgumentList>
+        <CommandContainer name="CommandContainer">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="size"/>
+            <ArgumentRefEntry argumentRef="data"/>
+            <ArgumentRefEntry argumentRef="value"/>
+          </EntryList>
+        </CommandContainer>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+
+</SpaceSystem>

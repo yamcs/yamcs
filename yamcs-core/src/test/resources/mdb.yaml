@@ -5,7 +5,7 @@ refmdb:
       args: 
            file: "mdb/refmdb.xls"
            enableAliasReferences: false
-      
+
 
 refmdb-v6:
     # Configuration of the active loaders
@@ -14,28 +14,28 @@ refmdb-v6:
       args: 
            file: "mdb/refmdb-v6.xls"
            enableAliasReferences: false
-      
+
 refxtce:
     - type: xtce
       args:
           file: "src/test/resources/xtce/ref-xtce.xml"
-      
+
 ccsds-green-book:
     - type: xtce
       args:
           file: "src/test/resources/xtce/ccsds-green-book.xml"
 
-      
+
 BogusSAT:
     - type: xtce
       args:
-          file: "src/test/resources/xtce/BogusSAT-1.xml"          
+          file: "src/test/resources/xtce/BogusSAT-1.xml"
 
 BogusSAT2:
     - type: xtce
       args:
           file: "src/test/resources/xtce/BogusSAT-2.xml"
-          
+
 BogusSAT2-noautopart:
     - type: xtce
       args:
@@ -46,14 +46,19 @@ ranges-test:
     - type: xtce
       args:
           file: "../yamcs-xtce/src/test/resources/ranges-test.xml"
-          
+
 empty-match-criteria:
     - type: xtce
       args:
           file: "src/test/resources/xtce/empty-match-criteria.xml"
-          
-          
+
+
 xtce-fileset:
     - type: xtce
       args:
           fileset: ["src/test/resources/xtce/a*.xml", "src/test/resources/xtce/b.xml"]
+
+VariableBinaryTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/VariableBinary.xml"

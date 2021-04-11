@@ -1,7 +1,6 @@
 package org.yamcs.xtceproc;
 
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
@@ -73,10 +72,11 @@ public class SequenceEntryProcessor {
             }
 
             cpc1.sequenceContainerProcessor.extract(subsribedContainer);
-            if (ce.getRefContainer().getSizeInBits() < 0)
+            if (ce.getRefContainer().getSizeInBits() < 0) {
                 buf.setPosition(buf.getPosition() + buf1.getPosition());
-            else
+            } else {
                 buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
+            }
         }
     }
 
@@ -236,6 +236,6 @@ public class SequenceEntryProcessor {
                     "Encountered parameter entry with a parameter type '" + ptype.getName()
                             + " without an encoding");
         }
-        return pcontext.dataEncodingProcessor.extractRaw(encoding);
+        return pcontext.dataEncodingProcessor.extractRaw(encoding, pcontext);
     }
 }
