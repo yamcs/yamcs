@@ -11,7 +11,7 @@ import org.yamcs.xtce.Parameter;
 
 /**
  * Keeps track of where we are when filling in the bits and bytes of a command
- *
+ * 
  * @author nm
  *
  */
@@ -21,7 +21,7 @@ public class TcProcessingContext {
 
     // arguments and their values
     final private Map<Argument, ArgumentValue> argValues;
-
+    
     //context parameters and their values
     final private Map<Parameter, Value> paramValues;
 
@@ -64,7 +64,7 @@ public class TcProcessingContext {
     }
 
     public Value getParameterValue(Parameter param) {
-        Value v = paramValues.get(param);
+        Value v = paramValues.get(param); 
         if(v == null) {
             ParameterValue pv = pdata.getLastValueCache().getValue(param);
             if(pv!=null) {

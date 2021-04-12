@@ -20,7 +20,7 @@ import org.yamcs.xtce.StringDataEncoding;
 
 /**
  * Encodes TC data according to the DataEncoding definition
- *
+ * 
  * @author nm
  *
  */

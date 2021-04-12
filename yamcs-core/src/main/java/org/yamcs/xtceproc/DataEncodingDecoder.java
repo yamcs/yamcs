@@ -22,7 +22,7 @@ import org.yamcs.xtce.StringDataEncoding;
  * Decodes TM data according to the specification of the DataEncoding
  * This is a generic catch all decoder, relies on specific custom decoders implementing
  * the DataDecoder interface when necessary.
- *
+ * 
  * @see org.yamcs.xtceproc.DataDecoder
  *
  * @author nm
@@ -44,7 +44,7 @@ public class DataEncodingDecoder {
 
     /**
      * Extracts the raw uncalibrated parameter value from the buffer.
-     *
+     * 
      * @return the extracted value or null if something went wrong - in this case the parameter will be marked with
      *         aquisitionStatus = INVALID
      */
@@ -168,13 +168,13 @@ public class DataEncodingDecoder {
             if(sde.getSizeInBits()==-1) {
                 while (buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                }
+                }    
                 extraBytes = 1;
             } else {
                 int maxSize = sde.getSizeInBits() >> 3;
                 while (sizeInBytes<maxSize && buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                }
+                } 
                 extraBytes = maxSize - sizeInBytes;
             }
             buffer.setPosition(position);
@@ -211,7 +211,7 @@ public class DataEncodingDecoder {
             return ValueUtility.getDoubleValue(Double.longBitsToDouble(buffer.getBits(64)));
         }
     }
-
+    
     private Value extractRawMILSTD_1750A(FloatDataEncoding de) {
         buffer.setByteOrder(de.getByteOrder());
 
@@ -278,7 +278,7 @@ public class DataEncodingDecoder {
 
     /**
      * return the nominal Value.Type of a raw value corresponding to the given XTCE data encoding definition
-     *
+     * 
      * @param encoding
      * @return
      */

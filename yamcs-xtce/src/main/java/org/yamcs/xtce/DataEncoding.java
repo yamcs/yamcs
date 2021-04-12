@@ -12,16 +12,16 @@ import java.util.Set;
  * Describes how a particular piece of data is sent or received from some non-native, off-platform device. (e.g. a
  * spacecraft)
  * <p>
- *
+ * 
  * DIFFERS_FROM_XTCE: XTCE defines known encodings for the usual types (e.g. twosComplement for signed integers) and
  * allows
  * a catch all using a BinaryDataEncoding with a custom algorithm. We consider this approach as flawed and inconsistent:
  * whereas FloatDataEncoding converts from binary to float, IntegerDataEncoding converts from binary to integer, etc,
  * the BinaryDataEncoding would convert from binary to anything and it cannot be known into what by just looking at it.
- *
+ * 
  * Therefore in Yamcs we allow the catch all custom algorithm for all encodings and the BinaryDataEncoding can only
  * convert from binary to binary.
- *
+ * 
  *
  */
 public abstract class DataEncoding implements Serializable {
@@ -46,7 +46,7 @@ public abstract class DataEncoding implements Serializable {
 
     /**
      * copy constructor
-     *
+     * 
      * @param ide
      */
     DataEncoding(DataEncoding de) {
@@ -58,7 +58,7 @@ public abstract class DataEncoding implements Serializable {
 
     DataEncoding(Builder<?> builder, int defaultSizeInBits) {
         this.sizeInBits = defaultSizeInBits;
-
+        
         if (builder.sizeInBits != null) {
             this.sizeInBits = builder.sizeInBits;
         }
@@ -95,7 +95,7 @@ public abstract class DataEncoding implements Serializable {
      * Returns the size in bits of data encoded according to this encoding.
      * For some encodings like {@link StringDataEncoding} the size may be variable (depending on the data to be
      * encoded). In this cases it returns -1.
-     *
+     * 
      * @return size in bits or -1 if the size is unknown
      */
     public int getSizeInBits() {
@@ -126,7 +126,7 @@ public abstract class DataEncoding implements Serializable {
             out.writeInt(0);
         } else {
             out.writeInt(1);
-        }
+    }
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -136,7 +136,7 @@ public abstract class DataEncoding implements Serializable {
             byteOrder = ByteOrder.BIG_ENDIAN;
         } else {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
-        }
+    }
     }
 
     /**
@@ -167,7 +167,7 @@ public abstract class DataEncoding implements Serializable {
 
     /**
      * Create a shallow copy of the data encoding
-     *
+     * 
      * @return
      */
     public abstract DataEncoding copy();
@@ -204,7 +204,7 @@ public abstract class DataEncoding implements Serializable {
             this.fromBinaryTransformAlgorithm = alg;
             return self();
         }
-
+        
         public T setToBinaryTransformAlgorithm(Algorithm alg) {
             this.toBinaryTransformAlgorithm = alg;
             return self();

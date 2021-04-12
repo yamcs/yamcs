@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Uses a parameter instance to obtain the value.
- *
+ * 
  * @author nm
  *
  */

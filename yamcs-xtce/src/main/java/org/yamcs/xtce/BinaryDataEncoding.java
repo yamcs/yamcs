@@ -1,7 +1,7 @@
 package org.yamcs.xtce;
 
 /**
- *
+ * 
  * Although XTCE suggests that this class could be used to encode/decode integer/float/string data, In Yamcs this is
  * used just for
  * encoding binary data (i.e. binary to binary). See {@link DataEncoding} for how to use the other classes to
@@ -26,7 +26,7 @@ public class BinaryDataEncoding extends DataEncoding {
 
     /**
      * copy constructor
-     *
+     * 
      * @param bde
      */
     public BinaryDataEncoding(BinaryDataEncoding bde) {
