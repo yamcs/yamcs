@@ -59,7 +59,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private InTxState inTxState = InTxState.RECEIVING_DATA;
-    private Bucket incomingBucket = null;
+    private final Bucket incomingBucket;
     private String objectName;
 
     private DataFile incomingDataFile;
@@ -612,7 +612,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getRemotePath() {
-        return metadataPacket.getSourceFilename();
+        return (metadataPacket == null) ? null : metadataPacket.getSourceFilename();
     }
 
     @Override

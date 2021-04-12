@@ -241,7 +241,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 .setName(name);
         infob.addAllLocalEntities(service.getLocalEntities());
         infob.addAllRemoteEntities(service.getRemoteEntities());
-		infob.setCapabilities(service.getCapabilities());
+        infob.setCapabilities(service.getCapabilities());
         return infob.build();
     }
 
@@ -259,12 +259,18 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 .setId(transfer.getId())
                 .setState(transfer.getTransferState())
                 .setBucket(transfer.getBucketName())
-                .setObjectName(transfer.getObjectName())
-                .setRemotePath(transfer.getRemotePath())
                 .setDirection(transfer.getDirection())
                 .setTotalSize(transfer.getTotalSize())
                 .setSizeTransferred(transfer.getTransferredSize())
                 .setReliable(transfer.isReliable());
+
+        if (transfer.getObjectName() != null) {
+            tib.setObjectName(transfer.getObjectName());
+        }
+        if (transfer.getRemotePath() != null) {
+            tib.setRemotePath(transfer.getRemotePath());
+        }
+
         if (transfer instanceof CfdpFileTransfer) {
             CfdpTransactionId txid = ((CfdpFileTransfer) transfer).getTransactionId();
             if (txid != null) {// queued transfers do not have a transaction id
