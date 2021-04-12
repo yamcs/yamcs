@@ -115,7 +115,7 @@ public class MetaCommandContainerProcessor {
                 throw new CommandEncodingException("No encoding available for type '" + atype.getName()
                         + "' used for argument '" + argName + "'");
             }
-            pcontext.deEncoder.encodeRaw(encoding, rawValue, pcontext);
+            pcontext.deEncoder.encodeRaw(encoding, rawValue);
         } else if (atype instanceof AggregateArgumentType) {
             AggregateArgumentType aggtype = (AggregateArgumentType) atype;
             AggregateValue aggRawValue = (AggregateValue)rawValue;

@@ -36,21 +36,6 @@ public class DataEncodingEncoder {
      * Encode the raw value of the argument into the packet.
      */
     public void encodeRaw(DataEncoding de, Value rawValue) {
-        encodeRaw(de, rawValue, null);
-    }
-
-    /**
-     * Encode the raw value of the argument into the packet, using the
-     * specified processing context to look up referenced arguments, if
-     * necessary.
-     *
-     * @param de the data encoding
-     * @param rawValue the raw value to encode
-     * @param pcontext the telecommand processing context
-     */
-    public void encodeRaw(DataEncoding de, Value rawValue,
-            TcProcessingContext pcontext) {
-
         pcontext.bitbuf.setByteOrder(de.getByteOrder());
 
         if (de.getToBinaryTransformAlgorithm() != null) {
