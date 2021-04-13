@@ -1,7 +1,12 @@
 package org.yamcs.cmdhistory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -84,35 +89,24 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     }
 
     @Override
-    public void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
+    public void publishAck(CommandId cmdId, String key, long time, AckStatus state,
+            String message, ParameterValue resultPv) {
         TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key + SUFFIX_STATUS, DataType.STRING);
         td.addColumn(key + SUFFIX_TIME, DataType.TIMESTAMP);
-        Tuple t;
+        List<Object> vals = new ArrayList<>(Arrays.asList(cmdId.getGenerationTime(), cmdId.getOrigin(),
+                cmdId.getSequenceNumber(), cmdId.getCommandName(), state.toString(),
+                time));
 
-        if (message == null) {
-            t = new Tuple(td, new Object[] {
-                    cmdId.getGenerationTime(),
-                    cmdId.getOrigin(),
-                    cmdId.getSequenceNumber(),
-                    cmdId.getCommandName(),
-                    state.toString(),
-                    time
-            });
-        } else {
+        if (message != null) {
             td.addColumn(key + SUFFIX_MESSAGE, DataType.STRING);
-            t = new Tuple(td, new Object[] {
-                    cmdId.getGenerationTime(),
-                    cmdId.getOrigin(),
-                    cmdId.getSequenceNumber(),
-                    cmdId.getCommandName(),
-                    state.toString(),
-                    time,
-                    message
-            });
+            vals.add(message);
         }
-
-        stream.emitTuple(t);
+        if (resultPv != null) {
+            td.addColumn(key + SUFFIX_RETURN, DataType.PARAMETER_VALUE);
+            vals.add(resultPv);
+        }
+        stream.emitTuple(new Tuple(td, vals));
     }
 
     @Override
@@ -127,4 +121,5 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     public Stream getStream() {
         return stream;
     }
+
 }

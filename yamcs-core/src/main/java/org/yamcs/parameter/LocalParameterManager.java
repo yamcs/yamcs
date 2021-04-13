@@ -155,7 +155,7 @@ public class LocalParameterManager extends AbstractProcessorService
         } else {
             Value v = DataTypeProcessor.convertEngValueForType(ptype, pv.getEngValue());
             r = new ParameterValue(pv);
-            r.setEngineeringValue(v);
+            r.setEngValue(v);
         }
 
         return r;
@@ -168,7 +168,7 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void updateParameter(final Parameter p, final Value engValue) {
         ParameterValue pv = new ParameterValue(p);
-        pv.setEngineeringValue(engValue);
+        pv.setEngValue(engValue);
 
         List<ParameterValue> pvlist = Arrays.asList(pv);
         updateParameters(pvlist);

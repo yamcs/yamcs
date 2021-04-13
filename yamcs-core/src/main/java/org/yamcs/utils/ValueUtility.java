@@ -16,6 +16,7 @@ import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.DoubleValue;
 import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.FloatValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SInt32Value;
 import org.yamcs.parameter.SInt64Value;
 import org.yamcs.parameter.StringValue;
@@ -100,6 +101,8 @@ public class ValueUtility {
             return getBooleanValue((Boolean) v);
         case DOUBLE:
             return getDoubleValue((Double) v);
+        case PARAMETER_VALUE:
+            return ((ParameterValue) v).getEngValue();
         case ARRAY:
         case PROTOBUF:
         case TUPLE:

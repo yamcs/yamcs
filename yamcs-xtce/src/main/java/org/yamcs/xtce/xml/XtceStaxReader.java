@@ -57,8 +57,10 @@ import org.yamcs.xtce.util.HexUtils;
 import org.yamcs.xtce.util.IncompleteType;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.ParameterReference.ParameterResolvedAction;
 import org.yamcs.xtce.util.ParameterReference;
 import org.yamcs.xtce.util.ReferenceFinder;
+import org.yamcs.xtce.util.ResolvedParameterReference;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
@@ -227,6 +229,7 @@ public class XtceStaxReader {
     private static final String XTCE_TRANSMISSION_CONSTRAINT_LIST = "TransmissionConstraintList";
     private static final String XTCE_PARAMETER_VALUE_CHANGE = "ParameterValueChange";
     private static final String XTCE_CHANGE = "Change";
+    private static final String XTCE_RETURN_PARAM_REF = "ReturnParmRef";
 
     /**
      * Logging subsystem
@@ -2857,8 +2860,7 @@ public class XtceStaxReader {
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
         instanceRef.setInstance(instance);
 
-        ParameterReference nr = new UnresolvedParameterReference(paramRef)
-                .addResolvedAction((para, path) -> {
+        makeParameterReference(spaceSystem, paramRef, (para, path) -> {
                     if (para.getParameterType() == null && !(para instanceof SystemParameter)) {
                         return false;
                     }
@@ -2871,14 +2873,6 @@ public class XtceStaxReader {
                     return true;
                 });
 
-        Parameter parameter = spaceSystem.getParameter(paramRef);
-        if (parameter != null) {
-            if (!nr.tryResolve(parameter)) {
-                spaceSystem.addUnresolvedReference(nr);
-            }
-        } else {
-            spaceSystem.addUnresolvedReference(nr);
-        }
         return instanceRef;
     }
 
@@ -2925,8 +2919,7 @@ public class XtceStaxReader {
         String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef();
 
-        ParameterReference nr = new UnresolvedParameterReference(paramRef)
-                .addResolvedAction((para, path) -> {
+        makeParameterReference(spaceSystem, paramRef, (para, path) -> {
                     if (para.getParameterType() == null) {
                         return false;
                     }
@@ -2938,15 +2931,6 @@ public class XtceStaxReader {
                     }
                     return true;
                 });
-
-        Parameter parameter = spaceSystem.getParameter(paramRef);
-        if (parameter != null) {
-            if (!nr.tryResolve(parameter)) {
-                spaceSystem.addUnresolvedReference(nr);
-            }
-        } else {
-            spaceSystem.addUnresolvedReference(nr);
-        }
         return instanceRef;
     }
 
@@ -3019,8 +3003,7 @@ public class XtceStaxReader {
         } else {
             final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibratedValue);
             comparison = new Comparison(instanceRef, theValue, optype);
-
-            UnresolvedParameterReference nr = new UnresolvedParameterReference(ref).addResolvedAction((p, path) -> {
+            makeParameterReference(spaceSystem, ref, (p, path) -> {
                 instanceRef.setParameter(p);
                 instanceRef.setMemberPath(path);
                 if (p.getParameterType() == null) {
@@ -3034,16 +3017,6 @@ public class XtceStaxReader {
                 comparison.validateValueType();
                 return true;
             });
-
-            Parameter parameter = spaceSystem.getParameter(ref);
-
-            if (parameter != null) {
-                if (!nr.tryResolve(parameter)) {
-                    spaceSystem.addUnresolvedReference(nr);
-                }
-            } else {
-                spaceSystem.addUnresolvedReference(nr);
-            }
         }
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3726,10 +3699,23 @@ public class XtceStaxReader {
                 ParameterValueChange paraValueChange = readParameterValueChange(spaceSystem);
                 cmdVerifier.setParameterValueChange(paraValueChange);
             } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
-                CheckWindow cw = readCheckWindow(spaceSystem);
-                if (cmdVerifier != null) {
-                    cmdVerifier.setCheckWindow(cw);
+                if (cmdVerifier == null) {
+                    throw new XMLStreamException("CheckWindow specified before the verifier.", xmlEvent.getLocation());
                 }
+                CheckWindow cw = readCheckWindow(spaceSystem);
+                cmdVerifier.setCheckWindow(cw);
+
+            } else if (isStartElementWithName(XTCE_RETURN_PARAM_REF)) {
+                if (cmdVerifier == null) {
+                    throw new XMLStreamException("ReturnParmRef specified before the verifier.",
+                            xmlEvent.getLocation());
+                }
+                CommandVerifier cmdVerifier1 = cmdVerifier;
+                String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
+                makeParameterReference(spaceSystem, paramRef, (param, path) -> {
+                    cmdVerifier1.setReturnParameter(param);
+                    return true;
+                });
             } else if (isEndElementWithName(tag)) {
                 if (cmdVerifier != null) {
                     if ("Failed".equals(type)) {
@@ -4459,17 +4445,23 @@ public class XtceStaxReader {
         }
     }
 
-    private void verifyScalarMember(Parameter p, PathElement[] path, Location xmlLocation) {
-        ParameterType ptype = p.getParameterType();
-        if (path != null) {
-            ptype = AggregateTypeUtil.getMemberType(ptype, path);
+    public static ParameterReference getParameterReference(SpaceSystem spaceSystem, String paramName,
+            boolean typeRequired) {
+        Parameter para = spaceSystem.getParameter(paramName);
+        ParameterReference paraRef;
+        if ((para == null) || (typeRequired && para.getParameterType() == null)) {
+            paraRef = new UnresolvedParameterReference(paramName);
+            spaceSystem.addUnresolvedReference(paraRef);
+        } else {
+            paraRef = new ResolvedParameterReference(paramName, para);
         }
 
-        if (ptype instanceof AggregateParameterType || ptype instanceof ArrayParameterType) {
-            String name = p.getName() + (path == null ? "" : "." + AggregateTypeUtil.toString(path));
-            throwException(xmlLocation, "Cannot use " + name + " of type " + ptype.getClass().getSimpleName()
-                    + " as input to algorithms (this is only supported for java algorithms; reference to scalar members can be used instead for other languages)");
-        }
+        return paraRef;
+    }
+
+    public static void makeParameterReference(SpaceSystem spaceSystem, String paramRef,
+            ParameterResolvedAction action) {
+        getParameterReference(spaceSystem, paramRef, true).addResolvedAction(action);
     }
 
     void throwException(Location location, String message) {

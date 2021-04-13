@@ -61,6 +61,9 @@
 			<xtce:Parameter name="local_para1" parameterTypeRef="uint16">
 				<xtce:ParameterProperties dataSource="local"/>
 			</xtce:Parameter>
+			<xtce:Parameter name="local_para2" parameterTypeRef="uint16">
+				<xtce:ParameterProperties dataSource="local"/>
+			</xtce:Parameter>
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -288,6 +291,8 @@
 							<xtce:Change value="10"/>
 						</xtce:ParameterValueChange>
 						<xtce:CheckWindow timeToStopChecking="PT1S"/>
+						<!-- The value of local_para2 will be saved in the command history -->
+						<xtce:ReturnParmRef parameterRef="local_para2"/>
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>

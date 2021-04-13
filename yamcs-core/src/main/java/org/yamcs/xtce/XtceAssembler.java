@@ -1473,6 +1473,11 @@ public class XtceAssembler {
         }
 
         writeCheckWindow(doc, verifier.getCheckWindow());
+        if (verifier.getReturnParameter() != null) {
+            doc.writeStartElement("ReturnParmRef");
+            doc.writeAttribute("parameterRef", getNameReference(verifier.getReturnParameter()));
+            doc.writeEndElement();
+        }
         doc.writeEndElement();// verifier name (stage)
     }
 

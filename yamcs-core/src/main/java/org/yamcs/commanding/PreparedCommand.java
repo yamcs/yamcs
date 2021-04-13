@@ -33,9 +33,8 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * This class is to keep track of a command binary and source included
+ * A command which has been transformed to binary and it is being executed.
  * 
- * @author nm
  *
  */
 public class PreparedCommand {

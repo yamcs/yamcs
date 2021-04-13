@@ -41,6 +41,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
@@ -181,6 +182,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
                 for (TransmissionConstraint tc : tcList) {
                     paramsToSubscribe.addAll(tc.getMatchCriteria().getDependentParameters());
+                }
+            }
+
+            if (mc.hasCommandVerifiers()) {
+                List<CommandVerifier> cvList = mc.getCommandVerifiers();
+                for (CommandVerifier cv : cvList) {
+                    paramsToSubscribe.addAll(cv.getDependentParameters());
                 }
             }
         }

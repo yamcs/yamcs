@@ -52,9 +52,12 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
         try {
             List<Parameter> params = matchCriteria.getDependentParameters()
                     .stream()
-                    .filter(p-> p.getDataSource()!=DataSource.COMMAND && p.getDataSource()!=DataSource.COMMAND_HISTORY)
+                    .filter(p -> p.getDataSource() != DataSource.COMMAND
+                            && p.getDataSource() != DataSource.COMMAND_HISTORY)
                     .collect(Collectors.toList());
-
+            if (cv.getReturnParameter() != null) {
+                params.add(cv.getReturnParameter());
+            }
             subscriptionId = proc.getParameterRequestManager().addRequest(params, this);
         } catch (Exception e) {
             log.warn("Failed to subscribe to parameters", e);
@@ -66,17 +69,38 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
         if (state != State.RUNNING) {
             return;
         }
-        MatchResult r = evaluator.evaluate(evaluatorInput);
-        log.debug("Condition check result with parameters {}: {}", evaluatorInput, r);
-        // serialize the result in the timer, just in case two conflicting deliveries happen at the same time
-        timer.execute(() -> {
+        MatchResult result = evaluator.evaluate(evaluatorInput);
+        log.debug("Condition check result with parameters {}: {}", evaluatorInput, result);
+
+        if (result == MatchResult.UNDEF) {
+            return;
+        }
+
+        // if there is a value for the return parameter in the current evaluatorInput (the one from which the result
+        // has been computed), we want that one to be the returnValue
+        returnPv = getReturnValue();
+
+        if (result == MatchResult.OK) {
             unsubscribe();
-            if (r == MatchResult.OK) {
-                finishOK();
-            } else if (r == MatchResult.NOK && cv.failOnFirstFailedMatch()) {
-                finished(false, "Verifier condition does not match");
-            }
-        });
+            finishOK();
+        } else if (result == MatchResult.NOK && cv.failOnFirstFailedMatch()) {
+            unsubscribe();
+            finished(false, "Verifier condition does not match");
+        }
+    }
+
+    private ParameterValue getReturnValue() {
+        Parameter returnParam = cv.getReturnParameter();
+        if (returnParam == null) {
+            return null;
+        }
+        ParameterValue retPv;
+        if (returnParam.getDataSource() == DataSource.COMMAND_HISTORY) {
+            retPv = evaluatorInput.getCmdHistParams().getLastInserted(returnParam);
+        } else {
+            retPv = evaluatorInput.getParams().getLastInserted(returnParam);
+        }
+        return retPv;
     }
 
     @Override
@@ -90,14 +114,19 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterConsumer
             subscriptionId = -1;
         }
     }
+
     @Override
     public void updateItems(int subscriptionId, final List<ParameterValue> params) {
-        evaluatorInput.setParams(new ParameterValueList(params));
-        check();
+        timer.execute(() -> {
+            evaluatorInput.setParams(new ParameterValueList(params));
+            check();
+        });
     }
 
     public void updatedCommandHistoryParam(ParameterValue pv) {
-        evaluatorInput.getCmdHistParams().add(pv);
+        timer.execute(() -> {
+            evaluatorInput.getCmdHistParams().add(pv);
+            check();
+        });
     }
-
 }

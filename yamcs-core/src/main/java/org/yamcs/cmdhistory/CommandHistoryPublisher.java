@@ -1,6 +1,7 @@
 package org.yamcs.cmdhistory;
 
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 /**
@@ -22,7 +23,7 @@ public interface CommandHistoryPublisher {
     public final static String TransmissionContraints_KEY = "TransmissionConstraints";
     public final static String AcknowledgeQueued_KEY = "Acknowledge_Queued";
     public final static String AcknowledgeReleased_KEY = "Acknowledge_Released";
-    
+
     /**
      * Used by the links to add entries in the command history when the command has been sent via the link.
      */
@@ -31,12 +32,11 @@ public interface CommandHistoryPublisher {
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
     public final static String Queue_KEY = "queue";
 
-    //these are used when publishing acks
-    public final static String SUFFIX_STATUS="_Status";
-    public final static String SUFFIX_TIME="_Time";
-    public final static String SUFFIX_MESSAGE="_Message";
-
-    
+    // these are used when publishing acks
+    public final static String SUFFIX_STATUS = "_Status";
+    public final static String SUFFIX_TIME = "_Time";
+    public final static String SUFFIX_MESSAGE = "_Message";
+    public final static String SUFFIX_RETURN = "_Return";
 
     public abstract void publish(CommandId cmdId, String key, String value);
 
@@ -46,7 +46,18 @@ public interface CommandHistoryPublisher {
 
     public abstract void publish(CommandId cmdId, String key, byte[] binary);
 
+    public default void publish(CommandId cmdId, String key, ParameterValue returnPv) {
+    };
+
     public abstract void addCommand(PreparedCommand pc);
+
+    default void publishAck(CommandId cmdId, String key, long time, AckStatus state) {
+        publishAck(cmdId, key, time, state, null, null);
+    }
+
+    default void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
+        publishAck(cmdId, key, time, state, message, null);
+    }
 
     /**
      * Publish an acknowledgement status to the command history.
@@ -58,22 +69,18 @@ public interface CommandHistoryPublisher {
      * <li>key_Message</li>
      * </ul>
      * 
-     * @param cmdId
-     * @param key
-     * @param time
-     * @param state
-     * @param message
      */
-    default void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
-        publish(cmdId, key + "_Status", state.toString());
-        publish(cmdId, key + "_Time", time);
-        if (message != null) {
-            publish(cmdId, key + "_Message", message);
-        }
-    }
+    default void publishAck(CommandId cmdId, String key, long time, AckStatus state,
+            String message, ParameterValue returnPv) {
+        publish(cmdId, key + SUFFIX_STATUS, state.toString());
+        publish(cmdId, key + SUFFIX_TIME, time);
 
-    default void publishAck(CommandId cmdId, String key, long time, AckStatus state) {
-        publishAck(cmdId, key, time, state, null);
+        if (message != null) {
+            publish(cmdId, key + SUFFIX_MESSAGE, message);
+        }
+        if (returnPv != null) {
+            publish(cmdId, key + SUFFIX_RETURN, returnPv);
+        }
     }
 
     default void commandFailed(CommandId cmdId, long time, String reason) {

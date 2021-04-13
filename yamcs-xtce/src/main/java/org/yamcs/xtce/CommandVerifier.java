@@ -1,6 +1,8 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * XTCE:
@@ -66,7 +68,8 @@ public class CommandVerifier implements Serializable {
     // if false, the verifier will keep checking until timeout (it will never fail)
     boolean verifierFailOnFirstFailedMatch = false;
 
-
+    // if not null, the value will be used as the "result" of verification
+    private Parameter returnParameter;
 
     public CommandVerifier(Type type, String stage) {
         this.type = type;
@@ -169,6 +172,32 @@ public class CommandVerifier implements Serializable {
     public boolean failOnFirstFailedMatch() {
         return verifierFailOnFirstFailedMatch;
     }
+
+    public Parameter getReturnParameter() {
+        return returnParameter;
+    }
+
+    public void setReturnParameter(Parameter returnParameter) {
+        this.returnParameter = returnParameter;
+    }
+
+    public List<Parameter> getDependentParameters() {
+        List<Parameter> plist = new ArrayList<>();
+        if (matchCriteria != null) {
+            plist.addAll(matchCriteria.getDependentParameters());
+        }
+        if (paraValueChange != null) {
+            plist.add(paraValueChange.getParameterRef().getParameter());
+        }
+
+        if (returnParameter != null) {
+            plist.add(returnParameter);
+        }
+        // parameters on which the algorithms depend are handled by AlgorithmManager
+
+        return plist;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{stage: ").append(stage);

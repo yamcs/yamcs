@@ -9,6 +9,7 @@ abstract class Verifier {
     final protected CommandVerifier cv;
     final protected CommandVerificationHandler cvh;
     final ScheduledThreadPoolExecutor timer;
+    protected ParameterValue returnPv;
 
     enum State {
         NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
@@ -35,7 +36,7 @@ abstract class Verifier {
         }
         state = State.TIMEOUT;
         doCancel();
-        cvh.onVerifierFinished(this, null);
+        cvh.onVerifierFinished(this);
     }
 
     void cancel() {
@@ -44,17 +45,29 @@ abstract class Verifier {
         }
         state = State.CANCELLED;
         doCancel();
-        cvh.onVerifierFinished(this, null);
+        cvh.onVerifierFinished(this);
     }
 
-    void finished(boolean result, String failureReason) {
+    void finished(boolean result, String message) {
         if (state != State.RUNNING) {
             return;
         }
+
+        // we set the returnPv from cache unless it has been set by one of the subclasses to a more relevant value
+        // for example if a specific packet triggered a verifier and that packet contained a sample for the
+        // returnParameter, we want that sample to be used as returnPv.
+        // We assume that the sub-classes do that, if not the code below will use whatever latest value is available.
+        if (cv.getReturnParameter() != null && returnPv == null) {
+            returnPv = cvh.getProcessor().getLastValueCache()
+                    .getValue(cv.getReturnParameter());
+        }
         state = result ? State.OK : State.NOK;
-        cvh.onVerifierFinished(this, failureReason);
+        cvh.onVerifierFinished(this, message, returnPv);
     }
 
+    void finished(boolean result) {
+        finished(result, null);
+    }
     void finishOK() {
         finished(true, null);
     }

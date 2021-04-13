@@ -54,7 +54,6 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     // accumulate here all command attributes and command history events
     List<ParameterValue> cmdParameters = new ArrayList<>();
 
-
     public CommandVerificationHandler(Processor proc, PreparedCommand pc) {
         this.processor = proc;
         this.preparedCommand = pc;
@@ -248,7 +247,11 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         return CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + cv.getStage();
     }
 
-    void onVerifierFinished(Verifier v, String failureReason) {
+    void onVerifierFinished(Verifier v) {
+        onVerifierFinished(v, null, null);
+    }
+
+    void onVerifierFinished(Verifier v, String failureReason, ParameterValue returnPv) {
         Verifier.State state = v.getState();
         log.debug("Command {} verifier finished: {} result: {}",
                 StringConverter.toString(preparedCommand.getCommandId()), v.cv, state);
@@ -256,7 +259,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
         String histKey = CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + cv.getStage();
         cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, processor.getCurrentTime(),
-                getAckState(v.state), failureReason);
+                getAckState(v.state), failureReason, returnPv);
         TerminationAction ta = null;
         switch (state) {
         case OK:
@@ -275,13 +278,20 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
         if (ta == TerminationAction.SUCCESS) {
             cmdHistPublisher.publishAck(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY,
-                    processor.getCurrentTime(), AckStatus.OK);
+                    processor.getCurrentTime(), AckStatus.OK, null, returnPv);
             stop();
         } else if (ta == TerminationAction.FAIL) {
+
+            if (failureReason == null && returnPv != null) {
+                Value engvalue = returnPv.getEngValue();
+                if (engvalue != null) {
+                    failureReason = "Verifier " + cv.getStage() + " return: " + engvalue;
+                }
+            }
+
             if (failureReason == null) {
                 failureReason = "Verifier " + cv.getStage() + " result: " + state;
             }
-
             cmdHistPublisher.commandFailed(preparedCommand.getCommandId(), processor.getCurrentTime(), failureReason);
             stop();
         }

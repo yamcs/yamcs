@@ -36,6 +36,7 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
     Log log;
     int subscriptionId = -1;
 
+
     ValueChangeVerifier(CommandVerificationHandler cvh, CommandVerifier cv, Log log) {
         super(cvh, cv);
         this.pvc = cv.getParameterValueChange();
@@ -49,7 +50,9 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
         try {
             Parameter param = pvc.getParameterRef().getParameter();
             subscriptionId = prm.addRequest(param, this);
-
+            if (cv.getReturnParameter() != null) {
+                prm.addItemsToRequest(subscriptionId, cv.getReturnParameter());
+            }
             ParameterValue pv = prm.getLastValueFromCache(param);
             if (pv != null) {
                 timer.submit(() -> process(pv, true));
@@ -63,13 +66,17 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
 
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> params) {
-        timer.submit(() -> process(params.get(0), false));
+        timer.submit(() -> params.forEach(pv -> process(pv, false)));
     }
 
     private void process(ParameterValue pv, boolean fromCache) {
         if (pv.getAcquisitionStatus() != AcquisitionStatus.ACQUIRED) {
             log.debug("Ignoring invalid value {}", pv);
             return;
+        }
+
+        if (!fromCache && pv.getParameter() == cv.getReturnParameter()) {
+            returnPv = pv;
         }
 
         Value engValue = pv.getEngValue();
@@ -96,7 +103,7 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
                 boolean ok = delta > 0 ? secondValue - firstValue >= delta : secondValue - firstValue <= delta;
                 if (ok) {
                     unsubscribe();
-                    finishOK();
+                    finished(true, null);
                 }
             });
         }

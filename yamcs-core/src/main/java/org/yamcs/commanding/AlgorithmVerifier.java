@@ -74,7 +74,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         algMgr.deactivateAlgorithm(alg, algCtx);
 
         if (returnValue instanceof Boolean) {
-            finished((Boolean) returnValue, null);
+            finished((Boolean) returnValue);
         } else {
             finished(false, returnValue.toString());
         }

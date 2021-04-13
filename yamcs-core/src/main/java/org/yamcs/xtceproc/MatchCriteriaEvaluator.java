@@ -68,16 +68,23 @@ public interface MatchCriteriaEvaluator {
             this.lastValueCache = lastValueCache;
         }
 
-        public EvaluatorInput(LastValueCache lastValueCache, Map<Argument, ArgumentValue> cmdArgs,
-                ParameterValueList cmdParams) {
+        public EvaluatorInput(ParameterValueList params, LastValueCache lastValueCache,
+                Map<Argument, ArgumentValue> cmdArgs, ParameterValueList cmdParams,
+                ParameterValueList cmdHistParams) {
+            this.params = params;
             this.lastValueCache = lastValueCache;
             this.cmdArgs = cmdArgs;
             this.cmdParams = cmdParams;
+            this.cmdHistParams = cmdHistParams;
+        }
+
+        public EvaluatorInput(LastValueCache lastValueCache, Map<Argument, ArgumentValue> cmdArgs,
+                ParameterValueList cmdParams) {
+            this(null, lastValueCache, cmdArgs, cmdParams, null);
         }
 
         public EvaluatorInput(ParameterValueList params, LastValueCache lastValueCache) {
-            this.params = params;
-            this.lastValueCache = lastValueCache;
+            this(params, lastValueCache, null, null, null);
         }
 
 
@@ -85,12 +92,16 @@ public interface MatchCriteriaEvaluator {
             this.cmdHistParams = cmdHistParams;
         }
 
+        public ParameterValueList getCmdHistParams() {
+            return cmdHistParams;
+        }
+
         public void setParams(ParameterValueList params) {
             this.params = params;
         }
 
-        public ParameterValueList getCmdHistParams() {
-            return cmdHistParams;
+        public ParameterValueList getParams() {
+            return params;
         }
 
         @Override

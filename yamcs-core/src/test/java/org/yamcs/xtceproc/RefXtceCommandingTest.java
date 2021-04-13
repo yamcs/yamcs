@@ -28,6 +28,7 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.LocalParameterManager;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
@@ -262,6 +263,7 @@ public class RefXtceCommandingTest {
     public void testVerifier2OK() throws Exception {
         // set first a value
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
+        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para2"), ValueUtility.getUint32Value(13));
 
         MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier2");
 
@@ -280,6 +282,10 @@ public class RefXtceCommandingTest {
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
 
         verifyCmdHist("Verifier_Complete", "OK");
+        CmdHistEntry che = cmdHistPublisher.getCmdHist(3000);
+        assertEquals("Verifier_Complete_Return", che.key);
+        ParameterValue returnPv = (ParameterValue) che.value;
+        assertEquals(13, returnPv.getEngValue().getUint32Value());
     }
 
     @Test
@@ -414,6 +420,11 @@ public class RefXtceCommandingTest {
 
         @Override
         public void publish(CommandId cmdId, String key, byte[] value) {
+            entries.add(new CmdHistEntry(cmdId, key, value));
+        }
+
+        @Override
+        public void publish(CommandId cmdId, String key, ParameterValue value) {
             entries.add(new CmdHistEntry(cmdId, key, value));
         }
 
