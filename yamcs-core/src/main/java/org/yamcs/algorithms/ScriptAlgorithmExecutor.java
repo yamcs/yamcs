@@ -127,7 +127,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             for (int k = 0; k < numOutputs; k++) {
                 OutputParameter outputParameter = outputList.get(k);
                 OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs + k];
-                if (res.updated && res.value != null) {
+                if (res.updated && (res.value != null || res.rawValue != null)) {
                     ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
                     pv.setGenerationTime(genTime);
@@ -197,25 +197,37 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         ParameterType ptype = parameter.getParameterType();
         DataEncoding de = null;
 
-        if (ptype instanceof BaseDataType) {
-            de = ((BaseDataType) ptype).getEncoding();
-        }
-        if (de != null) {
-            Value v = DataEncodingDecoder.getRawValue(de, binding.value);
-            if (v == null) {
-                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
-                        + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + de);
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            } else {
-                pval.setRawValue(v);
-                parameterTypeProcessor.calibrate(pval);
+        if (binding.rawValue != null) {
+            if (ptype instanceof BaseDataType) {
+                de = ((BaseDataType) ptype).getEncoding();
             }
-        } else {
+
+            if (de != null) {
+                Value rawV = DataEncodingDecoder.getRawValue(de, binding.rawValue);
+                if (rawV == null) {
+                    eventProducer.sendWarning(getAlgorithm().getName(),
+                            "Cannot convert raw value from algorithm output "
+                                    + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + de);
+                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+
+                } else {
+                    pval.setRawValue(rawV);
+                    if (binding.value == null) {
+                        parameterTypeProcessor.calibrate(pval);
+                    }
+                }
+            } else {
+                eventProducer.sendWarning(getAlgorithm().getName(),
+                        "Algorithm provided raw value but the parameter has no data encoding");
+            }
+        }
+
+        if (binding.value != null) {
             Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
             if (v == null) {
                 eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
-                        + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + ptype);
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                    + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + ptype);
+            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             } else {
                 pval.setEngValue(v);
             }
