@@ -234,7 +234,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
         SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
                 .setInstance(yamcsInstance)
                 .setProcessor("realtime")
-                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition"))
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAdditionJs"))
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);

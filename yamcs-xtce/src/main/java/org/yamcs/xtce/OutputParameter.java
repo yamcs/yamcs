@@ -30,6 +30,10 @@ public class OutputParameter implements Serializable {
     }
     
     public String getOutputName() {
+        return outputName == null ? parameter.getName() : outputName;
+    }
+
+    public String getDefinedOutputName() {
         return outputName;
     }
     

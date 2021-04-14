@@ -10,7 +10,7 @@ import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.RawEngValue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentInstanceRef;
@@ -58,26 +58,22 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
 
         for (int k = 0; k < l.size(); k++) {
             InputParameter inputParameter = l.get(k);
-            ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
-            if (pInstance == null) { // this happens when the input references an argument
-                continue;
-            }
+            ParameterValue pval = getParameterValue(currentDelivery, inputParameter);
 
-            // FIXME deal with multiple values of the same parameter in the same delivery
-            ParameterValue pval = currentDelivery.getFirstInserted(pInstance.getParameter());
-
-            if (pval != null && pval.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED) {
-                if (AlgorithmUtils.getLookbackSize(algorithmDef, pInstance.getParameter()) == 0) {
+            if (pval != null) {
+                ParameterInstanceRef pref = inputParameter.getParameterInstance();
+                if (AlgorithmUtils.getLookbackSize(algorithmDef, pref.getParameter()) == 0) {
                     updateInput(k, inputParameter, pval);
                     inputValues.set(k, pval);
                 } else {
-                    ParameterValue historicValue = execCtx.getHistoricValue(pInstance);
+                    ParameterValue historicValue = execCtx.getHistoricValue(pref);
                     if (historicValue != null) {
                         updateInput(k, inputParameter, historicValue);
                         inputValues.set(k, historicValue);
                     }
                 }
             }
+
             if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
                 log.trace("Not running algorithm {} because mandatory input {} is not present",
                         algorithmDef.getName(),
@@ -107,6 +103,28 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         }
         boolean shouldRun = (!skipRun && triggered);
         return shouldRun;
+    }
+
+    private ParameterValue getParameterValue(ParameterValueList currentDelivery, InputParameter inputParameter) {
+        ParameterInstanceRef pref = inputParameter.getParameterInstance();
+        if (pref == null) {// this happens when the inputParameter has a reference to a argument
+            return null;
+        }
+        // FIXME deal with multiple values of the same parameter in the same delivery
+        ParameterValue pval = currentDelivery.getFirstInserted(pref.getParameter());
+        if (pval == null) {
+            return null;
+        }
+        if (pref.getMemberPath() != null) {
+            ParameterValue memberValue = AggregateUtil.extractMember(pval, pref.getMemberPath());
+            if (memberValue == null) {
+                // this can happen for an array which does not have enough elements
+                log.debug("value {} does not have member path required by parameter reference {}",
+                        pval, pref);
+            }
+            pval = memberValue;
+        }
+        return pval;
     }
 
     public synchronized boolean updateArguments(Map<Argument, ArgumentValue> args) {

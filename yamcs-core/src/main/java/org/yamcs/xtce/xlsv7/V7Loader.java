@@ -2030,9 +2030,10 @@ public class V7Loader extends V7LoaderBase {
             String name = getContent(cells, CN_ALGO_NAME);
             String algorithmLanguage = getContent(cells, CN_ALGO_LANGUGAGE);
             if (!"JavaScript".equals(algorithmLanguage) && !"python".equals(algorithmLanguage)
-                    && !"java".equalsIgnoreCase(algorithmLanguage)) {
+                    && !"java".equalsIgnoreCase(algorithmLanguage)
+                    && !"java-expression".equalsIgnoreCase(algorithmLanguage)) {
                 throw new SpreadsheetLoadException(ctx, "Invalid algorithm language '" + algorithmLanguage
-                        + "' specified. Supported are 'JavaScript', 'python' and java (case sensitive)");
+                        + "' specified. Supported are 'JavaScript', 'python', 'java' and 'java-expression'");
             }
 
             String algorithmText = getContent(cells, CN_ALGO_TEXT);

@@ -128,7 +128,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
 
         // Set empty output bindings so that algorithms can write their attributes
         for (OutputParameter outputParameter : algorithmDef.getOutputList()) {
-            String scriptName = outputParameter.getOutputName();
+            String scriptName = outputParameter.getDefinedOutputName();
             if (scriptName == null) {
                 scriptName = outputParameter.getParameter().getName();
             }

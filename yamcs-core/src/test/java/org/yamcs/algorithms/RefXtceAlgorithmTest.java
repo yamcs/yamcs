@@ -88,6 +88,18 @@ public class RefXtceAlgorithmTest {
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
     }
 
+    @Test
+    public void testAvg4() {
+        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/avg4_result"));
+        ByteBuffer buf = ByteBuffer.allocate(6);
+        buf.putFloat(0.28f);
+        buf.putShort((short) 6);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+
+        assertEquals(1, params.size());
+        assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
+    }
+
     List<ParameterValue> subscribe(Parameter... plist) {
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(plist), (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));

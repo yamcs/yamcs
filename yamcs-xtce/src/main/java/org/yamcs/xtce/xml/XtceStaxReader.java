@@ -3964,6 +3964,12 @@ public class XtceStaxReader {
         String tag = startElement.getName().getLocalPart();
 
         String language = readMandatoryAttribute("language", startElement);
+        if (!"JavaScript".equals(language) && !"python".equals(language)
+                && !"java".equalsIgnoreCase(language)
+                && !"java-expression".equalsIgnoreCase(language)) {
+            throw new XtceLoadException(fileName, xmlEvent.getLocation(), "Invalid algorithm language '" + language
+                    + "'. Supported are 'JavaScript', 'python', 'java' and 'java-expression'");
+        }
         algo.setLanguage(language);
 
         while (true) {

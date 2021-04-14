@@ -734,6 +734,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         }
     }
 
+    public long getGenerationTime() {
+        return generationTime;
+    }
+
     public void simulateGap(int apid) {
         AtomicInteger a = seqCount.computeIfAbsent(apid, r -> new AtomicInteger(0));
         a.incrementAndGet();
@@ -753,6 +757,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     protected void doStop() {
         notifyStopped();
     }
+
 
     
 }

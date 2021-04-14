@@ -8,14 +8,12 @@ import org.codehaus.janino.SimpleCompiler;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 import org.yamcs.xtceproc.ParameterTypeUtils;
 
@@ -60,19 +58,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
     @Override
     protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
-
-        ParameterInstanceRef pref = inputParameter.getParameterInstance();
-
-        if (pref.getMemberPath() != null) {
-            ParameterValue memberValue = AggregateUtil.extractMember(newValue, pref.getMemberPath());
-            if (memberValue == null) {
-                // this can happen for an array which does not have enough elements
-                log.debug("value {} does not have member path required by parameter reference {}", newValue, pref);
-                return;
-            }
-            newValue = memberValue;
-        }
-
         Value v = inputParameter.getParameterInstance().useCalibratedValue() ? newValue.getEngValue()
                 : newValue.getRawValue();
 

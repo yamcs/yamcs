@@ -94,9 +94,11 @@ public class AlgorithmManager extends AbstractProcessorService
 
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
 
+    static JavaAlgorithmEngine jae = new JavaAlgorithmEngine();
     static {
         registerScriptEngines();
-        registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
+        registerAlgorithmEngine("Java", jae);
+        registerAlgorithmEngine("java-expression", jae);
     }
 
     /**
@@ -433,6 +435,7 @@ public class AlgorithmManager extends AbstractProcessorService
             if (ctx == globalCtx || activeAlgo.getExecutionContext() == ctx) {
                 boolean shouldRun = activeAlgo.updateParameters(currentDelivery);
                 if (shouldRun) {
+                    log.trace("Running algorithm {}", activeAlgo.getAlgorithm().getName());
                     List<ParameterValue> r = activeAlgo.runAlgorithm(acqTime, genTime);
                     if (r != null) {
                         currentDelivery.addAll(r);

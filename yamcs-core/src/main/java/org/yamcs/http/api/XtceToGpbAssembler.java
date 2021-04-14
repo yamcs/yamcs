@@ -1193,8 +1193,8 @@ public class XtceToGpbAssembler {
     public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
         resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), DetailLevel.SUMMARY));
-        if (xtceOutput.getOutputName() != null) {
-            resultb.setOutputName(xtceOutput.getOutputName());
+        if (xtceOutput.getDefinedOutputName() != null) {
+            resultb.setOutputName(xtceOutput.getDefinedOutputName());
         }
         return resultb.build();
     }

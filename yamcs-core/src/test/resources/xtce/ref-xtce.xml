@@ -57,6 +57,7 @@
 			<xtce:Parameter name="param5" parameterTypeRef="float32" initialValue="3.14" />
 			<xtce:Parameter name="param6" parameterTypeRef="float32" />
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
+			<xtce:Parameter name="avg4_result" parameterTypeRef="float32" />
 			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
 			<xtce:Parameter name="local_para1" parameterTypeRef="uint16">
 				<xtce:ParameterProperties dataSource="local"/>
@@ -118,9 +119,23 @@
                     <xtce:OutputParameterRef parameterRef="param7" outputName="avg"/>
                 </xtce:OutputSet>
             </xtce:CustomAlgorithm>
+            <xtce:CustomAlgorithm name="avg4">
+               <xtce:AlgorithmText language="java-expression">
+                    float m1v = m1.getEngValue().getFloatValue();
+                    float m2v = m2.getEngValue().getUint32Value();
+                    avg.setFloatValue((m1v + m2v) / 2);
+                </xtce:AlgorithmText>
+                <xtce:InputSet>
+                    <xtce:InputParameterInstanceRef parameterRef="param2/m1" inputName="m1" />
+                    <xtce:InputParameterInstanceRef parameterRef="param2/m2" inputName="m2" />
+                </xtce:InputSet>
+                <xtce:OutputSet>
+                    <xtce:OutputParameterRef parameterRef="avg4_result" outputName="avg"/>
+                </xtce:OutputSet>
+            </xtce:CustomAlgorithm>
             <xtce:MathAlgorithm name="copy_param5_into_param6">
                 <xtce:MathOperation outputParameterRef="param6">
-                    <xtce:ParameterInstanceRefOperand parameterRef="param5"/>                    
+                    <xtce:ParameterInstanceRefOperand parameterRef="param5"/>
                     <xtce:TriggerSet>
                          <!--  we use this as a trigger to control it easier from unit tests-->
                          <xtce:OnParameterUpdateTrigger parameterRef="param2"/>

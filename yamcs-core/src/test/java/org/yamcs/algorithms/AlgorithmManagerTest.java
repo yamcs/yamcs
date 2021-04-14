@@ -41,7 +41,6 @@ public class AlgorithmManagerTest {
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
-        // org.yamcs.LoggingUtils.enableLogging();
     }
 
     private XtceDb db;
@@ -68,17 +67,16 @@ public class AlgorithmManagerTest {
         Map<String, Object> config = new HashMap<>();
         config.put("libraries", jslib);
 
-
         algMgr = new AlgorithmManager();
         proc = ProcessorFactory.create("refmdb", "AlgorithmManagerTest",
-                 getPwc(tmGenerator, YConfiguration.emptyConfig()),
-                 getPwc(algMgr, YConfiguration.wrap(config)));
+                getPwc(tmGenerator, YConfiguration.emptyConfig()),
+                getPwc(algMgr, YConfiguration.wrap(config)));
         prm = proc.getParameterRequestManager();
 
     }
 
     static ProcessorServiceWithConfig getPwc(ProcessorService service, YConfiguration config) {
-        return new ProcessorServiceWithConfig(service, service.getClass().getName(), 
+        return new ProcessorServiceWithConfig(service, service.getClass().getName(),
                 service.getClass().getName(), config);
     }
 
@@ -90,7 +88,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testFloatAdd() throws InvalidIdentification {
         Parameter floatPara = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
-        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
+        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionJs");
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(floatPara, floatAddition),
@@ -103,27 +101,50 @@ public class AlgorithmManagerTest {
         verifyEqual(params.get(1), floatAddition, 2.1672918f);
     }
 
-
     @Ignore
     @Test
-    // this can be used to see that the performance of javascript is much worse in some later versions of Java 6
-    // OpenJDK 7 is very fast.
-    public void testJavascriptPerformanceFloatAdd() throws InvalidIdentification {
+    // this can be used to test the performance of a very simple addition algorithm
+    // to do that, you can comment in/out the right version of the parameter
+    //
+    // The number at the end includes the time it takes to process the packet, if you want to compute that time,
+    // comment out the AlgoFloatAddition and comment in the FloatPara1_1_3, this is a parameter part of the packet
+    // Results i7-8650U java 11:
+    // no algorithm: 1500 nsec/iteration
+    // java-expression: 1900 nsec/iteration
+    // python: 5000 nsec/iteration
+    // javascript: 23000 nsec/iteration
+    public void testPerformanceFloatAdd() throws InvalidIdentification {
         List<Parameter> paraList = new ArrayList<>();
-        paraList.add(prm.getParameter("/REFMDB/SUBSYS1/AlgoYprFloat"));
+
         paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
+
+        // paraList.add(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionPy"));
+        // paraList.add(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionJe"));
+        paraList.add(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionJs"));
+
+        // paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_3"));
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(paraList, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
-        long t0 = System.currentTimeMillis();
+        long t0 = System.nanoTime();
+
+        int m = 10;
         int n = 100000;
-        for (int i = 0; i < n; i++) {
-            tmGenerator.generate_PKT1_1();
+        for (int j = 0; j < m; j++) {
+            for (int i = 0; i < n; i++) {
+                tmGenerator.generate_PKT1_1();
+            }
+            if (j == 0) {
+                System.out.println(params.get(1));
+            }
+            assertEquals(2 * n, params.size());
+            params.clear();
         }
-        long t1 = System.currentTimeMillis();
-        assertEquals(2 * n, params.size());
+        long t1 = System.nanoTime();
+        System.out.println("time: " + (t1 - t0) / (n * m) + " nsec/iteration");
+
     }
 
     @Test
@@ -447,7 +468,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testTrace() throws InvalidIdentification {
         Parameter floatPara = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
-        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
+        Parameter floatAddition = db.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionJs");
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(floatPara, floatAddition),
@@ -484,7 +505,6 @@ public class AlgorithmManagerTest {
         algMgr.disableTracing(floatAddAlgo);
         assertNull(algMgr.getTrace(floatAddAlgo));
     }
-
 
     void verifyEqual(ParameterValue pv, Parameter p, float v) {
         assertEquals(p, pv.getParameter());

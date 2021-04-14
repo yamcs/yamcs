@@ -1209,7 +1209,7 @@ public class XtceAssembler {
             for (OutputParameter outp : algorithm.getOutputList()) {
                 doc.writeStartElement("OutputParameterRef");
                 doc.writeAttribute("parameterRef", getNameReference(outp.getParameter()));
-                doc.writeAttribute("outputName", outp.getOutputName());
+                doc.writeAttribute("outputName", outp.getDefinedOutputName());
                 doc.writeEndElement();
             }
             doc.writeEndElement();// OutputSet

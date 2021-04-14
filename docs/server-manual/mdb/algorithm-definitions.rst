@@ -5,7 +5,8 @@ Algorithms are user scripts that can perform arbitrary logic on a set of incomin
 
 Output parameters are very much identical to regular parameters. They can be calibrated (in which case the algorithm's direct outcome is considered the raw value), and they can also be subject to alarm generation.
 
-Algorithms can be written in any JSR-223 scripting language. By default Yamcs ships with support for JavaScript algorithms since the standard Oracle Java distribution contains the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
+Algorithms can be written in JavaScript, Python or Java. By default Yamcs ships with support for JavaScript algorithms since the standard Oracle Java distribution contains the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
+
 
 Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes are made available:
 
@@ -92,7 +93,7 @@ Note that some algorithms (e.g. command verifiers) need to return a value.
 Python algorithms
 -----------------
 
-This works very similarly with the JavaScript algorithms, The thing to pay attention is the indentation. The algorithm text wihch is specified in the spreadsheet will be automatically indented with 4 characters:
+This works very similarly with the JavaScript algorithms. The thing to pay attention is the indentation. The algorithm text wihch is specified in the spreadsheet will be automatically indented with 4 characters:
 
 .. code-block:: python
 
@@ -101,10 +102,40 @@ This works very similarly with the JavaScript algorithms, The thing to pay atten
     }
 
 
+Java expression algorithms
+--------------------------
+
+This works similarly with the JavaScript and Python algorithms: a java class is generated containing the user defined algorithm text. It offers better peformance than the scripting algorithms because no script engine is involved.
+
+.. code-block:: java
+
+    ... imports
+    ... class declaration
+    private void execute_java_expr(ParameterValue input0, ParameterValue input1..., ParameterValue output0, ParameterValue output1...) {
+        <algorithm-text>
+    }
+
+The first variables are the inputs, followed by the outputs.
+The java classe :javadoc:`org.yamcs.parameter.ParameterValue` has to be used to get the values of the inputs (e.g. ``getEngValue()`` will give the engineering value) and set the value of the outputs. For example the text to add two inputs ``pv0`` and ``pv1`` into ``AlgoFloatAdditionJe`` could be:
+
+.. code-block:: java
+
+    float f0 = pv0.getEngValue().getFloatValue();
+    float f1 = pv1.getEngValue().getFloatValue();
+    AlgoFloatAdditionJe.setFloatValue(f0 + f1);
+
+The ``getFloatValue()`` in the code above is because the engineering type is Float with sizeInBits=32. If the wrong get is used on a  :javadoc:`org.yamcs.parameter.Value`, an exceptio will be thrown by the algorithm (should be visible in the yamcs-web as well as in the logs).
+
+The algorithm can leave the output values unset; in that case the values will not be used further.
+
+In case the algorithm is used for a command verifier (see below), it has to return a value. A boolean value of ``true`` (in fact java ``Boolean.TRUE`` object) means that the verifier has succeeded, ``null`` means that the verifier is still pending. Any other value means that the verifier has failed; the object will be converted to string and used as an explanation for the failure.
+
+    
 Java algorithms
 ---------------
 
-The algorithm text is a class name with optionally parantheses enclosed string that is parsed into an object by a yaml parser.
+The algorithm text is a class name with optionally parantheses enclosed string that is parsed into an object by a yaml parser. Unlike the java-expression algorithms, the Java algorithms require the user to pre-compile the classes into a jar and place it on the server in the lib/ext directory.
+
 Yamcs will locate the given class which must be implementing the :javadoc:`org.yamcs.algorithms.AlgorithmExecutor` interface and will create an object with a constructor with three parameters:
 
 .. code-block:: java
@@ -131,7 +162,7 @@ Command verifier algorithms are special algorithms associated to the command ver
 
 These algorithms are special as they can use as input variables not only parameters but also command arguments and command history events. These are specified by using "/yamcs/cmd/arg/" and "/yamcs/cmdHist" prefix respectively.
 
-In addition these algorithms may return a boolean value (whereas the normal algorithms only have to write to output variables). The returned value is used to indicate if the verifier has succeeded or failed. No return value will mean that the verifier is still pending.
+In addition these algorithms have to return a boolean value (whereas the normal algorithms only have to write to output variables). The returned value is used to indicate if the verifier has succeeded or failed. No return value will mean that the verifier is still pending.
 
 
 Data Decoding algorithms
