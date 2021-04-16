@@ -45,6 +45,9 @@ export class Hex implements AfterViewInit, OnChanges {
   ngOnChanges() {
     const raw = atob(this.base64String);
     this.model = new HexModel(raw);
+    this.highlight = undefined;
+    this.selection = undefined;
+    this.pressStart = undefined;
     this.dirty = true;
   }
 
