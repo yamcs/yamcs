@@ -78,7 +78,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             process(pval.getGenerationTime(), pval.getEngValue().getUint64Value(), pval.getExpireMills());
             break;
         default:
-            log.warn("Unexpected value type {}", pval.getEngValue().getType());
+            process(pval.getGenerationTime(), Double.NaN, pval.getExpireMills());
         }
     }
 
@@ -138,7 +138,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             }
             break;
         default:
-            log.debug("Ignoring value type {}", engType);
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], Double.NaN, expireMillis);
+            }
         }
     }
 
