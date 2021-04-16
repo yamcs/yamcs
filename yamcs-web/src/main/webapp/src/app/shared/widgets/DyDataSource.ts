@@ -126,10 +126,10 @@ export class DyDataSource {
         this.visibleStop = stop;
         this.minValue = undefined;
         this.maxValue = undefined;
-        const dySamples = this.processSamples(results[0]);
+        let dySamples = this.processSamples(results[0]);
         const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
         for (let i = 1; i < this.parameters$.value.length; i++) {
-          this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
+          dySamples = this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
           // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
         }
         this.plotBuffer.setArchiveData(dySamples, dyAnnotations);
@@ -290,11 +290,40 @@ export class DyDataSource {
    * with the same date range.
    */
   private mergeSeries(samples1: DySample[], samples2: DySample[]) {
-    if (samples1.length !== samples2.length) {
-      throw new Error('Cannot merge two sample arrays of unequal length');
+    const merged: DySample[] = [];
+    let index1 = 0;
+    let index2 = 0;
+    let prev1: CustomBarsValue | null = null;
+    let prev2: CustomBarsValue | null = null;
+    while (index1 < samples1.length || index2 < samples2.length) {
+      const top1 = index1 < samples1.length ? samples1[index1] : null;
+      const top2 = index2 < samples2.length ? samples2[index2] : null;
+      if (top1 && top2) {
+        if (top1[0].getTime() === top2[0].getTime()) {
+          prev1 = top1[1];
+          prev2 = top2[1];
+          merged.push([top1[0], prev1, prev2]);
+          index1++;
+          index2++;
+        } else if (top1[0].getTime() < top2[0].getTime()) {
+          prev1 = top1[1];
+          merged.push([top1[0], prev1, prev2]);
+          index1++;
+        } else {
+          prev2 = top2[1];
+          merged.push([top2[0], prev1, prev2]);
+          index2++;
+        }
+      } else if (top1) {
+        prev1 = top1[1];
+        merged.push([top1[0], prev1, prev2]);
+        index1++;
+      } else if (top2) {
+        prev2 = top2[1];
+        merged.push([top2[0], prev1, prev2]);
+        index2++;
+      }
     }
-    for (let i = 0; i < samples1.length; i++) {
-      samples1[i].push(samples2[i][1]);
-    }
+    return merged;
   }
 }
