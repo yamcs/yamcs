@@ -145,6 +145,10 @@ message GetParameterSamplesRequest {
   // Disable loading of parameters from the parameter cache. Default: ``false``.
   optional bool norealtime = 6;
   
+  // Consider the raw value instead of the engineering value.
+  // Default is to use the engineering value 
+  optional bool useRawValue = 9;
+
   // The name of the processor from which to use the parameter cache.
   // Default: ``realtime``.
   optional string processor = 7;

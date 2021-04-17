@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -30,18 +31,24 @@ public class Downsampler implements Consumer<ParameterValueArray> {
     private TreeMap<Long, Sample> samplesByTime = new TreeMap<>();
     private long start;
     private long stop;
+    private boolean useRawValue;
     private long lastSampleTime;
 
     public Downsampler(long start, long stop) {
-        this(start, stop, DEFAULT_SAMPLE_COUNT);
+        this(start, stop, DEFAULT_SAMPLE_COUNT, false);
     }
 
     public Downsampler(long start, long stop, int sampleCount) {
+        this(start, stop, sampleCount, false);
+    }
+
+    public Downsampler(long start, long stop, int sampleCount, boolean useRawValue) {
         if (start > stop) {
             throw new IllegalArgumentException("start (" + start + ") should be smaller than stop (" + stop + ")");
         }
         this.start = start;
         this.stop = stop;
+        this.useRawValue = useRawValue;
 
         // Initialize intervals
         long step = (stop - start) / sampleCount;
@@ -54,28 +61,29 @@ public class Downsampler implements Consumer<ParameterValueArray> {
     }
 
     public void process(org.yamcs.parameter.ParameterValue pval) {
-        if (pval.getEngValue() == null) {
+        Value value = useRawValue ? pval.getEngValue() : pval.getRawValue();
+        if (value == null) {
             return;
         }
 
-        switch (pval.getEngValue().getType()) {
+        switch (value.getType()) {
         case DOUBLE:
-            process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue(), pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getDoubleValue(), pval.getExpireMills());
             break;
         case FLOAT:
-            process(pval.getGenerationTime(), pval.getEngValue().getFloatValue(), pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getFloatValue(), pval.getExpireMills());
             break;
         case SINT32:
-            process(pval.getGenerationTime(), pval.getEngValue().getSint32Value(), pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getSint32Value(), pval.getExpireMills());
             break;
         case SINT64:
-            process(pval.getGenerationTime(), pval.getEngValue().getSint64Value(), pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getSint64Value(), pval.getExpireMills());
             break;
         case UINT32:
-            process(pval.getGenerationTime(), pval.getEngValue().getUint32Value() & 0xFFFFFFFFL, pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getUint32Value() & 0xFFFFFFFFL, pval.getExpireMills());
             break;
         case UINT64:
-            process(pval.getGenerationTime(), pval.getEngValue().getUint64Value(), pval.getExpireMills());
+            process(pval.getGenerationTime(), value.getUint64Value(), pval.getExpireMills());
             break;
         default:
             process(pval.getGenerationTime(), Double.NaN, pval.getExpireMills());
@@ -84,7 +92,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
 
     @Override
     public void accept(ParameterValueArray t) {
-        ValueArray va = t.getEngValues();
+        ValueArray va = useRawValue ? t.getRawValues() : t.getEngValues();
         long[] timestamps = t.getTimestamps();
         ParameterStatus[] statuses = t.getStatuses();
 
