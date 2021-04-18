@@ -3,7 +3,7 @@ import { NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '..
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { CustomBarsValue, DySample } from './dygraphs';
+import { CustomBarsValue, DySample, DySeries } from './dygraphs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
@@ -125,10 +125,11 @@ export class DyDataSource {
         this.visibleStop = stop;
         this.minValue = undefined;
         this.maxValue = undefined;
-        let dySamples = this.processSamples(results[0]);
-        for (let i = 1; i < this.parameters$.value.length; i++) {
-          dySamples = this.mergeSeries(dySamples, this.processSamples(results[i]));
+        const dySeries = [];
+        for (let i = 0; i < results.length; i++) {
+          dySeries[i] = this.processSamples(results[i]);
         }
+        let dySamples = this.mergeSeries(...dySeries);
         this.plotBuffer.setArchiveData(dySamples);
         this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
@@ -244,45 +245,54 @@ export class DyDataSource {
   }
 
   /**
-   * Merges two DySample[] series together. This assumes that timestamps between
+   * Merges two or more DySample[] series together. This assumes that timestamps between
    * the two series are identical, which is the case if server requests are done
    * with the same date range.
    */
-  private mergeSeries(samples1: DySample[], samples2: DySample[]) {
-    const merged: DySample[] = [];
-    let index1 = 0;
-    let index2 = 0;
-    let prev1: CustomBarsValue | null = null;
-    let prev2: CustomBarsValue | null = null;
-    while (index1 < samples1.length || index2 < samples2.length) {
-      const top1 = index1 < samples1.length ? samples1[index1] : null;
-      const top2 = index2 < samples2.length ? samples2[index2] : null;
-      if (top1 && top2) {
-        if (top1[0].getTime() === top2[0].getTime()) {
-          prev1 = top1[1];
-          prev2 = top2[1];
-          merged.push([top1[0], prev1, prev2]);
+  private mergeSeries(...series: DySeries[]) {
+    if (series.length === 1) {
+      return series[0];
+    }
+    let result: DySample[] = series[0];
+    for (let i = 1; i < series.length; i++) {
+      const merged: DySample[] = [];
+      let index1 = 0;
+      let index2 = 0;
+      let prev1: CustomBarsValue[] = [];
+      let prev2: CustomBarsValue | null = null;
+      const series1 = result;
+      const series2 = series[i];
+      while (index1 < series1.length || index2 < series2.length) {
+        const top1 = index1 < series1.length ? series1[index1] : null;
+        const top2 = index2 < series2.length ? series2[index2] : null;
+        if (top1 && top2) {
+          if (top1[0].getTime() === top2[0].getTime()) {
+            prev1 = top1.slice(1) as CustomBarsValue[];
+            prev2 = top2[1];
+            merged.push([top1[0], ...prev1, prev2] as any);
+            index1++;
+            index2++;
+          } else if (top1[0].getTime() < top2[0].getTime()) {
+            prev1 = top1.slice(1) as CustomBarsValue[];
+            merged.push([top1[0], ...prev1, prev2] as any);
+            index1++;
+          } else {
+            prev2 = top2[1];
+            merged.push([top2[0], ...prev1, prev2] as any);
+            index2++;
+          }
+        } else if (top1) {
+          prev1 = top1.slice(1) as CustomBarsValue[];
+          merged.push([top1[0], ...prev1, prev2] as any);
           index1++;
-          index2++;
-        } else if (top1[0].getTime() < top2[0].getTime()) {
-          prev1 = top1[1];
-          merged.push([top1[0], prev1, prev2]);
-          index1++;
-        } else {
+        } else if (top2) {
           prev2 = top2[1];
-          merged.push([top2[0], prev1, prev2]);
+          merged.push([top2[0], ...prev1, prev2] as any);
           index2++;
         }
-      } else if (top1) {
-        prev1 = top1[1];
-        merged.push([top1[0], prev1, prev2]);
-        index1++;
-      } else if (top2) {
-        prev2 = top2[1];
-        merged.push([top2[0], prev1, prev2]);
-        index2++;
       }
+      result = merged;
     }
-    return merged;
+    return result;
   }
 }
