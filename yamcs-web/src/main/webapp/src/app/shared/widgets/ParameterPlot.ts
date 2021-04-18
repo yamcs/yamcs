@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Input, QueryList, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
@@ -47,18 +47,6 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   width = '100%';
 
-  @Input() lightAxisBackgroundColor = '#fafafa';
-  @Input() lightAxisLineColor = '#e1e1e1';
-  @Input() lightGridLineColor = '#f2f2f2';
-  @Input() lightPlotAreaBackgroundColor = '#fff';
-  @Input() lightHighlightColor = '#e1e1e1';
-
-  axisBackgroundColor = this.lightAxisBackgroundColor;
-  axisLineColor = this.lightAxisLineColor;
-  gridLineColor = this.lightGridLineColor;
-  plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
-  highlightColor = this.lightHighlightColor;
-
   @Input()
   removableSeries = false;
 
@@ -73,6 +61,18 @@ export class ParameterPlot implements AfterViewInit {
 
   @Input()
   crosshair: 'horizontal' | 'vertical' | 'both' | 'none' = 'vertical';
+
+  axisBackgroundColor = '#fafafa';
+  axisLineColor = '#e1e1e1';
+  gridLineColor = '#f2f2f2';
+  plotAreaBackgroundColor = '#fff';
+  highlightColor = '#e1e1e1';
+
+  @Output()
+  onVisibleRange = new EventEmitter<[Date, Date]>();
+
+  @Output()
+  onManualRangeChange = new EventEmitter<void>();
 
   @ContentChildren(ParameterSeries)
   seriesComponents: QueryList<ParameterSeries>;
@@ -119,6 +119,7 @@ export class ParameterPlot implements AfterViewInit {
           this.dataSource.visibleStart.getTime(),
           this.dataSource.visibleStop.getTime(),
         ];
+        this.onVisibleRange.emit([this.dataSource.visibleStart, this.dataSource.visibleStop]);
       }
       if (data.valueRange[0] !== null && data.valueRange[1] !== null) {
         dyOptions.axes = {
@@ -152,7 +153,6 @@ export class ParameterPlot implements AfterViewInit {
         };
       }
       this.dygraph.updateOptions(dyOptions);
-      this.dygraph.setAnnotations(data.annotations);
     });
 
     /*
@@ -160,11 +160,6 @@ export class ParameterPlot implements AfterViewInit {
      */
     const stop = this.stop;
     const start = subtractDuration(stop, this.duration);
-
-    // Add some padding to the right
-    const delta = stop.getTime() - start.getTime();
-    stop.setTime(stop.getTime() + 0.1 * delta);
-
     this.dataSource.updateWindow(start, stop, [null, null]);
     this.applyTheme();
   }
@@ -248,6 +243,7 @@ export class ParameterPlot implements AfterViewInit {
 
           const yAxisRange = g.yAxisRanges()[0];
           this.dataSource.updateWindow(start, stop, yAxisRange);
+          this.onManualRangeChange.emit();
 
           this.disableDataReload = false;
         },
@@ -499,14 +495,6 @@ export class ParameterPlot implements AfterViewInit {
   }
 
   private applyTheme() {
-    // Update model
-    this.axisBackgroundColor = this.lightAxisBackgroundColor;
-    this.axisLineColor = this.lightAxisLineColor;
-    this.gridLineColor = this.lightGridLineColor;
-    this.plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
-    this.highlightColor = this.lightHighlightColor;
-
-    // Apply model
     if (this.dygraph) {
       this.dygraph.updateOptions({
         axisLineColor: this.axisLineColor,
@@ -554,6 +542,14 @@ export class ParameterPlot implements AfterViewInit {
     const start = new Date(xAxisRange[0]);
     const stop = new Date(xAxisRange[1]);
     this.dataSource.updateWindow(start, stop, [null, null]);
+    this.onManualRangeChange.emit();
+  }
+
+  updateWindowOnly(start: Date, stop: Date) {
+    this.dataSource.updateWindowOnly(start, stop);
+    this.dygraph.updateOptions({
+      dateWindow: [start, stop]
+    });
   }
 
   private adjustAxis(axis: any, zoomInPercentage: number, bias: number) {

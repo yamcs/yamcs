@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Parameter } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -25,6 +25,7 @@ export class ParameterChartTab implements OnDestroy {
   parameter$: Promise<Parameter>;
   dataSource: DyDataSource;
   missionTime: Date;
+  private timeSubscription: Subscription;
 
   range$ = new BehaviorSubject<string>('PT15M');
   customStart$ = new BehaviorSubject<Date | null>(null);
@@ -45,17 +46,30 @@ export class ParameterChartTab implements OnDestroy {
       parameter.qualifiedName = qualifiedName;
       this.dataSource.addParameter(parameter);
     });
+
+    // Autoscroll (don't care about data, that is triggered by plot buffer)
+    this.timeSubscription = yamcs.time$.subscribe(() => {
+      if (this.range$.value !== 'CUSTOM') {
+        const stop = this.yamcs.getMissionTime();
+        const start = subtractDuration(stop, this.range$.value);
+        this.plot?.updateWindowOnly(start, stop);
+      }
+    });
+  }
+
+  onVisibleRange(xRange: [Date, Date]) {
+    this.customStart$.next(xRange[0]);
+    this.customStop$.next(xRange[1]);
+  }
+
+  onManualRangeChange() {
+    this.range$.next('CUSTOM');
   }
 
   loadLatest(range: string) {
     this.range$.next(range);
     const stop = this.yamcs.getMissionTime();
     const start = subtractDuration(stop, range);
-
-    // Add some padding to the right
-    const delta = stop.getTime() - start.getTime();
-    stop.setTime(stop.getTime() + 0.05 * delta);
-
     this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
@@ -104,6 +118,9 @@ export class ParameterChartTab implements OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.timeSubscription) {
+      this.timeSubscription.unsubscribe();
+    }
     this.dataSource.disconnect();
   }
 }

@@ -15,7 +15,7 @@ export class MemberPathPipe implements PipeTransform {
     if (parameter.path) {
       for (let i = 0; i < parameter.path.length; i++) {
         const el = parameter.path[i];
-        if (i === 0 || el.startsWith('[')) {
+        if (el.startsWith('[')) {
           result += el;
         } else {
           result += '.' + el;

@@ -1,9 +1,9 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Alarm, NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
+import { NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
+import { CustomBarsValue, DySample } from './dygraphs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
@@ -20,7 +20,6 @@ export class DyDataSource {
   data$ = new BehaviorSubject<PlotData>({
     valueRange: [null, null],
     samples: [],
-    annotations: [],
   });
   minValue?: number;
   maxValue?: number;
@@ -48,7 +47,6 @@ export class DyDataSource {
         const plotData = this.plotBuffer.snapshot();
         this.data$.next({
           samples: plotData.samples,
-          annotations: plotData.annotations,
           valueRange: plotData.valueRange,
         });
         this.plotBuffer.dirty = false;
@@ -87,6 +85,11 @@ export class DyDataSource {
     return this.updateWindow(this.visibleStart, this.visibleStop, [null, null]);
   }
 
+  updateWindowOnly(start: Date, stop: Date) {
+    this.visibleStart = start;
+    this.visibleStop = stop;
+  }
+
   updateWindow(
     start: Date,
     stop: Date,
@@ -106,10 +109,6 @@ export class DyDataSource {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
-        }),
-        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, {
-          start: loadStart.toISOString(),
-          stop: loadStop.toISOString(),
         })
       );
     }
@@ -127,12 +126,10 @@ export class DyDataSource {
         this.minValue = undefined;
         this.maxValue = undefined;
         let dySamples = this.processSamples(results[0]);
-        const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
         for (let i = 1; i < this.parameters$.value.length; i++) {
-          dySamples = this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
-          // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
+          dySamples = this.mergeSeries(dySamples, this.processSamples(results[i]));
         }
-        this.plotBuffer.setArchiveData(dySamples, dyAnnotations);
+        this.plotBuffer.setArchiveData(dySamples);
         this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
       }
@@ -244,44 +241,6 @@ export class DyDataSource {
       }
     }
     return dySamples;
-  }
-
-  private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
-    const dyAnnotations: DyAnnotation[] = [];
-    /*for (const alarm of alarms) {
-      const t = new Date();
-      t.setTime(Date.parse(alarm.triggerValue.generationTime));
-      const value = convertValueToNumber(alarm.triggerValue.engValue);
-      if (value !== null) {
-        const sample: DySample = [t, [value, value, value]];
-        const idx = this.findInsertPosition(t, dySamples);
-        dySamples.splice(idx, 0, sample);
-        dyAnnotations.push({
-          series: this.parameters$.value[0].qualifiedName,
-          x: t.getTime(),
-          shortText: 'A',
-          text: 'Alarm triggered at ' + alarm.triggerValue.generationTime,
-          tickHeight: 1,
-          cssClass: 'annotation',
-          tickColor: 'red',
-          // attachAtBottom: true,
-        });
-      }
-    }*/
-    return dyAnnotations;
-  }
-
-  private findInsertPosition(t: Date, dySamples: DySample[]) {
-    if (!dySamples.length) {
-      return 0;
-    }
-
-    for (let i = 0; i < dySamples.length; i++) {
-      if (dySamples[i][0] > t) {
-        return i;
-      }
-    }
-    return dySamples.length - 1;
   }
 
   /**
