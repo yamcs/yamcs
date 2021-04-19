@@ -291,10 +291,10 @@ public class XtceToGpbAssembler {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
                 b.setDynamicCount(
-                        toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.LINK));
+                        toParameterInfo(val.getParameterInstanceRef().getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setDynamicCount(
-                        toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.FULL));
+                        toParameterInfo(val.getParameterInstanceRef().getParameter(), DetailLevel.FULL));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());

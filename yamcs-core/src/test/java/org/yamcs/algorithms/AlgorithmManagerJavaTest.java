@@ -26,6 +26,7 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
@@ -113,7 +114,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
@@ -137,7 +138,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
@@ -165,7 +166,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 

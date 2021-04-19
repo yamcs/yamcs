@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
@@ -19,6 +18,7 @@ import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.TriggerSetType;
+import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
@@ -29,6 +29,7 @@ import org.yamcs.xtce.TriggerSetType;
 public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected AlgorithmExecutionContext execCtx;
     final protected Algorithm algorithmDef;
+    boolean firstUpdate = true;
 
     static protected final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
 
@@ -48,29 +49,29 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     /**
      * update the parameters and return true if the algorithm should run
      * 
-     * @param currentDelivery
+     * @param processingData
      * @return true if the algorithm should run
      */
     @Override
-    public synchronized boolean updateParameters(ParameterValueList currentDelivery) {
+    public synchronized boolean update(ProcessingData processingData) {
+
         boolean skipRun = false;
         List<InputParameter> l = algorithmDef.getInputList();
 
         for (int k = 0; k < l.size(); k++) {
             InputParameter inputParameter = l.get(k);
-            ParameterValue pval = getParameterValue(currentDelivery, inputParameter);
-
-            if (pval != null) {
-                ParameterInstanceRef pref = inputParameter.getParameterInstance();
-                if (AlgorithmUtils.getLookbackSize(algorithmDef, pref.getParameter()) == 0) {
+            ParameterInstanceRef pref = inputParameter.getParameterInstance();
+            if (pref == null) {
+                ArgumentValue argval = getInputArgument(processingData, inputParameter.getArgumentRef());
+                if (argval != null) {
+                    updateInputArgument(k, inputParameter, argval);
+                    inputValues.set(k, argval);
+                }
+            } else {
+                ParameterValue pval = getInputParameter(processingData, pref);
+                if (pval != null) {
                     updateInput(k, inputParameter, pval);
                     inputValues.set(k, pval);
-                } else {
-                    ParameterValue historicValue = execCtx.getHistoricValue(pref);
-                    if (historicValue != null) {
-                        updateInput(k, inputParameter, historicValue);
-                        inputValues.set(k, historicValue);
-                    }
                 }
             }
 
@@ -81,7 +82,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 skipRun = true;
             }
         }
-
+        firstUpdate = false;
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered = false;
         TriggerSetType triggerSet = algorithmDef.getTriggerSet();
@@ -89,8 +90,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             triggered = true;
         } else {
             for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
-                ParameterValue pval = currentDelivery.getFirstInserted(trigger.getParameter());
-                if (pval != null) {
+                if (processingData.containsUpdate(trigger.getParameter())) {
                     triggered = true;
                     break;
                 }
@@ -105,16 +105,18 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return shouldRun;
     }
 
-    private ParameterValue getParameterValue(ParameterValueList currentDelivery, InputParameter inputParameter) {
-        ParameterInstanceRef pref = inputParameter.getParameterInstance();
-        if (pref == null) {// this happens when the inputParameter has a reference to a argument
-            return null;
+    public ParameterValue getInputParameter(ProcessingData processingData, ParameterInstanceRef pref) {
+        ParameterValue pval = null;
+        Parameter p = pref.getParameter();
+        if (p.isCommandParameter()) {
+            pval = processingData.getCmdParameterInstance(p, pref.getInstance(), firstUpdate);
+        } else {
+            pval = processingData.getTmParameterInstance(p, pref.getInstance(), firstUpdate);
         }
-        // FIXME deal with multiple values of the same parameter in the same delivery
-        ParameterValue pval = currentDelivery.getFirstInserted(pref.getParameter());
         if (pval == null) {
             return null;
         }
+
         if (pref.getMemberPath() != null) {
             ParameterValue memberValue = AggregateUtil.extractMember(pval, pref.getMemberPath());
             if (memberValue == null) {
@@ -127,41 +129,22 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return pval;
     }
 
-    public synchronized boolean updateArguments(Map<Argument, ArgumentValue> args) {
-        boolean skipRun = false;
-        List<InputParameter> l = algorithmDef.getInputList();
-
-        for (int k = 0; k < l.size(); k++) {
-            InputParameter inputParameter = l.get(k);
-            ArgumentInstanceRef argRef = inputParameter.getArgumentRef();
-            if (argRef == null) {
-                if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
-                    log.trace("Not running algorithm {} because mandatory input {} is not present",
-                            algorithmDef.getName(),
-                            inputParameter.getInputName());
-                    skipRun = true;
-                }
-                continue;
-            }
-
-            ArgumentValue aval = args.get(argRef.getArgument());
-            if (aval == null) {
-                log.error("Cannot find value for argument " + argRef.getArgument());
-                continue;
-            }
-            updateInputArgument(k, inputParameter, aval);
-            inputValues.set(k, aval);
-
+    public ArgumentValue getInputArgument(ProcessingData processingData, ArgumentInstanceRef ref) {
+        ArgumentValue aval = processingData.getCmdArgument(ref.getArgument());
+        if (aval == null) {
+            return null;
         }
-        boolean triggered = algorithmDef.getTriggerSet() == null;
 
-        if (!skipRun && !triggered && log.isTraceEnabled()) {
-            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
-                    algorithmDef.getName(),
-                    algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
+        if (ref.getMemberPath() != null) {
+            ArgumentValue memberValue = AggregateUtil.extractMember(aval, ref.getMemberPath());
+            if (memberValue == null) {
+                // this can happen for an array which does not have enough elements
+                log.debug("value {} does not have member path required by parameter reference {}",
+                        aval, ref);
+            }
+            aval = memberValue;
         }
-        boolean shouldRun = (!skipRun && triggered);
-        return shouldRun;
+        return aval;
     }
 
     /**

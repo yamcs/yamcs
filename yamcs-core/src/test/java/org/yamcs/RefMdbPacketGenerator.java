@@ -116,9 +116,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     private long generationTime = TimeEncoding.INVALID_INSTANT;
     TmSink tmSink;
-    
+
     SequenceContainer rootSc;
-    
+
     public RefMdbPacketGenerator(String instance, String name, String spec) {
 
     }
@@ -127,20 +127,18 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public void init(Processor proc,  YConfiguration config, Object spec) {
+    public void init(Processor proc, YConfiguration config, Object spec) {
         this.tmProcessor = proc.getTmProcessor();
         proc.setPacketProvider(this);
         rootSc = proc.getXtceDb().getRootSequenceContainer();
-        if(rootSc == null) {
+        if (rootSc == null) {
             throw new ConfigurationException("Cannot find the root sequence container");
         }
     }
 
-
     public void setTmSink(TmSink tmSink) {
         this.tmSink = tmSink;
     }
-
 
     public byte[] generate_PKT1_1() {
         ByteBuffer bb = ByteBuffer.allocate(pkt1_1Length);
@@ -618,7 +616,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     // ########################### PKT8
     public final int para_pkt8_count = 150;
-    public final int pkt8Length = headerLength + 1 + 7 * para_pkt8_count+9*4;
+    public final int pkt8Length = headerLength + 1 + 7 * para_pkt8_count + 9 * 4;
 
     public byte[] generate_PKT8() {
         ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
@@ -631,7 +629,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
             bb.putFloat(i / 2.0f);
         }
 
-        //3x3 matrix
+        // 3x3 matrix
         for (int i = 0; i < 9; i++) {
             bb.putFloat(i);
         }
@@ -758,6 +756,4 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         notifyStopped();
     }
 
-
-    
 }

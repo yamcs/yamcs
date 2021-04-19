@@ -6,11 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoggingUtils {
-    /**
-     * use to enable logging during junit tests debugging. 
-     * Do not leave it enabled as travis will kill the tests if it outputs too much
-     */
-    public static void enableLogging(Level level) {
+
+    public static void configureLogging(Level level) {
         Logger logger = Logger.getLogger("org.yamcs");
         logger.setLevel(level);
         ConsoleHandler ch = null;
@@ -26,5 +23,12 @@ public class LoggingUtils {
             Logger.getLogger("").addHandler(ch);
         }
         ch.setLevel(level);
+    }
+
+    /**
+     * use to enable logging during junit tests debugging.
+     */
+    public static void enableTracing() {
+        configureLogging(Level.ALL);
     }
 }

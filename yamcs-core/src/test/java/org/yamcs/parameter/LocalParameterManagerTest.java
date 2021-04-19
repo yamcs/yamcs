@@ -24,11 +24,12 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class LocalParameterManagerTest {
     XtceDb xtceDb;
-    MyParamConsumer consumer;
+    MyParamProcessor paraProc;
     LocalParameterManager localParamMgr;
     Parameter p1, p2, p4, p7, p9;
 
@@ -44,9 +45,9 @@ public class LocalParameterManagerTest {
         localParamMgr = new LocalParameterManager();
         localParamMgr.init("test");
         xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
-        consumer = new MyParamConsumer();
+        paraProc = new MyParamProcessor();
         localParamMgr.init(xtceDb);
-        localParamMgr.setParameterListener(consumer);
+        localParamMgr.setParameterProcessor(paraProc);
 
         p1 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalPara1");
         p2 = localParamMgr.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara2").build());
@@ -61,19 +62,19 @@ public class LocalParameterManagerTest {
 
     @Test
     public void test() throws Exception {
-        assertFalse(localParamMgr.canProvide(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build()));
+        assertFalse(
+                localParamMgr.canProvide(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build()));
         localParamMgr.startProviding(p1);
 
-
         ParameterValue pv1 = new ParameterValue(p1);
-        pv1.setEngineeringValue(ValueUtility.getUint32Value(3));
+        pv1.setEngValue(ValueUtility.getUint32Value(3));
         ParameterValue pv2 = new ParameterValue(p2);
-        pv2.setEngineeringValue(ValueUtility.getDoubleValue(2.72));
+        pv2.setEngValue(ValueUtility.getDoubleValue(2.72));
 
         List<ParameterValue> pvList = Arrays.asList(pv1, pv2);
 
         localParamMgr.updateParameters(pvList);
-        Collection<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        Collection<ParameterValue> pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertNotNull(pvs);
 
         assertEquals(1, pvs.size());
@@ -83,19 +84,19 @@ public class LocalParameterManagerTest {
         localParamMgr.startProvidingAll();
 
         localParamMgr.updateParameters(pvList);
-        pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(2, pvs.size());
 
         localParamMgr.stopProviding(p1);
         localParamMgr.updateParameters(pvList);
-        pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(1, pvs.size());
         pv = pvs.iterator().next();
         assertEquals(p2, pv.getParameter());
 
         localParamMgr.stopProviding(p2);
         localParamMgr.updateParameters(pvList);
-        pvs = consumer.received.poll(2, TimeUnit.SECONDS);
+        pvs = paraProc.received.poll(2, TimeUnit.SECONDS);
         assertNull(pvs);
     }
 
@@ -103,13 +104,12 @@ public class LocalParameterManagerTest {
     public void testTypeConversion() throws Exception {
         localParamMgr.startProviding(p2);
         ParameterValue pv2 = new ParameterValue(p2);
-        pv2.setEngineeringValue(ValueUtility.getUint32Value(3));
+        pv2.setEngValue(ValueUtility.getUint32Value(3));
         localParamMgr.updateParameters(Arrays.asList(pv2));
 
-        List<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        List<ParameterValue> pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(3.0, pvs.get(0).getEngValue().getFloatValue(), 1e-5);
     }
-
 
     @Test
     public void testTypeConversion2() throws Exception {
@@ -119,10 +119,10 @@ public class LocalParameterManagerTest {
         AggregateValue sentv = new AggregateValue(p4type.getMemberNames());
         sentv.setMemberValue("member1", ValueUtility.getSint64Value(32)); // will be converted to UINT32
         sentv.setMemberValue("member2", ValueUtility.getSint64Value(10)); // will be converted to FLOAT
-        pv4.setEngineeringValue(sentv);
+        pv4.setEngValue(sentv);
         localParamMgr.updateParameters(Arrays.asList(pv4));
 
-        List<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        List<ParameterValue> pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(1, pvs.size());
         AggregateValue rcvd = (AggregateValue) pvs.get(0).getEngValue();
         assertEquals(32, rcvd.getMemberValue("member1").getUint32Value());
@@ -136,10 +136,10 @@ public class LocalParameterManagerTest {
         ArrayValue sentv = new ArrayValue(new int[] { 2 }, Yamcs.Value.Type.SINT32);
         sentv.setElementValue(0, ValueUtility.getSint32Value(1));// will be converted to FLOAT
         sentv.setElementValue(1, ValueUtility.getSint32Value(2));// will be converted to FLOAT
-        pv7.setEngineeringValue(sentv);
+        pv7.setEngValue(sentv);
         localParamMgr.updateParameters(Arrays.asList(pv7));
 
-        List<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        List<ParameterValue> pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(1, pvs.size());
         ArrayValue rcvd = (ArrayValue) pvs.get(0).getEngValue();
         assertEquals(1, rcvd.getElementValue(0).getFloatValue(), 1e-5);
@@ -152,10 +152,10 @@ public class LocalParameterManagerTest {
 
         localParamMgr.startProviding(p9);
         ParameterValue pv9 = new ParameterValue(p9);
-        pv9.setEngineeringValue(ValueUtility.getStringValue(ts));
+        pv9.setEngValue(ValueUtility.getStringValue(ts));
         localParamMgr.updateParameters(Arrays.asList(pv9));
 
-        List<ParameterValue> pvs = consumer.received.poll(5, TimeUnit.SECONDS);
+        List<ParameterValue> pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(1, pvs.size());
         TimestampValue tv = (TimestampValue) pvs.get(0).getEngValue();
         assertEquals(TimeEncoding.parse(ts), tv.getTimestampValue());
@@ -165,21 +165,20 @@ public class LocalParameterManagerTest {
     public void testInvalidConversion1() throws Exception {
         localParamMgr.startProviding(p1);
         ParameterValue pv1 = new ParameterValue(p1);
-        pv1.setEngineeringValue(ValueUtility.getUint64Value(Integer.MAX_VALUE * 2 + 1)); // out of range for UINT32
+        pv1.setEngValue(ValueUtility.getUint64Value(Integer.MAX_VALUE * 2 + 1)); // out of range for UINT32
         localParamMgr.updateParameters(Arrays.asList(pv1));
     }
 
-    class MyParamConsumer implements ParameterListener {
+    class MyParamProcessor implements ParameterProcessor {
         BlockingQueue<List<ParameterValue>> received = new LinkedBlockingQueue<>();
 
         @Override
-        public void update(ParameterValueList params) {
+        public void process(ProcessingData data) {
             try {
-                received.put(new ArrayList<>(params));
+                received.put(new ArrayList<>(data.getTmParams()));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
     }
 }

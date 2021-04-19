@@ -298,7 +298,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     /**
-     * Called from {@link ParameterListener when new parameters are available to be sent to clients}
+     * Called from {@link ParameterRequestManager when new parameters are available to be sent to clients}
      */
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {

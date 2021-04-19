@@ -13,16 +13,17 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.BasicParameterValue;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -30,20 +31,18 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-
 /**
- * Provides parameters from yarch streams (pp_realtime) to ParameterRequestManager.
+ * Provides parameters from yarch streams (pp_realtime) to {@link ParameterProcessorManager}
  * 
  * @author nm
  *
  */
 public class StreamParameterProvider extends AbstractProcessorService implements StreamSubscriber, ParameterProvider {
     List<Stream> streams = new ArrayList<>();
-    ParameterListener paraListener;
+    ParameterProcessor ppm;
     XtceDb xtceDb;
 
     ParameterTypeProcessor ptypeProcessor;
-
 
     public void init(Processor processor, YConfiguration config, Object spec) {
         super.init(processor, config, spec);
@@ -59,7 +58,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
         } else {
             streamNames = StreamConfig.getInstance(yamcsInstance).getEntries(StandardStreamType.PARAM).stream()
                     .map(sce -> sce.getName())
-                    .filter(s-> !Processor.PROC_PARAMETERS_STREAM.equals(s))
+                    .filter(s -> !Processor.PROC_PARAMETERS_STREAM.equals(s))
                     .collect(Collectors.toList());
         }
 
@@ -72,12 +71,11 @@ public class StreamParameterProvider extends AbstractProcessorService implements
             }
             streams.add(stream);
         }
-        
+
         ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
-        processor.getParameterRequestManager().addParameterProvider(this);
+        processor.getParameterProcessorManager().addParameterProvider(this);
         streams.forEach(s -> s.addSubscriber(this));
     }
-
 
     @Override
     protected void doStart() {
@@ -95,7 +93,8 @@ public class StreamParameterProvider extends AbstractProcessorService implements
      */
     @Override
     public void onTuple(Stream s, Tuple tuple) {// the definition of the tuple is in PpProviderAdapter
-        ParameterValueList params = new ParameterValueList();
+        ProcessingData data = ProcessingData.createForTmProcessing(processor.getLastValueCache());
+
         for (int i = 4; i < tuple.size(); i++) {
             Object o = tuple.getColumn(i);
             ParameterValue pv;
@@ -132,9 +131,9 @@ public class StreamParameterProvider extends AbstractProcessorService implements
             if (pv.getEngValue() == null && pv.getRawValue() != null) {
                 ptypeProcessor.calibrate(pv);
             }
-            params.add(pv);
+            data.addTmParam(pv);
         }
-        paraListener.update(params);
+        ppm.process(data);
     }
 
     @Override
@@ -143,13 +142,13 @@ public class StreamParameterProvider extends AbstractProcessorService implements
     }
 
     @Override
-    public void setParameterListener(ParameterListener paraListener) {
-        this.paraListener = paraListener;
+    public void setParameterProcessor(ParameterProcessor paraListener) {
+        this.ppm = paraListener;
     }
 
     @Override
     public void stopProviding(Parameter paramDef) {
-        //not implemented, this always provides all parameter
+        // not implemented, this always provides all parameters
     }
 
     @Override
@@ -178,11 +177,11 @@ public class StreamParameterProvider extends AbstractProcessorService implements
 
     @Override
     public void startProviding(Parameter paramDef) {
-        //not implemented, this always provides all parameter
+        // not implemented, this always provides all parameters
     }
 
     @Override
     public void startProvidingAll() {
-        //not implemented, this always provides all parameter
+        // not implemented, this always provides all parameters
     }
 }

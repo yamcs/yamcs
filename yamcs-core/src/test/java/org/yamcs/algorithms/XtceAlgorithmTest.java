@@ -11,12 +11,13 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class XtceAlgorithmTest {
@@ -24,6 +25,7 @@ public class XtceAlgorithmTest {
     static XtceDb db;
     private static Processor proc;
     private static ParameterRequestManager prm;
+    private static ParameterProcessorManager ppm;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -32,7 +34,9 @@ public class XtceAlgorithmTest {
         XtceDbFactory.reset();
         AlgorithmManager am = new AlgorithmManager();
         proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);
-        prm = proc.getParameterRequestManager();
+        ppm = proc.getParameterProcessorManager();
+        prm = ppm.getParameterRequestManager();
+
         db = proc.getXtceDb();
     }
 
@@ -45,7 +49,7 @@ public class XtceAlgorithmTest {
         prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngValue(ValueUtility.getFloatValue(12.6f));
-        prm.update(ParameterValueList.asList(pv));
+        ppm.process(ProcessingData.createForTestTm(pv));
         assertEquals(1, params.size());
         pv = params.get(0);
         assertEquals(1.0d, pv.getEngValue().getFloatValue(), 1e-5);
@@ -60,11 +64,10 @@ public class XtceAlgorithmTest {
         prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngValue(ValueUtility.getFloatValue(12.6f));
-        prm.update(ParameterValueList.asList(pv));
+        ppm.process(ProcessingData.createForTestTm(pv));
         assertEquals(1, params.size());
 
         pv = params.get(0);
         assertEquals(0.6d, pv.getEngValue().getFloatValue(), 1e-5);
     }
-
 }

@@ -1,9 +1,7 @@
 package org.yamcs.alarms;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,8 +12,7 @@ import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -29,7 +26,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Generates alarm events for a processor, by subscribing to all relevant parameters.
  */
-public class AlarmReporter extends AbstractProcessorService implements ParameterConsumer, ProcessorService {
+public class AlarmReporter extends AbstractProcessorService implements ProcessorService {
 
     private String source;
 
@@ -38,19 +35,18 @@ public class AlarmReporter extends AbstractProcessorService implements Parameter
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter = new HashMap<>();
 
-
     @Override
     public void init(Processor processor, YConfiguration config, Object spec) {
         super.init(processor, config, spec);
         eventProducer = EventProducerFactory.getEventProducer(processor.getInstance());
         source = config.getString("source", "AlarmChecker");
-        eventProducer.setSource(source);        
+        eventProducer.setSource(source);
     }
 
     @Override
     public void doStart() {
-        ParameterRequestManager prm = processor.getParameterRequestManager();
-        prm.getAlarmChecker().enableReporting(this);
+        ParameterProcessorManager ppm = processor.getParameterProcessorManager();
+        ppm.getAlarmChecker().enableReporting(this);
 
         // Auto-subscribe to parameters with alarms
         Set<Parameter> requiredParameters = new HashSet<>();
@@ -69,8 +65,7 @@ public class AlarmReporter extends AbstractProcessorService implements Parameter
         }
 
         if (!requiredParameters.isEmpty()) {
-            List<Parameter> params = new ArrayList<>(requiredParameters); // Now that we have uniques..
-            prm.addRequest(params, this);
+            ppm.subscribeToProviders(requiredParameters);
         }
         notifyStarted();
     }
@@ -78,13 +73,6 @@ public class AlarmReporter extends AbstractProcessorService implements Parameter
     @Override
     public void doStop() {
         notifyStopped();
-    }
-
-    @Override
-    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-        // Nothing. The real business of sending events, happens while checking the alarms
-        // because that's where we have easy access to the XTCE definition of the active
-        // alarm. The PRM is only used to signal the parameter subscriptions.
     }
 
     /**

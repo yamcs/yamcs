@@ -3,7 +3,7 @@ package org.yamcs.algorithms;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
@@ -16,11 +16,11 @@ class MyParaProvider extends AbstractService implements ParameterProvider {
 
     @Override
     public void init(Processor processor, YConfiguration config, Object spec) {
-        processor.getParameterRequestManager().addParameterProvider(this);
+        processor.getParameterProcessorManager().addParameterProvider(this);
     }
 
     @Override
-    public void setParameterListener(ParameterListener parameterListener) {
+    public void setParameterProcessor(ParameterProcessor parameterProcessor) {
     }
 
     @Override

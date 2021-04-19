@@ -16,7 +16,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -26,6 +27,7 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerProcessingResult;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
@@ -70,7 +72,6 @@ public class RefXtceAlgorithmTest {
     public void test2() {
         List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/param6"));
         mpp.injectPacket(new byte[6], "/RefXtce/packet2");
-
         assertEquals(1, params.size());
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
     }
@@ -108,14 +109,14 @@ public class RefXtceAlgorithmTest {
 
 
     static class MyProcService extends AbstractService implements ParameterProvider {
-        ParameterRequestManager prm;
+        ParameterProcessorManager ppm;
         XtceTmExtractor extractor;
         XtceDb db;
 
         @Override
         public void init(Processor processor, YConfiguration config, Object spec) {
-            this.prm = processor.getParameterRequestManager();
-            prm.addParameterProvider(this);
+            this.ppm = processor.getParameterProcessorManager();
+            ppm.addParameterProvider(this);
             db = processor.getXtceDb();
             extractor = new XtceTmExtractor(db);
             extractor.provideAll();
@@ -123,11 +124,11 @@ public class RefXtceAlgorithmTest {
 
         public void injectPacket(byte[] array, String name) {
             ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, db.getSequenceContainer(name));
-            prm.update(cpr.getParameterResult());
+            ppm.process(cpr);
         }
 
         @Override
-        public void setParameterListener(ParameterListener parameterListener) {
+        public void setParameterProcessor(ParameterProcessor parameterProcessor) {
         }
 
         @Override
@@ -176,7 +177,7 @@ public class RefXtceAlgorithmTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
             AggregateValue v = (AggregateValue) inputValues.get(0).getEngValue();
             float m1 = v.getMemberValue(0).getFloatValue();
             int m2 = v.getMemberValue(1).getUint32Value();

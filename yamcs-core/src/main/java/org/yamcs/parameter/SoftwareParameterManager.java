@@ -9,7 +9,7 @@ import org.yamcs.xtce.Parameter;
  * 
  * @author nm
  *
- *///this should be renamed to SoftwareParameterManager when we remove that class kept for backward compatibility
+ */
 public interface SoftwareParameterManager {
 
     /**

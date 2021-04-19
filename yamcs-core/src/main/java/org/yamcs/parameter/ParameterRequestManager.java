@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,41 +13,20 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
-import org.yamcs.alarms.AlarmServer;
-import org.yamcs.alarms.ParameterAlarmStreamer;
-import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.ParameterAlarmChecker;
-import org.yamcs.xtceproc.XtceTmProcessor;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Makes the connection between {@link ParameterProvider} and {@link ParameterConsumer}
+ * Distributes parameters from {@link ParameterProcessorManager} to {@link ParameterConsumer}
  * <p>
- * The consumers will subscribe to parameters, this class (we call it PRM) will subscribe itself to providers and send
- * to consumers each time the providers provide some values.
- * <p>
- * A special case is the AlgorithmManager which provides parameters that are computed based on others. The
- * AlgorithmManager is not invoking itself the PRM; instead the PRM calls it each time one of the other providers
- * sent some parameters.
- * 
- * <p>
- * For the consumers there are two types of subscriptions: - subscribe all - subscribe to a set. Both types have an
- * unique id associated but different methods work with them.
- * <p>
+ * The consumers will subscribe to parameters, this class (we call it PRM) will subscribe itself to providers
+ * and send to consumers each time the providers provide some values.
  * 
  */
-public class ParameterRequestManager extends AbstractService implements ParameterListener {
+public class ParameterRequestManager {
     Log log;
 
-    static final String REALTIME_ALARM_SERVER = "alarms_realtime";
     // Maps the parameters to the request(subscription id) in which they have been asked
     private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<>();
 
@@ -56,81 +34,24 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
     // contains subscribe all
-    private SubscriptionArray subscribeAll = new SubscriptionArray();
-
-    private ParameterAlarmChecker alarmChecker;
-    private AlgorithmManager algorithmManager;
-
-    private Map<Class<?>, ParameterProvider> parameterProviders = new LinkedHashMap<>();
+    private SubscriptionArray subscribeAllConsumers = new SubscriptionArray();
 
     private static AtomicInteger lastSubscriptionId = new AtomicInteger();
+
     public final Processor processor;
 
-    // if all parameter shall be subscribed/processed
-    private boolean shouldSubcribeAllParameters = false;
-
-    AlarmServer<Parameter, ParameterValue> parameterAlarmServer;
-    Map<DataSource, SoftwareParameterManager> spm = new HashMap<>();
-    ParameterCache parameterCache;
-    ParameterCacheConfig cacheConfig;
     LastValueCache lastValueCache;
+    ParameterProcessorManager ppm;
 
     /**
      * Creates a new ParameterRequestManager, configured to listen to the specified XtceTmProcessor.
      */
-    public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
-        this.processor = yproc;
-        log = new Log(getClass(), yproc.getInstance());
-        log.setContext(yproc.getName());
-        cacheConfig = yproc.getPameterCacheConfig();
-        shouldSubcribeAllParameters = yproc.isSubscribeAll();
-
-        this.lastValueCache = yproc.getLastValueCache();
-
-        tmProcessor.setParameterListener(this);
-        addParameterProvider(tmProcessor);
-        if (yproc.hasAlarmChecker()) {
-            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData());
-        }
-        if (yproc.hasAlarmServer()) {
-            parameterAlarmServer = new AlarmServer<>(yproc.getInstance(), yproc.getTimer());
-            alarmChecker.enableServer(parameterAlarmServer);
-        }
-
-        if (cacheConfig.enabled) {
-            parameterCache = new ArrayParameterCache(yproc.getInstance(), cacheConfig);
-        }
-    }
-
-    public void addParameterProvider(ParameterProvider parameterProvider) {
-        if (parameterProviders.containsKey(parameterProvider.getClass())) {
-            log.warn("Ignoring duplicate parameter provider of type {}", parameterProvider.getClass());
-        } else {
-            log.debug("Adding parameter provider: {}", parameterProvider.getClass());
-            parameterProvider.setParameterListener(this);
-            parameterProviders.put(parameterProvider.getClass(), parameterProvider);
-        }
-    }
-
-    /**
-     * This is called after all the parameter providers have been added but before the start.
-     */
-    public void init() {
-        if (shouldSubcribeAllParameters) {
-            for (ParameterProvider prov : parameterProviders.values()) {
-                prov.startProvidingAll();
-            }
-        } else if (parameterAlarmServer != null) { // at least get all that have alarms
-            for (Parameter p : processor.getXtceDb().getParameters()) {
-                if (p.getParameterType() != null && p.getParameterType().hasAlarm()) {
-                    try {
-                        subscribeToProviders(p);
-                    } catch (NoProviderException e) {
-                        log.warn("No provider found for parameter {} which has alarms", p.getQualifiedName());
-                    }
-                }
-            }
-        }
+    public ParameterRequestManager(ParameterProcessorManager ppm) throws ConfigurationException {
+        this.processor = ppm.processor;
+        this.ppm = ppm;
+        log = new Log(getClass(), processor.getInstance());
+        log.setContext(processor.getName());
+        this.lastValueCache = processor.getLastValueCache();
     }
 
     /**
@@ -139,12 +60,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public int subscribeAll(ParameterConsumer consumer) {
         int id = lastSubscriptionId.incrementAndGet();
         log.debug("new subscribeAll with subscriptionId {}", id);
-        if (subscribeAll.isEmpty()) {
-            for (ParameterProvider provider : parameterProviders.values()) {
-                provider.startProvidingAll();
-            }
-        }
-        subscribeAll.add(id);
+        ppm.subscribeAllToProviders();
+
+        subscribeAllConsumers.add(id);
         request2ParameterConsumerMap.put(id, consumer);
         return id;
     }
@@ -158,9 +76,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return
      */
     public boolean unsubscribeAll(int subscriptionId) {
-        return subscribeAll.remove(subscriptionId);
+        return subscribeAllConsumers.remove(subscriptionId);
     }
-
 
     /**
      * Called by a consumer to create a new subscription
@@ -191,7 +108,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return the newly created subscription id
      */
     public int addRequest(final Parameter para, final ParameterConsumer tpc) {
-
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for parameter: {}", id, para.getQualifiedName());
         subscribeToProviders(para);
@@ -200,7 +116,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
         return id;
     }
-
 
     /**
      * Called by a consumer to create request with a given id. This is called when switching processors, the id is
@@ -228,10 +143,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      */
     public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para.getName());
-        final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
-        if (consumer == null) {
-            throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
-        }
+        verifySubscriptionId(subscriptionId);
         subscribeToProviders(para);
         addItemToRequest(subscriptionId, para);
     }
@@ -247,13 +159,17 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList)
             throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: {} items ", subscriptionId, paraList.size());
-        final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
-        if (consumer == null) {
-            throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
-        }
+        verifySubscriptionId(subscriptionId);
+
         subscribeToProviders(paraList);
         for (int i = 0; i < paraList.size(); i++) {
             addItemToRequest(subscriptionId, paraList.get(i));
+        }
+    }
+
+    private void verifySubscriptionId(int subscriptionId) throws InvalidRequestIdentification {
+        if (!request2ParameterConsumerMap.containsKey(subscriptionId)) {
+            throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
         }
     }
 
@@ -284,15 +200,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void addItemToRequest(int id, Parameter para) {
-        if (!param2RequestMap.containsKey(para)) {
-            // this parameter is not requested by any other request
-            if (param2RequestMap.putIfAbsent(para, new SubscriptionArray()) == null) {
-                if (alarmChecker != null) {
-                    alarmChecker.parameterSubscribed(para);
-                }
-            }
-        }
-        SubscriptionArray al_req = param2RequestMap.get(para);
+        SubscriptionArray al_req = param2RequestMap.computeIfAbsent(para, k -> new SubscriptionArray());
         al_req.add(id);
     }
 
@@ -351,21 +259,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void subscribeToProviders(Parameter param) throws NoProviderException {
-        if (shouldSubcribeAllParameters) {
-            return;
-        }
-        boolean providerFound = false;
-
-        for (ParameterProvider provider : parameterProviders.values()) {
-            if (provider.canProvide(param)) {
-                providerFound = true;
-                provider.startProviding(param);
-            }
-        }
-        if (!providerFound) {
-            throw new NoProviderException("No provider found for " + param);
-        }
-
+        ppm.subscribeToProviders(param);
     }
 
     /**
@@ -377,12 +271,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @param itemList
      */
     public void subscribeToProviders(Collection<Parameter> itemList) {
-        if (shouldSubcribeAllParameters) {
-            return;
-        }
-        for (Parameter p : itemList) {
-            subscribeToProviders(p);
-        }
+        ppm.subscribeToProviders(itemList);
     }
 
     /**
@@ -393,7 +282,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @throws InvalidIdentification
      */
     public Parameter getParameter(String fqn) throws InvalidIdentification {
-        return getParameter(NamedObjectId.newBuilder().setName(fqn).build());
+        return ppm.getParameter(fqn);
     }
 
     /**
@@ -403,12 +292,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      *             in case no provider knows of this parameter.
      */
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-        for (ParameterProvider provider : parameterProviders.values()) {
-            if (provider.canProvide(paraId)) {
-                return provider.getParameter(paraId);
-            }
-        }
-        throw new InvalidIdentification(paraId);
+        return ppm.getParameter(paraId);
     }
 
     /**
@@ -428,26 +312,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * 
      */
-    @Override
-    public void update(ParameterValueList currentDelivery) {
-        log.trace("ParamRequestManager.update with {} parameters", currentDelivery.size());
-
-        if (alarmChecker != null) {
-            alarmChecker.performAlarmChecking(currentDelivery, currentDelivery.iterator());
-        }
-
-        Iterator<ParameterValue> tailIt = currentDelivery.tailIterator();
-        if (algorithmManager != null) {
-            algorithmManager.updateDelivery(currentDelivery);
-        }
-
-        if (alarmChecker != null) {
-            alarmChecker.performAlarmChecking(currentDelivery, tailIt);
-        }
-
+    public void update(ParameterValueList pvlist) {
         // build the customised lists for the subscribers and send it to them
         HashMap<Integer, ArrayList<ParameterValue>> subscription = new HashMap<>();
-        updateSubscription(subscription, currentDelivery);
+        updateSubscription(subscription, pvlist);
 
         for (Map.Entry<Integer, ArrayList<ParameterValue>> entry : subscription.entrySet()) {
             Integer subscriptionId = entry.getKey();
@@ -461,10 +329,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                 consumer.updateItems(subscriptionId, al);
             }
         }
-        if (parameterCache != null) {
-            parameterCache.update(currentDelivery);
-        }
-        lastValueCache.update(currentDelivery);
     }
 
     /**
@@ -499,7 +363,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         }
 
         // update the subscribeAll subscriptions
-        for (int id : subscribeAll.getArray()) {
+        for (int id : subscribeAllConsumers.getArray()) {
             ArrayList<ParameterValue> al = subscription.get(id);
 
             if (al == null) {
@@ -511,32 +375,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                 al.add(pv);
             }
         }
-    }
-
-    void checkAlarms(ParameterValueList pvlist, Iterator<ParameterValue> it) {
-        if (alarmChecker != null) {
-            try {
-                alarmChecker.performAlarmChecking(pvlist, it);
-            } catch (Exception e) {
-                log.error("Error when performing alarm checking ", e);
-            }
-        }
-    }
-    /**
-     * 
-     * @return the SoftwareParameterManager associated to the DataSource or null if not configured
-     */
-    public SoftwareParameterManager getSoftwareParameterManager(DataSource ds) {
-        return spm.get(ds);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends ParameterProvider> T getParameterProvider(Class<T> type) {
-        return (T) parameterProviders.get(type);
-    }
-
-    public ParameterAlarmChecker getAlarmChecker() {
-        return alarmChecker;
     }
 
     @Override
@@ -553,14 +391,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             sb.append("]\n");
         }
         return sb.toString();
-    }
-
-    public AlarmServer<Parameter, ParameterValue> getAlarmServer() {
-        return parameterAlarmServer;
-    }
-
-    public boolean hasParameterCache() {
-        return parameterCache != null;
     }
 
     /**
@@ -588,75 +418,5 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      */
     public ParameterValue getLastValueFromCache(Parameter param) {
         return lastValueCache.getValue(param);
-    }
-
-    /**
-     * Get all the values from cache for a specific parameters
-     * 
-     * The parameter are returned in descending order (newest parameter is returned first). Note that you can only all
-     * this function if the {@link #hasParameterCache()} returns true.
-     * 
-     * @param param
-     * @return
-     */
-    public List<ParameterValue> getValuesFromCache(Parameter param) {
-        return parameterCache.getAllValues(param);
-    }
-
-    public ParameterCache getParameterCache() {
-        return parameterCache;
-    }
-
-    public Object getXtceDb() {
-        return processor.getXtceDb();
-    }
-
-    @Override
-    protected void doStart() {
-        if (parameterAlarmServer != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-            Stream s = ydb.getStream(REALTIME_ALARM_SERVER);
-            if (s == null) {
-                notifyFailed(new ConfigurationException("Cannot find a stream named '" + REALTIME_ALARM_SERVER + "'"));
-                return;
-            }
-            parameterAlarmServer.addAlarmListener(new ParameterAlarmStreamer(s));
-            parameterAlarmServer.startAsync();
-        }
-
-        notifyStarted();
-    }
-
-    @Override
-    protected void doStop() {
-        if (parameterAlarmServer != null) {
-            parameterAlarmServer.stopAsync();
-        }
-        notifyStopped();
-    }
-
-    public LastValueCache getLastValueCache() {
-        return lastValueCache;
-    }
-
-    /**
-     * Register a {@link SoftwareParameterManager} for the given {@link DataSource}. Throws an
-     * {@link IllegalStateException} if there is already registered a parameter manager for this data source.
-     * 
-     * @param ds
-     * @param swParameterManager
-     */
-    public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManager swParameterManager) {
-        if (spm.containsKey(ds)) {
-            throw new IllegalStateException("There is already a soft parameter manager for " + ds);
-        }
-        spm.put(ds, swParameterManager);
-    }
-
-    public void setAlgortihmManager(AlgorithmManager algmgr) {
-        if (algorithmManager != null) {
-            throw new IllegalStateException("There is already one algorithm manager");
-        }
-        algorithmManager = algmgr;
     }
 }

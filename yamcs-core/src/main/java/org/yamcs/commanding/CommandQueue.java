@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 
@@ -11,11 +12,13 @@ import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.User;
+import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SystemParameter;
 
@@ -26,7 +29,7 @@ public class CommandQueue {
     private Set<String> groups = new HashSet<>();
     private Levels minLevel = Levels.none;
 
-    private ConcurrentLinkedQueue<PreparedCommand> commands = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<ActiveCommand> commands = new ConcurrentLinkedQueue<>();
     QueueState defaultState;
     QueueState state;
     Processor processor;
@@ -53,10 +56,6 @@ public class CommandQueue {
         spNumCommands = sps.createSystemParameter("cmdQueue/" + name + "/numCommands", Type.SINT32);
         spNumSentCommands = sps.createSystemParameter("cmdQueue/" + name + "/numSentCommands", Type.UINT32);
         spNumRejectedCommands = sps.createSystemParameter("cmdQueue/" + name + "/numRejectedCommands", Type.UINT32);
-    }
-
-    public ConcurrentLinkedQueue<PreparedCommand> getCommands() {
-        return commands;
     }
 
     public String getName() {
@@ -87,14 +86,14 @@ public class CommandQueue {
         this.groups.addAll(groups);
     }
 
-    public boolean matches(User user, PreparedCommand pc) {
+    public boolean matches(User user, MetaCommand metaCmd) {
         if (!isUserMatched(user)) {
             return false;
         }
 
         Levels level = Levels.none;
-        if (pc.getMetaCommand().getDefaultSignificance() != null) {
-            level = pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel();
+        if (metaCmd.getDefaultSignificance() != null) {
+            level = metaCmd.getDefaultSignificance().getConsequenceLevel();
         }
         if (!isLevelMatched(level)) {
             return false;
@@ -142,11 +141,7 @@ public class CommandQueue {
         return commands.size();
     }
 
-    public boolean contains(PreparedCommand pc) {
-        return commands.contains(pc);
-    }
-
-    public void add(PreparedCommand pc) {
+    public void add(ActiveCommand pc) {
         commands.add(pc);
     }
 
@@ -158,7 +153,7 @@ public class CommandQueue {
      *            true if the command has been sent, false if the command has been rejected
      * @return
      */
-    public boolean remove(PreparedCommand pc, boolean isSent) {
+    public boolean remove(ActiveCommand pc, boolean isSent) {
         boolean removed = commands.remove(pc);
         if (removed) {
             if (isSent) {
@@ -197,5 +192,27 @@ public class CommandQueue {
         params.add(SystemParametersService.getPV(spNumCommands, time, commands.size()));
         params.add(SystemParametersService.getPV(spNumSentCommands, time, nbSentCommands));
         params.add(SystemParametersService.getPV(spNumRejectedCommands, time, nbRejectedCommands));
+    }
+
+    public ActiveCommand getcommand(CommandId commandId) {
+        for (ActiveCommand c : commands) {
+            if (c.getCommandId().equals(commandId)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public ActiveCommand getcommand(UUID uuid) {
+        for (ActiveCommand c : commands) {
+            if (c.preparedCommand.getUUID().equals(uuid)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public ConcurrentLinkedQueue<ActiveCommand> getCommands() {
+        return commands;
     }
 }

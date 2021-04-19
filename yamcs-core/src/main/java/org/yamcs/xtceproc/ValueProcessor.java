@@ -6,7 +6,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.IntegerValue;
-import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterInstanceRef;
 
 public class ValueProcessor {
     ContainerProcessingContext pcontext;
@@ -33,13 +33,14 @@ public class ValueProcessor {
     }
 
     private Long getDynamicIntegerValue(DynamicIntegerValue div) {
-        Parameter pref = div.getParameterInstnaceRef().getParameter();
-        for (ParameterValue pv : pcontext.result.params) {
-            if (pv.getParameter() == pref) {
-                return (long)pv.getEngValue().getUint32Value();
-            }
+        ParameterInstanceRef pref = div.getParameterInstanceRef();
+        ParameterValue pv = pcontext.result.getTmParameterInstance(pref.getParameter(), pref.getInstance(), false);
+        if (pv == null) {
+            log.warn("Could not find a value for the parameter instance: {}",
+                    div.getParameterInstanceRef());
+            return null;
+        } else {
+            return (long) pv.getEngValue().getUint32Value();
         }
-        log.warn("Could not find the parameter in the list of extracted parameters, parameter: {}", pref);
-        return null;
     }
 }

@@ -56,6 +56,7 @@ public class RefXtceCommandingTest {
     MyCmdHistoryProvider cmdHistProvider;
 
     LocalParameterManager localParaMgr;
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         YConfiguration.setupTest(null);
@@ -69,7 +70,6 @@ public class RefXtceCommandingTest {
         cmdHistPublisher = new MyCmdHistPublisher();
         cmdHistProvider = new MyCmdHistoryProvider();
         localParaMgr = new LocalParameterManager();
-
 
         proc = ProcessorFactory.create("refxtce", "test", cmdHistProvider, cmdHistPublisher, cmdReleaser, localParaMgr);
         commandingManager = proc.getCommandingManager();
@@ -89,37 +89,38 @@ public class RefXtceCommandingTest {
 
         String tstring = "2020-01-01T00:00:00.123Z";
         long tlong = TimeEncoding.parse(tstring);
-        
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring), new ArgumentAssignment("t2", tstring));
+
+        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring),
+                new ArgumentAssignment("t2", tstring));
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
         Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
         assertEquals(tlong, v1.getTimestampValue());
-        
+
         Value v2 = cbr.args.get(mc.getArgument("t2")).getEngValue();
         assertEquals(tlong, v2.getTimestampValue());
-        
+
         byte[] cmdb = cbr.getCmdPacket();
         assertEquals(8, cmdb.length);
-        
+
         int gpsTime = ByteArrayUtils.decodeInt(cmdb, 0);
-        assertEquals(TimeEncoding.toGpsTimeMillisec(tlong)/1000, gpsTime);
-        
+        assertEquals(TimeEncoding.toGpsTimeMillisec(tlong) / 1000, gpsTime);
+
         int unixTime = ByteArrayUtils.decodeInt(cmdb, 4);
-        assertEquals(Instant.parse(tstring).toEpochMilli()/1000, unixTime);
-        
+        assertEquals(Instant.parse(tstring).toEpochMilli() / 1000, unixTime);
+
     }
-    
+
     @Test(expected = org.yamcs.ErrorInCommand.class)
-    public void testAggregateCmdArgIncompleteValue() throws Exception{
+    public void testAggregateCmdArgIncompleteValue() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
         List<ArgumentAssignment> arguments = new LinkedList<>();
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 0}");
         arguments.add(argumentAssignment1);
         metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
     }
-    
+
     @Test
-    public void testAggregateCmdArg() throws Exception{
+    public void testAggregateCmdArg() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
         List<ArgumentAssignment> arguments = new LinkedList<>();
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 23.4}");
@@ -132,14 +133,14 @@ public class RefXtceCommandingTest {
     }
 
     @Test(expected = org.yamcs.ErrorInCommand.class)
-    public void testAggregateCmdArgOutOfRange() throws Exception{
+    public void testAggregateCmdArgOutOfRange() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
         List<ArgumentAssignment> arguments = new LinkedList<>();
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 123.4}");
         arguments.add(argumentAssignment1);
         metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
     }
-    
+
     @Test
     public void testBinaryArgCmd() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
@@ -172,6 +173,8 @@ public class RefXtceCommandingTest {
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "3"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
         localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
+
+        localParaMgr.sync();
 
         commandingManager.sendCommand(user, pc);
 
@@ -294,6 +297,7 @@ public class RefXtceCommandingTest {
 
         List<ArgumentAssignment> argList = Arrays.asList(new ArgumentAssignment("arg1", "101"));
         PreparedCommand pc = commandingManager.buildCommand(cmd, argList, "localhost", 1, user);
+
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",

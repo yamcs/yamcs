@@ -4,12 +4,9 @@ import java.util.List;
 
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.parameter.Value;
 
 /**
  * Interface implemented by all the classes that want to receive command history events.
- * 
- * @author mache
  *
  */
 public interface CommandHistoryConsumer {
@@ -20,16 +17,6 @@ public interface CommandHistoryConsumer {
      */
     void addedCommand(PreparedCommand pc);
 
-    /**
-     * Called when the history of a command matching the filters has been updated
-     *
-     */
-    void updatedCommand(CommandId cmdId, long changeDate, String key, Value value);
-    
-    default void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {
-        for(Attribute a: attrs) {
-            updatedCommand(cmdId, changeDate, a.getKey(), a.getValue());
-        }
-    }
-   
+    void updatedCommand(CommandId cmdId, long time, List<Attribute> attrs);
+
 }

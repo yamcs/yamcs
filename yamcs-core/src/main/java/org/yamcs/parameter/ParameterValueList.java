@@ -22,6 +22,8 @@ import org.yamcs.xtce.Parameter;
  *
  */
 public class ParameterValueList implements Collection<ParameterValue> {
+    static public final ParameterValueList EMPTY = new ParameterValueList();
+
     Entry[] table;
 
     Entry head;
@@ -168,6 +170,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
     public ParameterValue getLast() {
         return head.before.pv;
     }
+
     private int getHash(Parameter p) {
         return p.hashCode();
     }
@@ -206,6 +209,26 @@ public class ParameterValueList implements Collection<ParameterValue> {
             if (e.pv.getParameter() == p) {
                 r = e.pv;
                 break;
+            }
+        }
+        return r;
+    }
+
+    /**
+     * Returns the n'th instance of the parameter or null if it does not exist
+     * <p>
+     * If n = 0 it is equivalent with {@link #getFirstInserted(Parameter)}
+     * 
+     */
+    public ParameterValue get(Parameter p, int n) {
+        int index = getHash(p) & (table.length - 1);
+        ParameterValue r = null;
+        for (Entry e = table[index]; e != null; e = e.next) {
+            if (e.pv.getParameter() == p) {
+                r = e.pv;
+                if (n-- == 0) {
+                    break;
+                }
             }
         }
         return r;
@@ -503,6 +526,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
             cur = tail ? head.before : head;
             expectedRmCount = rmCount;
         }
+
         @Override
         public boolean hasNext() {
             return cur.after != head;
@@ -534,4 +558,5 @@ public class ParameterValueList implements Collection<ParameterValue> {
         }
         return pvl;
     }
+
 }

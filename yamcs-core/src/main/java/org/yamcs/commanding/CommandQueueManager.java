@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
@@ -24,10 +25,9 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
-import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterProcessor;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -36,13 +36,10 @@ import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.Significance.Levels;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.DataSource;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
@@ -63,10 +60,10 @@ import com.google.common.util.concurrent.AbstractService;
  * likely connected in the same LAN, I don't consider this to be an issue.
  */
 @ThreadSafe
-public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
+public class CommandQueueManager extends AbstractService implements ParameterProcessor, SystemParametersProducer {
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues = new LinkedHashMap<>();
-    CommandReleaser commandReleaser;
+
     CommandHistoryPublisher commandHistoryPublisher;
     CommandingManager commandingManager;
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<>();
@@ -77,13 +74,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     private final String instance;
     private final String processorName;
 
-    ParameterValueList pvList = new ParameterValueList();
-
     Processor processor;
-    int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
-
 
     private TimeService timeService;
 
@@ -105,7 +98,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         log = new Log(this.getClass(), processor.getInstance());
         log.setContext(processor.getName());
         this.commandHistoryPublisher = processor.getCommandHistoryPublisher();
-        this.commandReleaser = processor.getCommandReleaser();
+
         this.instance = processor.getInstance();
         this.processorName = processor.getName();
         this.timer = processor.getTimer();
@@ -171,36 +164,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * called at processor startup, subscribe all parameters required for checking command constraints
+     * called at processor startup
      */
     @Override
     public void doStart() {
-        XtceDb xtcedb = processor.getXtceDb();
-        Set<Parameter> paramsToSubscribe = new HashSet<>();
-        for (MetaCommand mc : xtcedb.getMetaCommands()) {
-            if (mc.hasTransmissionConstraints()) {
-                List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
-                for (TransmissionConstraint tc : tcList) {
-                    paramsToSubscribe.addAll(tc.getMatchCriteria().getDependentParameters());
-                }
-            }
-
-            if (mc.hasCommandVerifiers()) {
-                List<CommandVerifier> cvList = mc.getCommandVerifiers();
-                for (CommandVerifier cv : cvList) {
-                    paramsToSubscribe.addAll(cv.getDependentParameters());
-                }
-            }
-        }
-        paramsToSubscribe.removeIf(p -> p.getDataSource() == DataSource.COMMAND
-                || p.getDataSource() == DataSource.COMMAND_HISTORY);
-        if (!paramsToSubscribe.isEmpty()) {
-            ParameterRequestManager prm = processor.getParameterRequestManager();
-            paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
-        } else {
-            log.debug("No parameter required for post transmission contraint check");
-        }
-
         SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             for (CommandQueue cq : queues.values()) {
@@ -208,6 +175,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
             sysParamCollector.registerProducer(this);
         }
+
         notifyStarted();
     }
 
@@ -216,10 +184,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             sysParamCollector.unregisterProducer(this);
-        }
-        if (paramSubscriptionRequestId != -1) {
-            ParameterRequestManager prm = processor.getParameterRequestManager();
-            prm.removeRequest(paramSubscriptionRequestId);
         }
         notifyStopped();
     }
@@ -254,41 +218,47 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * releaser.
      * 
      * @param user
-     * @param pc
+     * @param activeCommand
      * @return the queue the command was added to
      */
-    public synchronized CommandQueue addCommand(User user, PreparedCommand pc) {
-        commandHistoryPublisher.addCommand(pc);
+    public synchronized CommandQueue addCommand(User user, ActiveCommand activeCommand) {
+        commandHistoryPublisher.addCommand(activeCommand.getPreparedCommand());
 
         long missionTime = timeService.getMissionTime();
 
-        CommandQueue q = getQueue(user, pc);
+        CommandQueue q = getQueue(user, activeCommand.getPreparedCommand());
         if (q == null) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+            log.warn("No queue available for command {}", activeCommand.getLoggingId());
+            commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.NOK, "No queue available");
-            unhandledCommand(pc);
+            unhandledCommand(activeCommand);
             return null;
         }
+        log.debug("Adding command {} to queue {}; queue state: {}", activeCommand.getLoggingId(), q.getName(),
+                q.getState());
+        q.add(activeCommand);
+        notifyAdded(q, activeCommand);
 
-        q.add(pc);
-        notifyAdded(q, pc);
-
-        commandHistoryPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.Queue_KEY, q.getName());
+        commandHistoryPublisher.publish(activeCommand.getCommandId(), CommandHistoryPublisher.Queue_KEY, q.getName());
 
         if (q.state == QueueState.DISABLED) {
-            q.remove(pc, false);
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+            q.remove(activeCommand, false);
+            commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.NOK, "Queue disabled");
-            failedCommand(q, pc, "Queue disabled", true);
+            failedCommand(q, activeCommand, "Queue disabled", true);
             notifyUpdateQueue(q);
         } else if (q.state == QueueState.BLOCKED) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+            commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
             // notifyAdded(q, pc);
         } else if (q.state == QueueState.ENABLED) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+            commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
-            preReleaseCommad(q, pc, false);
+            preReleaseCommad(q, activeCommand);
 
         }
 
@@ -297,7 +267,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     // if there are transmission constrains, start the checker;
     // if not just release the command
-    private void preReleaseCommad(CommandQueue q, PreparedCommand pc, boolean rebuild) {
+    private void preReleaseCommad(CommandQueue q, ActiveCommand pc) {
         long missionTime = timeService.getMissionTime();
         if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionContraints()) {
             startTransmissionConstraintChecker(q, pc);
@@ -305,33 +275,33 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
             q.remove(pc, true);
-            releaseCommand(q, pc, true, rebuild);
+            releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         }
     }
 
-    private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
+    private void startTransmissionConstraintChecker(CommandQueue q, ActiveCommand pc) {
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
-
-        scheduleImmediateCheck(constraintChecker);
+        constraintChecker.checkImmediate();
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
-        tcChecker.pc.setPendingTransmissionConstraints(true);
-        notifyUpdated(tcChecker.queue, tcChecker.pc);
-        commandHistoryPublisher.publishAck(tcChecker.pc.getCommandId(),
+        tcChecker.activeCommand.setPendingTransmissionConstraints(true);
+        notifyUpdated(tcChecker.queue, tcChecker.activeCommand);
+        commandHistoryPublisher.publishAck(tcChecker.activeCommand.getCommandId(),
                 CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
     }
 
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
-        PreparedCommand pc = tcChecker.pc;
+        ActiveCommand pc = tcChecker.activeCommand;
         pc.setPendingTransmissionConstraints(false);
         CommandQueue q = tcChecker.queue;
         TCStatus status = tcChecker.aggregateStatus;
         log.info("transmission constraint finished for {} status: {}", pc.getCmdName(), status);
         long missionTime = timeService.getMissionTime();
+        tcChecker.unsubscribe();
 
         pendingTcCheckers.remove(tcChecker);
 
@@ -339,7 +309,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             q.remove(pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
                     missionTime, AckStatus.OK);
-            releaseCommand(q, pc, true, false);
+            releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
@@ -354,10 +324,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     // Notify the monitoring clients
-    private void notifyAdded(CommandQueue q, PreparedCommand pc) {
+    private void notifyAdded(CommandQueue q, ActiveCommand activeCommand) {
         for (CommandQueueListener m : monitoringClients) {
             try {
-                m.commandAdded(q, pc);
+                m.commandAdded(q, activeCommand);
             } catch (Exception e) {
                 log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
@@ -366,10 +336,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         notifyUpdateQueue(q);
     }
 
-    private void notifyUpdated(CommandQueue q, PreparedCommand pc) {
+    private void notifyUpdated(CommandQueue q, ActiveCommand activeCommand) {
         for (CommandQueueListener m : monitoringClients) {
             try {
-                m.commandUpdated(q, pc);
+                m.commandUpdated(q, activeCommand);
             } catch (Exception e) {
                 log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
@@ -378,10 +348,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     // Notify the monitoring clients
-    private void notifySent(CommandQueue q, PreparedCommand pc) {
+    private void notifySent(CommandQueue q, ActiveCommand activeCommand) {
         for (CommandQueueListener m : monitoringClients) {
             try {
-                m.commandSent(q, pc);
+                m.commandSent(q, activeCommand);
             } catch (Exception e) {
                 log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
@@ -415,18 +385,19 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * send a negative ack for a command.
      * 
-     * @param pc
+     * @param activeCommand
      *            the prepared command for which the negative ack is sent
      * @param notify
      *            notify or not the monitoring clients.
      */
-    private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
-        commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), reason);
+    private void failedCommand(CommandQueue cq, ActiveCommand activeCommand, String reason, boolean notify) {
+        commandHistoryPublisher.commandFailed(activeCommand.getCommandId(), timeService.getMissionTime(), reason);
+        commandingManager.failedCommand(activeCommand);
         // Notify the monitoring clients
         if (notify) {
             for (CommandQueueListener m : monitoringClients) {
                 try {
-                    m.commandRejected(cq, pc);
+                    m.commandRejected(cq, activeCommand);
                 } catch (Exception e) {
                     log.warn("got exception when notifying a monitor, removing it from the list", e);
                     monitoringClients.remove(m);
@@ -435,32 +406,25 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
-    private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
-        // start the verifiers
-        MetaCommand mc = pc.getMetaCommand();
-        if (mc.hasCommandVerifiers()) {
-            log.debug("Starting command verification for {}", pc);
-            CommandVerificationHandler cvh = new CommandVerificationHandler(processor, pc);
-            cvh.start();
-        }
-
-        commandReleaser.releaseCommand(pc);
+    private void releaseCommand(CommandQueue q, ActiveCommand activeCommand, boolean notify) {
+        commandingManager.releaseCommand(activeCommand);
         // Notify the monitoring clients
         if (notify) {
-            notifySent(q, pc);
+            notifySent(q, activeCommand);
         }
     }
 
-    private void unhandledCommand(PreparedCommand pc) {
-        commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), "No matching queue");
+    private void unhandledCommand(ActiveCommand activeCommand) {
+        commandHistoryPublisher.commandFailed(activeCommand.getCommandId(), timeService.getMissionTime(),
+                "No matching queue");
         CommandHistoryAttribute attr = CommandHistoryAttribute.newBuilder()
                 .setName(CommandHistoryPublisher.CommandComplete_KEY)
                 .setValue(Value.newBuilder().setStringValue("NOK"))
                 .build();
-        addToCommandHistory(pc.getCommandId(), attr);
+        addToCommandHistory(activeCommand.getCommandId(), attr);
         for (CommandQueueListener m : monitoringClients) {
             try {
-                m.commandUnhandled(pc);
+                m.commandUnhandled(activeCommand);
             } catch (Exception e) {
                 log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
@@ -475,7 +439,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     public CommandQueue getQueue(User user, PreparedCommand pc) {
         for (CommandQueue cq : queues.values()) {
-            if (cq.matches(user, pc)) {
+            if (cq.matches(user, pc.getMetaCommand())) {
                 return cq;
             }
         }
@@ -493,41 +457,40 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
         log.info("called to remove command: {}", commandId);
-        PreparedCommand pc = null;
+        ActiveCommand activeCommand = null;
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
-            for (PreparedCommand c : q.getCommands()) {
-                if (c.getCommandId().equals(commandId)) {
-                    pc = c;
-                    queue = q;
-                    break;
-                }
+            activeCommand = q.getcommand(commandId);
+            if (activeCommand != null) {
+                queue = q;
+                break;
             }
+
         }
-        if (pc != null) {
-            queue.remove(pc, false);
+        if (activeCommand != null) {
+            queue.remove(activeCommand, false);
             long missionTime = timeService.getMissionTime();
-            commandHistoryPublisher.publishAck(pc.getCommandId(),
+            commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK,
                     "Rejected by " + username);
-            failedCommand(queue, pc, "Rejected by " + username, true);
+            failedCommand(queue, activeCommand, "Rejected by " + username, true);
             notifyUpdateQueue(queue);
+            return activeCommand.getPreparedCommand();
         } else {
             log.warn("command not found in any queue");
+            return null;
         }
-        return pc;
     }
 
     // Used by REST API as a simpler identifier
     public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
         for (CommandQueue q : queues.values()) {
-            for (PreparedCommand pc : q.getCommands()) {
-                if (pc.getUUID().equals(uuid)) {
-                    return rejectCommand(pc.getCommandId(), username);
-                }
+            ActiveCommand activeCommand = q.getcommand(uuid);
+            if (activeCommand != null) {
+                return rejectCommand(activeCommand.getCommandId(), username);
             }
         }
-        log.warn("no prepared command found for uuid {}", uuid);
+        log.warn("no active command found for uuid {}", uuid);
         return null;
     }
 
@@ -535,35 +498,34 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * Called from external client to release a command from the queue
      * 
      * @param commandId
-     * @param rebuild
      *            - if to rebuild the command binary from the source
      * @return the prepared command sent
      */
-    public synchronized PreparedCommand sendCommand(CommandId commandId, boolean rebuild) {
-        PreparedCommand command = null;
+    public synchronized PreparedCommand sendCommand(CommandId commandId) {
+        ActiveCommand command = null;
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
-            for (PreparedCommand pc : q.getCommands()) {
-                if (pc.getCommandId().equals(commandId)) {
-                    command = pc;
-                    queue = q;
-                    break;
-                }
+            command = q.getcommand(commandId);
+            if (command != null) {
+                queue = q;
+                break;
             }
         }
         if (command != null) {
-            preReleaseCommad(queue, command, rebuild);
+            preReleaseCommad(queue, command);
+            return command.getPreparedCommand();
+        } else {
+            return null;
         }
-        return command;
+
     }
 
     // Used by REST API as a simpler identifier
-    public synchronized PreparedCommand sendCommand(UUID uuid, boolean rebuild) {
+    public synchronized PreparedCommand sendCommand(UUID uuid) {
         for (CommandQueue q : queues.values()) {
-            for (PreparedCommand pc : q.getCommands()) {
-                if (pc.getUUID().equals(uuid)) {
-                    return sendCommand(pc.getCommandId(), rebuild);
-                }
+            ActiveCommand activeCommand = q.getcommand(uuid);
+            if (activeCommand != null) {
+                return sendCommand(activeCommand.getCommandId());
             }
         }
         log.warn("no prepared command found for uuid {}", uuid);
@@ -604,13 +566,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         queue.state = newState;
         if (queue.state == QueueState.ENABLED) {
-            for (PreparedCommand pc : queue.getCommands()) {
-                preReleaseCommad(queue, pc, false);
+            for (ActiveCommand pc : queue.getCommands()) {
+                preReleaseCommad(queue, pc);
             }
         }
         if (queue.state == QueueState.DISABLED) {
             long missionTime = timeService.getMissionTime();
-            for (PreparedCommand pc : queue.getCommands()) {
+            for (ActiveCommand pc : queue.getCommands()) {
                 commandHistoryPublisher.publishAck(pc.getCommandId(),
                         CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Queue disabled");
                 failedCommand(queue, pc, "Queue disabled", true);
@@ -668,32 +630,18 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         return processorName;
     }
 
-    private void doUpdateItems(final List<ParameterValue> items) {
-        pvList.addAll(items);
-        // remove old parameter values
-        for (ParameterValue pv : items) {
-            Parameter p = pv.getParameter();
-            int c = pvList.count(p);
-            for (int i = 0; i < c - 1; i++) {
-                pvList.removeFirst(p);
-            }
-        }
+    /**
+     * Called from PRM when new telemetry data is available
+     */
+    @Override
+    public void process(ProcessingData tmData) {
         for (TransmissionConstraintChecker tcc : pendingTcCheckers) {
-            scheduleImmediateCheck(tcc);
+            tcc.checkWithTm(tmData);
         }
-    }
-
-    private void scheduleImmediateCheck(final TransmissionConstraintChecker tcc) {
-        timer.execute(tcc::check);
     }
 
     private void scheduleCheck(final TransmissionConstraintChecker tcc, long millisec) {
-        timer.schedule(tcc::check, millisec, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public void updateItems(int subscriptionId, final List<ParameterValue> items) {
-        timer.execute(() -> doUpdateItems(items));
+        timer.schedule(tcc::checkImmediate, millisec, TimeUnit.MILLISECONDS);
     }
 
     enum TCStatus {
@@ -701,26 +649,52 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     class TransmissionConstraintChecker {
-        List<TransmissionConstraintStatus> tcsList = new ArrayList<>();
-        final PreparedCommand pc;
+        volatile TCStatus aggregateStatus = TCStatus.INIT;
+        final List<TransmissionConstraintStatus> tcsList = new ArrayList<>();
+        final ActiveCommand activeCommand;
         final CommandQueue queue;
-        TCStatus aggregateStatus = TCStatus.INIT;
-        final MatchCriteriaEvaluator.EvaluatorInput matchCriteriaInput;
+        int ppmSubscriptionId = -1;
 
-
-        public TransmissionConstraintChecker(CommandQueue queue, PreparedCommand pc) {
-            this.pc = pc;
+        public TransmissionConstraintChecker(CommandQueue queue, ActiveCommand activeCommand) {
+            this.activeCommand = activeCommand;
             this.queue = queue;
-            List<TransmissionConstraint> constraints = pc.getMetaCommand().getTransmissionConstraintList();
+            List<TransmissionConstraint> constraints = activeCommand.getMetaCommand().getTransmissionConstraintList();
+            log.debug("Starting transmission constrant checker with {} checks for command {}, ", constraints.size(),
+                    activeCommand.getLoggingId());
             for (TransmissionConstraint tc : constraints) {
                 TransmissionConstraintStatus tcs = new TransmissionConstraintStatus(tc);
                 tcsList.add(tcs);
             }
-            matchCriteriaInput = new MatchCriteriaEvaluator.EvaluatorInput(processor.getLastValueCache(),
-                    pc.getArgAssignment(), pc.getAttributesAsParameters(processor.getXtceDb()));
+            Set<Parameter> pset = activeCommand.getMetaCommand().getTransmissionConstraintList()
+                    .stream()
+                    .flatMap(tcs -> tcs.getMatchCriteria().getDependentParameters().stream())
+                    .filter(p -> !p.isCommandParameter())
+                    .collect(Collectors.toSet());
+
+            if (!pset.isEmpty()) {
+                ParameterProcessorManager ppm = processor.getParameterProcessorManager();
+                ppmSubscriptionId = ppm.subscribe(pset, tmData -> checkWithTm(tmData));
+            }
+
         }
 
-        public void check() {
+        /**
+         * This may be called on multiple threads in parallel.
+         * <p>
+         * We cannot move the processing data on a different thread, so we do the check here and use the result in the
+         * timer thread.
+         */
+        public void checkWithTm(ProcessingData tmData) {
+            if (aggregateStatus != TCStatus.PENDING) {
+                return;
+            }
+            ProcessingData cmdData = ProcessingData.cloneForCommanding(tmData, activeCommand.getArguments(),
+                    activeCommand.getCmdParamCache());
+
+            check(System.currentTimeMillis(), cmdData);
+        }
+
+        public void checkImmediate() {
             long now = System.currentTimeMillis();
             if (aggregateStatus == TCStatus.INIT) {
                 // make sure that if timeout=0, the first check will not appear to be too late
@@ -733,44 +707,68 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             if (aggregateStatus != TCStatus.PENDING) {
                 return;
             }
+            ProcessingData cmdData = ProcessingData.createInitial(processor.getLastValueCache(),
+                    activeCommand.getArguments(), activeCommand.getCmdParamCache());
+            check(now, cmdData);
+        }
 
-            aggregateStatus = TCStatus.OK;
-            long scheduleNextCheck = Long.MAX_VALUE;
+        private void check(long now, ProcessingData data) {
+            TcsUpdate tcsUpdate = new TcsUpdate();
+            tcsUpdate.aggrStatus = TCStatus.OK;
+            tcsUpdate.scheduleNextCheck = Long.MAX_VALUE;
 
             for (TransmissionConstraintStatus tcs : tcsList) {
-                if (tcs.status == TCStatus.OK) {
-                    continue;
-                }
-
                 if (tcs.status == TCStatus.PENDING) {
                     long timeRemaining = tcs.expirationTime - now;
                     if (timeRemaining < 0) {
-                        tcs.status = TCStatus.TIMED_OUT;
-                        aggregateStatus = TCStatus.TIMED_OUT;
+                        tcsUpdate.tcs = tcs;
+                        tcsUpdate.tcsStatus = TCStatus.TIMED_OUT;
+                        tcsUpdate.aggrStatus = TCStatus.TIMED_OUT;
                         break;
                     } else {
-                        if (tcs.evaluator.evaluate(matchCriteriaInput) != MatchResult.OK) {
+                        if (tcs.evaluator.evaluate(data) != MatchResult.OK) {
                             if (timeRemaining > 0) {
-                                aggregateStatus = TCStatus.PENDING;
-                                if (timeRemaining < scheduleNextCheck) {
-                                    scheduleNextCheck = timeRemaining;
+                                tcsUpdate.aggrStatus = TCStatus.PENDING;
+                                if (timeRemaining < tcsUpdate.scheduleNextCheck) {
+                                    tcsUpdate.scheduleNextCheck = timeRemaining;
                                 }
                             } else {
-                                aggregateStatus = TCStatus.TIMED_OUT;
+                                tcsUpdate.aggrStatus = TCStatus.TIMED_OUT;
                                 break;
                             }
                         }
                     }
-
                 }
             }
-            if (aggregateStatus == TCStatus.PENDING) {
-                onTransmissionContraintCheckPending(this);
-                scheduleCheck(this, scheduleNextCheck);
-            } else {
-                onTransmissionContraintCheckFinished(this);
+
+            timer.submit(() -> {
+                if (aggregateStatus != TCStatus.PENDING) {
+                    return;
+                }
+                aggregateStatus = tcsUpdate.aggrStatus;
+
+                if (aggregateStatus == TCStatus.PENDING) {
+                    onTransmissionContraintCheckPending(this);
+                    scheduleCheck(this, tcsUpdate.scheduleNextCheck);
+                } else {
+                    onTransmissionContraintCheckFinished(this);
+                }
+            });
+
+        }
+
+        void unsubscribe() {
+            if (ppmSubscriptionId != -1) {
+                processor.getParameterProcessorManager().unsubscribe(ppmSubscriptionId);
             }
         }
+    }
+
+    static class TcsUpdate {
+        TransmissionConstraintStatus tcs;
+        TCStatus tcsStatus;
+        TCStatus aggrStatus;
+        long scheduleNextCheck;
     }
 
     static class TransmissionConstraintStatus {
@@ -787,9 +785,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     @Override
-    public Collection<ParameterValue> getSystemParameters() {
+    public Collection<ParameterValue> getSystemParameters(long time) {
         List<ParameterValue> pvlist = new ArrayList<>();
-        long time = processor.getCurrentTime();
         for (CommandQueue cq : queues.values()) {
             cq.fillInSystemParameters(pvlist, time);
         }

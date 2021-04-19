@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,6 +25,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.DataTypeProcessor;
+import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -38,7 +40,7 @@ public class LocalParameterManager extends AbstractProcessorService
         implements SoftwareParameterManager, ParameterProvider {
 
     ExecutorService executor;
-    private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();
+    private List<ParameterProcessor> parameterListeners = new CopyOnWriteArrayList<>();
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
 
     Set<Parameter> subscribedParams = new HashSet<>();
@@ -47,7 +49,7 @@ public class LocalParameterManager extends AbstractProcessorService
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
 
-    //called from unit test
+    // called from unit test
     void init(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
@@ -61,10 +63,10 @@ public class LocalParameterManager extends AbstractProcessorService
         this.proc = proc;
         this.lvc = proc.getLastValueCache();
         this.executor = proc.getTimer();
-                
-        ParameterRequestManager prm = proc.getParameterRequestManager();
-        prm.addParameterProvider(this);
-        prm.addSoftwareParameterManager(DataSource.LOCAL, this);
+
+        ParameterProcessorManager ppm = proc.getParameterProcessorManager();
+        ppm.addParameterProvider(this);
+        ppm.addSoftwareParameterManager(DataSource.LOCAL, this);
 
         if (proc.recordLocalValues()) {
             streamParameterSender = proc.getStreamParameterSender();
@@ -81,11 +83,11 @@ public class LocalParameterManager extends AbstractProcessorService
     }
 
     @Override
-    public void setParameterListener(ParameterListener parameterListener) {
+    public void setParameterProcessor(ParameterProcessor parameterListener) {
         parameterListeners.add(parameterListener);
     }
 
-    public void addParameterListener(ParameterListener parameterListener) {
+    public void addParameterListener(ParameterProcessor parameterListener) {
         parameterListeners.add(parameterListener);
     }
 
@@ -113,7 +115,10 @@ public class LocalParameterManager extends AbstractProcessorService
             }
         }
         if (pvlist.size() > 0) {
-            parameterListeners.forEach(l -> l.update(pvlist));
+            ProcessingData pdata = ProcessingData.createForTmProcessing(lvc);
+            pdata.getTmParams().addAll(pvlist);
+            parameterListeners.forEach(l -> l.process(pdata));
+
             if (streamParameterSender != null) {
                 streamParameterSender.sendParameters(pvlist);
             }
@@ -128,7 +133,7 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void updateParameters(final List<ParameterValue> pvList) {
         List<ParameterValue> pvl = new ArrayList<>(pvList.size());
-        for(ParameterValue pv: pvList) {
+        for (ParameterValue pv : pvList) {
             pvl.add(transformValue(pv));
         }
         // then filter out the subscribed ones and send it to PRM
@@ -145,7 +150,7 @@ public class LocalParameterManager extends AbstractProcessorService
         ParameterValue r;
 
         if (pv instanceof PartialParameterValue) {
-            ParameterValue oldValue = proc.getLastValueCache().getValue(p);
+            ParameterValue oldValue = lvc.getValue(p);
             if (oldValue == null) {
                 throw new IllegalArgumentException("Received request to partially update " + p.getQualifiedName()
                         + " but has no value in the cache");
@@ -160,7 +165,6 @@ public class LocalParameterManager extends AbstractProcessorService
 
         return r;
     }
-
 
     /**
      * Updates a parameter just with the engineering value
@@ -236,5 +240,11 @@ public class LocalParameterManager extends AbstractProcessorService
     protected void doStop() {
         executor.shutdown();
         notifyStopped();
+    }
+
+    // used in unit tests to synchronize with the sending of the parameters to the PPM
+    public void sync() throws InterruptedException, ExecutionException {
+        executor.submit(() -> {
+        }).get();
     }
 }

@@ -28,7 +28,7 @@ public enum DataSource {
      */
     SYSTEM,
     /**
-     * special parameters created on the fly and instantiated in the context of command verifiers
+     * parameters used in the context of command verifiers
      */
     COMMAND,
     /**

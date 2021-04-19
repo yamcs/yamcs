@@ -279,7 +279,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } else {
             pv = new PartialParameterValue(p, pid.getPath());
         }
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         try {
             mgr.updateParameters(Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
@@ -385,7 +385,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             } else {
                 pv = new PartialParameterValue(p, pid.getPath());
             }
-            pv.setEngineeringValue(ValueUtility.fromGpb(r.getValue()));
+            pv.setEngValue(ValueUtility.fromGpb(r.getValue()));
             List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
                     k -> new ArrayList<>());
             l.add(pv);
@@ -554,7 +554,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     private SoftwareParameterManager verifySoftwareParameterManager(Processor processor, DataSource ds)
             throws BadRequestException {
-        SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
+        SoftwareParameterManager mgr = processor.getParameterProcessorManager().getSoftwareParameterManager(ds);
         if (mgr == null) {
             throw new BadRequestException(String.format("Cannot set the value of %s parameters"
                     + " on processor %s", ds, processor.getName()));

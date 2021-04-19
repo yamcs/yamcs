@@ -100,6 +100,34 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testSendCommandFailedTransmissionConstraint2() throws Exception {
+        processorClient.setValue("/REFMDB/SUBSYS1/AllowCriticalTC2", ValueHelper.newValue(false)).get();
+        Command command = processorClient.prepareCommand("/REFMDB/SUBSYS1/CRITICAL_TC2")
+                .withArgument("p1", 2)
+                .withOrigin("IntegrationTest")
+                .withSequenceNumber(12)
+                .issue()
+                .get();
+        assertNotNull(command.getBinary());
+
+        CommandHistoryEntry cmdhist = captor.expectTimely();
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC2", cmdhist.getCommandName());
+        assertEquals(12, cmdhist.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdhist.getOrigin());
+
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
+
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.PENDING);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NOK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK,
+                "Transmission constraints check failed");
+
+        checkNextCmdHistoryAck(CommandHistoryPublisher.CommandComplete_KEY, AckStatus.NOK,
+                "Transmission constraints check failed");
+    }
+
+    @Test
     public void testSendCommandDisableTransmissionConstraint() throws Exception {
         Command command = processorClient.prepareCommand("/REFMDB/SUBSYS1/CRITICAL_TC1")
                 .withArgument("p1", 2)
@@ -143,8 +171,6 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY,
                 AckStatus.PENDING);
 
-        cmdhist = captor.poll(2000);
-        assertNull(cmdhist);
         Value v = ValueHelper.newValue(true);
         processorClient.setValue("/REFMDB/SUBSYS1/AllowCriticalTC2", v).get();
 

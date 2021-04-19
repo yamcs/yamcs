@@ -124,7 +124,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
         public boolean releaseCommand(PreparedCommand pc) {
             if (tcPatterns == null
                     || tcPatterns.stream().anyMatch(p -> p.matcher(pc.getCommandName()).matches())) {
-                log.trace("Releasing command {} on stream {}", pc.getId(), stream.getName());
+                log.trace("Releasing command {} on stream {}", pc.getLoggingId(), stream.getName());
                 stream.emitTuple(pc.toTuple());
                 return true;
             }

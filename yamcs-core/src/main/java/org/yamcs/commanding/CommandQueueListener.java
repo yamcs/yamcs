@@ -11,18 +11,18 @@ public interface CommandQueueListener {
     default void updateQueue(CommandQueue q) {
     }
 
-    default void commandAdded(CommandQueue q, PreparedCommand pc) {
-    }
-    
-    default void commandUpdated(CommandQueue q, PreparedCommand pc) {
+    default void commandAdded(CommandQueue q, ActiveCommand pc) {
     }
 
-    default void commandRejected(CommandQueue q, PreparedCommand pc) {
+    default void commandUpdated(CommandQueue q, ActiveCommand pc) {
     }
 
-    default void commandSent(CommandQueue q, PreparedCommand pc) {
+    default void commandRejected(CommandQueue q, ActiveCommand pc) {
     }
 
-    default void commandUnhandled(PreparedCommand pc) {
+    default void commandSent(CommandQueue q, ActiveCommand pc) {
+    }
+
+    default void commandUnhandled(ActiveCommand pc) {
     }
 }

@@ -13,7 +13,7 @@ import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.logging.Log;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -34,8 +34,9 @@ import org.yamcs.xtce.XtceDb;
  * 
  */
 
-public class XtceTmProcessor extends AbstractProcessorService implements TmProcessor, ParameterProvider, ContainerProvider {
-    private ParameterListener parameterRequestManager;
+public class XtceTmProcessor extends AbstractProcessorService
+        implements TmProcessor, ParameterProvider, ContainerProvider {
+    private ParameterProcessor parameterProcessorManager;
     private ContainerListener containerRequestManager;
 
     public final XtceDb xtcedb;
@@ -67,8 +68,8 @@ public class XtceTmProcessor extends AbstractProcessorService implements TmProce
     }
 
     @Override
-    public void setParameterListener(ParameterListener p) {
-        this.parameterRequestManager = p;
+    public void setParameterProcessor(ParameterProcessor p) {
+        this.parameterProcessorManager = p;
     }
 
     @Override
@@ -130,7 +131,7 @@ public class XtceTmProcessor extends AbstractProcessorService implements TmProce
      * Process telemetry packets
      *
      */
-   
+
     @Override
     public void processPacket(TmPacket pwrt, SequenceContainer sc) {
         try {
@@ -141,11 +142,11 @@ public class XtceTmProcessor extends AbstractProcessorService implements TmProce
             ContainerProcessingResult result = tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(),
                     rectime, sc);
 
-            ParameterValueList paramResult = result.params;
+            ParameterValueList paramResult = result.getTmParams();
             List<ContainerExtractionResult> containerResult = result.containers;
 
-            if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
-                parameterRequestManager.update(paramResult);
+            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
+                parameterProcessorManager.process(result);
             }
 
             if ((containerRequestManager != null) && (containerResult.size() > 0)) {

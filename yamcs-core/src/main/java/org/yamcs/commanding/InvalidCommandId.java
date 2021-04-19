@@ -3,7 +3,7 @@ package org.yamcs.commanding;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 @SuppressWarnings("serial")
-public class InvalidCommandId extends Exception {
+public class InvalidCommandId extends RuntimeException {
 
     CommandId cmdId;
 

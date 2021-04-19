@@ -16,7 +16,6 @@ import org.yamcs.xtce.XtceDb;
  *
  * Extracts parameters out of packets based on the XTCE description
  *
- *
  */
 public class XtceTmExtractor {
     private static final Logger log = LoggerFactory.getLogger(XtceTmExtractor.class);
@@ -30,6 +29,7 @@ public class XtceTmExtractor {
 
     /**
      * Create a standalone TM extractor
+     * 
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
@@ -47,9 +47,9 @@ public class XtceTmExtractor {
         this.subscription = new Subscription(xtcedb);
         rootContainer = xtcedb.getRootSequenceContainer();
         this.pdata = pdata;
-        if(pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
-            for(SequenceContainer sc: xtcedb.getSequenceContainers()) {
-                if(sc.useAsArchivePartition()) {
+        if (pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
+            for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
+                if (sc.useAsArchivePartition()) {
                     subscription.addSequenceContainer(sc);
                 }
             }
@@ -91,7 +91,7 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(Parameter param) {
-        //not implemented; very unlikely to be called
+        // not implemented; very unlikely to be called
     }
 
     /**
@@ -121,7 +121,9 @@ public class XtceTmExtractor {
      */
     public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
             SequenceContainer startContainer) {
-        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
+
+        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, stats,
+                pdata.getLastValueCache());
         try {
             synchronized (subscription) {
                 SubscribedContainer subscribedContainer = subscription.addSequenceContainer(startContainer);
@@ -152,7 +154,7 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(SequenceContainer sequenceContainer) {
-        //not implemented; very unlikely to be called
+        // not implemented; very unlikely to be called
     }
 
     public Subscription getSubscription() {

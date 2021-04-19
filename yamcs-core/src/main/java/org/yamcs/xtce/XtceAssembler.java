@@ -779,7 +779,7 @@ public class XtceAssembler {
         } else if (iv instanceof DynamicIntegerValue) {
             doc.writeStartElement("DynamicValue");
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", div.getParameterInstnaceRef());
+            writeParameterInstanceRef(doc, "ParameterInstanceRef", div.getParameterInstanceRef());
             doc.writeEndElement();
         }
 

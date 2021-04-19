@@ -78,7 +78,7 @@ public abstract class AbstractIntegrationTest {
         packetGenerator2 = PacketProvider.instance[1].mdbPacketGenerator;
         packetGenerator2.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
-        yamcs.getInstance(yamcsInstance).getProcessor("realtime").getParameterRequestManager().getAlarmServer()
+        yamcs.getInstance(yamcsInstance).getProcessor("realtime").getParameterProcessorManager().getAlarmServer()
                 .clearAll();
     }
 

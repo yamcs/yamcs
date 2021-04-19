@@ -32,7 +32,6 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -482,23 +481,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 observer.next(entry);
             }
 
-            @Override
-            public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-                CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
-                        .setName(key)
-                        .setValue(ValueUtility.toGbp(value))
-                        .build();
-                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
-                        .setId(cmdId.getGenerationTime() + "-" + cmdId.getOrigin() + "-" + cmdId.getSequenceNumber())
-                        .setOrigin(cmdId.getOrigin())
-                        .setCommandName(cmdId.getCommandName())
-                        .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
-                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
-                        .setCommandId(cmdId)
-                        .addAttr(cha)
-                        .build();
-                observer.next(entry);
-            }
 
             @Override
             public void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {

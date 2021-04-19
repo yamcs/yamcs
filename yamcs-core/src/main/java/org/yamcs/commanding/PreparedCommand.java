@@ -33,8 +33,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * A command which has been transformed to binary and it is being executed.
- * 
+ * Stores command source, binary attributes
  *
  */
 public class PreparedCommand {
@@ -42,14 +41,6 @@ public class PreparedCommand {
     private CommandId id;
     private MetaCommand metaCommand;
     private final UUID uuid; // Used in REST API as an easier single-field ID. Not persisted.
-
-    // used when a command has a transmissionConstraint with timeout
-    // when the command is ready to go, but is waiting for a transmission constraint, this is set to true
-    private boolean pendingTransmissionConstraint;
-
-    // this is the time when the clock starts ticking for fullfilling the transmission constraint
-    // -1 means it has not been set yet
-    private long transmissionContraintCheckStart = -1;
 
     // if true, the transmission constraints (if existing) will not be checked
     boolean disableTransmissionConstraints = false;
@@ -152,6 +143,14 @@ public class PreparedCommand {
         return id.getGenerationTime() + "-" + id.getOrigin() + "-" + id.getSequenceNumber();
     }
 
+    /**
+     * String useful for logging. Contains command name and sequence number
+     * 
+     * @return
+     */
+    public String getLoggingId() {
+        return id.getCommandName() + "-" + id.getSequenceNumber();
+    }
     public String getOrigin() {
         return id.getOrigin();
     }
@@ -354,22 +353,6 @@ public class PreparedCommand {
         this.metaCommand = cmd;
     }
 
-    public boolean isPendingTransmissionConstraints() {
-        return pendingTransmissionConstraint;
-    }
-
-    public void setPendingTransmissionConstraints(boolean b) {
-        this.pendingTransmissionConstraint = b;
-    }
-
-    public long getTransmissionContraintCheckStart() {
-        return transmissionContraintCheckStart;
-    }
-
-    public void setTransmissionContraintCheckStart(long transmissionContraintCheckStart) {
-        this.transmissionContraintCheckStart = transmissionContraintCheckStart;
-    }
-
     public void setArgAssignment(Map<Argument, ArgumentValue> argAssignment, Set<String> userAssignedArgumentNames) {
         this.argAssignment = argAssignment;
         this.userAssignedArgumentNames = userAssignedArgumentNames;
@@ -378,6 +361,7 @@ public class PreparedCommand {
     public ArgumentValue getArgAssignment(Argument arg) {
         return argAssignment.get(arg);
     }
+
     public Map<Argument, ArgumentValue> getArgAssignment() {
         return argAssignment;
     }

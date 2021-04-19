@@ -193,7 +193,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     @Override
     public void sendTc(PreparedCommand pc) {
         boolean tcBypassFlag = isBypass(pc);
-        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getId(), tcBypassFlag,
+        log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getLoggingId(),
+                tcBypassFlag,
                 bypassAll);
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int pcLength = cmdPostProcessor.getBinaryLength(pc);
@@ -591,7 +592,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private void queueTC(PreparedCommand pc) {
-        log.debug("Adding command {} to the waitQueue", pc.getId());
+        log.debug("Adding command {} to the waitQueue", pc.getLoggingId());
         waitQueue.add(pc);
         monitors.forEach(m -> m.tcQueued());
         if (state <= 2) {

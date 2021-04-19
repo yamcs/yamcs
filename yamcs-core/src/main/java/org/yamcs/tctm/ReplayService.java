@@ -25,11 +25,10 @@ import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -50,6 +49,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -71,7 +71,7 @@ public class ReplayService extends AbstractProcessorService
 
     ReplayOptions originalReplayRequest;
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
-    private ParameterRequestManager parameterRequestManager;
+    private ParameterProcessorManager parameterProcessorManager;
     TmProcessor tmProcessor;
     XtceDb xtceDb;
     volatile long replayTime;
@@ -100,9 +100,9 @@ public class ReplayService extends AbstractProcessorService
             excludeParameterGroups = args.getList("excludeParameterGroups");
         }
         this.tmProcessor = proc.getTmProcessor();
-        parameterRequestManager = proc.getParameterRequestManager();
+        parameterProcessorManager = proc.getParameterProcessorManager();
         proc.setPacketProvider(this);
-        parameterRequestManager.addParameterProvider(this);
+        parameterProcessorManager.addParameterProvider(this);
 
         if (spec instanceof ReplayOptions) {
             this.originalReplayRequest = (ReplayOptions) spec;
@@ -152,7 +152,9 @@ public class ReplayService extends AbstractProcessorService
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
                 replayTime = pvals.get(0).getGenerationTime();
-                parameterRequestManager.update(new ParameterValueList(calibrate(pvals)));
+                ProcessingData processingData = ProcessingData.createForTmProcessing(processor.getLastValueCache());
+                calibrate(pvals, processingData);
+                parameterProcessorManager.process(processingData);
             }
             break;
         case CMD_HISTORY:
@@ -169,15 +171,15 @@ public class ReplayService extends AbstractProcessorService
         }
     }
 
-    private List<ParameterValue> calibrate(List<ParameterValue> pvlist) {
+    private void calibrate(List<ParameterValue> pvlist, ProcessingData processingData) {
         ParameterTypeProcessor ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
 
         for (ParameterValue pv : pvlist) {
             if (pv.getEngValue() == null && pv.getRawValue() != null) {
-                ptypeProcessor.calibrate(pv);
+                ptypeProcessor.calibrate(processingData, pv);
             }
+            processingData.addTmParam(pv);
         }
-        return pvlist;
     }
 
     @Override
@@ -259,7 +261,8 @@ public class ReplayService extends AbstractProcessorService
         if (plist.isEmpty()) {
             return;
         }
-        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager,
+        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(
+                parameterProcessorManager.getParameterRequestManager(),
                 (subscriptionId, params) -> {
                     // ignore data, we create this subscription just to get the list of
                     // dependent containers and PPs
@@ -341,8 +344,8 @@ public class ReplayService extends AbstractProcessorService
     }
 
     @Override
-    public void setParameterListener(ParameterListener parameterRequestManager) {
-        this.parameterRequestManager = (ParameterRequestManager) parameterRequestManager;
+    public void setParameterProcessor(ParameterProcessor ppm) {
+        this.parameterProcessorManager = (ParameterProcessorManager) ppm;
     }
 
     @Override

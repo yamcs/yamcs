@@ -18,4 +18,8 @@ public class Attribute {
     public Value getValue() {
         return value;
     }
+
+    public String toString() {
+        return key + ": " + value;
+    }
 }

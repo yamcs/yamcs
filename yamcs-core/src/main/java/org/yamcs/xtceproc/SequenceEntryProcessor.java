@@ -66,7 +66,8 @@ public class SequenceEntryProcessor {
         if (subsribedContainer != null) {
             BitBuffer buf1 = buf.slice();
 
-            ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, buf1, pcontext.result,
+            ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.proccessingData, buf1,
+                    pcontext.result,
                     pcontext.subscription, pcontext.options);
             if (!pcontext.options.resultIncludesSubcontainers) {
                 cpc1.provideContainerResult = false;
@@ -100,7 +101,7 @@ public class SequenceEntryProcessor {
         }
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
 
-        pcontext.pdata.parameterTypeProcessor.calibrate(pcontext, pv);
+        pcontext.proccessingData.parameterTypeProcessor.calibrate(result, pv);
 
         pv.setAcquisitionTime(result.acquisitionTime);
         pv.setGenerationTime(result.generationTime);
@@ -111,7 +112,7 @@ public class SequenceEntryProcessor {
     private void extractParameterEntry(ParameterEntry pe) {
         ContainerParameterValue pv = extractParameter(pe.getParameter());
         pv.setSequenceEntry(pe);
-        pcontext.result.params.add(pv);
+        pcontext.result.addTmParam(pv);
     }
 
     private void extractArrayParameterEntry(ArrayParameterEntry pe) {
@@ -128,14 +129,14 @@ public class SequenceEntryProcessor {
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
 
-        pcontext.pdata.parameterTypeProcessor.calibrate(pcontext, pv);
+        pcontext.proccessingData.parameterTypeProcessor.calibrate(pcontext.result, pv);
 
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);
         pv.setExpireMillis(pcontext.result.expireMillis);
         pv.setSequenceEntry(pe);
 
-        pcontext.result.params.add(pv);
+        pcontext.result.addTmParam(pv);
     }
 
     private ArrayValue extractArray(ArrayParameterType aptype, List<IntegerValue> size) {
@@ -197,7 +198,7 @@ public class SequenceEntryProcessor {
         }
         ContainerParameterValue pv = extractParameter(p);
         pv.setSequenceEntry(se);
-        pcontext.result.params.add(pv);
+        pcontext.result.addTmParam(pv);
     }
 
     private Value extract(ParameterType ptype) {

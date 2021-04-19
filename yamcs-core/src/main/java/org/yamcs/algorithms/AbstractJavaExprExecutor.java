@@ -6,6 +6,7 @@ import java.util.List;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtceproc.ProcessingData;
 
 public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor {
 
@@ -13,7 +14,8 @@ public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor
         super(algorithmDef, execCtx);
     }
 
-    public AlgorithmExecutionResult execute(long acqTime, long genTime) throws AlgorithmException {
+    @Override
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) throws AlgorithmException {
         try {
             List<ParameterValue> outputValues = new ArrayList<>(algorithmDef.getOutputList().size());
             for (OutputParameter outputParam : algorithmDef.getOutputList()) {

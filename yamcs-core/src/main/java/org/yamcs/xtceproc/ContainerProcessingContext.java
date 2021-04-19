@@ -15,7 +15,7 @@ import org.yamcs.xtce.XtceDb;
  *
  */
 public class ContainerProcessingContext {
-    final ProcessorData pdata;
+    final ProcessorData proccessingData;
     final BitBuffer buffer;
 
     // Keeps track of the absolute offset of the container where the processing takes place.
@@ -35,7 +35,7 @@ public class ContainerProcessingContext {
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
             Subscription subscription, ContainerProcessingOptions options) {
-        this.pdata = pdata;
+        this.proccessingData = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
         this.result = result;
@@ -57,7 +57,12 @@ public class ContainerProcessingContext {
      */
     public Value getValue(ParameterInstanceRef pir) {
         Parameter p = pir.getParameter();
-        ParameterValue pv = result.params.getLastInserted(p);
+        // TBD maybe we should make this configurable
+        // allowOld = true means that processing parameters in this packet can depend on parameters not part of the
+        // packet - not a good idea but some people use that. Yamcs wasn't able to use old values but now it is
+        // able.
+        boolean allowOld = false;
+        ParameterValue pv = result.getTmParameterInstance(p, pir.getInstance(), allowOld);
         if (pv == null) {
             return null;
         }
@@ -69,10 +74,10 @@ public class ContainerProcessingContext {
     }
 
     public XtceDb getXtceDb() {
-        return pdata.getXtceDb();
+        return proccessingData.getXtceDb();
     }
 
     public ProcessorData getProcessorData() {
-        return pdata;
+        return proccessingData;
     }
 }

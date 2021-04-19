@@ -198,7 +198,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         ListProcessorAlarmsResponse.Builder responseb = ListProcessorAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
             AlarmServer<Parameter, org.yamcs.parameter.ParameterValue> alarmServer = processor
-                    .getParameterRequestManager()
+                    .getParameterProcessorManager()
                     .getAlarmServer();
             for (ActiveAlarm<org.yamcs.parameter.ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
                 responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
@@ -278,7 +278,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
         if (processor.hasAlarmServer()) {
-            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+            alarmServers.add(processor.getParameterProcessorManager().getAlarmServer());
         }
         if (processor.getEventAlarmServer() != null) {
             alarmServers.add(processor.getEventAlarmServer());
@@ -327,7 +327,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
         if (processor.hasAlarmServer()) {
-            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+            alarmServers.add(processor.getParameterProcessorManager().getAlarmServer());
         }
         if (processor.getEventAlarmServer() != null) {
             alarmServers.add(processor.getEventAlarmServer());
@@ -384,7 +384,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             throws HttpException {
         try {
             if (processor.hasAlarmServer()) {
-                AlarmServer<Parameter, ParameterValue> parameterAlarmServer = processor.getParameterRequestManager()
+                AlarmServer<Parameter, ParameterValue> parameterAlarmServer = processor.getParameterProcessorManager()
                         .getAlarmServer();
                 XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
                 Parameter parameter = mdb.getParameter(alarmName);
@@ -422,7 +422,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             throw new BadRequestException(
                     "Alarms are not enabled for processor '" + instance + "/" + processorName + "'");
         } else {
-            return processor.getParameterRequestManager().getAlarmServer();
+            return processor.getParameterProcessorManager().getAlarmServer();
         }
     }
 

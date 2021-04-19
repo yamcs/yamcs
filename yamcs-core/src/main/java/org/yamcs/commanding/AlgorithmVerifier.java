@@ -1,13 +1,14 @@
 package org.yamcs.commanding;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.Processor;
+import org.yamcs.algorithms.ActiveAlgorithm;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
@@ -16,53 +17,58 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
     final Algorithm alg;
     final AlgorithmExecutionContext algCtx;
-    final PreparedCommand pc;
+    final ActiveCommand activeCommand;
     Logger log;
     final XtceDb xtcedb;
 
-    final Processor yproc;
+    final Processor processor;
 
     AlgorithmVerifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         super(cvh, cv);
         alg = cv.getAlgorithm();
         algCtx = cvh.getAlgorithmExecutionContext();
-        pc = cvh.getPreparedCommand();
-        yproc = cvh.getProcessor();
-        xtcedb = yproc.getXtceDb();
+        activeCommand = cvh.getActiveCommand();
+        processor = cvh.getProcessor();
+        xtcedb = processor.getXtceDb();
         log = LoggerFactory.getLogger(AlgorithmVerifier.class);
     }
 
     @Override
     void doStart() {
+        activeCommand.subscribeCmdParams(data -> processCmdData(data));
+
         log.debug("Starting verifier for command {} alg: {} stage: {} ",
-                StringConverter.toString(pc.getCommandId()), alg.getName(), cv.getStage());
+                StringConverter.toString(activeCommand.getCommandId()), alg.getName(), cv.getStage());
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.activateAlgorithm(alg, algCtx, this);
-
-        // send command arguments
-        algMgr.processArguments(cvh.getCommandArguments(), algCtx);
-
-        // push all the command parameters
-        List<ParameterValue> pvList = cvh.getCommandParameters();
-        if (!pvList.isEmpty()) {
-            algMgr.updateDelivery(new ParameterValueList(pvList), algCtx);
+        ActiveAlgorithm algo = algMgr.activateAlgorithm(alg, algCtx);
+        if (algo == null) {
+            log.warn("{}: failing verifier {} because algorithm could not be activated",
+                    activeCommand.getCommandId(), cv.getStage());
+            finished(false, "algorithm activation failed");
+        } else {
+            algo.addExecListener(this);
         }
+
+        ProcessingData data = ProcessingData.createInitial(processor.getLastValueCache(),
+                activeCommand.getArguments(), activeCommand.getCmdParamCache());
+        // send initial values to algorithm
+        algCtx.process(processor.getCurrentTime(), data);
     }
 
     @Override
     void doCancel() {
-        AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.deactivateAlgorithm(alg, algCtx);
+        algCtx.removeAlgorithm(alg.getQualifiedName());
     }
 
     @Override
     public void algorithmRun(List<RawEngValue> inputValues, Object returnValue, List<ParameterValue> outputValues) {
         if (log.isTraceEnabled()) {
-            CommandId cmdId = pc.getCommandId();
+            CommandId cmdId = activeCommand.getCommandId();
             log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}",
                     StringConverter.toString(cmdId), alg.getName(), cv.getStage(), returnValue, outputValues);
         }
@@ -70,8 +76,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             log.trace("Algorithm {} run but did not return a result.", alg.getName());
             return;
         }
-        AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.deactivateAlgorithm(alg, algCtx);
+        algCtx.removeAlgorithm(alg.getQualifiedName());
 
         if (returnValue instanceof Boolean) {
             finished((Boolean) returnValue);
@@ -80,9 +85,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         }
     }
 
-    @Override
-    public void updatedCommandHistoryParam(ParameterValue pv) {
-        AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.updateDelivery(ParameterValueList.asList(pv), algCtx);
+    public void processCmdData(ProcessingData data) {
+        algCtx.process(processor.getCurrentTime(), data);
     }
 }

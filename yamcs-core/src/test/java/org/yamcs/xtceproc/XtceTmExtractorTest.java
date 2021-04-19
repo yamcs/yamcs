@@ -449,7 +449,7 @@ public class XtceTmExtractorTest {
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_List", container.getName());
 
-        ParameterValueList received = result.params;
+        ParameterValueList received = result.getTmParams();
         assertEquals(received.size(), 6);
     }
 

@@ -2,14 +2,18 @@ package org.yamcs.commanding;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.CommandVerifier;
 
 abstract class Verifier {
+    final protected Log log;
     final protected CommandVerifier cv;
     final protected CommandVerificationHandler cvh;
+    final ActiveCommand activeCommand;
     final ScheduledThreadPoolExecutor timer;
     protected ParameterValue returnPv;
+
 
     enum State {
         NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
@@ -23,6 +27,8 @@ abstract class Verifier {
         this.cv = cv;
         this.cvh = cvh;
         this.timer = cvh.timer;
+        this.activeCommand = cvh.getActiveCommand();
+        this.log = new Log(this.getClass(), cvh.getProcessor().getInstance());
     }
 
     void start() {
@@ -68,6 +74,7 @@ abstract class Verifier {
     void finished(boolean result) {
         finished(result, null);
     }
+
     void finishOK() {
         finished(true, null);
     }
@@ -82,16 +89,6 @@ abstract class Verifier {
      * Called to cancel the verification in case it didn't finish in the expected time.
      */
     abstract void doCancel();
-
-    /**
-     * Called when a command history parameter (an entry in the command history) is received The parameter name is set
-     * to /yamcs/cdmHist/&lt;key&gt; where the key is the command history key.
-     * 
-     * 
-     * @param pv
-     */
-    public void updatedCommandHistoryParam(ParameterValue pv) {
-    }
 
     public State getState() {
         return state;

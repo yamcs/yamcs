@@ -26,7 +26,7 @@ public class DynamicIntegerValue extends IntegerValue {
         this.instanceRef = pir;
     }
 
-    public ParameterInstanceRef getParameterInstnaceRef() {
+    public ParameterInstanceRef getParameterInstanceRef() {
         return instanceRef;
     }
 

@@ -9,8 +9,9 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 
 /**
- * stubbed implementation of DataEncoder that "removes" all the AlgorithmExecutor methods - 
- *  to be used until the data decoders will work as algorithms, or for data decoders that do not need any input parameters  
+ * stubbed implementation of DataEncoder that "removes" all the AlgorithmExecutor methods -
+ * to be used until the data decoders will work as algorithms, or for data decoders that do not need any input
+ * parameters
  * 
  * @author nm
  *
@@ -27,21 +28,20 @@ public abstract class AbstractDataEncoder implements DataEncoder {
     public int getLookbackSize(Parameter parameter) {
         return 0;
     }
-    
+
     /**
-     * Update parameters and return true if the algorithm should run
+     * Update the input data and return true if the algorithm should run
      * 
-     * @param paramList - list of input parameters
      * @return true if the algorithm should run
      */
-    public boolean updateParameters(ParameterValueList paramList) {
+    public boolean update(ProcessingData data) {
         return false;
     }
-  
+
     /**
      * Runs the associated algorithm with the latest InputParameters
      */
-    public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
         throw new IllegalStateException("Cannot run this method on a data encoder");
     }
 

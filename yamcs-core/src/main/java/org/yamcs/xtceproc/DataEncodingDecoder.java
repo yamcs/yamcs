@@ -33,7 +33,7 @@ public class DataEncodingDecoder {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public DataEncodingDecoder(ContainerProcessingContext pcontext) {
-        this(pcontext.pdata, pcontext.buffer);
+        this(pcontext.proccessingData, pcontext.buffer);
     }
 
     public DataEncodingDecoder(ProcessorData pdata, BitBuffer buffer) {

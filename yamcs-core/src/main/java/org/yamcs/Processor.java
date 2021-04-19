@@ -21,6 +21,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.ServiceState;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -53,8 +54,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class Processor extends AbstractService {
     public static final String PROC_PARAMETERS_STREAM = "proc_param";
 
-    // handles subscriptions to parameters
-    private ParameterRequestManager parameterRequestManager;
+    // runs algorithms and distributes parameters
+    private ParameterProcessorManager parameterProcessorManager;
+
     // handles subscriptions to containers
     private ContainerRequestManager containerRequestManager;
     // handles subscriptions to command history
@@ -173,7 +175,7 @@ public class Processor extends AbstractService {
         // Shared between prm and crm
         tmProcessor = new XtceTmProcessor(this);
         containerRequestManager = new ContainerRequestManager(this, tmProcessor);
-        parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
+        parameterProcessorManager = new ParameterProcessorManager(this, tmProcessor);
 
         for (ProcessorServiceWithConfig swc : serviceList) {
             if (swc.service instanceof CommandHistoryPublisher) {
@@ -203,8 +205,7 @@ public class Processor extends AbstractService {
             service.init(this, swc.getConfig(), spec);
         }
 
-
-        parameterRequestManager.init();
+        parameterProcessorManager.init();
 
         listeners.forEach(l -> l.processorAdded(this));
 
@@ -230,8 +231,8 @@ public class Processor extends AbstractService {
         return commandHistoryPublisher;
     }
 
-    public ParameterRequestManager getParameterRequestManager() {
-        return parameterRequestManager;
+    public ParameterProcessorManager getParameterProcessorManager() {
+        return parameterProcessorManager;
     }
 
     public ContainerRequestManager getContainerRequestManager() {
@@ -258,7 +259,7 @@ public class Processor extends AbstractService {
             }, MoreExecutors.directExecutor());
             startIfNecessary(commandHistoryRequestManager);
             startIfNecessary(commandHistoryProvider);
-            startIfNecessary(parameterRequestManager);
+            startIfNecessary(parameterProcessorManager);
             startIfNecessary(tmPacketProvider);
             startIfNecessary(commandingManager);
             startIfNecessary(eventAlarmServer);
@@ -271,7 +272,7 @@ public class Processor extends AbstractService {
 
             awaitIfNecessary(commandHistoryRequestManager);
             awaitIfNecessary(commandHistoryProvider);
-            awaitIfNecessary(parameterRequestManager);
+            awaitIfNecessary(parameterProcessorManager);
             awaitIfNecessary(tmPacketProvider);
             awaitIfNecessary(commandingManager);
             awaitIfNecessary(eventAlarmServer);
@@ -581,7 +582,7 @@ public class Processor extends AbstractService {
     }
 
     public ParameterCache getParameterCache() {
-        return parameterRequestManager.getParameterCache();
+        return parameterProcessorManager.getParameterCache();
     }
 
     /**
@@ -624,6 +625,10 @@ public class Processor extends AbstractService {
 
     public ProcessorConfig getConfig() {
         return config;
+    }
+
+    public ParameterRequestManager getParameterRequestManager() {
+        return parameterProcessorManager.getParameterRequestManager();
     }
 
     @Override

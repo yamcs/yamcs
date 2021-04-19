@@ -41,7 +41,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int pcLength = cmdPostProcessor.getBinaryLength(preparedCommand);
         if (framingLength + pcLength > vmp.maxFrameLength) {
-            log.warn("Command {} does not fit into frame ({} + {} > {})", preparedCommand.getId(), framingLength,
+            log.warn("Command {} does not fit into frame ({} + {} > {})", preparedCommand.getLoggingId(), framingLength,
                     pcLength, vmp.maxFrameLength);
             failedCommand(preparedCommand.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "

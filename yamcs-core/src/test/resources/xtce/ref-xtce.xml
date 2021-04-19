@@ -134,6 +134,7 @@
                 </xtce:OutputSet>
             </xtce:CustomAlgorithm>
             <xtce:MathAlgorithm name="copy_param5_into_param6">
+            <!-- The param5 has an initial value and this algorithm is copying it to param6 -->
                 <xtce:MathOperation outputParameterRef="param6">
                     <xtce:ParameterInstanceRefOperand parameterRef="param5"/>
                     <xtce:TriggerSet>

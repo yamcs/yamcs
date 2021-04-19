@@ -89,6 +89,9 @@ public class ParameterInstanceRef extends ParameterOrArgumentRef {
             sb.append("/");
             sb.append(PathElement.pathToString(path));
         }
+        if (instance != 0) {
+            sb.append("[" + instance + "]");
+        }
         return sb.toString();
     }
 }

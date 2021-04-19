@@ -6,11 +6,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.parameter.LastValueCache;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -21,7 +20,6 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.util.DoubleRange;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
@@ -42,15 +40,15 @@ public class ParameterAlarmChecker {
 
     private AlarmServer<Parameter, ParameterValue> alarmServer;
 
-    ParameterRequestManager prm;
+    ParameterProcessorManager ppm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     LastValueCache lastValueCache;
     final ProcessorData pdata;
 
-    public ParameterAlarmChecker(ParameterRequestManager prm, ProcessorData pdata) {
-        this.prm = prm;
-        this.lastValueCache = prm.getLastValueCache();
+    public ParameterAlarmChecker(ParameterProcessorManager ppm, ProcessorData pdata) {
+        this.ppm = ppm;
+        this.lastValueCache = ppm.getLastValueCache();
         this.pdata = pdata;
     }
 
@@ -65,7 +63,7 @@ public class ParameterAlarmChecker {
             return;
         }
         Set<Parameter> params = ptype.getDependentParameters();
-        prm.subscribeToProviders(params);
+        ppm.subscribeToProviders(params);
     }
 
     /**
@@ -75,12 +73,12 @@ public class ParameterAlarmChecker {
      * The method is called once before the algorithms are run and once after the algorithms to also check
      * the new values.
      */
-    public void performAlarmChecking(ParameterValueList currentDelivery, Iterator<ParameterValue> it) {
+    public void performAlarmChecking(ProcessingData processingData, Iterator<ParameterValue> it) {
         while (it.hasNext()) {
             ParameterValue pval = it.next();
             ParameterType ptype = pdata.getParameterType(pval.getParameter());
             if (ptype != null && ptype.hasAlarm()) {
-                performAlarmChecking(currentDelivery, pval, ptype);
+                performAlarmChecking(processingData, pval, ptype);
             } else if (pval.getMonitoringResult() != null) {
                 // monitoring result set already - either processed parameters or some service like the
                 // TimeCorrelationService
@@ -103,17 +101,17 @@ public class ParameterAlarmChecker {
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
      */
-    private void performAlarmChecking(ParameterValueList currentDelivery, ParameterValue pv, ParameterType ptype) {
+    private void performAlarmChecking(ProcessingData processingData, ParameterValue pv, ParameterType ptype) {
         if (ptype instanceof FloatParameterType) {
-            performAlarmCheckingFloat(currentDelivery, (FloatParameterType) ptype, pv);
+            performAlarmCheckingFloat(processingData, (FloatParameterType) ptype, pv);
         } else if (ptype instanceof EnumeratedParameterType) {
-            performAlarmCheckingEnumerated(currentDelivery, (EnumeratedParameterType) ptype, pv);
+            performAlarmCheckingEnumerated(processingData, (EnumeratedParameterType) ptype, pv);
         } else if (ptype instanceof IntegerParameterType) {
-            performAlarmCheckingInteger(currentDelivery, (IntegerParameterType) ptype, pv);
+            performAlarmCheckingInteger(processingData, (IntegerParameterType) ptype, pv);
         }
     }
 
-    private void performAlarmCheckingInteger(ParameterValueList currentDelivery,
+    private void performAlarmCheckingInteger(ProcessingData processingData,
             IntegerParameterType ipt, ParameterValue pv) {
         long intCalValue = 0;
         if (pv.getEngValue().getType() == Type.SINT32) {
@@ -137,9 +135,8 @@ public class ParameterAlarmChecker {
         boolean latching = false;
         if (ipt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
-                EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(input) == MatchResult.OK) {
+                if (evaluator.evaluate(processingData) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -176,7 +173,7 @@ public class ParameterAlarmChecker {
         }
     }
 
-    private void performAlarmCheckingFloat(ParameterValueList currentDelivery,
+    private void performAlarmCheckingFloat(ProcessingData processingData,
             FloatParameterType fpt, ParameterValue pv) {
         double doubleCalValue = 0;
         if (pv.getEngValue().getType() == Type.FLOAT) {
@@ -196,10 +193,9 @@ public class ParameterAlarmChecker {
         boolean autoAck = false;
         boolean latching = false;
         if (fpt.getContextAlarmList() != null) {
-            EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(input) == MatchResult.OK) {
+                if (evaluator.evaluate(processingData) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -284,7 +280,7 @@ public class ParameterAlarmChecker {
         pv.setSevereRange(severeRange);
     }
 
-    private void performAlarmCheckingEnumerated(ParameterValueList currentDelivery,
+    private void performAlarmCheckingEnumerated(ProcessingData processingData,
             EnumeratedParameterType ept, ParameterValue pv) {
         pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
         String s = pv.getEngValue().getStringValue();
@@ -292,10 +288,9 @@ public class ParameterAlarmChecker {
         EnumerationAlarm alarm = ept.getDefaultAlarm();
         int minViolations = (alarm == null) ? 1 : alarm.getMinViolations();
         if (ept.getContextAlarmList() != null) {
-            EvaluatorInput input = new EvaluatorInput(currentDelivery, lastValueCache);
             for (EnumerationContextAlarm nca : ept.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(input) == MatchResult.OK) {
+                if (evaluator.evaluate(processingData) == MatchResult.OK) {
                     alarm = nca;
                     minViolations = nca.getMinViolations();
                     break;

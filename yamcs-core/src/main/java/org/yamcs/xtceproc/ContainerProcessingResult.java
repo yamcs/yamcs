@@ -4,21 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.SequenceContainer;
 
-public class ContainerProcessingResult {
-    ParameterValueList params = new ParameterValueList();
+/**
+ * the container result is built during a container processing
+ * <p>
+ * It is an super class of the {@link ProcessingData} and passed to the ParameteRequestManager to compute algorithms,
+ * trigger alarms, etc.
+ *
+ */
+public class ContainerProcessingResult extends ProcessingData {
     List<ContainerExtractionResult> containers = new ArrayList<>();
     long acquisitionTime;
     long generationTime;
     ProcessingStatistics stats;
     long expireMillis = -1; // -1 means not defined
 
-    public ContainerProcessingResult(long aquisitionTime, long generationTime, ProcessingStatistics stats) {
+    public ContainerProcessingResult(long aquisitionTime, long generationTime, ProcessingStatistics stats,
+            LastValueCache procLastValueCache) {
+        super(procLastValueCache, new ParameterValueList(), null, null, null);
         this.acquisitionTime = aquisitionTime;
         this.generationTime = generationTime;
         this.stats = stats;
+
     }
 
     public String getPacketName() {
@@ -34,10 +44,11 @@ public class ContainerProcessingResult {
     }
 
     public ParameterValueList getParameterResult() {
-        return params;
+        return getTmParams();
     }
 
     public List<ContainerExtractionResult> getContainerResult() {
         return containers;
     }
+
 }

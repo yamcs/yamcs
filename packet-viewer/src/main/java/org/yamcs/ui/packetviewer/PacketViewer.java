@@ -85,7 +85,7 @@ import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.parameter.ContainerParameterValue;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.SubscribePacketsRequest;
@@ -104,13 +104,14 @@ import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.io.CountingInputStream;
 
 public class PacketViewer extends JFrame implements ActionListener,
-        TreeSelectionListener, ParameterListener, ConnectionListener {
+        TreeSelectionListener, ParameterProcessor, ConnectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(PacketViewer.class);
@@ -618,7 +619,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
 
-        tmProcessor.setParameterListener(this);
+        tmProcessor.setParameterProcessor(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         log(String.format("Loaded definition of %d sequence container%s and %d parameter%s",
@@ -648,7 +649,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
 
         tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
-        tmProcessor.setParameterListener(this);
+        tmProcessor.setParameterProcessor(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         packetsTable.setupParameterColumns();
@@ -858,7 +859,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void update(final ParameterValueList params) {
+    public void process(final ProcessingData processingData) {
+        ParameterValueList params = processingData.getTmParams();
         SwingUtilities.invokeLater(new Runnable() {
             Hashtable<String, TreeContainer> containers = new Hashtable<>();
 

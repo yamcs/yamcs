@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
+import org.yamcs.commanding.ActiveCommand;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -103,7 +104,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         CommandQueueListener listener = new CommandQueueListener() {
             @Override
-            public void commandAdded(CommandQueue q, PreparedCommand pc) {
+            public void commandAdded(CommandQueue q, ActiveCommand pc) {
                 CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_ADDED);
@@ -112,7 +113,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
             }
 
             @Override
-            public void commandUpdated(CommandQueue q, PreparedCommand pc) {
+            public void commandUpdated(CommandQueue q, ActiveCommand pc) {
                 CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_UPDATED);
@@ -121,7 +122,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
             }
 
             @Override
-            public void commandRejected(CommandQueue q, PreparedCommand pc) {
+            public void commandRejected(CommandQueue q, ActiveCommand pc) {
                 CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_REJECTED);
@@ -130,7 +131,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
             }
 
             @Override
-            public void commandSent(CommandQueue q, PreparedCommand pc) {
+            public void commandSent(CommandQueue q, ActiveCommand pc) {
                 CommandQueueEntry data = toCommandQueueEntry(q, pc);
                 CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
                 evtb.setType(Type.COMMAND_SENT);
@@ -202,7 +203,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         CommandQueue queue = verifyCommandQueue(mgr, request.getName());
 
         ListQueueEntriesResponse.Builder responseb = ListQueueEntriesResponse.newBuilder();
-        for (PreparedCommand pc : queue.getCommands()) {
+        for (ActiveCommand pc : queue.getCommands()) {
             CommandQueueEntry qEntry = toCommandQueueEntry(queue, pc);
             responseb.addEntries(qEntry);
         }
@@ -222,7 +223,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
             // what we want. It would be better to assure only the queue from the URI is considered.
             switch (request.getState().toLowerCase()) {
             case "released":
-                mgr.sendCommand(entryId, false);
+                mgr.sendCommand(entryId);
                 break;
             case "rejected":
                 String username = ctx.user.getName();
@@ -254,16 +255,17 @@ public class QueueApi extends AbstractQueueApi<Context> {
             b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
         }
         if (detail) {
-            for (PreparedCommand pc : queue.getCommands()) {
-                CommandQueueEntry qEntry = toCommandQueueEntry(queue, pc);
+            for (ActiveCommand activeCommand : queue.getCommands()) {
+                CommandQueueEntry qEntry = toCommandQueueEntry(queue, activeCommand);
                 b.addEntry(qEntry);
             }
         }
         return b.build();
     }
 
-    private static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
+    private static CommandQueueEntry toCommandQueueEntry(CommandQueue q, ActiveCommand activeCommand) {
         Processor c = q.getProcessor();
+        PreparedCommand pc = activeCommand.getPreparedCommand();
         CommandQueueEntry.Builder entryb = CommandQueueEntry.newBuilder()
                 .setInstance(q.getProcessor().getInstance())
                 .setProcessorName(c.getName())
@@ -273,7 +275,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 .setSequenceNumber(pc.getSequenceNumber())
                 .setCommandName(pc.getCommandName())
                 .setSource(pc.getSource())
-                .setPendingTransmissionConstraints(pc.isPendingTransmissionConstraints())
+                .setPendingTransmissionConstraints(activeCommand.isPendingTransmissionConstraints())
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());

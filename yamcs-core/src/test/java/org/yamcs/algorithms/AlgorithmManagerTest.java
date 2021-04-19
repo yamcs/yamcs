@@ -151,7 +151,7 @@ public class AlgorithmManagerTest {
     public void testSlidingWindow() throws InvalidIdentification, InterruptedException {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoWindowResult");
         final List<ParameterValue> params = new ArrayList<>();
-        prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        prm.addRequest(p, (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         long startTime = TimeEncoding.getWallclockTime();
@@ -457,7 +457,6 @@ public class AlgorithmManagerTest {
                 (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
-
         tmGenerator.generate_PKT8();
         assertEquals(1, params.size());
         ParameterValue pv0 = params.get(0);

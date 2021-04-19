@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
@@ -13,7 +14,6 @@ import org.yamcs.events.QuietEventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs;
@@ -21,6 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationContextAlarm;
@@ -37,16 +38,16 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 
 import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
  * usable when not a full blown processor is available (e.g. XTCE packet processing)
  * 
- * 
- * Contains a cache of the last known value for each parameter
+ * <p>
+ * Contains a cache of encoders, decoders, calibrators
  *
  */
 public class ProcessorData {
@@ -64,11 +65,10 @@ public class ProcessorData {
     final Log log;
     final EventProducer eventProducer;
     final String processorName;
-    
+
     private Map<String, Object> userData = new HashMap<>();
 
-    private LastValueCache lastValueCache = new LastValueCache();
-
+    final private LastValueCache lastValueCache;
     /**
      * used to store parameter types which are changed dynamically (so they don't correspond anymore to MDB)
      */
@@ -83,11 +83,11 @@ public class ProcessorData {
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)
         ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName());
-        lastValueCache.put(procNamePv.getParameter(), procNamePv);
+        lastValueCache.add(procNamePv);
 
         String mode = proc.isReplay() ? "replay" : "realtime";
         ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode);
-        lastValueCache.put(procModePv.getParameter(), procModePv);
+        lastValueCache.add(procModePv);
     }
 
     /**
@@ -100,7 +100,7 @@ public class ProcessorData {
         this.xtcedb = xtcedb;
         this.processorConfig = config;
         this.processorName = procName;
-        
+
         parameterTypeProcessor = new ParameterTypeProcessor(this);
         log = new Log(this.getClass(), instance);
         log.setContext(procName);
@@ -115,28 +115,42 @@ public class ProcessorData {
 
         // populate last value cache with the default (initial) value for each parameter that has one
         long genTime = TimeEncoding.getWallclockTime();
-        for (Parameter p : xtcedb.getParameters()) {
-            ParameterType ptype = p.getParameterType();
-            if (ptype != null) {
 
-                Object o = p.getInitialValue();
+        List<ParameterValue> constants = xtcedb.getParameters().stream()
+                .filter(p -> p.getParameterType() != null && p.getDataSource() == DataSource.CONSTANT)
+                .map(p -> getInitialValue(genTime, p))
+                .filter(pv -> pv != null)
+                .collect(Collectors.toList());
 
-                if (o == null) {
-                    o = ptype.getInitialValue();
-                }
-                if (o != null) {
-                    Value v = DataTypeProcessor.getValueForType(ptype, o);
-                    ParameterValue pv = new ParameterValue(p);
-                    pv.setEngValue(v);
-                    pv.setGenerationTime(genTime);
-                    pv.setAcquisitionTime(genTime);
-                    lastValueCache.put(p, pv);
-                }
-            }
-        }
+        lastValueCache = new LastValueCache(constants);
+
+        xtcedb.getParameters().stream()
+                .filter(p -> p.getParameterType() != null && p.getDataSource() != DataSource.CONSTANT)
+                .map(p -> getInitialValue(genTime, p))
+                .filter(pv -> pv != null)
+                .forEach(pv -> lastValueCache.add(pv));
 
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
 
+    }
+
+    private ParameterValue getInitialValue(long genTime, Parameter p) {
+        ParameterType ptype = p.getParameterType();
+
+        Object o = p.getInitialValue();
+
+        if (o == null) {
+            o = ptype.getInitialValue();
+        }
+        if (o != null) {
+            Value v = DataTypeProcessor.getValueForType(ptype, o);
+            ParameterValue pv = new ParameterValue(p);
+            pv.setEngValue(v);
+            pv.setGenerationTime(genTime);
+            pv.setAcquisitionTime(genTime);
+            return pv;
+        }
+        return null;
     }
 
     private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value) {
@@ -176,24 +190,24 @@ public class ProcessorData {
      * returns a calibrator processor for the given data encoding. Can be null if the DataEncoding does not define a
      * calibrator.
      * 
-     * @param pvalues
-     *            - the current list of parameters being extracted (not yet added to the lastValueCache). They are used
-     *            when evaluating contexts matches and have priority over the parameters in the lastValueCache.
+     * @param pdata
+     *            - contains the current list of parameters being extracted (not yet added to the lastValueCache). The
+     *            list is used when evaluating contexts matches and have priority over the parameters in the
+     *            lastValueCache.
      *            <p>
      *            Could be null if the calibration is not running as part of packet processing.
      * @return a calibrator processor or null
      */
-    public CalibratorProc getCalibrator(ParameterValueList pvalues, DataEncoding de) {
+    public CalibratorProc getCalibrator(ProcessingData pdata, DataEncoding de) {
         if (de instanceof NumericDataEncoding) {
             NumericDataEncoding nde = (NumericDataEncoding) de;
             Calibrator c = nde.getDefaultCalibrator();
 
             List<ContextCalibrator> clist = nde.getContextCalibratorList();
             if (clist != null) {
-                EvaluatorInput input = new EvaluatorInput(pvalues, lastValueCache);
                 for (ContextCalibrator cc : clist) {
                     MatchCriteriaEvaluator evaluator = getEvaluator(cc.getContextMatch());
-                    if (evaluator.evaluate(input) == MatchResult.OK) {
+                    if (evaluator.evaluate(pdata) == MatchResult.OK) {
                         c = cc.getCalibrator();
                         break;
                     }

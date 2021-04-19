@@ -192,6 +192,10 @@ public class MetaCommand extends NameDescription {
         transmissionContstraintList.add(constraint);
     }
 
+    /**
+     * 
+     * @return the list of transmission constraints (can be empty but not null)
+     */
     public List<TransmissionConstraint> getTransmissionConstraintList() {
         return transmissionContstraintList;
     }

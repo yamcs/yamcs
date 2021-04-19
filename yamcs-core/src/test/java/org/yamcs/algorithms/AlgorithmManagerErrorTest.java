@@ -18,16 +18,17 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ValidationException;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class AlgorithmManagerErrorTest {
@@ -37,7 +38,7 @@ public class AlgorithmManagerErrorTest {
         XtceDbFactory.reset();
 
         // this test intentionally generates some errors which we don't want to see in the test output
-        LoggingUtils.enableLogging(Level.SEVERE);
+        LoggingUtils.configureLogging(Level.SEVERE);
     }
 
     static String instance = "errmdb";
@@ -57,7 +58,7 @@ public class AlgorithmManagerErrorTest {
 
         algMgr = new AlgorithmManager();
         processor = ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", new MyParaProvider(), algMgr);
-        prm = processor.getParameterRequestManager();
+        prm = processor.getParameterProcessorManager().getParameterRequestManager();
     }
 
     @Test
@@ -80,11 +81,11 @@ public class AlgorithmManagerErrorTest {
         AlgorithmStatus status2 = algMgr.getAlgorithmStatus(errAlg2);
         assertEquals(status2.getRunCount(), 0);
         assertFalse(status2.hasErrorMessage());
-        
+
         ParameterValue pv1 = new ParameterValue(p1);
-        pv1.setEngineeringValue(ValueUtility.getUint32Value(3));
-        
-        algMgr.updateDelivery(ParameterValueList.asList(pv1));
+        pv1.setEngValue(ValueUtility.getUint32Value(3));
+
+        algMgr.process(getProcessingData(pv1));
         status1 = algMgr.getAlgorithmStatus(errAlg1);
         // errAlg1 doesn't run at all
         assertEquals(status1.getRunCount(), 0);
@@ -96,5 +97,11 @@ public class AlgorithmManagerErrorTest {
         assertEquals(1, status2.getErrorCount());
 
         assertTrue(status2.hasErrorMessage());
+    }
+
+    public static ProcessingData getProcessingData(ParameterValue pv) {
+        ProcessingData data = ProcessingData.createForTmProcessing(new LastValueCache());
+        data.addTmParam(pv);
+        return data;
     }
 }

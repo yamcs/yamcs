@@ -40,7 +40,6 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
     public void testModifyParameterCalibration() throws Exception {
         ParameterSubscription subscription = yamcsClient.createParameterSubscription();
         ParameterCaptor captor = ParameterCaptor.of(subscription);
-
         SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
                 .setInstance(yamcsInstance)
                 .setProcessor("realtime")
@@ -72,7 +71,6 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
         packetGenerator.generate_PKT1_1();
         values = captor.expectTimely();
         assertEquals(packetGenerator.pFloatPara1_1_2 * 0.0001672918, values.get(0).getEngValue().getFloatValue(), 1e-5);
-
         captor.assertSilence();
     }
 
@@ -245,7 +243,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
         assertEquals(2.16729187, values.get(0).getEngValue().getFloatValue(), 1e-5);
 
         // change the algorithm
-        String text = "AlgoFloatAddition.value = 10 + f0.value + f1.value";
+        String text = "AlgoFloatAdditionJs.value = 10 + f0.value + f1.value";
         processorClient.updateAlgorithm("/REFMDB/SUBSYS1/float_add", text).get();
 
         packetGenerator.generate_PKT1_1();

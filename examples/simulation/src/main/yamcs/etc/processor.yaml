@@ -15,6 +15,7 @@ realtime:
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService service)
     - class: org.yamcs.parameter.LocalParameterManager
   config:
+    generateEvents: true #generate events for errors in TM decoding and running algorithms
     subscribeAll: true
     #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
     alarm:

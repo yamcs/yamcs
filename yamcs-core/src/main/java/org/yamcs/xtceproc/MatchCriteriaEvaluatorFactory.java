@@ -28,7 +28,6 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.util.DataTypeUtil;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
 
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedLongs;
@@ -64,16 +63,16 @@ public class MatchCriteriaEvaluatorFactory {
 
         final OperatorType comparisonOperator;
 
-        abstract ResolvedValue resolveLeft(EvaluatorInput input);
+        abstract ResolvedValue resolveLeft(ProcessingData input);
 
-        abstract ResolvedValue resolveRight(EvaluatorInput input);
+        abstract ResolvedValue resolveRight(ProcessingData input);
 
         AbstractComparisonnEvaluator(OperatorType comparisonOperator) {
             this.comparisonOperator = comparisonOperator;
         }
 
         @Override
-        public MatchResult evaluate(EvaluatorInput input) {
+        public MatchResult evaluate(ProcessingData input) {
             ResolvedValue lValue = resolveLeft(input);
             ResolvedValue rValue = resolveRight(input);
 
@@ -130,12 +129,12 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        ResolvedValue resolveLeft(EvaluatorInput input) {
+        ResolvedValue resolveLeft(ProcessingData input) {
             return resolveValue(ref, input);
         }
 
         @Override
-        ResolvedValue resolveRight(EvaluatorInput input) {
+        ResolvedValue resolveRight(ProcessingData input) {
             return rValue;
         }
 
@@ -153,12 +152,12 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        ResolvedValue resolveLeft(EvaluatorInput input) {
+        ResolvedValue resolveLeft(ProcessingData input) {
             return resolveValue(leftRef, input);
         }
 
         @Override
-        ResolvedValue resolveRight(EvaluatorInput input) {
+        ResolvedValue resolveRight(ProcessingData input) {
             return resolveValue(rightRef, input);
         }
     }
@@ -181,7 +180,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        public MatchResult evaluate(EvaluatorInput input) {
+        public MatchResult evaluate(ProcessingData input) {
             MatchResult result = MatchResult.OK;
 
             for (MatchCriteriaEvaluator mce : evaluatorList) {
@@ -210,7 +209,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        public MatchResult evaluate(EvaluatorInput input) {
+        public MatchResult evaluate(ProcessingData input) {
             MatchResult result = MatchResult.NOK;
 
             for (MatchCriteriaEvaluator mce : evaluatorList) {
@@ -248,7 +247,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static ResolvedValue resolveValue(ParameterOrArgumentRef ref, EvaluatorInput input) {
+    static ResolvedValue resolveValue(ParameterOrArgumentRef ref, ProcessingData input) {
         if (ref instanceof ParameterInstanceRef) {
             return resolveParameter((ParameterInstanceRef) ref, input);
         } else {
@@ -256,19 +255,17 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static ResolvedValue resolveParameter(ParameterInstanceRef paramRef, EvaluatorInput input) {
+    static ResolvedValue resolveParameter(ParameterInstanceRef paramRef, ProcessingData input) {
         ParameterValue pv = null;
         Parameter p = paramRef.getParameter();
-        if (p.getDataSource() == DataSource.COMMAND) {
+        if (p.getDataSource() == DataSource.COMMAND || p.getDataSource() == DataSource.COMMAND_HISTORY) {
             pv = input.cmdParams.getLastInserted(p);
-        } else if (p.getDataSource() == DataSource.COMMAND_HISTORY) {
-            pv = input.cmdHistParams.getLastInserted(p);
         } else {
-            if (input.params != null) {
-                pv = input.params.getLastInserted(p);
+            if (input.tmParams != null) {
+                pv = input.tmParams.getLastInserted(p);
             }
             if (pv == null) {
-                pv = input.lastValueCache.getValue(p);
+                pv = input.tmParamsCache.getValue(p);
             }
         }
         if (pv == null) {
@@ -527,7 +524,7 @@ public class MatchCriteriaEvaluatorFactory {
     public static MatchCriteriaEvaluator ALWAYS_MATCH = new MatchCriteriaEvaluator() {
 
         @Override
-        public MatchResult evaluate(EvaluatorInput input) {
+        public MatchResult evaluate(ProcessingData input) {
             return MatchResult.OK;
         }
     };

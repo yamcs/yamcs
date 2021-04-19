@@ -22,7 +22,6 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -34,6 +33,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.ParameterTypeUtils;
+import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
@@ -67,7 +67,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
-        this.eventProducer = execCtx.getProcessorData().getEventProducer();
+        this.eventProducer = execCtx.getEventProducer();
         this.functionScript = functionScript;
 
         numInputs = algorithmDef.getInputList().size();
@@ -116,7 +116,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
      * @see org.yamcs.algorithms.AlgorithmExecutor#runAlgorithm(long, long)
      */
     @Override
-    public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime) {
+    public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
         if (log.isTraceEnabled()) {
             log.trace(getRunningTraceString());
         }
@@ -128,7 +128,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 OutputParameter outputParameter = outputList.get(k);
                 OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs + k];
                 if (res.updated && (res.value != null || res.rawValue != null)) {
-                    ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
+                    ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res, data);
                     pv.setAcquisitionTime(acqTime);
                     pv.setGenerationTime(genTime);
                     outputValues.add(pv);
@@ -140,6 +140,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             throw new AlgorithmException(inputValues, msg);
         } catch (NoSuchMethodException e) {
             throw new AlgorithmException("Error while executing algorithm: " + e.getMessage());
+        } catch (InvalidAlgorithmOutputException e) {
+            eventProducer.sendWarning(getAlgorithm().getName(), e.getMessage());
+            throw new AlgorithmException(inputValues, e.getMessage());
         }
     }
 
@@ -192,7 +195,13 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return sb.toString();
     }
 
-    private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
+    /**
+     * converts the output of the algorithm to a value corresponding to a parameter type
+     * <p>
+     * Throws InvalidAlgorithmOutputException if the conversion cannot be made
+     */
+    private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding,
+            ProcessingData pdata) throws InvalidAlgorithmOutputException {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();
         DataEncoding de = null;
@@ -205,11 +214,10 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if (de != null) {
                 Value rawV = DataEncodingDecoder.getRawValue(de, binding.rawValue);
                 if (rawV == null) {
-                    eventProducer.sendWarning(getAlgorithm().getName(),
+                    throw new InvalidAlgorithmOutputException(parameter, binding,
                             "Cannot convert raw value from algorithm output "
-                                    + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + de);
-                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
-
+                                    + "'" + binding.value + "' of type " + binding.value.getClass()
+                                    + " into values for the data encoding " + de);
                 } else {
                     pval.setRawValue(rawV);
                     if (binding.value == null) {
@@ -217,17 +225,19 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                     }
                 }
             } else {
-                eventProducer.sendWarning(getAlgorithm().getName(),
-                        "Algorithm provided raw value but the parameter has no data encoding");
+                throw new InvalidAlgorithmOutputException(parameter, binding, "Algorithm provided raw value"
+                        + " but the parameter has no data encoding");
             }
         }
 
         if (binding.value != null) {
             Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
             if (v == null) {
-                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
-                    + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + ptype);
-            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                throw new InvalidAlgorithmOutputException(parameter, binding,
+                        "Cannot convert algorithm output value "
+                                + "'" + binding.value + "' of type " + binding.value.getClass().getSimpleName()
+                                + " into values for the type "
+                                + ptype.getQualifiedName() + "(" + ptype.getClass().getSimpleName() + ")");
             } else {
                 pval.setEngValue(v);
             }

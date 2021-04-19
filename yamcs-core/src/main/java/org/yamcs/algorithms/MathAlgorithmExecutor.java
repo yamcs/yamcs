@@ -16,6 +16,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 import org.yamcs.xtceproc.ParameterTypeUtils;
+import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Executes XTCE math algorithms {@link MathAlgorithm}
@@ -39,7 +40,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     }
 
     @Override
-    public AlgorithmExecutionResult execute(long acqTime, long genTime) {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
         ParameterValue pv = new ParameterValue(outParam);
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);

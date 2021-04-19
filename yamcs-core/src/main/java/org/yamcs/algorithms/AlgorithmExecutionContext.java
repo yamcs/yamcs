@@ -2,20 +2,21 @@ package org.yamcs.algorithms;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.yamcs.events.EventProducer;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.ProcessorData;
-
-import com.google.protobuf.util.Timestamps;
 
 /**
  * Algorithms for command verifiers must execute in parallel in different contexts - meaning that each algorithm will
@@ -28,16 +29,18 @@ import com.google.protobuf.util.Timestamps;
  * <p>
  * Each execution context has a parent that stores the values which are not context specific.
  * 
- * @author nm
  *
  */
 public class AlgorithmExecutionContext {
     // For storing a window of previous parameter instances
-    HashMap<Parameter, WindowBuffer> buffersByParam = new HashMap<>();
     final AlgorithmExecutionContext parent;
+    final static Log log = new Log(AlgorithmExecutionContext.class);
 
     // all the algorithms that run in this context
-    final HashMap<Algorithm, ActiveAlgorithm> activeAlgorithms = new HashMap<>();
+    // fqn -> ActiveAlgorithm
+    final HashMap<String, ActiveAlgorithm> activeAlgorithms = new HashMap<>();
+
+    CopyOnWriteArrayList<ActiveAlgorithm> executionOrder = new CopyOnWriteArrayList<>();
 
     // algorithm tracers fqn -> AlgorithmTrace
     final Map<String, AlgorithmTrace> tracers = new HashMap<>();
@@ -47,80 +50,107 @@ public class AlgorithmExecutionContext {
 
     final ProcessorData procData;
 
-    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, ProcessorData procData) {
+    final int maxErrCount;
+
+    // stores algorithms deactivated because of too many runtime errors
+    Map<String, AlgorithmStatus> algorithmsInError = new HashMap<>();
+
+    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, ProcessorData procData,
+            int maxErrCount) {
         this.contextName = contextName;
         this.parent = parent;
         this.procData = procData;
+        this.maxErrCount = maxErrCount;
     }
 
-    public boolean enableBuffer(Parameter param, int lookbackSize) {
-        boolean enabled = false;
-        if (parent == null || param.getDataSource() == DataSource.COMMAND
-                || param.getDataSource() == DataSource.COMMAND_HISTORY) {
-            if (buffersByParam.containsKey(param)) {
-                WindowBuffer buf = buffersByParam.get(param);
-                buf.expandIfNecessary(lookbackSize + 1);
-            } else {
-                buffersByParam.put(param, new WindowBuffer(lookbackSize + 1));
-                enabled = true;
+    public void deactivateAlgorithm(Algorithm algorithm) {
+        ActiveAlgorithm activeAlgo = activeAlgorithms.remove(algorithm.getQualifiedName());
+        if (activeAlgo != null) {
+            executionOrder.remove(activeAlgo);
+        }
+    }
+
+    /**
+     * Update the input data and run the affected algorithms
+     * <p>
+     * Add the result of the algorithms to the processing data
+     * 
+     */
+    public void process(long acqTime, ProcessingData data) {
+        ParameterValueList tmParams = data.getTmParams();
+        ParameterValueList cmdParams = data.getCmdParams();
+        long genTime = acqTime;
+        if (tmParams != null && !tmParams.isEmpty()) {
+            genTime = tmParams.getFirst().getGenerationTime();
+        } else if (cmdParams != null && !cmdParams.isEmpty()) {
+            genTime = cmdParams.getFirst().getGenerationTime();
+        }
+
+        for (ActiveAlgorithm activeAlgo : executionOrder) {
+            boolean shouldRun = activeAlgo.update(data);
+            if (shouldRun) {
+                log.trace("Running algorithm {}", activeAlgo.getAlgorithm().getName());
+                List<ParameterValue> r = runAlgorithm(activeAlgo, acqTime, genTime, data);
+                if (r == null || r.isEmpty()) {
+                    continue;
+                }
+                if (activeAlgo.getScope() == Scope.GLOBAL) {
+                    if (tmParams != null) {
+                        tmParams.addAll(r);
+                    }
+                } else if (cmdParams != null) {
+                    for (ParameterValue pv : r) {
+                        if (pv.getParameter().isCommandParameter()) {
+                            cmdParams.add(pv);
+                        } else if (tmParams != null) {
+                            tmParams.add(pv);
+                        }
+                    }
+                }
             }
-        } else {
-            enabled = parent.enableBuffer(param, lookbackSize);
-        }
-        return enabled;
-    }
-
-    public void updateHistoryWindows(ParameterValueList currentDelivery) {
-        for (Map.Entry<Parameter, WindowBuffer> me : buffersByParam.entrySet()) {
-            ParameterValue pval = currentDelivery.getFirstInserted(me.getKey());
-            if (pval != null) {
-                me.getValue().update(pval);
-            }
-        }
-        if (parent != null) {
-            parent.updateHistoryWindows(currentDelivery);
         }
     }
 
-    public void updateHistoryWindow(ParameterValue pval) {
-        if (buffersByParam.containsKey(pval.getParameter())) {
-            buffersByParam.get(pval.getParameter()).update(pval);
+    List<ParameterValue> runAlgorithm(ActiveAlgorithm activeAlgo, long acqTime, long genTime, ProcessingData data) {
+        List<ParameterValue> params = activeAlgo.runAlgorithm(acqTime, genTime, data);
+        if (activeAlgo.getErrorCount() >= maxErrCount) {
+            Algorithm algo = activeAlgo.getAlgorithm();
+            log.warn("Algorithm {} has faulted {} times, deactivating", algo.getQualifiedName(),
+                    activeAlgo.getErrorCount());
+            algorithmsInError.put(algo.getQualifiedName(),
+                    activeAlgo.getStatus(tracers.containsKey(algo.getQualifiedName())));
+            executionOrder.remove(activeAlgo);
         }
-    }
-
-    public ParameterValue getHistoricValue(ParameterInstanceRef pInstance) {
-        WindowBuffer wb = buffersByParam.get(pInstance.getParameter());
-        if (wb != null) {
-            return wb.getHistoricValue(pInstance.getInstance());
-        } else if (parent != null) {
-            return parent.getHistoricValue(pInstance);
-        } else {
-            return null;
-        }
+        return params;
     }
 
     public String getName() {
         return contextName;
     }
 
-    public boolean containsAlgorithm(Algorithm algo) {
-        return activeAlgorithms.containsKey(algo);
-    }
-
-    public AlgorithmExecutor getExecutor(Algorithm algo) {
-        return activeAlgorithms.get(algo).executor;
+    public boolean containsAlgorithm(String algoFqn) {
+        return activeAlgorithms.containsKey(algoFqn);
     }
 
     public void addAlgorithm(ActiveAlgorithm activeAlgorithm) {
-        activeAlgorithms.put(activeAlgorithm.getAlgorithm(), activeAlgorithm);
+        activeAlgorithms.put(activeAlgorithm.getAlgorithm().getQualifiedName(), activeAlgorithm);
+        executionOrder.add(activeAlgorithm);
+    }
+
+    public ActiveAlgorithm removeAlgorithm(String algoFqn) {
+        ActiveAlgorithm algo = activeAlgorithms.remove(algoFqn);
+        if (algo != null) {
+            executionOrder.remove(algo);
+        }
+        return algo;
     }
 
     public Collection<Algorithm> getAlgorithms() {
-        return activeAlgorithms.keySet();
+        return activeAlgorithms.values().stream().map(aa -> aa.getAlgorithm()).collect(Collectors.toList());
     }
 
-    public ActiveAlgorithm remove(Algorithm algo) {
-        return activeAlgorithms.remove(algo);
+    public ActiveAlgorithm remove(String algoFqn) {
+        return activeAlgorithms.remove(algoFqn);
     }
 
     public ProcessorData getProcessorData() {
@@ -142,7 +172,7 @@ public class AlgorithmExecutionContext {
         }
         AlgorithmTrace trace = new AlgorithmTrace();
         tracers.put(fqn, trace);
-        ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+        ActiveAlgorithm activeAlgo = activeAlgorithms.get(fqn);
         if (activeAlgo != null) {
             activeAlgo.addExecListener(trace);
         }
@@ -153,13 +183,13 @@ public class AlgorithmExecutionContext {
         AlgorithmTrace trace = tracers.remove(fqn);
 
         if (trace != null) {
-            ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+            ActiveAlgorithm activeAlgo = activeAlgorithms.get(fqn);
             activeAlgo.removeExecListener(trace);
         }
     }
 
-    public synchronized AlgorithmTrace getTrace(Algorithm algo) {
-        return tracers.get(algo.getQualifiedName());
+    public synchronized AlgorithmTrace getTrace(String algoFqn) {
+        return tracers.get(algoFqn);
     }
 
     public void logTrace(String algoFqn, String msg) {
@@ -169,28 +199,17 @@ public class AlgorithmExecutionContext {
         }
     }
 
-    public ActiveAlgorithm getActiveAlgorithm(Algorithm algo) {
-        return activeAlgorithms.get(algo);
+    public ActiveAlgorithm getAlgorithm(String algoFqn) {
+        return activeAlgorithms.get(algoFqn);
     }
 
-    public AlgorithmStatus getAlgorithmStatus(Algorithm algo) {
-        ActiveAlgorithm activeAlgo = activeAlgorithms.get(algo);
+    public AlgorithmStatus getAlgorithmStatus(String algoFqn) {
+        ActiveAlgorithm activeAlgo = activeAlgorithms.get(algoFqn);
         if (activeAlgo == null) {
             return AlgorithmStatus.newBuilder().setActive(false).build();
         }
 
-        AlgorithmStatus.Builder statusb = AlgorithmStatus.newBuilder()
-                .setActive(true)
-                .setTraceEnabled(tracers.containsKey(algo.getQualifiedName()))
-                .setRunCount(activeAlgo.runCount)
-                .setErrorCount(activeAlgo.errorCount);
-        if (activeAlgo.errorMessage != null) {
-            statusb.setErrorMessage(activeAlgo.errorMessage);
-            statusb.setErrorTime(Timestamps.fromMillis(activeAlgo.errorTime));
-        }
-        statusb.setLastRun(Timestamps.fromMillis(activeAlgo.lastRun));
-        statusb.setExecTimeNs(activeAlgo.totalExecTimeNs);
-        return statusb.build();
+        return activeAlgo.getStatus(tracers.containsKey(algoFqn));
     }
 
 }

@@ -11,7 +11,6 @@ import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.EvaluatorInput;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtceproc.SubscribedContainer.InheritingContainer;
 
@@ -25,7 +24,7 @@ public class SequenceContainerProcessor {
     }
 
     public void extract(SubscribedContainer subscribedContainer) {
-        ProcessorData pdata = pcontext.pdata;
+        ProcessorData pdata = pcontext.proccessingData;
         SequenceContainer containerDef = subscribedContainer.conainerDef;
         ContainerProcessingResult result = pcontext.result;
         ContainerProcessingOptions options = pcontext.options;
@@ -48,10 +47,9 @@ public class SequenceContainerProcessor {
         for (SequenceEntry se : entries) {
             int position = buf.getPosition();
             try {
-                if (se.getIncludeCondition()!=null) {
+                if (se.getIncludeCondition() != null) {
                     MatchCriteriaEvaluator evaluator = pdata.getEvaluator(se.getIncludeCondition());
-                    EvaluatorInput input = new EvaluatorInput(result.params, pdata.getLastValueCache());
-                    if (evaluator.evaluate(input) != MatchResult.OK) {
+                    if (evaluator.evaluate(result) != MatchResult.OK) {
                         continue;
                     }
                 }
@@ -116,7 +114,7 @@ public class SequenceContainerProcessor {
         // And then any derived containers
         int bitp = buf.getPosition();
         for (InheritingContainer inherited : inheritingContainers) {
-            MatchResult r = inherited.matches(result.params, pcontext.pdata.getLastValueCache());
+            MatchResult r = inherited.matches(result);
 
             if (r == MatchResult.OK) {
                 hasDerived = true;
