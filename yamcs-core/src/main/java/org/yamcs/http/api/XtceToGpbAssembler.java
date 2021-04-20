@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Mdb;
@@ -58,7 +59,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
-import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
@@ -72,9 +72,7 @@ import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryDataEncoding;
-import org.yamcs.xtce.BinaryDataType;
 import org.yamcs.xtce.BooleanDataEncoding;
-import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CommandContainer;
@@ -90,7 +88,6 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedArgumentType;
-import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
@@ -105,7 +102,6 @@ import org.yamcs.xtce.History;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerDataType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
@@ -136,18 +132,14 @@ import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringDataType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
-
-import com.google.gson.Gson;
 
 public class XtceToGpbAssembler {
-
+    static final Log log = new Log(XtceToGpbAssembler.class);
     public enum DetailLevel {
         LINK, SUMMARY, FULL
     }
@@ -408,7 +400,12 @@ public class XtceToGpbAssembler {
             b.setDescription(xtceArgument.getShortDescription());
         }
         if (xtceArgument.getInitialValue() != null) {
-            b.setInitialValue(xtceArgument.getInitialValue().toString());
+            if (xtceArgument.getArgumentType() != null) {
+                String strInitialValue = xtceArgument.getArgumentType().toString(xtceArgument.getInitialValue());
+                b.setInitialValue(strInitialValue);
+            } else {
+                log.warn("Argument {} has no type so cannot convert initial value to string", xtceArgument.getName());
+            }
         }
 
         if (xtceArgument.getArgumentType() != null) {
@@ -775,31 +772,7 @@ public class XtceToGpbAssembler {
         if (dataType == null || dataType.getInitialValue() == null) {
             return null;
         }
-
-        if (dataType instanceof IntegerDataType) {
-            IntegerDataType idt = (IntegerDataType) dataType;
-            Long l = idt.getInitialValue();
-            if (idt.isSigned()) {
-                return l.toString();
-            } else {
-                return Long.toUnsignedString(l);
-            }
-        } else if (dataType instanceof FloatArgumentType) {
-            return ((FloatArgumentType) dataType).getInitialValue() + "";
-        } else if (dataType instanceof EnumeratedDataType) {
-            return ((EnumeratedDataType) dataType).getInitialValue();
-        } else if (dataType instanceof StringDataType) {
-            return ((StringDataType) dataType).getInitialValue();
-        } else if (dataType instanceof BinaryDataType) {
-            byte[] initialValue = ((BinaryDataType) dataType).getInitialValue();
-            return StringConverter.arrayToHexString(initialValue);
-        } else if (dataType instanceof BooleanDataType) {
-            return ((BooleanDataType) dataType).getInitialValue().toString();
-        } else if (dataType instanceof AggregateDataType) {
-            Map<String, Object> value = ((AggregateDataType) dataType).getInitialValue();
-            return new Gson().toJson(value);
-        }
-        return null;
+        return dataType.toString(dataType.getInitialValue());
     }
 
     public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
