@@ -17,7 +17,7 @@ public class BinaryDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 2L;
 
     public enum Type {
-        FIXED_SIZE, LEADING_SIZE, CUSTOM
+        FIXED_SIZE, LEADING_SIZE, CUSTOM, DYNAMIC
     }
 
     int sizeInBitsOfSizeTag = 16; // this is used when type is LEADING_SIZE to encod the length of the value before the
@@ -58,6 +58,7 @@ public class BinaryDataEncoding extends DataEncoding {
         }
     }
 
+    @Override
     public Builder toBuilder() {
         return new Builder(this);
     }
@@ -107,6 +108,7 @@ public class BinaryDataEncoding extends DataEncoding {
             super();
         }
 
+        @Override
         public BinaryDataEncoding build() {
             return new BinaryDataEncoding(this);
         }

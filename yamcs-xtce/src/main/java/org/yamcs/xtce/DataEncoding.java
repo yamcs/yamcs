@@ -31,6 +31,11 @@ public abstract class DataEncoding implements Serializable {
      * size in bits if known. If the size in bits is variable, it should be set to -1.
      */
     protected int sizeInBits;
+    /**
+     * For variable-sized parameters or arguments, a reference to the parameter
+     * or argument containing the size.
+     */
+    protected ParameterOrArgumentRef instanceRef;
     transient ByteOrder byteOrder = ByteOrder.BIG_ENDIAN; // DIFFERS_FROM_XTCE in xtce is very complicated
 
     // the algorithm will be used to convert from binary to raw value
@@ -56,6 +61,10 @@ public abstract class DataEncoding implements Serializable {
         
         if (builder.sizeInBits != null) {
             this.sizeInBits = builder.sizeInBits;
+        }
+        if (builder.instanceRef != null) {
+            this.sizeInBits = -1;
+            this.instanceRef = builder.instanceRef;
         }
         if (builder.byteOrder != null) {
             this.byteOrder = builder.byteOrder;
@@ -97,6 +106,14 @@ public abstract class DataEncoding implements Serializable {
         this.sizeInBits = sizeInBits;
     }
 
+    public boolean isVariableSize() {
+        return instanceRef != null;
+    }
+
+    public ParameterOrArgumentRef getSizeReference() {
+        return instanceRef;
+    }
+
     public ByteOrder getByteOrder() {
         return byteOrder;
     }
@@ -107,8 +124,9 @@ public abstract class DataEncoding implements Serializable {
         out.defaultWriteObject();
         if (byteOrder == ByteOrder.BIG_ENDIAN) {
             out.writeInt(0);
-        } else
+        } else {
             out.writeInt(1);
+    }
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -116,8 +134,9 @@ public abstract class DataEncoding implements Serializable {
         int o = in.readInt();
         if (o == 0) {
             byteOrder = ByteOrder.BIG_ENDIAN;
-        } else
+        } else {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
+    }
     }
 
     /**
@@ -155,6 +174,7 @@ public abstract class DataEncoding implements Serializable {
 
     public abstract static class Builder<T extends Builder<T>> {
         protected Integer sizeInBits;
+        ParameterOrArgumentRef instanceRef;
         transient ByteOrder byteOrder = null;
         private Algorithm fromBinaryTransformAlgorithm;
         private Algorithm toBinaryTransformAlgorithm;
@@ -172,6 +192,11 @@ public abstract class DataEncoding implements Serializable {
 
         public T setSizeInBits(Integer sizeInBits) {
             this.sizeInBits = sizeInBits;
+            return self();
+        }
+
+        public T setSizeReference(ParameterOrArgumentRef instanceRef) {
+            this.instanceRef = instanceRef;
             return self();
         }
 
@@ -200,6 +225,11 @@ public abstract class DataEncoding implements Serializable {
         public Integer getSizeInBits() {
             return sizeInBits;
         }
+
+        public ParameterOrArgumentRef getSizeReference() {
+            return instanceRef;
+        }
+
     }
 
     public abstract Builder<?> toBuilder();

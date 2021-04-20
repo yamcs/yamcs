@@ -13,26 +13,32 @@ public class DynamicIntegerValue extends IntegerValue {
     private static final long serialVersionUID = 201603101239L;
 
     transient static Logger log = LoggerFactory.getLogger(DynamicIntegerValue.class.getName());
-    ParameterInstanceRef instanceRef;;
+    ParameterOrArgumentRef instanceRef;
 
     public DynamicIntegerValue() {
     }
 
-    public DynamicIntegerValue(ParameterInstanceRef pir) {
-        this.instanceRef = pir;
+    public DynamicIntegerValue(ParameterOrArgumentRef ir) {
+        this.instanceRef = ir;
     }
 
-    public void setParameterInstanceRef(ParameterInstanceRef pir) {
-        this.instanceRef = pir;
+    public ParameterInstanceRef getParameterInstnaceRef() {
+        if (!(instanceRef instanceof ParameterInstanceRef)) {
+            throw new IllegalStateException(
+                    "In DynamicIntegerValue: wanted ParameterInstanceRef but got "
+                            + instanceRef.getClass().getName());
+        }
+        return (ParameterInstanceRef) instanceRef;
     }
 
-    public ParameterInstanceRef getParameterInstanceRef() {
+    public ParameterOrArgumentRef getDynamicInstanceRef() {
         return instanceRef;
     }
 
     @Override
     public String toString() {
-        return "DynamicIntegerValue(parameterInstance=" + instanceRef.getParameter().getName() + ")";
+        return "DynamicIntegerValue(instanceRef=" + instanceRef.getName()
+                + ")";
     }
 
 }

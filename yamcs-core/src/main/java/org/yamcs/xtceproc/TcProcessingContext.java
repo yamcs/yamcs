@@ -45,6 +45,24 @@ public class TcProcessingContext {
         return argValues.get(arg);
     }
 
+    /**
+     * Look up an argument by name only, for cases in which we do not have the
+     * full argument definition, such as arguments used for defining the length
+     * of other variable-length arguments.
+     *
+     * @param argName the name of the argument
+     * @return the argument value, if found, or null
+     */
+    public ArgumentValue getArgumentValue(String argName) {
+        for (Map.Entry<Argument, ArgumentValue> entry : argValues.entrySet()) {
+            if (argName.equals(entry.getKey().getName())) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
     public Value getParameterValue(Parameter param) {
         Value v = paramValues.get(param); 
         if(v == null) {

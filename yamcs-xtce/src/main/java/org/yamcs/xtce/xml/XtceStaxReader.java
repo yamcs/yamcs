@@ -1271,6 +1271,11 @@ public class XtceStaxReader {
                 IntegerValue v = readIntegerValue(spaceSystem);
                 if (v instanceof FixedIntegerValue) {
                     binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
+                } else if (v instanceof DynamicIntegerValue) {
+                    binaryDataEncoding.setSizeReference(
+                            ((DynamicIntegerValue) v).getDynamicInstanceRef());
+                    binaryDataEncoding
+                            .setType(BinaryDataEncoding.Type.DYNAMIC);
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -2836,6 +2841,9 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
                 v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
+            } else if (isStartElementWithName(XTCE_ARGUMENT_INSTANCE_REF)) {
+                v = new DynamicIntegerValue(
+                        readArgumentInstanceRef(spaceSystem, null));
             } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
                 if (v == null) {
                     throw new XMLStreamException("No " + XTCE_PARAMETER_INSTANCE_REF + " section found");
@@ -2895,7 +2903,15 @@ public class XtceStaxReader {
         boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
 
         ArgumentInstanceRef argInstRef = new ArgumentInstanceRef();
-        ArgumentReference ref = ArgumentReference.getReference(metaCmd, argRef);
+        // If we are not in the context of a metacommand, such as an argument
+        // that is used as the size of another argument type, then do not try
+        // to resolve the argument. Instead, the name alone will be used to
+        // look up the argument in context when needed.
+        if (metaCmd == null) {
+            argInstRef.setArgument(new Argument(argRef));
+        } else {
+            ArgumentReference ref = ArgumentReference.getReference(metaCmd,
+                    argRef);
 
         ref.addResolvedAction((arg, path) -> {
             argInstRef.setArgument(arg);
@@ -2905,6 +2921,7 @@ public class XtceStaxReader {
 
         if (!ref.isResolved()) {
             spaceSystem.addUnresolvedReference(ref);
+        }
         }
 
         argInstRef.setUseCalibratedValue(useCalibrated);

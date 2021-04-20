@@ -4,10 +4,12 @@ import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
+import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -15,6 +17,8 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
+import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.StringDataEncoding;
 
 /**
@@ -48,6 +52,25 @@ public class DataEncodingDecoder {
      *         aquisitionStatus = INVALID
      */
     public Value extractRaw(DataEncoding de) {
+        return extractRaw(de, null);
+    }
+
+    /**
+     * Extract the raw, uncalibrated parameter value from the buffer, using the
+     * provider context to find referenced parameter values for variable- sized
+     * objects.
+     *
+     * @param de
+     *            the data encoding
+     * @param pcontext
+     *            the processing context, or null if the context is
+     *            unknown
+     * @return the extracted value, or null if something went wrong - in this
+     *         case the parameter will be marked with aquisitionStatus = INVALID
+     */
+    public Value extractRaw(DataEncoding de,
+            ContainerProcessingContext pcontext) {
+
         if (de.getFromBinaryTransformAlgorithm() != null) { // custom algorithm
             DataDecoder dd = pdata.getDataDecoder(de);
             return dd.extractRaw(de, buffer);
@@ -62,7 +85,7 @@ public class DataEncodingDecoder {
             } else if (de instanceof BooleanDataEncoding) {
                 rv = extractRawBoolean((BooleanDataEncoding) de);
             } else if (de instanceof BinaryDataEncoding) {
-                rv = extractRawBinary((BinaryDataEncoding) de);
+                rv = extractRawBinary((BinaryDataEncoding) de, pcontext);
             } else {
                 log.error("DataEncoding {} not implemented", de);
                 throw new IllegalArgumentException("DataEncoding " + de + " not implemented");
@@ -147,16 +170,16 @@ public class DataEncodingDecoder {
             sizeInBytes = (int) buffer.getBits(sde.getSizeInBitsOfSizeTag());
             break;
         case TERMINATION_CHAR:
-            if(sde.getSizeInBits()==-1) {
+            if (sde.getSizeInBits() == -1) {
                 while (buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                }    
+                }
                 extraBytes = 1;
             } else {
                 int maxSize = sde.getSizeInBits() >> 3;
-                while (sizeInBytes<maxSize && buffer.getByte() != sde.getTerminationChar()) {
+                while (sizeInBytes < maxSize && buffer.getByte() != sde.getTerminationChar()) {
                     sizeInBytes++;
-                } 
+                }
                 extraBytes = maxSize - sizeInBytes;
             }
             buffer.setPosition(position);
@@ -167,7 +190,7 @@ public class DataEncodingDecoder {
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
 
-        buffer.skip(extraBytes<<3);
+        buffer.skip(extraBytes << 3);
         return ValueUtility.getStringValue(new String(b, Charset.forName(sde.getEncoding())));
     }
 
@@ -193,12 +216,12 @@ public class DataEncodingDecoder {
             return ValueUtility.getDoubleValue(Double.longBitsToDouble(buffer.getBits(64)));
         }
     }
-    
+
     private Value extractRawMILSTD_1750A(FloatDataEncoding de) {
         buffer.setByteOrder(de.getByteOrder());
 
         if (de.getSizeInBits() == 32) {
-            return ValueUtility.getFloatValue((float)MilStd1750A.decode32((int) buffer.getBits(32)));
+            return ValueUtility.getFloatValue((float) MilStd1750A.decode32((int) buffer.getBits(32)));
         } else {
             return ValueUtility.getDoubleValue(MilStd1750A.decode48(buffer.getBits(64)));
         }
@@ -208,10 +231,13 @@ public class DataEncodingDecoder {
         return ValueUtility.getBooleanValue(buffer.getBits(1) != 0);
     }
 
-    private Value extractRawBinary(BinaryDataEncoding bde) {
+    private Value extractRawBinary(BinaryDataEncoding bde,
+            ContainerProcessingContext pcontext) {
+
         if (buffer.getPosition() % 8 != 0) {
-            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", buffer);
-            return null;
+            throw new XtceProcessingException(
+                    "Binary Parameter that does not start at byte boundary not supported. bitPosition: "
+                            + buffer.getPosition());
         }
 
         int sizeInBytes;
@@ -221,6 +247,10 @@ public class DataEncodingDecoder {
             break;
         case LEADING_SIZE:
             sizeInBytes = (int) buffer.getBits(bde.getSizeInBitsOfSizeTag());
+            break;
+        case DYNAMIC:
+            sizeInBytes = getDynamicSizeInBytes(bde, pcontext);
+
             break;
         default: // shouldn't happen
             throw new IllegalStateException();
@@ -329,6 +359,48 @@ public class DataEncodingDecoder {
         } else {
             return ValueUtility.getDoubleValue(doubleValue);
         }
+    }
+
+    private int getDynamicSizeInBytes(BinaryDataEncoding bde, ContainerProcessingContext pcontext) {
+        ParameterOrArgumentRef ref = bde.getSizeReference();
+        ParameterValue sizePv = null;
+        if (ref instanceof ParameterInstanceRef) {
+            ParameterInstanceRef pref = (ParameterInstanceRef) ref;
+            sizePv = pcontext.result.getTmParameterInstance(pref.getParameter(), pref.getInstance(),
+                    /* allow old */false);
+        } else {
+            throw new IllegalStateException(
+                    "Encountered argument reference when processing dynamic size " + ref.getName());
+        }
+
+        if (sizePv == null) {
+            throw new XtceProcessingException("Missing value for dynamic size in bits parameter: " + ref.getName());
+        }
+
+        Value sizeValue = ref.useCalibratedValue() ? sizePv.getEngValue() : sizePv.getRawValue();
+        if (sizeValue == null) {
+            throw new XtceProcessingException("Missing " + (ref.useCalibratedValue() ? "engineering" : "raw")
+                    + " value for dynamic size in bits parameter: " + ref.getName());
+        }
+        
+        MutableLong ml = new MutableLong(0);
+        if (!ValueUtility.processAsLong(sizeValue, l -> ml.setLong(l))) {
+            throw new XtceProcessingException("Cannot interpret value  of type " + sizeValue.getClass()
+                    + " as integer; used in the dynamic value specification");
+        };
+        long sizeInBits = ml.getLong();
+        
+        if (sizeInBits % 8 != 0) {
+            throw new XtceProcessingException(
+                    "Variable size in bits parameter is not a multiple of 8: "
+                            + sizeInBits);
+        }
+        if (sizeInBits > Integer.MAX_VALUE) {
+            throw new XtceProcessingException(
+                    "Variable size in bits parameter is too large: " + sizeInBits);
+        }
+
+        return (int) (sizeInBits / 8);
     }
 
 }

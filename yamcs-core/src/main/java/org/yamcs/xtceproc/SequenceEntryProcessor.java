@@ -237,6 +237,6 @@ public class SequenceEntryProcessor {
                     "Encountered parameter entry with a parameter type '" + ptype.getName()
                             + " without an encoding");
         }
-        return pcontext.dataEncodingProcessor.extractRaw(encoding);
+        return pcontext.dataEncodingProcessor.extractRaw(encoding, pcontext);
     }
 }

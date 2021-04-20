@@ -57,3 +57,8 @@ xtce-fileset:
     - type: xtce
       args:
           fileset: ["src/test/resources/xtce/a*.xml", "src/test/resources/xtce/b.xml"]
+
+VariableBinaryTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/VariableBinary.xml"
