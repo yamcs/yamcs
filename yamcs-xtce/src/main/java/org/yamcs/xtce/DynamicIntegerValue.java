@@ -22,7 +22,7 @@ public class DynamicIntegerValue extends IntegerValue {
         this.instanceRef = ir;
     }
 
-    public ParameterInstanceRef getParameterInstnaceRef() {
+    public ParameterInstanceRef getParameterInstanceRef() {
         if (!(instanceRef instanceof ParameterInstanceRef)) {
             throw new IllegalStateException(
                     "In DynamicIntegerValue: wanted ParameterInstanceRef but got "
