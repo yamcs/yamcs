@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Member, Parameter, ParameterValue } from '../../client';
+import { Member, Parameter, ParameterType, ParameterValue } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { EntryForOffsetPipe } from '../../shared/pipes/EntryForOffsetPipe';
+import { ParameterTypeForPathPipe } from '../../shared/pipes/ParameterTypeForPathPipe';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -24,8 +25,12 @@ export class ParameterDetail implements OnChanges {
   // A Parameter or a Member depending on whether the user is visiting
   // nested entries of an aggregate or array.
   entry$ = new BehaviorSubject<Parameter | Member | null>(null);
+  ptype$ = new BehaviorSubject<ParameterType | null>(null);
 
-  constructor(readonly yamcs: YamcsService, private entryForOffsetPipe: EntryForOffsetPipe) {
+  constructor(
+    readonly yamcs: YamcsService,
+    private entryForOffsetPipe: EntryForOffsetPipe,
+    private parameterTypeForPathPipe: ParameterTypeForPathPipe) {
   }
 
   ngOnChanges() {
@@ -36,8 +41,10 @@ export class ParameterDetail implements OnChanges {
       } else {
         this.entry$.next(this.parameter);
       }
+      this.ptype$.next(this.parameterTypeForPathPipe.transform(this.parameter) || null);
     } else {
       this.entry$.next(null);
+      this.ptype$.next(null);
     }
   }
 }

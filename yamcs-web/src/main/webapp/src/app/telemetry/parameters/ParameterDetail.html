@@ -13,16 +13,16 @@
         {{ spaceSystemName }}
       </a>
     </ng-container>
-
-    <ng-container *ngFor="let alias of (entry$ | async).alias">
-      <dt>{{ alias.namespace }}</dt>
-      <dd>{{ alias.name }}</dd>
-    </ng-container>
   </dd>
+
+  <ng-container *ngFor="let alias of (entry$ | async).alias">
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
+  </ng-container>
 
   <dt>Type</dt>
   <dd>
-    <span class="mono" *ngIf="(entry$ | async).type?.engType as engType; else dash">
+    <span class="mono" *ngIf="(ptype$ | async)?.engType as engType; else dash">
       {{ engType }}
     </span>
   </dd>
@@ -104,7 +104,7 @@
         <ng-container *ngIf="((offset || '') + '.' + name) as memberOffset">
           <td>
             <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + memberOffset]"
-              [queryParams]="{c: yamcs.context}">{{ name }}</a>
+               [queryParams]="{c: yamcs.context}">{{ name }}</a>
           </td>
           <td>
             <span class="mono" *ngIf="(parameter | entryForOffset:memberOffset)?.type?.engType as engType; else dash">

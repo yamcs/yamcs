@@ -79,6 +79,7 @@ import { MemberPathPipe } from './pipes/MemberPathPipe';
 import { NanosDurationPipe } from './pipes/NanosDurationPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
+import { ParameterTypeForPathPipe } from './pipes/ParameterTypeForPathPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { ReversePipe } from './pipes/ReversePipe';
 import { ShortNamePipe } from './pipes/ShortNamePipe';
@@ -243,6 +244,7 @@ const pipes = [
   NanosDurationPipe,
   NvlPipe,
   OperatorPipe,
+  ParameterTypeForPathPipe,
   PrintJsonPipe,
   ReversePipe,
   ShortNamePipe,
