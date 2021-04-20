@@ -1,8 +1,5 @@
 package org.yamcs.xtce;
 
-import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
-import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,13 +52,6 @@ public class Comparison implements MatchCriteria {
         if (paraRef.getInstance() != 0) {
             throw new UnsupportedOperationException("Condition on parameter values from history are not supported");
         }
-    }
-
-    @Override
-    public String toExpressionString() {
-        return printExpressionReference(ref) + " "
-                + comparisonOperator + " "
-                + printExpressionValue(stringValue);
     }
 
     /**

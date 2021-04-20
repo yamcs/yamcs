@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * All comparisons must be true.
@@ -32,13 +31,6 @@ public class ComparisonList implements MatchCriteria {
 
     public List<Comparison> getComparisonList() {
         return comparisons;
-    }
-
-    @Override
-    public String toExpressionString() {
-        return comparisons.stream()
-                .map(Comparison::toExpressionString)
-                .collect(Collectors.joining(" and "));
     }
 
     @Override

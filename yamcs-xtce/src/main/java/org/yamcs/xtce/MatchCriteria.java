@@ -5,8 +5,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public interface MatchCriteria extends Serializable {
-
-
     /**
      * Return the set of parameters which are required in order to evaluate the match criteria. If no parameter is
      * required, return an empty set.
@@ -14,8 +12,6 @@ public interface MatchCriteria extends Serializable {
      * @return
      */
     public Set<Parameter> getDependentParameters();
-
-    public String toExpressionString();
 
     static String printExpressionReference(ParameterOrArgumentRef ref) {
         if (!ref.useCalibratedValue()) {

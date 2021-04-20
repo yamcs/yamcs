@@ -18,4 +18,6 @@ public interface MatchCriteriaEvaluator {
     }
 
     MatchResult evaluate(ProcessingData input);
+
+    public String toExpressionString();
 }

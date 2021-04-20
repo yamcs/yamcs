@@ -16,10 +16,6 @@ public class NumericContextAlarm extends NumericAlarm {
         return contextMatch;
     }
 
-    public String getContextString() {
-        return contextMatch.toExpressionString();
-    }
-
     public void setContextMatch(MatchCriteria contextMatch) {
         this.contextMatch = contextMatch;
     }

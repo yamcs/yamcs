@@ -137,9 +137,12 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtceproc.MatchCriteriaEvaluator;
+import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 public class XtceToGpbAssembler {
     static final Log log = new Log(XtceToGpbAssembler.class);
+
     public enum DetailLevel {
         LINK, SUMMARY, FULL
     }
@@ -446,9 +449,10 @@ public class XtceToGpbAssembler {
     }
 
     public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint) {
+
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder()
                 .setTimeout(xtceConstraint.getTimeout())
-                .setExpression(xtceConstraint.getMatchCriteria().toExpressionString());
+                .setExpression(toExpressionString(xtceConstraint.getMatchCriteria()));
         return b.build();
     }
 
@@ -498,7 +502,7 @@ public class XtceToGpbAssembler {
     public static ComparisonInfo toComparisonInfo(Comparison xtceComparison) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
         ParameterOrArgumentRef ref = xtceComparison.getRef();
-        if(ref instanceof ParameterInstanceRef) {
+        if (ref instanceof ParameterInstanceRef) {
             b.setParameter(toParameterInfo((ParameterInstanceRef) ref));
         } else {
             b.setArgument(toArgumentInfo((ArgumentInstanceRef) ref));
@@ -1032,7 +1036,7 @@ public class XtceToGpbAssembler {
     private static ContextAlarmInfo toContextAlarmInfo(NumericContextAlarm contextAlarm) {
         ContextAlarmInfo.Builder resultb = ContextAlarmInfo.newBuilder()
                 .setAlarm(toAlarmInfo(contextAlarm))
-                .setContext(contextAlarm.getContextString())
+                .setContext(toExpressionString(contextAlarm.getContextMatch()))
                 .addAllComparison(toComparisons(contextAlarm.getContextMatch()));
         return resultb.build();
     }
@@ -1049,7 +1053,7 @@ public class XtceToGpbAssembler {
     private static ContextAlarmInfo toContextAlarmInfo(EnumerationContextAlarm contextAlarm) {
         ContextAlarmInfo.Builder resultb = ContextAlarmInfo.newBuilder()
                 .setAlarm(toAlarmInfo(contextAlarm))
-                .setContext(contextAlarm.getContextString())
+                .setContext(toExpressionString(contextAlarm.getContextMatch()))
                 .addAllComparison(toComparisons(contextAlarm.getContextMatch()));
         return resultb.build();
     }
@@ -1223,5 +1227,11 @@ public class XtceToGpbAssembler {
             b.addSub(toSpaceSystemInfo(sub));
         }
         return b.build();
+    }
+
+    static String toExpressionString(MatchCriteria matchCriteria) {
+        MatchCriteriaEvaluator evaluator = MatchCriteriaEvaluatorFactory
+                .getEvaluator(matchCriteria);
+        return evaluator.toExpressionString();
     }
 }

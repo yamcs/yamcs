@@ -15,10 +15,6 @@ public class EnumerationContextAlarm extends EnumerationAlarm {
         return contextMatch;
     }
 
-    public String getContextString() {
-        return contextMatch.toExpressionString();
-    }
-
     @Override
     public String toString() {
         return "EnumerationContextAlarm(contextMatch:" + getContextMatch() + ", defaultLevel:" + defaultAlarmLevel

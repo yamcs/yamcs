@@ -1,9 +1,12 @@
 package org.yamcs.xtceproc;
 
+import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.logging.Log;
@@ -99,6 +102,17 @@ public class MatchCriteriaEvaluatorFactory {
 
             return result ? MatchResult.OK : MatchResult.NOK;
         }
+
+        static String printExpressionValue(Object value) {
+            if (value != null && value instanceof String) {
+                // Need to allow for quotes and slashes within the string itself
+                // Turn '\' into '\\' and next, '"' into '\"'
+                String escaped = ((String) value).replace("\\", "\\\\").replace("\"", "\\\"");
+                return "\"" + escaped + "\"";
+            } else {
+                return String.valueOf(value);
+            }
+        }
     }
 
     // evaluates [reference operator value] conditions
@@ -138,6 +152,12 @@ public class MatchCriteriaEvaluatorFactory {
             return rValue;
         }
 
+        @Override
+        public String toExpressionString() {
+            return printExpressionReference(ref) + " "
+                    + comparisonOperator + " "
+                    + printExpressionValue(rValue.value);
+        }
     }
 
     static class RefRefEvaluator extends AbstractComparisonnEvaluator {
@@ -159,6 +179,13 @@ public class MatchCriteriaEvaluatorFactory {
         @Override
         ResolvedValue resolveRight(ProcessingData input) {
             return resolveValue(rightRef, input);
+        }
+
+        @Override
+        public String toExpressionString() {
+            return printExpressionReference(leftRef) + " "
+                    + comparisonOperator + " "
+                    + printExpressionValue(rightRef);
         }
     }
 
@@ -196,6 +223,17 @@ public class MatchCriteriaEvaluatorFactory {
 
             return result;
         }
+
+        @Override
+        public String toExpressionString() {
+            if (evaluatorList.size() == 1) {
+                return evaluatorList.get(0).toExpressionString();
+            } else {
+                return evaluatorList.stream()
+                        .map(evaluator -> "(" + evaluator.toExpressionString() + ")")
+                        .collect(Collectors.joining(" and "));
+            }
+        }
     }
 
     static class ORedConditionsEvaluator implements MatchCriteriaEvaluator {
@@ -223,6 +261,17 @@ public class MatchCriteriaEvaluatorFactory {
                 }
             }
             return result;
+        }
+
+        @Override
+        public String toExpressionString() {
+            if (evaluatorList.size() == 1) {
+                return evaluatorList.get(0).toExpressionString();
+            } else {
+                return evaluatorList.stream()
+                        .map(evaluator -> "(" + evaluator.toExpressionString() + ")")
+                        .collect(Collectors.joining(" or "));
+            }
         }
     }
 
@@ -488,7 +537,6 @@ public class MatchCriteriaEvaluatorFactory {
         public String getComparedType() {
             return "Binary";
         }
-
     };
 
     // Binary evaluator
@@ -527,8 +575,12 @@ public class MatchCriteriaEvaluatorFactory {
         public MatchResult evaluate(ProcessingData input) {
             return MatchResult.OK;
         }
-    };
 
+        @Override
+        public String toExpressionString() {
+            return "true";
+        }
+    };
 }
 
 class ResolvedValue {

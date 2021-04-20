@@ -1,8 +1,5 @@
 package org.yamcs.xtce;
 
-import static org.yamcs.xtce.MatchCriteria.printExpressionReference;
-import static org.yamcs.xtce.MatchCriteria.printExpressionValue;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +22,6 @@ public class Condition implements BooleanExpression {
 
     OperatorType comparisonOperator;
 
-
     public Condition(OperatorType comparisonOperator, ParameterOrArgumentRef leftRef, ParameterOrArgumentRef rightRef) {
         super();
 
@@ -41,8 +37,6 @@ public class Condition implements BooleanExpression {
         this.comparisonOperator = comparisonOperator;
         this.rightValue = rightValue;
     }
-
-
 
     /**
      * If the type of the parameter used for comparison is known, can parse the stringValue to see if it can be compared
@@ -74,22 +68,6 @@ public class Condition implements BooleanExpression {
         }
 
         return pset;
-    }
-
-    @Override
-    public String toExpressionString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(printExpressionReference(leftRef));
-        buf.append(" ");
-        buf.append(comparisonOperator);
-        buf.append(" ");
-
-        if (rightValue!=null) {
-            buf.append(printExpressionValue(rightValue));
-        } else {
-            buf.append(printExpressionReference(rightRef));
-        }
-        return buf.toString();
     }
 
     @Override
