@@ -2,12 +2,17 @@
          matTooltip="Active"
          [color]="onColor"
          [fade]="false"
-         ></app-led>
+         [width]="size"
+         [height]="size"></app-led>
 <app-led *ngIf="!status.active && !status.errorMessage"
          matTooltip="Inactive"
          [color]="offColor"
-         [fade]="false"></app-led>
+         [fade]="false"
+         [width]="size"
+         [height]="size"></app-led>
 <app-led *ngIf="status.errorMessage"
          [matTooltip]="status.errorMessage"
          color="red"
-         [fade]="false"></app-led>
+         [fade]="false"
+         [width]="size"
+         [height]="size"></app-led>

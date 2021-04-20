@@ -6,54 +6,55 @@ export const OFF_COLOR = 'rgb(0,100,0)';
 export let SEQ = 0;
 
 @Component({
-    selector: 'app-led',
-    template: `
+  selector: 'app-led',
+  template: `
         <div #container [style.opacity]="fade ? 0.3 : 1"
                         [style.width]="width + 'px'"
                         [style.height]="height + 'px'"
                         style="display: inline-block; line-height: 0">
         </div>`,
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./Led.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Led implements AfterViewInit, OnChanges {
 
-    @Input()
-    width = 16;
+  @Input()
+  width = 16;
 
-    @Input()
-    height = 16;
+  @Input()
+  height = 16;
 
-    @Input()
-    color = ON_COLOR;
+  @Input()
+  color = ON_COLOR;
 
-    @Input()
-    borderColor = 'rgb(150,150,150)';
+  @Input()
+  borderColor = 'rgb(150,150,150)';
 
-    @Input()
-    border = 2;
+  @Input()
+  border = 2;
 
-    @Input()
-    fade = true;
+  @Input()
+  fade = true;
 
-    private id = SEQ++;
+  private id = SEQ++;
 
-    @ViewChild('container')
-    private containerEl: ElementRef;
+  @ViewChild('container')
+  private containerEl: ElementRef;
 
-    ngAfterViewInit() {
-        this.render();
+  ngAfterViewInit() {
+    this.render();
+  }
+
+  ngOnChanges() {
+    if (this.containerEl) {
+      this.render();
     }
+  }
 
-    ngOnChanges() {
-        if (this.containerEl) {
-            this.render();
-        }
-    }
-
-    private render() {
-        const innerWidth = this.width - (2 * this.border);
-        const innerHeight = this.height - (2 * this.border);
-        const content = `
+  private render() {
+    const innerWidth = this.width - (2 * this.border);
+    const innerHeight = this.height - (2 * this.border);
+    const content = `
             <svg width="${this.width}" height="${this.height}">
                 <defs>
                     <linearGradient id="${this.id}g1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -79,6 +80,6 @@ export class Led implements AfterViewInit, OnChanges {
                          fill="url(${window.location.href}#${this.id}g2)" />
                 </svg>
         `;
-        this.containerEl.nativeElement.innerHTML = content;
-    }
+    this.containerEl.nativeElement.innerHTML = content;
+  }
 }

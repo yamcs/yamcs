@@ -11,7 +11,7 @@
         <ng-container *ngIf="customStart$ | async as customStart">
           <ng-container *ngIf="customStop$ | async as customStop">
             <span *ngIf="range === 'CUSTOM'">
-              {{ customStart | datetime }} -  {{ customStop | datetime }}
+              {{ customStart | datetime }} - {{ customStop | datetime }}
             </span>
           </ng-container>
         </ng-container>
@@ -73,7 +73,9 @@
                         duration="PT15M"
                         [dataSource]="dataSource"
                         [stop]="missionTime"
-                        [removableSeries]="true">
+                        [removableSeries]="true"
+                        (onVisibleRange)="onVisibleRange($event)"
+                        (onManualRangeChange)="onManualRangeChange()">
       <app-parameter-series [parameter]="parameter.qualifiedName"
                             [grid]="true"></app-parameter-series>
     </app-parameter-plot>

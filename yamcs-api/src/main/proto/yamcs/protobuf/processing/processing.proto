@@ -130,6 +130,13 @@ service ProcessingApi {
     };
   }
   
+  // Receive algorithm status updates
+  rpc SubscribeAlgorithmStatus(SubscribeAlgorithmStatusRequest) returns (stream AlgorithmStatus) {
+    option (yamcs.api.websocket) = {
+      topic: "algorithm-status"
+    };
+  }
+  
   // Get the algorithm trace
   rpc GetAlgorithmTrace(GetAlgorithmTraceRequest) returns (AlgorithmTrace) {
     option (yamcs.api.route) = {
@@ -356,6 +363,16 @@ message GetAlgorithmStatusRequest {
   optional string name = 3;
 }
 
+message SubscribeAlgorithmStatusRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Algorithm name.
+  optional string name = 3;
+}
 
 message GetAlgorithmTraceRequest {
   // Yamcs instance name.

@@ -36,7 +36,7 @@
 
 <dl class="dl-horizontal" *ngIf="status">
   <dt>Status</dt>
-  <dd>
+  <dd style="display: flex; align-items: center">
     <app-algorithm-status [status]="status"></app-algorithm-status>&nbsp;
     <ng-container *ngIf="status.active && !status.errorMessage">ACTIVE</ng-container>
     <ng-container *ngIf="!status.active && !status.errorMessage">INACTIVE</ng-container>
@@ -66,9 +66,33 @@
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
-  <dt>Text</dt>
+  <dt>
+    Text
+    <app-help *ngIf="isChangeMissionDatabaseEnabled()">
+      You may override the MDB algorithm text. Such a change is scoped to the
+      current processor only and will not persist across server restarts.
+    </app-help><br>
+    <span class="override-annotation" *ngIf="(overrides$ | async)?.textOverride">
+      MDB Override
+    </span>
+  </dt>
   <dd>
-    <div #text style="height: 300px;">{{ algorithm.text }}</div>
+    <div *ngIf="isChangeMissionDatabaseEnabled()" style="padding-bottom: 5px">
+      <button class="ya-button"
+              style="margin-right: 5px"
+              [disabled]="!(dirty$ | async)"
+              (click)="saveTextChanges()">
+        <mat-icon>save</mat-icon>
+        Save
+      </button>
+      <button class="ya-button"
+              [disabled]="!((overrides$ | async)?.textOverride)"
+              (click)="revertText()">
+        <mat-icon>undo</mat-icon>
+        Restore MDB text
+      </button>
+    </div>
+    <div #text class="algorithm-text"></div>
   </dd>
 </dl>
 

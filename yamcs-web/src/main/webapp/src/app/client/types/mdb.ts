@@ -1,3 +1,5 @@
+import { ParameterValue } from './monitoring';
+
 export interface MissionDatabase {
   configName: string;
   name: string;
@@ -51,6 +53,7 @@ export interface Parameter extends NameDescription {
 
   type?: ParameterType;
   usedBy?: UsedByInfo;
+  path?: string[];
 }
 
 export interface UsedByInfo {
@@ -254,6 +257,33 @@ export interface AlgorithmStatus {
   errorTime?: string;
 }
 
+export interface AlgorithmTrace {
+  runs: AlgorithmRun[];
+  logs: AlgorithmLog[];
+}
+
+export interface AlgorithmRun {
+  time: string;
+  inputs: ParameterValue[];
+  outputs: ParameterValue[];
+  returnValue: string;
+  error: string;
+}
+
+export interface AlgorithmLog {
+  time: string;
+  msg: string;
+}
+
+export interface AlgorithmOverrides {
+  textOverride?: AlgorithmTextOverride;
+}
+
+export interface AlgorithmTextOverride {
+  algorithm: string;
+  text: string;
+}
+
 export interface InputParameter {
   parameter: Parameter;
   inputName: string;
@@ -315,6 +345,7 @@ export interface GetParametersOptions {
   source?: string;
   q?: string;
   system?: string;
+  searchMembers?: boolean;
   pos?: number;
   limit?: number;
 }

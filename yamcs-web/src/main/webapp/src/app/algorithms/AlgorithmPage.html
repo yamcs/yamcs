@@ -9,10 +9,24 @@
     </ng-container>
   </app-instance-toolbar>
 
-  <div class="panel-content">
-    <app-algorithm-detail [algorithm]="algorithm"
-                          [readonly]="true"
-                          [status]="status$ | async">
-    </app-algorithm-detail>
+  <nav #tabs mat-tab-nav-bar>
+    <a mat-tab-link
+       routerLink="summary"
+       routerLinkActive #rla="routerLinkActive"
+       [active]="rla.isActive"
+       [queryParams]="{c: yamcs.context}">
+      Summary
+    </a>
+    <a mat-tab-link
+       routerLink="trace"
+       routerLinkActive #rlb="routerLinkActive"
+       [active]="rlb.isActive"
+       [queryParams]="{c: yamcs.context}">
+      Trace
+    </a>
+  </nav>
+
+  <div class="tab-content-wrapper">
+    <router-outlet></router-outlet>
   </div>
 </app-instance-page>

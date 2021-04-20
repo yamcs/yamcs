@@ -23,11 +23,19 @@ export class WebSocketCall<O, D> {
   }
 
   sendMessage(options: O) {
-    this.client.sendMessage({
-      type: this.type,
-      id: this.requestId,
-      options,
-    });
+    if (this._id !== undefined) {
+      this.client.sendMessage({
+        type: this.type,
+        call: this._id,
+        options,
+      });
+    } else {
+      this.client.sendMessage({
+        type: this.type,
+        id: this.requestId,
+        options,
+      });
+    }
   }
 
   consume(msg: ServerMessage) {

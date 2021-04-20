@@ -40,7 +40,8 @@ export class RoutesPage implements AfterViewInit {
   ) {
     title.setTitle('API routes');
     this.dataSource.filterPredicate = (rec, filter) => {
-      return rec.url.toLowerCase().indexOf(filter) >= 0;
+      return rec.url.toLowerCase().indexOf(filter) >= 0 ||
+        rec.description.toLowerCase().indexOf(filter) >= 0;
     };
   }
 

@@ -9,9 +9,9 @@ import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, Ge
 import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { AlgorithmsPage, AlgorithmStatus, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
-import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
+import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
@@ -449,6 +449,10 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.createSubscription('tmstats', options, observer);
   }
 
+  createAlgorithmStatusSubscription(options: SubscribeAlgorithmStatusRequest, observer: (status: AlgorithmStatus) => void): AlgorithmStatusSubscription {
+    return this.webSocketClient!.createSubscription('algorithm-status', options, observer);
+  }
+
   createEventSubscription(options: SubscribeEventsRequest, observer: (event: Event) => void): EventSubscription {
     return this.webSocketClient!.createSubscription('events', options, observer);
   }
@@ -882,6 +886,55 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/status`;
     const response = await this.doFetch(url);
     return await response.json() as AlgorithmStatus;
+  }
+
+  async getAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    const response = await this.doFetch(url);
+    return await response.json() as AlgorithmTrace;
+  }
+
+  async startAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    return this.doFetch(url, {
+      body: JSON.stringify({ "state": "enabled" }),
+      method: 'PATCH',
+    });
+  }
+
+  async stopAlgorithmTrace(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/algorithms${qualifiedName}/trace`;
+    return this.doFetch(url, {
+      body: JSON.stringify({ "state": "disabled" }),
+      method: 'PATCH',
+    });
+  }
+
+  async updateAlgorithmText(instance: string, processorName: string, qualifiedName: string, text: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    return this.doFetch(url, {
+      body: JSON.stringify({
+        action: 'SET',
+        algorithm: { text },
+      }),
+      method: 'PATCH',
+    });
+  }
+
+  async getAlgorithmOverrides(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb-overrides/${instance}/${processorName}/algorithms${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as AlgorithmOverrides;
+  }
+
+  async revertAlgorithmText(instance: string, processorName: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    return this.doFetch(url, {
+      body: JSON.stringify({
+        action: 'RESET',
+      }),
+      method: 'PATCH',
+    });
   }
 
   async getParameterSamples(instance: string, qualifiedName: string, options: GetParameterSamplesOptions = {}): Promise<Sample[]> {

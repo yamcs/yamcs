@@ -35,16 +35,16 @@ import org.yamcs.protobuf.Mdb.CalibratorInfo;
 import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
 import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
-import org.yamcs.protobuf.Mdb.UpdateAlgorithmRequest;
-import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
-import org.yamcs.protobuf.Mdb.UpdateParameterRequest.ActionType;
-import org.yamcs.protobuf.MdbApiClient;
+import org.yamcs.protobuf.MdbOverrideApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.QueueApiClient;
 import org.yamcs.protobuf.SetParameterValueRequest;
+import org.yamcs.protobuf.UpdateAlgorithmRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.UpdateParameterRequest;
+import org.yamcs.protobuf.UpdateParameterRequest.ActionType;
 import org.yamcs.protobuf.Yamcs.Value;
 
 import com.google.protobuf.Empty;
@@ -57,7 +57,7 @@ public class ProcessorClient {
 
     private ProcessingApiClient processingService;
     private CommandsApiClient commandService;
-    private MdbApiClient mdbService;
+    private MdbOverrideApiClient mdbOverrideService;
     private QueueApiClient queueService;
 
     public ProcessorClient(MethodHandler methodHandler, String instance, String processor) {
@@ -65,7 +65,7 @@ public class ProcessorClient {
         this.processor = processor;
         processingService = new ProcessingApiClient(methodHandler);
         commandService = new CommandsApiClient(methodHandler);
-        mdbService = new MdbApiClient(methodHandler);
+        mdbOverrideService = new MdbOverrideApiClient(methodHandler);
         queueService = new QueueApiClient(methodHandler);
     }
 
@@ -247,7 +247,7 @@ public class ProcessorClient {
                 .setDefaultCalibrator(calibrator)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -263,7 +263,7 @@ public class ProcessorClient {
             requestb.setDefaultCalibrator(defaultCalibrator);
         }
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -279,7 +279,7 @@ public class ProcessorClient {
                 .setAction(ActionType.RESET_CALIBRATORS)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -292,7 +292,7 @@ public class ProcessorClient {
                 .setDefaultAlarm(alarm)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -308,7 +308,7 @@ public class ProcessorClient {
             requestb.setDefaultAlarm(defaultAlarm);
         }
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -324,20 +324,20 @@ public class ProcessorClient {
                 .setAction(ActionType.RESET_ALARMS)
                 .build();
         CompletableFuture<ParameterTypeInfo> f = new CompletableFuture<>();
-        mdbService.updateParameter(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateParameter(null, request, new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<Void> updateAlgorithm(String algorithm, AlgorithmInfo definition) {
+    public CompletableFuture<Void> updateAlgorithm(String algorithm, String text) {
         UpdateAlgorithmRequest request = UpdateAlgorithmRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
                 .setName(algorithm)
                 .setAction(UpdateAlgorithmRequest.ActionType.SET)
-                .setAlgorithm(definition)
+                .setAlgorithm(AlgorithmInfo.newBuilder().setText(text))
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        mdbService.updateAlgorithm(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateAlgorithm(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -349,7 +349,7 @@ public class ProcessorClient {
                 .setAction(UpdateAlgorithmRequest.ActionType.RESET)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        mdbService.updateAlgorithm(null, request, new ResponseObserver<>(f));
+        mdbOverrideService.updateAlgorithm(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 

@@ -5,6 +5,7 @@ import { OFF_COLOR, ON_COLOR } from '../shared/template/Led';
 @Component({
   selector: 'app-algorithm-status',
   templateUrl: './AlgorithmStatusComponent.html',
+  styleUrls: ['./AlgorithmStatusComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmStatusComponent {
@@ -13,7 +14,7 @@ export class AlgorithmStatusComponent {
   status: AlgorithmStatus;
 
   @Input()
-  size = 16;
+  size = 14;
 
   onColor = ON_COLOR;
   offColor = OFF_COLOR;

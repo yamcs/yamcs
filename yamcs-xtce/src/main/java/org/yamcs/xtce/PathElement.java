@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Describes an element from an aggregate/array member access path
- * For example, the third element from this path : <br>
+ * Describes an element from an aggregate/array member access path For example, the third element from this path : <br>
  * a/c[2]/d[0][5]/x <br>
  * is: <br>
  * name = "d"<br>
@@ -32,6 +31,7 @@ public class PathElement implements Serializable {
      * name[idx_1][idx_2]..[idx_n]
      * </pre>
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (name != null) {
@@ -39,7 +39,7 @@ public class PathElement implements Serializable {
         }
         if (index != null) {
             for (int i = 0; i < index.length; i++) {
-                sb.append("[").append(i).append("]");
+                sb.append("[").append(index[i]).append("]");
             }
         }
         return sb.toString();
@@ -53,7 +53,7 @@ public class PathElement implements Serializable {
      * </pre>
      */
     public static PathElement fromString(String s) {
-        List<Integer> idx = new ArrayList<Integer>();
+        List<Integer> idx = new ArrayList<>();
         int k = s.indexOf('[', 0);
         if (k == -1) {
             return new PathElement(s, null);

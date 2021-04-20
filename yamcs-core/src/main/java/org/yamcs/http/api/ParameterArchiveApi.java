@@ -34,11 +34,11 @@ import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterInfoRetrieval;
 import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.protobuf.AbstractParameterArchiveApi;
-import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.ArchivedParameterGroupResponse;
+import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.ArchivedParameterSegmentsResponse;
 import org.yamcs.protobuf.ArchivedParametersInfoResponse;
 import org.yamcs.protobuf.DeletePartitionsRequest;
@@ -61,7 +61,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.streamsql.ResourceNotFoundException;
 
 import com.google.protobuf.Empty;
 
@@ -170,9 +169,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-        int sampleCount = request.hasCount() ? request.getCount() : 500;
 
-        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        int sampleCount = request.hasCount() ? request.getCount() : 500;
+        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
+
+        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
         ParameterArchive parchive = getParameterArchive(ysi);
 
         ParameterCache pcache = null;

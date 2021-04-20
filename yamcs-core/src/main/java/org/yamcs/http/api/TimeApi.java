@@ -1,8 +1,8 @@
 package org.yamcs.http.api;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.Processor;
@@ -24,8 +24,6 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 
 public class TimeApi extends AbstractTimeApi<Context> {
-
-    private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     @Override
     public void getLeapSeconds(Context ctx, Empty request, Observer<LeapSecondsTable> observer) {
@@ -86,7 +84,8 @@ public class TimeApi extends AbstractTimeApi<Context> {
             provider = () -> timeService.getMissionTime();
         }
 
-        ScheduledFuture<?> future = timer.scheduleAtFixedRate(() -> {
+        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        ScheduledFuture<?> future = exec.scheduleAtFixedRate(() -> {
             long time = provider.getTime();
             observer.next(TimeEncoding.toProtobufTimestamp(time));
         }, 0, 1, TimeUnit.SECONDS);

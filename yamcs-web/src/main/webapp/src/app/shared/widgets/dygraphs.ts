@@ -11,6 +11,8 @@ export type DySample = [Date, CustomBarsValue]
   | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue]
   | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue, CustomBarsValue];
 
+export type DySeries = DySample[];
+
 /**
  * Annotation for a sample on a time-based plot.
  */
@@ -114,7 +116,7 @@ export function analyzeStaticValueRanges(parameter: NamedParameterType) {
     }
   }
 
-  const valueRange: [number|null, number|null] = [null, null]; // Null makes Dygraph choose
+  const valueRange: [number | null, number | null] = [null, null]; // Null makes Dygraph choose
   if (minLow !== undefined) {
     valueRange[0] = minLow;
   }

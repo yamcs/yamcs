@@ -1810,7 +1810,9 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_UNIT)) {
                 UnitType u = readUnit();
-                units.add(u);
+                if (u != null) {
+                    units.add(u);
+                }
             } else if (isEndElementWithName(XTCE_UNIT_SET)) {
                 return units;
             } else {

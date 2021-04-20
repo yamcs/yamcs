@@ -1,4 +1,4 @@
-import { DyAnnotation, DySample } from './dygraphs';
+import { DySample } from './dygraphs';
 
 export type WatermarkObserver = () => void;
 
@@ -7,7 +7,6 @@ export type DyValueRange = [number | null, number | null];
 export interface PlotData {
   valueRange: DyValueRange;
   samples: DySample[];
-  annotations: DyAnnotation[];
 }
 
 /**
@@ -25,7 +24,6 @@ export class PlotBuffer {
   private valueRange: DyValueRange = [null, null];
 
   private archiveSamples: DySample[] = [];
-  private archiveAnnotations: DyAnnotation[] = [];
 
   private realtimeBuffer: (DySample | undefined)[];
   private bufferSize = 500;
@@ -37,9 +35,8 @@ export class PlotBuffer {
     this.realtimeBuffer = Array(this.bufferSize).fill(undefined);
   }
 
-  setArchiveData(samples: DySample[], annotations: DyAnnotation[]) {
+  setArchiveData(samples: DySample[]) {
     this.archiveSamples = samples;
-    this.archiveAnnotations = annotations;
     this.dirty = true;
   }
 
@@ -85,7 +82,6 @@ export class PlotBuffer {
     return {
       valueRange: this.valueRange,
       samples: splicedSamples,
-      annotations: this.archiveAnnotations,
     };
   }
 }

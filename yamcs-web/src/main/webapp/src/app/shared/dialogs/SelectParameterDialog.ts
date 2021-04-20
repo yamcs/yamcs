@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
+import { MemberPathPipe } from '../pipes/MemberPathPipe';
 
 export interface SelectParameterOptions {
   label?: string;
@@ -36,6 +37,7 @@ export class SelectParameterDialog implements OnInit {
     private dialogRef: MatDialogRef<SelectParameterDialog>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: SelectParameterOptions,
+    private memberPathPipe: MemberPathPipe,
   ) {
     this.label = data.label || 'Search parameter';
     this.okLabel = data.okLabel || 'SELECT';
@@ -49,12 +51,14 @@ export class SelectParameterDialog implements OnInit {
       switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
         q: val,
         limit: this.limit,
+        searchMembers: true,
       })),
       map(page => page.parameters || []),
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {
-            if (excludedParameter === candidate.qualifiedName) {
+            const qualifiedName = this.memberPathPipe.transform(candidate);
+            if (excludedParameter === qualifiedName) {
               return false;
             }
           }

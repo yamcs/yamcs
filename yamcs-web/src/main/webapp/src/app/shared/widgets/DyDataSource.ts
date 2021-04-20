@@ -1,9 +1,9 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Alarm, NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
+import { NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
+import { CustomBarsValue, DySample, DySeries } from './dygraphs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
@@ -20,7 +20,6 @@ export class DyDataSource {
   data$ = new BehaviorSubject<PlotData>({
     valueRange: [null, null],
     samples: [],
-    annotations: [],
   });
   minValue?: number;
   maxValue?: number;
@@ -48,7 +47,6 @@ export class DyDataSource {
         const plotData = this.plotBuffer.snapshot();
         this.data$.next({
           samples: plotData.samples,
-          annotations: plotData.annotations,
           valueRange: plotData.valueRange,
         });
         this.plotBuffer.dirty = false;
@@ -87,6 +85,11 @@ export class DyDataSource {
     return this.updateWindow(this.visibleStart, this.visibleStop, [null, null]);
   }
 
+  updateWindowOnly(start: Date, stop: Date) {
+    this.visibleStart = start;
+    this.visibleStop = stop;
+  }
+
   updateWindow(
     start: Date,
     stop: Date,
@@ -106,10 +109,6 @@ export class DyDataSource {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
-        }),
-        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, {
-          start: loadStart.toISOString(),
-          stop: loadStop.toISOString(),
         })
       );
     }
@@ -126,13 +125,12 @@ export class DyDataSource {
         this.visibleStop = stop;
         this.minValue = undefined;
         this.maxValue = undefined;
-        const dySamples = this.processSamples(results[0]);
-        const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
-        for (let i = 1; i < this.parameters$.value.length; i++) {
-          this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
-          // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
+        const dySeries = [];
+        for (let i = 0; i < results.length; i++) {
+          dySeries[i] = this.processSamples(results[i]);
         }
-        this.plotBuffer.setArchiveData(dySamples, dyAnnotations);
+        let dySamples = this.mergeSeries(...dySeries);
+        this.plotBuffer.setArchiveData(dySamples);
         this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
       }
@@ -246,55 +244,55 @@ export class DyDataSource {
     return dySamples;
   }
 
-  private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
-    const dyAnnotations: DyAnnotation[] = [];
-    /*for (const alarm of alarms) {
-      const t = new Date();
-      t.setTime(Date.parse(alarm.triggerValue.generationTime));
-      const value = convertValueToNumber(alarm.triggerValue.engValue);
-      if (value !== null) {
-        const sample: DySample = [t, [value, value, value]];
-        const idx = this.findInsertPosition(t, dySamples);
-        dySamples.splice(idx, 0, sample);
-        dyAnnotations.push({
-          series: this.parameters$.value[0].qualifiedName,
-          x: t.getTime(),
-          shortText: 'A',
-          text: 'Alarm triggered at ' + alarm.triggerValue.generationTime,
-          tickHeight: 1,
-          cssClass: 'annotation',
-          tickColor: 'red',
-          // attachAtBottom: true,
-        });
-      }
-    }*/
-    return dyAnnotations;
-  }
-
-  private findInsertPosition(t: Date, dySamples: DySample[]) {
-    if (!dySamples.length) {
-      return 0;
-    }
-
-    for (let i = 0; i < dySamples.length; i++) {
-      if (dySamples[i][0] > t) {
-        return i;
-      }
-    }
-    return dySamples.length - 1;
-  }
-
   /**
-   * Merges two DySample[] series together. This assumes that timestamps between
+   * Merges two or more DySample[] series together. This assumes that timestamps between
    * the two series are identical, which is the case if server requests are done
    * with the same date range.
    */
-  private mergeSeries(samples1: DySample[], samples2: DySample[]) {
-    if (samples1.length !== samples2.length) {
-      throw new Error('Cannot merge two sample arrays of unequal length');
+  private mergeSeries(...series: DySeries[]) {
+    if (series.length === 1) {
+      return series[0];
     }
-    for (let i = 0; i < samples1.length; i++) {
-      samples1[i].push(samples2[i][1]);
+    let result: DySample[] = series[0];
+    for (let i = 1; i < series.length; i++) {
+      const merged: DySample[] = [];
+      let index1 = 0;
+      let index2 = 0;
+      let prev1: CustomBarsValue[] = [];
+      let prev2: CustomBarsValue | null = null;
+      const series1 = result;
+      const series2 = series[i];
+      while (index1 < series1.length || index2 < series2.length) {
+        const top1 = index1 < series1.length ? series1[index1] : null;
+        const top2 = index2 < series2.length ? series2[index2] : null;
+        if (top1 && top2) {
+          if (top1[0].getTime() === top2[0].getTime()) {
+            prev1 = top1.slice(1) as CustomBarsValue[];
+            prev2 = top2[1];
+            merged.push([top1[0], ...prev1, prev2] as any);
+            index1++;
+            index2++;
+          } else if (top1[0].getTime() < top2[0].getTime()) {
+            prev1 = top1.slice(1) as CustomBarsValue[];
+            merged.push([top1[0], ...prev1, prev2] as any);
+            index1++;
+          } else {
+            prev2 = top2[1];
+            merged.push([top2[0], ...prev1, prev2] as any);
+            index2++;
+          }
+        } else if (top1) {
+          prev1 = top1.slice(1) as CustomBarsValue[];
+          merged.push([top1[0], ...prev1, prev2] as any);
+          index1++;
+        } else if (top2) {
+          prev2 = top2[1];
+          merged.push([top2[0], ...prev1, prev2] as any);
+          index2++;
+        }
+      }
+      result = merged;
     }
+    return result;
   }
 }

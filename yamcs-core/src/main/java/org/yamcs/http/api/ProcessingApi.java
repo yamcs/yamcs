@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -63,6 +65,7 @@ import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.SubscribeAlgorithmStatusRequest;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
@@ -429,6 +432,23 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
+    public void subscribeAlgorithmStatus(Context ctx, SubscribeAlgorithmStatusRequest request,
+            Observer<AlgorithmStatus> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm alg = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+        AlgorithmManager algMng = verifyAlgorithmManager(processor);
+
+        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        ScheduledFuture<?> future = exec.scheduleAtFixedRate(() -> {
+            AlgorithmStatus status = algMng.getAlgorithmStatus(alg);
+            observer.next(status);
+        }, 0, 1, TimeUnit.SECONDS);
+
+        observer.setCancelHandler(() -> future.cancel(false));
+    }
+
+    @Override
     public void editAlgorithmTrace(Context ctx, EditAlgorithmTraceRequest request, Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
@@ -441,7 +461,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
         Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
 
-
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
         if ("enabled".equalsIgnoreCase(state)) {
             algMng.enableTracing(a);
@@ -453,7 +472,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
         observer.complete(Empty.getDefaultInstance());
     }
-
 
     @Override
     public void getAlgorithmTrace(Context ctx, GetAlgorithmTraceRequest request, Observer<AlgorithmTrace> observer) {

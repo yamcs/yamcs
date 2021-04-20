@@ -37,7 +37,7 @@ public class WebSocketObserver implements Observer<Message> {
         log = new Log(WebSocketObserver.class);
         log.setContext(ctx.toString());
 
-        log.info("Subscribe {}", ctx.getTopic().getName());
+        log.debug("Subscribe {}", ctx.getTopic().getName());
     }
 
     void sendReply(Reply reply) {
@@ -108,9 +108,9 @@ public class WebSocketObserver implements Observer<Message> {
     void cancelCall(String reason) {
         if (!cancelled) {
             if (reason != null) {
-                log.info("Cancelling {} call ({})", ctx.getTopic().getName(), reason);
+                log.debug("Cancelling {} call ({})", ctx.getTopic().getName(), reason);
             } else {
-                log.info("Cancelling {} call", ctx.getTopic().getName());
+                log.debug("Cancelling {} call", ctx.getTopic().getName());
             }
             cancelled = true;
             if (cancelHandler != null) {

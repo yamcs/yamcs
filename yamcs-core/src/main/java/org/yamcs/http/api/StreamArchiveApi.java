@@ -150,8 +150,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
         int sampleCount = request.hasCount() ? request.getCount() : 500;
-
-        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
+        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
             @Override

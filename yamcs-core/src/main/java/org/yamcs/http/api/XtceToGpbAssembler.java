@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.parameter.BasicParameterValue;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AbsoluteTimeInfo;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
@@ -575,6 +576,18 @@ public class XtceToGpbAssembler {
             b.setQualifiedName(p.getQualifiedName() + memberPath);
         }
         return b.build();
+    }
+
+    public static ParameterInfo toParameterInfo(ParameterWithId parameterWithId, DetailLevel detail) {
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameterWithId.getParameter(), detail);
+        if (parameterWithId.getPath() != null && parameterWithId.getPath().length > 0) {
+            ParameterInfo.Builder infob = ParameterInfo.newBuilder(pinfo);
+            for (PathElement el : parameterWithId.getPath()) {
+                infob.addPath(el.toString());
+            }
+            pinfo = infob.build();
+        }
+        return pinfo;
     }
 
     public static ParameterInfo toParameterInfo(Parameter p, DetailLevel detail) {

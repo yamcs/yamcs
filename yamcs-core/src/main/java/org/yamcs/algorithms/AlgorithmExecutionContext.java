@@ -181,6 +181,7 @@ public class AlgorithmExecutionContext {
 
         AlgorithmStatus.Builder statusb = AlgorithmStatus.newBuilder()
                 .setActive(true)
+                .setTraceEnabled(tracers.containsKey(algo.getQualifiedName()))
                 .setRunCount(activeAlgo.runCount)
                 .setErrorCount(activeAlgo.errorCount);
         if (activeAlgo.errorMessage != null) {

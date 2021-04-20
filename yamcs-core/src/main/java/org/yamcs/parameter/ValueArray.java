@@ -123,7 +123,7 @@ public class ValueArray {
             ((BitSet) obj).set(idx, v.getBooleanValue());
             break;
         default:
-            throw new IllegalStateException("Unnown type " + type);
+            throw new IllegalStateException("Unknown type " + type);
         }
     }
     
@@ -152,7 +152,7 @@ public class ValueArray {
         case BINARY:
             return ValueUtility.getBinaryValue((byte[]) (((Object[]) obj)[idx]));
         default:
-            throw new IllegalStateException("Unnown type " + type);
+            throw new IllegalStateException("Unknown type " + type);
         }
     }
     
@@ -178,7 +178,7 @@ public class ValueArray {
         case BINARY:
             return new Object[size];
         }
-        throw new IllegalStateException("Unnown type " + type);
+        throw new IllegalStateException("Unknown type " + type);
     }
 
     public Type getType() {
