@@ -10,4 +10,7 @@ export class EmptyMessage {
 
   @Input()
   headerTitle: string;
+
+  @Input()
+  marginTop = '50px';
 }
