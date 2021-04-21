@@ -27,7 +27,7 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
                 .setProcessor("realtime")
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         CreateEventRequest createRequest = CreateEventRequest.newBuilder()
                 .setInstance(yamcsInstance)

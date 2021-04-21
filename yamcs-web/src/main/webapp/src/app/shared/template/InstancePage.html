@@ -87,7 +87,7 @@
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
-      <app-sidebar-nav-item *ngIf="(connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer'"
+      <app-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
                             routerLink="/filetransfer"
                             [queryParams]="{c: yamcs.context}">
         <mat-icon class="item-icon">file_copy</mat-icon>

@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.filetransfer.FileTransferService;
-import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -16,6 +14,8 @@ import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferService;
+import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.http.BadRequestException;
@@ -38,13 +38,13 @@ import org.yamcs.protobuf.SubscribeTransfersRequest;
 import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.Empty;
-import com.google.protobuf.Timestamp;
 
 public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
@@ -53,6 +53,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     @Override
     public void listFileTransferServices(Context ctx, ListFileTransferServicesRequest request,
             Observer<ListFileTransferServicesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         ListFileTransferServicesResponse.Builder responseb = ListFileTransferServicesResponse.newBuilder();
@@ -67,6 +68,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     @Override
     public void listTransfers(Context ctx, ListTransfersRequest request,
             Observer<ListTransfersResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
 
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
@@ -83,6 +85,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         FileTransfer transaction = verifyTransaction(ftService, request.getId());
@@ -91,6 +94,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void createTransfer(Context ctx, CreateTransferRequest request, Observer<TransferInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
@@ -180,6 +184,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void pauseTransfer(Context ctx, PauseTransferRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
@@ -194,6 +199,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void cancelTransfer(Context ctx, CancelTransferRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
@@ -208,6 +214,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void resumeTransfer(Context ctx, ResumeTransferRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         FileTransfer transaction = verifyTransaction(ftService, request.getId());
@@ -222,6 +229,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void subscribeTransfers(Context ctx, SubscribeTransfersRequest request, Observer<TransferInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         TransferMonitor listener = transfer -> {

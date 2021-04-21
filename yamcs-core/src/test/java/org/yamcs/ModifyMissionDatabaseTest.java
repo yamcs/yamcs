@@ -47,7 +47,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_1();
         List<ParameterValue> values = captor.expectTimely();
@@ -86,7 +86,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_10(5, 0, 30);
         List<ParameterValue> values = captor.expectTimely();
@@ -143,7 +143,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_10(0, 3, 0);
         List<ParameterValue> values = captor.expectTimely();
@@ -180,7 +180,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_10(80, 3, 0);
         List<ParameterValue> values = captor.expectTimely();
@@ -236,7 +236,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_1();
         List<ParameterValue> values = captor.expectTimely();

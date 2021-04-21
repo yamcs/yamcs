@@ -199,6 +199,10 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.user.hasSystemPrivilege('ReadAlarms');
   }
 
+  showFileTransferItem() {
+    return this.user.hasSystemPrivilege('ControlFileTransfers');
+  }
+
   showArchiveBrowserItem() {
     return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }

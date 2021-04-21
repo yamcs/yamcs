@@ -28,6 +28,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlCommandClearances = new SystemPrivilege("ControlCommandClearances");
 
     /**
+     * Allows to control file transfers.
+     */
+    public static final SystemPrivilege ControlFileTransfers = new SystemPrivilege("ControlFileTransfers");
+
+    /**
      * Allows to issue any commands
      */
     public static final SystemPrivilege Command = new SystemPrivilege("Command");

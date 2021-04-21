@@ -20,7 +20,7 @@ public class EventTests extends AbstractIntegrationTest {
                 .setInstance(yamcsInstance)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         long now = TimeEncoding.getWallclockTime();
         CreateEventRequest createRequest = CreateEventRequest.newBuilder()
