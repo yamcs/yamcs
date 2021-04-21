@@ -35,7 +35,7 @@ public class ServiceUtil {
             log.error("Service {} did not stop in {} seconds", service.getClass().getName(),
                     YamcsServer.SERVICE_STOP_GRACE_TIME);
         } catch (IllegalStateException e) {
-            log.error("Service {} was in a bad state: {}", service.getClass().getName(), e.getMessage());
+            log.error("Service {} was in a bad state: {}", service.getClass().getName(), e.toString());
         }
     }
 }

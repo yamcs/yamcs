@@ -227,7 +227,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
                 ackCommand(pc.getCommandId());
                 return;
             } catch (IOException e) {
-                reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.getMessage());
+                reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
                 log.warn(reason);
             }
 

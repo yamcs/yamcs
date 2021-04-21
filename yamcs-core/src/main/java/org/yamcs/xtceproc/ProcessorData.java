@@ -218,7 +218,7 @@ public class ProcessorData {
             try {
                 return getCalibrator(c);
             } catch (Exception e) {
-                eventProducer.sendWarning("Could not get calibrator processor for " + c + ": " + e.getMessage());
+                eventProducer.sendWarning("Could not get calibrator processor for " + c + ": " + e.toString());
                 return null;
             }
         } else {

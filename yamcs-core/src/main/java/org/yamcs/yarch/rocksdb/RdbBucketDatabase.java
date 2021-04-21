@@ -93,7 +93,7 @@ public class RdbBucketDatabase implements BucketDatabase {
                 return bucket;
             }
         } catch (RocksDBException e) {
-            throw new IOException("Failed to create bucket: " + e.getMessage(), e);
+            throw new IOException("Failed to create bucket: " + e.toString(), e);
         }
     }
 
@@ -124,7 +124,7 @@ public class RdbBucketDatabase implements BucketDatabase {
                 buckets.remove(b.getName());
             }
         } catch (RocksDBException e) {
-            throw new IOException("Failed to delete bucket: " + e.getMessage(), e);
+            throw new IOException("Failed to delete bucket: " + e.toString(), e);
         }
     }
 

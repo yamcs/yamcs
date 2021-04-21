@@ -75,7 +75,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
         try {
             BackupUtils.verifyBackupDirectory(backupDir, false);
         } catch (Exception e1) {
-            throw new BadRequestException(e1.getMessage());
+            throw new BadRequestException(e1.toString());
         }
 
         RDBFactory rdbFactory = tablespace.getRdbFactory();

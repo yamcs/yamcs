@@ -384,8 +384,7 @@ public class ReplicationSlave extends AbstractYamcsService {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            cause.printStackTrace();
-            log.warn("Caught exception {}", cause.getMessage());
+            log.warn("Caught exception", cause);
         }
 
         @Override

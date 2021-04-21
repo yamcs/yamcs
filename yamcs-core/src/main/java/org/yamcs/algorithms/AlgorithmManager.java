@@ -244,7 +244,8 @@ public class AlgorithmManager extends AbstractProcessorService
             executor = makeExecutor(algorithm, execCtx);
         } catch (AlgorithmException e) {
             AlgorithmStatus algst = AlgorithmStatus.newBuilder()
-                    .setErrorMessage("Failed to create executor: " + e.getMessage())
+                    .setErrorMessage("Failed to create executor"
+                            + ((e.getMessage() == null) ? "" : ": " + e.getMessage()))
                     .setErrorTime(Timestamps.fromMillis(System.currentTimeMillis()))
                     .build();
             algorithmsInError.put(algorithm.getQualifiedName(), algst);
@@ -517,8 +518,10 @@ public class AlgorithmManager extends AbstractProcessorService
             eventProducer.sendCritical("Failed to create executor for algorithm "
                     + algOverr.getQualifiedName() + ": " + e);
             AlgorithmStatus.Builder status = AlgorithmStatus.newBuilder()
-                    .setErrorMessage(e.getMessage())
                     .setErrorTime(Timestamps.fromMillis(System.currentTimeMillis()));
+            if (e.getMessage() != null) {
+                status.setErrorMessage(e.getMessage());
+            }
             algorithmsInError.put(algOverr.getQualifiedName(), status.build());
             return;
         }

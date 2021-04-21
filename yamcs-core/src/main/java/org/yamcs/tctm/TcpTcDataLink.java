@@ -194,7 +194,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
                     dataCount.getAndIncrement();
                     sent = true;
                 } catch (IOException e) {
-                    reason = String.format("Error writing to TC socket to %s:%d : %s", host, port, e.getMessage());
+                    reason = String.format("Error writing to TC socket to %s:%d : %s", host, port, e.toString());
                     log.warn(reason);
                     try {
                         if (socketChannel.isOpen()) {

@@ -435,7 +435,7 @@ public class CfdpService extends AbstractYamcsService
         try {
             packet = CfdpPacket.fromTuple(tuple);
         } catch (PduDecodingException e) {
-            log.warn("Error decoding PDU: {}, packet: {}", e.getMessage(),
+            log.warn("Error decoding PDU: {}, packet: {}", e.toString(),
                     StringConverter.arrayToHexString(e.getData(), true));
             eventProducer.sendInfo(ETYPE_PDU_DECODING_ERROR, "Error decoding CFDP PDU; " + e.getMessage());
             return;

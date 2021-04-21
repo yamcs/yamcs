@@ -125,14 +125,14 @@ public class ActiveAlgorithm {
             setError(System.currentTimeMillis(), e.getMessage());
             if (e instanceof AlgorithmException) {
                 propagateErrorToListeners(((AlgorithmException) e).inputValues, e.getMessage());
-                log.warn("{}", e.getMessage());
+                log.warn("Error executing algorithm: {}", e.getMessage());
             } else {
-                log.error("{}", e.getMessage());
-                propagateErrorToListeners(null, e.getMessage());
+                log.error("Error executing algorithm", e);
+                propagateErrorToListeners(null, e.toString());
             }
 
             if (eventProducer != null) {
-                eventProducer.sendWarning(e.getMessage());
+                eventProducer.sendWarning(e.toString());
             }
         }
         long t1 = System.nanoTime();

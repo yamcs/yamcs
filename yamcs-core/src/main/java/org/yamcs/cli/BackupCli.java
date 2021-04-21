@@ -137,7 +137,7 @@ public class BackupCli extends Command {
                 } catch (RocksDBException e) {
                     throw new IOException(
                             "Error when backing up tablespace '" + tablespace + "' to '" + backupDir + "': "
-                                    + e.getMessage());
+                                    + e.toString());
                 }
             }
         }

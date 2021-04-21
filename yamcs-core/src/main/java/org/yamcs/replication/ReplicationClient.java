@@ -74,7 +74,7 @@ public class ReplicationClient {
                     scheduleReconnect();
                 });
             } else {
-                log.warn("Failed to connect: {}", f.cause().getMessage());
+                log.warn("Failed to connect: {}", f.cause());
                 scheduleReconnect();
             }
         });

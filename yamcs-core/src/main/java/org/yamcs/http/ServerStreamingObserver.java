@@ -88,7 +88,7 @@ public class ServerStreamingObserver implements Observer<Message> {
             cancelCall("closed channel");
             // No rethrow. Client disconnect is a normal condition
         } catch (IOException e) {
-            cancelCall(e.getMessage());
+            cancelCall(e.toString());
             throw new UncheckedIOException(e);
         }
 

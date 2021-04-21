@@ -156,7 +156,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
                 if (!isRunning() || isDisabled()) {
                     return null;
                 }
-                log.warn("Exception when receiving parameter data: {}'", e.getMessage());
+                log.warn("Exception when receiving parameter data: {}'", e.toString());
                 invalidDatagramCount++;
             }
         }

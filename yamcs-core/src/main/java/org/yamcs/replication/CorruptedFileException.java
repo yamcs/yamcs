@@ -10,6 +10,7 @@ public class CorruptedFileException extends RuntimeException {
     }
     
     public String toString() {
-        return "Corrupted file "+path+": "+getMessage();
+        String msg = getMessage();
+        return "Corrupted file " + path + (msg == null ? "" : ": " + msg);
     }
 }

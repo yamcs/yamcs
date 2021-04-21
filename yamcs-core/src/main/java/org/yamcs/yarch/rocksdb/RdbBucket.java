@@ -117,7 +117,7 @@ public class RdbBucket implements Bucket {
             tablespace.getRdb().getDb().write(writeOpts, writeBatch);
             bucketProps = bucketProps1;
         } catch (RocksDBException e) {
-            throw new IOException("Error writing object data: " + e.getMessage(), e);
+            throw new IOException("Error writing object data: " + e.toString(), e);
         }
     }
 
@@ -131,7 +131,7 @@ public class RdbBucket implements Bucket {
             }
             return ObjectProperties.newBuilder().mergeFrom(v).setName(objectName).build();
         } catch (InvalidProtocolBufferException e) {
-            throw new DatabaseCorruptionException("Cannot decode data: " + e.getMessage(), e);
+            throw new DatabaseCorruptionException("Cannot decode data: " + e.toString(), e);
         } catch (RocksDBException e1) {
             throw new IOException(e1);
         }
@@ -145,7 +145,7 @@ public class RdbBucket implements Bucket {
 
             return rdb.get(k);
         } catch (RocksDBException e) {
-            throw new IOException("Failed to retrieve object: " + e.getMessage(), e);
+            throw new IOException("Failed to retrieve object: " + e.toString(), e);
         }
     }
 
@@ -173,7 +173,7 @@ public class RdbBucket implements Bucket {
                 bucketProps = bucketProps1;
             }
         } catch (RocksDBException e) {
-            throw new IOException("Failed to retrieve object: " + e.getMessage(), e);
+            throw new IOException("Failed to retrieve object: " + e.toString(), e);
         }
     }
 

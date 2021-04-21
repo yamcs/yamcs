@@ -113,7 +113,6 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
         if (config != null) {
 
-
             if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
                 String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
                 tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class,
@@ -178,7 +177,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 corrupted = true;
             }
         } catch (IllegalArgumentException e) {
-            eventProducer.sendWarning("Error when computing checkword: " + e.getMessage());
+            eventProducer.sendWarning("Error when computing checkword: " + e);
             corrupted = true;
         }
         if (corrupted) {
@@ -251,8 +250,8 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
+            log.warn("Failed to extract time from the packet", e);
+            eventProducer.sendWarning("Failed to extract time from packet: " + e);
             tmPacket.setInvalid(true);
         }
     }

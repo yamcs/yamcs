@@ -163,7 +163,7 @@ public class ProcessorFactory {
                 serviceList.add(swc);
             } catch (NoClassDefFoundError e) {
                 targetLog.error("Cannot create service {}, with arguments {}: class {} not found", name, config,
-                        e.getMessage());
+                        servclass);
                 throw e;
             } catch (ValidationException e) {
                 throw e;

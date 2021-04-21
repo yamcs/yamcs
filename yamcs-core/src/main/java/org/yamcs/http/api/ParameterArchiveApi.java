@@ -131,7 +131,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             observer.complete(sm);
 
         } catch (RocksDBException e) {
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException(e.toString());
         }
     }
 
@@ -189,7 +189,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             spdr.retrieve(sampler);
         } catch (IOException e) {
             log.warn("Received exception during parameter retrieval", e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException(e.toString());
         }
 
         TimeSeries.Builder series = TimeSeries.newBuilder();
@@ -239,7 +239,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             spdr.retrieve(ranger);
         } catch (IOException e) {
             log.warn("Received exception during parameter retrieval ", e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException(e.toString());
         }
 
         Ranges.Builder ranges = Ranges.newBuilder();
@@ -580,7 +580,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             observer.complete(resp.build());
         } catch (RocksDBException | IOException e) {
             log.error("Error retrieving parameter info", e);
-            throw new InternalServerErrorException(e.getMessage());
+            throw new InternalServerErrorException(e.toString());
         }
     }
 

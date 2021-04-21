@@ -244,7 +244,7 @@ public class RDBFactory implements Runnable {
             try {
                 BackupUtils.verifyBackupDirectory(backupDir, false);
             } catch (IOException e) {
-                log.warn("Invalid backup directory: {} ", e.getMessage());
+                log.warn("Invalid backup directory: {} ", e.toString());
                 cf.completeExceptionally(e);
                 return;
             }
