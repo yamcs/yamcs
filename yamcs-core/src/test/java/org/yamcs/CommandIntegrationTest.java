@@ -2,7 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -44,7 +43,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
     private MessageCaptor<CommandHistoryEntry> captor;
 
     @Before
-    public void prepareTests() throws InterruptedException {
+    public void prepareTests() throws Exception {
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
         subscription = yamcsClient.createCommandSubscription();
@@ -55,6 +54,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
                 .setProcessor("realtime")
                 .build();
         subscription.sendMessage(request);
+        subscription.awaitConfirmation();
     }
 
     @Test

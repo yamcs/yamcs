@@ -15,4 +15,9 @@ public interface DataObserver<T extends Message> extends Observer<T> {
     default void unpackNext(Any data) throws InvalidProtocolBufferException {
         next(data.unpack(getMessageClass()));
     }
+
+    /**
+     * Called when the server has confirmed this call.
+     */
+    void confirm();
 }

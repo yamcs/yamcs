@@ -69,7 +69,7 @@ public class ParameterTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         assertTrue(captor.isEmpty());
         packetGenerator.generate_PKT1_1();
@@ -191,7 +191,7 @@ public class ParameterTest extends AbstractIntegrationTest {
                 .setUpdateOnExpiration(true)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_1();
         List<ParameterValue> values = captor.expectTimely();
@@ -220,7 +220,7 @@ public class ParameterTest extends AbstractIntegrationTest {
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
-        Thread.sleep(2000);
+        subscription.awaitConfirmation();
 
         packetGenerator.generate_PKT1_1();
         List<ParameterValue> values = captor.expectTimely();

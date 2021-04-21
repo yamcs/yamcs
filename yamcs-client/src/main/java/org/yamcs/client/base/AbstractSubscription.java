@@ -22,6 +22,10 @@ import com.google.protobuf.Message;
  */
 public abstract class AbstractSubscription<C extends Message, S extends Message> implements Subscription<C, S> {
 
+    // A future that resolves when the call is confirmed by the server
+    // A call is confirmed when the server has assigned it an id (upon first message)
+    private CompletableFuture<Void> confirmationFuture = new CompletableFuture<>();
+
     // A future that resolves when the call is completed
     private CompletableFuture<Void> wrappedFuture = new CompletableFuture<>();
 
@@ -32,6 +36,11 @@ public abstract class AbstractSubscription<C extends Message, S extends Message>
     protected AbstractSubscription(MethodHandler methodHandler, String topic, Class<S> responseClass) {
         WebSocketClient client = ((HttpMethodHandler) methodHandler).getWebSocketClient();
         clientObserver = client.call(topic, new DataObserver<S>() {
+
+            @Override
+            public void confirm() {
+                confirmationFuture.complete(null);
+            }
 
             @Override
             public void next(S message) {
@@ -80,6 +89,27 @@ public abstract class AbstractSubscription<C extends Message, S extends Message>
         messageListeners.clear(); // Immediately ensure nobody will receive anything anymore
         clientObserver.complete(); // Now notify Yamcs async.
         return true;
+    }
+
+    public CompletableFuture<Void> getConfirmationFuture() {
+        return confirmationFuture;
+    }
+
+    /**
+     * Waits until the server has confirmed the call for this subscription. Only the first client message of a call is
+     * confirmed.
+     */
+    public void awaitConfirmation() throws InterruptedException, ExecutionException {
+        confirmationFuture.get();
+    }
+
+    /**
+     * Waits until the server has confirmed the call for this subscription. Only the first client message of a call is
+     * confirmed.
+     */
+    public void awaitConfirmation(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        confirmationFuture.get(timeout, unit);
     }
 
     @Override

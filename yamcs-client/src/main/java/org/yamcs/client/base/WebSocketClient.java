@@ -171,7 +171,7 @@ public class WebSocketClient {
             }
         });
 
-        log.info("WebSocket Client connecting");
+        log.info("WebSocket client connecting");
         try {
             nettyChannel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
         } catch (Exception e) {
@@ -396,6 +396,7 @@ public class WebSocketClient {
 
         void assignCallId(int callId) {
             this.callId = callId;
+            serverObserver.confirm();
             callIdLatch.countDown();
         }
     }
