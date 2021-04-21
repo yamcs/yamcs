@@ -198,8 +198,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             }
             Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
             Levels level = null;
-            if (preparedCommand.getMetaCommand().getDefaultSignificance() != null) {
-                level = preparedCommand.getMetaCommand().getDefaultSignificance().getConsequenceLevel();
+            if (preparedCommand.getMetaCommand().getEffectiveDefaultSignificance() != null) {
+                level = preparedCommand.getMetaCommand().getEffectiveDefaultSignificance().getConsequenceLevel();
             }
             if (level != null && level.isMoreSevere(clearance)) {
                 throw new ForbiddenException("Not cleared for this level of commands");

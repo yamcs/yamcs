@@ -99,8 +99,9 @@ public class CommandQueue {
         }
 
         Levels level = Levels.none;
-        if (metaCmd.getDefaultSignificance() != null) {
-            level = metaCmd.getDefaultSignificance().getConsequenceLevel();
+
+        if (metaCmd.getEffectiveDefaultSignificance() != null) {
+            level = metaCmd.getEffectiveDefaultSignificance().getConsequenceLevel();
         }
         if (!isLevelMatched(level)) {
             return false;
