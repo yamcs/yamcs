@@ -22,6 +22,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     String packetInputStreamClassName;
     YConfiguration packetInputStreamArgs;
     PacketInputStream packetInputStream;
+    Thread thread;
 
     @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
@@ -34,6 +35,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
             port = config.getInt("port");
         }
         initialDelay = config.getLong("initialDelay", -1);
+
         if (config.containsKey("packetInputStreamClassName")) {
             this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
             this.packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
@@ -41,7 +43,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
             this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
             this.packetInputStreamArgs = YConfiguration.emptyConfig();
         }
-        
+
     }
 
     protected void openSocket() throws IOException {
@@ -61,13 +63,16 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public void doStart() {
         if (!isDisabled()) {
-            new Thread(this).start();
+            doEnable();
         }
         notifyStarted();
     }
 
     @Override
     public void doStop() {
+        if (thread != null) {
+            thread.interrupt();
+        }
         if (tmSocket != null) {
             try {
                 tmSocket.close();
@@ -116,40 +121,41 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
                 if (pwt != null) {
                     break;
                 }
-            } catch (EOFException e) {
-                log.warn("TM Connection closed");
-                tmSocket = null;
             } catch (IOException e) {
                 if (isRunningAndEnabled()) {
-                    String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-                    log.info("Cannot open or read TM socket {}:{} {}'. Retrying in 10s", host, port, exc);
+                    String msg;
+                    if (e instanceof EOFException) {
+                        msg = "TM socket connection to " + host + ":" + port + " closed. Reconnecting in 10s.";
+                    } else {
+                        msg = "Cannot open or read TM socket " + host + ": " + port + ": "
+                                + ((e instanceof ConnectException) ? e.getMessage() : e.toString())
+                                + ". Retrying in 10 seconds.";
+                    }
+                    log.warn(msg);
                 }
+                forceClosedSocket();
                 try {
-                    tmSocket.close();
-                } catch (Exception e2) {
-                }
-                tmSocket = null;
-                for (int i = 0; i < 10; i++) {
-                    if (!isRunningAndEnabled()) {
-                        break;
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e1) {
-                        Thread.currentThread().interrupt();
-                        return null;
-                    }
+                    Thread.sleep(10000);
+                } catch (InterruptedException e1) {
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             } catch (PacketTooLongException e) {
                 log.warn(e.toString());
-                try {
-                    tmSocket.close();
-                } catch (Exception e2) {
-                }
-                tmSocket = null;
+                forceClosedSocket();
             }
         }
         return pwt;
+    }
+
+    private void forceClosedSocket() {
+        if (tmSocket != null) {
+            try {
+                tmSocket.close();
+            } catch (Exception e2) {
+            }
+        }
+        tmSocket = null;
     }
 
     @Override
@@ -162,11 +168,16 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
             }
             tmSocket = null;
         }
+        if (thread != null) {
+            thread.interrupt();
+        }
     }
 
     @Override
     public void doEnable() {
-        new Thread(this).start();
+        thread = new Thread(this);
+        thread.setName(this.getClass().getSimpleName() + "-" + linkName);
+        thread.start();
     }
 
     @Override
