@@ -57,8 +57,8 @@ import static org.yamcs.xtce.NameDescription.qualifiedName;
  * Starting with Yamcs 5.5.0, all system parameters have types defined in the MDB. For the basic types (corresponding to
  * scalar values), this class will provide some types (e.g. uint65, float32, etc)
  * <p>
- * For aggregate, the caller can use the {@link #createSystemParameter(String, AggregateParameterType)} to make the
- * parameter and also add the corresponding type to the MDB.
+ * For aggregate, the caller can use the {@link #createSystemParameter(String, AggregateParameterType, String)} to make
+ * the parameter and also add the corresponding type to the MDB.
  *
  * @author nm
  *
@@ -256,8 +256,8 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     /**
      * Create a system parameter for a basic value type. The created parameter will have a shared basic parameter type.
      * <p>
-     * If the type is aggregate, the method {@link #createSystemParameter(String, AggregateParameterType)} should be
-     * used after making an appropriate {@link AggregateParameterType}
+     * If the type is aggregate, the method {@link #createSystemParameter(String, AggregateParameterType, String)}
+     * should be used after making an appropriate {@link AggregateParameterType}
      * 
      * @param relativeName
      *            - the relative name of the parameter, can contain multiple subsystems but cannot start with "/"
