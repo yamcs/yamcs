@@ -52,10 +52,17 @@ public class CommandQueue {
 
     void setupSysParameters() {
         SystemParametersService sps = SystemParametersService.getInstance(processor.getInstance());
-        spQueueState = sps.createSystemParameter("cmdQueue/" + name + "/state", Type.ENUMERATED);
-        spNumCommands = sps.createSystemParameter("cmdQueue/" + name + "/numCommands", Type.SINT32);
-        spNumSentCommands = sps.createSystemParameter("cmdQueue/" + name + "/numSentCommands", Type.UINT32);
-        spNumRejectedCommands = sps.createSystemParameter("cmdQueue/" + name + "/numRejectedCommands", Type.UINT32);
+        spQueueState = sps.createEnumeratedSystemParameter("cmdQueue/" + name + "/state", QueueState.class,
+                "State of the commanding queue. "
+                        + "BLOCKED: the commands are hold in the queue until manually released or the queue is unblocked; "
+                        + "DISABLED: the commands are immediately rejected; "
+                        + "ENABLED: the command pass through (but only if they satisfy the tranmission constraints)");
+        spNumCommands = sps.createSystemParameter("cmdQueue/" + name + "/numCommands", Type.SINT32,
+                "number of commands in the queue");
+        spNumSentCommands = sps.createSystemParameter("cmdQueue/" + name + "/numSentCommands", Type.UINT32,
+                "number of commands sent through the queue");
+        spNumRejectedCommands = sps.createSystemParameter("cmdQueue/" + name + "/numRejectedCommands", Type.UINT32,
+                "number of commands rejected by the queue");
     }
 
     public String getName() {

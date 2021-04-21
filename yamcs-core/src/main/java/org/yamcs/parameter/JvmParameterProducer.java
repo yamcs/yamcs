@@ -14,13 +14,16 @@ public class JvmParameterProducer implements SystemParametersProducer {
     private Parameter spJvmTotalMemory, spJvmMemoryUsed, spJvmTheadCount;
 
     public JvmParameterProducer(SystemParametersService sysParamsService) {
-        spJvmTotalMemory = sysParamsService.createSystemParameter("jvmTotalMemory", Type.UINT64);
+        spJvmTotalMemory = sysParamsService.createSystemParameter("jvmTotalMemory", Type.UINT64,
+                "total amount of memory allocated by the Java virtual machine");
         log.debug("Publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
-        spJvmMemoryUsed = sysParamsService.createSystemParameter("jvmMemoryUsed", Type.UINT64);
+        spJvmMemoryUsed = sysParamsService.createSystemParameter("jvmMemoryUsed", Type.UINT64,
+                "amount of memory currently used in the Java Virtual Machine");
         log.debug("Publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
-        spJvmTheadCount = sysParamsService.createSystemParameter("jvmThreadCount", Type.UINT32);
+        spJvmTheadCount = sysParamsService.createSystemParameter("jvmThreadCount", Type.UINT32,
+                "number of active threads");
         log.debug("Publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
     }
 

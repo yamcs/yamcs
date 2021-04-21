@@ -173,7 +173,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
     Stream tcoStream;
     EventProducer eventProducer;
-    private SystemParameter spDeviationId;
+    private SystemParameter spDeviation;
     private ParameterValue deviationPv;
     String tableName;
 
@@ -455,12 +455,12 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     private void publishDeviation(double deviation) {
         lastDeviation = deviation;
 
-        if (spDeviationId == null) {
+        if (spDeviation == null) {
             return;// no system parameter collector configured
         }
         long time = timeService.getMissionTime();
         double dabs = Math.abs(deviation);
-        ParameterValue pv = SystemParametersService.getPV(spDeviationId, time, deviation);
+        ParameterValue pv = SystemParametersService.getPV(spDeviation, time, deviation);
         if (dabs > validity) {
             pv.setStatus(warningStatus);
         } else if (dabs > accuracy) {
@@ -513,7 +513,9 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         SystemParametersService collector = SystemParametersService.getInstance(yamcsInstance);
         if (collector != null) {
             makeParameterStatus();
-            spDeviationId = collector.createSystemParameter(serviceName + "/deviation", Type.DOUBLE);
+            spDeviation = collector.createSystemParameter(serviceName + "/deviation", Type.DOUBLE,
+                    "delta between the OBT computed using the coefficients and the OBT which is part of a time sample"
+                            + " (after adjusting for delays)");
             collector.registerProducer(this);
         }
     }

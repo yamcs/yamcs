@@ -144,9 +144,16 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
 
     @Override
     public void setupSystemParameters(SystemParametersService sysParamCollector) {
-        spLinkStatus = sysParamCollector.createSystemParameter(linkName + "/linkStatus", Type.ENUMERATED);
-        spDataOutCount = sysParamCollector.createSystemParameter(linkName + "/dataOutCount", Type.UINT64);
-        spDataInCount = sysParamCollector.createSystemParameter(linkName + "/dataInCount", Type.UINT64);
+        spLinkStatus = sysParamCollector.createEnumeratedSystemParameter(linkName + "/linkStatus", Status.class,
+                "The status of the link. "
+                        + "OK: the link is up ready to receive data; "
+                        + "UNAVAIL: the link is down although it should be up; "
+                        + "DISABLED: the link has been disabled by the user; "
+                        + "FAILED: there was an internal error while processing the data;");
+        spDataOutCount = sysParamCollector.createSystemParameter(linkName + "/dataOutCount", Type.UINT64,
+                "number of items (e.g. telecommand packetss) that has been sent through the link");
+        spDataInCount = sysParamCollector.createSystemParameter(linkName + "/dataInCount", Type.UINT64,
+                "number of items (e.g. telemetry packets) that has been received throught the link");
     }
 
     @Override
@@ -171,9 +178,9 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
      * @param list
      */
     protected void collectSystemParameters(long time, List<ParameterValue> list) {
-        State state = state();
+        Status status = getLinkStatus();
         list.add(SystemParametersService.getPV(spLinkStatus, time,
-                ValueUtility.getEnumeratedValue(state.ordinal(), state.name())));
+                ValueUtility.getEnumeratedValue(status.ordinal(), status.name())));
         list.add(SystemParametersService.getPV(spDataOutCount, time, getDataOutCount()));
         list.add(SystemParametersService.getPV(spDataInCount, time, getDataInCount()));
     }

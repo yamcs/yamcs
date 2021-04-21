@@ -70,8 +70,10 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     @Override
     public void setupSystemParameters(SystemParametersService sysParamService) {
         super.setupSystemParameters(sysParamService);
-        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.FLOAT);
-        spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.FLOAT);
+        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.DOUBLE,
+                "number of bytes/second computed over a five seconds interval");
+        spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.DOUBLE,
+                "number of packets/second computed over a five second interval");
     }
 
     @Override

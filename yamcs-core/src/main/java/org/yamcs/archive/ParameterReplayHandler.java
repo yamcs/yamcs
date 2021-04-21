@@ -129,7 +129,7 @@ public class ParameterReplayHandler implements ReplayHandler {
             if (p == null) {
                 if (XtceDb.isSystemParameter(pv.getParameterQualifiedName())) {
                     p = SystemParametersService.createSystemParameter(xtceDb, pv.getParameterQualifiedName(),
-                            pv.getEngValue().getType());
+                            pv.getEngValue().getType(), null);
                 } else {
                     log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
                     continue;

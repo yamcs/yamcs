@@ -1205,7 +1205,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 .addMember(new Member("nnR", sysParamsService.getBasicType(Type.UINT32)))
                 .build();
 
-        spCop1Status = sysParamsService.createSystemParameter(linkName + "/cop1Status", aggrType);
+        spCop1Status = sysParamsService.createSystemParameter(linkName + "/cop1Status", aggrType,
+                "Status of the COP1 state machine");
 
         addMonitor(new Cop1Monitor() {
             int prevClcw = INVALID_CLCW;

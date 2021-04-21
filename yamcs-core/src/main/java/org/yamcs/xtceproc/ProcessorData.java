@@ -82,11 +82,13 @@ public class ProcessorData {
 
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)
-        ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName());
+        ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName(),
+                "the name of the current processor");
         lastValueCache.add(procNamePv);
 
         String mode = proc.isReplay() ? "replay" : "realtime";
-        ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode);
+        ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode,
+                "the mode of the current processor (either replay or realtime)");
         lastValueCache.add(procModePv);
     }
 
@@ -153,9 +155,9 @@ public class ProcessorData {
         return null;
     }
 
-    private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value) {
+    private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value, String description) {
         String fqn = NameDescription.qualifiedName(YAMCS_SPACESYSTEM_NAME, "processor", name);
-        Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING);
+        Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING, description);
 
         ParameterValue pv = new ParameterValue(p);
 

@@ -239,7 +239,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      * @param type
      * @return
      */
-    public SystemParameter createSystemParameter(String relativeName, AggregateParameterType type) {
+    public SystemParameter createSystemParameter(String relativeName, AggregateParameterType type, String description) {
         relativeName = Files.simplifyPath(relativeName);
         if (relativeName.startsWith("/")) {
             throw new IllegalArgumentException("The name has to be relative");
@@ -250,7 +250,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             type = (AggregateParameterType) mdb.addSystemParameterType(type);
         }
 
-        return mdb.createSystemParameter(qualifiedName(namespace, relativeName), type);
+        return mdb.createSystemParameter(qualifiedName(namespace, relativeName), type, description);
     }
 
     /**
@@ -266,32 +266,49 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      *            - any type except aggregate and array
      * @return
      */
-    public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType) {
+    public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType, String description) {
         relativeName = Files.simplifyPath(relativeName);
         if (relativeName.startsWith("/")) {
             throw new IllegalArgumentException("The name has to be relative");
         }
-        return createSystemParameter(mdb, qualifiedName(namespace, relativeName), basicType);
+        return createSystemParameter(mdb, qualifiedName(namespace, relativeName), basicType, description);
     }
 
     public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Value engValue) {
         String name = NameDescription.getName(fqn);
         ParameterType ptype = createSystemParameterType(mdb, name, engValue);
-        return mdb.createSystemParameter(fqn, ptype);
+        return mdb.createSystemParameter(fqn, ptype, null);
     }
 
-    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType) {
+    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType,
+            String description) {
         ParameterType ptype = getBasicType(mdb, basicType);
-        return mdb.createSystemParameter(fqn, ptype);
+        return mdb.createSystemParameter(fqn, ptype, description);
     }
 
+    public SystemParameter createEnumeratedSystemParameter(String name, Class<? extends Enum<?>> enumClass,
+            String description) {
+        String typeName = enumClass.getCanonicalName().replace(".", "_");
+        EnumeratedParameterType type = (EnumeratedParameterType) mdb.getParameterType(YAMCS_SPACESYSTEM_NAME, typeName);
+        if (type == null) {
+            EnumeratedParameterType.Builder etypeb = new EnumeratedParameterType.Builder();
+            etypeb.setName(typeName);
+            etypeb.setQualifiedName(qualifiedName(YAMCS_SPACESYSTEM_NAME, typeName));
+            for (Enum<?> x : enumClass.getEnumConstants()) {
+                etypeb.addEnumerationValue(x.ordinal(), x.name());
+            }
+            type = (EnumeratedParameterType) mdb.addSystemParameterType(etypeb.build());
+        }
+
+        return mdb.createSystemParameter(qualifiedName(YAMCS_SPACESYSTEM_NAME, name), type, description);
+    }
 
     public static ParameterType createSystemParameterType(XtceDb mdb, String name, Value v) {
         if (v instanceof AggregateValue) {
             AggregateValue aggrv = (AggregateValue) v;
             AggregateParameterType.Builder aggrType = new AggregateParameterType.Builder();
             aggrType.setName(name).setQualifiedName(qualifiedName(YAMCS_SPACESYSTEM_NAME, name));
-           
+
             for (int i = 0; i < aggrv.numMembers(); i++) {
                 String mname = aggrv.getMemberName(i);
                 Value mvalue = aggrv.getMemberValue(i);
@@ -508,4 +525,5 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         }
 
     }
+
 }

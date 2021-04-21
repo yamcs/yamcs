@@ -45,7 +45,8 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
                     log.debug("Do not adding duplicate store '{}' to the file stores to be monitored", store);
                 } else {
                     log.debug("Adding store '{}' to the file stores to be monitored", store);
-                    Parameter p = sysParamsService.createSystemParameter("df/" + store.name(), fileStoreAggrType);
+                    Parameter p = sysParamsService.createSystemParameter("df/" + store.name(), fileStoreAggrType,
+                            "Information about disk usage");
                     fileStores.add(new FileStoreParam(store, p));
                 }
             }

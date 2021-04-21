@@ -632,6 +632,7 @@ public class XtceDb implements Serializable {
             rwLock.writeLock().unlock();
         }
     }
+
     /**
      * Creates and returns a system parameter with the given qualified name. If the parameter already exists it is
      * returned.
@@ -644,7 +645,8 @@ public class XtceDb implements Serializable {
      * @throws IllegalArgumentException
      *             if the <code>parameterQualifiedNamed</code> does not start with {@link #YAMCS_SPACESYSTEM_NAME}
      */
-    public SystemParameter createSystemParameter(String parameterQualifiedNamed, ParameterType ptype) {
+    public SystemParameter createSystemParameter(String parameterQualifiedNamed, ParameterType ptype,
+            String shortDescription) {
         rwLock.writeLock().lock();
         try {
             if (!parameterQualifiedNamed.startsWith(YAMCS_SPACESYSTEM_NAME)) {
@@ -664,6 +666,7 @@ public class XtceDb implements Serializable {
                             + " The type in the request was: " + ptype);
                 }
             }
+            p.setShortDescription(shortDescription);
             return p;
         } finally {
             rwLock.writeLock().unlock();
