@@ -1197,8 +1197,8 @@ public class XtceAssembler {
                     ArgumentInstanceRef aref = inp.getArgumentRef();
                     doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
                 }
-                if (inp.getDefinedInputName() != null) {
-                    doc.writeAttribute("inputName", inp.getDefinedInputName());
+                if (inp.getInputName() != null) {
+                    doc.writeAttribute("inputName", inp.getInputName());
                 }
                 doc.writeEndElement();
             }
@@ -1209,7 +1209,7 @@ public class XtceAssembler {
             for (OutputParameter outp : algorithm.getOutputList()) {
                 doc.writeStartElement("OutputParameterRef");
                 doc.writeAttribute("parameterRef", getNameReference(outp.getParameter()));
-                doc.writeAttribute("outputName", outp.getDefinedOutputName());
+                doc.writeAttribute("outputName", outp.getOutputName());
                 doc.writeEndElement();
             }
             doc.writeEndElement();// OutputSet

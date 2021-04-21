@@ -1925,7 +1925,7 @@ public class V7Loader extends V7LoaderBase {
                 argInstRef.setUseCalibratedValue(pref.useCalibratedValue());
                 argInstRef.setMemberPath(pref.getMemberPath());
 
-                InputParameter inputPara1 = new InputParameter(argInstRef, inputPara0.getDefinedInputName());
+                InputParameter inputPara1 = new InputParameter(argInstRef, inputPara0.getInputName());
                 inputList.set(i, inputPara1);
             }
             algo.setInputList(inputList);

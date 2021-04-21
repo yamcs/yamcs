@@ -211,6 +211,17 @@ public class MetaCommand extends NameDescription {
         return !transmissionContstraintList.isEmpty();
     }
 
+    /**
+     * returns the command significance either directly defined or inherited from the parent
+     * <p>
+     * Returns null of no significance is attached to the command
+     */
+    public Significance getEffectiveDefaultSignificance() {
+        return defaultSignificance != null ? defaultSignificance
+                : baseMetaCommand != null ? baseMetaCommand.getEffectiveDefaultSignificance()
+                        : null;
+    }
+
     public Significance getDefaultSignificance() {
         return defaultSignificance;
     }

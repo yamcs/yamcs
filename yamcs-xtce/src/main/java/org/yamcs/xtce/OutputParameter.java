@@ -29,11 +29,15 @@ public class OutputParameter implements Serializable {
         this.parameter = parameter;
     }
     
-    public String getOutputName() {
+    public String getEffectiveOutputName() {
         return outputName == null ? parameter.getName() : outputName;
     }
 
-    public String getDefinedOutputName() {
+    /**
+     * Returns the name of the output to be used in the algorithm. This is the defined name as returned by
+     * {@link #getOutputName()} or the name of the parameter if no specific name has been defined.
+     */
+    public String getOutputName() {
         return outputName;
     }
     

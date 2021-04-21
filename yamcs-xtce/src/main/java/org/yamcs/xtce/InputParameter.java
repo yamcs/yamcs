@@ -55,11 +55,15 @@ public class InputParameter implements Serializable {
         return parameterInstance == null ? argumentRef : parameterInstance;
     }
 
-    public String getDefinedInputName() {
+    public String getInputName() {
         return inputName;
     }
 
-    public String getInputName() {
+    /**
+     * Returns the name of the input to be used in the algorithm. This is the defined name as returned by
+     * {@link #getInputName()} or the name of the parameter if no specific name has been defined.
+     */
+    public String getEffectiveInputName() {
         if (inputName != null) {
             return inputName;
         }

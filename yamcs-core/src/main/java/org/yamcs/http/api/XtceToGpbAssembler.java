@@ -1160,8 +1160,8 @@ public class XtceToGpbAssembler {
         } else {
             resultb.setArgument(toArgumentInfo(xtceInput.getArgumentRef().getArgument()));
         }
-        if (xtceInput.getDefinedInputName() != null) {
-            resultb.setInputName(xtceInput.getDefinedInputName());
+        if (xtceInput.getInputName() != null) {
+            resultb.setInputName(xtceInput.getInputName());
         }
         resultb.setMandatory(xtceInput.isMandatory());
         return resultb.build();
@@ -1170,8 +1170,8 @@ public class XtceToGpbAssembler {
     public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
         resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), DetailLevel.SUMMARY));
-        if (xtceOutput.getDefinedOutputName() != null) {
-            resultb.setOutputName(xtceOutput.getDefinedOutputName());
+        if (xtceOutput.getOutputName() != null) {
+            resultb.setOutputName(xtceOutput.getOutputName());
         }
         return resultb.build();
     }

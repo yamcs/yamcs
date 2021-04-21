@@ -158,15 +158,15 @@ public class JavaExprAlgorithmExecutionFactory implements AlgorithmExecutorFacto
                 sb.append(", ");
             }
             if (inputParam.getParameterInstance() != null) {
-                sb.append("ParameterValue ").append(inputParam.getInputName());
+                sb.append("ParameterValue ").append(inputParam.getEffectiveInputName());
             } else {
-                sb.append("ArgumentValue ").append(inputParam.getInputName());
+                sb.append("ArgumentValue ").append(inputParam.getEffectiveInputName());
             }
         }
 
         for (OutputParameter outputParam : algorithmDef.getOutputList()) {
             sb.append(", ");
-            sb.append("ParameterValue ").append(outputParam.getOutputName());
+            sb.append("ParameterValue ").append(outputParam.getEffectiveOutputName());
         }
 
         sb.append(") {\n");

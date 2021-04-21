@@ -78,7 +78,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
                 log.trace("Not running algorithm {} because mandatory input {} is not present",
                         algorithmDef.getName(),
-                        inputParameter.getInputName());
+                        inputParameter.getEffectiveInputName());
                 skipRun = true;
             }
         }

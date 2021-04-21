@@ -105,7 +105,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
         if (log.isTraceEnabled()) {
             log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(),
-                    inputParameter.getInputName(), newValue);
+                    inputParameter.getEffectiveInputName(), newValue);
         }
         valueBinding.updateValue(newValue);
     }
@@ -187,7 +187,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if (pos != 0) {
                 sb.append(", ");
             }
-            sb.append(p.getInputName()).append(": ")
+            sb.append(p.getEffectiveInputName()).append(": ")
                     .append(String.valueOf(functionArgs[pos]));
             pos++;
         }

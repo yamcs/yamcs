@@ -117,7 +117,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         boolean firstParam = true;
         for (InputParameter inputParameter : algorithmDef.getInputList()) {
             // Default-define all input values to null to prevent ugly runtime errors
-            String argName = inputParameter.getInputName();
+            String argName = inputParameter.getEffectiveInputName();
             if (firstParam) {
                 firstParam = false;
             } else {
@@ -128,7 +128,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
 
         // Set empty output bindings so that algorithms can write their attributes
         for (OutputParameter outputParameter : algorithmDef.getOutputList()) {
-            String scriptName = outputParameter.getDefinedOutputName();
+            String scriptName = outputParameter.getOutputName();
             if (scriptName == null) {
                 scriptName = outputParameter.getParameter().getName();
             }
