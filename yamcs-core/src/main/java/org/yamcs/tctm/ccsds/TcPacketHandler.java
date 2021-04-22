@@ -68,12 +68,12 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
 
     @Override
     public TcTransferFrame getFrame() {
-       
+
         if (commandQueue.isEmpty()) {
             return null;
         }
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
-     
+
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
         PreparedCommand pc;

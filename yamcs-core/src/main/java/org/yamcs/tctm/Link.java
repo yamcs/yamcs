@@ -57,7 +57,25 @@ public interface Link {
      */
     public void disable();
 
+    /**
+     * return true if the link has been disabled by the user.
+     * <p>
+     * See also {@link #isEffectivelyDisabled()}
+     */
     public boolean isDisabled();
+
+    /**
+     * return true if this link or its parent (in case of a sub-link part of an aggregated link) is disabled
+     */
+    public default boolean isEffectivelyDisabled() {
+        if (isDisabled()) {
+            return true;
+        } else if (getParent() != null) {
+            return getParent().isEffectivelyDisabled();
+        } else {
+            return false;
+        }
+    }
 
     public long getDataInCount();
 
@@ -98,7 +116,7 @@ public interface Link {
      */
     default void setupSystemParameters(SystemParametersService sysParamCollector) {
     }
-    
+
     /**
      * Called at startup to initialize the link.
      * <p>
@@ -106,11 +124,11 @@ public interface Link {
      * 
      * @param yamcsInstance
      * @param linkName
-     * @param config  - the configuration - cannot be null (but can be empty)
+     * @param config
+     *            - the configuration - cannot be null (but can be empty)
      */
     default void init(String yamcsInstance, String linkName, YConfiguration config) {
     }
-    
 
     /**
      * Returns the valid configuration of the input args of this link.

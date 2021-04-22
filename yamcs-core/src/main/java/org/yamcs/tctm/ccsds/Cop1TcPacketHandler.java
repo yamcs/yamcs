@@ -203,7 +203,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     vmp.maxFrameLength);
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                    + vmp.maxFrameLength + "; frame overhead: " + framingLength);
+                            + vmp.maxFrameLength + "; frame overhead: " + framingLength);
             return;
         }
         if (!cop1Active) {
@@ -1206,7 +1206,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 .build();
 
         spCop1Status = sysParamsService.createSystemParameter(linkName + "/cop1Status", aggrType,
-                "Status of the COP1 state machine");
+                "Status of the COP1 protocol");
 
         addMonitor(new Cop1Monitor() {
             int prevClcw = INVALID_CLCW;
@@ -1256,7 +1256,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
                 ParameterValue pv = new ParameterValue(spCop1Status);
                 pv.setGenerationTime(getCurrentTime());
-                pv.setEngineeringValue(tmp);
+                pv.setEngValue(tmp);
                 cop1Status = pv;
             }
 

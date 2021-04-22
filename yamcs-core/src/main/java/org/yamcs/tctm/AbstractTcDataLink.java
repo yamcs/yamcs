@@ -34,12 +34,11 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected long housekeepingInterval = 10000;
     private AggregatedDataLink parent = null;
-    
-   
+
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        
+
         initPostprocessor(yamcsInstance, config);
     }
 
@@ -75,7 +74,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
             throw e;
         }
     }
-    
+
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
         this.commandHistoryPublisher = commandHistoryListener;
@@ -96,33 +95,36 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     public void resetCounters() {
         dataCount.set(0);
     }
+
     @Override
     public AggregatedDataLink getParent() {
-        return parent ;
+        return parent;
     }
 
     @Override
     public void setParent(AggregatedDataLink parent) {
         this.parent = parent;
     }
-    
-    /**Send to command history the failed command */
+
+    /** Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
         commandHistoryPublisher.publishAck(commandId, AcknowledgeSent,
                 currentTime, AckStatus.NOK, reason);
-        commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
+        commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
-    
+
     /**
      * send an ack in the command history that the command has been sent out of the link
+     * 
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
         commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(),
                 AckStatus.OK);
     }
+
     public String getYamcsInstance() {
         return yamcsInstance;
     }

@@ -229,13 +229,15 @@ public class LinkManager {
         }
         return stream;
     }
+
     private void processTmPacket(TmPacketDataLink tmLink, TmPacket tmPacket, Stream stream, InvalidPacketAction ipa) {
         if (tmPacket.isInvalid()) {
             if (ipa.action == Action.DROP) {
                 return;
             } else if (ipa.action == Action.DIVERT) {
                 Tuple t = new Tuple(StandardTupleDefinitions.INVALID_TM,
-                        new Object[] { tmPacket.getReceptionTime(), ipa.divertStream.getDataCount(), tmPacket.getPacket() });
+                        new Object[] { tmPacket.getReceptionTime(), ipa.divertStream.getDataCount(),
+                                tmPacket.getPacket() });
                 ipa.divertStream.emitTuple(t);
                 return;
             } // if action is PROCESS, continue below
@@ -509,7 +511,7 @@ public class LinkManager {
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             boolean sent = false;
             for (TcDataLink tcLink : tcLinks) {
-                if (!tcLink.isDisabled()) {
+                if (!tcLink.isEffectivelyDisabled()) {
                     tcLink.sendTc(pc);
                     sent = true;
                 }

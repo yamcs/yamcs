@@ -19,12 +19,10 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  * <p>
  * and partly
  * CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
- * 
+ * <p>
  * 
  * It receives TCs as CLTUs via UDP (one UDP frame = one CLTU)
  * 
- * @author nm
- *
  */
 public class UdpTcFrameLink extends AbstractExecutionThreadService {
     final ColSimulator simulator;

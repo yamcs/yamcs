@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -33,12 +32,12 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     InetAddress address;
     Thread thread;
     RateLimiter rateLimiter;
-    
+
     public void init(String yamcsInstance, String name, YConfiguration config) {
         super.init(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");
-       
+
         try {
             address = InetAddress.getByName(host);
         } catch (UnknownHostException e) {
@@ -48,7 +47,6 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
             rateLimiter = RateLimiter.create(config.getDouble("frameMaxRate"), 1, TimeUnit.SECONDS);
         }
     }
-
 
     @Override
     public void run() {
@@ -73,11 +71,11 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
                 try {
                     socket.send(dtg);
                 } catch (IOException e) {
-                   log.warn("Error sending datagram", e);
-                   notifyFailed(e);
-                   return;
+                    log.warn("Error sending datagram", e);
+                    notifyFailed(e);
+                    return;
                 }
-                
+
                 if (tf.isBypass()) {
                     ackBypassFrame(tf);
                 }
@@ -89,9 +87,13 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
 
     @Override
     protected void doDisable() throws Exception {
-        thread.interrupt();
-        socket.close();
-        socket = null;
+        if (thread != null) {
+            thread.interrupt();
+        }
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
     }
 
     @Override
@@ -107,6 +109,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
             doEnable();
             notifyStarted();
         } catch (Exception e) {
+            log.warn("Exception starting link", e);
             notifyFailed(e);
         }
     }
@@ -118,13 +121,13 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
             multiplexer.quit();
             notifyStopped();
         } catch (Exception e) {
+            log.warn("Exception stopping link", e);
             notifyFailed(e);
         }
     }
 
-
     @Override
     protected Status connectionStatus() {
-        return Status.OK;
+        return (socket == null) ? Status.DISABLED : Status.OK;
     }
 }
