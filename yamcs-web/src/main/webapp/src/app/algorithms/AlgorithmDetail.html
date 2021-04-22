@@ -32,36 +32,37 @@
   <dd>{{ algorithm.language || '-' }}</dd>
 </dl>
 
-<mat-divider></mat-divider>
+<ng-container *ngIf="status && algorithm.scope === 'GLOBAL'">
+  <mat-divider></mat-divider>
 
-<dl class="dl-horizontal" *ngIf="status">
-  <dt>Status</dt>
-  <dd style="display: flex; align-items: center">
-    <app-algorithm-status [status]="status"></app-algorithm-status>&nbsp;
-    <ng-container *ngIf="status.active && !status.errorMessage">ACTIVE</ng-container>
-    <ng-container *ngIf="!status.active && !status.errorMessage">INACTIVE</ng-container>
-    <ng-container *ngIf="status.errorMessage">ERROR: {{ status.errorMessage }}</ng-container>
-  </dd>
+  <dl class="dl-horizontal">
+    <dt>Status</dt>
+    <dd style="display: flex; align-items: center">
+      <app-algorithm-status [status]="status"></app-algorithm-status>&nbsp;
+      <ng-container *ngIf="!status.errorMessage">OK</ng-container>
+      <ng-container *ngIf="status.errorMessage">{{ status.errorMessage }}</ng-container>
+    </dd>
 
-  <dt>Run count</dt>
-  <dd>{{ (status.runCount | number) || '-' }}</dd>
+    <dt>Run count</dt>
+    <dd>{{ (status.runCount | number) || '-' }}</dd>
 
-  <dt>Total run time</dt>
-  <dd>
-    {{ (status.execTimeNs | nanosDuration) || '-' }}
-  </dd>
+    <dt>Total run time</dt>
+    <dd>
+      {{ (status.execTimeNs | nanosDuration) || '-' }}
+    </dd>
 
-  <dt>Average run time</dt>
-  <dd>
-    <span *ngIf="status.runCount">
-      {{ (status.execTimeNs / status.runCount) | nanosDuration }}
-    </span>
-    <span *ngIf="!status.runCount">-</span>
-  </dd>
+    <dt>Average run time</dt>
+    <dd>
+      <span *ngIf="status.runCount">
+        {{ (status.execTimeNs / status.runCount) | nanosDuration }}
+      </span>
+      <span *ngIf="!status.runCount">-</span>
+    </dd>
 
-  <dt>Last run</dt>
-  <dd>{{ (status.lastRun | datetime) || '-' }}</dd>
-</dl>
+    <dt>Last run</dt>
+    <dd>{{ (status.lastRun | datetime) || '-' }}</dd>
+  </dl>
+</ng-container>
 
 <mat-divider></mat-divider>
 
