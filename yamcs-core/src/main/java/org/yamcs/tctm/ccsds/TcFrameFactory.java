@@ -16,7 +16,6 @@ public class TcFrameFactory {
         } else {
             crc = null;
         }
-
     }
 
     /**
@@ -86,8 +85,8 @@ public class TcFrameFactory {
         ByteArrayUtils.encodeShort(w0, data, 0);
         int w1 = (ttf.getVirtualChannelId() << 10) + (data.length - 1);
         ByteArrayUtils.encodeShort(w1, data, 2);
-        data[4] = (byte)ttf.getVcFrameSeq();
-        
+        data[4] = (byte) ttf.getVcFrameSeq();
+
         if (crc != null) {
             int c = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeShort(c, data, data.length - 2);

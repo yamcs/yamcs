@@ -6,7 +6,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
 
 /**
  * Parameters used for generation of TC frames as per CCSDS 232.0-B-3

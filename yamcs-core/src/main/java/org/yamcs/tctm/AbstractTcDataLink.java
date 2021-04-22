@@ -27,8 +27,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected AtomicLong dataCount = new AtomicLong();
 
-    protected String sv_linkStatus_id, sp_dataCount_id;
-
     protected CommandPostprocessor cmdPostProcessor;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 

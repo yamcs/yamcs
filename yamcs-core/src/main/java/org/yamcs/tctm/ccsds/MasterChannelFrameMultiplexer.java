@@ -41,8 +41,8 @@ public class MasterChannelFrameMultiplexer {
         handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
         log = new Log(getClass(), yamcsInstance);
         log.setContext(linkName);
-        
-        for(VcUplinkHandler h: handlers) {
+
+        for (VcUplinkHandler h : handlers) {
             h.setDataAvailableSemaphore(dataAvailableSemaphore);
         }
         if (tcManagedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
