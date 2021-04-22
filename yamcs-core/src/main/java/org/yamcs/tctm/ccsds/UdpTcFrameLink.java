@@ -58,13 +58,13 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
             if (tf != null) {
                 byte[] data = tf.getData();
                 if (log.isTraceEnabled()) {
-                    log.trace("Frame data: {}", StringConverter.arrayToHexString(data, true));
+                    log.trace("Outgoing frame data: {}", StringConverter.arrayToHexString(data, true));
                 }
 
                 if (cltuGenerator != null) {
                     data = cltuGenerator.makeCltu(data);
                     if (log.isTraceEnabled()) {
-                        log.trace("CLTU: {}", StringConverter.arrayToHexString(data, true));
+                        log.trace("Outgoing CLTU: {}", StringConverter.arrayToHexString(data, true));
                     }
                 }
                 DatagramPacket dtg = new DatagramPacket(data, data.length, address, port);

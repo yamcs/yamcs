@@ -38,7 +38,7 @@ public class TcVcFrameLink {
     }
 
     void processTcFrame(byte[] data, int offset, int length) {
-        
+
         byte d0 = data[offset];
         int vn = d0 >>> 6;
 
@@ -47,15 +47,15 @@ public class TcVcFrameLink {
         boolean controlCommand = ((d0 >> 4) & 1) == 1;
 
         int spacecraftId = ByteArrayUtils.decodeUnsignedShort(data, offset) & 0x3FF;
-        int d23 = ByteArrayUtils.decodeUnsignedShort(data, offset+2);
+        int d23 = ByteArrayUtils.decodeUnsignedShort(data, offset + 2);
         int virtualChannelId = d23 >> 10;
-        int frameLength = 1+(d23 & 0x3FF);
+        int frameLength = 1 + (d23 & 0x3FF);
 
         int frameSeq = data[offset + 4] & 0xFF;
         log.info(
                 "Received TC frame data length: {}, frameLength: {}, spacecraftId: {}, VC: {}, frameSeq: {}, bypassFlag: {}",
                 length, frameLength, spacecraftId, virtualChannelId, frameSeq, bypassFlag);
-        
+
         if (vn != 0) {
             log.warn("Invalid frame version number {} received; expecting 0; ignoring frame", vn);
             return;
@@ -65,13 +65,14 @@ public class TcVcFrameLink {
             return;
         }
         int c1 = crc.compute(data, offset, frameLength - 2);
-        int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2);
+        int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2) & 0xFFFF;
         if (c1 != c2) {
-            log.warn("CRC check failed");
+            log.warn("CRC check failed, computed CRC: {}, frame data: {}", Integer.toHexString(c1).toUpperCase(),
+                    StringConverter.arrayToHexString(data, offset, frameLength, true));
             return;
         }
-        int cmdLength = frameLength -7;
-        offset+=5;
+        int cmdLength = frameLength - 7;
+        offset += 5;
         if (controlCommand) {// BC frame
             if (bypassFlag) {
                 log.warn("Invalid frame with both control and bypass flags set, ignoring");
