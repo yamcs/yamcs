@@ -1,18 +1,35 @@
 package org.yamcs.client.timeline;
 
-import org.yamcs.api.MethodHandler;
-import org.yamcs.api.Observer;
-import org.yamcs.client.Page;
-import org.yamcs.client.base.AbstractPage;
-import org.yamcs.client.base.ResponseObserver;
-import org.yamcs.protobuf.*;
+import static org.yamcs.client.utils.TimeUtils.toTimestamp;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static org.yamcs.client.utils.TimeUtils.toTimestamp;
+import org.yamcs.api.MethodHandler;
+import org.yamcs.api.Observer;
+import org.yamcs.client.Page;
+import org.yamcs.client.base.AbstractPage;
+import org.yamcs.client.base.ResponseObserver;
+import org.yamcs.protobuf.AddBandRequest;
+import org.yamcs.protobuf.CreateItemRequest;
+import org.yamcs.protobuf.DeleteItemRequest;
+import org.yamcs.protobuf.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.GetItemRequest;
+import org.yamcs.protobuf.ListBandsRequest;
+import org.yamcs.protobuf.ListBandsResponse;
+import org.yamcs.protobuf.ListItemsRequest;
+import org.yamcs.protobuf.ListItemsResponse;
+import org.yamcs.protobuf.ListSourcesRequest;
+import org.yamcs.protobuf.ListSourcesResponse;
+import org.yamcs.protobuf.ListTimelineTagsRequest;
+import org.yamcs.protobuf.ListTimelineTagsResponse;
+import org.yamcs.protobuf.TimelineApiClient;
+import org.yamcs.protobuf.TimelineBand;
+import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.protobuf.UpdateItemRequest;
 
 public class TimelineClient {
     static public final String RDB_TIMELINE_SOURCE = "rdb";
@@ -29,7 +46,7 @@ public class TimelineClient {
                 .setInstance(instance)
                 .setStart(toTimestamp(start))
                 .setStop(toTimestamp(stop));
-        if(band!=null) {
+        if (band != null) {
             requestb.setBand(band);
         }
         return new TimelineItemPage(requestb.build()).future();
@@ -40,7 +57,7 @@ public class TimelineClient {
         if (!item.hasType()) {
             throw new IllegalArgumentException("type is mandatory");
         }
-        AddItemRequest.Builder requestb = AddItemRequest.newBuilder()
+        CreateItemRequest.Builder requestb = CreateItemRequest.newBuilder()
                 .setType(item.getType())
                 .setInstance(instance)
                 .setSource(source);
@@ -58,13 +75,14 @@ public class TimelineClient {
             requestb.setGroupUuid(item.getGroupUuid());
         }
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
-        timelineService.addItem(null, requestb.build(), new ResponseObserver<>(f));
+        timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<TimelineItem> addItem(TimelineItem item) {
         return addItem(RDB_TIMELINE_SOURCE, item);
     }
+
     public CompletableFuture<TimelineItem> getItem(String source, String uuid) {
 
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
@@ -94,6 +112,7 @@ public class TimelineClient {
     public CompletableFuture<TimelineItem> deleteTimelineGroup(String uuid) {
         return deleteTimelineGroup(RDB_TIMELINE_SOURCE, uuid);
     }
+
     public CompletableFuture<TimelineItem> deleteTimelineGroup(String source, String uuid) {
 
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
@@ -141,7 +160,7 @@ public class TimelineClient {
     }
 
     public CompletableFuture<TimelineItem> updateItem(String source, TimelineItem item) {
-        if(!item.hasUuid()) {
+        if (!item.hasUuid()) {
             throw new IllegalArgumentException("the intem needs an UUID");
         }
 
@@ -168,7 +187,6 @@ public class TimelineClient {
         return f;
     }
 
-
     public CompletableFuture<List<TimelineBand>> getBands() {
         ListBandsRequest.Builder request = ListBandsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListBandsResponse> f = new CompletableFuture<>();
@@ -192,7 +210,7 @@ public class TimelineClient {
             requestb.setShared(band.getShared());
         }
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
-        timelineService.addBand(null, requestb.build(), new ResponseObserver(f));
+        timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 }

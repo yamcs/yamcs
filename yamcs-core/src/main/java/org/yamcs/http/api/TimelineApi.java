@@ -12,8 +12,8 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractTimelineApi;
 import org.yamcs.protobuf.AddBandRequest;
-import org.yamcs.protobuf.AddItemRequest;
 import org.yamcs.protobuf.AddViewRequest;
+import org.yamcs.protobuf.CreateItemRequest;
 import org.yamcs.protobuf.DeleteBandRequest;
 import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
@@ -61,7 +61,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     private static final Log log = new Log(TimelineApi.class);
 
     @Override
-    public void addItem(Context ctx, AddItemRequest request, Observer<TimelineItem> observer) {
+    public void createItem(Context ctx, CreateItemRequest request, Observer<TimelineItem> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -107,6 +107,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         org.yamcs.timeline.TimelineItem item = timelineSource.getItem(uuid);
         if (item == null) {
             throw new NotFoundException("Item " + uuid + " not found");
+        }
+
+        if (request.hasName()) {
+            item.setName(request.getName());
         }
 
         if (request.hasStart()) {
@@ -436,7 +440,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
     }
 
-    private org.yamcs.timeline.TimelineItem req2Item(AddItemRequest request) {
+    private org.yamcs.timeline.TimelineItem req2Item(CreateItemRequest request) {
         if (!request.hasType()) {
             throw new BadRequestException("Type is mandatory");
         }
@@ -466,6 +470,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             break;
         default:
             throw new InternalServerErrorException("Unknown item type " + type);
+        }
+
+        if (request.hasName()) {
+            item.setName(request.getName());
         }
 
         if (request.hasStart()) {

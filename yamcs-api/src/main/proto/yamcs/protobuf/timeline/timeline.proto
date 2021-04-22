@@ -6,20 +6,19 @@ option java_outer_classname = "TimelineProto";
 option java_multiple_files = true;
 
 import "yamcs/api/annotations.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
 //Methods related to the Timeline Service.
 service TimelineApi {
 
-  // Add an item
-  rpc AddItem(AddItemRequest) returns (TimelineItem) {
+  // Create an item
+  rpc CreateItem(CreateItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/items"
+      body: "*"
     };
   }
-
 
   // Get an item
   rpc GetItem(GetItemRequest) returns (TimelineItem) {
@@ -40,7 +39,6 @@ service TimelineApi {
   rpc ListItems(ListItemsRequest) returns (ListItemsResponse) {
     option (yamcs.api.route) = {
       get: "/api/timeline/{instance}/items"
-      body: "*"
     };
   }
 
@@ -80,62 +78,62 @@ service TimelineApi {
   
   // Add a band. The band must not have the uuid set.
   rpc AddBand(AddBandRequest) returns (TimelineBand) {
-      option (yamcs.api.route) = {
-        post: "/api/timeline/{instance}/bands"
-        body: "*"
-      };
+    option (yamcs.api.route) = {
+      post: "/api/timeline/{instance}/bands"
+      body: "*"
+    };
   }
 
   // Get a band
   rpc GetBand(GetBandRequest) returns (TimelineBand) {
-       option (yamcs.api.route) = {
-         get: "/api/timeline/{instance}/bands/{uuid}"
-       };
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/bands/{uuid}"
+    };
   }
 
   // List all bands
   rpc ListBands(ListBandsRequest) returns (ListBandsResponse) {
-      option (yamcs.api.route) = {
-        get: "/api/timeline/{instance}/bands"
-      };
-   }
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/bands"
+    };
+  }
 
 
   // Delete a band
   rpc DeleteBand(DeleteBandRequest) returns (TimelineBand) {
-      option (yamcs.api.route) = {
-        delete: "/api/timeline/{instance}/bands/{uuid}"
-      };
+    option (yamcs.api.route) = {
+      delete: "/api/timeline/{instance}/bands/{uuid}"
+    };
   }
 
-   // Add a view. The view must not have the uuid set.
-    rpc AddView(AddViewRequest) returns (TimelineView) {
-        option (yamcs.api.route) = {
-          post: "/api/timeline/{instance}/views"
-          body: "*"
-        };
-    }
+  // Add a view
+  rpc AddView(AddViewRequest) returns (TimelineView) {
+    option (yamcs.api.route) = {
+      post: "/api/timeline/{instance}/views"
+      body: "*"
+    };
+  }
 
-    // Get a view
-    rpc GetView(GetViewRequest) returns (TimelineView) {
-         option (yamcs.api.route) = {
-           get: "/api/timeline/{instance}/views/{uuid}"
-         };
-    }
+  // Get a view
+  rpc GetView(GetViewRequest) returns (TimelineView) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/views/{uuid}"
+    };
+  }
 
-    // List all views
-    rpc ListViews(ListViewsRequest) returns (ListViewsResponse) {
-        option (yamcs.api.route) = {
-          get: "/api/timeline/{instance}/views"
-        };
-     }
+  // List all views
+  rpc ListViews(ListViewsRequest) returns (ListViewsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/timeline/{instance}/views"
+    };
+  }
 
-   // Delete a view
-   rpc DeleteView(DeleteViewRequest) returns (TimelineView) {
-          option (yamcs.api.route) = {
-            delete: "/api/timeline/{instance}/views/{uuid}"
-        };
-    }
+  // Delete a view
+  rpc DeleteView(DeleteViewRequest) returns (TimelineView) {
+    option (yamcs.api.route) = {
+      delete: "/api/timeline/{instance}/views/{uuid}"
+    };
+  }
 }
 
 message RelativeTime {
@@ -237,7 +235,7 @@ message TimelineView {
 }
 
 /******************* Items ***********************/
-message AddItemRequest {
+message CreateItemRequest {
   //Yamcs instance name
   optional string instance = 1;
   

@@ -87,6 +87,12 @@
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
+      <app-sidebar-nav-item routerLink="/timeline"
+                            [queryParams]="{c: yamcs.context}">
+        <mat-icon class="item-icon">pending_actions</mat-icon>
+        Timeline
+      </app-sidebar-nav-item>
+
       <app-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
                             routerLink="/filetransfer"
                             [queryParams]="{c: yamcs.context}">

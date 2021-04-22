@@ -1,16 +1,24 @@
 package org.yamcs.timeline;
 
-import com.google.protobuf.util.Durations;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_DURATION;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_GROUP_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_NAME;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_START;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_START;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_TAGS;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.yamcs.protobuf.RelativeTime;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.yamcs.timeline.TimelineItemDb.*;
+import com.google.protobuf.util.Durations;
 
 /**
  * A timeline item is the entity that appears in the timeline bars.
@@ -44,6 +52,9 @@ public abstract class TimelineItem {
         this.id = tuple.getColumn(CNAME_ID);
         this.start = tuple.getTimestampColumn(CNAME_START);
         this.duration = tuple.getLongColumn(CNAME_DURATION);
+        if (tuple.hasColumn(CNAME_NAME)) {
+            this.name = tuple.getColumn(CNAME_NAME);
+        }
         if (tuple.hasColumn(CNAME_TAGS)) {
             this.tags = tuple.getColumn(CNAME_TAGS);
         }
@@ -68,7 +79,6 @@ public abstract class TimelineItem {
     public List<String> getTags() {
         return tags;
     }
-
 
     public UUID getRelativeItemUuid() {
         return relativeItemUuid;
@@ -137,6 +147,7 @@ public abstract class TimelineItem {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
     protected abstract void addToProto(org.yamcs.protobuf.TimelineItem.Builder protob);
 
     public org.yamcs.protobuf.TimelineItem toProtoBuf() {
@@ -144,6 +155,9 @@ public abstract class TimelineItem {
         protob.setUuid(id.toString());
         protob.setStart(TimeEncoding.toProtobufTimestamp(start));
         protob.setDuration(Durations.fromMillis(duration));
+        if (name != null) {
+            protob.setName(name);
+        }
 
         if (relativeItemUuid != null) {
             RelativeTime relTime = RelativeTime.newBuilder()
@@ -164,6 +178,9 @@ public abstract class TimelineItem {
         tuple.addColumn(CNAME_ID, DataType.UUID, id);
         tuple.addTimestampColumn(CNAME_START, start);
         tuple.addColumn(CNAME_DURATION, duration);
+        if (name != null) {
+            tuple.addColumn(CNAME_NAME, name);
+        }
         if (tags != null) {
             tuple.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM), tags);
         }
@@ -183,7 +200,7 @@ public abstract class TimelineItem {
     public static TimelineItem fromTuple(Tuple tuple) {
         String types = tuple.getColumn("type");
         TimelineItemType type = TimelineItemType.valueOf(types);
-        switch(type) {
+        switch (type) {
         case ACTIVITY_GROUP:
             return new ActivityGroup(tuple);
         case AUTO_ACTIVITY:

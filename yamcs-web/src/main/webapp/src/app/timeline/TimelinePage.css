@@ -1,0 +1,9 @@
+.timeline-container {
+  line-height: 0;
+  border-top: 1px solid #d1d5da;
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}

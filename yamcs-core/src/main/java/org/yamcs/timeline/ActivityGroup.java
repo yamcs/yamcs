@@ -1,12 +1,12 @@
 package org.yamcs.timeline;
 
-import org.yamcs.protobuf.TimelineItem.Builder;
-import org.yamcs.protobuf.TimelineItemType;
-import org.yamcs.yarch.Tuple;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
 
 import java.util.UUID;
 
-import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
+import org.yamcs.protobuf.TimelineItem.Builder;
+import org.yamcs.protobuf.TimelineItemType;
+import org.yamcs.yarch.Tuple;
 
 public class ActivityGroup extends Activity {
 
@@ -20,7 +20,7 @@ public class ActivityGroup extends Activity {
 
     @Override
     protected void addToProto(Builder protob) {
-
+        protob.setType(TimelineItemType.ACTIVITY_GROUP);
     }
 
     @Override

@@ -1,11 +1,12 @@
 package org.yamcs.timeline;
 
+import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
+
 import java.util.UUID;
 
-import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineItem.Builder;
+import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.yarch.Tuple;
-import static org.yamcs.timeline.TimelineItemDb.*;
 
 public class ManualActivity extends Activity {
 
@@ -19,13 +20,11 @@ public class ManualActivity extends Activity {
 
     @Override
     protected void addToProto(Builder protob) {
-        // TODO Auto-generated method stub
-
+        protob.setType(TimelineItemType.MANUAL_ACTIVITY);
     }
 
     @Override
     protected void addToTuple(Tuple tuple) {
         tuple.addEnumColumn(CNAME_TYPE, TimelineItemType.MANUAL_ACTIVITY.name());
     }
-
 }

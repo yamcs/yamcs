@@ -137,7 +137,7 @@ export default class EventBand extends Band {
 
   private grabStart?: Point;
 
-  private eventsById: { [key: string]: EventWithDrawInfo } = {};
+  private eventsById: { [key: string]: EventWithDrawInfo; } = {};
 
   constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
     super(timeline, opts, style);

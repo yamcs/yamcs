@@ -244,7 +244,7 @@ a.ya-link.ya-header-link {
   color: crimson;
 }
 
-.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input {
+.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input, .ya-form label .duration-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;
@@ -266,7 +266,7 @@ a.ya-link.ya-header-link {
   border-color: #5787b1;
 }
 
-.ng-invalid:not(.ng-pristine)>.date-time-input>input, .ng-invalid:not(.ng-pristine)>.binary-input>input, input.ng-invalid:not(.ng-pristine) {
+.ng-invalid:not(.ng-pristine)>.date-time-input>input, .ng-invalid:not(.ng-pristine)>.binary-input>input, input.ng-invalid:not(.ng-pristine), .ng-invalid:not(.ng-pristine)>.duration-input>input {
   border-color: crimson !important;
 }
 

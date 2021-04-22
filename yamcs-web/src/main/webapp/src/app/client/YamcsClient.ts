@@ -16,6 +16,7 @@ import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditComm
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
+import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineItem, TimelineItemsPage, UpdateTimelineItemRequest } from './types/timeline';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -311,6 +312,49 @@ export default class YamcsClient implements HttpHandler {
 
   async deleteServiceAccount(name: string) {
     const url = `${this.apiUrl}/service-accounts/${name}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
+  async getTimelineItems(instance: string, options: GetTimelineItemsOptions = {}) {
+    const url = `${this.apiUrl}/timeline/${instance}/items`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as TimelineItemsPage;
+  }
+
+  async createTimelineBand(instance: string, options: CreateTimelineBandRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/bands`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as TimelineBand;
+  }
+
+  async createTimelineItem(instance: string, options: CreateTimelineItemRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/items`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as TimelineItem;
+  }
+
+  async updateTimelineItem(instance: string, id: string, options: UpdateTimelineItemRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/items/${id}`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+    return await response.json() as TimelineItem;
+  }
+
+  async deleteTimelineItem(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/items/${id}`;
     return await this.doFetch(url, {
       method: 'DELETE',
     });

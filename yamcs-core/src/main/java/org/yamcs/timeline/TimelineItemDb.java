@@ -15,6 +15,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -173,7 +174,6 @@ public class TimelineItemDb implements TimelineSource {
 
             Tuple tuple = item.toTuple();
             log.debug("Updating timeline item in RDB: {}", tuple);
-            System.out.println("emitting " + tuple);
             timelineStream.emitTuple(tuple);
 
             updateDependentStart(item);
@@ -325,15 +325,21 @@ public class TimelineItemDb implements TimelineSource {
         try {
             SqlBuilder sqlBuilder = new SqlBuilder(TIMELINE_TABLE_NAME);
             sqlBuilder.select("*");
-            sqlBuilder.where("start < ?", filter.getTimeInterval().getEnd());
-            sqlBuilder.where("start+duration > ?", filter.getTimeInterval().getStart());
+
+            TimeInterval interval = filter.getTimeInterval();
+            if (interval.hasEnd()) {
+                sqlBuilder.where("start < ?", interval.getEnd());
+            }
+            if (interval.hasStart()) {
+                sqlBuilder.where("start+duration > ?", interval.getStart());
+            }
             if (filter.getTags() != null && !filter.getTags().isEmpty()) {
                 sqlBuilder.where(" tags && ?", filter.getTags());
             }
             sqlBuilder.limit(limit + 1);
 
-            // System.out.println("statement=" + sqlBuilder.toString() + " with arguments " +
-            // sqlBuilder.getQueryArguments().toArray());
+            System.out.println("statement=" + sqlBuilder.toString() + " with arguments " +
+                    sqlBuilder.getQueryArguments().toArray());
             StreamSqlStatement stmt = ydb.createStatement(sqlBuilder.toString(),
                     sqlBuilder.getQueryArguments().toArray());
             ydb.execute(stmt, new ResultListener() {

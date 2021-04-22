@@ -6,7 +6,7 @@ export const requireInteger: ValidatorFn = (control: AbstractControl): Validatio
 };
 
 export const requireFloat: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-  const allowed = !isNaN(control.value);
+  const allowed = !isNaN(control.value) &&
+    (Number.isInteger(parseFloat(control.value)) || control.value % 1 !== 0);
   return allowed ? null : { 'notFloat': { value: control.value } };
 };
-
