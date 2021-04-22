@@ -1,6 +1,8 @@
 package org.yamcs.http.api;
 
-import com.google.protobuf.util.Durations;
+import java.util.List;
+import java.util.UUID;
+
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -8,28 +10,61 @@ import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.AbstractTimelineApi;
+import org.yamcs.protobuf.AddBandRequest;
+import org.yamcs.protobuf.AddItemRequest;
+import org.yamcs.protobuf.AddViewRequest;
+import org.yamcs.protobuf.DeleteBandRequest;
+import org.yamcs.protobuf.DeleteItemRequest;
+import org.yamcs.protobuf.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.DeleteViewRequest;
+import org.yamcs.protobuf.GetBandRequest;
+import org.yamcs.protobuf.GetItemRequest;
+import org.yamcs.protobuf.GetViewRequest;
+import org.yamcs.protobuf.ListBandsRequest;
+import org.yamcs.protobuf.ListBandsResponse;
+import org.yamcs.protobuf.ListItemsRequest;
+import org.yamcs.protobuf.ListItemsResponse;
+import org.yamcs.protobuf.ListSourcesRequest;
+import org.yamcs.protobuf.ListSourcesResponse;
+import org.yamcs.protobuf.ListTimelineTagsRequest;
+import org.yamcs.protobuf.ListTimelineTagsResponse;
+import org.yamcs.protobuf.ListViewsRequest;
+import org.yamcs.protobuf.ListViewsResponse;
+import org.yamcs.protobuf.RelativeTime;
+import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
-import org.yamcs.protobuf.*;
-import org.yamcs.timeline.*;
+import org.yamcs.protobuf.TimelineItemType;
+import org.yamcs.protobuf.TimelineView;
+import org.yamcs.protobuf.UpdateItemRequest;
+import org.yamcs.timeline.ActivityGroup;
+import org.yamcs.timeline.AutomatedActivity;
+import org.yamcs.timeline.BandListener;
+import org.yamcs.timeline.ItemFilter;
+import org.yamcs.timeline.ItemGroup;
+import org.yamcs.timeline.ItemListener;
+import org.yamcs.timeline.ManualActivity;
+import org.yamcs.timeline.TimelineBandDb;
+import org.yamcs.timeline.TimelineEvent;
+import org.yamcs.timeline.TimelineService;
+import org.yamcs.timeline.TimelineSource;
+import org.yamcs.timeline.TimelineViewDb;
+import org.yamcs.timeline.ViewListener;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 
-import java.util.List;
-import java.util.UUID;
-
+import com.google.protobuf.util.Durations;
 
 public class TimelineApi extends AbstractTimelineApi<Context> {
 
     private static final Log log = new Log(TimelineApi.class);
-    private int limit;
 
     @Override
     public void addItem(Context ctx, AddItemRequest request, Observer<TimelineItem> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
-
 
         org.yamcs.timeline.TimelineItem item = req2Item(request);
         try {
@@ -39,7 +74,6 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new BadRequestException(e.getMessage());
         }
     }
-
 
     @Override
     public void getItem(Context ctx, GetItemRequest request, Observer<TimelineItem> observer) {
@@ -118,17 +152,16 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         String next = request.hasNext() ? request.getNext() : null;
         int limit = request.hasLimit() ? request.getLimit() : 500;
         TimeInterval interval = new TimeInterval();
-        if(request.hasStart()) {
+        if (request.hasStart()) {
             interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
-        if(request.hasStart()) {
+        if (request.hasStart()) {
             interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         ItemFilter filter = new ItemFilter(interval);
-        if(request.hasBand()) {
+        if (request.hasBand()) {
             filter.setTags(request.getBand().getTagsList());
         }
-
 
         ListItemsResponse.Builder resp = ListItemsResponse.newBuilder();
 
@@ -178,7 +211,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void addBand(Context ctx, AddBandRequest request, Observer<TimelineBand> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
-        TimelineBand band = req2Band(request,ctx.user.getName());
+        TimelineBand band = req2Band(request, ctx.user.getName());
         try {
             band = timelineBandDb.addBand(band);
             observer.complete(band);
@@ -207,7 +240,6 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void listBands(Context ctx, ListBandsRequest request, Observer<ListBandsResponse> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
-
 
         ListBandsResponse.Builder resp = ListBandsResponse.newBuilder();
 
@@ -383,7 +415,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     private TimelineSource verifySource(TimelineService timelineService, String source) {
         TimelineSource ts = timelineService.getSource(source);
-        if(ts == null) {
+        if (ts == null) {
             throw new BadRequestException("Invalid source '" + source + "'");
         }
         return ts;
@@ -412,28 +444,28 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         org.yamcs.timeline.TimelineItem item;
 
         switch (type) {
-            case EVENT:
-                TimelineEvent event = new TimelineEvent(UUID.randomUUID());
-                item = event;
-                break;
-            case ITEM_GROUP:
-                ItemGroup itemGroup = new ItemGroup(UUID.randomUUID());
-                item = itemGroup;
-                break;
-            case MANUAL_ACTIVITY:
-                ManualActivity manualActivity = new ManualActivity(UUID.randomUUID());
-                item = manualActivity;
-                break;
-            case AUTO_ACTIVITY:
-                AutomatedActivity autoActivity = new AutomatedActivity(UUID.randomUUID());
-                item = autoActivity;
-                break;
-            case ACTIVITY_GROUP:
-                ActivityGroup activityGroup = new ActivityGroup(UUID.randomUUID());
-                item = activityGroup;
-                break;
-            default:
-                throw new InternalServerErrorException("Unknown item type " + type);
+        case EVENT:
+            TimelineEvent event = new TimelineEvent(UUID.randomUUID());
+            item = event;
+            break;
+        case ITEM_GROUP:
+            ItemGroup itemGroup = new ItemGroup(UUID.randomUUID());
+            item = itemGroup;
+            break;
+        case MANUAL_ACTIVITY:
+            ManualActivity manualActivity = new ManualActivity(UUID.randomUUID());
+            item = manualActivity;
+            break;
+        case AUTO_ACTIVITY:
+            AutomatedActivity autoActivity = new AutomatedActivity(UUID.randomUUID());
+            item = autoActivity;
+            break;
+        case ACTIVITY_GROUP:
+            ActivityGroup activityGroup = new ActivityGroup(UUID.randomUUID());
+            item = activityGroup;
+            break;
+        default:
+            throw new InternalServerErrorException("Unknown item type " + type);
         }
 
         if (request.hasStart()) {
@@ -487,7 +519,6 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
                 .setDescription(request.getDescription())
                 .addAllBands(request.getBandsList()).build();
     }
-
 
     private static UUID parseUuid(String uuid) {
         try {

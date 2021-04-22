@@ -13,7 +13,7 @@ import "google/protobuf/duration.proto";
 //Methods related to the Timeline Service.
 service TimelineApi {
 
-  // Add item. The item must not have the uuid set, otherwise an error will be thrown.
+  // Add an item
   rpc AddItem(AddItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/items"
@@ -28,7 +28,7 @@ service TimelineApi {
     };
   }
   
-  // Update a item
+  // Update an item
   rpc UpdateItem(UpdateItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
       patch: "/api/timeline/{instance}/items/{uuid}"
@@ -163,17 +163,18 @@ enum TimelineItemType {
   
 message TimelineItem {
   optional string uuid = 1;
-  optional TimelineItemType type = 2;
-  optional google.protobuf.Timestamp start = 3;
-  optional google.protobuf.Duration duration = 4;
-  repeated string tags = 5;
+  optional string name = 2;
+  optional TimelineItemType type = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Duration duration = 5;
+  repeated string tags = 6;
   //if this item is part of a group, this is the group UUID
-  optional string groupUuid = 6;
+  optional string groupUuid = 7;
     
   //if this item time specification is relative to another item, relativeTime contains a reference
   // to that item as well as the relative start (the duration is the same as given by the duration above)
   //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
-  optional RelativeTime relativeTime = 7;
+  optional RelativeTime relativeTime = 8;
 }
 
 enum TimelineBandType {
@@ -243,24 +244,27 @@ message AddItemRequest {
   //item source
   optional string source = 2;
   
+  //item name
+  optional string name = 3;
+  
   //item type
-  optional TimelineItemType type = 3;
+  optional TimelineItemType type = 4;
 
   //item start. The start and the relativeTime (below) are mutually exclusive
-  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp start = 5;
   
   //item duration. Applies also if the relativeTime is specified
-  optional google.protobuf.Duration duration = 5;
+  optional google.protobuf.Duration duration = 6;
   
   //tags
-  repeated string tags = 6;
+  repeated string tags = 7;
   
   //if this item is part of a group, this is the group UUID
-  optional string groupUuid = 7;
+  optional string groupUuid = 8;
     
   //if this item time specification is relative to another item, relativeTime contains a reference
   // to that item as well as the relative start (the duration is the same as given by the duration above)
-  optional RelativeTime relativeTime = 8;
+  optional RelativeTime relativeTime = 9;
 }
 
 message GetItemRequest {
@@ -281,21 +285,24 @@ message UpdateItemRequest {
 
   //item id
   optional string uuid = 3;
+  
+  //item name
+  optional string name = 4; 
 
   //new start time
-  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp start = 5;
 
   //new duration
-  optional google.protobuf.Duration duration = 5;
+  optional google.protobuf.Duration duration = 6;
 
   //new tags
-  repeated string tags = 6;
+  repeated string tags = 7;
 
   //new group UUID
-  optional string groupUuid = 7;
+  optional string groupUuid = 8;
 
   //new relative time
-  optional RelativeTime relativeTime = 8;
+  optional RelativeTime relativeTime = 9;
 }
 
 message ListItemsRequest {

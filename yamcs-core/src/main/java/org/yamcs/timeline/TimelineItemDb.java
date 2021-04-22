@@ -1,9 +1,14 @@
 package org.yamcs.timeline;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.yamcs.InitException;
 import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.logging.Log;
@@ -11,16 +16,22 @@ import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.*;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableColumnDefinition;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class TimelineItemDb implements TimelineSource {
     static final Random random = new Random();
@@ -28,6 +39,7 @@ public class TimelineItemDb implements TimelineSource {
     public static final String CNAME_START = "start";
     public static final String CNAME_DURATION = "duration";
     public static final String CNAME_ID = "uuid";
+    public static final String CNAME_NAME = "name";
     public static final String CNAME_TYPE = "type";
     public static final String CNAME_TAGS = "tags";
     public static final String CNAME_GROUP_ID = "group_id";
@@ -38,6 +50,7 @@ public class TimelineItemDb implements TimelineSource {
         TIMELINE_DEF.addColumn(CNAME_START, DataType.TIMESTAMP);
         TIMELINE_DEF.addColumn(CNAME_DURATION, DataType.LONG);
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
+        TIMELINE_DEF.addColumn(CNAME_NAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_TYPE, DataType.ENUM);
         TIMELINE_DEF.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM));
         TIMELINE_DEF.addColumn(CNAME_GROUP_ID, DataType.UUID);
@@ -88,6 +101,7 @@ public class TimelineItemDb implements TimelineSource {
         return ydb.getStream(streamName);
     }
 
+    @Override
     public TimelineItem addItem(TimelineItem item) {
         rwlock.writeLock().lock();
         try {
@@ -105,11 +119,12 @@ public class TimelineItemDb implements TimelineSource {
                     throw new InvalidRequestException(
                             "Referenced group item uuid " + item.getGroupUuid() + " does not exist");
                 }
-                if(!(groupItem instanceof ActivityGroup || groupItem instanceof ItemGroup)) {
+                if (!(groupItem instanceof ActivityGroup || groupItem instanceof ItemGroup)) {
                     throw new InvalidRequestException(
                             "Assigned group " + groupItem.getId() + " is not a real group");
                 }
-                if(groupItem instanceof ActivityGroup && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
+                if (groupItem instanceof ActivityGroup
+                        && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
                     throw new InvalidRequestException(
                             "An activity group " + groupItem.getId() + " can only contain activity items");
                 }
@@ -143,11 +158,12 @@ public class TimelineItemDb implements TimelineSource {
                     throw new InvalidRequestException(
                             "Referenced group item uuid " + item.getGroupUuid() + " does not exist");
                 }
-                if(!(groupItem instanceof ActivityGroup || groupItem instanceof ItemGroup)) {
+                if (!(groupItem instanceof ActivityGroup || groupItem instanceof ItemGroup)) {
                     throw new InvalidRequestException(
                             "Assigned group " + groupItem.getId() + " is not a real group");
                 }
-                if(groupItem instanceof ActivityGroup && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
+                if (groupItem instanceof ActivityGroup
+                        && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
                     throw new InvalidRequestException(
                             "An activity group " + groupItem.getId() + " can only contain activity items");
                 }
@@ -227,7 +243,6 @@ public class TimelineItemDb implements TimelineSource {
         throw new NoSuchItemException();
     }
 
-
     @Override
     public TimelineItem getItem(UUID uuid) {
         rwlock.readLock().lock();
@@ -304,7 +319,6 @@ public class TimelineItemDb implements TimelineSource {
         r.close();
     }
 
-
     @Override
     public void getItems(int limit, String token, ItemFilter filter, ItemListener consumer) {
         rwlock.readLock().lock();
@@ -313,12 +327,15 @@ public class TimelineItemDb implements TimelineSource {
             sqlBuilder.select("*");
             sqlBuilder.where("start < ?", filter.getTimeInterval().getEnd());
             sqlBuilder.where("start+duration > ?", filter.getTimeInterval().getStart());
-            if(filter.getTags()!=null && !filter.getTags().isEmpty())
+            if (filter.getTags() != null && !filter.getTags().isEmpty()) {
                 sqlBuilder.where(" tags && ?", filter.getTags());
-            sqlBuilder.limit(limit+1);
+            }
+            sqlBuilder.limit(limit + 1);
 
-//            System.out.println("statement=" + sqlBuilder.toString() + " with arguments " + sqlBuilder.getQueryArguments().toArray());
-            StreamSqlStatement stmt = ydb.createStatement(sqlBuilder.toString(),sqlBuilder.getQueryArguments().toArray());
+            // System.out.println("statement=" + sqlBuilder.toString() + " with arguments " +
+            // sqlBuilder.getQueryArguments().toArray());
+            StreamSqlStatement stmt = ydb.createStatement(sqlBuilder.toString(),
+                    sqlBuilder.getQueryArguments().toArray());
             ydb.execute(stmt, new ResultListener() {
                 int count = 0;
 
@@ -389,7 +406,12 @@ public class TimelineItemDb implements TimelineSource {
 
     @Override
     public TimelineSourceCapabilities getCapabilities() {
-        return TimelineSourceCapabilities.newBuilder().setReadOnly(false).setHasActivityGroups(true)
-                .setHasEventGroups(true).setHasManualActivities(true).setHasAutomatedActivities(true).build();
+        return TimelineSourceCapabilities.newBuilder()
+                .setReadOnly(false)
+                .setHasActivityGroups(true)
+                .setHasEventGroups(true)
+                .setHasManualActivities(true)
+                .setHasAutomatedActivities(true)
+                .build();
     }
 }
