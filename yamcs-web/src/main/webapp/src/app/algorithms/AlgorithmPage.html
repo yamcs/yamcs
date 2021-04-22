@@ -21,7 +21,8 @@
        routerLink="trace"
        routerLinkActive #rlb="routerLinkActive"
        [active]="rlb.isActive"
-       [queryParams]="{c: yamcs.context}">
+       [queryParams]="{c: yamcs.context}"
+       [disabled]="algorithm.scope !== 'GLOBAL'">
       Trace
     </a>
   </nav>
