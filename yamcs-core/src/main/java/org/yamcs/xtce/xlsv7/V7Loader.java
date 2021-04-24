@@ -126,8 +126,6 @@ import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ParameterReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -629,7 +627,6 @@ public class V7Loader extends V7LoaderBase {
             DataType dtype1 = dtype;
             nr.addResolvedAction(nd -> {
                 ((BaseDataType) dtype1).getEncoding().setFromBinaryTransformAlgorithm((Algorithm) nd);
-                return true;
             });
         }
 
@@ -833,11 +830,10 @@ public class V7Loader extends V7LoaderBase {
             }
         } else if (ref.toLowerCase().startsWith("parameter:")) {
             String paraRefName = ref.substring(10);
-            NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+            NameReference paramRef = getParameterReference(spaceSystem, paraRefName);
             final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
             paramRef.addResolvedAction(nd -> {
                 parameterInstance.setParameter((Parameter) nd);
-                return true;
             });
             ReferenceTime rt = new ReferenceTime(parameterInstance);
             ptype.setReferenceTime(rt);
@@ -919,11 +915,10 @@ public class V7Loader extends V7LoaderBase {
             } else {
                 algoName = encodingArgs[0];
             }
-            customFromBinaryTransform = new UnresolvedNameReference(algoName, Type.ALGORITHM);
+            customFromBinaryTransform = new NameReference(algoName, Type.ALGORITHM);
             spaceSystem.addUnresolvedReference(customFromBinaryTransform);
             customFromBinaryTransform.addResolvedAction(nd -> {
                 ((Algorithm) nd).setScope(Scope.CONTAINER_PROCESSING);
-                return true;
             });
         }
         DataEncoding.Builder<?> encoding = null;
@@ -932,7 +927,6 @@ public class V7Loader extends V7LoaderBase {
                 IntegerDataEncoding.Builder e = new IntegerDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -957,7 +951,6 @@ public class V7Loader extends V7LoaderBase {
                 FloatDataEncoding.Builder e = new FloatDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -984,7 +977,6 @@ public class V7Loader extends V7LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -1011,7 +1003,6 @@ public class V7Loader extends V7LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else if ("fixed".equalsIgnoreCase(encodingType)) {
@@ -1056,7 +1047,6 @@ public class V7Loader extends V7LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else if ("fixed".equalsIgnoreCase(encodingType)) {
@@ -1262,11 +1252,10 @@ public class V7Loader extends V7LoaderBase {
                 if (sc != null) {
                     container.setBaseContainer(sc);
                 } else {
-                    NameReference nr = new UnresolvedNameReference(parent, Type.SEQUENCE_CONTAINER)
+                    NameReference nr = new NameReference(parent, Type.SEQUENCE_CONTAINER)
                             .addResolvedAction(nd -> {
                                 SequenceContainer sc1 = (SequenceContainer) nd;
                                 container.setBaseContainer(sc1);
-                                return true;
                             });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -1570,11 +1559,10 @@ public class V7Loader extends V7LoaderBase {
                 } else {
                     final MetaCommand mc = cmd;
                     final CommandContainer mcc = container;
-                    UnresolvedNameReference nr = new UnresolvedNameReference(parent, Type.META_COMMAND)
+                    NameReference nr = new NameReference(parent, Type.META_COMMAND)
                             .addResolvedAction(nd -> {
                                 mc.setBaseMetaCommand((MetaCommand) nd);
                                 mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
-                                return true;
                             });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -1917,9 +1905,8 @@ public class V7Loader extends V7LoaderBase {
                 ArgumentReference ref = ArgumentReference.getReference(cmd, argRef);
 
                 ref.addResolvedAction(nd -> {
-                            argInstRef.setArgument((Argument) nd);
-                            return true;
-                        });
+                    argInstRef.setArgument((Argument) nd);
+                });
 
                 spaceSystem.addUnresolvedReference(ref);
                 argInstRef.setUseCalibratedValue(pref.useCalibratedValue());
@@ -2095,7 +2082,7 @@ public class V7Loader extends V7LoaderBase {
                         parameterInstance.setParameter(p);
                     } else {
                         inputParameterRefs.add(refName);
-                        ParameterReference paramRef = getParameterReference(spaceSystem, refName, false);
+                        ParameterReference paramRef = getParameterReference(spaceSystem, refName);
 
                         SpreadsheetLoadContext ctx1 = ctx.copy();
                         paramRef.addResolvedAction((p, path) -> {
@@ -2104,7 +2091,6 @@ public class V7Loader extends V7LoaderBase {
                             }
                             parameterInstance.setParameter(p);
                             parameterInstance.setMemberPath(path);
-                            return true;
                         });
                     }
 
@@ -2126,12 +2112,11 @@ public class V7Loader extends V7LoaderBase {
                     }
                     algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
-                    NameReference paramRef = getParameterReference(spaceSystem, refName, false);
+                    NameReference paramRef = getParameterReference(spaceSystem, refName);
                     OutputParameter outputParameter = new OutputParameter();
                     paramRef.addResolvedAction(nd -> {
                         Parameter param = (Parameter) nd;
                         outputParameter.setParameter(param);
-                        return true;
                     });
                     if (hasColumn(cells, CN_ALGO_PARA_NAME)) {
                         outputParameter.setOutputName(getContent(cells, CN_ALGO_PARA_NAME));
@@ -2157,11 +2142,10 @@ public class V7Loader extends V7LoaderBase {
                             OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
                             triggerSet.addOnParameterUpdateTrigger(trigger);
                         } else {
-                            NameReference nr = new UnresolvedParameterReference(s.trim())
+                            NameReference nr = new ParameterReference(s.trim())
                                     .addResolvedAction(nd -> {
                                         OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                         triggerSet.addOnParameterUpdateTrigger(trigger);
-                                        return true;
                                     });
                             spaceSystem.addUnresolvedReference(nr);
                         }
@@ -2186,11 +2170,10 @@ public class V7Loader extends V7LoaderBase {
                     if (para != null) {
                         triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
                     } else {
-                        NameReference nr = new UnresolvedParameterReference(paraRef)
+                        NameReference nr = new ParameterReference(paraRef)
                                 .addResolvedAction(nd -> {
                                     OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                     triggerSet.addOnParameterUpdateTrigger(trigger);
-                                    return true;
                                 });
                         spaceSystem.addUnresolvedReference(nr);
                     }
@@ -2249,7 +2232,7 @@ public class V7Loader extends V7LoaderBase {
 
             Cell[] cells = jumpToRow(sheet, start);
             String paramName = getContent(cells, CN_ALARM_PARAM_NAME);
-            NameReference paraRef = getParameterReference(spaceSystem, paramName, true);
+            NameReference paraRef = getParameterReference(spaceSystem, paramName);
             boolean renameType = true;
             // now we search for the matching last row of the alarms for this parameter
             int paramEnd = start + 1;
@@ -2298,7 +2281,6 @@ public class V7Loader extends V7LoaderBase {
                     ParameterType newPtype = ptypeb.build();
                     param.setParameterType(newPtype);
                     spaceSystem.addParameterType(newPtype);
-                    return true;
                 });
 
                 checkAndAddAlarm(spaceSystem, cells, AlarmLevels.watch, paraRef, context,
@@ -2383,7 +2365,6 @@ public class V7Loader extends V7LoaderBase {
 
             para.setParameterType(newPtype);
             spaceSystem.addParameterType(newPtype);
-            return true;
         });
     }
 
@@ -2394,9 +2375,6 @@ public class V7Loader extends V7LoaderBase {
         paraRef.addResolvedAction(nd -> {
             Parameter param = (Parameter) nd;
             ParameterType oldPtype = param.getParameterType();
-            if (oldPtype == null) { // the type has to be resolved somewhere else first
-                return false;
-            }
             ParameterType.Builder<?> ptypeb = oldPtype.toBuilder();
 
             // Set minviolations and alarmreporttype
@@ -2428,8 +2406,6 @@ public class V7Loader extends V7LoaderBase {
             param.setParameterType(newPtype);
             spaceSystem.removeParameterType(oldPtype);
             spaceSystem.addParameterType(newPtype);
-
-            return true;
         });
     }
 

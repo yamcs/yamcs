@@ -1,7 +1,7 @@
 package org.yamcs.xtce.util;
 
-import java.util.concurrent.CompletableFuture;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.yamcs.xtce.NameDescription;
 
 /**
@@ -20,7 +20,7 @@ import org.yamcs.xtce.NameDescription;
  * <p>
  * The ResolvedAction.resolved will be called once the reference is resolved.
  */
-public interface NameReference {
+public class NameReference {
 
     public enum Type {
         SEQUENCE_CONTAINER, COMMAND_CONTAINER, PARAMETER, PARAMETER_TYPE, META_COMMAND, ALGORITHM, ARGUMENT_TYPE, ARGUMENT
@@ -33,17 +33,34 @@ public interface NameReference {
          * 
          * false can be returned in case the NameDescription refers to something which is not itself fully resolved
          */
-        public boolean resolved(NameDescription nd);
+        public void resolved(NameDescription nd);
 
     }
 
+    protected List<ResolvedAction> actions = new ArrayList<>();
+    protected NameDescription result;
+
+    protected final String ref;
+    protected final Type type;
+
+    public NameReference(String ref, Type type) {
+        this.ref = ref;
+        this.type = type;
+    }
+
     /**
-     * Execute all the actions (if not already executed) and return true if the reference has been resolved.
+     * Execute all the actions (if not already executed).
      * 
      * @param nd
-     * @return true if the reference has been resolved
      */
-    public boolean tryResolve(NameDescription nd);
+    public void resolved(NameDescription nd) {
+        result = nd;
+        for (ResolvedAction ra : actions) {
+            ra.resolved(nd);
+        }
+        actions.clear();
+
+    }
 
     /**
      * Adds an action to the list to be executed when the reference is resolved and returns this.
@@ -53,19 +70,30 @@ public interface NameReference {
      * @param action
      * @return this
      */
-    public NameReference addResolvedAction(ResolvedAction action);
+    public NameReference addResolvedAction(ResolvedAction action) {
+        if (result != null) {
+            action.resolved(result);
+        } else {
+            actions.add(action);
+        }
 
-    public String getReference();
+        return this;
+    }
 
-    public Type getType();
+    public String getReference() {
+        return ref;
+    }
 
-    public abstract boolean isResolved();
+    public Type getType() {
+        return type;
+    }
 
-    /**
-     * returns a future that is called when the reference is resolved
-     * 
-     * @return
-     */
-    public abstract CompletableFuture<NameDescription> getResolvedFuture();
+    public boolean isResolved() {
+        return result != null;
+    }
 
+    @Override
+    public String toString() {
+        return type + "(" + ref + ")";
+    }
 }

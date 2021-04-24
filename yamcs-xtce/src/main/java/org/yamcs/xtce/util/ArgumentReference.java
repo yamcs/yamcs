@@ -18,26 +18,67 @@ import org.yamcs.xtce.PathElement;
  * for a parameter or container.
  *
  */
-public interface ArgumentReference extends NameReference {
+public class ArgumentReference extends NameReference {
+
     @FunctionalInterface
     public interface ArgumentResolvedAction extends ResolvedAction {
         public boolean resolved(Argument parameter, PathElement[] path);
 
-        default boolean resolved(NameDescription nd) {
-            return resolved((Argument) nd, null);
+        default void resolved(NameDescription nd) {
+            resolved((Argument) nd, null);
         }
 
     }
 
-    public boolean tryResolve(Argument argument, PathElement[] path);
+    PathElement[] path;
+    final MetaCommand metaCmd;
 
-    public ArgumentReference addResolvedAction(ArgumentResolvedAction action);
+    public ArgumentReference(MetaCommand metaCmd, String argName, PathElement[] path) {
+        super(argName, Type.ARGUMENT);
+        this.metaCmd = metaCmd;
+        this.path = path;
+    }
 
-    public MetaCommand getMetaCommand();
+    public ArgumentReference(MetaCommand metaCmd, Argument arg, PathElement[] path) {
+        this(metaCmd, arg.getName(), path);
+        this.result = arg;
+    }
 
-    public String getArgName();
+    public void resolved(Argument argument, PathElement[] path) {
+        result = argument;
 
-    public PathElement[] getPath();
+        for (ResolvedAction ra : actions) {
+            if (ra instanceof ArgumentResolvedAction) {
+                ((ArgumentResolvedAction) ra).resolved(argument, path);
+            } else {
+                ra.resolved(argument);
+            }
+        }
+        actions.clear();
+    }
+
+    public ArgumentReference addResolvedAction(ArgumentResolvedAction action) {
+        actions.add(action);
+        if (result != null) {
+            if (!action.resolved((Argument) result, path)) {
+                actions.add(action);
+            }
+        }
+
+        return this;
+    }
+
+    public MetaCommand getMetaCommand() {
+        return metaCmd;
+    }
+
+    public String getArgName() {
+        return ref;
+    }
+
+    public PathElement[] getPath() {
+        return path;
+    }
 
     static String toString(String argName, PathElement[] path) {
         return path == null ? argName : argName + "." + AggregateTypeUtil.toString(path);
@@ -59,16 +100,16 @@ public interface ArgumentReference extends NameReference {
         }
         MetaCommand tmpcmd = metaCmd;
         Argument arg = null;
-        while (arg == null && tmpcmd !=null) {
+        while (arg == null && tmpcmd != null) {
             arg = tmpcmd.getArgument(argName);
             tmpcmd = tmpcmd.getBaseMetaCommand();
         }
         if (arg == null || arg.getArgumentType() == null
                 || (path != null && !ReferenceFinder.verifyPath(arg.getArgumentType(), path))) {
-            UnresolvedArgumentReference ref = new UnresolvedArgumentReference(metaCmd, argName, path);
+            ArgumentReference ref = new ArgumentReference(metaCmd, argName, path);
             return ref;
         } else {
-            return new ResolvedArgumentReference(metaCmd, arg, path);
+            return new ArgumentReference(metaCmd, arg, path);
         }
 
     }

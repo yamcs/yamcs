@@ -50,7 +50,7 @@ import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.NameReference.Type;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
+import org.yamcs.xtce.util.ParameterReference;
 
 public class XtceDbFactory {
 
@@ -226,8 +226,7 @@ public class XtceDbFactory {
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
-            boolean resolved = false;
-
+            boolean resolved;
             if (nr.getType() == Type.ARGUMENT) {
                 resolved = resolveArgumentReference((ArgumentReference) nr);
             } else {
@@ -242,15 +241,14 @@ public class XtceDbFactory {
                     foundReference = refFinder.findAliasReference(rootSs, nr, ss);
                 }
                 if (foundReference == null) {
-                    throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
+                    throw new DatabaseLoadException("Cannot resolve reference " + nr
+                            + " relative to SpaceSystem '" + ss.getName() + "'");
                 }
-
-                if (foundReference.getAggregateMemberPath() == null) {
-                    resolved = nr.tryResolve(foundReference.getNameDescription());
+                if (foundReference.isComplete()) {
+                    foundReference.resolved(nr);
+                    resolved = true;
                 } else {
-                    resolved = ((UnresolvedParameterReference) nr).tryResolve(
-                            (Parameter) foundReference.getNameDescription(),
-                            foundReference.getAggregateMemberPath());
+                    resolved = false;
                 }
             }
             if (resolved) {
@@ -289,7 +287,8 @@ public class XtceDbFactory {
                         + " for argument '" + arg.getName());
             }
         }
-        return nr.tryResolve(arg, nr.getPath());
+        nr.resolved(arg, nr.getPath());
+        return true;
     }
 
     static private void addTmPartitions(SpaceSystem spaceSystem) {

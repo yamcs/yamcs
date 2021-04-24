@@ -40,8 +40,6 @@ import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.ResolvedNameReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 
 public class GbpToXtceAssembler {
 
@@ -337,7 +335,7 @@ public class GbpToXtceAssembler {
 
     private static MatchCriteria toMatchCriteria(XtceDb xtcedb, String spaceSystemName, String context)
             throws BadRequestException {
-        List<UnresolvedNameReference> unresolvedRefs = new ArrayList<>();
+        List<NameReference> unresolvedRefs = new ArrayList<>();
 
         ConditionParser condParser = new ConditionParser(pname -> {
             Parameter p = null;
@@ -346,13 +344,13 @@ public class GbpToXtceAssembler {
             } else {
                 p = xtcedb.getParameter(spaceSystemName + "/" + pname);
             }
+            NameReference nr = new NameReference(pname, NameReference.Type.PARAMETER);
             if (p != null) {
-                return new ResolvedNameReference(pname, NameReference.Type.PARAMETER, p);
+                nr.resolved(p);
             } else {
-                UnresolvedNameReference unr = new UnresolvedNameReference(pname, NameReference.Type.PARAMETER);
-                unresolvedRefs.add(unr);
-                return unr;
+                unresolvedRefs.add(nr);
             }
+            return nr;
         });
 
         try {

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.yamcs.xtce.util.UnresolvedNameReference;
+import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
@@ -13,6 +13,7 @@ public class TestReferenceFinder {
 
     @Test
     public void testResolveReference() {
+        ParameterType ptype = new IntegerParameterType.Builder().setName("test").build();
         ReferenceFinder refFinder = new ReferenceFinder(s ->{});
         SpaceSystem root = new SpaceSystem("");
 
@@ -30,59 +31,62 @@ public class TestReferenceFinder {
         a_b2.addSpaceSystem(a_b2_c1);
 
         Parameter a_p1 = new Parameter("p1");
+        a_p1.setParameterType(ptype);
         a_p1.addAlias("MDB:OPS Name", "a_p1");
         a.addParameter(a_p1);
 
         Parameter a_b1_p1 = new Parameter("p1");
+        a_b1_p1.setParameterType(ptype);
         a_b1_p1.addAlias("MDB:OPS Name", "a_b1_p1");
         a_b1.addParameter(a_b1_p1);
 
         Parameter a_b2_c1_p1 = new Parameter("p1");
+        a_b2_c1_p1.setParameterType(ptype);
         a_b2_c1.addParameter(a_b2_c1_p1);
 
         FoundReference rr;
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("/a/b2/c1/p1", Type.PARAMETER), a_b1);
+        rr = refFinder.findReference(root, new NameReference("/a/b2/c1/p1", Type.PARAMETER), a_b1);
         assertEquals(a_b2_c1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b2_c1);
+        rr = refFinder.findReference(root, new NameReference("p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_b2_c1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b2);
+        rr = refFinder.findReference(root, new NameReference("p1", Type.PARAMETER), a_b2);
         assertEquals(a_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b1);
+        rr = refFinder.findReference(root, new NameReference("p1", Type.PARAMETER), a_b1);
         assertEquals(a_b1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("b2/c1/p1", Type.PARAMETER), a_b2_c1);
+        rr = refFinder.findReference(root, new NameReference("b2/c1/p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_b2_c1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("b2/.//../b2/c1/p1", Type.PARAMETER),
+        rr = refFinder.findReference(root, new NameReference("b2/.//../b2/c1/p1", Type.PARAMETER),
                 a_b2_c1);
         assertEquals(a_b2_c1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("../p1", Type.PARAMETER), a_b2_c1);
+        rr = refFinder.findReference(root, new NameReference("../p1", Type.PARAMETER), a_b2_c1);
         assertNull(rr);
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b2_c1);
+        rr = refFinder.findReference(root, new NameReference("../../p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b3);
+        rr = refFinder.findReference(root, new NameReference("../../p1", Type.PARAMETER), a_b3);
         assertNull(rr);
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2_c1);
+        rr = refFinder.findReference(root, new NameReference("./p1", Type.PARAMETER), a_b2_c1);
         assertEquals(rr.getNameDescription(), a_b2_c1_p1);
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2);
+        rr = refFinder.findReference(root, new NameReference("./p1", Type.PARAMETER), a_b2);
         assertNull(rr);
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("/a/b2/c1/.//p1", Type.PARAMETER), a_b2);
+        rr = refFinder.findReference(root, new NameReference("/a/b2/c1/.//p1", Type.PARAMETER), a_b2);
         assertEquals(a_b2_c1_p1, rr.getNameDescription());
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("/a/..", Type.PARAMETER), a_b2);
+        rr = refFinder.findReference(root, new NameReference("/a/..", Type.PARAMETER), a_b2);
         assertNull(rr);
 
-        rr = refFinder.findReference(root, new UnresolvedNameReference("p2", Type.PARAMETER), a_b2);
+        rr = refFinder.findReference(root, new NameReference("p2", Type.PARAMETER), a_b2);
         assertNull(rr);
     }
 }

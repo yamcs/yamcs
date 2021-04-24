@@ -29,7 +29,7 @@ public class ArrayParameterEntry extends ParameterEntry {
 
     public void setParameter(Parameter parameter) {
         if (!(parameter.getParameterType() instanceof ArrayParameterType)) {
-            throw new IllegalArgumentException("Array parameter type required");
+            throw new IllegalArgumentException("Array parameter type required for parameter " + parameter.getName());
         }
         this.parameter = parameter;
         if(dim==null) {

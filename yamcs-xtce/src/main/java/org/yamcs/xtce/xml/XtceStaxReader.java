@@ -51,7 +51,6 @@ import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.util.AggregateTypeUtil;
 import org.yamcs.xtce.util.ArgumentReference;
-import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.HexUtils;
 import org.yamcs.xtce.util.IncompleteType;
@@ -60,10 +59,7 @@ import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ParameterReference.ParameterResolvedAction;
 import org.yamcs.xtce.util.ParameterReference;
 import org.yamcs.xtce.util.ReferenceFinder;
-import org.yamcs.xtce.util.ResolvedParameterReference;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
 
 import static org.yamcs.xtce.XtceDb.*;
 
@@ -341,23 +337,13 @@ public class XtceStaxReader {
                 continue;
             }
             FoundReference rr = refFinder.findReference(topSs, nr, ss);
-
             if (rr == null) { // look for aliases up the hierarchy
                 rr = refFinder.findAliasReference(topSs, nr, ss);
             }
-            if (rr != null) {
-                boolean resolved;
-
-                if (nr instanceof UnresolvedParameterReference) {
-                    resolved = ((UnresolvedParameterReference) nr).tryResolve((Parameter) rr.getNameDescription(),
-                            rr.getAggregateMemberPath());
-                } else {
-                    resolved = nr.tryResolve(rr.getNameDescription());
-                }
-                if (resolved) {
-                    n++;
-                    it.remove();
-                }
+            if (rr != null && rr.isComplete()) {
+                rr.resolved(nr);
+                n++;
+                it.remove();
             }
         }
         for (SpaceSystem ss1 : ss.getSubSystems()) {
@@ -736,9 +722,8 @@ public class XtceStaxReader {
             if (ptype != null) {
                 member.setDataType(ptype);
             } else {
-                NameReference nr = new UnresolvedNameReference(typeRef, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+                NameReference nr = new NameReference(typeRef, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
                     member.setDataType((ParameterType) nd);
-                    return true;
                 });
                 spaceSystem.addUnresolvedReference(nr);
             }
@@ -747,9 +732,8 @@ public class XtceStaxReader {
             if (atype != null) {
                 member.setDataType(atype);
             } else {
-                NameReference nr = new UnresolvedNameReference(typeRef, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
+                NameReference nr = new NameReference(typeRef, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
                     member.setDataType((ArgumentType) nd);
-                    return true;
                 });
                 spaceSystem.addUnresolvedReference(nr);
             }
@@ -776,9 +760,8 @@ public class XtceStaxReader {
         }
 
         String refName = readMandatoryAttribute("arrayTypeRef", xmlEvent.asStartElement());
-        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+        NameReference nr = new NameReference(refName, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
             typeBuilder.setElementType((ParameterType) nd);
-            return true;
         });
         incompleteType.addReference(nr);
         spaceSystem.addUnresolvedReference(nr);
@@ -814,13 +797,12 @@ public class XtceStaxReader {
 
         String baseType = readAttribute("baseType", element, null);
         if (baseType != null) {
-            NameReference nr = new UnresolvedNameReference(baseType, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+            NameReference nr = new NameReference(baseType, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
                 ParameterType ptype = (ParameterType) nd;
                 if (!(ptype instanceof BaseDataType)) {
                     throwException(element.getLocation(), "cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
-                return true;
             });
             incompleteType.addReference(nr);
             spaceSystem.addUnresolvedReference(nr);
@@ -838,13 +820,12 @@ public class XtceStaxReader {
 
         String baseType = readAttribute("baseType", element, null);
         if (baseType != null) {
-            NameReference nr = new UnresolvedNameReference(baseType, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
+            NameReference nr = new NameReference(baseType, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
                 ArgumentType ptype = (ArgumentType) nd;
                 if (!(ptype instanceof BaseDataType)) {
                     throwException(element.getLocation(), "cannot use " + ptype.getName() + " as a baseType");
                 }
                 typeBuilder.setBaseType((BaseDataType) ptype);
-                return true;
             });
             incompleteType.addReference(nr);
             spaceSystem.addUnresolvedReference(nr);
@@ -1621,9 +1602,8 @@ public class XtceStaxReader {
         if (algo != null) {
 
             TriggeredMathOperation trigMathOp = new TriggeredMathOperation(list);
-            NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+            NameReference nr = new NameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
                 algo.addOutput(new OutputParameter((Parameter) nd));
-                return true;
             });
             spaceSystem.addUnresolvedReference(nr);
             algo.setMathOperation(trigMathOp);
@@ -1655,9 +1635,8 @@ public class XtceStaxReader {
         String refName = null;
         refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
         OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger();
-        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+        NameReference nr = new NameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
             trigger.setParameter((Parameter) nd);
-            return true;
         });
         spaceSystem.addUnresolvedReference(nr);
         return trigger;
@@ -2154,13 +2133,12 @@ public class XtceStaxReader {
             }
         } else {
             final Parameter p = parameter;
-            NameReference nr = new UnresolvedNameReference(value, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+            NameReference nr = new NameReference(value, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
                 ParameterType ptype1 = (ParameterType) nd;
                 p.setParameterType(ptype1);
                 if (initialValue != null) {
                     p.setInitialValue(ptype1.parseString(initialValue));
                 }
-                return true;
             });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -2570,10 +2548,9 @@ public class XtceStaxReader {
                 seqContainer.setBaseContainer(baseContainer);
             } else { // must come from somewhere else
                 final SequenceContainer finalsc = seqContainer;
-                NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER)
+                NameReference nr = new NameReference(refName, Type.SEQUENCE_CONTAINER)
                         .addResolvedAction(nd -> {
                             finalsc.setBaseContainer((SequenceContainer) nd);
-                            return true;
                         });
                 spaceSystem.addUnresolvedReference(nr);
             }
@@ -2642,17 +2619,9 @@ public class XtceStaxReader {
         ArrayParameterEntry parameterEntry = new ArrayParameterEntry(0, locationType);
 
         final ArrayParameterEntry finalpe = parameterEntry;
-        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
-            Parameter p = (Parameter) nd;
-            if (p.getParameterType() != null) {
-                finalpe.setParameter((Parameter) nd);
-                return true;
-            } else {
-                return false;
-            }
+        makeParameterReference(spaceSystem, refName, (param, path) -> {
+            finalpe.setParameter(param);
         });
-
-        spaceSystem.addUnresolvedReference(nr);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -2733,9 +2702,8 @@ public class XtceStaxReader {
         SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY; // default
         ParameterEntry parameterEntry = new ParameterEntry(0, locationType);
         final ParameterEntry finalpe = parameterEntry;
-        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+        NameReference nr = new NameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
             finalpe.setParameter((Parameter) nd);
-            return true;
         });
 
         spaceSystem.addUnresolvedReference(nr);
@@ -2772,9 +2740,8 @@ public class XtceStaxReader {
         } else {
             containerEntry = new ContainerEntry(0, locationType);
             final ContainerEntry finalce = containerEntry;
-            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER).addResolvedAction(nd -> {
+            NameReference nr = new NameReference(refName, Type.SEQUENCE_CONTAINER).addResolvedAction(nd -> {
                 finalce.setRefContainer((SequenceContainer) nd);
-                return true;
             });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -2871,17 +2838,13 @@ public class XtceStaxReader {
         instanceRef.setInstance(instance);
 
         makeParameterReference(spaceSystem, paramRef, (para, path) -> {
-                    if (para.getParameterType() == null && !(para instanceof SystemParameter)) {
-                        return false;
-                    }
-                    instanceRef.setParameter(para);
-                    instanceRef.setMemberPath(path);
+            instanceRef.setParameter(para);
+            instanceRef.setMemberPath(path);
 
-                    if (resolvedCf != null) {
-                        resolvedCf.complete(instanceRef);
-                    }
-                    return true;
-                });
+            if (resolvedCf != null) {
+                resolvedCf.complete(instanceRef);
+            }
+        });
 
         return instanceRef;
     }
@@ -2913,15 +2876,15 @@ public class XtceStaxReader {
             ArgumentReference ref = ArgumentReference.getReference(metaCmd,
                     argRef);
 
-        ref.addResolvedAction((arg, path) -> {
-            argInstRef.setArgument(arg);
-            argInstRef.setMemberPath(path);
-            return true;
-        });
+            ref.addResolvedAction((arg, path) -> {
+                argInstRef.setArgument(arg);
+                argInstRef.setMemberPath(path);
+                return true;
+            });
 
-        if (!ref.isResolved()) {
-            spaceSystem.addUnresolvedReference(ref);
-        }
+            if (!ref.isResolved()) {
+                spaceSystem.addUnresolvedReference(ref);
+            }
         }
 
         argInstRef.setUseCalibratedValue(useCalibrated);
@@ -2939,17 +2902,13 @@ public class XtceStaxReader {
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef();
 
         makeParameterReference(spaceSystem, paramRef, (para, path) -> {
-                    if (para.getParameterType() == null) {
-                        return false;
-                    }
-                    instanceRef.setParameter(para);
-                    instanceRef.setMemberPath(path);
+            instanceRef.setParameter(para);
+            instanceRef.setMemberPath(path);
 
-                    if (resolvedCf != null) {
-                        resolvedCf.complete(instanceRef);
-                    }
-                    return true;
-                });
+            if (resolvedCf != null) {
+                resolvedCf.complete(instanceRef);
+            }
+        });
         return instanceRef;
     }
 
@@ -3025,16 +2984,9 @@ public class XtceStaxReader {
             makeParameterReference(spaceSystem, ref, (p, path) -> {
                 instanceRef.setParameter(p);
                 instanceRef.setMemberPath(path);
-                if (p.getParameterType() == null) {
-                    // allow an exception for system parameters
-                    return p instanceof SystemParameter;
-                }
-                if (path != null && DataTypeUtil.getMemberType(p.getParameterType(), path) == null) {
-                    return false;
-                }
-
-                comparison.validateValueType();
-                return true;
+                if (!(p instanceof SystemParameter)) {
+                    comparison.validateValueType();
+                } // else cannot validate system parameters because they don't have a type
             });
         }
         while (true) {
@@ -3539,9 +3491,8 @@ public class XtceStaxReader {
                     mc.setBaseMetaCommand(baseContainer);
                 } else { // must come from somewhere else
                     final MetaCommand finalmc = mc;
-                    NameReference nr = new UnresolvedNameReference(refName, Type.META_COMMAND).addResolvedAction(nd -> {
+                    NameReference nr = new NameReference(refName, Type.META_COMMAND).addResolvedAction(nd -> {
                         finalmc.setBaseMetaCommand((MetaCommand) nd);
-                        return true;
                     });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -3633,14 +3584,13 @@ public class XtceStaxReader {
             }
         } else {
             final Argument arg1 = arg;
-            NameReference nr = new UnresolvedNameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
+            NameReference nr = new NameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
                     .addResolvedAction(nd -> {
                         ArgumentType atype1 = (ArgumentType) nd;
                         if (initialValue != null) {
                             arg1.setInitialValue(atype1.parseString(initialValue));
                         }
                         arg1.setArgumentType(atype1);
-                        return true;
                     });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -3733,7 +3683,6 @@ public class XtceStaxReader {
                 String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
                 makeParameterReference(spaceSystem, paramRef, (param, path) -> {
                     cmdVerifier1.setReturnParameter(param);
-                    return true;
                 });
             } else if (isEndElementWithName(tag)) {
                 if (cmdVerifier != null) {
@@ -3760,10 +3709,9 @@ public class XtceStaxReader {
         if (container != null) {
             cmdVerifier.setContainerRef(container);
         } else { // must come from somewhere else
-            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER)
+            NameReference nr = new NameReference(refName, Type.SEQUENCE_CONTAINER)
                     .addResolvedAction(nd -> {
                         cmdVerifier.setContainerRef((SequenceContainer) nd);
-                        return true;
                     });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -3854,10 +3802,9 @@ public class XtceStaxReader {
                 mcContainer.setBaseContainer(baseContainer);
             } else { // must come from somewhere else
                 final CommandContainer finalsc = mcContainer;
-                NameReference nr = new UnresolvedNameReference(refName, Type.COMMAND_CONTAINER)
+                NameReference nr = new NameReference(refName, Type.COMMAND_CONTAINER)
                         .addResolvedAction(nd -> {
                             finalsc.setBaseContainer((Container) nd);
-                            return true;
                         });
                 spaceSystem.addUnresolvedReference(nr);
             }
@@ -4141,9 +4088,8 @@ public class XtceStaxReader {
         OutputParameter outp = new OutputParameter();
         outp.setOutputName(outputName);
 
-        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
+        NameReference nr = new NameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
             outp.setParameter((Parameter) nd);
-            return true;
         });
         spaceSystem.addUnresolvedReference(nr);
 
@@ -4470,23 +4416,17 @@ public class XtceStaxReader {
         }
     }
 
-    public static ParameterReference getParameterReference(SpaceSystem spaceSystem, String paramName,
-            boolean typeRequired) {
-        Parameter para = spaceSystem.getParameter(paramName);
-        ParameterReference paraRef;
-        if ((para == null) || (typeRequired && para.getParameterType() == null)) {
-            paraRef = new UnresolvedParameterReference(paramName);
-            spaceSystem.addUnresolvedReference(paraRef);
-        } else {
-            paraRef = new ResolvedParameterReference(paramName, para);
-        }
+    public static ParameterReference getParameterReference(SpaceSystem spaceSystem, String paramName) {
+        ParameterReference paraRef = new ParameterReference(paramName);
+        spaceSystem.addUnresolvedReference(paraRef);
 
         return paraRef;
     }
 
     public static void makeParameterReference(SpaceSystem spaceSystem, String paramRef,
             ParameterResolvedAction action) {
-        getParameterReference(spaceSystem, paramRef, true).addResolvedAction(action);
+
+        getParameterReference(spaceSystem, paramRef).addResolvedAction(action);
     }
 
     void throwException(Location location, String message) {

@@ -7,16 +7,20 @@ import java.util.function.Consumer;
 
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.Member;
+import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.util.NameReference.Type;
-
 
 public class ReferenceFinder {
     Consumer<String> logger;
@@ -60,7 +64,6 @@ public class ReferenceFinder {
             return rr;
         }
     }
-
 
     /**
      * looks in the SpaceSystem ss for a namedObject with the given alias. Prints a warning in case multiple references
@@ -126,7 +129,7 @@ public class ReferenceFinder {
      * @param nr
      * @return
      */
-    private FoundReference findReference(SpaceSystem startSs, NameReference nr) {
+    public static FoundReference findReference(SpaceSystem startSs, NameReference nr) {
         String[] path = nr.getReference().split("/");
         SpaceSystem ss = startSs;
         for (int i = 0; i < path.length - 1; i++) {
@@ -182,31 +185,33 @@ public class ReferenceFinder {
         }
         switch (nr.getType()) {
         case PARAMETER:
-            return getParameterReference(ss, name);
+            return findParameterReference(ss, name);
         case PARAMETER_TYPE:
-            return getSimpleReference((NameDescription) ss.getParameterType(name));
+            return findSimpleReference((NameDescription) ss.getParameterType(name));
         case SEQUENCE_CONTAINER:
-            return getSimpleReference(ss.getSequenceContainer(name));
+            return findSimpleReference(ss.getSequenceContainer(name));
         case COMMAND_CONTAINER:
             Container c = ss.getCommandContainer(name);
             if (c == null) {
                 c = ss.getSequenceContainer(name);
             }
-            return getSimpleReference(c);
+            return findSimpleReference(c);
         case META_COMMAND:
-            return getSimpleReference(ss.getMetaCommand(name));
+            return findSimpleReference(ss.getMetaCommand(name));
         case ALGORITHM:
-            return getSimpleReference(ss.getAlgorithm(name));
+            return findSimpleReference(ss.getAlgorithm(name));
         case ARGUMENT_TYPE:
-            return getSimpleReference((NameDescription) ss.getArgumentType(name));
+            return findSimpleReference((NameDescription) ss.getArgumentType(name));
+        case ARGUMENT:
+            return findArgumentReference((ArgumentReference) nr);
+        default:
+            throw new IllegalStateException("Unknonwn reference of type " + nr.getType());
         }
-        // shouldn't arrive here
-        return null;
     }
 
-    private FoundReference getParameterReference(SpaceSystem ss, String name) {
+    public static FoundReference findParameterReference(SpaceSystem ss, String name) {
         PathElement[] path = null;
-        
+
         String pname = name;
         int idx = findSeparator(name);
         if (idx > 0) { // this is an array or aggregate element
@@ -215,13 +220,34 @@ public class ReferenceFinder {
         }
 
         Parameter p = ss.getParameter(pname);
-        if(p==null) {
+        if (p == null) {
             return null;
         }
-        if (path != null && !verifyPath(p.getParameterType(), path)) {
+        ParameterType ptype = p.getParameterType();
+        if (ptype != null && path != null && !verifyPath(ptype, path)) {
             return null;
         }
         return new FoundReference(p, path);
+
+    }
+
+    public static FoundReference findArgumentReference(ArgumentReference argRef) {
+        Argument arg = null;
+        MetaCommand cmd = argRef.getMetaCommand();
+        while (arg == null && cmd != null) {
+            arg = cmd.getArgument(argRef.getArgName());
+            cmd = cmd.getBaseMetaCommand();
+        }
+        if (arg == null) {
+            return null;
+        }
+        ArgumentType atype = arg.getArgumentType();
+
+        if (atype != null && argRef.getPath() != null && !verifyPath(arg.getArgumentType(), argRef.getPath())) {
+            return null;
+        }
+
+        return new FoundReference(arg, argRef.getPath());
     }
 
     public static PathElement[] parseReference(String name) {
@@ -234,7 +260,6 @@ public class ReferenceFinder {
         }
         return tmp.toArray(new PathElement[0]);
     }
-
 
     public static boolean verifyPath(DataType dataType, PathElement[] path) {
         DataType ptype = dataType;
@@ -261,10 +286,11 @@ public class ReferenceFinder {
                 ptype = at.getElementType();
             }
         }
-        return true;
+
+        return ptype != null;
     }
 
-    private static FoundReference getSimpleReference(NameDescription nd) {
+    private static FoundReference findSimpleReference(NameDescription nd) {
         if (nd == null) {
             return null;
         } else {
@@ -283,21 +309,30 @@ public class ReferenceFinder {
     public static class FoundReference {
         private final NameDescription nd;
         private final PathElement[] aggregateMemberPath;
+        // complete is false for parameters without type
+        boolean complete = true;
 
-        public FoundReference(NameDescription nd, PathElement[] aggregateMemberPath) {
+        public FoundReference(NameDescription nd) {
+            this(nd, null);
+        }
+
+        public FoundReference(Parameter parameter, PathElement[] path) {
+            this((NameDescription) parameter, path);
+            // we allow system parameters without type
+            complete = (parameter instanceof SystemParameter || parameter.getParameterType() != null);
+        }
+
+        public FoundReference(Argument arg, PathElement[] path) {
+            this((NameDescription) arg, path);
+            complete = arg.getArgumentType() != null;
+        }
+
+        private FoundReference(NameDescription nd, PathElement[] aggregateMemberPath) {
             if (nd == null) {
                 throw new NullPointerException("nd cannot be null");
             }
             this.nd = nd;
             this.aggregateMemberPath = aggregateMemberPath;
-        }
-
-        public FoundReference(NameDescription nd) {
-            if (nd == null) {
-                throw new NullPointerException("nd cannot be null");
-            }
-            this.nd = nd;
-            this.aggregateMemberPath = null;
         }
 
         public NameDescription getNameDescription() {
@@ -306,6 +341,25 @@ public class ReferenceFinder {
 
         public PathElement[] getAggregateMemberPath() {
             return aggregateMemberPath;
+        }
+
+        public void resolved(NameReference nr) {
+            if (nr instanceof ParameterReference) {
+                ((ParameterReference) nr).resolved((Parameter) nd, aggregateMemberPath);
+            } else if (nr instanceof ArgumentReference) {
+                ((ArgumentReference) nr).resolved((Argument) nd, aggregateMemberPath);
+            } else {
+                nr.resolved(nd);
+            }
+        }
+
+        /**
+         * References to Parameters or Arguments are complete when their types are known.
+         * <p>
+         * Other references are always complete.
+         */
+        public boolean isComplete() {
+            return complete;
         }
 
         @Override

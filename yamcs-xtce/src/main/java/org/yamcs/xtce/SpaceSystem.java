@@ -10,6 +10,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ReferenceFinder;
+import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
@@ -59,25 +61,23 @@ public class SpaceSystem extends NameDescription {
      */
     public void addSequenceContainer(SequenceContainer container) {
         if (containers.containsKey(container.getName()))
-            throw new IllegalArgumentException("there is already a container with name " + container.getName());
+            throw new IllegalArgumentException("duplicate container '" + container.getName() + "'");
         containers.put(container.getName(), container);
     }
 
     public void addParameter(Parameter parameter) throws IllegalArgumentException {
         if (parameters.containsKey(parameter.getName()))
-            throw new IllegalArgumentException("there is already a parameter with name " + parameter.getName()
-                    + " in space system " + (qualifiedName == null ? name : qualifiedName));
+            throw new IllegalArgumentException("duplicate parameter '" + parameter.getName() + "'");
         parameters.put(parameter.getName(), parameter);
     }
 
     public void addParameterType(ParameterType parameterType) {
         String ptn = ((NameDescription) parameterType).getName();
         if (parameterTypes.containsKey(ptn))
-            throw new IllegalArgumentException("there is already a parameter type with name '" + ptn + "'");
+            throw new IllegalArgumentException("duplicate parameter type '" + ptn + "'");
         parameterTypes.put(ptn, parameterType);
 
     }
-    
 
     public boolean removeParameterType(ParameterType ptype) {
         return parameterTypes.remove(ptype.getName(), ptype);
@@ -86,19 +86,19 @@ public class SpaceSystem extends NameDescription {
     public void addArgumentType(ArgumentType argumentType) {
         String atn = ((NameDescription) argumentType).getName();
         if (argumentTypes.containsKey(atn))
-            throw new IllegalArgumentException("there is already a argument type with name '" + atn + "'");
+            throw new IllegalArgumentException("duplicate argument type '" + atn + "'");
         argumentTypes.put(atn, argumentType);
     }
 
     public void addAlgorithm(Algorithm algorithm) {
         if (algorithms.containsKey(algorithm.getName()))
-            throw new IllegalArgumentException("there is already an algorithm with name " + algorithm.getName());
+            throw new IllegalArgumentException("duplcate algorithm '" + algorithm.getName() + "'");
         algorithms.put(algorithm.getName(), algorithm);
     }
 
     public void addMetaCommand(MetaCommand command) {
         if (commands.containsKey(command.getName()))
-            throw new IllegalArgumentException("there is already a command with name " + command.getName());
+            throw new IllegalArgumentException("duplicate command '" + command.getName() + "'");
         commands.put(command.getName(), command);
     }
 
@@ -120,7 +120,7 @@ public class SpaceSystem extends NameDescription {
 
     public void addCommandContainer(CommandContainer cmdContainer) {
         if (cmdContainers.containsKey(cmdContainer.getName()))
-            throw new IllegalArgumentException("there is already a command container with name " + cmdContainer.getName());
+            throw new IllegalArgumentException("duplicate container '" + cmdContainer.getName() + "'");
         cmdContainers.put(cmdContainer.getName(), cmdContainer);
     }
 
@@ -143,34 +143,17 @@ public class SpaceSystem extends NameDescription {
         ss.setParent(this);
     }
 
+    /**
+     * tries to resolve the reference immediately in the current system; if it cannot, add it to the list of unresolved
+     * references - the reference will be resolved when all parts are available
+     */
     public void addUnresolvedReference(NameReference nr) {
         // try to resolve it immediately
-        boolean resolved = false;
-        NameDescription nd = null;
-        switch (nr.getType()) {
-        case PARAMETER:
-            nd = getParameter(nr.getReference());
-            break;
-        case ALGORITHM:
-            nd = getAlgorithm(nr.getReference());
-            break;
-        case COMMAND_CONTAINER:
-            nd = getCommandContainer(nr.getReference());
-            break;
-        case META_COMMAND:
-            nd = getMetaCommand(nr.getReference());
-            break;
-        case SEQUENCE_CONTAINER:
-            nd = getSequenceContainer(nr.getReference());
-            break;
-        default:
-            break;
-        }
-        if (nd != null) {
-            resolved = nr.tryResolve(nd);
-        }
-        if (!resolved) {
+        FoundReference foundRef = ReferenceFinder.findReference(this, nr);
+        if (foundRef == null) {
             unresolvedReferences.add(nr);
+        } else {
+            foundRef.resolved(nr);
         }
     }
 
@@ -376,6 +359,5 @@ public class SpaceSystem extends NameDescription {
         }
         return l;
     }
-
 
 }

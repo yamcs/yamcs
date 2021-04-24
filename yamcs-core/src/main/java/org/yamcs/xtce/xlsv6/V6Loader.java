@@ -103,7 +103,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -499,7 +498,7 @@ public class V6Loader extends V6LoaderBase {
                             + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
                 }
                 ptypeb = new EnumeratedParameterType.Builder();
-                for (ValueEnumeration ve: enumeration.values) {
+                for (ValueEnumeration ve : enumeration.values) {
                     ((EnumeratedParameterType.Builder) ptypeb).addEnumerationValue(ve);
                 }
             } else if (PARAM_ENGTYPE_STRING.equalsIgnoreCase(engtype)) {
@@ -602,13 +601,12 @@ public class V6Loader extends V6LoaderBase {
             }
             parameterDataTypesBuilders.put(param, ptypeb);
             ParameterType ptype = (ParameterType) ptypeb.build();
-            
+
             NameReference nr = algoReferences.get(encoding);
             if (nr != null) {
                 BaseDataType bdt = (BaseDataType) ptype;
                 nr.addResolvedAction(nd -> {
                     bdt.getEncoding().setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
             }
             param.setParameterType(ptype);
@@ -635,11 +633,10 @@ public class V6Loader extends V6LoaderBase {
             }
         } else if (ref.toLowerCase().startsWith("parameter:")) {
             String paraRefName = ref.substring(10);
-            NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+            NameReference paramRef = getParameterReference(spaceSystem, paraRefName);
             final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
             paramRef.addResolvedAction(nd -> {
                 parameterInstance.setParameter((Parameter) nd);
-                return true;
             });
             ReferenceTime rt = new ReferenceTime(parameterInstance);
             ptype.setReferenceTime(rt);
@@ -721,11 +718,10 @@ public class V6Loader extends V6LoaderBase {
             } else {
                 algoName = encodingArgs[0];
             }
-            customFromBinaryTransform = new UnresolvedNameReference(algoName, Type.ALGORITHM);
+            customFromBinaryTransform = new NameReference(algoName, Type.ALGORITHM);
             spaceSystem.addUnresolvedReference(customFromBinaryTransform);
             customFromBinaryTransform.addResolvedAction(nd -> {
                 ((Algorithm) nd).setScope(Scope.CONTAINER_PROCESSING);
-                return true;
             });
         }
         DataEncoding.Builder<?> encoding = null;
@@ -734,7 +730,6 @@ public class V6Loader extends V6LoaderBase {
                 IntegerDataEncoding.Builder e = new IntegerDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -759,7 +754,6 @@ public class V6Loader extends V6LoaderBase {
                 FloatDataEncoding.Builder e = new FloatDataEncoding.Builder().setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -787,7 +781,6 @@ public class V6Loader extends V6LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else {
@@ -814,7 +807,6 @@ public class V6Loader extends V6LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else if ("fixed".equalsIgnoreCase(encodingType)) {
@@ -855,7 +847,6 @@ public class V6Loader extends V6LoaderBase {
                 e.setSizeInBits(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd -> {
                     e.setFromBinaryTransformAlgorithm((Algorithm) nd);
-                    return true;
                 });
                 encoding = e;
             } else if ("fixed".equalsIgnoreCase(encodingType)) {
@@ -880,7 +871,7 @@ public class V6Loader extends V6LoaderBase {
         } else {
             throw new SpreadsheetLoadException(ctx, "Invalid rawType '" + rawtype + "'");
         }
-        
+
         if (customFromBinaryTransform != null) {
             algoReferences.put(encoding, customFromBinaryTransform);
         }
@@ -1160,7 +1151,7 @@ public class V6Loader extends V6LoaderBase {
                         container.useAsArchivePartition(true);
                     }
                 } else {
-                    NameReference nr = new UnresolvedNameReference(parent, Type.SEQUENCE_CONTAINER)
+                    NameReference nr = new NameReference(parent, Type.SEQUENCE_CONTAINER)
                             .addResolvedAction(nd -> {
                                 SequenceContainer sc1 = (SequenceContainer) nd;
                                 container.setBaseContainer(sc1);
@@ -1169,7 +1160,6 @@ public class V6Loader extends V6LoaderBase {
                                         container.useAsArchivePartition(true);
                                     }
                                 }
-                                return true;
                             });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -1363,10 +1353,9 @@ public class V6Loader extends V6LoaderBase {
                 } else {
                     final MetaCommand mc = cmd;
                     final CommandContainer mcc = container;
-                    NameReference nr = new UnresolvedNameReference(parent, Type.META_COMMAND).addResolvedAction(nd -> {
+                    NameReference nr = new NameReference(parent, Type.META_COMMAND).addResolvedAction(nd -> {
                         mc.setBaseMetaCommand((MetaCommand) nd);
                         mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
-                        return true;
                     });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -1783,7 +1772,8 @@ public class V6Loader extends V6LoaderBase {
             }
         }
 
-        DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Argument " + arg.getName(), rawType, engType,
+        DataEncoding.Builder<?> encoding = getDataEncoding(spaceSystem, ctx, "Argument " + arg.getName(), rawType,
+                engType,
                 encodings, calib);
 
         if (atype instanceof IntegerArgumentType.Builder) {
@@ -1791,7 +1781,8 @@ public class V6Loader extends V6LoaderBase {
             if (encoding instanceof StringDataEncoding.Builder) {
                 StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
                 // Create a new int encoding which uses the configured string encoding
-                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                        .setStringEncoding(sde);
                 if (calib != null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -1840,7 +1831,8 @@ public class V6Loader extends V6LoaderBase {
             // Enumerations encoded as string integers
             if (encoding instanceof StringDataEncoding.Builder) {
                 StringDataEncoding sde = ((StringDataEncoding.Builder) encoding).build();
-                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder().setStringEncoding(sde);
+                IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
+                        .setStringEncoding(sde);
                 // Don't set calibrator, already done when making ptype
                 ((EnumeratedArgumentType.Builder) atype).setEncoding(intStringEncoding);
                 intStringEncoding.setByteOrder(byteOrder);
@@ -1985,11 +1977,10 @@ public class V6Loader extends V6LoaderBase {
                         algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
                     inputParameterRefs.add(paraRefName);
-                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
                     paramRef.addResolvedAction(nd -> {
                         parameterInstance.setParameter((Parameter) nd);
-                        return true;
                     });
 
                     if (cells.length > IDX_ALGO_PARA_INSTANCE) {
@@ -2012,12 +2003,11 @@ public class V6Loader extends V6LoaderBase {
                     }
                     algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
-                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+                    NameReference paramRef = getParameterReference(spaceSystem, paraRefName);
                     OutputParameter outputParameter = new OutputParameter();
                     paramRef.addResolvedAction(nd -> {
                         Parameter param = (Parameter) nd;
                         outputParameter.setParameter(param);
-                        return true;
                     });
                     if (hasColumn(cells, IDX_ALGO_PARA_NAME)) {
                         outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
@@ -2043,11 +2033,10 @@ public class V6Loader extends V6LoaderBase {
                             OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
                             triggerSet.addOnParameterUpdateTrigger(trigger);
                         } else {
-                            NameReference nr = new UnresolvedNameReference(s.trim(), Type.PARAMETER)
+                            NameReference nr = new NameReference(s.trim(), Type.PARAMETER)
                                     .addResolvedAction(nd -> {
                                         OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                         triggerSet.addOnParameterUpdateTrigger(trigger);
-                                        return true;
                                     });
                             spaceSystem.addUnresolvedReference(nr);
                         }
@@ -2072,11 +2061,10 @@ public class V6Loader extends V6LoaderBase {
                     if (para != null) {
                         triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
                     } else {
-                        NameReference nr = new UnresolvedNameReference(paraRef, Type.PARAMETER)
+                        NameReference nr = new NameReference(paraRef, Type.PARAMETER)
                                 .addResolvedAction(nd -> {
                                     OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
                                     triggerSet.addOnParameterUpdateTrigger(trigger);
-                                    return true;
                                 });
                         spaceSystem.addUnresolvedReference(nr);
                     }
@@ -2120,7 +2108,7 @@ public class V6Loader extends V6LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Alarms must be attached to a parameter name");
             }
             String paramName = cells[IDX_ALARM_PARAM_NAME].getContents();
-            NameReference paraRef = getParameterReference(spaceSystem, paramName, true);
+            NameReference paraRef = getParameterReference(spaceSystem, paramName);
 
             // now we search for the matching last row of the alarms for this parameter
             int paramEnd = start + 1;
@@ -2231,7 +2219,6 @@ public class V6Loader extends V6LoaderBase {
                             + "' for alarm of enumerated parameter " + para.getName());
                 }
             }
-            return true;
         });
     }
 
@@ -2240,10 +2227,7 @@ public class V6Loader extends V6LoaderBase {
 
         paraRef.addResolvedAction(nd -> {
             Parameter para = (Parameter) nd;
-            DataType.Builder ptype = parameterDataTypesBuilders.get(para);
-            if (ptype == null) { // the type has to be resolved somewhere else first
-                return false;
-            }
+            DataType.Builder<?> ptype = parameterDataTypesBuilders.get(para);
 
             // Set minviolations and alarmreporttype
             AlarmType alarm = null;
@@ -2271,7 +2255,6 @@ public class V6Loader extends V6LoaderBase {
                 alarm.setMinViolations((minViolations == -1) ? 1 : minViolations);
                 alarm.setAlarmReportType(reportType);
             }
-            return true;
         });
     }
 

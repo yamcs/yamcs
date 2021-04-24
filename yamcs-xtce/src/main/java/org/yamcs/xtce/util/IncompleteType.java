@@ -9,7 +9,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SpaceSystem;
 
 /**
- * Stores an incomplete type together with some references which if all resolved, will  make the type complete.
+ * Stores an incomplete type together with some references which if all resolved, will make the type complete.
  * 
  * 
  * @author nm
@@ -34,6 +34,7 @@ public class IncompleteType {
     public DataType.Builder<?> getTypeBuilder() {
         return typeBuilder;
     }
+
     /**
      * Schedule the addition of the type to the SpaceSystem after all references are resolved
      * <p>
@@ -44,9 +45,8 @@ public class IncompleteType {
             complete();
             return;
         }
-        
         for (NameReference nr : references) {
-            nr.getResolvedFuture().thenAccept(nd -> {
+            nr.addResolvedAction(nd -> {
                 tryComplete();
             });
         }
@@ -64,7 +64,7 @@ public class IncompleteType {
 
     private void complete() {
         DataType type = typeBuilder.build();
-        if(type instanceof ParameterType) {
+        if (type instanceof ParameterType) {
             spaceSystem.addParameterType((ParameterType) type);
         } else {
             spaceSystem.addArgumentType((ArgumentType) type);

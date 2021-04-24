@@ -24,12 +24,13 @@ public interface DataType {
      */
     String getName();
 
-
     /**
      * Parse a value represented as string
      * 
      * @param v
-     * @return
+     * @return - a java object representation
+     * @throws IllegalArgumentException
+     *             if the string cannot be parsed
      */
     Object parseString(String v);
 
@@ -37,7 +38,9 @@ public interface DataType {
      * parses the string into a java object according to the parameter encoding
      * 
      * @param stringValue
-     * @return
+     * @return a java object representation
+     * @throws IllegalArgumentException
+     *             if the string cannot be parsed
      */
     Object parseStringForRawValue(String stringValue);
 
@@ -48,14 +51,14 @@ public interface DataType {
      * @return
      */
     String toString(Object v);
-    
+
     /**
      * Get the initial value if any
+     * 
      * @return
      */
     Object getInitialValue();
-    
-    
+
     /**
      * Return the expected Value type of an engineering value conforming to this XTCE data type
      * 
@@ -63,20 +66,25 @@ public interface DataType {
      */
     Value.Type getValueType();
 
-   
     public String getShortDescription();
 
-
     public String getLongDescription();
-    
+
     public String getQualifiedName();
 
     public interface Builder<T extends Builder<T>> {
         public T setName(String name);
+
         public T setQualifiedName(String fqn);
+
         public T setInitialValue(String initialValue);
+
         public T setShortDescription(String shortDescription);
+
         public T setLongDescription(String longDescription);
+
         public DataType build();
+
+        public String getName();
     }
 }

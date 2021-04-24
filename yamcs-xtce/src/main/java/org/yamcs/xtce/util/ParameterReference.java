@@ -4,7 +4,7 @@ import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
 
-public interface ParameterReference extends NameReference {
+public class ParameterReference extends NameReference {
     @FunctionalInterface
     public interface ParameterResolvedAction extends ResolvedAction {
         /**
@@ -14,15 +14,41 @@ public interface ParameterReference extends NameReference {
          * 
          * if path is not null, it means that the reference has been resolved to a path inside an aggregate parameter
          */
-        public boolean resolved(Parameter parameter, PathElement[] path);
+        public void resolved(Parameter parameter, PathElement[] path);
 
-        default boolean resolved(NameDescription nd) {
-            return resolved((Parameter) nd, null);
+        default void resolved(NameDescription nd) {
+            resolved((Parameter) nd, null);
         }
 
     }
 
-    public boolean tryResolve(Parameter parameter, PathElement[] path);
+    PathElement[] resultPath;
 
-    public ParameterReference addResolvedAction(ParameterResolvedAction action);
+    public ParameterReference(String ref) {
+        super(ref, Type.PARAMETER);
+    }
+
+    public void resolved(Parameter param, PathElement[] path) {
+        result = param;
+        resultPath = path;
+
+        for (ResolvedAction ra : actions) {
+            if (ra instanceof ParameterResolvedAction) {
+                ((ParameterResolvedAction) ra).resolved(param, path);
+            } else {
+                ra.resolved(param);
+            }
+        }
+    }
+
+    public ParameterReference addResolvedAction(ParameterResolvedAction action) {
+        if (result == null) {
+            actions.add(action);
+        } else {
+            action.resolved((Parameter) result, resultPath);
+        }
+
+        return this;
+    }
+
 }

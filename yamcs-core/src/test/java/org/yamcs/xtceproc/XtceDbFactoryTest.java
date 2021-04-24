@@ -13,10 +13,10 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 
 public class XtceDbFactoryTest {
 
@@ -56,12 +56,12 @@ public class XtceDbFactoryTest {
         assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
 
         FoundReference rr = refFinder.findReference(db.getRootSpaceSystem(),
-                new UnresolvedNameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
+                new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(rr);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", rr.getNameDescription().getQualifiedName());
 
         rr = refFinder.findReference(db.getRootSpaceSystem(),
-                new UnresolvedNameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
+                new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(rr);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", rr.getNameDescription().getQualifiedName());
     }

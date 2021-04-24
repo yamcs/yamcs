@@ -19,7 +19,7 @@ import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.DoubleRange;
-import org.yamcs.xtce.util.UnresolvedNameReference;
+import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 
@@ -105,11 +105,10 @@ public class PerfMdbLoader implements SpaceSystemLoader {
             int pktId = PerfPacketGenerator.PERF_TEST_PACKET_ID + j;
             SequenceContainer sc = new SequenceContainer("pkt_" + pktId);
             sc.useAsArchivePartition(true);
-            UnresolvedNameReference unr = new UnresolvedNameReference("/YSS/ccsds-default", Type.SEQUENCE_CONTAINER);
+            NameReference unr = new NameReference("/YSS/ccsds-default", Type.SEQUENCE_CONTAINER);
 
             unr.addResolvedAction(nd -> {
                 addCcsdsInheritance((SequenceContainer) nd, sc, pktId);
-                return true;
             });
             ss.addUnresolvedReference(unr);
             for (int i = 0; i < numParam; i++) {

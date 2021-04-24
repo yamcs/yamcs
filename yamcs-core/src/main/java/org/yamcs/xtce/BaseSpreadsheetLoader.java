@@ -14,8 +14,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.xtce.ConditionParser.ParameterReferenceFactory;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ParameterReference;
-import org.yamcs.xtce.util.ResolvedParameterReference;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
 
 import jxl.Cell;
 import jxl.CellType;
@@ -342,16 +340,9 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         return true;
     }
 
-    public static ParameterReference getParameterReference(SpaceSystem spaceSystem, String paramName,
-            boolean typeRequired) {
-        Parameter para = spaceSystem.getParameter(paramName);
-        ParameterReference paraRef;
-        if ((para == null) || (typeRequired && para.getParameterType() == null)) {
-            paraRef = new UnresolvedParameterReference(paramName);
-            spaceSystem.addUnresolvedReference(paraRef);
-        } else {
-            paraRef = new ResolvedParameterReference(paramName, para);
-        }
+    public static ParameterReference getParameterReference(SpaceSystem spaceSystem, String paramName) {
+        ParameterReference paraRef = new ParameterReference(paramName);
+        spaceSystem.addUnresolvedReference(paraRef);
 
         return paraRef;
     }
@@ -377,7 +368,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
 
         @Override
         public NameReference getReference(String pname) {
-            return getParameterReference(spaceSystem, pname, true);
+            return getParameterReference(spaceSystem, pname);
         }
 
         public void setCurrentSpaceSystem(SpaceSystem spaceSystem) {

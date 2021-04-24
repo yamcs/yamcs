@@ -24,9 +24,7 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     public AggregateDataType(Builder<?> builder) {
         super(builder);
-
         this.memberList = builder.memberList;
-
     }
 
     public AggregateDataType(String name) {
@@ -211,7 +209,7 @@ public class AggregateDataType extends NameDescription implements DataType {
                 }
                 r.put(memb.getName(), memb.getType().parseStringForRawValue(v));
             } else {
-                throw new IllegalArgumentException("No value for member '" + memb.getName()+"'");
+                throw new IllegalArgumentException("No value for member '" + memb.getName() + "'");
             }
         }
         if (jobj.size() > 0) {
@@ -280,8 +278,8 @@ public class AggregateDataType extends NameDescription implements DataType {
 
         }
 
-        public T addMember(Member memberType) {
-            memberList.add(memberType);
+        public T addMember(Member member) {
+            memberList.add(member);
             return self();
         }
 
@@ -292,10 +290,6 @@ public class AggregateDataType extends NameDescription implements DataType {
 
         public List<Member> getMemberList() {
             return memberList;
-        }
-
-        public boolean isResolved() {
-            return true;
         }
     }
 
