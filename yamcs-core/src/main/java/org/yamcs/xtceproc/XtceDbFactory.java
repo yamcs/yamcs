@@ -50,7 +50,6 @@ import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.util.NameReference.Type;
-import org.yamcs.xtce.util.ParameterReference;
 
 public class XtceDbFactory {
 

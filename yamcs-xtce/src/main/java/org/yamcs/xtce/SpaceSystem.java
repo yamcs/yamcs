@@ -150,7 +150,7 @@ public class SpaceSystem extends NameDescription {
     public void addUnresolvedReference(NameReference nr) {
         // try to resolve it immediately
         FoundReference foundRef = ReferenceFinder.findReference(this, nr);
-        if (foundRef == null) {
+        if (foundRef == null || !foundRef.isComplete()) {
             unresolvedReferences.add(nr);
         } else {
             foundRef.resolved(nr);
