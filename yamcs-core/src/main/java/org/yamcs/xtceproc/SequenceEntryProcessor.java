@@ -50,7 +50,6 @@ public class SequenceEntryProcessor {
     }
 
     private void extractContainerEntry(ContainerEntry ce) {
-
         BitBuffer buf = pcontext.buffer;
         if (buf.getPosition() % 8 != 0) {
             log.warn("Container Entry that doesn't start at byte boundary is not supported. "
@@ -142,24 +141,27 @@ public class SequenceEntryProcessor {
     private ArrayValue extractArray(ArrayParameterType aptype, List<IntegerValue> size) {
         int[] isize = new int[size.size()];
         ValueProcessor valueproc = pcontext.valueProcessor;
+        int max = pcontext.options.getMaxArraySize();
+
         for (int i = 0; i < size.size(); i++) {
             IntegerValue iv = size.get(i);
-            Long l = valueproc.getValue(iv);
-            if (l == null) {
-                throw new XtceProcessingException("Cannot compute value of " + iv
-                        + " necessary to determine the size of the array " + aptype.getName());
-            }
-            int ds = l.intValue();
+            long ds = valueproc.getValue(iv);
             if (ds == 0) { // zero size array, just skip over it
                 return null;
+            } else if (ds < 0) {
+                throw new XtceProcessingException(
+                        "Negative array size " + ds + " encountered when processing array " + aptype.getName());
+            } else if (ds > max) {
+                throw new XtceProcessingException("Size of one dimension of array " + aptype.getName()
+                        + " exceeds the max allowed: " + ds + " > " + max);
             }
-            isize[i] = ds;
+            isize[i] = (int) ds;
         }
 
         ParameterType elementType = (ParameterType) aptype.getElementType();
 
         int ts = ArrayValue.flatSize(isize);
-        int max = pcontext.options.getMaxArraySize();
+
         if (ts > max) {
             throw new XtceProcessingException("Resulted size of the array " + aptype.getName()
                     + " exceeds the max allowed: " + ts + " > " + max);

@@ -15,7 +15,7 @@ public abstract class IntegerDataType extends NumericDataType {
     int sizeInBits = 32;
     protected boolean signed = true;
     Long initialValue;
-    
+
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have.
      * For Telemetry the valid range is always applied before calibration, regardless of the value of
@@ -37,17 +37,17 @@ public abstract class IntegerDataType extends NumericDataType {
         if (builder.validRange != null) {
             validRange = builder.validRange;
         }
-        
+
         if (builder.baseType != null && builder.baseType instanceof IntegerDataType) {
             IntegerDataType baseType = (IntegerDataType) builder.baseType;
             if (builder.sizeInBits == null) {
                 this.sizeInBits = baseType.sizeInBits;
             }
-            if(builder.signed==null) {
+            if (builder.signed == null) {
                 this.signed = baseType.signed;
             }
-            
-            if(builder.validRange == null && baseType.validRange != null) {
+
+            if (builder.validRange == null && baseType.validRange != null) {
                 this.validRange = baseType.validRange;
             }
         }
@@ -70,14 +70,15 @@ public abstract class IntegerDataType extends NumericDataType {
     }
 
     protected void setInitialValue(Object initialValue) {
-        if(initialValue instanceof Long) {
+        if (initialValue instanceof Long) {
             this.initialValue = (Long) initialValue;
         } else if (initialValue instanceof String) {
-            this.initialValue = parseString((String)initialValue);
+            this.initialValue = parseString((String) initialValue);
         } else {
-            throw new IllegalArgumentException("Unsupported type for initial value "+initialValue.getClass());
+            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
         }
     }
+
     /**
      * returns the range for the values of this type to be valid or null if there is no range set (meaning that all
      * values are valid)
@@ -173,7 +174,7 @@ public abstract class IntegerDataType extends NumericDataType {
         return "integer";
     }
 
-    public abstract static class Builder<T extends Builder<T>>  extends BaseDataType.Builder<T> {
+    public abstract static class Builder<T extends Builder<T>> extends BaseDataType.Builder<T> {
 
         Integer sizeInBits;
         Boolean signed;
@@ -181,14 +182,14 @@ public abstract class IntegerDataType extends NumericDataType {
 
         public Builder() {
         }
-        
+
         public Builder(IntegerDataType dataType) {
             super(dataType);
             this.sizeInBits = dataType.sizeInBits;
             this.signed = dataType.signed;
             this.validRange = dataType.validRange;
         }
-        
+
         public T setSizeInBits(int sizeInBits) {
             this.sizeInBits = sizeInBits;
             return self();

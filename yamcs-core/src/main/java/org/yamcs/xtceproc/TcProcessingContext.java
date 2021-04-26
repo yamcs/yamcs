@@ -1,48 +1,46 @@
 package org.yamcs.xtceproc;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.commanding.ArgumentValue;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 
 /**
  * Keeps track of where we are when filling in the bits and bytes of a command
  * 
- * @author nm
- *
  */
-public class TcProcessingContext {
+public class TcProcessingContext extends ProcessingData {
     final ProcessorData pdata;
     final BitBuffer bitbuf;
 
-    // arguments and their values
-    final private Map<Argument, ArgumentValue> argValues;
-    
-    //context parameters and their values
+    // context parameters and their values
     final private Map<Parameter, Value> paramValues;
 
     public long generationTime;
     final MetaCommandContainerProcessor mccProcessor;
     final DataEncodingEncoder deEncoder;
-    public int size;
+    final ArgumentTypeProcessor argumentTypeProcessor;
 
-    public TcProcessingContext(ProcessorData pdata, Map<Argument, ArgumentValue> argValues,
-            Map<Parameter, Value> paramValues,
+    private int size;
+    final MetaCommand metaCmd;
+
+    public TcProcessingContext(MetaCommand metaCmd, ProcessorData pdata, Map<Parameter, Value> paramValues,
             BitBuffer bitbuf, int bitPosition) {
+        super(pdata.getLastValueCache(), null, new HashMap<Argument, ArgumentValue>(), new LastValueCache(), null);
+        this.metaCmd = metaCmd;
         this.bitbuf = bitbuf;
         this.pdata = pdata;
-        this.argValues = argValues;
         this.paramValues = paramValues;
         this.mccProcessor = new MetaCommandContainerProcessor(this);
         this.deEncoder = new DataEncodingEncoder(this);
-    }
-
-    public ArgumentValue getArgumentValue(Argument arg) {
-        return argValues.get(arg);
+        this.argumentTypeProcessor = new ArgumentTypeProcessor(this);
     }
 
     /**
@@ -50,11 +48,12 @@ public class TcProcessingContext {
      * full argument definition, such as arguments used for defining the length
      * of other variable-length arguments.
      *
-     * @param argName the name of the argument
+     * @param argName
+     *            the name of the argument
      * @return the argument value, if found, or null
      */
     public ArgumentValue getArgumentValue(String argName) {
-        for (Map.Entry<Argument, ArgumentValue> entry : argValues.entrySet()) {
+        for (Map.Entry<Argument, ArgumentValue> entry : cmdArgs.entrySet()) {
             if (argName.equals(entry.getKey().getName())) {
                 return entry.getValue();
             }
@@ -64,13 +63,51 @@ public class TcProcessingContext {
     }
 
     public Value getParameterValue(Parameter param) {
-        Value v = paramValues.get(param); 
-        if(v == null) {
+        Value v = paramValues.get(param);
+        if (v == null) {
             ParameterValue pv = pdata.getLastValueCache().getValue(param);
-            if(pv!=null) {
+            if (pv != null) {
                 v = pv.getEngValue();
             }
         }
         return v;
     }
+
+    public Map<Argument, ArgumentValue> getArgValues() {
+        return cmdArgs;
+    }
+
+    public boolean hasArgumentValue(Argument a) {
+        return cmdArgs.containsKey(a);
+    }
+
+    public void addArgumentValue(Argument a, Value argValue) {
+        if (cmdArgs.containsKey(a)) {
+            throw new IllegalStateException("There is already a value for argument " + a.getName());
+        }
+        cmdArgs.put(a, new ArgumentValue(a, argValue));
+    }
+
+    public Argument getArgument(String argName) {
+        return metaCmd.getEffectiveArgument(argName);
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * sets the size in bytes of the encoded command
+     */
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    /**
+     * returns the size in bytes of the encoded command
+     */
+    public MetaCommand getCommand() {
+        return metaCmd;
+    }
+
 }

@@ -5,7 +5,6 @@ import java.nio.BufferUnderflowException;
 import java.util.List;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.logging.Log;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
@@ -16,14 +15,12 @@ import org.yamcs.xtceproc.SubscribedContainer.InheritingContainer;
 
 public class SequenceContainerProcessor {
     ContainerProcessingContext pcontext;
-    private Log log;
 
     SequenceContainerProcessor(ContainerProcessingContext pcontext) {
-        log = new Log(this.getClass(), pcontext.getProcessorData().getYamcsInstance());
         this.pcontext = pcontext;
     }
 
-    public void extract(SubscribedContainer subscribedContainer) {
+    public void extract(SubscribedContainer subscribedContainer) throws XtceProcessingException {
         ProcessorData pdata = pcontext.proccessingData;
         SequenceContainer containerDef = subscribedContainer.conainerDef;
         ContainerProcessingResult result = pcontext.result;
@@ -74,35 +71,29 @@ public class SequenceContainerProcessor {
                 if (se.getRepeatEntry() == null) {
                     pcontext.sequenceEntryProcessor.extract(se);
                 } else { // this entry is repeated several times
-                    Long l = pcontext.valueProcessor.getValue(se.getRepeatEntry().getCount());
-                    if (l == null) {
-                        log.warn("Cannot find value for count {} required for extracting the repeated entry {} ",
-                                se.getRepeatEntry().getCount(), se);
-                    } else {
-                        long n = l;
-                        for (int i = 0; i < n; i++) {
-                            pcontext.sequenceEntryProcessor.extract(se);
-                            buf.setPosition(buf.getPosition() + se.getRepeatEntry().getOffsetSizeInBits());
-                        }
+                    long n = pcontext.valueProcessor.getValue(se.getRepeatEntry().getCount());
+                    for (int i = 0; i < n; i++) {
+                        pcontext.sequenceEntryProcessor.extract(se);
+                        buf.setPosition(buf.getPosition() + se.getRepeatEntry().getOffsetSizeInBits());
                     }
                 }
             } catch (BufferUnderflowException | BufferOverflowException | IndexOutOfBoundsException e) {
                 if (se instanceof ParameterEntry) {
                     ParameterEntry pe = (ParameterEntry) se;
-                    log.warn("Could not extract parameter " + pe.getParameter().getQualifiedName()
-                            + " from container " + se.getContainer().getQualifiedName()
-                            + " at position " + position
-                            + " because it falls beyond the end of the container. Container size in bits: "
-                            + buf.sizeInBits());
+                    throw new XtceProcessingException(
+                            "Could not extract parameter " + pe.getParameter().getQualifiedName()
+                                    + " from container " + se.getContainer().getQualifiedName()
+                                    + " at position " + position
+                                    + " because it falls beyond the end of the container. Container size in bits: "
+                                    + buf.sizeInBits());
                 } else {
-                    log.warn("Could not extract entry " + se + "of size "
+                    throw new XtceProcessingException("Could not extract entry " + se + "of size "
                             + buf.sizeInBits() + "bits from container " + se.getContainer().getQualifiedName()
                             + " position " + position
                             + "because it falls beyond the end of the container. Container size in bits: "
                             + buf.sizeInBits());
                 }
 
-                break;
             }
             if (buf.getPosition() > maxposition) {
                 maxposition = buf.getPosition();

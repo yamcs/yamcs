@@ -1,8 +1,10 @@
 package org.yamcs.xtceproc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
@@ -39,14 +41,9 @@ public class MetaCommandProcessor {
             throw new ErrorInCommand("Will not build command " + mc.getQualifiedName() + " because it is abstract");
         }
 
-        Map<Argument, ArgumentValue> args = new HashMap<>();
-        Map<String, String> argAssignment = new HashMap<>();
-        for (ArgumentAssignment aa : argAssignmentList) {
-            argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
-        }
-
         ProcessorConfig procConf = pdata.getProcessorConfig();
-        collectAndCheckArguments(mc, args, argAssignment);
+
+        Map<Parameter, Value> params = new HashMap<>();
 
         CommandContainer cmdContainer = mc.getCommandContainer();
         if (cmdContainer == null && !procConf.allowContainerlessCommands()) {
@@ -54,25 +51,41 @@ public class MetaCommandProcessor {
                     + " has no container (and the processor option allowContainerlessCommands is set to false)");
         }
 
+        if (cmdContainer != null) {
+            collectParameters(cmdContainer, params);
+        }
+        BitBuffer bitbuf = new BitBuffer(new byte[procConf.getMaxCommandSize()]);
+        TcProcessingContext pcontext = new TcProcessingContext(mc, pdata, params, bitbuf, 0);
+
+        Map<String, String> argAssignment = new HashMap<>();
+        for (ArgumentAssignment aa : argAssignmentList) {
+            argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
+        }
+        List<ArgumentAssignment> inheritedAssignment = mc.getEffectiveArgumentAssignmentList();
+
+        for (ArgumentAssignment aa : inheritedAssignment) {
+            if (argAssignment.containsKey(aa.getArgumentName())) {
+                throw new ErrorInCommand("Cannot overwrite the argument " + aa.getArgumentName()
+                        + " which is defined in the inheritance assignment list");
+            }
+            argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
+        }
+        collectAndCheckArguments(pcontext, argAssignment);
 
         byte[] binary = null;
 
         if (cmdContainer != null) {
-            Map<Parameter, Value> params = new HashMap<>();
-            collectParameters(cmdContainer, params);
-            BitBuffer bitbuf = new BitBuffer(new byte[procConf.getMaxCommandSize()]);
-            TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
             try {
                 pcontext.mccProcessor.encode(mc);
             } catch (CommandEncodingException e) {
                 throw new ErrorInCommand("Error when encoding command: " + e.getMessage());
             }
 
-            int length = pcontext.size;
+            int length = pcontext.getSize();
             binary = new byte[length];
             System.arraycopy(bitbuf.array(), 0, binary, 0, length);
         }
-        return new CommandBuildResult(binary, args);
+        return new CommandBuildResult(binary, pcontext.getArgValues());
     }
 
     /**
@@ -84,17 +97,22 @@ public class MetaCommandProcessor {
      * 
      * This function is called recursively.
      * 
+     * @param argAssignmentList
+     * 
      * @param args
      * @param argAssignment
      * @throws ErrorInCommand
      */
-    private static void collectAndCheckArguments(MetaCommand mc, Map<Argument, ArgumentValue> args,
-            Map<String, String> argAssignment) throws ErrorInCommand {
-        List<Argument> argList = mc.getArgumentList();
+    private static void collectAndCheckArguments(TcProcessingContext pcontext, Map<String, String> argAssignment)
+            throws ErrorInCommand {
+
+        List<Argument> argList = pcontext.getCommand().getEffectiveArgumentList();
+        List<Argument> unassigned = new ArrayList<>();
+
         if (argList != null) {
-            // check for each argument that we either have an assignment or a value
+            // check for each argument that we either have an assignment or an value
             for (Argument a : argList) {
-                if (args.containsKey(a)) {
+                if (pcontext.hasArgumentValue(a)) {
                     continue;
                 }
                 Value argValue = null;
@@ -104,9 +122,10 @@ public class MetaCommandProcessor {
                     if (argObj == null) {
                         argObj = a.getArgumentType().getInitialValue();
                     }
+
                     if (argObj == null) {
-                        throw new ErrorInCommand("No value provided for argument " + a.getName()
-                                + " (and the argument has no default value either)");
+                        unassigned.add(a);
+                        continue;
                     }
                 } else {
                     String stringValue = argAssignment.remove(a.getName());
@@ -118,30 +137,24 @@ public class MetaCommandProcessor {
                     }
                 }
                 try {
-                    ArgumentTypeProcessor.checkRange(a.getArgumentType(), argObj);
+                    pcontext.argumentTypeProcessor.checkRange(a.getArgumentType(), argObj);
                     argValue = DataTypeProcessor.getValueForType(a.getArgumentType(), argObj);
                 } catch (Exception e) {
                     throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                 }
-                args.put(a, new ArgumentValue(a, argValue));
+                pcontext.addArgumentValue(a, argValue);
+            }
+        }
+        if (!unassigned.isEmpty()) {
+            // some arguments may have been assigned by the checkRange method
+            // for example arguments used as dynamic array sizes
+            unassigned.removeAll(pcontext.getCmdArgs().keySet());
+            if (!unassigned.isEmpty()) {
+                throw new ErrorInCommand("No value provided for arguments: "
+                        + unassigned.stream().map(arg -> arg.getName()).collect(Collectors.joining(", ", "[", "]")));
             }
         }
 
-        // now, go to the parent
-        MetaCommand parent = mc.getBaseMetaCommand();
-        if (parent != null) {
-            List<ArgumentAssignment> aaList = mc.getArgumentAssignmentList();
-            if (aaList != null) {
-                for (ArgumentAssignment aa : aaList) {
-                    if (argAssignment.containsKey(aa.getArgumentName())) {
-                        throw new ErrorInCommand("Cannot overwrite the argument " + aa.getArgumentName()
-                                + " which is defined in the inheritance assignment list");
-                    }
-                    argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
-                }
-            }
-            collectAndCheckArguments(parent, args, argAssignment);
-        }
     }
 
     // look at the command container if it inherits another container using a condition list and add those parameters

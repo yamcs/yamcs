@@ -131,6 +131,9 @@ public class XtceTmExtractor {
                         options);
                 cpc.sequenceContainerProcessor.extract(subscribedContainer);
             }
+        } catch (XtceProcessingException e) {
+            pdata.eventProducer.sendWarning(e.toString());
+            log.info("Exception processing packet ", e);
         } catch (Exception e) {
             // send warning as events and in the log file.
             pdata.eventProducer.sendWarning(e.toString());

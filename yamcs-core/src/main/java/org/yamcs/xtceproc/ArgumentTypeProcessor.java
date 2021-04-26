@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -14,11 +16,16 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatValidRange;
@@ -26,7 +33,9 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.Member;
+import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.TimeEpoch;
@@ -34,14 +43,14 @@ import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 
 public class ArgumentTypeProcessor {
-    ProcessorData pdata;
+    final TcProcessingContext pcontext;
+
     final Log log;
-    
-    public ArgumentTypeProcessor(ProcessorData pdata) {
-        if (pdata == null) {
-            throw new NullPointerException();
-        }
-        this.pdata = pdata;
+
+    public ArgumentTypeProcessor(TcProcessingContext pcontext) {
+        this.pcontext = pcontext;
+        ProcessorData pdata = pcontext.pdata;
+
         log = new Log(this.getClass(), pdata.getYamcsInstance());
         log.setContext(pdata.getProcessorName());
     }
@@ -62,19 +71,20 @@ public class ArgumentTypeProcessor {
         } else if (atype instanceof AbsoluteTimeArgumentType) {
             return decalibrateAbsoluteTime((AbsoluteTimeArgumentType) atype, v);
         } else if (atype instanceof AggregateArgumentType) {
-            return decalibrateAggregate((AggregateArgumentType) atype, (AggregateValue)v);
+            return decalibrateAggregate((AggregateArgumentType) atype, (AggregateValue) v);
+        } else if (atype instanceof ArrayArgumentType) {
+            return decalibrateArray((ArrayArgumentType) atype, (ArrayValue) v);
         } else {
             throw new IllegalArgumentException("decalibration for " + atype + " not implemented");
         }
     }
 
-    
-
     private Value decalibrateEnumerated(EnumeratedArgumentType atype, Value v) {
-        if(v.getType()==Type.ENUMERATED) {
-            return ValueUtility.getSint64Value(((EnumeratedValue)v).getSint64Value());
+        if (v.getType() == Type.ENUMERATED) {
+            return ValueUtility.getSint64Value(((EnumeratedValue) v).getSint64Value());
         } else if (v.getType() != Type.STRING) {
-            throw new IllegalArgumentException("Enumerated decalibrations only available for enumerated values or strings");
+            throw new IllegalArgumentException(
+                    "Enumerated decalibrations only available for enumerated values or strings");
         }
 
         return ValueUtility.getSint64Value(atype.decalibrate(v.getStringValue()));
@@ -103,7 +113,7 @@ public class ArgumentTypeProcessor {
             return doFloatDecalibration(ipt.getEncoding(), ipt.getSizeInBits(), v);
         }
 
-        CalibratorProc calibrator = pdata.getDecalibrator(ipt.getEncoding());
+        CalibratorProc calibrator = pcontext.pdata.getDecalibrator(ipt.getEncoding());
 
         Value raw;
         long longDecalValue = (calibrator == null) ? v : (long) calibrator.calibrate(v);
@@ -154,7 +164,7 @@ public class ArgumentTypeProcessor {
     }
 
     private Value doFloatDecalibration(DataEncoding de, int sizeInBits, double doubleValue) {
-        CalibratorProc calibrator = pdata.getDecalibrator(de);
+        CalibratorProc calibrator = pcontext.pdata.getDecalibrator(de);
 
         double doubleCalValue = (calibrator == null) ? doubleValue : calibrator.calibrate(doubleValue);
         Value raw;
@@ -193,7 +203,7 @@ public class ArgumentTypeProcessor {
             throw new IllegalStateException(
                     "Unsupported value type '" + v.getType() + "' cannot be converted to timestamp");
         }
-        
+
         ReferenceTime rtime = atype.getReferenceTime();
         TimeEpoch epoch = rtime.getEpoch();
         long epochOffset = 0;
@@ -204,16 +214,16 @@ public class ArgumentTypeProcessor {
             throw new IllegalStateException("Cannot convert absolute time argument without an epoch");
         }
         DataEncoding enc = atype.getEncoding();
-        
-        if(enc instanceof FloatDataEncoding) {
+
+        if (enc instanceof FloatDataEncoding) {
             return ValueUtility.getDoubleValue(scaleDouble(atype, epochOffset));
         } else if (enc instanceof IntegerDataEncoding) {
             return ValueUtility.getSint64Value(scaleInt(atype, epochOffset));
         } else {
-            throw new IllegalStateException("Cannot convert encode absolute time with "+enc+" encoding");
+            throw new IllegalStateException("Cannot convert encode absolute time with " + enc + " encoding");
         }
     }
-    
+
     static long getEpochOffset(TimeEpoch epoch, long time) {
         CommonEpochs ce = epoch.getCommonEpoch();
 
@@ -234,36 +244,49 @@ public class ArgumentTypeProcessor {
             return TimeEncoding.parse(epoch.getDateTime());
         }
     }
-    
+
     private long scaleInt(AbsoluteTimeArgumentType atype, long time) {
         if (atype.needsScaling()) {
-            return (long) ((time - 1000 * atype.getOffset())/(1000 * atype.getScale()));
+            return (long) ((time - 1000 * atype.getOffset()) / (1000 * atype.getScale()));
         } else {
-            return time/1000;
+            return time / 1000;
         }
     }
 
     private double scaleDouble(AbsoluteTimeArgumentType atype, long time) {
         if (atype.needsScaling()) {
-            return ((time - 1000 * atype.getOffset())/(1000 * atype.getScale()));
+            return ((time - 1000 * atype.getOffset()) / (1000 * atype.getScale()));
         } else {
-            return time/1000.0;
+            return time / 1000.0;
         }
     }
-    
-    
+
     private Value decalibrateAggregate(AggregateArgumentType atype, AggregateValue v) {
         AggregateValue rv = new AggregateValue(atype.getMemberNames());
-        for(Member aggm: atype.getMemberList()) {
-            Value mv = decalibrate((ArgumentType)aggm.getType(), v.getMemberValue(aggm.getName()));
+        for (Member aggm : atype.getMemberList()) {
+            Value mv = decalibrate((ArgumentType) aggm.getType(), v.getMemberValue(aggm.getName()));
             rv.setMemberValue(aggm.getName(), mv);
         }
-        
         return rv;
     }
-    
-    
-    public static void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
+
+    private Value decalibrateArray(ArrayArgumentType atype, ArrayValue v) {
+        int n = v.flatLength();
+        if (n == 0) {
+            return v;
+        }
+        Value rv0 = decalibrate((ArgumentType) atype.getElementType(), v.getElementValue(0));
+        ArrayValue rv = new ArrayValue(v.getDimensions(), rv0.getType());
+        rv.setElementValue(0, rv0);
+        for (int i = 1; i < n; i++) {
+            Value rvi = decalibrate((ArgumentType) atype.getElementType(), v.getElementValue(i));
+            rv.setElementValue(i, rvi);
+        }
+
+        return rv;
+    }
+
+    public void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
         if (type instanceof IntegerArgumentType) {
             IntegerArgumentType intType = (IntegerArgumentType) type;
 
@@ -334,21 +357,92 @@ public class ArgumentTypeProcessor {
                         + "' supplied for enumeration argument cannot be found in enumeration list " + vlist);
             }
         } else if (type instanceof AggregateArgumentType) {
-            AggregateArgumentType atype = (AggregateArgumentType)type;
-            Map<String, Object> mvalue = (Map<String, Object>)o;
-            
-            for(Member m: atype.getMemberList()) {
-                
-                if(!mvalue.containsKey(m.getName())) {
-                    throw new ErrorInCommand("Value for aggregate argument '" +type.getName() 
-                            + "' does not contain a value for member " + m.getName());   
+            AggregateArgumentType atype = (AggregateArgumentType) type;
+            Map<String, Object> mvalue = (Map<String, Object>) o;
+
+            for (Member m : atype.getMemberList()) {
+
+                if (!mvalue.containsKey(m.getName())) {
+                    throw new ErrorInCommand("Value for aggregate argument '" + type.getName()
+                            + "' does not contain a value for member " + m.getName());
                 }
                 checkRange((ArgumentType) m.getType(), mvalue.get(m.getName()));
             }
+        } else if (type instanceof ArrayArgumentType) {
+            ArrayArgumentType arrType = (ArrayArgumentType) type;
+            checkArrayRange(arrType, arrType.getNumberOfDimensions() - 1, (Object[]) o);
         } else if (type instanceof BooleanArgumentType || type instanceof AbsoluteTimeArgumentType) {
             // nothing to check
         } else {
             throw new IllegalArgumentException("Cannot process values of type " + type);
         }
+    }
+
+    private void checkArrayRange(ArrayArgumentType type, int n, Object[] elements)
+            throws ErrorInCommand {
+        type.getNumberOfDimensions();
+        IntegerValue iv = type.getDimension(n);
+        if (iv instanceof FixedIntegerValue) {
+            FixedIntegerValue fiv = (FixedIntegerValue) iv;
+            if (elements.length != fiv.getValue()) {
+                throw new ErrorInCommand(getSizeError(type, n, fiv.getValue(), elements.length));
+            }
+        } else {
+            DynamicIntegerValue div = (DynamicIntegerValue) iv;
+            if (div.getDynamicInstanceRef() instanceof ParameterInstanceRef) {
+                throw new ErrorInCommand("Dynamic array size specified by parameters not supported "
+                        + "(used in " + type.getName() + ")");
+            } else {
+                ArgumentInstanceRef aref = (ArgumentInstanceRef) div.getDynamicInstanceRef();
+                if (!aref.useCalibratedValue()) {
+                    // this cannot be supported for the moment because we do not have the raw values of arguments at
+                    // this point
+                    throw new ErrorInCommand("Dynamic argument array sizes specified using raw value not supported "
+                            + "(used in " + type.getName() + ")");
+                }
+                ArgumentValue argValue = pcontext.getArgumentValue(aref.getName());
+                if (argValue != null) {
+                    long expectedSize = argValue.getEngValue().toLong();
+                    if (elements.length != expectedSize) {
+                        throw new ErrorInCommand(getSizeError(type, n, expectedSize, elements.length));
+                    }
+                } else {
+                    Argument arg = pcontext.getArgument(aref.getName());
+                    if (arg == null) {
+                        throw new ErrorInCommand("array " + type.getName()
+                                + " makes reference to non-existent argument '" + aref.getName() + "' for command "
+                                + pcontext.getCommand());
+                    }
+                    Value v = DataTypeProcessor.getValueForType(arg.getArgumentType(),
+                            Long.valueOf(elements.length - div.getIntercept()));
+                    pcontext.addArgumentValue(arg, v);
+                }
+            }
+        }
+
+        if (n == 0) {
+            for (Object elementValue : elements) {
+                checkRange((ArgumentType) type.getElementType(), elementValue);
+            }
+        } else {
+            for (Object elementValue : elements) {
+                checkArrayRange(type, n - 1, (Object[]) elementValue);
+            }
+        }
+    }
+
+    private static String getSizeError(ArrayArgumentType type, int dim, long expected, long actual) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("bad size for ");
+        if (type.getNumberOfDimensions() > 1) {
+            sb.append(dim + 1);
+            sb.append("th dimension of");
+        }
+        sb.append(" array of type ")
+                .append(type.getName())
+                .append("; expected size: ")
+                .append(expected)
+                .append(", actual size: ").append(actual);
+        return sb.toString();
     }
 }

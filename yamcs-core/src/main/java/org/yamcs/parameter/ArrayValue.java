@@ -60,7 +60,8 @@ public class ArrayValue extends Value {
     }
 
     /**
-     * Return true of the idx is the same dimensions with this array and if the element exists (i.e. idx is not out of bounds)
+     * Return true of the idx is the same dimensions with this array and if the element exists (i.e. idx is not out of
+     * bounds)
      * 
      * @param idx
      * @return
@@ -96,6 +97,7 @@ public class ArrayValue extends Value {
         }
         elements[flatIndex(idx)] = v;
     }
+
     public static int flatIndex(int[] dim, int[] idx) {
         if (idx.length == 1) {
             return idx[0];
@@ -107,6 +109,7 @@ public class ArrayValue extends Value {
         }
         return n;
     }
+
     public int flatIndex(int[] idx) {
         return flatIndex(dim, idx);
     }
@@ -123,19 +126,25 @@ public class ArrayValue extends Value {
         }
         return n;
     }
-    
+
     /**
      * unflatten the flatIndex into the idx array
      */
     public void unFlattenIndex(int flatIndex, int[] idx) {
-        if(idx.length!=dim.length) {
+        if (idx.length != dim.length) {
             throw new IllegalArgumentException("idx length is not the expected one");
         }
         if (dim.length == 1) {
             idx[0] = flatIndex;
             return;
         }
-        
+
+    }
+
+    public int[] unFlattenIndex(int flatIndex) {
+        int[] idx = new int[dim.length];
+        unFlattenIndex(flatIndex, idx);
+        return idx;
     }
 
     /**
@@ -163,7 +172,6 @@ public class ArrayValue extends Value {
         return elements[flatIdx];
     }
 
-   
     /**
      * Return the length of the flat array
      * This is the product of the size of the individual dimensions.
@@ -190,9 +198,21 @@ public class ArrayValue extends Value {
     public int[] getDimensions() {
         return dim;
     }
-    
+
+    public String flatIndexToString(int flatIndex) {
+        if (dim.length == 1) {
+            return "[" + flatIndex + "]";
+        }
+
+        int[] idx = unFlattenIndex(flatIndex);
+        StringBuilder sb = new StringBuilder();
+        for (int x : idx) {
+            sb.append("[").append(x).append("]");
+        }
+        return sb.toString();
+    }
+
     public String toString() {
         return Arrays.toString(elements);
     }
-
 }

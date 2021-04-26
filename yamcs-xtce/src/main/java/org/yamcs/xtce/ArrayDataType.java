@@ -109,6 +109,13 @@ public class ArrayDataType extends NameDescription implements DataType {
     }
 
     /**
+     * Get the size of the nth dimension
+     */
+    public IntegerValue getDimension(int n) {
+        return dim.get(n);
+    }
+
+    /**
      * If {@link #isFixedSize()} returns true, this method can be used to get the array flat size
      * 
      * @return
@@ -123,46 +130,57 @@ public class ArrayDataType extends NameDescription implements DataType {
         }
         return r;
     }
+
     /**
-     * Parse an initial value as an json array
+     * Parse an initial value specified as an json array. Each element of the array has to be itself an array until
+     * reaching the {@link #getNumberOfDimensions()}
+     * <p>
+     * The return is an java array (Object[]). For multi dimensional arrays each Object it itself an Object[] and so on
+     * to reach the number of dimensions,
+     * <p>
+     * The final Object is of type as returned by the element type {@link DataType#parseString(String)}
+     * 
      */
     @Override
-    public Object[] parseString(String v) {
-        Object[] r;
-        try {
-            JsonElement el = new JsonParser().parse(v);
-            if (!(el instanceof JsonArray)) {
-                throw new IllegalArgumentException("Expected an array but got a : " + el.getClass());
-            }
-
-            JsonArray jarr = (JsonArray) el;
-            r = new Object[jarr.size()];
-            for (int i = 0; i < jarr.size(); i++) {
-                r[i] = type.parseString(jarr.get(i).getAsString());
-            }
-        } catch (JsonParseException e) {
-            throw new IllegalArgumentException("Cannot parse string as json: " + e.getMessage());
-        }
-        return r;
+    public Object[] parseString(String stringValue) {
+        return parse(stringValue, false);
     }
 
     @Override
     public Object parseStringForRawValue(String stringValue) {
-        Object[] r;
+        return parse(stringValue, true);
+    }
+
+    private Object[] parse(String stringValue, boolean raw) {
         try {
             JsonElement el = new JsonParser().parse(stringValue);
-            if (!(el instanceof JsonArray)) {
-                throw new IllegalArgumentException("Expected an array but got a : " + el.getClass());
-            }
-
-            JsonArray jarr = (JsonArray) el;
-            r = new Object[jarr.size()];
-            for (int i = 0; i < jarr.size(); i++) {
-                r[i] = type.parseStringForRawValue(jarr.get(i).getAsString());
-            }
+            return toArray(el, numberOfDimensions - 1, raw);
         } catch (JsonParseException e) {
             throw new IllegalArgumentException("Cannot parse string as json: " + e.getMessage());
         }
+    }
+
+    private Object[] toArray(JsonElement jel, int numDim, boolean raw) {
+        if (!(jel instanceof JsonArray)) {
+            throw new IllegalArgumentException(
+                    "Expected '" + jel + "' to be an array but instead it is: " + jel.getClass());
+        }
+        JsonArray jarr = (JsonArray) jel;
+        Object[] r = new Object[jarr.size()];
+        if (numDim > 0) {
+            for (int i = 0; i < jarr.size(); i++) {
+                r[i] = toArray(jarr.get(i), numDim - 1, raw);
+            }
+        } else if (raw) {
+            for (int i = 0; i < jarr.size(); i++) {
+                r[i] = type.parseStringForRawValue(jarr.get(i).getAsString());
+            }
+        } else {
+            for (int i = 0; i < jarr.size(); i++) {
+                r[i] = type.parseString(jarr.get(i).getAsString());
+            }
+        }
+
         return r;
     }
 
@@ -185,8 +203,6 @@ public class ArrayDataType extends NameDescription implements DataType {
     public Object[] getInitialValue() {
         return initialValue;
     }
-
-
 
     public static abstract class Builder<T extends Builder<T>> extends NameDescription.Builder<T>
             implements DataType.Builder<T> {
@@ -238,5 +254,4 @@ public class ArrayDataType extends NameDescription implements DataType {
             return type != null;
         }
     }
-
 }

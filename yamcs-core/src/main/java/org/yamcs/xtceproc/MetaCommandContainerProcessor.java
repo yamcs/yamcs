@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.*;
@@ -12,11 +13,9 @@ import org.yamcs.xtce.*;
 public class MetaCommandContainerProcessor {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     TcProcessingContext pcontext;
-    ArgumentTypeProcessor argumentTypeProcessor;
 
     MetaCommandContainerProcessor(TcProcessingContext pcontext) {
         this.pcontext = pcontext;
-        argumentTypeProcessor = new ArgumentTypeProcessor(pcontext.pdata);
     }
 
     public void encode(MetaCommand metaCommand) throws ErrorInCommand {
@@ -58,8 +57,8 @@ public class MetaCommandContainerProcessor {
                 fillInParameterEntry((ParameterEntry) se, pcontext);
                 size = (bitbuf.getPosition() + 7) / 8;
             }
-            if (size > pcontext.size) {
-                pcontext.size = size;
+            if (size > pcontext.getSize()) {
+                pcontext.setSize(size);
             }
         }
     }
@@ -89,21 +88,21 @@ public class MetaCommandContainerProcessor {
                 fillInParameterEntry((ParameterEntry) se, pcontext);
                 size = (bitbuf.getPosition() + 7) / 8;
             }
-            if (size > pcontext.size) {
-                pcontext.size = size;
+            if (size > pcontext.getSize()) {
+                pcontext.setSize(size);
             }
         }
     }
 
     private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {
         Argument arg = argEntry.getArgument();
-        ArgumentValue argValue = pcontext.getArgumentValue(arg);
+        ArgumentValue argValue = pcontext.getCmdArgument(arg);
         if (argValue == null) {
             throw new IllegalStateException("No value for argument " + arg.getName());
         }
         Value engValue = argValue.getEngValue();
         ArgumentType atype = arg.getArgumentType();
-        Value rawValue = argumentTypeProcessor.decalibrate(atype, engValue);
+        Value rawValue = pcontext.argumentTypeProcessor.decalibrate(atype, engValue);
         argValue.setRawValue(rawValue);
         encodeRawValue(arg.getName(), atype, rawValue, pcontext);
     }
@@ -118,13 +117,21 @@ public class MetaCommandContainerProcessor {
             pcontext.deEncoder.encodeRaw(encoding, rawValue);
         } else if (atype instanceof AggregateArgumentType) {
             AggregateArgumentType aggtype = (AggregateArgumentType) atype;
-            AggregateValue aggRawValue = (AggregateValue)rawValue;
+            AggregateValue aggRawValue = (AggregateValue) rawValue;
             for (Member aggm : aggtype.getMemberList()) {
                 Value mvalue = aggRawValue.getMemberValue(aggm.getName());
-                encodeRawValue(argName+"."+aggm.getName(), (ArgumentType) aggm.getType(), mvalue, pcontext);
+                encodeRawValue(argName + "." + aggm.getName(), (ArgumentType) aggm.getType(), mvalue, pcontext);
+            }
+        } else if (atype instanceof ArrayArgumentType) {
+            ArrayArgumentType arrtype = (ArrayArgumentType) atype;
+            ArgumentType etype = (ArgumentType) arrtype.getElementType();
+            ArrayValue arrayRawValue = (ArrayValue) rawValue;
+            for (int i = 0; i < arrayRawValue.flatLength(); i++) {
+                Value valuei = arrayRawValue.getElementValue(i);
+                encodeRawValue(argName + arrayRawValue.flatIndexToString(i), etype, valuei, pcontext);
             }
         } else {
-            throw new CommandEncodingException("Arguments of type "+atype+" not supported");
+            throw new CommandEncodingException("Arguments of type " + atype + " not supported");
         }
     }
 

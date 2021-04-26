@@ -159,6 +159,47 @@ public class MetaCommand extends NameDescription {
     }
 
     /**
+     * returns the list of all arguments including those inherited from the parent
+     */
+    public List<Argument> getEffectiveArgumentList() {
+        // collect all the parents in a list so we can add the arguments starting from the top
+        List<MetaCommand> mclist = getHierarchy();
+
+        List<Argument> r = new ArrayList<>();
+        for (int i = mclist.size() - 1; i >= 0; i--) {
+            MetaCommand mc = mclist.get(i);
+            if (mc.argumentList != null) {
+                r.addAll(mc.argumentList);
+            }
+        }
+        return r;
+    }
+
+    public List<ArgumentAssignment> getEffectiveArgumentAssignmentList() {
+        List<MetaCommand> mclist = getHierarchy();
+
+        List<ArgumentAssignment> r = new ArrayList<>();
+        for (int i = mclist.size() - 1; i >= 0; i--) {
+            MetaCommand mc = mclist.get(i);
+            if (mc.argumentAssignmentList != null) {
+                r.addAll(mc.argumentAssignmentList);
+            }
+        }
+
+        return r;
+    }
+
+    private List<MetaCommand> getHierarchy() {
+        List<MetaCommand> mcList = new ArrayList<>();
+        MetaCommand mc = this;
+        while (mc != null) {
+            mcList.add(mc);
+            mc = mc.getBaseMetaCommand();
+        }
+        return mcList;
+    }
+
+    /**
      * returns an argument based on name or null if it doesn't exist
      * <p>
      * The argument is only looked up in the current meta command, not in its parent.
@@ -173,6 +214,17 @@ public class MetaCommand extends NameDescription {
             }
         }
         return null;
+    }
+
+    /**
+     * Same as {@link #getArgument(String)} but looks up the argument also in the parent
+     */
+    public Argument getEffectiveArgument(String argumentName) {
+        Argument arg = getArgument(argumentName);
+        if (arg == null && baseMetaCommand != null) {
+            arg = baseMetaCommand.getEffectiveArgument(argumentName);
+        }
+        return arg;
     }
 
     /**

@@ -62,3 +62,8 @@ VariableBinaryTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/VariableBinary.xml"
+
+ArrayArgCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-arg.xml"

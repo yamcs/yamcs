@@ -57,11 +57,11 @@ import org.yamcs.xtce.Parameter;
  * 
  */
 public class ProcessingData {
-    final LastValueCache tmParamsCache;
-    final ParameterValueList tmParams;
-    final Map<Argument, ArgumentValue> cmdArgs;
-    LastValueCache cmdParamsCache;
-    ParameterValueList cmdParams;
+    final protected LastValueCache tmParamsCache;
+    final protected ParameterValueList tmParams;
+    final protected Map<Argument, ArgumentValue> cmdArgs;
+    final protected LastValueCache cmdParamsCache;
+    final protected ParameterValueList cmdParams;
 
     /**
      * Used in a TM processing pipeline - for example when a TM packet is received
