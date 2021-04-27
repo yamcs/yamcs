@@ -48,8 +48,7 @@ public class VariableBinaryXtceTest {
         assertTrue(bde.isVariableSize());
 
         Parameter sizeParameter = db.getParameter(SIZE_QN);
-        assertEquals(sizeParameter.getQualifiedName(),
-                bde.getSizeReference().getName());
+        assertEquals(sizeParameter.getQualifiedName(), bde.getDynamicSize().getDynamicInstanceRef().getName());
 
         Argument dataArgument = db.getMetaCommand(COMMAND_QN)
                 .getArgument("data");
@@ -63,7 +62,7 @@ public class VariableBinaryXtceTest {
 
         Argument sizeArgument = db.getMetaCommand(COMMAND_QN)
                 .getArgument("size");
-        assertEquals(sizeArgument.getName(), bde.getSizeReference().getName());
+        assertEquals(sizeArgument.getName(), bde.getDynamicSize().getDynamicInstanceRef().getName());
 
     }
 

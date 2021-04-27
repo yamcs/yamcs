@@ -291,7 +291,6 @@ public class ArgumentTypeProcessor {
             IntegerArgumentType intType = (IntegerArgumentType) type;
 
             long l = (Long) o;
-            ;
             IntegerValidRange vr = ((IntegerArgumentType) type).getValidRange();
             if (vr != null) {
                 if (intType.isSigned() && !ValidRangeChecker.checkIntegerRange(vr, l)) {
@@ -388,7 +387,6 @@ public class ArgumentTypeProcessor {
                 throw new ErrorInCommand(getSizeError(type, n, fiv.getValue(), elements.length));
             }
         } else {
-
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
             if (div.getDynamicInstanceRef() instanceof ParameterInstanceRef) {
                 throw new ErrorInCommand("Dynamic array size specified by parameters not supported "
@@ -408,7 +406,7 @@ public class ArgumentTypeProcessor {
             if (argValue != null) {
                 // the command contains a value for the argument giving the length, verify that it matches the length of
                 // the array
-                long expectedSize = argValue.getEngValue().toLong() + div.getIntercept();
+                long expectedSize = div.transform(argValue.getEngValue().toLong());
                 if (elements.length != expectedSize) {
                     throw new ErrorInCommand(getSizeError(type, n, expectedSize, elements.length));
                 }
@@ -421,7 +419,7 @@ public class ArgumentTypeProcessor {
                             + " makes reference to non-existent argument '" + lengthAref.getName()
                             + "' for command " + pcontext.getCommand());
                 }
-                long lengthArgValue = elements.length - div.getIntercept();
+                long lengthArgValue = div.reverse(elements.length);
                 checkRange(lengthArg.getArgumentType(), lengthArgValue);
                 Value v = DataTypeProcessor.getValueForType(lengthArg.getArgumentType(), Long.valueOf(lengthArgValue));
                 pcontext.addArgumentValue(lengthArg, v);

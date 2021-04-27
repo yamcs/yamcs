@@ -44,7 +44,7 @@ public class ValueProcessor {
                                 + " value for the parameter instance: " + div.getParameterInstanceRef());
             }
             try {
-                return Math.addExact(v.toLong(), div.getIntercept());
+                return div.transform(v.toLong());
             } catch (UnsupportedOperationException | ArithmeticException e) {
                 throw new XtceProcessingException(
                         "Could extract dynamic integer value from " + div.getParameterInstanceRef() + "(" + v + ") : "

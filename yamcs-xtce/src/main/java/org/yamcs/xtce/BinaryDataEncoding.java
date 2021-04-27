@@ -14,7 +14,7 @@ package org.yamcs.xtce;
  *
  */
 public class BinaryDataEncoding extends DataEncoding {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     public enum Type {
         FIXED_SIZE, LEADING_SIZE, CUSTOM, DYNAMIC
@@ -23,6 +23,12 @@ public class BinaryDataEncoding extends DataEncoding {
     int sizeInBitsOfSizeTag = 16; // this is used when type is LEADING_SIZE to encod the length of the value before the
                                   // value
     private Type type = Type.FIXED_SIZE;
+
+    /**
+     * For variable-sized parameters or arguments, a reference to the parameter
+     * or argument containing the size.
+     */
+    protected DynamicIntegerValue dynamicSize;
 
     /**
      * copy constructor
@@ -45,6 +51,11 @@ public class BinaryDataEncoding extends DataEncoding {
             this.sizeInBitsOfSizeTag = builder.sizeInBitsOfSizeTag;
         }
 
+        if (builder.dynamicSize != null) {
+            this.sizeInBits = -1;
+            this.dynamicSize = builder.dynamicSize;
+        }
+
         if (builder.baseEncoding != null && builder.baseEncoding instanceof BinaryDataEncoding) {
             BinaryDataEncoding baseEncoding = (BinaryDataEncoding) builder.baseEncoding;
 
@@ -54,6 +65,9 @@ public class BinaryDataEncoding extends DataEncoding {
 
             if (builder.sizeInBitsOfSizeTag == null) {
                 this.sizeInBitsOfSizeTag = baseEncoding.sizeInBitsOfSizeTag;
+            }
+            if (builder.dynamicSize == null) {
+                this.dynamicSize = baseEncoding.dynamicSize;
             }
         }
     }
@@ -79,6 +93,14 @@ public class BinaryDataEncoding extends DataEncoding {
         this.sizeInBitsOfSizeTag = sizeInBits;
     }
 
+    public boolean isVariableSize() {
+        return dynamicSize != null;
+    }
+
+    public DynamicIntegerValue getDynamicSize() {
+        return dynamicSize;
+    }
+
     @Override
     public Object parseString(String stringValue) {
         return BinaryDataType.hexStringToArray(stringValue);
@@ -91,12 +113,13 @@ public class BinaryDataEncoding extends DataEncoding {
 
     @Override
     public String toString() {
-        return "BinaryDataEncoding(sizeInBits:" + sizeInBits + ", type:"+ type+")";
+        return "BinaryDataEncoding(sizeInBits:" + sizeInBits + ", type:" + type + ")";
     }
 
     public static class Builder extends DataEncoding.Builder<Builder> {
         Integer sizeInBitsOfSizeTag;
         private Type type;
+        DynamicIntegerValue dynamicSize;
 
         public Builder(BinaryDataEncoding encoding) {
             super(encoding);
@@ -108,9 +131,13 @@ public class BinaryDataEncoding extends DataEncoding {
             super();
         }
 
-        @Override
-        public BinaryDataEncoding build() {
-            return new BinaryDataEncoding(this);
+        public DynamicIntegerValue getDynamicSize() {
+            return dynamicSize;
+        }
+
+        public Builder setDynamicSize(DynamicIntegerValue v) {
+            this.dynamicSize = v;
+            return self();
         }
 
         public Builder setType(Type type) {
@@ -121,6 +148,11 @@ public class BinaryDataEncoding extends DataEncoding {
         public Builder setSizeInBitsOfSizeTag(int sizeInBitsOfSizeTag) {
             this.sizeInBitsOfSizeTag = sizeInBitsOfSizeTag;
             return self();
+        }
+
+        @Override
+        public BinaryDataEncoding build() {
+            return new BinaryDataEncoding(this);
         }
     }
 }

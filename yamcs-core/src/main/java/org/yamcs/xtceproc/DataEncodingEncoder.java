@@ -13,8 +13,10 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 
@@ -245,9 +247,7 @@ public class DataEncodingEncoder {
         }
     }
 
-    private void encodeRawBinary(BinaryDataEncoding bde, Value rawValue,
-            TcProcessingContext pcontext) {
-
+    private void encodeRawBinary(BinaryDataEncoding bde, Value rawValue, TcProcessingContext pcontext) {
         byte[] v;
         if (rawValue.getType() == Type.BINARY) {
             v = rawValue.getBinaryValue();
@@ -274,35 +274,37 @@ public class DataEncodingEncoder {
             bitbuf.put(v);
             break;
         case DYNAMIC:
-            String sizeName = bde.getSizeReference().getName();
+            DynamicIntegerValue div = bde.getDynamicSize();
+            ParameterOrArgumentRef ref = div.getDynamicInstanceRef();
+            String sizeName = ref.getName();
             ArgumentValue sizeArgValue = pcontext.getArgumentValue(sizeName);
             if (sizeArgValue == null) {
                 throw new IllegalStateException(
                         "No argument supplied for binary variable size: " + sizeName);
             }
-            Value sizeValue = bde.getSizeReference().useCalibratedValue() ? sizeArgValue.getEngValue()
-                    : sizeArgValue.getRawValue();
-            boolean isInteger = ValueUtility.processAsLong(sizeValue, sizeInBits -> {
-                if (sizeInBits % 8 != 0) {
-                    throw new IllegalArgumentException(
-                            "Binary variable size argument is not a multiple of 8: " + sizeInBits);
-                }
-                if (sizeInBits < 0) {
-                    throw new IllegalArgumentException(
-                            "Binary variable size argument is negative: " + sizeInBits);
-                }
-                int dynSizeInBytes = (int) (sizeInBits / 8);
-                int dataSizeInBytes = Math.min(dynSizeInBytes, v.length);
-                bitbuf.put(v, 0, dataSizeInBytes);
-                if (dynSizeInBytes > v.length) {
-                    // Fill with nulls to reach the required size.
-                    byte[] nuls = new byte[dynSizeInBytes - dataSizeInBytes];
-                    bitbuf.put(nuls);
-                }
-            });
-            if (!isInteger) {
+            Value sizeValue = ref.useCalibratedValue() ? sizeArgValue.getEngValue() : sizeArgValue.getRawValue();
+            long sizeInBits;
+            try {
+                sizeInBits = div.transform(sizeValue.toLong());
+            } catch (UnsupportedOperationException e) {
                 throw new IllegalStateException(
                         "Cannot convert argument " + sizeName + " of type " + sizeValue.getClass() + " to integer");
+            }
+            if (sizeInBits % 8 != 0) {
+                throw new CommandEncodingException(
+                        "Binary variable size argument is not a multiple of 8: " + sizeInBits);
+            }
+            if (sizeInBits < 0) {
+                throw new CommandEncodingException(
+                        "Binary variable size argument is negative: " + sizeInBits);
+            }
+            int dynSizeInBytes = (int) (sizeInBits / 8);
+            int dataSizeInBytes = Math.min(dynSizeInBytes, v.length);
+            bitbuf.put(v, 0, dataSizeInBytes);
+            if (dynSizeInBytes > v.length) {
+                // Fill with nulls to reach the required size.
+                byte[] nuls = new byte[dynSizeInBytes - dataSizeInBytes];
+                bitbuf.put(nuls);
             }
             break;
         default:

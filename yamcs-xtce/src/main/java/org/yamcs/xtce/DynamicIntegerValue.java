@@ -4,13 +4,12 @@ package org.yamcs.xtce;
  * Uses a parameter instance to obtain the value.
  * <p>
  * Note that this explicitly supports only integer values (whereas XTCE supports also doubles)
- * <p>
- * there is support for intercept but not for slope;
  * 
  */
 public class DynamicIntegerValue extends IntegerValue {
-    private static final long serialVersionUID = 201603101239L;
-    private long intercept;
+    private static final long serialVersionUID = 13L;
+    private long intercept = 0;
+    private long slope = 1;
     ParameterOrArgumentRef instanceRef;
 
     public DynamicIntegerValue() {
@@ -41,9 +40,37 @@ public class DynamicIntegerValue extends IntegerValue {
         this.intercept = intercept;
     }
 
+    public long getSlope() {
+        return slope;
+    }
+
+    public void setSlope(long slope) {
+        this.slope = slope;
+    }
+
+    /**
+     * Transform the value with the intercept and slope.
+     * 
+     * @throws ArithmeticException
+     *             if the result overflows a long
+     */
+    public long transform(long v) {
+        return Math.addExact(Math.multiplyExact(v, slope), intercept);
+    }
+
+    /**
+     * Reverse operation for {@link #transform(long)}
+     * 
+     * @throws ArithmeticException
+     *             if the result overflows a long
+     */
+    public long reverse(long v) {
+        return Math.subtractExact(v / slope, intercept);
+    }
+
     @Override
     public String toString() {
         return "DynamicIntegerValue(instanceRef=" + instanceRef.getName()
-                + ", intercept=" + intercept + ")";
+                + ", slope=" + slope + ", intercept=" + intercept + ")";
     }
 }

@@ -25,17 +25,13 @@ import java.util.Set;
  *
  */
 public abstract class DataEncoding implements Serializable {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     /**
      * size in bits if known. If the size in bits is variable, it should be set to -1.
      */
     protected int sizeInBits;
-    /**
-     * For variable-sized parameters or arguments, a reference to the parameter
-     * or argument containing the size.
-     */
-    protected ParameterOrArgumentRef instanceRef;
+
     transient ByteOrder byteOrder = ByteOrder.BIG_ENDIAN; // DIFFERS_FROM_XTCE in xtce is very complicated
 
     // the algorithm will be used to convert from binary to raw value
@@ -58,14 +54,11 @@ public abstract class DataEncoding implements Serializable {
 
     DataEncoding(Builder<?> builder, int defaultSizeInBits) {
         this.sizeInBits = defaultSizeInBits;
-        
+
         if (builder.sizeInBits != null) {
             this.sizeInBits = builder.sizeInBits;
         }
-        if (builder.instanceRef != null) {
-            this.sizeInBits = -1;
-            this.instanceRef = builder.instanceRef;
-        }
+
         if (builder.byteOrder != null) {
             this.byteOrder = builder.byteOrder;
         }
@@ -106,18 +99,9 @@ public abstract class DataEncoding implements Serializable {
         this.sizeInBits = sizeInBits;
     }
 
-    public boolean isVariableSize() {
-        return instanceRef != null;
-    }
-
-    public ParameterOrArgumentRef getSizeReference() {
-        return instanceRef;
-    }
-
     public ByteOrder getByteOrder() {
         return byteOrder;
     }
-
 
     // these two methods are used for serialisation because ByteOrder is not serializable
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -126,7 +110,7 @@ public abstract class DataEncoding implements Serializable {
             out.writeInt(0);
         } else {
             out.writeInt(1);
-    }
+        }
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -136,7 +120,7 @@ public abstract class DataEncoding implements Serializable {
             byteOrder = ByteOrder.BIG_ENDIAN;
         } else {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
-    }
+        }
     }
 
     /**
@@ -174,7 +158,6 @@ public abstract class DataEncoding implements Serializable {
 
     public abstract static class Builder<T extends Builder<T>> {
         protected Integer sizeInBits;
-        ParameterOrArgumentRef instanceRef;
         transient ByteOrder byteOrder = null;
         private Algorithm fromBinaryTransformAlgorithm;
         private Algorithm toBinaryTransformAlgorithm;
@@ -195,16 +178,11 @@ public abstract class DataEncoding implements Serializable {
             return self();
         }
 
-        public T setSizeReference(ParameterOrArgumentRef instanceRef) {
-            this.instanceRef = instanceRef;
-            return self();
-        }
-
         public T setFromBinaryTransformAlgorithm(Algorithm alg) {
             this.fromBinaryTransformAlgorithm = alg;
             return self();
         }
-        
+
         public T setToBinaryTransformAlgorithm(Algorithm alg) {
             this.toBinaryTransformAlgorithm = alg;
             return self();
@@ -224,10 +202,6 @@ public abstract class DataEncoding implements Serializable {
 
         public Integer getSizeInBits() {
             return sizeInBits;
-        }
-
-        public ParameterOrArgumentRef getSizeReference() {
-            return instanceRef;
         }
 
     }

@@ -33,10 +33,8 @@ public class VariableBinaryCommandEncodingTest {
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = XtceDbFactory
-                .createInstanceByConfig("VariableBinaryTest");
-        metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", db, new ProcessorConfig()));
+        db = XtceDbFactory.createInstanceByConfig("VariableBinaryTest");
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", db, new ProcessorConfig()));
     }
 
     @Test
@@ -49,12 +47,10 @@ public class VariableBinaryCommandEncodingTest {
         for (byte b : data) {
             builder.append(String.format("%02X", b));
         }
-        arguments.add(new ArgumentAssignment("size",
-                Integer.toString(data.length * 8)));
+        arguments.add(new ArgumentAssignment("size", Integer.toString(data.length)));
         arguments.add(new ArgumentAssignment("data", builder.toString()));
         arguments.add(new ArgumentAssignment("value", "3.14"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments)
-                .getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
         byte[] expected = createPacket(data, 3.14F);
 
         assertArrayEquals(expected, b);
@@ -64,7 +60,7 @@ public class VariableBinaryCommandEncodingTest {
         ByteArrayOutputStream arrayStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(arrayStream);
 
-        out.writeShort(data.length * 8);
+        out.writeShort(data.length);
         out.write(data);
         out.writeInt(Float.floatToIntBits(value));
 

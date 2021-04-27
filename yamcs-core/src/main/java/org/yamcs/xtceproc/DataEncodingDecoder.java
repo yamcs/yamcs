@@ -14,6 +14,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
@@ -362,7 +363,9 @@ public class DataEncodingDecoder {
     }
 
     private int getDynamicSizeInBytes(BinaryDataEncoding bde, ContainerProcessingContext pcontext) {
-        ParameterOrArgumentRef ref = bde.getSizeReference();
+        DynamicIntegerValue div = bde.getDynamicSize();
+        ParameterOrArgumentRef ref = div.getDynamicInstanceRef();
+
         ParameterValue sizePv = null;
         if (ref instanceof ParameterInstanceRef) {
             ParameterInstanceRef pref = (ParameterInstanceRef) ref;
@@ -382,14 +385,14 @@ public class DataEncodingDecoder {
             throw new XtceProcessingException("Missing " + (ref.useCalibratedValue() ? "engineering" : "raw")
                     + " value for dynamic size in bits parameter: " + ref.getName());
         }
-        
+
         MutableLong ml = new MutableLong(0);
         if (!ValueUtility.processAsLong(sizeValue, l -> ml.setLong(l))) {
             throw new XtceProcessingException("Cannot interpret value  of type " + sizeValue.getClass()
                     + " as integer; used in the dynamic value specification");
-        };
+        }
         long sizeInBits = ml.getLong();
-        
+
         if (sizeInBits % 8 != 0) {
             throw new XtceProcessingException(
                     "Variable size in bits parameter is not a multiple of 8: "

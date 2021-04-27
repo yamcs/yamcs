@@ -154,7 +154,6 @@ public class MetaCommandProcessor {
                         + unassigned.stream().map(arg -> arg.getName()).collect(Collectors.joining(", ", "[", "]")));
             }
         }
-
     }
 
     // look at the command container if it inherits another container using a condition list and add those parameters

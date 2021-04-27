@@ -1256,10 +1256,8 @@ public class XtceStaxReader {
                 if (v instanceof FixedIntegerValue) {
                     binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else if (v instanceof DynamicIntegerValue) {
-                    binaryDataEncoding.setSizeReference(
-                            ((DynamicIntegerValue) v).getDynamicInstanceRef());
-                    binaryDataEncoding
-                            .setType(BinaryDataEncoding.Type.DYNAMIC);
+                    binaryDataEncoding.setDynamicSize(((DynamicIntegerValue) v));
+                    binaryDataEncoding.setType(BinaryDataEncoding.Type.DYNAMIC);
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -2828,6 +2826,7 @@ public class XtceStaxReader {
                 }
                 LinearAdjusment ladj = readLinearAdjusment();
                 v.setIntercept((long) ladj.getIntercept());
+                v.setSlope((long) ladj.getSlope());
             } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
                 if (v == null) {
                     throw new XMLStreamException("No " + XTCE_PARAMETER_INSTANCE_REF + " section found");

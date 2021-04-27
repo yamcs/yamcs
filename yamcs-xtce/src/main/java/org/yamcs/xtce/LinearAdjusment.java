@@ -12,4 +12,8 @@ public class LinearAdjusment {
     public double getIntercept() {
         return intercept;
     }
+
+    public double getSlope() {
+        return slope;
+    }
 }
