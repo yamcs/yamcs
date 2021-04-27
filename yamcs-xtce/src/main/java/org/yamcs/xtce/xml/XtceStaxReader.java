@@ -1145,8 +1145,8 @@ public class XtceStaxReader {
 
     private IntegerRange readIntegerRange() throws XMLStreamException {
         StartElement element = xmlEvent.asStartElement();
-        long minInclusive = readLongAttribute("minInclusive", element);
-        long maxInclusive = readLongAttribute("maxInclusive", element);
+        long minInclusive = readLongAttribute("minInclusive", element, Long.MIN_VALUE);
+        long maxInclusive = readLongAttribute("maxInclusive", element, Long.MAX_VALUE);
         return new IntegerRange(minInclusive, maxInclusive);
     }
 
