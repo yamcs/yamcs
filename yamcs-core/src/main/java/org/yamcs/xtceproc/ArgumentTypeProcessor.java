@@ -388,35 +388,43 @@ public class ArgumentTypeProcessor {
                 throw new ErrorInCommand(getSizeError(type, n, fiv.getValue(), elements.length));
             }
         } else {
+
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
             if (div.getDynamicInstanceRef() instanceof ParameterInstanceRef) {
                 throw new ErrorInCommand("Dynamic array size specified by parameters not supported "
                         + "(used in " + type.getName() + ")");
+            }
+
+            // the length of the array is specified dynamically using a reference to another argument
+            ArgumentInstanceRef lengthAref = (ArgumentInstanceRef) div.getDynamicInstanceRef();
+            if (!lengthAref.useCalibratedValue()) {
+                // this cannot be supported for the moment because we do not have the raw values of arguments at
+                // this point
+                throw new ErrorInCommand("Dynamic argument array sizes specified using raw value not supported "
+                        + "(used in " + type.getName() + ")");
+            }
+
+            ArgumentValue argValue = pcontext.getArgumentValue(lengthAref.getName());
+            if (argValue != null) {
+                // the command contains a value for the argument giving the length, verify that it matches the length of
+                // the array
+                long expectedSize = argValue.getEngValue().toLong() + div.getIntercept();
+                if (elements.length != expectedSize) {
+                    throw new ErrorInCommand(getSizeError(type, n, expectedSize, elements.length));
+                }
             } else {
-                ArgumentInstanceRef aref = (ArgumentInstanceRef) div.getDynamicInstanceRef();
-                if (!aref.useCalibratedValue()) {
-                    // this cannot be supported for the moment because we do not have the raw values of arguments at
-                    // this point
-                    throw new ErrorInCommand("Dynamic argument array sizes specified using raw value not supported "
-                            + "(used in " + type.getName() + ")");
+                // the argument specifying the length is not present, compute it automatically based on the length of
+                // the array
+                Argument lengthArg = pcontext.getArgument(lengthAref.getName());
+                if (lengthArg == null) {
+                    throw new ErrorInCommand("length of array " + type.getName()
+                            + " makes reference to non-existent argument '" + lengthAref.getName()
+                            + "' for command " + pcontext.getCommand());
                 }
-                ArgumentValue argValue = pcontext.getArgumentValue(aref.getName());
-                if (argValue != null) {
-                    long expectedSize = argValue.getEngValue().toLong();
-                    if (elements.length != expectedSize) {
-                        throw new ErrorInCommand(getSizeError(type, n, expectedSize, elements.length));
-                    }
-                } else {
-                    Argument arg = pcontext.getArgument(aref.getName());
-                    if (arg == null) {
-                        throw new ErrorInCommand("array " + type.getName()
-                                + " makes reference to non-existent argument '" + aref.getName() + "' for command "
-                                + pcontext.getCommand());
-                    }
-                    Value v = DataTypeProcessor.getValueForType(arg.getArgumentType(),
-                            Long.valueOf(elements.length - div.getIntercept()));
-                    pcontext.addArgumentValue(arg, v);
-                }
+                long lengthArgValue = elements.length - div.getIntercept();
+                checkRange(lengthArg.getArgumentType(), lengthArgValue);
+                Value v = DataTypeProcessor.getValueForType(lengthArg.getArgumentType(), Long.valueOf(lengthArgValue));
+                pcontext.addArgumentValue(lengthArg, v);
             }
         }
 

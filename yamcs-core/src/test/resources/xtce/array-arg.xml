@@ -11,6 +11,12 @@
     	<IntegerArgumentType name="uint16">
     		<IntegerDataEncoding sizeInBits="16"/>
     	</IntegerArgumentType>
+    	<IntegerArgumentType name="uint16_max5">
+    		<IntegerDataEncoding sizeInBits="16"/>
+    		<ValidRangeSet>
+    			<ValidRange maxInclusive="5"/>
+    		</ValidRangeSet>
+    	</IntegerArgumentType>
     	<IntegerArgumentType name="uint8">
     		<IntegerDataEncoding sizeInBits="8"/>
     	</IntegerArgumentType>
@@ -33,7 +39,7 @@
  	<MetaCommandSet>
  		<MetaCommand name="cmd1">
  			<ArgumentList>
- 				<Argument name="length" argumentTypeRef="uint16"/>
+ 				<Argument name="length" argumentTypeRef="uint16_max5"/>
  				<Argument name="array1" argumentTypeRef="array1_type"/>
  			</ArgumentList>
  			<CommandContainer name="cmd1_container">

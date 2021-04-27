@@ -72,4 +72,13 @@ public class ArrayArgTest {
         metaCommandProcessor.buildCommand(mc, arguments);
     }
 
+    @Test(expected = ErrorInCommand.class)
+    public void testMaxLengthExceeded() throws ErrorInCommand, IOException {
+        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+
+        arguments.add(new ArgumentAssignment("array1", "[1,2,3,4,5,6]"));
+        metaCommandProcessor.buildCommand(mc, arguments);
+    }
+
 }
