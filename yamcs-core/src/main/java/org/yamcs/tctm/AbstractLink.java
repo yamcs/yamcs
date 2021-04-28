@@ -53,7 +53,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
         this.config = config;
         log = new Log(getClass(), instance);
         log.setContext(name);
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, getClass().getSimpleName(), 10000);
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, name, 10000);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
