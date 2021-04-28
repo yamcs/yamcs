@@ -15,13 +15,14 @@ import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
 import io.netty.channel.nio.NioEventLoopGroup;
+
+import static org.yamcs.parameter.SystemParametersService.*;
 
 /**
  * Abstract link implementation as a {@link Service} handling the basic enable/disable getConfig operations
@@ -178,11 +179,9 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
      * @param list
      */
     protected void collectSystemParameters(long time, List<ParameterValue> list) {
-        Status status = getLinkStatus();
-        list.add(SystemParametersService.getPV(spLinkStatus, time,
-                ValueUtility.getEnumeratedValue(status.ordinal(), status.name())));
-        list.add(SystemParametersService.getPV(spDataOutCount, time, getDataOutCount()));
-        list.add(SystemParametersService.getPV(spDataInCount, time, getDataInCount()));
+        list.add(getPV(spLinkStatus, time, getLinkStatus()));
+        list.add(getPV(spDataOutCount, time, getDataOutCount()));
+        list.add(getPV(spDataInCount, time, getDataInCount()));
     }
 
 }

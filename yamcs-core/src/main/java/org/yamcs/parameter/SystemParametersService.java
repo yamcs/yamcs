@@ -286,8 +286,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return mdb.createSystemParameter(fqn, ptype, description);
     }
 
-    public SystemParameter createEnumeratedSystemParameter(String name, Class<? extends Enum<?>> enumClass,
-            String description) {
+    public EnumeratedParameterType createEnumeratedParameterType(Class<? extends Enum<?>> enumClass) {
         String typeName = enumClass.getCanonicalName().replace(".", "_");
         EnumeratedParameterType type = (EnumeratedParameterType) mdb.getParameterType(YAMCS_SPACESYSTEM_NAME, typeName);
         if (type == null) {
@@ -299,7 +298,12 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             }
             type = (EnumeratedParameterType) mdb.addSystemParameterType(etypeb.build());
         }
+        return type;
+    }
 
+    public SystemParameter createEnumeratedSystemParameter(String name, Class<? extends Enum<?>> enumClass,
+            String description) {
+        EnumeratedParameterType type = createEnumeratedParameterType(enumClass);
         return mdb.createSystemParameter(qualifiedName(YAMCS_SPACESYSTEM_NAME, name), type, description);
     }
 
@@ -442,6 +446,12 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     public static ParameterValue getUnsignedIntPV(Parameter parameter, long time, int v) {
         ParameterValue pv = getNewPv(parameter, time);
         pv.setEngValue(ValueUtility.getUint64Value(v));
+        return pv;
+    }
+
+    public static <T extends Enum<T>> ParameterValue getPV(Parameter parameter, long time, T v) {
+        ParameterValue pv = getNewPv(parameter, time);
+        pv.setEngValue(ValueUtility.getEnumeratedValue(v.ordinal(), v.name()));
         return pv;
     }
 

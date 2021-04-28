@@ -22,6 +22,8 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SystemParameter;
 
+import static org.yamcs.parameter.SystemParametersService.*;
+
 public class CommandQueue {
 
     private String name;
@@ -196,10 +198,10 @@ public class CommandQueue {
     }
 
     void fillInSystemParameters(List<ParameterValue> params, long time) {
-        params.add(SystemParametersService.getPV(spQueueState, time, state.name()));
-        params.add(SystemParametersService.getPV(spNumCommands, time, commands.size()));
-        params.add(SystemParametersService.getPV(spNumSentCommands, time, nbSentCommands));
-        params.add(SystemParametersService.getPV(spNumRejectedCommands, time, nbRejectedCommands));
+        params.add(getPV(spQueueState, time, state));
+        params.add(getPV(spNumCommands, time, commands.size()));
+        params.add(getPV(spNumSentCommands, time, nbSentCommands));
+        params.add(getPV(spNumRejectedCommands, time, nbRejectedCommands));
     }
 
     public ActiveCommand getcommand(CommandId commandId) {
