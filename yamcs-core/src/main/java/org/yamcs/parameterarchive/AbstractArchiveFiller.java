@@ -72,6 +72,7 @@ abstract class AbstractArchiveFiller implements ParameterConsumer {
             Value engValue = pv.getEngValue();
             if (engValue == null) {
                 log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedName());
+                continue;
             }
             BasicParameterList l = m.computeIfAbsent(t, x -> new BasicParameterList(parameterIdMap));
             l.add(pv);
@@ -84,8 +85,6 @@ abstract class AbstractArchiveFiller implements ParameterConsumer {
             numParams += pvList.size();
         }
     }
-
-
 
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
@@ -123,7 +122,6 @@ abstract class AbstractArchiveFiller implements ParameterConsumer {
         }
         return false;
     }
-
 
     static MemoryPoolMXBean getMemoryBean() {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
