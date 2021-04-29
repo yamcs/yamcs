@@ -53,8 +53,9 @@
   <ng-container cdkColumnDef="significance">
     <th mat-header-cell *cdkHeaderCellDef style="width: 1px">Significance</th>
     <td mat-cell *cdkCellDef="let item">
-      <app-significance-level *ngIf="item.command" [level]="item.command?.significance?.consequenceLevel"></app-significance-level>
-      <ng-container *ngIf="!item.command">-</ng-container>
+      <ng-container *ngIf="(item.command | effectiveSignificance) as significance; else dash">
+        <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+      </ng-container>
     </td>
   </ng-container>
 
@@ -67,3 +68,7 @@
                [showFirstLastButtons]="true"
                [length]="dataSource.totalSize$ | async">
 </mat-paginator>
+
+<ng-template #dash>
+  -
+</ng-template>

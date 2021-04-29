@@ -43,7 +43,7 @@
 
   <dt>Significance</dt>
   <dd *ngIf="command.significance">
-    <app-significance-level [level]="command.significance?.consequenceLevel"></app-significance-level>
+    <app-significance-level [level]="command.significance.consequenceLevel"></app-significance-level>
     {{ command.significance.reasonForWarning }}
   </dd>
   <dd *ngIf="!command.significance">-</dd>

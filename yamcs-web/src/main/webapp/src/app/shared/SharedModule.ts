@@ -71,6 +71,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
+import { EffectiveSignificancePipe } from './pipes/EffectiveSignificancePipe';
 import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
@@ -236,6 +237,7 @@ const pipes = [
   DefaultProcessorPipe,
   DeltaWithPipe,
   DurationPipe,
+  EffectiveSignificancePipe,
   FilenamePipe,
   FormatBytesPipe,
   EntryForOffsetPipe,

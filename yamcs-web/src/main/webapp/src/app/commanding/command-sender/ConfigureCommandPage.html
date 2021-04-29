@@ -26,8 +26,10 @@
 
       <dt>Significance</dt>
       <dd>
-        <app-significance-level [level]="command.significance?.consequenceLevel"></app-significance-level>
-        &nbsp;&nbsp;{{ command.significance?.reasonForWarning }}
+        <ng-container *ngIf="(command | effectiveSignificance) as significance; else dash">
+          <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+          &nbsp;&nbsp;{{ significance.reasonForWarning }}
+        </ng-container>
       </dd>
     </dl>
 
@@ -90,3 +92,7 @@
     </mat-toolbar>
   </div>
 </app-instance-page>
+
+<ng-template #dash>
+  -
+</ng-template>

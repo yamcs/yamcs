@@ -24,11 +24,10 @@
 
 <h6>Significance</h6>
 <div class="block">
-  <ng-container *ngIf="entry.command?.significance as significance">
+  <ng-container *ngIf="(entry.command | effectiveSignificance) as significance; else dash">
     <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
     {{ significance.reasonForWarning }}
   </ng-container>
-  <ng-container *ngIf="!entry.command?.significance">-</ng-container>
 </div>
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
@@ -62,3 +61,7 @@
   </ng-container>
   <ng-container *ngIf="!entry.command?.constraint">-</ng-container>
 </div>
+
+<ng-template #dash>
+  -
+</ng-template>
