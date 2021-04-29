@@ -1,5 +1,7 @@
 package org.yamcs.xtceproc;
 
+import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +41,6 @@ import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
-
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
@@ -83,12 +83,12 @@ public class ProcessorData {
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)
         ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName(),
-                "the name of the current processor");
+                "The name of the current processor");
         lastValueCache.add(procNamePv);
 
         String mode = proc.isReplay() ? "replay" : "realtime";
         ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode,
-                "the mode of the current processor (either replay or realtime)");
+                "The mode of the current processor (either replay or realtime)");
         lastValueCache.add(procModePv);
     }
 

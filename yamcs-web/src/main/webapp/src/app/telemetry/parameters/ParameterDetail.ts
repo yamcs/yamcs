@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Member, Parameter, ParameterType, ParameterValue } from '../../client';
+import { ContextAlarmInfo, EnumValue, Member, Parameter, ParameterType, ParameterValue } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { EntryForOffsetPipe } from '../../shared/pipes/EntryForOffsetPipe';
 import { ParameterTypeForPathPipe } from '../../shared/pipes/ParameterTypeForPathPipe';
@@ -45,6 +45,28 @@ export class ParameterDetail implements OnChanges {
     } else {
       this.entry$.next(null);
       this.ptype$.next(null);
+    }
+  }
+
+  getDefaultAlarmLevel(ptype: ParameterType, enumValue: EnumValue) {
+    if (ptype && ptype.defaultAlarm) {
+      const alarm = ptype.defaultAlarm;
+      if (alarm.enumerationAlarm) {
+        for (const enumAlarm of alarm.enumerationAlarm) {
+          if (enumAlarm.label === enumValue.label) {
+            return enumAlarm.level;
+          }
+        }
+      }
+    }
+  }
+
+  getEnumerationAlarmLevel(contextAlarm: ContextAlarmInfo, enumValue: EnumValue) {
+    const alarm = contextAlarm.alarm;
+    for (const enumAlarm of alarm.enumerationAlarm) {
+      if (enumAlarm.label === enumValue.label) {
+        return enumAlarm.level;
+      }
     }
   }
 }

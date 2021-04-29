@@ -246,6 +246,7 @@ message JavaExpressionCalibratorInfo {
 message EnumValue {
   optional int64 value = 1;
   optional string label = 2;
+  optional string description = 3;
 }
 
 message ParameterTypeInfo {

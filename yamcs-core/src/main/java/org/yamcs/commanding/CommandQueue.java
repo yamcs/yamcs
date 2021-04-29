@@ -1,5 +1,7 @@
 package org.yamcs.commanding;
 
+import static org.yamcs.parameter.SystemParametersService.getPV;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -18,11 +20,10 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.User;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SystemParameter;
-
-import static org.yamcs.parameter.SystemParametersService.*;
 
 public class CommandQueue {
 
@@ -55,16 +56,21 @@ public class CommandQueue {
     void setupSysParameters() {
         SystemParametersService sps = SystemParametersService.getInstance(processor.getInstance());
         spQueueState = sps.createEnumeratedSystemParameter("cmdQueue/" + name + "/state", QueueState.class,
-                "State of the commanding queue. "
-                        + "BLOCKED: the commands are hold in the queue until manually released or the queue is unblocked; "
-                        + "DISABLED: the commands are immediately rejected; "
-                        + "ENABLED: the command pass through (but only if they satisfy the tranmission constraints)");
+                "The current state of this commanding queue");
+        EnumeratedParameterType spQueueStateType = (EnumeratedParameterType) spQueueState.getParameterType();
+        spQueueStateType.enumValue(QueueState.BLOCKED.name())
+                .setDescription("Commands are held in the queue until manually released or the queue is unblocked");
+        spQueueStateType.enumValue(QueueState.DISABLED.name())
+                .setDescription("Commands are rejected immediately");
+        spQueueStateType.enumValue(QueueState.ENABLED.name())
+                .setDescription("Commands pass through the queue immediately (subject to transmission constraints)");
+
         spNumCommands = sps.createSystemParameter("cmdQueue/" + name + "/numCommands", Type.SINT32,
-                "number of commands in the queue");
+                "Number of queued commands");
         spNumSentCommands = sps.createSystemParameter("cmdQueue/" + name + "/numSentCommands", Type.UINT32,
-                "number of commands sent through the queue");
+                "The total number of commands that have been sent through this queue since Yamcs has started execution");
         spNumRejectedCommands = sps.createSystemParameter("cmdQueue/" + name + "/numRejectedCommands", Type.UINT32,
-                "number of commands rejected by the queue");
+                "The total number of commands that have been rejected by this queue since Yamcs has started execution");
     }
 
     public String getName() {

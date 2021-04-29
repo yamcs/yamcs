@@ -180,8 +180,9 @@
     <h4>Enumeration</h4>
     <table yaDataTable *ngIf="entry.type?.engType === 'enumeration'">
       <tr>
-        <th width="100">Value</th>
-        <th width="100">Label</th>
+        <th style="width: 50px">Value</th>
+        <th style="width: 100px">Label</th>
+        <th style="width: 300px">Description</th>
         <th>Alarm Level (default)</th>
         <th *ngFor="let context of entry.type?.contextAlarm">
           <ng-container *ngFor="let comparison of context.comparison; let first = first">
@@ -199,6 +200,7 @@
       <tr *ngFor="let enumValue of entry.type?.enumValue">
         <td style="white-space: nowrap">{{ enumValue.value }}</td>
         <td style="white-space: nowrap">{{ enumValue.label }}</td>
+        <td>{{ enumValue.description || '-' }}</td>
         <td>
           <ng-container *ngIf="getDefaultAlarmLevel(entry.type, enumValue) as level">
             <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
