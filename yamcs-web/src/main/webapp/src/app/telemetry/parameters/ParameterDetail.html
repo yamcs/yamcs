@@ -27,15 +27,23 @@
     </span>
   </dd>
 
-  <dt>Description</dt>
-  <dd>
-    <ng-container *ngIf="entry$ | async as entry; else dash">
-      {{ entry.longDescription || entry.shortDescription || '-' }}
-    </ng-container>
-  </dd>
-
   <dt>Source</dt>
   <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+
+  <ng-container *ngIf="entry$ | async as entry; else dash">
+    <ng-container *ngIf="entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        <app-markdown [text]="entry.longDescription"></app-markdown>
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="!entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        {{ entry.shortDescription || '-' }}
+      </dd>
+    </ng-container>
+  </ng-container>
 </dl>
 
 <dl class="dl-horizontal no-trail" [class.no-lead]="!offset">
@@ -80,12 +88,22 @@
     </span>
   </dd>
 
-  <dt>Description</dt>
-  <dd>{{ parameter.longDescription || parameter.shortDescription || '-' }}</dd>
-
   <ng-container *ngIf="!offset">
     <dt>Source</dt>
     <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      <app-markdown [text]="parameter.longDescription"></app-markdown>
+    </dd>
+  </ng-container>
+  <ng-container *ngIf="!parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      {{ parameter.shortDescription || '-' }}
+    </dd>
   </ng-container>
 </dl>
 

@@ -61,6 +61,7 @@ import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
+import { Markdown } from './markdown/Markdown';
 import { AgoPipe } from './pipes/AgoPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
@@ -202,6 +203,7 @@ const sharedComponents = [
   Labels,
   Led,
   LiveExpression,
+  Markdown,
   MessageBar,
   ObjectSelector,
   ParameterLegend,
