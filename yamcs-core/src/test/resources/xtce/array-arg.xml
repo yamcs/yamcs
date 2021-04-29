@@ -1,54 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  name="ArrayArgTest"
-  shortDescription="Test of binary parameter and argument with variable size"
-  xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xi="http://www.w3.org/2001/XInclude" name="ArrayArgTest"
+	shortDescription="Test of binary parameter and argument with variable size" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 
- <CommandMetaData>
-    <ArgumentTypeSet>
-    	<IntegerArgumentType name="uint16">
-    		<IntegerDataEncoding sizeInBits="16"/>
-    	</IntegerArgumentType>
-    	<IntegerArgumentType name="uint16_max5">
-    		<IntegerDataEncoding sizeInBits="16"/>
-    		<ValidRangeSet>
-    			<ValidRange maxInclusive="5"/>
-    		</ValidRangeSet>
-    	</IntegerArgumentType>
-    	<IntegerArgumentType name="uint8">
-    		<IntegerDataEncoding sizeInBits="8"/>
-    	</IntegerArgumentType>
-    	<ArrayArgumentType name="array1_type" arrayTypeRef="uint8">
-    		<DimensionList>
-    			<Dimension>
-    				<StartingIndex>
-    					<FixedValue>0</FixedValue>
-    				</StartingIndex>
-    				<EndingIndex>
-    					<DynamicValue>
-    						<ArgumentInstanceRef argumentRef="length"/>
-    						<LinearAdjustment intercept="-1"/>
-    					</DynamicValue>
-    				</EndingIndex>
-    			</Dimension>
-    		</DimensionList>
-    	</ArrayArgumentType>
- 	</ArgumentTypeSet>
- 	<MetaCommandSet>
- 		<MetaCommand name="cmd1">
- 			<ArgumentList>
- 				<Argument name="length" argumentTypeRef="uint16_max5"/>
- 				<Argument name="array1" argumentTypeRef="array1_type"/>
- 			</ArgumentList>
- 			<CommandContainer name="cmd1_container">
- 				<EntryList>
- 					<ArgumentRefEntry argumentRef="length"/>
- 					<ArgumentRefEntry argumentRef="array1"/>
- 				</EntryList>
- 			</CommandContainer>
- 		</MetaCommand>
- 	</MetaCommandSet>
- </CommandMetaData>
- </SpaceSystem>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="uint16">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint16_max5">
+				<IntegerDataEncoding sizeInBits="16" />
+				<ValidRangeSet>
+					<ValidRange maxInclusive="5" />
+				</ValidRangeSet>
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint8">
+				<IntegerDataEncoding sizeInBits="8" />
+			</IntegerArgumentType>
+			<ArrayArgumentType name="array1_type" arrayTypeRef="uint8">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="length" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="cmd1">
+				<ArgumentList>
+					<Argument name="length" argumentTypeRef="uint16_max5" />
+					<Argument name="array1" argumentTypeRef="array1_type" />
+				</ArgumentList>
+				<CommandContainer name="cmd1_container">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="length" />
+						<ArgumentRefEntry argumentRef="array1" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

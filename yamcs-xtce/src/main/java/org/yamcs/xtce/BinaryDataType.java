@@ -1,9 +1,12 @@
 package org.yamcs.xtce;
 
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
+
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class BinaryDataType extends BaseDataType {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
     byte[] initialValue;
 
     /**
@@ -126,6 +129,29 @@ public class BinaryDataType extends BaseDataType {
 
         public void setSizeRangeInBytes(IntegerRange sizeRangeInBytes) {
             this.sizeRangeInBytes = sizeRangeInBytes;
+        }
+
+        public void setAncillaryData(List<AncillaryData> ancillaryData) {
+            super.setAncillaryData(ancillaryData);
+
+            long minLength = Long.MIN_VALUE;
+            long maxLength = Long.MAX_VALUE;
+
+            for (AncillaryData ad : ancillaryData) {
+                if (ad.isYamcs()) {
+                    SimpleEntry<String, String> p = ad.getValueAsPair();
+                    if (p != null && "minLength".equals(p.getKey())) {
+                        minLength = Integer.valueOf(p.getValue());
+                    }
+                    if (p != null && "maxLength".equals(p.getKey())) {
+                        maxLength = Integer.valueOf(p.getValue());
+                    }
+                }
+            }
+            if (minLength != Long.MIN_VALUE || maxLength != Long.MAX_VALUE) {
+                this.sizeRangeInBytes = new IntegerRange(minLength, maxLength);
+            }
+            System.out.println("ancillaryData: " + ancillaryData);
         }
 
     }

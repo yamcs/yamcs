@@ -6,11 +6,11 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
     BinaryArgumentType(Builder builder) {
         super(builder);
     }
-    
+
     public BinaryArgumentType(BinaryArgumentType t1) {
         super(t1);
     }
-    
+
     @Override
     public String getTypeAsString() {
         return "binary";
@@ -21,11 +21,10 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
         return "BinaryArgumentType name:" + name + " encoding:" + encoding;
     }
 
-    
     public BinaryArgumentType.Builder toBuilder() {
         return new Builder(this);
     }
-    
+
     public static class Builder extends BinaryDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {
         public Builder() {
         }
@@ -39,5 +38,5 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
             return new BinaryArgumentType(this);
         }
     }
-   
+
 }

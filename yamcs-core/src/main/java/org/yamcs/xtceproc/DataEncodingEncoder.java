@@ -10,7 +10,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -259,8 +258,13 @@ public class DataEncodingEncoder {
         BitBuffer bitbuf = pcontext.bitbuf;
         switch (bde.getType()) {
         case FIXED_SIZE:
-            int bdeSizeInBytes = bde.getSizeInBits() / 8;
-            int sizeInBytes = Math.min(bdeSizeInBytes, v.length);
+            int sizeInBytes, bdeSizeInBytes;
+            if (bde.getSizeInBits() < 0) { // if the size is negative, we take all the data
+                bdeSizeInBytes = sizeInBytes = v.length;
+            } else {
+                bdeSizeInBytes = bde.getSizeInBits() / 8;
+                sizeInBytes = Math.min(bdeSizeInBytes, v.length);
+            }
             bitbuf.put(v, 0, sizeInBytes);
             if (bdeSizeInBytes > v.length) { // fill up with nulls to reach the required size
                 byte[] nulls = new byte[bdeSizeInBytes - sizeInBytes];

@@ -40,6 +40,9 @@
 		<ArgumentTypeSet>
 			<IntegerArgumentType name="SizeType" sizeInBits="16" signed="false">
 				<IntegerDataEncoding sizeInBits="16" byteOrder="mostSignificantByteFirst" encoding="unsigned" />
+				<ValidRangeSet>
+					<ValidRange maxInclusive="6" />
+				</ValidRangeSet>
 			</IntegerArgumentType>
 			<BinaryArgumentType name="BinaryType">
 				<BinaryDataEncoding>
@@ -48,6 +51,18 @@
 							<ArgumentInstanceRef argumentRef="size" />
 							<LinearAdjustment slope="8" />
 						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<BinaryArgumentType name="BinaryType1">
+				<AncillaryDataSet>
+					<!-- these two are Yamcs extensions which limit the size of the user accepted argument -->
+					<AncillaryData name="Yamcs">minLength=2</AncillaryData>
+					<AncillaryData name="Yamcs">maxLength=5</AncillaryData>
+				</AncillaryDataSet>
+				<BinaryDataEncoding>
+					<SizeInBits> <!-- -1 means the size will be taken from the argument value passed by the user -->
+						<FixedValue>-1</FixedValue>
 					</SizeInBits>
 				</BinaryDataEncoding>
 			</BinaryArgumentType>
@@ -65,6 +80,19 @@
 				<CommandContainer name="CommandContainer">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="size" />
+						<ArgumentRefEntry argumentRef="data" />
+						<ArgumentRefEntry argumentRef="value" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="Command1">
+				<ArgumentList>
+					<Argument argumentTypeRef="BinaryType1" name="data" />
+					<Argument argumentTypeRef="FloatType" name="value" />
+				</ArgumentList>
+				<CommandContainer name="Command1Container">
+					<EntryList>
 						<ArgumentRefEntry argumentRef="data" />
 						<ArgumentRefEntry argumentRef="value" />
 					</EntryList>

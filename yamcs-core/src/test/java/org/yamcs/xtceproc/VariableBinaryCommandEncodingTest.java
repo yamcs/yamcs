@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -43,24 +44,57 @@ public class VariableBinaryCommandEncodingTest {
         List<ArgumentAssignment> arguments = new LinkedList<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
-        StringBuilder builder = new StringBuilder();
-        for (byte b : data) {
-            builder.append(String.format("%02X", b));
-        }
         arguments.add(new ArgumentAssignment("size", Integer.toString(data.length)));
-        arguments.add(new ArgumentAssignment("data", builder.toString()));
+        arguments.add(new ArgumentAssignment("data", StringConverter.arrayToHexString(data)));
         arguments.add(new ArgumentAssignment("value", "3.14"));
         byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
-        byte[] expected = createPacket(data, 3.14F);
+        byte[] expected = createPacket(data, 3.14F, true);
 
         assertArrayEquals(expected, b);
     }
 
-    private byte[] createPacket(byte[] data, float value) throws IOException {
+    @Test
+    public void testCommandEncodingWithoutSize() throws ErrorInCommand, IOException {
+        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+
+        byte[] data = new byte[] { 1, 2, 3, 4, 5 };
+        StringBuilder builder = new StringBuilder();
+        for (byte b : data) {
+            builder.append(String.format("%02X", b));
+        }
+        arguments.add(new ArgumentAssignment("data", builder.toString()));
+        arguments.add(new ArgumentAssignment("value", "3.14"));
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        byte[] expected = createPacket(data, 3.14F, false);
+
+        assertArrayEquals(expected, b);
+    }
+
+    @Test(expected = ErrorInCommand.class)
+    public void testCommandEncodingWithoutSizeTooSmall() throws ErrorInCommand, IOException {
+        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        arguments.add(new ArgumentAssignment("data", "01"));
+        arguments.add(new ArgumentAssignment("value", "3.14"));
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+
+    @Test(expected = ErrorInCommand.class)
+    public void testCommandEncodingWithoutSizeTooLong() throws ErrorInCommand, IOException {
+        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        arguments.add(new ArgumentAssignment("data", "01020304050607"));
+        arguments.add(new ArgumentAssignment("value", "3.14"));
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+
+    private byte[] createPacket(byte[] data, float value, boolean withSize) throws IOException {
         ByteArrayOutputStream arrayStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(arrayStream);
-
-        out.writeShort(data.length);
+        if (withSize) {
+            out.writeShort(data.length);
+        }
         out.write(data);
         out.writeInt(Float.floatToIntBits(value));
 

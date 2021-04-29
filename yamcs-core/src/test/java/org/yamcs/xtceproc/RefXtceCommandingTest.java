@@ -153,6 +153,26 @@ public class RefXtceCommandingTest {
         assertEquals("010203AB", StringConverter.arrayToHexString(b, 2, 4));
     }
 
+    @Test(expected = ErrorInCommand.class)
+    public void testBinaryArgCmdTooLong() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        // max allowed length for arg1 is 10, the value below has 11 bytes, it will throw an exception
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "0102030405060708090A0B");
+        arguments.add(argumentAssignment1);
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+
+    @Test(expected = ErrorInCommand.class)
+    public void testBinaryArgCmdTooShort() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+        // min allowed length for arg1 is 2, the value below has 1 byte, it will throw an exception
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "01");
+        arguments.add(argumentAssignment1);
+        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+    }
+
     @Test
     public void testTransmissionConstraint1Fail() throws Exception {
         MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");

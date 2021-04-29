@@ -98,7 +98,7 @@ public class NameDescription implements Serializable {
 
     /**
      * Stores the given ancillary data. If an entry already existed for the applicable name, that entry will be
-     * overriden.
+     * overridden.
      */
     public void addAncillaryData(AncillaryData data) {
         if (ancillaryData == null) {

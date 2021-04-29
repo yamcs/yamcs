@@ -2,6 +2,7 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
  * Used for any other data associated with each named object. May be used to
@@ -53,6 +54,20 @@ public class AncillaryData implements Serializable {
         return value;
     }
 
+    /**
+     * Tries to split the value in a "s1=s2" form and returns the (s1,s2) pair if the value can be split. Otherwise
+     * returns null.
+     * 
+     */
+    SimpleEntry<String, String> getValueAsPair() {
+        String[] s = value.split("\s*=\s*", 2);
+        if (s.length == 2) {
+            return new SimpleEntry<>(s[0], s[1]);
+        } else {
+            return null;
+        }
+    }
+
     public String getMimeType() {
         return mimeType;
     }
@@ -63,6 +78,10 @@ public class AncillaryData implements Serializable {
 
     public void setHref(URI href) {
         this.href = href;
+    }
+
+    public boolean isYamcs() {
+        return KEY_YAMCS.equalsIgnoreCase(name);
     }
 
     @Override

@@ -1143,23 +1143,23 @@ public class XtceStaxReader {
         return fvr;
     }
 
-    private IntegerRange readIntegerRange() throws XMLStreamException {
+    private IntegerRange readIntegerRange(boolean signed) throws XMLStreamException {
         StartElement element = xmlEvent.asStartElement();
-        long minInclusive = readLongAttribute("minInclusive", element, Long.MIN_VALUE);
+        long minInclusive = readLongAttribute("minInclusive", element, signed ? Long.MIN_VALUE : 0);
         long maxInclusive = readLongAttribute("maxInclusive", element, Long.MAX_VALUE);
         return new IntegerRange(minInclusive, maxInclusive);
     }
 
-    private IntegerValidRange readIntegerValidRange() throws XMLStreamException {
+    private IntegerValidRange readIntegerValidRange(boolean signed) throws XMLStreamException {
         StartElement element = xmlEvent.asStartElement();
-        IntegerValidRange ivr = new IntegerValidRange(readIntegerRange());
+        IntegerValidRange ivr = new IntegerValidRange(readIntegerRange(signed));
         boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
         ivr.setValidRangeAppliesToCalibrated(calib);
 
         return ivr;
     }
 
-    private IntegerValidRange readIntegerValidRangeSet() throws XMLStreamException {
+    private IntegerValidRange readIntegerValidRangeSet(boolean signed) throws XMLStreamException {
         log.trace(XTCE_VALID_RANGE_SET);
         StartElement element = xmlEvent.asStartElement();
         boolean calib = readBooleanAttribute("validRangeAppliesToCalibrated", element, true);
@@ -1171,7 +1171,7 @@ public class XtceStaxReader {
                 if (ivr != null) {
                     throw new XMLStreamException("Only one ValidRange supported. ", xmlEvent.getLocation());
                 }
-                ivr = readIntegerValidRange();
+                ivr = readIntegerValidRange(signed);
             } else if (isEndElementWithName(XTCE_VALID_RANGE_SET)) {
                 if (ivr == null) {
                     throw new XMLStreamException("No ValidRange supecified ", xmlEvent.getLocation());
@@ -1433,7 +1433,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 typeBuilder.setNumericContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isStartElementWithName(XTCE_VALID_RANGE)) {
-                typeBuilder.setValidRange(readIntegerValidRange());
+                typeBuilder.setValidRange(readIntegerValidRange(typeBuilder.isSigned()));
             } else if (isEndElementWithName(XTCE_INTEGER_PARAMETER_TYPE)) {
                 return incompleteType;
             } else {
@@ -3327,9 +3327,9 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_VALID_RANGE)) {// XTCE 1.1
-                typeBuilder.setValidRange(readIntegerValidRange());
+                typeBuilder.setValidRange(readIntegerValidRange(typeBuilder.isSigned()));
             } else if (isStartElementWithName(XTCE_VALID_RANGE_SET)) {// XTCE 1.2
-                typeBuilder.setValidRange(readIntegerValidRangeSet());
+                typeBuilder.setValidRange(readIntegerValidRangeSet(typeBuilder.isSigned()));
             } else if (isEndElementWithName(XTCE_INTEGER_ARGUMENT_TYPE)) {
                 return incompleteType;
             } else {
