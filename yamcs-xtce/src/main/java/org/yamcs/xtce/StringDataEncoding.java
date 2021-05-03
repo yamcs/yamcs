@@ -3,9 +3,20 @@ package org.yamcs.xtce;
 import java.nio.charset.Charset;
 
 /**
- * For common encodings of string data
+ * For common encodings of string data.
  * 
- * @author nm
+ * <p>
+ * String data is encoded in a buffer. The size of the buffer may be fixed or variable. The size of the string may be
+ * variable inside the buffer or may take the whole buffer.
+ * <p>
+ * Upon decoding a packet, the resulting raw value will be the string extracted from the buffer but the parameter is
+ * considered to occupy the whole buffer (meaning that the next parameter will come in the packet after the end of the
+ * buffer not after the end of the string)
+ * 
+ * <p>
+ * The distinction between the string and the buffer containing the string has been made in Yamcs 5.5 in order to comply
+ * better with the XTCE 1.2.
+ * 
  */
 public class StringDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 1L;
@@ -26,29 +37,41 @@ public class StringDataEncoding extends DataEncoding {
         LEADING_SIZE,
         /**
          * {@link #getFromBinaryTransformAlgorithm} will be used to decode the data
+         * <p>
+         * If this is used, the algorithm will also determine the size of the buffer.
          */
         CUSTOM
     };
 
+    /**
+     * If the buffer size is dynamic
+     */
+    private DynamicIntegerValue dynamicBufferSize;
+
     private SizeType sizeType;
+
     private byte terminationChar = 0; // it's in fact the terminationByte but we call it like this for compatibility
                                       // with XTCE
-    int sizeInBitsOfSizeTag = 16;
+    int sizeInBytesOfSizeTag = 2;
     private String encoding = "UTF-8";
+
+    private int maxSizeInBytes = -1;
 
     public StringDataEncoding(Builder builder) {
         super(builder, -1);
-        
+
         this.sizeType = builder.sizeType;
         if (builder.terminationChar != null) {
             this.terminationChar = builder.terminationChar;
         }
-        if (builder.sizeInBitsOfSizeTag != null) {
-            this.sizeInBitsOfSizeTag = builder.sizeInBitsOfSizeTag;
+        if (builder.sizeInBytesOfSizeTag != null) {
+            this.sizeInBytesOfSizeTag = builder.sizeInBytesOfSizeTag;
         }
         if (builder.encoding != null) {
             this.encoding = builder.encoding;
         }
+        this.maxSizeInBytes = builder.maxSizeInBytes;
+        this.dynamicBufferSize = builder.dynamicBufferSize;
 
         if (builder.baseEncoding != null && builder.baseEncoding instanceof StringDataEncoding) {
             StringDataEncoding baseEncoding = (StringDataEncoding) builder.baseEncoding;
@@ -60,12 +83,19 @@ public class StringDataEncoding extends DataEncoding {
                 this.terminationChar = baseEncoding.terminationChar;
             }
 
-            if (builder.sizeInBitsOfSizeTag == null) {
-                this.sizeInBitsOfSizeTag = baseEncoding.sizeInBitsOfSizeTag;
+            if (builder.sizeInBytesOfSizeTag == null) {
+                this.sizeInBytesOfSizeTag = baseEncoding.sizeInBytesOfSizeTag;
             }
 
             if (builder.encoding == null) {
                 this.encoding = baseEncoding.encoding;
+            }
+
+            if (builder.dynamicBufferSize == null) {
+                this.dynamicBufferSize = baseEncoding.dynamicBufferSize;
+            }
+            if (builder.maxSizeInBytes == -1) {
+                this.maxSizeInBytes = baseEncoding.maxSizeInBytes;
             }
         }
     }
@@ -79,7 +109,7 @@ public class StringDataEncoding extends DataEncoding {
         super(sde);
         this.sizeType = sde.sizeType;
         this.terminationChar = sde.terminationChar;
-        this.sizeInBitsOfSizeTag = sde.sizeInBitsOfSizeTag;
+        this.sizeInBytesOfSizeTag = sde.sizeInBytesOfSizeTag;
         this.encoding = sde.encoding;
     }
 
@@ -95,12 +125,12 @@ public class StringDataEncoding extends DataEncoding {
         return sizeType;
     }
 
-    public int getSizeInBitsOfSizeTag() {
-        return sizeInBitsOfSizeTag;
+    public int getSizeInBytesOfSizeTag() {
+        return sizeInBytesOfSizeTag;
     }
 
-    public void setSizeInBitsOfSizeTag(int sizeInBits) {
-        this.sizeInBitsOfSizeTag = sizeInBits;
+    public int getSizeInBitsOfSizeTag() {
+        return sizeInBytesOfSizeTag << 3;
     }
 
     public byte getTerminationChar() {
@@ -109,6 +139,14 @@ public class StringDataEncoding extends DataEncoding {
 
     public void setTerminationChar(byte tc) {
         this.terminationChar = tc;
+    }
+
+    public DynamicIntegerValue getDynamicBufferSize() {
+        return dynamicBufferSize;
+    }
+
+    public int getMaxSizeInBytes() {
+        return maxSizeInBytes;
     }
 
     @Override
@@ -124,12 +162,16 @@ public class StringDataEncoding extends DataEncoding {
             sb.append("sizeInBitsOfSizeTag=" + getSizeInBitsOfSizeTag());
             if (getSizeInBits() != -1) {
                 sb.append(", sizeInBits=" + getSizeInBits());
+            } else if (dynamicBufferSize != null) {
+                sb.append(", dynamicBufferSize=").append(dynamicBufferSize);
             }
             break;
         case TERMINATION_CHAR:
             sb.append("terminationChar=" + getTerminationChar());
             if (getSizeInBits() != -1) {
                 sb.append(", sizeInBits=" + getSizeInBits());
+            } else if (dynamicBufferSize != null) {
+                sb.append(", dynamicBufferSize=").append(dynamicBufferSize);
             }
             break;
         case CUSTOM:
@@ -164,14 +206,16 @@ public class StringDataEncoding extends DataEncoding {
     public static class Builder extends DataEncoding.Builder<Builder> {
         private SizeType sizeType;
         private Byte terminationChar = null;
-        Integer sizeInBitsOfSizeTag = null;
+        Integer sizeInBytesOfSizeTag = null;
         private String encoding = "UTF-8";
+        private DynamicIntegerValue dynamicBufferSize;
+        private int maxSizeInBytes = -1;
 
         public Builder(StringDataEncoding encoding) {
             super(encoding);
             this.sizeType = encoding.sizeType;
             this.terminationChar = encoding.terminationChar;
-            this.sizeInBitsOfSizeTag = encoding.sizeInBitsOfSizeTag;
+            this.sizeInBytesOfSizeTag = encoding.sizeInBytesOfSizeTag;
         }
 
         public Builder() {
@@ -180,6 +224,19 @@ public class StringDataEncoding extends DataEncoding {
 
         public StringDataEncoding build() {
             return new StringDataEncoding(this);
+        }
+
+        public Builder setSizeInBits(Integer sizeInBits) {
+            if (sizeInBits > 0) {
+                if (sizeInBits % 8 != 0) {
+                    throw new IllegalArgumentException("Size in bits for string encoding has to be multiple of 8.");
+                }
+                this.maxSizeInBytes = sizeInBits / 8;
+            }
+            super.setSizeInBits(sizeInBits);
+            return
+
+            self();
         }
 
         public Builder setSizeType(SizeType sizeType) {
@@ -193,7 +250,10 @@ public class StringDataEncoding extends DataEncoding {
         }
 
         public Builder setSizeInBitsOfSizeTag(int size) {
-            this.sizeInBitsOfSizeTag = size;
+            if ((size & 7) != 0) {
+                throw new IllegalArgumentException("Size in bits of size tag has to be a multiple of 8");
+            }
+            this.sizeInBytesOfSizeTag = size >> 3;
             return self();
         }
 
@@ -202,8 +262,22 @@ public class StringDataEncoding extends DataEncoding {
             return self();
         }
 
+        public Builder setMaxSizeInBits(int maxSizeInBits) {
+            if (maxSizeInBits % 8 != 0) {
+                throw new IllegalArgumentException("Maximum size in bits for string encoding has to be multiple of 8.");
+            }
+            this.maxSizeInBytes = maxSizeInBits / 8;
+            return self();
+        }
+
+        public Builder setDynamicBufferSize(DynamicIntegerValue div) {
+            this.dynamicBufferSize = div;
+            return self();
+        }
+
         public SizeType getSizeType() {
             return sizeType;
         }
     }
+
 }

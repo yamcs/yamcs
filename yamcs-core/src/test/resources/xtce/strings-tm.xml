@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
+<!--
+	This file contains several examples on how to define string parameters with yamcs
+-->
+<xtce:SpaceSystem name="StringsTm" xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+
+	<xtce:TelemetryMetaData>
+		<xtce:ParameterTypeSet>
+			<!-- null terminated string in fixed size buffer
+				The string is maximum 6 bytes long;
+				If it is maximum size the terminator will not be present. -->
+			<xtce:StringParameterType name="string1">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
+			<!-- Fixed size string in fixed size buffer.
+				The string is always 6 bytes long. -->
+			<xtce:StringParameterType name="string2">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
+			<!-- Null terminated string in undefined buffer.
+				The terminator is mandatory in this case.
+				The buffer is effectively as long as the string + terminator
+				The maxSizeInBits refers to the size of the buffer, so the maximum size of the string is 5.
+
+				Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value
+			-->
+			<xtce:StringParameterType name="string3">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+						</xtce:DynamicValue>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
+			<!-- prefixed size string in buffer whose size is given by another parameter -->
+			<xtce:StringParameterType name="string4">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="uint16_param2" />
+							<xtce:LinearAdjustment slope="8" />
+						</xtce:DynamicValue>
+						<xtce:LeadingSize sizeInBitsOfSizeTag="8" />
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
+			<!-- prefixed size string in undefined buffer.
+				The buffer is effectively as long as the prefix + string.
+				The maxSizeInBits refers to the size of the buffer, so the maximum size of the string is 4.
+
+				Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value
+			-->
+			<xtce:StringParameterType name="string5">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+						</xtce:DynamicValue>
+						<xtce:LeadingSize sizeInBitsOfSizeTag="16" />
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
+			<xtce:IntegerParameterType signed="false" name="uint16">
+				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
+			</xtce:IntegerParameterType>
+		</xtce:ParameterTypeSet>
+		<xtce:ParameterSet>
+			<xtce:Parameter name="string1" parameterTypeRef="string1" />
+			<xtce:Parameter name="string2" parameterTypeRef="string2" />
+			<xtce:Parameter name="string3" parameterTypeRef="string3" />
+			<xtce:Parameter name="string4" parameterTypeRef="string4" />
+			<xtce:Parameter name="string5" parameterTypeRef="string5" />
+			<xtce:Parameter name="uint16_param1" parameterTypeRef="uint16" />
+			<xtce:Parameter name="uint16_param2" parameterTypeRef="uint16" />
+		</xtce:ParameterSet>
+		<xtce:ContainerSet>
+			<xtce:SequenceContainer name="packet1">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="string1" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet2">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="string2" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet3">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="string3" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet4">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="uint16_param2" />
+					<xtce:ParameterRefEntry parameterRef="string4" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet5">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="string5" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+		</xtce:ContainerSet>
+
+	</xtce:TelemetryMetaData>
+	<xtce:CommandMetaData>
+		<xtce:ArgumentTypeSet>
+			<xtce:IntegerArgumentType name="uint16"></xtce:IntegerArgumentType>
+		</xtce:ArgumentTypeSet>
+		<xtce:MetaCommandSet>
+			<xtce:MetaCommand name="cmd1">
+
+			</xtce:MetaCommand>
+		</xtce:MetaCommandSet>
+	</xtce:CommandMetaData>
+</xtce:SpaceSystem>

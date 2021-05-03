@@ -134,6 +134,7 @@ public class XtceTmExtractor {
         } catch (XtceProcessingException e) {
             pdata.eventProducer.sendWarning(e.toString());
             log.info("Exception processing packet ", e);
+            result.exception = e;
         } catch (Exception e) {
             // send warning as events and in the log file.
             pdata.eventProducer.sendWarning(e.toString());

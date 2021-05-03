@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
+<!--
+	This file contains several examples on how to define string arguments with yamcs
+-->
+<xtce:SpaceSystem name="StringsCmd" xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+
+	<xtce:CommandMetaData>
+		<xtce:ArgumentTypeSet>
+			<!-- null terminated string in fixed size buffer
+				The string is maximum 6 bytes long;
+				If it is maximum size the terminator will not be present. -->
+			<xtce:StringArgumentType name="string1">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:StringArgumentType>
+
+			<!-- Fixed size string in fixed size buffer.
+				The string is always 6 bytes long. -->
+			<xtce:StringArgumentType name="string2">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:StringArgumentType>
+
+			<!-- Null terminated string in undefined buffer.
+				The terminator is mandatory in this case.
+				The buffer is effectively as long as the string + terminator
+				The maxSizeInBits refers to the size of the buffer, so the maximum size of the string is 5.
+
+				Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value
+			-->
+			<xtce:StringArgumentType name="string3">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+						</xtce:DynamicValue>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringArgumentType>
+
+			<!-- prefixed size string in buffer whose size is given by another parameter -->
+			<xtce:StringArgumentType name="string4">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ArgumentInstanceRef argumentRef="buf_length" />
+							<xtce:LinearAdjustment slope="8" />
+						</xtce:DynamicValue>
+						<xtce:LeadingSize sizeInBitsOfSizeTag="8" />
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringArgumentType>
+
+			<!-- prefixed size string in undefined buffer.
+				The buffer is effectively as long as the prefix + string.
+				The maxSizeInBits refers to the size of the buffer, so the maximum size of the string is 4.
+
+				Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value
+			-->
+			<xtce:StringArgumentType name="string5">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+						</xtce:DynamicValue>
+						<xtce:LeadingSize sizeInBitsOfSizeTag="16" />
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringArgumentType>
+
+			<xtce:IntegerArgumentType signed="false" name="uint16">
+				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
+			</xtce:IntegerArgumentType>
+		</xtce:ArgumentTypeSet>
+		<xtce:MetaCommandSet>
+			<xtce:MetaCommand name="command1">
+				<xtce:ArgumentList>
+					<xtce:Argument name="string1" argumentTypeRef="string1" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command1">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="string1" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+
+			<xtce:MetaCommand name="command2">
+				<xtce:ArgumentList>
+					<xtce:Argument name="string2" argumentTypeRef="string2" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command2">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="string2" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+
+			<xtce:MetaCommand name="command3">
+				<xtce:ArgumentList>
+					<xtce:Argument name="string3" argumentTypeRef="string3" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command3">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="string3" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+
+			<xtce:MetaCommand name="command4">
+				<xtce:ArgumentList>
+					<xtce:Argument name="buf_length" argumentTypeRef="uint16" />
+					<xtce:Argument name="string4" argumentTypeRef="string4" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command4">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="buf_length" />
+						<xtce:ArgumentRefEntry argumentRef="string4" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+
+			<xtce:MetaCommand name="command5">
+				<xtce:ArgumentList>
+					<xtce:Argument name="string5" argumentTypeRef="string5" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command5">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="string5" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+		</xtce:MetaCommandSet>
+
+	</xtce:CommandMetaData>
+</xtce:SpaceSystem>

@@ -67,3 +67,13 @@ ArrayArgCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/array-arg.xml"
+
+xtce-strings-tm:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/strings-tm.xml"
+
+xtce-strings-cmd:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/strings-cmd.xml"

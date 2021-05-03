@@ -21,7 +21,7 @@ public class SequenceContainerProcessor {
     }
 
     public void extract(SubscribedContainer subscribedContainer) throws XtceProcessingException {
-        ProcessorData pdata = pcontext.proccessingData;
+        ProcessorData pdata = pcontext.proccessorData;
         SequenceContainer containerDef = subscribedContainer.conainerDef;
         ContainerProcessingResult result = pcontext.result;
         ContainerProcessingOptions options = pcontext.options;
@@ -71,7 +71,7 @@ public class SequenceContainerProcessor {
                 if (se.getRepeatEntry() == null) {
                     pcontext.sequenceEntryProcessor.extract(se);
                 } else { // this entry is repeated several times
-                    long n = pcontext.valueProcessor.getValue(se.getRepeatEntry().getCount());
+                    long n = pcontext.getIntegerValue(se.getRepeatEntry().getCount());
                     for (int i = 0; i < n; i++) {
                         pcontext.sequenceEntryProcessor.extract(se);
                         buf.setPosition(buf.getPosition() + se.getRepeatEntry().getOffsetSizeInBits());

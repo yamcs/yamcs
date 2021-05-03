@@ -4,12 +4,10 @@ import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
-import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -18,8 +16,6 @@ import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
-import org.yamcs.xtce.ParameterInstanceRef;
-import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.StringDataEncoding;
 
 /**
@@ -29,7 +25,6 @@ import org.yamcs.xtce.StringDataEncoding;
  * 
  * @see org.yamcs.xtceproc.DataDecoder
  *
- * @author nm
  *
  */
 public class DataEncodingDecoder {
@@ -38,7 +33,7 @@ public class DataEncodingDecoder {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public DataEncodingDecoder(ContainerProcessingContext pcontext) {
-        this(pcontext.proccessingData, pcontext.buffer);
+        this(pcontext.proccessorData, pcontext.buffer);
     }
 
     public DataEncodingDecoder(ProcessorData pdata, BitBuffer buffer) {
@@ -82,7 +77,7 @@ public class DataEncodingDecoder {
             } else if (de instanceof FloatDataEncoding) {
                 rv = extractRawFloat((FloatDataEncoding) de);
             } else if (de instanceof StringDataEncoding) {
-                rv = extractRawString((StringDataEncoding) de);
+                rv = extractRawString((StringDataEncoding) de, pcontext);
             } else if (de instanceof BooleanDataEncoding) {
                 rv = extractRawBoolean((BooleanDataEncoding) de);
             } else if (de instanceof BinaryDataEncoding) {
@@ -154,44 +149,88 @@ public class DataEncodingDecoder {
         }
     }
 
-    private Value extractRawString(StringDataEncoding sde) {
+    private Value extractRawString(StringDataEncoding sde, ContainerProcessingContext pcontext) {
         int position = buffer.getPosition();
         if ((position & 7) != 0) {
-            log.warn("String data that does not start at byte boundary not supported. bitPosition: {}", buffer);
-            return null;
+            throw new ContainerDecodingException(pcontext,
+                    "String data that does not start at byte boundary not supported");
         }
 
+        // bmr = buffer, max, or remaining size
+        int bmr = sde.getMaxSizeInBytes();
+        if (bmr < 0 || bmr > buffer.remainingBytes()) {
+            bmr = buffer.remainingBytes();
+        }
+
+        // first determine the buffer size
+        int bufSize = -1;
+        DynamicIntegerValue div = sde.getDynamicBufferSize();
+        if (div != null) {
+            bufSize = getDynamicSizeInBytes(div, pcontext);
+
+            if (bufSize > bmr) {
+                throw new ContainerDecodingException(pcontext,
+                        "Size of string buffer computed from " + div.getDynamicInstanceRef().getName()
+                                + "exceeds the "
+                                + ((bmr == sde.getMaxSizeInBytes()) ? "max" : "remaining") + " size in bytes: "
+                                + bufSize + ">" + bmr);
+            }
+            bmr = bufSize;
+        } else if (sde.getSizeInBits() > 0) {
+            bufSize = sde.getSizeInBits() >>> 3;
+            if (bufSize > bmr) {
+                throw new ContainerDecodingException(pcontext, "Fixed size of string buffer exceeds the "
+                        + ((bmr == sde.getMaxSizeInBytes()) ? "max" : "remaining") + " size in bytes: "
+                        + bufSize + ">" + bmr);
+            }
+            bmr = bufSize;
+        }
+        // find the string size
         int sizeInBytes = 0;
-        int extraBytes = 0;
         switch (sde.getSizeType()) {
         case FIXED:
-            sizeInBytes = sde.getSizeInBits() >> 3;
+            assert (bufSize > 0);
+            sizeInBytes = bufSize;
             break;
         case LEADING_SIZE:
+            if (sde.getSizeInBytesOfSizeTag() > bmr) {
+                throw new ContainerDecodingException(pcontext, "Size in bytes of the size tag exceeds the "
+                        + (bmr == bufSize ? "buffer" : bmr == sde.getMaxSizeInBytes() ? "max" : "remaining")
+                        + " size: " + sde.getSizeInBytesOfSizeTag() + ">" + bmr);
+            }
             sizeInBytes = (int) buffer.getBits(sde.getSizeInBitsOfSizeTag());
+            if (sde.getSizeInBytesOfSizeTag() + sizeInBytes > bmr) {
+                throw new ContainerDecodingException(pcontext, "Size in bytes of buffer exceeds the "
+                        + (bmr == bufSize ? "buffer" : bmr == sde.getMaxSizeInBytes() ? "max" : "remaining")
+                        + " size: " + (sde.getSizeInBytesOfSizeTag() + sizeInBytes) + ">" + bmr);
+            }
+            if (bufSize < 0) {
+                bufSize = sde.getSizeInBytesOfSizeTag() + sizeInBytes;
+            }
             break;
         case TERMINATION_CHAR:
-            if (sde.getSizeInBits() == -1) {
-                while (buffer.getByte() != sde.getTerminationChar()) {
-                    sizeInBytes++;
+            while (sizeInBytes < bmr && buffer.getByte() != sde.getTerminationChar()) {
+                sizeInBytes++;
+            }
+            if (bufSize < 0) {
+                if (sizeInBytes == bmr) {
+                    // if the buffer size is not set (either from sizeInBits or from DynamicIntegerValue)
+                    // we do not want to just eat the remaining of the buffer
+                    throw new ContainerDecodingException(pcontext,
+                            "Cannot find string terminator 0x" + Integer.toHexString(sde.getTerminationChar()));
                 }
-                extraBytes = 1;
-            } else {
-                int maxSize = sde.getSizeInBits() >> 3;
-                while (sizeInBytes < maxSize && buffer.getByte() != sde.getTerminationChar()) {
-                    sizeInBytes++;
-                }
-                extraBytes = maxSize - sizeInBytes;
+                bufSize = sizeInBytes + 1;
             }
             buffer.setPosition(position);
             break;
         default: // shouldn't happen, CUSTOM should have an binary transform algorithm
             throw new IllegalStateException();
         }
+        // extract the string
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
 
-        buffer.skip(extraBytes << 3);
+        buffer.setPosition(position + (bufSize << 3));
         return ValueUtility.getStringValue(new String(b, Charset.forName(sde.getEncoding())));
     }
 
@@ -250,7 +289,7 @@ public class DataEncodingDecoder {
             sizeInBytes = (int) buffer.getBits(bde.getSizeInBitsOfSizeTag());
             break;
         case DYNAMIC:
-            sizeInBytes = getDynamicSizeInBytes(bde, pcontext);
+            sizeInBytes = getDynamicSizeInBytes(bde.getDynamicSize(), pcontext);
 
             break;
         default: // shouldn't happen
@@ -362,48 +401,24 @@ public class DataEncodingDecoder {
         }
     }
 
-    private int getDynamicSizeInBytes(BinaryDataEncoding bde, ContainerProcessingContext pcontext) {
-        DynamicIntegerValue div = bde.getDynamicSize();
-        ParameterOrArgumentRef ref = div.getDynamicInstanceRef();
-
-        ParameterValue sizePv = null;
-        if (ref instanceof ParameterInstanceRef) {
-            ParameterInstanceRef pref = (ParameterInstanceRef) ref;
-            sizePv = pcontext.result.getTmParameterInstance(pref.getParameter(), pref.getInstance(),
-                    /* allow old */false);
-        } else {
-            throw new IllegalStateException(
-                    "Encountered argument reference when processing dynamic size " + ref.getName());
+    private int getDynamicSizeInBytes(DynamicIntegerValue div, ContainerProcessingContext pcontext) {
+        long sizeInBits;
+        try {
+            sizeInBits = pcontext.result.resolveDynamicIntegerValue(div, false);
+        } catch (XtceProcessingException e) {
+            throw new ContainerDecodingException(pcontext, e.getMessage());
         }
-
-        if (sizePv == null) {
-            throw new XtceProcessingException("Missing value for dynamic size in bits parameter: " + ref.getName());
-        }
-
-        Value sizeValue = ref.useCalibratedValue() ? sizePv.getEngValue() : sizePv.getRawValue();
-        if (sizeValue == null) {
-            throw new XtceProcessingException("Missing " + (ref.useCalibratedValue() ? "engineering" : "raw")
-                    + " value for dynamic size in bits parameter: " + ref.getName());
-        }
-
-        MutableLong ml = new MutableLong(0);
-        if (!ValueUtility.processAsLong(sizeValue, l -> ml.setLong(l))) {
-            throw new XtceProcessingException("Cannot interpret value  of type " + sizeValue.getClass()
-                    + " as integer; used in the dynamic value specification");
-        }
-        long sizeInBits = ml.getLong();
 
         if (sizeInBits % 8 != 0) {
-            throw new XtceProcessingException(
+            throw new ContainerDecodingException(pcontext,
                     "Variable size in bits parameter is not a multiple of 8: "
                             + sizeInBits);
         }
         if (sizeInBits > Integer.MAX_VALUE) {
-            throw new XtceProcessingException(
+            throw new ContainerDecodingException(pcontext,
                     "Variable size in bits parameter is too large: " + sizeInBits);
         }
 
         return (int) (sizeInBits / 8);
     }
-
 }

@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
@@ -113,45 +114,9 @@ public class DataEncodingEncoder {
     }
 
     private void encodeRawString(StringDataEncoding sde, Value rawValue) {
-        String v = "";
-        switch (rawValue.getType()) {
-        case DOUBLE:
-            v = rawValue.getDoubleValue() + "";
-            break;
-        case FLOAT:
-            v = rawValue.getFloatValue() + "";
-            break;
-        case UINT32:
-            v = rawValue.getUint32Value() + "";
-            break;
-        case SINT32:
-            v = rawValue.getSint32Value() + "";
-            break;
-        case UINT64:
-            v = rawValue.getUint64Value() + "";
-            break;
-        case SINT64:
-            v = rawValue.getSint64Value() + "";
-            break;
-        case STRING:
-            v = rawValue.getStringValue();
-            break;
-        case BOOLEAN:
-            v = rawValue.getBooleanValue() + "";
-            break;
-        case TIMESTAMP:
-            v = rawValue.getTimestampValue() + "";
-            break;
-        case BINARY:
-            v = StringConverter.arrayToHexString(rawValue.getBinaryValue());
-            break;
-        default:
-            throw new IllegalArgumentException(
-                    "String encoding for data of type " + rawValue.getType() + " not supported");
-        }
+        String v = rawValueToString(rawValue);
         BitBuffer bitbuf = pcontext.bitbuf;
 
-        byte[] rawValueBytes = v.getBytes(); // TBD encoding
         int initialBitPosition = bitbuf.getPosition();
 
         if ((initialBitPosition & 0x7) != 0) {
@@ -160,32 +125,133 @@ public class DataEncodingEncoder {
                             + initialBitPosition);
         }
 
+        byte[] rawValueBytes;
+        try {
+            rawValueBytes = v.getBytes(sde.getEncoding());
+        } catch (UnsupportedEncodingException e1) {
+            throw new CommandEncodingException(pcontext, "Unsupported encoding '" + sde.getEncoding() + "'");
+        }
+
+        // bmr = buffer, max, or remaining size
+        int bmr = sde.getMaxSizeInBytes();
+        if (bmr < 0 || bmr > bitbuf.remainingBytes()) {
+            bmr = bitbuf.remainingBytes();
+        }
+
+        // first determine the buffer size
+        int bufSize = -1;
+        DynamicIntegerValue div = sde.getDynamicBufferSize();
+        if (div != null) {
+            long sizeInBits;
+            try {
+                sizeInBits = pcontext.resolveDynamicIntegerValue(div, false);
+            } catch (XtceProcessingException e) {
+                throw new CommandEncodingException(pcontext, e.getMessage());
+            }
+            if ((sizeInBits & 7) != 0) {
+                throw new CommandEncodingException(pcontext,
+                        "Size of string buffer (computed from " + div.getDynamicInstanceRef().getName() + ")"
+                                + " is not a multiple of 8: " + sizeInBits);
+            }
+            bufSize = (int) (sizeInBits >>> 3);
+            if (bufSize > bmr) {
+                throw new CommandEncodingException(pcontext,
+                        "Size of string buffer (computed from " + div.getDynamicInstanceRef().getName() + ")"
+                                + " exceeds the "
+                                + ((bmr == sde.getMaxSizeInBytes()) ? "max" : "remaining") + " size: "
+                                + sizeInBits + ">" + (8 * bmr));
+            }
+            bmr = bufSize;
+        } else if (sde.getSizeInBits() > 0) {
+            bufSize = sde.getSizeInBits() >>> 3;
+            if (bufSize > bmr) {
+                throw new CommandEncodingException(pcontext, "Fixed size of string buffer exceeds the "
+                        + ((bmr == sde.getMaxSizeInBytes()) ? "max" : "remaining") + " size: "
+                        + sde.getSizeInBits() + ">" + (8 * bmr));
+            }
+            bmr = bufSize;
+        }
+
+        // then write the string
+        int sizeInBytes;
         switch (sde.getSizeType()) {
         case FIXED:
-            int sdeSizeInBytes = sde.getSizeInBits() / 8;
-            int sizeInBytes = (sdeSizeInBytes > rawValueBytes.length) ? rawValueBytes.length : sdeSizeInBytes;
-            bitbuf.put(rawValueBytes, 0, sizeInBytes);
-            if (sdeSizeInBytes > rawValueBytes.length) { // fill up with nulls to reach the required size
-                byte[] nulls = new byte[sdeSizeInBytes - sizeInBytes];
-                bitbuf.put(nulls);
+            assert (bufSize > 0);
+            sizeInBytes = rawValueBytes.length;
+            if (sizeInBytes > bmr) {
+                throw new CommandEncodingException(pcontext, "String size is greater that "
+                        + (bmr == bufSize ? "buffer" : bmr == sde.getMaxSizeInBytes() ? "max" : "remaining")
+                        + " size: " + sizeInBytes + ">" + bmr);
             }
+            bitbuf.put(rawValueBytes);
             break;
         case LEADING_SIZE:
-            bitbuf.setByteOrder(ByteOrder.BIG_ENDIAN); // TBD
-            bitbuf.putBits(rawValueBytes.length, sde.getSizeInBitsOfSizeTag());
+            sizeInBytes = rawValueBytes.length + sde.getSizeInBytesOfSizeTag();
+            if (sizeInBytes > bmr) {
+                throw new CommandEncodingException(pcontext, "String size + tag is greater that "
+                        + (bmr == bufSize ? "buffer" : bmr == sde.getMaxSizeInBytes() ? "max" : "remaining")
+                        + " size: " + sizeInBytes + ">" + bmr);
+            }
+            bitbuf.setByteOrder(sde.getByteOrder());
+            bitbuf.putBits(sizeInBytes - sde.getSizeInBytesOfSizeTag(), sde.getSizeInBitsOfSizeTag());
             bitbuf.put(rawValueBytes);
             break;
         case TERMINATION_CHAR:
+            sizeInBytes = rawValueBytes.length;
+            if (bufSize < 0) {
+                sizeInBytes++;
+            }
+            if (sizeInBytes > bmr) {
+                throw new CommandEncodingException(pcontext, "String size "
+                        + (bufSize < 0 ? "with terminator " : "")
+                        + " is greater than "
+                        + (bmr == bufSize ? "buffer" : bmr == sde.getMaxSizeInBytes() ? "max" : "remaining")
+                        + " size: " + sizeInBytes + ">" + bmr);
+            }
+
             bitbuf.put(rawValueBytes);
-            bitbuf.putByte(sde.getTerminationChar());
+            if (bufSize < 0) {
+                bitbuf.putByte(sde.getTerminationChar());
+            } else if (sizeInBytes < bufSize) {
+                bitbuf.putByte(sde.getTerminationChar());
+                sizeInBytes++;
+            }
             break;
         default:
             throw new IllegalStateException("Unsupported size type " + sde.getSizeType());
         }
 
-        int newBitPosition = bitbuf.getPosition();
-        if ((sde.getSizeInBits() != -1) && (newBitPosition - initialBitPosition < sde.getSizeInBits())) {
-            bitbuf.setPosition(initialBitPosition + sde.getSizeInBits());
+        if (bufSize > sizeInBytes) { // fill up with nulls to reach the required size
+            byte[] nulls = new byte[bufSize - sizeInBytes];
+            bitbuf.put(nulls);
+        }
+    }
+
+    private String rawValueToString(Value rawValue) {
+        switch (rawValue.getType()) {
+        case DOUBLE:
+            return rawValue.getDoubleValue() + "";
+        case FLOAT:
+            return rawValue.getFloatValue() + "";
+        case UINT32:
+            return rawValue.getUint32Value() + "";
+        case SINT32:
+            return rawValue.getSint32Value() + "";
+        case UINT64:
+            return rawValue.getUint64Value() + "";
+        case SINT64:
+            return rawValue.getSint64Value() + "";
+        case STRING:
+            return rawValue.getStringValue();
+        case BOOLEAN:
+            return rawValue.getBooleanValue() + "";
+        case TIMESTAMP:
+            return rawValue.getTimestampValue() + "";
+        case BINARY:
+            return StringConverter.arrayToHexString(rawValue.getBinaryValue());
+        default:
+            throw new IllegalArgumentException(
+                    "String encoding for data of type " + rawValue.getType() + " not supported");
         }
     }
 

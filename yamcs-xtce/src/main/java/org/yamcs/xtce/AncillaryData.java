@@ -60,7 +60,7 @@ public class AncillaryData implements Serializable {
      * 
      */
     SimpleEntry<String, String> getValueAsPair() {
-        String[] s = value.split("\s*=\s*", 2);
+        String[] s = value.split("\\s*=\\s*", 2);
         if (s.length == 2) {
             return new SimpleEntry<>(s[0], s[1]);
         } else {

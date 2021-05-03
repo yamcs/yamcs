@@ -386,7 +386,7 @@ public class ParameterTypeProcessor {
             log.warn("{}: no parameter processing context avaialble", ptype.getName());
             return TimeEncoding.INVALID_INSTANT;
         }
-        ParameterValue pv = processingData.getTmParameterInstance(ref.getParameter(), ref.getInstance(), false);
+        ParameterValue pv = processingData.getParameterInstance(ref, false);
         if (pv == null) {
             log.warn("{}: no instance of {} found in the processing context", ptype.getName(),
                     ref.getParameter().getQualifiedName());

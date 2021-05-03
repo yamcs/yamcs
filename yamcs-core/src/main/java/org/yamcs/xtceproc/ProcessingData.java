@@ -7,9 +7,15 @@ import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.RawEngValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 
 /**
  * This class holds live information used during a (XTCE) processing.
@@ -156,32 +162,29 @@ public class ProcessingData {
     }
 
     /**
-     * Returns a parameter value associated to the parameter {@code param} or null if none is found.
+     * Returns a parameter value associated to the parameter reference or null if none is found.
      * <p>
-     * The instance is according to XTCE rules: if tmParams contains multiple values for the parameter {@code param},
+     * The instance is according to XTCE rules: if tmParams/cmdParams contains multiple values for the parameter,
      * then the oldest one (first inserted in the list) is instance 0, the next one is instance 1, etc.
      * <p>
-     * The negative instances are retrieved from the tmParamsCache: -1 is the latest value in tmParamsCache (the one
+     * The negative instances are retrieved from the cache: -1 is the latest value in tmParamsCache (the one
      * which was added last), -2 is the previous one and so on.
      * 
      * <p>
-     * If {@code allowOld = true} and the {@code tmParams} does not contain a value for {@code param}, then the
-     * instances in {@code tmParamsCache} are counted down from 0 instead of -1.
+     * If {@code allowOld = true} and the tmParams/cmdParams does not contain a value for the parameter, then the
+     * instances in the cache are counted down from 0 instead of -1.
      * <p>
-     * If {@code allowOld = false}, the return will always be null if the {@code tmParams} does not contain a value for
-     * {@code param}.
+     * If {@code allowOld = false}, the return will always be null if the tmParams/cmdParams does not contain a value
+     * for the parameter.
      * 
      */
-    public ParameterValue getTmParameterInstance(Parameter param, int instance, boolean allowOld) {
-        return get(tmParams, tmParamsCache, param, instance, allowOld);
-    }
-
-    /**
-     * Same as {@link #getTmParameterInstance(Parameter, int, boolean)} but retrieves command parameters from
-     * {@code cmdParams} and {@code cmdParamsCache}
-     */
-    public ParameterValue getCmdParameterInstance(Parameter param, int instance, boolean allowOld) {
-        return get(cmdParams, cmdParamsCache, param, instance, allowOld);
+    public ParameterValue getParameterInstance(ParameterInstanceRef pref, boolean allowOld) {
+        Parameter param = pref.getParameter();
+        if (param.isCommandParameter()) {
+            return get(cmdParams, cmdParamsCache, param, pref.getInstance(), allowOld);
+        } else {
+            return get(tmParams, tmParamsCache, param, pref.getInstance(), allowOld);
+        }
     }
 
     private static ParameterValue get(ParameterValueList tmParams, LastValueCache tmParamsCache, Parameter param,
@@ -223,6 +226,39 @@ public class ProcessingData {
         return cmdParams;
     }
 
+    public long resolveDynamicIntegerValue(DynamicIntegerValue div, boolean allowOld) throws XtceProcessingException {
+        ParameterOrArgumentRef ref = div.getDynamicInstanceRef();
+
+        RawEngValue pv = null;
+        if (ref instanceof ParameterInstanceRef) {
+            pv = getParameterInstance((ParameterInstanceRef) ref, allowOld);
+        } else if (ref instanceof ArgumentInstanceRef) {
+            ArgumentInstanceRef argRef = (ArgumentInstanceRef) ref;
+            Argument arg = cmdArgs.keySet().stream().filter(a -> a.getName().equals(argRef.getName())).findFirst()
+                    .orElse(null);
+            if (arg == null) {
+                throw new XtceProcessingException("Missing argument for dynamic integer value: " + ref.getName());
+            }
+            pv = cmdArgs.get(arg);
+        }
+
+        if (pv == null) {
+            throw new XtceProcessingException("Missing value for dynamic integer value: " + ref.getName());
+        }
+
+        Value value = ref.useCalibratedValue() ? pv.getEngValue() : pv.getRawValue();
+        if (value == null) {
+            throw new XtceProcessingException("Missing " + (ref.useCalibratedValue() ? "engineering" : "raw")
+                    + " value for dynamic size in bits parameter: " + ref.getName());
+        }
+        try {
+            return div.transform(value.toLong());
+        } catch (UnsupportedOperationException e) {
+            throw new XtceProcessingException("Cannot interpret value  of type " + value.getClass()
+                    + " as integer; used in the dynamic value specification");
+        }
+    }
+
     @Override
     public String toString() {
         return "EvaluatorInput [params=" + tmParams
@@ -230,4 +266,5 @@ public class ProcessingData {
                 + ", cmdParams=" + cmdParams
                 + ", cmdParamsCache=" + cmdParamsCache + "]";
     }
+
 }

@@ -35,6 +35,7 @@ public class SequenceEntryProcessor {
     }
 
     public void extract(SequenceEntry se) {
+        pcontext.currentEntry = se;
         if (se instanceof ArrayParameterEntry) {
             extractArrayParameterEntry((ArrayParameterEntry) se);
         } else if (se instanceof ParameterEntry) {
@@ -47,6 +48,7 @@ public class SequenceEntryProcessor {
             throw new UnsupportedOperationException(
                     "processing entry of class " + se.getClass() + " not implemented");
         }
+        pcontext.currentEntry = null;
     }
 
     private void extractContainerEntry(ContainerEntry ce) {
@@ -65,7 +67,7 @@ public class SequenceEntryProcessor {
         if (subsribedContainer != null) {
             BitBuffer buf1 = buf.slice();
 
-            ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.proccessingData, buf1,
+            ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.proccessorData, buf1,
                     pcontext.result,
                     pcontext.subscription, pcontext.options);
             if (!pcontext.options.resultIncludesSubcontainers) {
@@ -100,7 +102,7 @@ public class SequenceEntryProcessor {
         }
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
 
-        pcontext.proccessingData.parameterTypeProcessor.calibrate(result, pv);
+        pcontext.proccessorData.parameterTypeProcessor.calibrate(result, pv);
 
         pv.setAcquisitionTime(result.acquisitionTime);
         pv.setGenerationTime(result.generationTime);
@@ -128,7 +130,7 @@ public class SequenceEntryProcessor {
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
 
-        pcontext.proccessingData.parameterTypeProcessor.calibrate(pcontext.result, pv);
+        pcontext.proccessorData.parameterTypeProcessor.calibrate(pcontext.result, pv);
 
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);
@@ -140,12 +142,11 @@ public class SequenceEntryProcessor {
 
     private ArrayValue extractArray(ArrayParameterType aptype, List<IntegerValue> size) {
         int[] isize = new int[size.size()];
-        ValueProcessor valueproc = pcontext.valueProcessor;
         int max = pcontext.options.getMaxArraySize();
 
         for (int i = 0; i < size.size(); i++) {
             IntegerValue iv = size.get(i);
-            long ds = valueproc.getValue(iv);
+            long ds = pcontext.getIntegerValue(iv);
             if (ds == 0) { // zero size array, just skip over it
                 return null;
             } else if (ds < 0) {

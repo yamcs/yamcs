@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.LoggingUtils;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ArrayValue;
@@ -36,14 +37,13 @@ public class RefXtceDecodingTest {
 
     @Test
     public void testBinaryLeadingSize() {
-        byte[] buf = new byte[] { 0x03, 0x01, 0x02, 0x03};
+        byte[] buf = new byte[] { 0x03, 0x01, 0x02, 0x03 };
         ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
                 xtcedb.getSequenceContainer("/RefXtce/packet1"));
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
         ParameterValue pv = pvl.getFirstInserted(xtcedb.getParameter("/RefXtce/param1"));
         assertEquals("010203", StringConverter.arrayToHexString(pv.getEngValue().getBinaryValue()));
-        
     }
 
     @Test
@@ -60,6 +60,6 @@ public class RefXtceDecodingTest {
         assertEquals(0x0304, av.getElementValue(1).getUint32Value());
         assertEquals(0x0506, av.getElementValue(2).getUint32Value());
         assertEquals(0x0708, av.getElementValue(3).getUint32Value());
-
     }
+
 }

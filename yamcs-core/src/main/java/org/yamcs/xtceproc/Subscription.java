@@ -38,7 +38,6 @@ public class Subscription {
         this.xtcedb = xtcedb;
     }
 
-
     public SubscribedContainer addSequenceContainer(SequenceContainer containerDef) {
         SubscribedContainer subscribedContainer = containers.get(containerDef);
         if (subscribedContainer != null) {
@@ -114,7 +113,8 @@ public class Subscription {
         if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY) {
             if (se.getIndex() > 0) {
                 addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
-            } else { // continue with the basecontainer if we are at the first entry and go up in hierarchy skipping all containers with no entry
+            } else { // continue with the basecontainer if we are at the first entry and go up in hierarchy skipping all
+                     // containers with no entry
                 do {
                     sctmp = sctmp.getBaseContainer();
                 } while (sctmp != null && sctmp.getEntryList().size() == 0);
@@ -162,7 +162,6 @@ public class Subscription {
         }
     }
 
-
     /**
      * Get the set of all containers subscribed
      * 
@@ -185,7 +184,6 @@ public class Subscription {
 
         return sb.toString();
     }
-
 
     public SubscribedContainer getSubscribedContainer(SequenceContainer containerDef) {
         return containers.get(containerDef);

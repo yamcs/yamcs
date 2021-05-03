@@ -142,6 +142,7 @@ public class XtceStaxReader {
     private static final String XTCE_FLOAT_DATA_ENCODING = "FloatDataEncoding";
     private static final String XTCE_BINARY_DATA_ENCODING = "BinaryDataEncoding";
     private static final String XTCE_SIZE_IN_BITS = "SizeInBits";
+    private static final String XTCE_VARIABLE = "Variable";
     private static final String XTCE_FIXED_VALUE = "FixedValue";
     private static final String XTCE_DYNAMIC_VALUE = "DynamicValue";
     private static final String XTCE_LINEAR_ADJUSTMENT = "LinearAdjustment";
@@ -229,7 +230,9 @@ public class XtceStaxReader {
     private static final String XTCE_PARAMETER_VALUE_CHANGE = "ParameterValueChange";
     private static final String XTCE_CHANGE = "Change";
     private static final String XTCE_RETURN_PARAM_REF = "ReturnParmRef";
+    private static final String YAMCS_IGNORE = "_yamcs_ignore";
 
+    public static final DynamicIntegerValue IGNORED_DYNAMIC_VALUE = new DynamicIntegerValue();
     /**
      * Logging subsystem
      */
@@ -1343,9 +1346,12 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 readStringSizeInBits(spaceSystem, stringDataEncoding);
+            } else if (isStartElementWithName(XTCE_VARIABLE)) {
+                readVariableStringSize(spaceSystem, stringDataEncoding);
             } else if (isEndElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 if (stringDataEncoding.getSizeType() == null) {
-                    throw new XMLStreamException(XTCE_SIZE_IN_BITS + " not specified for the StringDataEncoding",
+                    throw new XMLStreamException(
+                            XTCE_SIZE_IN_BITS + "or " + XTCE_VARIABLE + " not specified for the StringDataEncoding",
                             xmlEvent.getLocation());
                 }
                 return stringDataEncoding;
@@ -1379,6 +1385,36 @@ public class XtceStaxReader {
                 int sizeInBits = readIntAttribute("sizeInBitsOfSizeTag", xmlEvent.asStartElement(), 16);
                 stringDataEncoding.setSizeInBitsOfSizeTag(sizeInBits);
             } else if (isEndElementWithName(XTCE_SIZE_IN_BITS)) {
+                return;
+            }
+        }
+    }
+
+    private void readVariableStringSize(SpaceSystem spaceSystem, StringDataEncoding.Builder stringDataEncoding)
+            throws XMLStreamException {
+        checkStartElementPreconditions();
+        int maxSizeInBits = readIntAttribute("maxSizeInBits", xmlEvent.asStartElement());
+        stringDataEncoding.setMaxSizeInBits(maxSizeInBits);
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_DYNAMIC_VALUE)) {
+                DynamicIntegerValue div = readDynamicValue(spaceSystem);
+                if (div != IGNORED_DYNAMIC_VALUE) {
+                    stringDataEncoding.setDynamicBufferSize(div);
+                }
+            } else if (isStartElementWithName(XTCE_TERMINATION_CHAR)) {
+                stringDataEncoding.setSizeType(SizeType.TERMINATION_CHAR);
+                byte[] x = readHexBinary();
+                if (x == null || x.length != 1) {
+                    throwException("Terminated strings have to have the size of the termination character of 1");
+                }
+                stringDataEncoding.setTerminationChar(x[0]);
+            } else if (isStartElementWithName(XTCE_LEADING_SIZE)) {
+                stringDataEncoding.setSizeType(SizeType.LEADING_SIZE);
+                int sizeInBits = readIntAttribute("sizeInBitsOfSizeTag", xmlEvent.asStartElement(), 16);
+                stringDataEncoding.setSizeInBitsOfSizeTag(sizeInBits);
+            } else if (isEndElementWithName(XTCE_VARIABLE)) {
                 return;
             }
         }
@@ -2816,7 +2852,12 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
-                v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
+                String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
+                if (YAMCS_IGNORE.equals(paramRef)) {
+                    v = IGNORED_DYNAMIC_VALUE;
+                } else {
+                    v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
+                }
             } else if (isStartElementWithName(XTCE_ARGUMENT_INSTANCE_REF)) {
                 v = new DynamicIntegerValue(readArgumentInstanceRef(spaceSystem, null));
             } else if (isStartElementWithName(XTCE_LINEAR_ADJUSTMENT)) {

@@ -10,7 +10,7 @@
 
 	<xtce:TelemetryMetaData>
 		<xtce:ParameterTypeSet>
-			<xtce:IntegerParameterType sizeInBits="32" signed="false" name="uint16">
+			<xtce:IntegerParameterType signed="false" name="uint16">
 				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
 			</xtce:IntegerParameterType>
 			<xtce:FloatParameterType sizeInBits="32" name="float32">
@@ -59,6 +59,8 @@
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
 			<xtce:Parameter name="avg4_result" parameterTypeRef="float32" />
 			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
+			<xtce:Parameter name="uint16_param1" parameterTypeRef="uint16" />
+			<xtce:Parameter name="uint16_param2" parameterTypeRef="uint16" />
 			<xtce:Parameter name="local_para1" parameterTypeRef="uint16">
 				<xtce:ParameterProperties dataSource="local" />
 			</xtce:Parameter>
@@ -83,6 +85,7 @@
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
 		</xtce:ContainerSet>
+
 		<xtce:AlgorithmSet>
 			<xtce:MathAlgorithm name="avg1">
 				<xtce:MathOperation outputParameterRef="param3">

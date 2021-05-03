@@ -21,6 +21,7 @@ public class ContainerProcessingResult extends ProcessingData {
     long generationTime;
     ProcessingStatistics stats;
     long expireMillis = -1; // -1 means not defined
+    XtceProcessingException exception;
 
     public ContainerProcessingResult(long aquisitionTime, long generationTime, ProcessingStatistics stats,
             LastValueCache procLastValueCache) {

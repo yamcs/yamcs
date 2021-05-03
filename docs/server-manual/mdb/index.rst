@@ -12,6 +12,7 @@ The terminology used in the Yamcs Mission Database is very close to the terminol
     :maxdepth: 1
     :caption: Table of Contents
 
+    data-types
     parameter-definitions
     container-definitions
     alarm-definitions
