@@ -151,6 +151,20 @@ public class BinaryDataEncoding extends DataEncoding {
         }
 
         @Override
+        public Builder setToBinaryTransformAlgorithm(Algorithm alg) {
+            super.setToBinaryTransformAlgorithm(alg);
+            this.type = Type.CUSTOM;
+            return self();
+        }
+
+        @Override
+        public Builder setFromBinaryTransformAlgorithm(Algorithm alg) {
+            super.setFromBinaryTransformAlgorithm(alg);
+            this.type = Type.CUSTOM;
+            return self();
+        }
+
+        @Override
         public BinaryDataEncoding build() {
             return new BinaryDataEncoding(this);
         }

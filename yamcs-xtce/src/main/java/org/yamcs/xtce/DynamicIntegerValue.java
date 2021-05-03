@@ -7,13 +7,10 @@ package org.yamcs.xtce;
  * 
  */
 public class DynamicIntegerValue extends IntegerValue {
-    private static final long serialVersionUID = 13L;
+    private static final long serialVersionUID = 14L;
     private long intercept = 0;
     private long slope = 1;
-    ParameterOrArgumentRef instanceRef;
-
-    public DynamicIntegerValue() {
-    }
+    private ParameterOrArgumentRef instanceRef;
 
     public DynamicIntegerValue(ParameterOrArgumentRef ir) {
         this.instanceRef = ir;

@@ -222,7 +222,7 @@ public class ProcessorData {
                 return null;
             }
         } else {
-            throw new IllegalStateException("Calibrators not supported for: " + de);
+            return null;
         }
     }
 

@@ -16,6 +16,5 @@ public interface NumericDataEncoding {
     public static interface Builder<T extends Builder<T>> {
         T setDefaultCalibrator(Calibrator defaultCalibrator);
         T setContextCalibratorList(List<ContextCalibrator> contextCalibrator);
-        
     }
 }

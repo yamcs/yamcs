@@ -232,7 +232,8 @@ public class XtceStaxReader {
     private static final String XTCE_RETURN_PARAM_REF = "ReturnParmRef";
     private static final String YAMCS_IGNORE = "_yamcs_ignore";
 
-    public static final DynamicIntegerValue IGNORED_DYNAMIC_VALUE = new DynamicIntegerValue();
+    public static final DynamicIntegerValue IGNORED_DYNAMIC_VALUE = new DynamicIntegerValue(
+            new ParameterInstanceRef(new Parameter(YAMCS_IGNORE)));
     /**
      * Logging subsystem
      */
@@ -996,6 +997,8 @@ public class XtceStaxReader {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 typeBuilder.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
@@ -1259,8 +1262,10 @@ public class XtceStaxReader {
                 if (v instanceof FixedIntegerValue) {
                     binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else if (v instanceof DynamicIntegerValue) {
-                    binaryDataEncoding.setDynamicSize(((DynamicIntegerValue) v));
-                    binaryDataEncoding.setType(BinaryDataEncoding.Type.DYNAMIC);
+                    if (v != IGNORED_DYNAMIC_VALUE) {
+                        binaryDataEncoding.setDynamicSize(((DynamicIntegerValue) v));
+                        binaryDataEncoding.setType(BinaryDataEncoding.Type.DYNAMIC);
+                    }
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -1464,6 +1469,8 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 typeBuilder.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {

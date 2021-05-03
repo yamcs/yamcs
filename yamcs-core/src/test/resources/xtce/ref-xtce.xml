@@ -13,6 +13,28 @@
 			<xtce:IntegerParameterType signed="false" name="uint16">
 				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
 			</xtce:IntegerParameterType>
+
+			<xtce:IntegerParameterType signed="false" name="int_encoded_as_string">
+				<xtce:StringDataEncoding>
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:IntegerParameterType>
+			<xtce:FloatParameterType name="float_encoded_as_string">
+				<xtce:StringDataEncoding>
+					<xtce:SizeInBits>
+						<xtce:Fixed>
+							<xtce:FixedValue>48</xtce:FixedValue>
+						</xtce:Fixed>
+						<xtce:TerminationChar>00</xtce:TerminationChar>
+					</xtce:SizeInBits>
+				</xtce:StringDataEncoding>
+			</xtce:FloatParameterType>
+
 			<xtce:FloatParameterType sizeInBits="32" name="float32">
 				<xtce:FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32" />
 			</xtce:FloatParameterType>
@@ -57,6 +79,8 @@
 			<xtce:Parameter name="param5" parameterTypeRef="float32" initialValue="3.14" />
 			<xtce:Parameter name="param6" parameterTypeRef="float32" />
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
+			<xtce:Parameter name="param9" parameterTypeRef="int_encoded_as_string" />
+			<xtce:Parameter name="param10" parameterTypeRef="float_encoded_as_string" />
 			<xtce:Parameter name="avg4_result" parameterTypeRef="float32" />
 			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
 			<xtce:Parameter name="uint16_param1" parameterTypeRef="uint16" />
@@ -74,14 +98,23 @@
 					<xtce:ParameterRefEntry parameterRef="param1" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
+
 			<xtce:SequenceContainer name="packet2">
 				<xtce:EntryList>
 					<xtce:ParameterRefEntry parameterRef="param2" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
+
 			<xtce:SequenceContainer name="packet3">
 				<xtce:EntryList>
 					<xtce:ParameterRefEntry parameterRef="param8" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+
+			<xtce:SequenceContainer name="packet4">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="param9" />
+					<xtce:ParameterRefEntry parameterRef="param10" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>
 		</xtce:ContainerSet>
@@ -190,9 +223,11 @@
 					<xtce:AncillaryData name="Yamcs">maxLength=10</xtce:AncillaryData>
 				</xtce:AncillaryDataSet>
 				<xtce:BinaryDataEncoding>
+					<!--  this SizInBits section is superfluous and can be removed -->
 					<xtce:SizeInBits>
-						<!-- -1 means the algorithm will find the size -->
-						<xtce:FixedValue>-1</xtce:FixedValue>
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+						</xtce:DynamicValue>
 					</xtce:SizeInBits>
 					<xtce:ToBinaryTransformAlgorithm name="LeadingSizeBinaryEncoder" shortDescription="encodes byte arrays whith the size specified at the beginning">
 						<!-- the 16 passed to the constructor means the size is encoded on 16 bits -->

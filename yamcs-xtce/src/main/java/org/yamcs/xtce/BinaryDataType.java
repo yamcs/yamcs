@@ -151,9 +151,6 @@ public class BinaryDataType extends BaseDataType {
             if (minLength != Long.MIN_VALUE || maxLength != Long.MAX_VALUE) {
                 this.sizeRangeInBytes = new IntegerRange(minLength, maxLength);
             }
-            System.out.println("ancillaryData: " + ancillaryData);
         }
-
     }
-
 }
