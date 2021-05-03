@@ -19,6 +19,11 @@ public class ArrayDataType extends DataType {
     }
 
     @Override
+    public String name() {
+        return "ARRAY(" + elementType.name() + ")";
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;

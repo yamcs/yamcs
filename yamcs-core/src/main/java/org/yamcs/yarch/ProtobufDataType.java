@@ -19,6 +19,7 @@ private final String className;
         return name();
     } 
     
+    @Override
     public String name() {
         return "PROTOBUF("+className+")";
     }

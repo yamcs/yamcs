@@ -9,9 +9,7 @@ import java.io.File;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.BeforeClass;
@@ -19,11 +17,6 @@ import org.junit.Test;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TupleDefinition;
 
 public class RDBFactoryTest {
     @BeforeClass
@@ -33,19 +26,6 @@ public class RDBFactoryTest {
 
     private boolean isOpen(YRDB yrdb) {
         return yrdb.isOpen();
-    }
-
-    TableDefinition getTableDef() throws Exception {
-        PartitioningSpec spec = PartitioningSpec.timeAndValueSpec("gentime", "packetid");
-
-        TupleDefinition tdef = new TupleDefinition();
-        tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
-        tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
-
-        TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
-        tblDef.setPartitioningSpec(spec);
-
-        return tblDef;
     }
 
     @Test

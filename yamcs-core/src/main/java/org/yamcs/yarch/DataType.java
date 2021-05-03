@@ -111,6 +111,9 @@ public class DataType {
         if (name.toUpperCase().startsWith("PROTOBUF(")) {
             return protobuf(name.substring(9, name.length() - 1));
         }
+        if (name.toUpperCase().startsWith("ARRAY(")) {
+            return array(byName(name.substring(6, name.length() - 1)));
+        }
 
         throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
     }

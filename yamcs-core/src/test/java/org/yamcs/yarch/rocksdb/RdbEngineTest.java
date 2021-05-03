@@ -87,7 +87,7 @@ public class RdbEngineTest extends YarchTestCase {
     }
 
     public TableDefinition populate() throws Exception {
-        String query = "create table table1(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) "
+        String query = "create table table1(gentime timestamp, seqNum int, name string, values string[], primary key(gentime, seqNum)) histogram(name) "
                 + "partition by time(gentime) table_format=compressed engine rocksdb2";
         execute(query);
         long t1 = TimeEncoding.parse("2016-12-16T00:00:00");
@@ -95,11 +95,14 @@ public class RdbEngineTest extends YarchTestCase {
         TableDefinition tblDef = ydb.getTable("table1");
         RdbStorageEngine rse = (RdbStorageEngine) ydb.getStorageEngine(tblDef);
         TableWriter tw = rse.newTableWriter(ydb, tblDef, InsertMode.INSERT);
-        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(), new Object[] { 1000L, 10, "p1" }));
-        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(), new Object[] { 2000L, 20, "p1" }));
-        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(), new Object[] { 3000L, 30, "p2" }));
-
-        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(), new Object[] { t1, 30, "p2" }));
+        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(),
+                new Object[] { 1000L, 10, "p1", Arrays.asList("x", "y") }));
+        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(),
+                new Object[] { 2000L, 20, "p1", Arrays.asList("x", "y") }));
+        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(),
+                new Object[] { 3000L, 30, "p2", Arrays.asList("x", "y") }));
+        tw.onTuple(null, new Tuple(tblDef.getTupleDefinition(),
+                new Object[] { t1, 30, "p2", Arrays.asList("x", "y") }));
         tw.close();
         return tblDef;
     }
