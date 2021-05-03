@@ -57,6 +57,10 @@ public abstract class BaseDataType extends NameDescription implements DataType {
         return unitSet;
     }
 
+    public void setUnitSet(List<UnitType> unitSet) {
+        this.unitSet = unitSet;
+    }
+
     protected void setInitialValue(Builder<?> builder) {
         if (builder.initialValue != null) {
             setInitialValue(builder.initialValue);
@@ -73,12 +77,15 @@ public abstract class BaseDataType extends NameDescription implements DataType {
      * @param stringValue
      * @return
      */
+    @Override
     public abstract Object parseString(String stringValue);
 
+    @Override
     public String toString(Object o) {
         return o.toString();
     }
 
+    @Override
     public Object parseStringForRawValue(String stringValue) {
         return encoding.parseString(stringValue);
     }
@@ -107,6 +114,7 @@ public abstract class BaseDataType extends NameDescription implements DataType {
             return self();
         }
 
+        @Override
         public T setInitialValue(String initialValue) {
             this.initialValue = initialValue;
             return self();

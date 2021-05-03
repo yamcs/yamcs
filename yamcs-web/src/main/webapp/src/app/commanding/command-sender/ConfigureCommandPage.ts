@@ -9,6 +9,7 @@ import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { EffectiveSignificancePipe } from '../../shared/pipes/EffectiveSignificancePipe';
 import { CommandForm, TemplateProvider } from './CommandForm';
 
 @Component({
@@ -43,6 +44,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     private location: Location,
     configService: ConfigService,
     authService: AuthService,
+    effectiveSignificancePipe: EffectiveSignificancePipe,
   ) {
     this.config = configService.getConfig();
 
@@ -75,7 +77,8 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
       if (this.config.commandClearances) {
         this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
-          this.cleared$.next(this.isCleared(clearance, command.significance?.consequenceLevel));
+          const significance = effectiveSignificancePipe.transform(command);
+          this.cleared$.next(this.isCleared(clearance, significance?.consequenceLevel));
         });
       }
     });

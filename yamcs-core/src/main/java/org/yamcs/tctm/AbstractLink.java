@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.parameter.SystemParametersService.getPV;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,18 +13,17 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
 import io.netty.channel.nio.NioEventLoopGroup;
-
-import static org.yamcs.parameter.SystemParametersService.*;
 
 /**
  * Abstract link implementation as a {@link Service} handling the basic enable/disable getConfig operations
@@ -146,15 +147,19 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     @Override
     public void setupSystemParameters(SystemParametersService sysParamCollector) {
         spLinkStatus = sysParamCollector.createEnumeratedSystemParameter(linkName + "/linkStatus", Status.class,
-                "The status of the link. "
-                        + "OK: the link is up ready to receive data; "
-                        + "UNAVAIL: the link is down although it should be up; "
-                        + "DISABLED: the link has been disabled by the user; "
-                        + "FAILED: there was an internal error while processing the data;");
+                "The current status of this link");
+        EnumeratedParameterType spLinkStatusType = (EnumeratedParameterType) spLinkStatus.getParameterType();
+        spLinkStatusType.enumValue(Status.OK.name())
+                .setDescription("This link is up and ready to receive (or send) data");
+        spLinkStatusType.enumValue(Status.UNAVAIL.name()).setDescription("This link is down unexpectedly");
+        spLinkStatusType.enumValue(Status.DISABLED.name()).setDescription("This link was disabled by a user");
+        spLinkStatusType.enumValue(Status.FAILED.name())
+                .setDescription("An internal error occurred while processing data");
+
         spDataOutCount = sysParamCollector.createSystemParameter(linkName + "/dataOutCount", Type.UINT64,
-                "number of items (e.g. telecommand packetss) that has been sent through the link");
+                "The total number of items (e.g. telecommand packets) that have been sent through this link");
         spDataInCount = sysParamCollector.createSystemParameter(linkName + "/dataInCount", Type.UINT64,
-                "number of items (e.g. telemetry packets) that has been received throught the link");
+                "The total number of items (e.g. telemetry packets) that have been received through this link");
     }
 
     @Override

@@ -27,15 +27,23 @@
     </span>
   </dd>
 
-  <dt>Description</dt>
-  <dd>
-    <ng-container *ngIf="entry$ | async as entry; else dash">
-      {{ entry.longDescription || entry.shortDescription || '-' }}
-    </ng-container>
-  </dd>
-
   <dt>Source</dt>
   <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+
+  <ng-container *ngIf="entry$ | async as entry; else dash">
+    <ng-container *ngIf="entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        <app-markdown [text]="entry.longDescription"></app-markdown>
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="!entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        {{ entry.shortDescription || '-' }}
+      </dd>
+    </ng-container>
+  </ng-container>
 </dl>
 
 <dl class="dl-horizontal no-trail" [class.no-lead]="!offset">
@@ -80,17 +88,29 @@
     </span>
   </dd>
 
-  <dt>Description</dt>
-  <dd>{{ parameter.longDescription || parameter.shortDescription || '-' }}</dd>
-
   <ng-container *ngIf="!offset">
     <dt>Source</dt>
     <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
   </ng-container>
+
+  <ng-container *ngIf="parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      <app-markdown [text]="parameter.longDescription"></app-markdown>
+    </dd>
+  </ng-container>
+  <ng-container *ngIf="!parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      {{ parameter.shortDescription || '-' }}
+    </dd>
+  </ng-container>
 </dl>
 
-<p>&nbsp;</p>
-<h3>Current value</h3>
+<div class="section-divider">
+  <mat-divider></mat-divider>
+</div>
+<h4>Current value</h4>
 <ng-container *ngIf="pval?.engValue as value">
   <ng-container [ngSwitch]="value.type">
     <table *ngSwitchCase="'AGGREGATE'" yaDataTable>
@@ -152,5 +172,54 @@
   </ng-container>
 </ng-container>
 <span *ngIf="!(pval?.engValue)" style="white-space: nowrap">---</span>
+
+<ng-container *ngIf="entry$ | async as entry">
+  <ng-container *ngIf="entry.type?.engType === 'enumeration'">
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+
+    <h4>Enumeration</h4>
+    <table yaDataTable>
+      <tr>
+        <th style="width: 50px">Value</th>
+        <th style="width: 100px">Label</th>
+        <th style="width: 300px">Description</th>
+        <th>Alarm Level (default)</th>
+        <th *ngFor="let context of entry.type?.contextAlarm">
+          <ng-container *ngFor="let comparison of context.comparison; let first = first">
+            <ng-container *ngIf="!first">, </ng-container>
+            <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+               [queryParams]="{c: yamcs.context}"
+               class="secundary">
+              {{ comparison.parameter.name }}
+            </a>
+            {{ comparison.operator | operator }}
+            {{ comparison.value }}
+          </ng-container>
+        </th>
+      </tr>
+      <tr *ngFor="let enumValue of entry.type?.enumValue">
+        <td style="white-space: nowrap">{{ enumValue.value }}</td>
+        <td style="white-space: nowrap">{{ enumValue.label }}</td>
+        <td>{{ enumValue.description || '-' }}</td>
+        <td>
+          <ng-container *ngIf="getDefaultAlarmLevel(entry.type, enumValue) as level">
+            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            {{ level }}
+          </ng-container>
+          <span *ngIf="!getDefaultAlarmLevel(entry.type, enumValue)">-</span>
+        </td>
+        <td *ngFor="let context of entry.type.contextAlarm">
+          <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
+            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            {{ level }}
+          </ng-container>
+          <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+</ng-container>
 
 <ng-template #dash>-</ng-template>

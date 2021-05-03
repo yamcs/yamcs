@@ -20,14 +20,26 @@
       </ng-container>
 
       <ng-container *ngIf="command.longDescription || command.shortDescription">
-        <dt>Description</dt>
-        <dd>{{ command.longDescription || command.shortDescription || '-' }}</dd>
+        <ng-container *ngIf="command.longDescription">
+          <dt>Description</dt>
+          <dd>
+            <app-markdown [text]="command.longDescription"></app-markdown>
+          </dd>
+        </ng-container>
+        <ng-container *ngIf="!command.longDescription">
+          <dt>Description</dt>
+          <dd>
+            {{ command.shortDescription || '-' }}
+          </dd>
+        </ng-container>
       </ng-container>
 
       <dt>Significance</dt>
       <dd>
-        <app-significance-level [level]="command.significance?.consequenceLevel"></app-significance-level>
-        &nbsp;&nbsp;{{ command.significance?.reasonForWarning }}
+        <ng-container *ngIf="(command | effectiveSignificance) as significance; else dash">
+          <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+          &nbsp;&nbsp;{{ significance.reasonForWarning }}
+        </ng-container>
       </dd>
     </dl>
 
@@ -90,3 +102,7 @@
     </mat-toolbar>
   </div>
 </app-instance-page>
+
+<ng-template #dash>
+  -
+</ng-template>

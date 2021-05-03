@@ -90,6 +90,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
     const options: GetCommandsOptions = {
       system: this.system || '/',
       noAbstract: true,
+      details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };

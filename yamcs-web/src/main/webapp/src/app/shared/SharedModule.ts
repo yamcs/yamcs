@@ -61,6 +61,7 @@ import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
+import { Markdown } from './markdown/Markdown';
 import { AgoPipe } from './pipes/AgoPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
@@ -71,6 +72,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { DefaultProcessorPipe } from './pipes/DefaultProcessorPipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
+import { EffectiveSignificancePipe } from './pipes/EffectiveSignificancePipe';
 import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
@@ -201,6 +203,7 @@ const sharedComponents = [
   Labels,
   Led,
   LiveExpression,
+  Markdown,
   MessageBar,
   ObjectSelector,
   ParameterLegend,
@@ -236,6 +239,7 @@ const pipes = [
   DefaultProcessorPipe,
   DeltaWithPipe,
   DurationPipe,
+  EffectiveSignificancePipe,
   FilenamePipe,
   FormatBytesPipe,
   EntryForOffsetPipe,

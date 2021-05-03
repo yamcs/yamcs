@@ -958,6 +958,9 @@ public class XtceToGpbAssembler {
         Mdb.EnumValue.Builder b = Mdb.EnumValue.newBuilder();
         b.setValue(xtceValue.getValue());
         b.setLabel(xtceValue.getLabel());
+        if (xtceValue.getDescription() != null) {
+            b.setDescription(xtceValue.getDescription());
+        }
         return b.build();
     }
 
