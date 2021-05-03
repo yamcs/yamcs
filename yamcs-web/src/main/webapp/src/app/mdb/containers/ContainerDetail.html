@@ -22,7 +22,11 @@
   <dd>{{ container.shortDescription || '-' }}</dd>
 
   <dt>Long Description</dt>
-  <dd>{{ container.longDescription || '-' }}</dd>
+  <dd>
+    <ng-container *ngIf="container.longDescription; else dash">
+      <app-markdown [text]="container.longDescription"></app-markdown>
+    </ng-container>
+  </dd>
 </dl>
 
 <mat-divider></mat-divider>
@@ -93,3 +97,5 @@
     <span *ngIf="!container.entry">-</span>
   </dd>
 </dl>
+
+<ng-template #dash>-</ng-template>

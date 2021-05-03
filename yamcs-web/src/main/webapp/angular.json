@@ -37,7 +37,8 @@
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
             ],
             "allowedCommonJsDependencies": [
-              "brace/mode/javascript"
+              "brace/mode/javascript",
+              "showdown"
             ]
           },
           "configurations": {

@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.UnitType;
 
 public class JvmParameterProducer implements SystemParametersProducer {
     final static Log log = new Log(JvmParameterProducer.class);
@@ -15,15 +17,23 @@ public class JvmParameterProducer implements SystemParametersProducer {
 
     public JvmParameterProducer(SystemParametersService sysParamsService) {
         spJvmTotalMemory = sysParamsService.createSystemParameter("jvmTotalMemory", Type.UINT64,
-                "total amount of memory allocated by the Java virtual machine");
+                "Total amount of memory allocated by the Java Virtual Machine");
+        IntegerParameterType spJvmTotalMemoryType = (IntegerParameterType) spJvmTotalMemory.getParameterType();
+        List<UnitType> unitSet = new ArrayList<>(1);
+        unitSet.add(new UnitType("KB"));
+        spJvmTotalMemoryType.setUnitSet(unitSet);
         log.debug("Publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
         spJvmMemoryUsed = sysParamsService.createSystemParameter("jvmMemoryUsed", Type.UINT64,
-                "amount of memory currently used in the Java Virtual Machine");
+                "Amount of memory currently used in the Java Virtual Machine");
+        IntegerParameterType spJvmMemoryUsedType = (IntegerParameterType) spJvmMemoryUsed.getParameterType();
+        unitSet = new ArrayList<>(1);
+        unitSet.add(new UnitType("KB"));
+        spJvmMemoryUsedType.setUnitSet(unitSet);
         log.debug("Publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
         spJvmTheadCount = sysParamsService.createSystemParameter("jvmThreadCount", Type.UINT32,
-                "number of active threads");
+                "Current thread count of the Java Virtual Machine");
         log.debug("Publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
     }
 

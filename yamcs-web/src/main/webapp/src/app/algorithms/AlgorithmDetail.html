@@ -18,8 +18,18 @@
     <dd>{{ alias.name }}</dd>
   </ng-container>
 
-  <dt>Description</dt>
-  <dd>{{ algorithm.longDescription || algorithm.shortDescription || '-' }}</dd>
+  <ng-container *ngIf="algorithm.longDescription">
+    <dt>Description</dt>
+    <dd>
+      <app-markdown [text]="algorithm.longDescription"></app-markdown>
+    </dd>
+  </ng-container>
+  <ng-container *ngIf="!algorithm.longDescription">
+    <dt>Description</dt>
+    <dd>
+      {{ algorithm.shortDescription || '-' }}
+    </dd>
+  </ng-container>
 </dl>
 
 <mat-divider></mat-divider>

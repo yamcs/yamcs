@@ -7,9 +7,9 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.SimulationTimeService;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
@@ -30,6 +30,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     private TmSink tmSink;
     protected boolean updateSimulationTime;
 
+    @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
         if (config.containsKey(CFG_PREPRO_CLASS)) {
@@ -71,9 +72,9 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     public void setupSystemParameters(SystemParametersService sysParamService) {
         super.setupSystemParameters(sysParamService);
         spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.DOUBLE,
-                "number of bytes/second computed over a five seconds interval");
+                "Number of bytes per second computed over a five second interval");
         spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.DOUBLE,
-                "number of packets/second computed over a five second interval");
+                "Number of packets per second computed over a five second interval");
     }
 
     @Override
@@ -117,7 +118,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
         tmSink.processPacket(tmpkt);
         if (updateSimulationTime) {
             SimulationTimeService sts = (SimulationTimeService) timeService;
-            if(!tmpkt.isInvalid()) {
+            if (!tmpkt.isInvalid()) {
                 sts.setSimElapsedTime(tmpkt.getGenerationTime());
             }
         }
