@@ -25,6 +25,11 @@ public class SInt64Value extends Value {
     }
 
     @Override
+    public double toDouble() {
+        return v;
+    }
+
+    @Override
     public int hashCode() {
         return Long.hashCode(v);
     }

@@ -1,16 +1,12 @@
 package org.yamcs.xtceproc;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BinaryDataType;

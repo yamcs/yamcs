@@ -21,6 +21,7 @@ import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
+import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -38,10 +39,14 @@ import org.yamcs.xtce.Member;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 
+/**
+ * Handles conversions from engineering value to raw value according to the parameter type and encoding
+ */
 public class ArgumentTypeProcessor {
     final TcProcessingContext pcontext;
 
@@ -91,47 +96,30 @@ public class ArgumentTypeProcessor {
     }
 
     private Value decalibrateInteger(IntegerArgumentType ipt, Value v) {
-        if (v.getType() == Type.UINT32) {
-            return doIntegerDecalibration(ipt, v.getUint32Value() & 0xFFFFFFFFL);
-        } else if (v.getType() == Type.UINT64) {
-            return doIntegerDecalibration(ipt, v.getUint64Value());
-        } else if (v.getType() == Type.SINT32) {
-            return doIntegerDecalibration(ipt, v.getSint32Value());
-        } else if (v.getType() == Type.SINT64) {
-            return doIntegerDecalibration(ipt, v.getSint64Value());
-        } else if (v.getType() == Type.STRING) {
-            return doIntegerDecalibration(ipt, Long.valueOf(v.getStringValue()));
+        DataEncoding encoding = ipt.getEncoding();
+
+        if (encoding instanceof IntegerDataEncoding) {
+            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
+            if (calibrator == null) {
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, v);
+            } else {
+                long calibValue = (long) calibrator.calibrate(v.toDouble());
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, calibValue);
+            }
+        } else if (encoding instanceof FloatDataEncoding) {
+            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
+            if (calibrator == null) {
+                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, v.toDouble());
+            } else {
+                double calibValue = calibrator.calibrate(v.toDouble());
+                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, calibValue);
+            }
+        } else if (encoding instanceof StringDataEncoding) {
+            return ValueUtility.getStringValue(v.toString());
         } else {
             throw new IllegalStateException(
-                    "Unsupported raw value type '" + v.getType() + "' cannot be converted to integer");
+                    "Cannot convert integer to '" + encoding);
         }
-    }
-
-    private Value doIntegerDecalibration(IntegerArgumentType ipt, long v) {
-        DataEncoding de = ipt.getEncoding();
-        if (de instanceof FloatDataEncoding) {
-            return doFloatDecalibration(ipt.getEncoding(), ipt.getSizeInBits(), v);
-        }
-
-        CalibratorProc calibrator = pcontext.pdata.getDecalibrator(ipt.getEncoding());
-
-        Value raw;
-        long longDecalValue = (calibrator == null) ? v : (long) calibrator.calibrate(v);
-
-        if (ipt.getSizeInBits() <= 32) {
-            if (ipt.isSigned()) {
-                raw = ValueUtility.getSint32Value((int) longDecalValue);
-            } else {
-                raw = ValueUtility.getUint32Value((int) longDecalValue);
-            }
-        } else {
-            if (ipt.isSigned()) {
-                raw = ValueUtility.getSint64Value(longDecalValue);
-            } else {
-                raw = ValueUtility.getUint64Value(longDecalValue);
-            }
-        }
-        return raw;
     }
 
     private Value decalibrateBoolean(BooleanArgumentType ipt, Value v) {
@@ -139,63 +127,71 @@ public class ArgumentTypeProcessor {
             throw new IllegalStateException(
                     "Unsupported value type '" + v.getType() + "' cannot be converted to boolean");
         }
-        return v;
+        boolean boolv = v.getBooleanValue();
+
+        DataEncoding encoding = ipt.getEncoding();
+        if (encoding instanceof IntegerDataEncoding) {
+            return ValueUtility.getUint32Value(boolv ? 1 : 0);
+        } else if (encoding instanceof FloatDataEncoding) {
+            return ValueUtility.getFloatValue(boolv ? 1 : 0);
+        } else if (encoding instanceof StringDataEncoding) {
+            return ValueUtility.getStringValue(boolv ? ipt.getOneStringValue() : ipt.getZeroStringValue());
+        } else if (encoding instanceof BinaryDataEncoding) {
+            return ValueUtility.getBinaryValue(new byte[] { (byte) (boolv ? 1 : 0) });
+        } else {
+            return v;
+        }
     }
 
     private Value decalibrateFloat(FloatArgumentType fat, Value v) {
-        if (v.getType() == Type.FLOAT) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getFloatValue());
-        } else if (v.getType() == Type.DOUBLE) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getDoubleValue());
-        } else if (v.getType() == Type.STRING) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), Double.valueOf(v.getStringValue()));
-        } else if (v.getType() == Type.UINT32) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getUint32Value());
-        } else if (v.getType() == Type.UINT64) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getUint64Value());
-        } else if (v.getType() == Type.SINT32) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getSint32Value());
-        } else if (v.getType() == Type.SINT64) {
-            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getSint64Value());
-        } else {
-            throw new IllegalArgumentException(
-                    "Unsupported value type '" + v.getType() + "' cannot be converted to float");
-        }
-    }
+        DataEncoding encoding = fat.getEncoding();
 
-    private Value doFloatDecalibration(DataEncoding de, int sizeInBits, double doubleValue) {
-        CalibratorProc calibrator = pcontext.pdata.getDecalibrator(de);
-
-        double doubleCalValue = (calibrator == null) ? doubleValue : calibrator.calibrate(doubleValue);
-        Value raw;
-        if (sizeInBits == 32) {
-            raw = ValueUtility.getFloatValue((float) doubleCalValue);
+        if (encoding instanceof IntegerDataEncoding) {
+            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
+            if (calibrator == null) {
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.getDoubleValue());
+            } else {
+                long calibValue = (long) calibrator.calibrate(v.toDouble());
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) calibValue);
+            }
+        } else if (encoding instanceof FloatDataEncoding) {
+            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
+            if (calibrator == null) {
+                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, v.toDouble());
+            } else {
+                double calibValue = calibrator.calibrate(v.toDouble());
+                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, calibValue);
+            }
+        } else if (encoding instanceof StringDataEncoding) {
+            return ValueUtility.getStringValue(v.toString());
         } else {
-            raw = ValueUtility.getDoubleValue(doubleCalValue);
+            throw new IllegalStateException(
+                    "Cannot convert integer to '" + encoding);
         }
-        return raw;
     }
 
     private static Value decalibrateString(StringArgumentType sat, Value v) {
-        Value raw;
-        if (v.getType() == Type.STRING) {
-            raw = v;
+        DataEncoding encoding = sat.getEncoding();
+        if (encoding instanceof StringDataEncoding) {
+            return v;
+        } else if (encoding instanceof BinaryDataEncoding) {
+            return ValueUtility.getBinaryValue(v.getStringValue().getBytes());
         } else {
             throw new IllegalStateException(
-                    "Unsupported value type '" + v.getType() + "' cannot be converted to string");
+                    "Unsupported value type '" + v.getType() + "' cannot be converted to " + encoding);
         }
-        return raw;
     }
 
     private static Value decalibrateBinary(BinaryArgumentType bat, Value v) {
-        Value raw;
-        if (v.getType() == Type.BINARY) {
-            raw = v;
+        DataEncoding encoding = bat.getEncoding();
+        if (encoding instanceof BinaryDataEncoding) {
+            return v;
+        } else if (encoding instanceof StringDataEncoding) {
+            return DataEncodingUtils.rawRawStringValue(v);
         } else {
             throw new IllegalStateException(
-                    "Unsupported value type '" + v.getType() + "' cannot be converted to binary");
+                    "Unsupported value type '" + v.getType() + "' cannot be converted to " + encoding);
         }
-        return raw;
     }
 
     private Value decalibrateAbsoluteTime(AbsoluteTimeArgumentType atype, Value v) {
@@ -220,7 +216,7 @@ public class ArgumentTypeProcessor {
         } else if (enc instanceof IntegerDataEncoding) {
             return ValueUtility.getSint64Value(scaleInt(atype, epochOffset));
         } else {
-            throw new IllegalStateException("Cannot convert encode absolute time with " + enc + " encoding");
+            throw new IllegalStateException("Cannot convert encode absolute time to " + enc + " encoding");
         }
     }
 

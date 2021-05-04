@@ -10,7 +10,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -20,12 +19,13 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 
+import static org.yamcs.xtceproc.DataEncodingUtils.*;
+
 /**
  * Encodes TC data according to the DataEncoding definition
- * 
- * @author nm
- *
  */
+// this class needs some cleanup: normally values arriving in the encodeRaw should match the data encoding but it's not
+// always the case. We should detect where the values come from and convert them there.
 public class DataEncodingEncoder {
     TcProcessingContext pcontext;
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -114,7 +114,7 @@ public class DataEncodingEncoder {
     }
 
     private void encodeRawString(StringDataEncoding sde, Value rawValue) {
-        String v = rawValueToString(rawValue);
+        String v = rawRawStringValue(rawValue).getStringValue();
         BitBuffer bitbuf = pcontext.bitbuf;
 
         int initialBitPosition = bitbuf.getPosition();
@@ -224,34 +224,6 @@ public class DataEncodingEncoder {
         if (bufSize > sizeInBytes) { // fill up with nulls to reach the required size
             byte[] nulls = new byte[bufSize - sizeInBytes];
             bitbuf.put(nulls);
-        }
-    }
-
-    private String rawValueToString(Value rawValue) {
-        switch (rawValue.getType()) {
-        case DOUBLE:
-            return rawValue.getDoubleValue() + "";
-        case FLOAT:
-            return rawValue.getFloatValue() + "";
-        case UINT32:
-            return rawValue.getUint32Value() + "";
-        case SINT32:
-            return rawValue.getSint32Value() + "";
-        case UINT64:
-            return rawValue.getUint64Value() + "";
-        case SINT64:
-            return rawValue.getSint64Value() + "";
-        case STRING:
-            return rawValue.getStringValue();
-        case BOOLEAN:
-            return rawValue.getBooleanValue() + "";
-        case TIMESTAMP:
-            return rawValue.getTimestampValue() + "";
-        case BINARY:
-            return StringConverter.arrayToHexString(rawValue.getBinaryValue());
-        default:
-            throw new IllegalArgumentException(
-                    "String encoding for data of type " + rawValue.getType() + " not supported");
         }
     }
 

@@ -39,7 +39,8 @@ public class RefMdbCommandEncodingTest {
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("refmdb");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
+        metaCommandProcessor = new MetaCommandProcessor(
+                new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
     }
 
     @Test
@@ -235,11 +236,10 @@ public class RefMdbCommandEncodingTest {
                 new ArgumentAssignment("binary_arg", "010A"),
                 new ArgumentAssignment("enumerated_arg", "value1"),
                 new ArgumentAssignment("boolean_arg", "false"));
-        ErrorInCommand e = null;
 
         byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
         String result = new String(b);
-        String expected = "1,-3,-3.01,string with \n special chars \",010A,1,false,";
+        String expected = "1,-3,-3.01,string with \n special chars \",010A,1,False,";
 
         assertEquals(expected, result);
     }
@@ -432,24 +432,24 @@ public class RefMdbCommandEncodingTest {
                 new ArgumentAssignment("ccsds-apid", "123")); // Already assigned by parent
         metaCommandProcessor.buildCommand(mc, assignments);
     }
-    
+
     @Test
     public void testTimeArg() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/TIME_ARG_TC");
         assertNotNull(mc);
         String tstring = "2020-01-01T00:00:00.123Z";
         long tlong = TimeEncoding.parse(tstring);
-        
+
         List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring));
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
         Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
-        
+
         assertEquals(tlong, v1.getTimestampValue());
         byte[] cmdb = cbr.getCmdPacket();
         assertEquals(4, cmdb.length);
         int gpsTime = ByteArrayUtils.decodeInt(cmdb, 0);
-        assertEquals(TimeEncoding.toGpsTimeMillisec(tlong)/1000, gpsTime);
-        
+        assertEquals(TimeEncoding.toGpsTimeMillisec(tlong) / 1000, gpsTime);
+
     }
 
     @Test

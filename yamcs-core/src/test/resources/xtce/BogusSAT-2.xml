@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2015 David Overeem (dovereem@cox.net) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy 
-	of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
+<!-- Copyright 2015 David Overeem (dovereem@cox.net) Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy
+	of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. -->
 <xtce:SpaceSystem name="BogusSAT" xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.omg.org/space/xtce ../../../../omg/space/xtce/schema/SpaceSystemV1.2-27Feb2014-mods.xsd"
@@ -416,8 +416,9 @@
 						</xtce:IncludeCondition>
 					</xtce:ParameterRefEntry>
 					<!-- this is where the PUS data field goes -->
-					<!-- currently not supported by Yamcs <xtce:ParameterRefEntry parameterRef="PUS_Error_Control_Field"> <xtce:LocationInContainerInBits referenceLocation="containerEnd"> <xtce:FixedValue>16</xtce:FixedValue> 
-						</xtce:LocationInContainerInBits> <xtce:IncludeCondition> <xtce:Comparison parameterRef="TM_CHECKSUM_TYPE" value="NotUsed" useCalibratedValue="true" comparisonOperator="!="/> </xtce:IncludeCondition> </xtce:ParameterRefEntry> -->
+					<!-- currently not supported by Yamcs <xtce:ParameterRefEntry parameterRef="PUS_Error_Control_Field"> <xtce:LocationInContainerInBits referenceLocation="containerEnd"> <xtce:FixedValue>16</xtce:FixedValue>
+						</xtce:LocationInContainerInBits> <xtce:IncludeCondition> <xtce:Comparison parameterRef="TM_CHECKSUM_TYPE" value="NotUsed" useCalibratedValue="true" comparisonOperator="!="/> </xtce:IncludeCondition>
+						</xtce:ParameterRefEntry> -->
 				</xtce:EntryList>
 				<xtce:BaseContainer containerRef="CCSDSTelemetryPacket">
 					<xtce:RestrictionCriteria>
@@ -573,26 +574,6 @@
 							<xtce:ComparisonList>
 								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
 								<xtce:Comparison value="2" parameterRef="CCSDS_Packet_ID.APID" />
-							</xtce:ComparisonList>
-						</xtce:RestrictionCriteria>
-					</xtce:BaseContainer>
-				</xtce:SequenceContainer>
-				<xtce:SequenceContainer name="CCSDS_SpacePacket3">
-					<xtce:EntryList>
-						<!-- Demonstrate the Fixed Repeat working -->
-						<xtce:ParameterRefEntry parameterRef="Payload1/Basic_string_uint32">
-							<xtce:RepeatEntry>
-								<xtce:Count>
-									<xtce:FixedValue>5</xtce:FixedValue>
-								</xtce:Count>
-							</xtce:RepeatEntry>
-						</xtce:ParameterRefEntry>
-					</xtce:EntryList>
-					<xtce:BaseContainer containerRef="/BogusSAT/CCSDSTelemetryPacket">
-						<xtce:RestrictionCriteria>
-							<xtce:ComparisonList>
-								<xtce:Comparison value="NotPresent" parameterRef="CCSDS_Packet_ID.SecHdrFlag" />
-								<xtce:Comparison value="3" parameterRef="CCSDS_Packet_ID.APID" />
 							</xtce:ComparisonList>
 						</xtce:RestrictionCriteria>
 					</xtce:BaseContainer>
@@ -1052,9 +1033,9 @@
 					</xtce:BinaryParameterType>
 					<xtce:AggregateParameterType name="Config_Log_Levels_Type">
 						<LongDescription>Test Long Description</LongDescription>
-    					<AncillaryDataSet>
-        					<AncillaryData name="TEST_ANC_DATA">1</AncillaryData>
-    					</AncillaryDataSet>
+						<AncillaryDataSet>
+							<AncillaryData name="TEST_ANC_DATA">1</AncillaryData>
+						</AncillaryDataSet>
 						<xtce:MemberList>
 							<xtce:Member name="COREINF" typeRef="Log_Level_Type" shortDescription="Log level for Common Infrastructure Software" />
 							<xtce:Member name="ANTCTRL" typeRef="Log_Level_Type" shortDescription="Log level for Payload Antenna Control Software" />
@@ -1359,7 +1340,7 @@
 							<xtce:ParameterRefEntry parameterRef="Config_Self_Test" />
 							<xtce:ParameterRefEntry parameterRef="Config_Clock_ID" />
 							<xtce:ParameterRefEntry parameterRef="Config_Ant_Power_Level" />
-							<!-- not supported by Yamcs <xtce:ParameterRefEntry parameterRef="Table_CRC_Value"> <xtce:LocationInContainerInBits referenceLocation="containerEnd"> <xtce:FixedValue>0</xtce:FixedValue> </xtce:LocationInContainerInBits> 
+							<!-- not supported by Yamcs <xtce:ParameterRefEntry parameterRef="Table_CRC_Value"> <xtce:LocationInContainerInBits referenceLocation="containerEnd"> <xtce:FixedValue>0</xtce:FixedValue> </xtce:LocationInContainerInBits>
 								</xtce:ParameterRefEntry> -->
 						</xtce:EntryList>
 					</xtce:SequenceContainer>
@@ -2297,22 +2278,6 @@
 						<xtce:UnitSet />
 						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="onesComplement" sizeInBits="32" changeThreshold="1" />
 					</xtce:IntegerParameterType>
-					<xtce:StringParameterType name="Basic_string_uint32_Type" shortDescription="Generic string encoded as unsigned 32 bit number">
-						<xtce:UnitSet />
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="32" />
-					</xtce:StringParameterType>
-					<xtce:StringParameterType name="Basic_string_int32_signmag_Type" shortDescription="Generic string encoded as signed 32 bit number with sign magnitude encoding">
-						<xtce:UnitSet />
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="signMagnitude" sizeInBits="32" />
-					</xtce:StringParameterType>
-					<xtce:StringParameterType name="Basic_string_int32_twoscomp_Type" shortDescription="Generic string encoded as signed 32 bit number with twos complement encoding">
-						<xtce:UnitSet />
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="twosComplement" sizeInBits="32" />
-					</xtce:StringParameterType>
-					<xtce:StringParameterType name="Basic_string_int32_onescomp_Type" shortDescription="Generic string encoded as signed 32 bit number with ones complement encoding">
-						<xtce:UnitSet />
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="onesComplement" sizeInBits="32" />
-					</xtce:StringParameterType>
 					<xtce:StringParameterType name="Basic_string_binary_Type" shortDescription="Generic string encoded as binary octets instead of C style char string encoding">
 						<xtce:UnitSet />
 						<xtce:BinaryDataEncoding>
@@ -2321,22 +2286,14 @@
 							</xtce:SizeInBits>
 						</xtce:BinaryDataEncoding>
 					</xtce:StringParameterType>
-					<xtce:StringParameterType name="Basic_string_float32_Type" shortDescription="Generic string encoded as 32 bit IEEE-754 floating point encoding">
-						<xtce:UnitSet />
-						<xtce:FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32" />
-					</xtce:StringParameterType>
-					<xtce:StringParameterType name="Basic_string_float64_Type" shortDescription="Generic string encoded as 64 bit IEEE-754 floating point encoding">
-						<xtce:UnitSet />
-						<xtce:FloatDataEncoding encoding="IEEE754_1985" sizeInBits="64" />
-					</xtce:StringParameterType>
 					<xtce:ArrayParameterType name="Array_Dim1_Float64_Type" arrayTypeRef="Basic_Float64_Type" numberOfDimensions="1">
-						<xtce:LongDescription>This is some calibration values for a
-							payload device
+						<xtce:LongDescription>
+							This is some calibration values for a payload device
 						</xtce:LongDescription>
 					</xtce:ArrayParameterType>
 					<xtce:ArrayParameterType name="Array_Dim1_Float32_Type" arrayTypeRef="Basic_Float32_Type" numberOfDimensions="1">
-						<xtce:LongDescription>This is some more calibration values for a
-							payload device
+						<xtce:LongDescription>
+							This is some more calibration values for a payload device
 						</xtce:LongDescription>
 					</xtce:ArrayParameterType>
 				</xtce:ParameterTypeSet>
@@ -2436,37 +2393,7 @@
 							<xtce:SystemName>CPU</xtce:SystemName>
 						</xtce:ParameterProperties>
 					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_uint32" parameterTypeRef="Basic_string_uint32_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_int32_signmag" parameterTypeRef="Basic_string_int32_signmag_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_int32_twoscomp" parameterTypeRef="Basic_string_int32_twoscomp_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_int32_onescomp" parameterTypeRef="Basic_string_int32_onescomp_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
 					<xtce:Parameter name="Basic_string_binary" parameterTypeRef="Basic_string_binary_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_float32" parameterTypeRef="Basic_string_float32_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>CPU</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Basic_string_float64" parameterTypeRef="Basic_string_float64_Type">
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>CPU</xtce:SystemName>
 						</xtce:ParameterProperties>

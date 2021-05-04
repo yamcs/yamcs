@@ -18,6 +18,8 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 
+import static org.yamcs.xtceproc.DataEncodingUtils.*;
+
 /**
  * Decodes TM data according to the specification of the DataEncoding
  * This is a generic catch all decoder, relies on specific custom decoders implementing
@@ -359,45 +361,6 @@ public class DataEncodingDecoder {
             }
         } else {
             throw new IllegalStateException("Unknown data encoding '" + de + "'");
-        }
-    }
-
-    static private Value getRawIntegerValue(IntegerDataEncoding ide, Object value) {
-        long longValue;
-        if (value instanceof Number) {
-            longValue = ((Number) value).longValue();
-        } else {
-            return null;
-        }
-        // limit the value to the number of defined bits
-        longValue = longValue & (-1 >>> (64 - ide.getSizeInBits()));
-
-        if (ide.getSizeInBits() <= 32) {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                return ValueUtility.getUint32Value((int) longValue);
-            } else {
-                return ValueUtility.getSint32Value((int) longValue);
-            }
-        } else {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                return ValueUtility.getUint64Value(longValue);
-            } else {
-                return ValueUtility.getSint64Value(longValue);
-            }
-        }
-    }
-
-    static private Value getRawFloatValue(FloatDataEncoding fde, Object value) {
-        double doubleValue;
-        if (value instanceof Number) {
-            doubleValue = ((Number) value).doubleValue();
-        } else {
-            return null;
-        }
-        if (fde.getSizeInBits() <= 32) {
-            return ValueUtility.getFloatValue((float) doubleValue);
-        } else {
-            return ValueUtility.getDoubleValue(doubleValue);
         }
     }
 

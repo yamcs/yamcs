@@ -999,6 +999,8 @@ public class XtceStaxReader {
                 typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                throw new XMLStreamException("Cannot use a binary data encoding for float parameter type");
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 typeBuilder.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
@@ -1235,10 +1237,14 @@ public class XtceStaxReader {
                 readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(XTCE_UNIT_SET)) {
                 typeBuilder.addAllUnits(readUnitSet());
-            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
-                typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)
+                    || isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
+                        + " not supported for binary parameter", xmlEvent.getLocation());
             } else if (isEndElementWithName(XTCE_BINARY_PARAMETER_TYPE)) {
                 return incompleteType;
             } else {
@@ -1330,10 +1336,18 @@ public class XtceStaxReader {
                 typeBuilder.addAllUnits(readUnitSet());
             } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 skipXtceSection(XTCE_CONTEXT_ALARM_LIST);
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)
+                    || isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
+                        + " not supported for string parameter", xmlEvent.getLocation());
             } else if (isEndElementWithName(XTCE_STRING_PARAMETER_TYPE)) {
                 return incompleteType;
+            } else {
+                logUnknown();
             }
         }
     }
@@ -1469,8 +1483,12 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                throw new XMLStreamException("Cannot use a binary data encoding for integer parameters");
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 typeBuilder.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
@@ -3248,6 +3266,12 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isEndElementWithName(XTCE_BOOLEAN_ARGUMENT_TYPE)) {
                 return incompleteType;
             } else {
@@ -3285,6 +3309,11 @@ public class XtceStaxReader {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
+                        + " not supported for float argument", xmlEvent.getLocation());
             } else if (isStartElementWithName(XTCE_VALID_RANGE)) {
                 typeBuilder.setValidRange(readFloatValidRange());
             } else if (isStartElementWithName(XTCE_VALID_RANGE_SET)) {
@@ -3318,6 +3347,12 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_ENUMERATION_LIST)) {
                 readEnumerationList(typeBuilder);
             } else if (isEndElementWithName(XTCE_ENUMERATED_ARGUMENT_TYPE)) {
@@ -3374,6 +3409,12 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readFloatDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                throw new XMLStreamException("Cannot use a binary data encoding for integer arguments");
             } else if (isStartElementWithName(XTCE_VALID_RANGE)) {// XTCE 1.1
                 typeBuilder.setValidRange(readIntegerValidRange(typeBuilder.isSigned()));
             } else if (isStartElementWithName(XTCE_VALID_RANGE_SET)) {// XTCE 1.2
@@ -3400,10 +3441,10 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (readBaseTypeProperties(typeBuilder)) {
                 continue;
-            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
-                typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
             } else if (isEndElementWithName(XTCE_BINARY_ARGUMENT_TYPE)) {
                 return incompleteType;
             } else {
@@ -3428,8 +3469,14 @@ public class XtceStaxReader {
                 continue;
             } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 skipXtceSection(XTCE_CONTEXT_ALARM_LIST);
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)
+                    || isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
+                throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
+                        + " not supported for string argument", xmlEvent.getLocation());
             } else if (isEndElementWithName(XTCE_STRING_ARGUMENT_TYPE)) {
                 return incompleteType;
             } else {

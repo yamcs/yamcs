@@ -31,7 +31,7 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
     
     @Override
     public String toString() {
-        return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
+        return "FloatArgumentType name:" + name + " sizeInBits:" + sizeInBits + " encoding:" + encoding;
     }
     
     public static class Builder extends FloatDataType.Builder<Builder> implements ArgumentType.Builder<Builder> {

@@ -82,6 +82,15 @@
 				</xtce:StringDataEncoding>
 			</xtce:StringArgumentType>
 
+			<!-- string encoded as binary -->
+			<xtce:StringArgumentType name="string6">
+				<xtce:BinaryDataEncoding>
+					<xtce:SizeInBits>
+						<xtce:FixedValue>40</xtce:FixedValue>
+					</xtce:SizeInBits>
+				</xtce:BinaryDataEncoding>
+			</xtce:StringArgumentType>
+
 			<xtce:IntegerArgumentType signed="false" name="uint16">
 				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
 			</xtce:IntegerArgumentType>
@@ -149,6 +158,19 @@
 				<xtce:CommandContainer name="command5">
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="string5" />
+						<xtce:ArgumentRefEntry argumentRef="para1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+
+			<xtce:MetaCommand name="command6">
+				<xtce:ArgumentList>
+					<xtce:Argument name="string6" argumentTypeRef="string6" />
+					<xtce:Argument name="para1" argumentTypeRef="uint16" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command6">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="string6" />
 						<xtce:ArgumentRefEntry argumentRef="para1" />
 					</xtce:EntryList>
 				</xtce:CommandContainer>

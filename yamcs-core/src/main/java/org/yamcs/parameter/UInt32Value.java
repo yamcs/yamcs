@@ -25,6 +25,11 @@ public class UInt32Value extends Value {
     }
 
     @Override
+    public double toDouble() {
+        return toLong();
+    }
+
+    @Override
     public int hashCode() {
         return Integer.hashCode(v);
     }

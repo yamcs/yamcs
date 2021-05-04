@@ -77,3 +77,9 @@ xtce-strings-cmd:
     - type: xtce
       args:
           file: "src/test/resources/xtce/strings-cmd.xml"
+          
+xtce-booleans:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/booleans.xml"          
+          

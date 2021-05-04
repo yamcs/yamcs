@@ -154,17 +154,18 @@ public class BogusSat2Test {
         assertEquals(-6, pv.getRawValue().getSint32Value());
 
     }
-    
+
     @Test
     public void testAbstractMetaCommand() {
         MetaCommand mc = db.getMetaCommand("/BogusSAT/CCSDSTelecommand");
         assertTrue(mc.isAbstract());
     }
-    
+
     @Test
     public void testAggregatePtypeNameDescription() {
-        AggregateParameterType pt = (AggregateParameterType)db.getParameterType("/BogusSAT/SC001/Onboard_Processor_Config/Config_Log_Levels_Type");
-        
+        AggregateParameterType pt = (AggregateParameterType) db
+                .getParameterType("/BogusSAT/SC001/Onboard_Processor_Config/Config_Log_Levels_Type");
+
         assertEquals("Test Long Description", pt.getLongDescription());
         List<AncillaryData> l = pt.getAncillaryData();
         assertEquals(1, l.size());
@@ -175,7 +176,8 @@ public class BogusSat2Test {
 
     @Test
     public void testEnumDescription() {
-        EnumeratedParameterType ept = (EnumeratedParameterType) db.getParameterType("/BogusSAT/LOG_MSGS/ERRORCODE_Type");
+        EnumeratedParameterType ept = (EnumeratedParameterType) db
+                .getParameterType("/BogusSAT/LOG_MSGS/ERRORCODE_Type");
         ValueEnumeration ve = ept.enumValue(123l);
         assertEquals("Detailed description of error case A", ve.getDescription());
     }

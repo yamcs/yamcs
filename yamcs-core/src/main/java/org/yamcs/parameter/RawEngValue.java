@@ -16,6 +16,7 @@ public abstract class RawEngValue {
 
     public RawEngValue() {
     }
+
     // copy constructor - copies all the fields in a shallow mode
     public RawEngValue(RawEngValue pv) {
         this.rawValue = pv.rawValue;

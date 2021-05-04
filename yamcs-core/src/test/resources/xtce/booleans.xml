@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
+<!--
+	This file contains several examples on how to define string arguments with yamcs
+-->
+<SpaceSystem name="Booleans" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<BooleanParameterType name="bool1">
+				<IntegerDataEncoding sizeInBits="8" />
+			</BooleanParameterType>
+			<BooleanParameterType name="bool2" oneStringValue="yes!" zeroStringValue="nooo">
+				<StringDataEncoding>
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>32</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</BooleanParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="bool1" name="bool1"></Parameter>
+			<Parameter parameterTypeRef="bool2" name="bool2"></Parameter>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="packet1">
+				<EntryList>
+					<ParameterRefEntry parameterRef="bool1"></ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="packet2">
+				<EntryList>
+					<ParameterRefEntry parameterRef="bool2"></ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<BooleanArgumentType name="bool1">
+				<IntegerDataEncoding sizeInBits="8" />
+			</BooleanArgumentType>
+			<BooleanArgumentType name="bool2" oneStringValue="yes!" zeroStringValue="nooo">
+				<StringDataEncoding>
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>32</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</BooleanArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="command1">
+				<ArgumentList>
+					<Argument name="bool1" argumentTypeRef="bool1" />
+				</ArgumentList>
+				<CommandContainer name="command1">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="bool1" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="command2">
+				<ArgumentList>
+					<Argument name="bool2" argumentTypeRef="bool2" />
+				</ArgumentList>
+				<CommandContainer name="bool2">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="bool2" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

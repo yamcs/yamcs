@@ -25,6 +25,11 @@ public class SInt32Value extends Value {
     }
 
     @Override
+    public double toDouble() {
+        return v;
+    }
+
+    @Override
     public int hashCode() {
         return Integer.hashCode(v);
     }

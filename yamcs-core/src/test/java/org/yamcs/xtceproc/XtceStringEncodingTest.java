@@ -186,4 +186,17 @@ public class XtceStringEncodingTest {
         assertArrayEquals(expected, b);
     }
 
+    @Test
+    public void testStringEncodedAsBinary() throws Exception {
+        MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command6");
+        List<ArgumentAssignment> arguments = new LinkedList<>();
+
+        arguments.add(new ArgumentAssignment("string6", "ab"));
+        arguments.add(new ArgumentAssignment("para1", "258"));
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+
+        byte[] expected = new byte[] { 'a', 'b', 0, 0, 0, 0x01, 0x02 };
+        assertArrayEquals(expected, b);
+    }
+
 }

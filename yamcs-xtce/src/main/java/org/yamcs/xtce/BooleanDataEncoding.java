@@ -1,7 +1,9 @@
 package org.yamcs.xtce;
 
 /**
- * For boolean data. DIFFERS_FROM_XTCE: XTCE does not have a BooleanDataEncoding, only a BooleanParameterType. This
+ * For boolean data.
+ * <p>
+ * DIFFERS_FROM_XTCE: XTCE does not have a BooleanDataEncoding, only a BooleanParameterType. This
  * creates an inconsistency when algorithms output uncalibrated boolean values.
  */
 public class BooleanDataEncoding extends DataEncoding {
@@ -14,14 +16,9 @@ public class BooleanDataEncoding extends DataEncoding {
     public BooleanDataEncoding(Builder builder) {
         super(builder, 1);
     }
-    
+
     public Builder toBuilder() {
         return new Builder(this);
-    }
-    
-    @Override
-    public String toString() {
-        return "BooleanDataEncoding(sizeInBits:" + sizeInBits + ")";
     }
 
     @Override
@@ -41,10 +38,15 @@ public class BooleanDataEncoding extends DataEncoding {
 
         public Builder() {
             super();
-         }
-        
+        }
+
         public BooleanDataEncoding build() {
             return new BooleanDataEncoding(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "BooleanDataEncoding(sizeInBits:" + sizeInBits + ")";
     }
 }

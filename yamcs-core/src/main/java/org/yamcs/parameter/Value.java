@@ -57,4 +57,15 @@ public abstract class Value {
     public long toLong() {
         throw new UnsupportedOperationException("Cannot use toLong() for " + getType() + " values");
     }
+
+    /**
+     * return the value as a double. Precision will be lost when converting large integer numbers.
+     * 
+     * @throws UnsupportedOperationException
+     *             for non numeric values.
+     * 
+     */
+    public double toDouble() {
+        throw new UnsupportedOperationException("Cannot use toLong() for " + getType() + " values");
+    }
 }

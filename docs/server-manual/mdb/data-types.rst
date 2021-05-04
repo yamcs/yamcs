@@ -2,39 +2,41 @@ Data Types
 =====================
 
 The MDB data types are associated to parameters and command arguments and provide several characteristics of these:
+ - the value type (int64, int32, float,...) of the engineering value
+ - the value type of the raw value
+ - validity conditions
+ - units
+ - alarms (only for types corresponding to parameters)
+ - engineering/raw transformation using calibrators
+ - raw/binary transformation using data encodings
 
-- the value type (int64, int32, float,...) of the engineering value
-- the value type of the raw value
-- validity conditions
-- units
-- alarms (only for types corresponding to parameters)
-- engineering/raw transformation
-- raw/binary transformation
+The distinction between a parameter and its type is not so evident and many control systems do not make this distinction (i.e. each parameter with its own type). 
+
+In practice most use of shared types has been to define generic types such as "uint8", "uint16", etc and use those for parameters that do not require any calibration, units or other specific properties.
+Types can also be shared for parameters associated to the same type of sensors which do not need individual calibrators.
+
 
 Yamcs supports the following parameter and argument data types:
+ - Integer data type
+ - Float data type
+ - Boolean data type
+ - String data type
+ - Binary data type
+ - Absolute time data type
+ - Enumerated data type - a (integer, string) pair.
+ - Aggregate data type - complex data type similar to a C-struct. Each member of the aggregate has a name and a type. 
+ - Array data type- multidimensional array where each element is of the same type.
 
-- Integer data type
-- Float data type
-- Boolean data type
-- String data type
-- Binary data type
-- Absolute time data type
-- Enumerated data type - a (integer, string) pair.
-- Aggregate data type - complex data type similar to a C-struct. Each member of the aggregate has a name and a type. 
-- Array data type- multidimensional array where each element is of the same type.
+As mentioned above, one important function of a data type is to describe how to represent the raw value on the wire (i.e. in the command or telemetry packet). The following encodings are supported:
+ - Integer data encoding 
+ - Float data encoding
+ - Boolean data encoding
+ - String data encoding
+ - Binary data encoding
 
+Note that the ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``xyz`` in the ``xyz data type`` refers to type of the engineering value.
 
-To encode/decode data to/from binary (telemetry/command packet), the following encodings are supported:
-
-- Integer data encoding 
-- Float data encoding
-- Boolean data encoding
-- String data encoding
-- Binary data encoding
-
-Note that the ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``abc`` in the ``abc data type`` refers to type of the engineering value.
-
-One will quickly notice that there is no direct encoding for absolute times, enumerated, aggregated and array value types. Currently these can only be decoded/encoded from/to binary by other means (e.g. an aggregate value will be decoded by decoding its members, an enumerated value by decoding its integer or string representation).
+One will certanly notice that there is no direct encoding for absolute times, enumerated, aggregated and array value types. Currently these can only be encoded/decoded by other means (e.g. an aggregate value will be decoded by decoding its members, an enumerated value by decoding its integer or string representation).
 
 The integer and float encodings have optionally a calibrator which allow transforming the raw value to engineering value or reverse.
 
@@ -68,26 +70,36 @@ A simple XTCE example of an unsigned integer parameter type with an integer enco
 
     <IntegerParameterType signed="false" name="uint16">
         <IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
+        <ValidRange minInclusive="100" maxInclusive="1000"/>
     </IntegerParameterType>
 
 
 Note that by default the type has a ``sizeInBits=32`` so the value will be converted from 16 bits on the wire to 32 bits value.
 Yamcs will use a 32 bit integer for any parameter with ``sizeInBits <= 32`` and a 64 bit integer for any type with the ``32 < sizeInBits <= 64``.
 
-The following example shows a more exotic encoding of an integer parameter as a string:
+The ``<ValidRange>`` construct is optional and used differently for parameters and arguments:
+ - for parameters it is used to check the validity. If a parameter value does not satisfy the range, it will be marked as invalid (and can be seen with a specific color in the display)
+ - for arguments it is used to verify the value provided by the user. If the value does not match the range, the command is rejected.
+
+Integer parameters can also have associated alarms and calibrators (see below an example for float parameters, it is identical for integer parameters).
+ 
+One important thing to mention about calibrators is that even when associated to the integers, they still work on (signed) double floating point numbers. Some precision will be lost when converting from a large (unsgined) integer to a double or viceversa.
+ 
+
+The integer parameters can also be encoded as strings, as in the following XTCE example:
 
 .. code-block:: xml
   
-   <xtce:IntegerParameterType signed="false" name="int_encoded_as_string">
-        <xtce:StringDataEncoding>
-            <xtce:SizeInBits>
-                <xtce:Fixed>
-                    <xtce:FixedValue>48</xtce:FixedValue>
-                </xtce:Fixed>
-                <xtce:TerminationChar>00</xtce:TerminationChar>
-            </xtce:SizeInBits>
-        </xtce:StringDataEncoding>
-   </xtce:IntegerParameterType>
+   <IntegerParameterType signed="false" name="int_encoded_as_string">
+        <StringDataEncoding>
+            <SizeInBits>
+                <Fixed>
+                    <FixedValue>48</FixedValue>
+                </Fixed>
+                <TerminationChar>00</TerminationChar>
+            </SizeInBits>
+        </StringDataEncoding>
+   </IntegerParameterType>
   
 In this case the raw value will be of type string and the engineering value of type integer. For an explanation of how the string encoding works, please see below in the String data type section.
 
@@ -99,33 +111,86 @@ Floating point data in Yamcs can be simple precision (32  bit) or double precisi
 
 It can be encoded/decoded either to a IEEE754 representation or to an integer representation using a calibration function. Typically a sensor will produce a digital value (e.g. 12 bits integer) which has to be converted to an analog value using a calibration (or transfer) function. 
 
-An XTCE example of a float parameter encoded as integer and having a polynomial calibrator to convert from the raw integer value to the float engineering value:
+An XTCE example of a float parameter encoded as integer and having a polynomial calibrator:
 
 .. code-block:: xml
 
-    <FloatParameterType initialValue="-0.6" name="Power_Level_Type">
+    <FloatParameterType initialValue="20" name="Temperature_Type">
         <UnitSet>
-            <Unit>dB</Unit>
+            <Unit>degC</Unit>
         </UnitSet>
-        <IntegerDataEncoding encoding="twosComplement" sizeInBits="16">
-            <DefaultCalibrator name="Default_Counts">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="12">
+            <DefaultCalibrator>
                 <PolynomialCalibrator>
-                    <Term coefficient="1.5" exponent="0" />
-                    <Term coefficient="1" exponent="1" />
+                    <Term coefficient="0" exponent="-20" />
+                    <Term coefficient="1" exponent=".025" />
                 </PolynomialCalibrator>
             </DefaultCalibrator>
         </IntegerDataEncoding>
+        <DefaultAlarm>
+            <StaticAlarmRanges>
+                <WarningRange minInclusive="10" maxInclusive="30" />
+                <CriticalRange minInclusive="-10" maxInclusive="50" />
+                </StaticAlarmRanges>
+        </DefaultAlarm>
     </FloatParameterType>
+
+Yamcs supports the following type of calibrations:
+ - polynomial - the conversion between the raw value and the engineering value is obtained by applying a polynomial function.
+ - linear spline (point pairs) - the conversion between the raw and engineering value is obtained by interpolating linearly the raw value.
+ - mathematical operations specified in reverse polish notation (only in XTCE format) - the conversion is obtained by applying the mathematical operation.
+ - Java expressions (only in spreadsheet format) - the conversion is obtained by running it through the java expression.
+ 
+The java expression is the most flexible calibration as it can practically call any java code available on the server. However it is not allowed by XTCE (instead an algorithm can be used to generate the output value into a different parameter).
+
+The example above also defines an default alarm - perhaps a bit counter intuitive the parameter will trigger the alarm if it is outside of the range defined there (for example a value of 40 will trigger the warning alarm and a value of -15 will trigger the critical alarm).  As per XTCE there are 5 levels of alarms supported (in order of severity): watch, warning, distress, critical and severe.
+
+Both calibrators and alarms can be contextualized: that means a different alarm or calibrator will be used depending on the value of other parameters.
+
+While the most common encoding for float is float encoding, the other encodings can also be used:
+ - integer: will convert number to integer by performing a java cast to long and then fitting the long into the number of bits required. This may result in loss of precision and even in completely wrong number when converting a signed float to a unsigned integer. 
+ - string: the value will be converted to a string representation.
+ - binary: 
+ 
+
 
 
 Boolean data type
 -----------------
-TBW
+
+Boolean values in Yamcs take take a simple ``true`` or ``false`` value. In XTCE one can define different values instead of ``true``/``false`` as in the example below. Yamcs only supports these values when reading the XTCE file (they can be used in conditions for example) but the value computed does not include the string (and thus cannot be shown in the display).
+
+To encode boolean values one can use any data encoding with the following transformations:
+ - for integer/float raw values: 
+    - decoding: ``0`` is ``false`` and anything else is true when decoding. 
+    - encoding: ``true`` is converted to ``1``, ``false`` is converted to ``0``.
+ - for string values: 
+    - decoding: if the string value is empty, case insensitive equal with the ``zeroStringValue`` defined in the type or with the string ``0`` then the value is ``false``, anything else is ``true``. 
+    - encoding: ``true`` is converted to the ``oneStringValue`` defined in the type, ``false`` is converted to ``zeroStringValue`` defined in the type.
+ - for binary values: 
+    - decoding: if the binary value is empty or consists only of nulls then the value of the boolean is ``false`` anything else is ``true``.
+    - encoding: the value is converted to a binary array of one element with the value ``1`` if ``true`` or ``0`` if ``false``.
+
+ .. code-block:: xml
+
+    <BooleanParameterType name="bool2" oneStringValue="yes!" zeroStringValue="nooo">
+        <StringDataEncoding>
+            <SizeInBits>
+                <Fixed>
+                    <FixedValue>32</FixedValue>
+                </Fixed>
+                <TerminationChar>00</TerminationChar>
+            </SizeInBits>
+        </StringDataEncoding>
+    </BooleanParameterType>
+        
+The spreadsheet format allows to define a data type with  a boolean data encoding by using a raw type of ``bool`` in the Data Type definition. This encoding is not possible to be defined in XTCE (but it is equivalent with a 1 bit integer encoding) and it always uses one bit representation with ``0 = false`` and ``1 = true``.  
+
 
 String data type
 ----------------
 
-In Yamcs the string data is represented as a java (unicode) String value. The encoding to/from the wire is performed using one of the supported java charsets <https://docs.oracle.com/javase/8/docs/api/java/nio/charset/Charset.html>`_ (UTF-8, ISO-8859-1, etc)
+In Yamcs the string data is represented as a java (unicode) String value. The encoding to/from the wire is performed using a string data encoding with one of the supported java charsets <https://docs.oracle.com/javase/8/docs/api/java/nio/charset/Charset.html>`_ (UTF-8, ISO-8859-1, etc)
 
 In addition to converting the bytes to unicode character, a typical problem in decoding telemetry is to know the boundary of the string inside the packet. To comply with XTCE Yamcs implements a "string in a buffer" approach:
 
@@ -211,6 +276,8 @@ Note the _yamcs_ignore parameter reference which is used to workaround XTCE mand
 More XTCE examples can be found in `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-tm.xml>`_ and `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-cmd.xml>`_
 
 More Spreadsheet examples can be found in `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/mdb/refmdb.xls>`_
+
+Finally, we mention that string values can also be encoded with a binary encoder; the translation from string to binary is using the `String#getBytes <https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-->`_ method.
 
 
 Binary data type

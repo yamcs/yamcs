@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
+import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -18,6 +19,7 @@ import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -173,19 +175,15 @@ public class ParameterTypeProcessor {
         case DOUBLE:
             return ValueUtility.getBooleanValue(rawValue.getDoubleValue() != 0);
         case STRING:
-            return ValueUtility
-                    .getBooleanValue(rawValue.getStringValue() != null
-                            && !rawValue.getStringValue().isEmpty()
-                            && !rawValue.getStringValue().equals("0")
-                            && !rawValue.getStringValue().toLowerCase().equals("false"));
+            return stringToBool(bpt, rawValue.getStringValue());
         case BOOLEAN:
             return rawValue;
         case BINARY:
             ByteBuffer buf = ByteBuffer.wrap(rawValue.getBinaryValue());
-            boolean b = false;
+            boolean b = true;
             while (buf.hasRemaining()) {
-                if (buf.get() != 0xFF) {
-                    b = true;
+                if (buf.get() != 0x00) {
+                    b = false;
                     break;
                 }
             }
@@ -193,6 +191,14 @@ public class ParameterTypeProcessor {
         default:
             throw new IllegalStateException(
                     "Unsupported raw value type '" + rawValue.getType() + "' cannot be calibrated as a boolean");
+        }
+    }
+
+    private static Value stringToBool(BooleanDataType bdt, String rawValue) {
+        if (rawValue.isEmpty() || rawValue.equalsIgnoreCase(bdt.getZeroStringValue()) || rawValue.equals("0")) {
+            return BooleanValue.FALSE;
+        } else {
+            return BooleanValue.TRUE;
         }
     }
 
