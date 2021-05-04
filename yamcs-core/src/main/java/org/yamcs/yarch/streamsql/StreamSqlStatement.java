@@ -2,14 +2,13 @@ package org.yamcs.yarch.streamsql;
 
 /**
  * Tag interface for all StreamSQL statements. The execute method locks the dictionary for the period of execution.
- * 
- * @author nm
  */
 public interface StreamSqlStatement {
     /**
      * Execute query and limit the number of results returned.
      * <p>
-     * Note that the update/delete/drop table queries that return one row are executed even if the limit is 0. The output however
+     * Note that the update/delete/drop table queries that return one row are executed even if the limit is 0. The
+     * output however
      * is suppressed when the limit is set to 0.
      *
      * @param context

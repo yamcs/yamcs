@@ -9,11 +9,10 @@ import org.yamcs.yarch.TupleDefinition;
 /**
  * common implementation for statements which do not return a stream of results but just a limited set
  *
- * @author nm
- *
  */
 public abstract class SimpleStreamSqlStatement implements StreamSqlStatement {
     final static TupleDefinition EMPTY_TDEF = new TupleDefinition();
+
     @Override
     public void execute(ExecutionContext c, ResultListener resultListener, long limit) throws StreamSqlException {
         resultListener.start(getResultDefinition());

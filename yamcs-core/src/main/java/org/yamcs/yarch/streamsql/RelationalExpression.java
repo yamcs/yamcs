@@ -68,8 +68,9 @@ public class RelationalExpression extends Expression {
         if (DataType.compatible(ltype, rtype)) {
             return;
         }
-        
-        //if any of the two children is constant, we attempt a conversion, otherwise we throw an exception (an explicit conversion should be used)
+
+        // if any of the two children is constant, we attempt a conversion, otherwise we throw an exception (an explicit
+        // conversion should be used)
         if (children[0].isConstant()) {
             try {
                 Object v = DataType.castAs(ltype, rtype, children[0].getConstantValue());

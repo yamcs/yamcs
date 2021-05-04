@@ -3,6 +3,7 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,6 +104,16 @@ public class StreamSelect1Test extends YarchTestCase {
         s.start();
         assertTrue(finished.tryAcquire(5, TimeUnit.SECONDS));
         assertEquals(89, counter.get());
+    }
+
+    @Test
+    public void testDoubleParanthesis() throws Exception {
+        createFeeder1();
+        execute("create stream stream_out1 as select * from stream_in where (x>3 and (x<5 or y = 's5'))");
+        List<Tuple> tlist = fetchAll("stream_out1");
+        assertEquals(2, tlist.size());
+        assertEquals(4, tlist.get(0).getIntColumn("x"));
+        assertEquals(5, tlist.get(1).getIntColumn("x"));
     }
 
     @Test

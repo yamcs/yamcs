@@ -2,17 +2,18 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FilterableTarget;
-import org.yamcs.utils.parser.ParseException;
+
+import java.util.ArrayList;
 
 public class OrExpression extends Expression {
 
-    public OrExpression(Expression left, Expression right) throws ParseException {
-        super(new Expression[] { left, right });
+    public OrExpression(ArrayList<Expression> list) {
+        super(list.toArray(new Expression[0]));
     }
 
     @Override
     public void addFilter(FilterableTarget tableStream) throws StreamSqlException {
-        //cannot apply or condition to filter
+        // cannot apply or condition to filter
     }
 
     @Override

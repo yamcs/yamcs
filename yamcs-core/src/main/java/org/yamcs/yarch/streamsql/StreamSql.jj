@@ -703,30 +703,43 @@ SpeedSpec SpeedSpec() throws StreamSqlException: {
   | "STEP_BY_STEP" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.STEP_BY_STEP, Integer.parseInt(token.image));}
 }
 
-// Expression and it's childs
-
+// Expression and its children
 Expression Expression() throws StreamSqlException: {
     Expression expr;
-    Expression retExpr;
+    ArrayList<Expression> list = new ArrayList<Expression>();
 } {
-    (
-        expr = AndExpression() {retExpr=expr;}
-        ["OR" expr=AndExpression() {retExpr = new OrExpression(retExpr, expr);} ]
-    )
-    { 
-        retExpr.setArgs(args);
-        return retExpr; 
+      expr = AndExpression() { list.add(expr); }
+      ( "OR" expr=AndExpression() { list.add(expr); } )*
+    {
+        if(list.size() == 1) expr= list.get(0);
+        else expr = new OrExpression(list);
+
+        expr.setArgs(args);
+        return expr;
     }
 }
 
 Expression AndExpression() throws StreamSqlException: {
     Expression expr;
-    ArrayList<Expression> list = new ArrayList<Expression>();
+    ArrayList<Expression> list=new ArrayList<Expression>();
 } {
-      expr = UnaryLogicalExpression() { list.add(expr); }
-      ( "AND" expr=UnaryLogicalExpression() { list.add(expr); } )*
+    (
+        (
+            LOOKAHEAD(3) expr=UnaryLogicalExpression()
+            |
+            "(" expr=Expression() ")"
+        ) { list.add(expr); }
+        (
+            "AND"
+            (
+            LOOKAHEAD(3)  expr=UnaryLogicalExpression()
+                |
+                "(" expr=Expression() ")"
+            ) { list.add(expr); }
+        )*
+    )
     {
-        if(list.size() == 1) return list.get(0);
+        if(list.size()==1) return list.get(0);
         else return new AndExpression(list);
     }
 }

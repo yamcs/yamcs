@@ -82,7 +82,7 @@ public class StreamInitializer {
         ydb.execute(stmt, new ResultListener() {
             @Override
             public void next(Tuple tuple) {
-                //normally create stream does not produce any tuple
+                // normally create stream does not produce any tuple
             }
 
             @Override
@@ -113,12 +113,12 @@ public class StreamInitializer {
                 stmt1.execute(context, new ResultListener() {
                     @Override
                     public void next(Tuple tuple) {
-                        //swallow result
+                        // swallow result
                     }
 
                     @Override
                     public void completeExceptionally(Throwable t) {
-                        log.error("Query {} eneded in error: ",stmt1, t);
+                        log.error("Query {} eneded in error: ", stmt1, t);
                     }
 
                     @Override

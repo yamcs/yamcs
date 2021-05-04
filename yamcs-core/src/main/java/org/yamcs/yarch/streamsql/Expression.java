@@ -45,9 +45,14 @@ public abstract class Expression {
     }
 
     // TODO: this is now called from within the parser at query preparation time.
-    // when we add PreparedStatements, we should support passing the args at execution time
+    // when we add PreparedStatements, we should allow passing the args at execution time
     public void setArgs(Object[] args) {
         this.args = args;
+        if (children != null) {
+            for (Expression c : children) {
+                c.setArgs(args);
+            }
+        }
     }
 
     protected boolean isAggregate() {
@@ -127,7 +132,7 @@ public abstract class Expression {
         }
     }
 
-    protected void fillCode_InputDefVars( Collection<ColumnDefinition> inputs, StringBuilder code) {
+    protected void fillCode_InputDefVars(Collection<ColumnDefinition> inputs, StringBuilder code) {
         for (ColumnDefinition cd : inputs) {
 
             String javaColIdentifier = "col" + sanitizeName(cd.getName());
@@ -135,7 +140,7 @@ public abstract class Expression {
             if (dtype.isPrimitiveJavaType()) {
                 code.append("\t\t" + dtype.primitiveJavaType() + " " + javaColIdentifier +
                         " =  (" + dtype.javaType() + ")tuple.getColumn(\""
-                    + cd.getName() + "\");\n");
+                        + cd.getName() + "\");\n");
             } else {
                 code.append("\t\t" + dtype.javaType() + " " + javaColIdentifier +
                         " =  (" + dtype.javaType() + ")tuple.getColumn(\""
