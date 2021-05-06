@@ -13,18 +13,11 @@ import org.yamcs.xtce.XtceDb;
 
 /**
  * Keeps track of where we are when processing a packet.
- * 
- * @author nm
  *
  */
 public class ContainerProcessingContext {
     final ProcessorData proccessorData;
     final BitBuffer buffer;
-
-    // Keeps track of the absolute offset of the container where the processing takes place.
-    // Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container
-    // with respect to the primary container where the processing started
-    int containerAbsoluteByteOffset;
 
     final Subscription subscription;
     final ContainerProcessingResult result;
@@ -43,7 +36,7 @@ public class ContainerProcessingContext {
         this.buffer = buffer;
         this.subscription = subscription;
         this.result = result;
-        this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
+        this.options = options;
 
         sequenceContainerProcessor = new SequenceContainerProcessor(this);
         sequenceEntryProcessor = new SequenceEntryProcessor(this);

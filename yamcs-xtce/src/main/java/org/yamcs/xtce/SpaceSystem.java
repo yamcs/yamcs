@@ -27,7 +27,6 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 public class SpaceSystem extends NameDescription {
 
     private static final long serialVersionUID = 6L;
-    private SequenceContainer rootSequenceContainer;
 
     Header header;
     private Map<String, SequenceContainer> containers = new LinkedHashMap<>();
@@ -279,11 +278,7 @@ public class SpaceSystem extends NameDescription {
     }
 
     public SequenceContainer getRootSequenceContainer() {
-        return rootSequenceContainer;
-    }
-
-    public void setRootSequenceContainer(SequenceContainer sc) {
-        this.rootSequenceContainer = sc;
+        return containers.values().stream().filter(sc -> sc.getBaseContainer() == null).findFirst().orElse(null);
     }
 
     public Header getHeader() {

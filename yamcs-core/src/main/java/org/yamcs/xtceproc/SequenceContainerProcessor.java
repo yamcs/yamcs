@@ -29,8 +29,9 @@ public class SequenceContainerProcessor {
         BitBuffer buf = pcontext.buffer;
         // First add it to the result
         if (pcontext.provideContainerResult) {
-            result.containers.add(new ContainerExtractionResult(containerDef, buf.array(),
-                    buf.getPosition() + buf.offset() * 8, result.acquisitionTime, result.generationTime));
+            result.containers.add(new ContainerExtractionResult(containerDef,
+                    buf.array(), buf.offset(), buf.getPosition(),
+                    result.acquisitionTime, result.generationTime));
         }
 
         RateInStream ris = containerDef.getRateInStream();
@@ -117,9 +118,11 @@ public class SequenceContainerProcessor {
             }
         }
         buf.setPosition(maxposition);
+
         // Finally update the stats. We add the packet into the statistics only if it doesn't have a derived container
         if (!hasDerived && (result.stats != null)) {
-            String pname = result.getPacketName();
+
+            String pname = subscribedContainer.conainerDef.getQualifiedName();
             result.stats.newPacket(pname, (entries == null) ? 0 : entries.size(),
                     result.acquisitionTime, result.generationTime, buf.sizeInBits());
         }

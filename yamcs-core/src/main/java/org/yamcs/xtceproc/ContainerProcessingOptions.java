@@ -29,7 +29,6 @@ public class ContainerProcessingOptions {
 
     int maxArraySize = 10000;
 
-
     public ContainerProcessingOptions(YConfiguration config) {
         if (config != null) {
             ignoreOutOfContainerEntries = config.getBoolean("ignoreOutOfContainerEntries", false);

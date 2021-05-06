@@ -59,7 +59,7 @@ public class ListPacket {
 
     void load(File srcFile) throws IOException {
         if (incomplete) {
-            try (FileInputStream reader = new FileInputStream(srcFile)){
+            try (FileInputStream reader = new FileInputStream(srcFile)) {
                 byte[] data = new byte[length];
                 long n = fileOffset + buf.length;
                 if (reader.skip(n) != n) {

@@ -23,6 +23,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.XtceDb;
 
@@ -63,7 +64,14 @@ public class SequenceEntryProcessor {
                     + " while the packet buffer has capacity {} bits", ce, buf.getPosition(), buf.sizeInBits());
             return;
         }
-        SubscribedContainer subsribedContainer = pcontext.subscription.getSubscribedContainer(ce.getRefContainer());
+        SequenceContainer refContainer = ce.getRefContainer();
+        while (refContainer.getBaseContainer() != null) {
+            // TODO: this is weird, we go up the hierarchy to find the root but maybe the inheritance conditions don't
+            // match.
+            refContainer = refContainer.getBaseContainer();
+        }
+
+        SubscribedContainer subsribedContainer = pcontext.subscription.getSubscribedContainer(refContainer);
         if (subsribedContainer != null) {
             BitBuffer buf1 = buf.slice();
 
@@ -75,10 +83,10 @@ public class SequenceEntryProcessor {
             }
 
             cpc1.sequenceContainerProcessor.extract(subsribedContainer);
-            if (ce.getRefContainer().getSizeInBits() < 0)
+            if (refContainer.getSizeInBits() < 0)
                 buf.setPosition(buf.getPosition() + buf1.getPosition());
             else
-                buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
+                buf.setPosition(buf.getPosition() + refContainer.getSizeInBits());
         }
     }
 
@@ -90,9 +98,9 @@ public class SequenceEntryProcessor {
             throw new XtceProcessingException(
                     "Encountered entry for parameter '" + param.getName() + " without a type");
         }
-        ContainerParameterValue pv = new ContainerParameterValue(param);
-        int offset = pcontext.buffer.getPosition();
-        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
+        ContainerParameterValue pv = new ContainerParameterValue(param,
+                pcontext.buffer.offset(), pcontext.buffer.getPosition());
+        int startPosition = pcontext.buffer.getPosition();
 
         Value rv = extract(ptype);
         if (rv == null) {
@@ -100,7 +108,7 @@ public class SequenceEntryProcessor {
         } else {
             pv.setRawValue(rv);
         }
-        pv.setBitSize(pcontext.buffer.getPosition() - offset);
+        pv.setBitSize(pcontext.buffer.getPosition() - startPosition);
 
         pcontext.proccessorData.parameterTypeProcessor.calibrate(result, pv);
 
@@ -125,9 +133,9 @@ public class SequenceEntryProcessor {
         ArrayValue rv = extractArray((ArrayParameterType) pe.getParameter().getParameterType(),
                 size);
 
-        ContainerParameterValue pv = new ContainerParameterValue(pe.getParameter());
+        ContainerParameterValue pv = new ContainerParameterValue(pe.getParameter(),
+                pcontext.buffer.offset(), offset);
         pv.setRawValue(rv);
-        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
 
         pcontext.proccessorData.parameterTypeProcessor.calibrate(pcontext.result, pv);

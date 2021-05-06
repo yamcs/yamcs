@@ -1169,10 +1169,6 @@ public class V6Loader extends V6LoaderBase {
                     container.setRestrictionCriteria(toMatchCriteria(spaceSystem, condition));
                     MatchCriteria.printParsedMatchCriteria(log.getJulLogger(), container.getRestrictionCriteria(), "");
                 }
-            } else {
-                if (spaceSystem.getRootSequenceContainer() == null) {
-                    spaceSystem.setRootSequenceContainer(container);
-                }
             }
 
             spaceSystem.addSequenceContainer(container);

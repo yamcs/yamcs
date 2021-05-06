@@ -534,18 +534,22 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         packet.setColumnParameters(pvlist);
 
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
-        String name = null;
-        if (containers.isEmpty()) {
+        SequenceContainer sc = null;
+
+        for (ContainerExtractionResult cer : containers) {
+            if (cer.getOffset() > 0) {
+                continue;
+            }
+            sc = cer.getContainer();
+        }
+
+        String name;
+        if (sc == null) {
             name = "unknown";
         } else {
-            SequenceContainer sc = containers.get(containers.size() - 1).getContainer();
-            String defaultNamespace = packetViewer.getDefaultNamespace();
-            if (defaultNamespace != null) {
-                name = sc.getAlias(defaultNamespace);
-            }
-            if (name == null) {
-                name = sc.getName();
-            }
+            String alias = packetViewer.getDefaultNamespace() == null ? null
+                    : sc.getAlias(packetViewer.getDefaultNamespace());
+            name = alias == null ? sc.getName() : alias;
         }
 
         packet.setName(name);

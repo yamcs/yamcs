@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -290,14 +291,27 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
                     rootSequenceContainer);
-            String packetName = cpr.getPacketName();
+
+            List<ContainerExtractionResult> cerList = cpr.getContainerResult();
+            String pname = null;
+            // Derives the archive partition; the first container is the root container.
+            // We take the name of the most specific one with the archive partition flag set
+            for (int i = cerList.size() - 1; i >= 0; i--) {
+                SequenceContainer sc = cerList.get(i).getContainer();
+                if (sc.useAsArchivePartition()) {
+                    pname = sc.getQualifiedName();
+                }
+            }
+            if (pname == null) {
+                pname = cerList.get(0).getContainer().getQualifiedName();
+            }
 
             try {
                 List<Object> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);
                 columns.addAll(c);
 
-                columns.add(c.size(), packetName);
+                columns.add(c.size(), pname);
                 TupleDefinition tdef = t.getDefinition().copy();
                 tdef.addColumn(PNAME_COLUMN, DataType.ENUM);
 

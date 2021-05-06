@@ -7,29 +7,47 @@ import org.yamcs.xtce.SequenceEntry;
  * A parameter value corresponding to a parameter that has been extracted from a container.
  *  
  * It contains the position in the container where it has been extracted from.
- * @author nm
  *
  */
 public class ContainerParameterValue extends ParameterValue {
     SequenceEntry entry;
-    int absoluteBitOffset, bitSize;
+    // the start of the container in the packet in bytes
+    // this is the start of the top container in the hierarchy
+    // this means it is normally 0 unless we have container composition (not inheritance!) and then it is the
+    // byte offset where the sub-container appears in the containing container
+    final int startOffset;
+    // bit offset relative to the startOffset
+    final int bitOffset;
 
-    public ContainerParameterValue(Parameter def) {
+    int bitSize;
+
+    public ContainerParameterValue(Parameter def, int startOffset, int bitOffset) {
         super(def);
+        this.startOffset = startOffset;
+        this.bitOffset = bitOffset;
     }
+
     public ContainerParameterValue(ContainerParameterValue cpv) {
         super(cpv);
         this.entry = cpv.entry;
-        this.absoluteBitOffset = cpv.absoluteBitOffset;
+        this.bitOffset = cpv.bitOffset;
+        this.startOffset = cpv.startOffset;
         this.bitSize = cpv.bitSize;
     }
     
     public int getAbsoluteBitOffset() {
-        return absoluteBitOffset;
+        return startOffset * 8 + bitOffset;
     }
 
-    public void setAbsoluteBitOffset(int absoluteBitOffset) {
-        this.absoluteBitOffset = absoluteBitOffset;
+    /**
+     * Returns the start of the byte offset of the container start in the packet. This is the start of the top
+     * container in the hierarchy where entry.getContainer() belongs.
+     * <p>
+     * It is 0 unless we have container composition (not inheritance!) and then it is the
+     * byte offset where the sub-container appears in the containing container
+     */
+    public int getContainerStartOffset() {
+        return startOffset;
     }
 
     public int getBitSize() {
@@ -40,12 +58,12 @@ public class ContainerParameterValue extends ParameterValue {
         this.bitSize = bitSize;
     }
 
-    public void setSequenceEntry(SequenceEntry entry) {
-        this.entry = entry;
-    }
-
     public SequenceEntry getSequenceEntry() {
         return entry;
+    }
+
+    public void setSequenceEntry(SequenceEntry entry) {
+        this.entry = entry;
     }
 
 }

@@ -2554,9 +2554,6 @@ public class XtceStaxReader {
                 } else {
                     spaceSystem.addSequenceContainer(sc);
                 }
-                if ((sc.getBaseContainer() == null) && (spaceSystem.getRootSequenceContainer() == null)) {
-                    spaceSystem.setRootSequenceContainer(sc);
-                }
             } else if (isEndElementWithName(XTCE_CONTAINER_SET)) {
                 return;
             } else {

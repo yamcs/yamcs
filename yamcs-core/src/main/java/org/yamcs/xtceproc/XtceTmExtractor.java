@@ -102,13 +102,6 @@ public class XtceTmExtractor {
     }
 
     /**
-     * Extract one packet, starting at the root sequence container
-     */
-    public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime) {
-        return processPacket(buf, generationTime, acquisitionTime, rootContainer);
-    }
-
-    /**
      * Extract one packet, starting at the specified container.
      */
     public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime,

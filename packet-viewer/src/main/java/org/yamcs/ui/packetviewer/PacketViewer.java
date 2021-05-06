@@ -864,16 +864,24 @@ public class PacketViewer extends JFrame implements ActionListener,
         SwingUtilities.invokeLater(new Runnable() {
             Hashtable<String, TreeContainer> containers = new Hashtable<>();
 
-            DefaultMutableTreeNode getTreeNode(SequenceContainer sc) {
+            DefaultMutableTreeNode getTreeNode(int startOffset, SequenceContainer sc) {
+                String sckey = startOffset + ":" + sc.getOpsName();
+
                 if (sc.getBaseContainer() == null) {
-                    return structureRoot;
+                    if (startOffset == 0) {
+                        return structureRoot;
+                    } else {
+
+                        return containers.computeIfAbsent(sckey, k -> {
+                            TreeContainer tc1 = new TreeContainer(sc);
+                            structureRoot.add(tc1);
+                            return tc1;
+                        });
+                    }
                 }
-                TreeContainer tc = containers.get(sc.getOpsName());
-                if (tc == null) {
-                    tc = new TreeContainer(sc);
-                    containers.put(sc.getOpsName(), tc);
-                }
-                getTreeNode(sc.getBaseContainer()).add(tc);
+                TreeContainer tc = containers.computeIfAbsent(sckey, key -> new TreeContainer(sc));
+
+                getTreeNode(startOffset, sc.getBaseContainer()).add(tc);
                 return tc;
             }
 
@@ -887,7 +895,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                     // parameters become leaves, and sequence containers become nodes recursively
                     if (value instanceof ContainerParameterValue) {
                         ContainerParameterValue cpv = (ContainerParameterValue) value;
-                        getTreeNode(cpv.getSequenceEntry().getSequenceContainer())
+                        getTreeNode(cpv.getContainerStartOffset(), cpv.getSequenceEntry().getSequenceContainer())
                                 .add(new TreeEntry(cpv));
                     }
                     parametersTable.parametersTableModel.addRow(value);

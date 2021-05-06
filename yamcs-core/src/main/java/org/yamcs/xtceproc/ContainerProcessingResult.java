@@ -6,7 +6,6 @@ import java.util.List;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.xtce.SequenceContainer;
 
 /**
  * the container result is built during a container processing
@@ -29,19 +28,6 @@ public class ContainerProcessingResult extends ProcessingData {
         this.acquisitionTime = aquisitionTime;
         this.generationTime = generationTime;
         this.stats = stats;
-
-    }
-
-    public String getPacketName() {
-        // Derives the archive partition based on a list of matched containers. The first container is the root
-        // container.
-        for (int i = containers.size() - 1; i >= 0; i--) {
-            SequenceContainer sc = containers.get(i).getContainer();
-            if (sc.useAsArchivePartition()) {
-                return sc.getQualifiedName();
-            }
-        }
-        return containers.get(0).getContainer().getQualifiedName();
     }
 
     public ParameterValueList getParameterResult() {
