@@ -19,6 +19,7 @@ public class VcDownlinkManagedParameters {
     String packetPreprocessorClassName;
     YConfiguration packetPreprocessorArgs;
     final YConfiguration config;
+    protected String vcaHandlerClassName;
     
     public VcDownlinkManagedParameters(int vcId) {
         this.vcId = vcId;
@@ -42,5 +43,9 @@ public class VcDownlinkManagedParameters {
             packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
         }
         stripEncapsulationHeader = config.getBoolean("stripEncapsulationHeader", false);
+    }
+
+    protected void parseVcaConfig() {
+        this.vcaHandlerClassName = config.getString("vcaHandlerClassName");
     }
 }

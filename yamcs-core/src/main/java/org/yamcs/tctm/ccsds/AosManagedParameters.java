@@ -14,7 +14,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         /** Bitstream Protocol Data Unit */
         // B_PDU,
         /** Virtual Channel Access Service Data Unit */
-        // VCA_SDU,
+        VCA,
         /** IDLE frames are those with vcId = 63 */
         IDLE
     };
@@ -34,7 +34,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
         }
-        if(errorDetection == FrameErrorDetection.CRC32) {
+        if (errorDetection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for AOS");
         }
         insertZoneLength = config.getInt("insertZoneLength", 0);
@@ -42,7 +42,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         if (insertZoneLength < 0 || insertZoneLength > frameLength - 6) {
             throw new ConfigurationException("Invalid insert zone length " + insertZoneLength);
         }
-        
+
         frameHeaderErrorControlPresent = config.getBoolean("frameHeaderErrorControlPresent");
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
@@ -80,6 +80,9 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             case IDLE:
                 m.put(vmp.vcId, new IdleFrameHandler());
                 break;
+            case VCA:
+                m.put(vmp.vcId, createVcaHandler(yamcsInstance, linkName, vmp));
+                break;
             default:
                 throw new UnsupportedOperationException(vmp.service + " not supported (TODO)");
             }
@@ -90,7 +93,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
     static class AosVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
         boolean ocfPresent;
-        
+
         public AosVcManagedParameters(YConfiguration config) {
             super(config);
 
@@ -106,6 +109,8 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             ocfPresent = config.getBoolean("ocfPresent");
             if (service == ServiceType.PACKET) {
                 parsePacketConfig();
+            } else if (service == ServiceType.VCA) {
+                parseVcaConfig();
             }
         }
 

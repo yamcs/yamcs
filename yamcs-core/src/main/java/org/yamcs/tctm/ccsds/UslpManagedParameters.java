@@ -17,7 +17,9 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         /** Multiplexing Protocol Data Unit */
         PACKET,
         /** IDLE frames are those with vcId = 63 */
-        IDLE
+        IDLE,
+        /** Virtual Channel Access */
+        VCA
     };
 
     int frameLength; // frame length if fixed or -1 if not fixed
@@ -58,7 +60,6 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
     }
 
     static class UslpVcManagedParameters extends VcDownlinkManagedParameters {
-
         ServiceType service;
 
         COPType copInEffect;
@@ -72,6 +73,8 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
             service = config.getEnum("service", ServiceType.class);
             if (service == ServiceType.PACKET) {
                 parsePacketConfig();
+            } else if (service == ServiceType.VCA) {
+                parseVcaConfig();
             }
         }
 
@@ -106,6 +109,10 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
             case IDLE:
                 m.put(vmp.vcId, new IdleFrameHandler());
                 break;
+            case VCA:
+                m.put(vmp.vcId, createVcaHandler(yamcsInstance, linkName, vmp));
+                break;
+
             default:
                 throw new UnsupportedOperationException(vmp.service + " not supported (TODO)");
             }
