@@ -273,7 +273,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 return TimeEncoding.fromUnixMillisec(customEpoch + t);
             }
         default:
-            throw new IllegalStateException("Unknonw epoch " + timeEpoch);
+            throw new IllegalStateException("Unknown epoch " + timeEpoch);
         }
     }
 
