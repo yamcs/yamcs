@@ -47,13 +47,13 @@ public class AggregateUtil {
     }
 
     /**
-     * parses a reference of shape
+     * Parses a reference of shape
      * 
      * <pre>
-     * x.y[3][4].z
+     * /a/b/c/x.y[3][4].z
      * </pre>
      * 
-     * into an array of PathElement
+     * into an array of PathElement: {"a/b/c/x", "y"[3,4], "z"}
      * 
      * @param name
      * @return

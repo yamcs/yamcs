@@ -232,8 +232,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, ranges.size());
         r0 = ranges.get(0);
         assertEquals(7200 + 3600, r0.getCounts(0));
-        
-        
+
         ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
                 RangeOptions.minimumRange(4 * 3600000l)).get();
         assertEquals(1, ranges.size());
@@ -308,13 +307,16 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         start = Instant.parse("2019-04-06T20:00:00Z");
         stop = Instant.parse("2019-04-06T23:00:00Z");
-        page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1[1].member3", start, stop).get();
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1[1].member3",
+                start, stop, ListOptions.ascending(true)).get();
 
         values.clear();
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(100, values.size());
         pv = values.get(0);
+        assertEquals("2019-04-06T20:00:00Z", Timestamps.toString(pv.getGenerationTime()));
+
         engValue = pv.getEngValue();
         assertEquals(0.5, engValue.getFloatValue(), 1e-5);
 
@@ -324,6 +326,46 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(500, samples.size());
         Sample s0 = samples.get(0);
         assertEquals(23, s0.getAvg(), 1e-5);
+    }
+
+    @Test
+    public void testWithFullArrayAggregates() throws Exception {
+        generatePkt8("2021-05-17T20:00:00", 2 * 3600);
+
+        // first two requests before the consolidation, should return data from cache
+        Instant start = Instant.parse("2021-05-17T21:59:00Z");
+        Instant stop = Instant.parse("2021-05-17T23:00:00Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1", start, stop)
+                .get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(59, values.size());
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        Value engValue = pv.getEngValue().getArrayValue(5).getAggregateValue().getValue(1);
+
+        assertEquals(10, engValue.getUint32Value());
+        assertFalse(pv.hasExpireMillis());
+
+        // build the parameter archive
+        buildParameterArchive("2021-05-17T20:00:00", "2021-05-17T23:00:00");
+
+        start = Instant.parse("2021-05-17T20:00:00Z");
+        stop = Instant.parse("2021-05-17T23:00:00Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1",
+                start, stop, ListOptions.ascending(true)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(100, values.size());
+        pv = values.get(0);
+
+        assertEquals("2021-05-17T20:00:00Z", Timestamps.toString(pv.getGenerationTime()));
+
+        engValue = pv.getEngValue().getArrayValue(1).getAggregateValue().getValue(2);
+        assertEquals(0.5, engValue.getFloatValue(), 1e-5);
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {

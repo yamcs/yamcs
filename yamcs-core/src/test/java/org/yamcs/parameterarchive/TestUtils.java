@@ -15,7 +15,7 @@ public class TestUtils {
         ParameterValue pv = new ParameterValue(p);
         pv.setAcquisitionTime(instant);
         Value v = ValueUtility.getSint32Value(intv);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         return pv;
     }
 
@@ -23,7 +23,7 @@ public class TestUtils {
         ParameterValue pv = new ParameterValue(p);
         pv.setAcquisitionTime(instant);
         Value v = ValueUtility.getStringValue(sv);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         return pv;
     }
 

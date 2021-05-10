@@ -266,7 +266,7 @@ public class Tablespace {
         return tr;
     }
 
-    private TablespaceRecord updateRecord(String yamcsInstance, TablespaceRecord.Builder trb) throws RocksDBException {
+    public TablespaceRecord updateRecord(String yamcsInstance, TablespaceRecord.Builder trb) throws RocksDBException {
         if (!trb.hasType()) {
             throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
         }

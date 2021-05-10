@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
@@ -55,7 +55,7 @@ public class ParameterArchiveTest {
     }
 
     static MockupTimeService timeService;
-    static Parameter p1, p2, p3, p4, p5;
+    static Parameter p1, p2, p3, p4, p5, a1;
     ParameterArchive parchive;
     ParameterIdDb pidMap;
     ParameterGroupIdDb pgidMap;
@@ -67,11 +67,14 @@ public class ParameterArchiveTest {
         p3 = new Parameter("p3");
         p4 = new Parameter("p4");
         p5 = new Parameter("p5");
+        a1 = new Parameter("a1");
         p1.setQualifiedName("/test/p1");
         p2.setQualifiedName("/test/p2");
         p3.setQualifiedName("/test/p3");
         p4.setQualifiedName("/test/p4");
         p5.setQualifiedName("/test/p5");
+
+        a1.setQualifiedName("/test/a1");
         TimeEncoding.setUp();
 
         timeService = new MockupTimeService();
@@ -291,7 +294,18 @@ public class ParameterArchiveTest {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(instant);
         Value v = ValueUtility.getStringValue(sv);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
+        return pv;
+    }
+
+    ParameterValue getArrayValue(Parameter p, long instant, String... values) {
+        ParameterValue pv = new ParameterValue(p);
+        ArrayValue engValue = new ArrayValue(new int[] { values.length }, Type.STRING);
+        for (int i = 0; i < values.length; i++) {
+            engValue.setElementValue(i, ValueUtility.getStringValue(values[i]));
+        }
+        pv.setGenerationTime(instant);
+        pv.setEngValue(engValue);
         return pv;
     }
 
@@ -299,7 +313,7 @@ public class ParameterArchiveTest {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(instant);
         Value v = ValueUtility.getStringValue(sv);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         pv.setRawValue(ValueUtility.getUint32Value(rv));
         return pv;
     }
@@ -308,7 +322,7 @@ public class ParameterArchiveTest {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(instant);
         Value v = ValueUtility.getStringValue(sv);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         pv.setRawValue(ValueUtility.getStringValue(rv));
         return pv;
     }
@@ -509,6 +523,7 @@ public class ParameterArchiveTest {
         // ascending retrieving two para
         List<ParameterIdValueList> l3a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
                 new int[] { p1id, p2id }, new int[] { pg1id, pg1id }, true);
+
         assertEquals(1, l3a.size());
         checkEquals(l3a.get(0), 100, pv1_0, pv2_0);
 
@@ -580,7 +595,51 @@ public class ParameterArchiveTest {
         assertEquals(2, l7a.size());
         checkEquals(l7a.get(0), 100, pv1_0, pv2_0);
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
+    }
 
+    @Test
+    public void testArrays() throws Exception {
+        ParameterValue pva1_0 = getArrayValue(a1, 100, "a");
+        ParameterValue pva1_1 = getArrayValue(a1, 100, "b", "c");
+
+        long t1 = TimeEncoding.parse("2021-06-02T00:00:00");
+        long t2 = TimeEncoding.parse("2021-06-02T00:10:00");
+
+        BasicParameterList l1 = new BasicParameterList(parchive.getParameterIdDb());
+        l1.add(pva1_0);
+
+        BasicParameterList l2 = new BasicParameterList(parchive.getParameterIdDb());
+        l2.add(pva1_1);
+
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(l1.getPids());
+        int pg2id = parchive.getParameterGroupIdDb().createAndGet(l2.getPids());
+
+        PGSegment pgSegment2 = new PGSegment(pg2id, ParameterArchive.getIntervalStart(t2),
+                l2.getPids());
+        pgSegment2.addRecord(t2, l2.getValues());
+
+        PGSegment pgSegment1 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t1),
+                l1.getPids());
+        pgSegment1.addRecord(t1, l1.getValues());
+
+        parchive.writeToArchive(pgSegment2);
+        parchive.writeToArchive(pgSegment1);
+
+        ParameterId[] parameterIds = parchive.getParameterIdDb().get(a1.getQualifiedName());
+        assertEquals(1, parameterIds.length);
+
+        MultipleParameterRequest mpvr = new MultipleParameterRequest(0l, TimeEncoding.MAX_INSTANT,
+                parameterIds, true);
+
+        MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
+        MultiValueConsumer c = new MultiValueConsumer();
+        mpdr.retrieve(c);
+        assertEquals(2, c.list.size());
+        ParameterIdValueList rl0 = c.list.get(0);
+        assertEquals(1, rl0.size());
+        checkEquals(c.list.get(0), t1, pva1_0);
+
+        checkEquals(c.list.get(1), t2, pva1_1);
     }
 
     @Test
@@ -615,14 +674,10 @@ public class ParameterArchiveTest {
 
     List<ParameterIdValueList> retrieveMultipleParameters(long start, long stop, int[] parameterIds,
             int[] parameterGroupIds, boolean ascending, int limit) throws Exception {
-        String[] parameterNames = new String[parameterIds.length];
-        for (int i = 0; i < parameterIds.length; i++) {
-            parameterNames[i] = "p" + parameterIds[i];
-        }
-        BitSet retrieveRawValues = new BitSet();
-        retrieveRawValues.set(0, parameterIds.length);
-        MultipleParameterRequest mpvr = new MultipleParameterRequest(start, stop, parameterNames,
-                parameterIds, parameterGroupIds, ascending, true, retrieveRawValues, true);
+        ParameterId[] pids = Arrays.stream(parameterIds).mapToObj(pid -> pidMap.getParameterId(pid))
+                .toArray(ParameterId[]::new);
+        MultipleParameterRequest mpvr = new MultipleParameterRequest(start, stop,
+                pids, parameterGroupIds, ascending, true, true, true);
         mpvr.setLimit(limit);
 
         MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
@@ -630,6 +685,7 @@ public class ParameterArchiveTest {
         mpdr.retrieve(c);
         return c.list;
     }
+
 
     class SingleValueConsumer implements Consumer<ParameterValueArray> {
         List<ParameterValueArray> list = new ArrayList<>();

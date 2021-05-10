@@ -40,11 +40,6 @@ public class ParameterIdValueList {
         return pids.size();
     }
 
-    public void sortByPid() {
-        // TODO Auto-generated method stub
-        
-    }
-
     public IntArray getPids() {
         return pids;
     }

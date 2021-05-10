@@ -2,7 +2,6 @@ package org.yamcs.http.api;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -49,7 +48,6 @@ import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
@@ -257,13 +255,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             streamArchiveApi.listParameterHistory(ctx, request, observer);
             return;
         }
-
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
-
-        NamedObjectId requestedId = requestedParamWithId.getId();
 
         int limit = request.hasLimit() ? request.getLimit() : 100;
 
@@ -275,7 +270,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-
         boolean ascending = request.getOrder().equals("asc");
         if (request.hasNext()) {
             TimeSortedPageToken token = TimeSortedPageToken.decode(request.getNext());
@@ -286,38 +280,17 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             }
         }
 
+        MultipleParameterRequest mpvr;
         ParameterArchive parchive = getParameterArchive(ysi);
         ParameterIdDb piddb = parchive.getParameterIdDb();
-        IntArray pidArray = new IntArray();
-        IntArray pgidArray = new IntArray();
         String qn = requestedParamWithId.getQualifiedName();
         ParameterId[] pids = piddb.get(qn);
-
-        BitSet retrieveRawValues = new BitSet();
         if (pids != null) {
-            ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
-            for (ParameterId pid : pids) {
-                int[] pgids = pgidDb.getAllGroups(pid.pid);
-                for (int pgid : pgids) {
-                    if (pid.getRawType() != null) {
-                        retrieveRawValues.set(pidArray.size());
-                    }
-                    pidArray.add(pid.pid);
-                    pgidArray.add(pgid);
-                }
-            }
-
-            if (pidArray.isEmpty()) {
-                log.error("No parameter group id found in the parameter archive for {}", qn);
-                throw new NotFoundException();
-            }
+            mpvr = new MultipleParameterRequest(start, stop, pids, ascending);
         } else {
-            log.warn("No parameter id found in the parameter archive for {}", qn);
+            log.debug("No parameter id found in the parameter archive for {}", qn);
+            mpvr = null;
         }
-        String[] pnames = new String[pidArray.size()];
-        Arrays.fill(pnames, requestedParamWithId.getQualifiedName());
-        MultipleParameterRequest mpvr = new MultipleParameterRequest(start, stop, pnames, pidArray.toArray(),
-                pgidArray.toArray(), ascending, true, retrieveRawValues, true);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
         // filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
@@ -357,8 +330,18 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         replayListener.setNoRepeat(request.getNorepeat());
         try {
-            // FIXME - make async
-            retrieveParameterData(parchive, pcache, requestedParamWithId, mpvr, replayListener);
+            if (mpvr != null) {
+                retrieveParameterData(parchive, pcache, requestedParamWithId, mpvr, replayListener);
+            } else if (pcache != null) {
+                // sendFromCache sends (start, stop) in ascending mode, so we have to make sure that start is also
+                // included
+                long _start = ascending ? start - 1 : start;
+                sendFromCache(requestedParamWithId, pcache, ascending, _start, stop, replayListener);
+            } else {
+                log.warn("No parameter id found in the parameter archive for {} and parameter cache is not enabled",
+                        qn);
+                throw new NotFoundException();
+            }
         } catch (DecodingException | RocksDBException | IOException e) {
             throw new InternalServerErrorException(e);
         }
@@ -514,14 +497,14 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             if (request.hasQ() && !fqn.contains(request.getQ())) {
                 return true;
             }
-            ArchivedParameterInfo.Builder apib = ArchivedParameterInfo.newBuilder().setFqn(fqn).setPid(pid.pid);
-            if (pid.engType != null) {
-                apib.setEngType(pid.engType);
+            ArchivedParameterInfo.Builder apib = ArchivedParameterInfo.newBuilder().setFqn(fqn).setPid(pid.getPid());
+            if (pid.getEngType() != null) {
+                apib.setEngType(pid.getEngType());
             }
             if (pid.getRawType() != null) {
                 apib.setRawType(pid.getRawType());
             }
-            for (int gid : pgdb.getAllGroups(pid.pid)) {
+            for (int gid : pgdb.getAllGroups(pid.getPid())) {
                 apib.addGids(gid);
             }
 
@@ -559,7 +542,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder();
 
         pdb.iterate((fqn, paraId) -> {
-            if (paraId.pid == pid) {
+            if (paraId.getPid() == pid) {
                 paraInfo.setFqn(fqn);
                 paraInfo.setEngType(paraId.getEngType());
                 paraInfo.setRawType(paraId.getRawType());
@@ -608,7 +591,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ArchivedParameterGroupResponse.Builder resp = ArchivedParameterGroupResponse.newBuilder();
 
         pdb.iterate((fqn, paraId) -> {
-            if (sortedPids.contains(paraId.pid)) {
+            if (sortedPids.contains(paraId.getPid())) {
                 ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder()
                         .setFqn(fqn);
                 if (paraId.getEngType() != null) {
@@ -618,7 +601,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                     paraInfo.setRawType(paraId.getRawType());
                 }
 
-                paraInfo.setPid(paraId.pid);
+                paraInfo.setPid(paraId.getPid());
 
                 resp.addParameters(paraInfo.build());
             }

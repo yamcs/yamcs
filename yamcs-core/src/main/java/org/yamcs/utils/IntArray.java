@@ -127,6 +127,9 @@ public class IntArray {
         return Arrays.copyOf(a, length);
     }
 
+    /**
+     * @return the size of the array (which is smaller or equal than the length of the underlying int[] array)
+     */
     public int size() {
         return length;
     }
@@ -186,6 +189,9 @@ public class IntArray {
         return Arrays.binarySearch(a, 0, length, x);
     }
 
+    public void sort() {
+        Arrays.sort(a, 0, length);
+    }
 
     /**
      * Sort the array concurrently swapping the elements in the list such that the
@@ -294,6 +300,63 @@ public class IntArray {
                 return b.append(']').toString();
             b.append(", ");
         }
+    }
+
+    /**
+     * Compares two arrays. Assuming that the arrays a1 and a2 are sorted, it returns
+     * <ul>
+     * <li>0 if a1 == a2</li>
+     * <li>1 if a1 is a subset of a2</li>
+     * <li>2 if a2 is a subset of a1</li>
+     * <li>-1 otherwise</li>
+     * </ul>
+     * 
+     * If the arrays are not sorted the return is meaningless.
+     * 
+     * @param a1
+     *            - first array
+     * @param a2
+     *            - second array
+     */
+    public static int compare(IntArray a1, IntArray a2) {
+        int i1 = 0;
+        int i2 = 0;
+        int c = 0;
+        while (i1 < a1.size() && i2 < a2.size()) {
+            int x1 = a1.get(i1);
+            int x2 = a2.get(i2);
+            if (x1 == x2) {
+                i1++;
+                i2++;
+                continue;
+            }
+            if (x1 > x2) {
+                if (c == 0) {
+                    c = 1;
+                } else if (c == 2) {
+                    c = -1;
+                    break;
+                }
+                i2++;
+            } else { // x1 < x2
+                if (c == 0) {
+                    c = 2;
+                } else if (c == 1) {
+                    c = -1;
+                    break;
+                }
+                i1++;
+            }
+        }
+
+        if (c != -1) {
+            if (i1 < a1.size()) {
+                c = (c == 0) ? 2 : -1;
+            } else if (i2 < a2.size()) {
+                c = (c == 0) ? 1 : -1;
+            }
+        }
+        return c;
     }
 
 }

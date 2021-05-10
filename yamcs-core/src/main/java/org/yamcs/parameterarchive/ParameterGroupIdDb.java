@@ -103,6 +103,11 @@ public class ParameterGroupIdDb {
         }
     }
 
+    /**
+     * return the members of the pg group.
+     * <p>
+     * Throws {@link IllegalArgumentException} if the group does not exist
+     */
     public IntArray getParameterGroup(int pg) {
         for (Map.Entry<IntArray, Integer> e : pg2pgidCache.entrySet()) {
             if (e.getValue() == pg) {

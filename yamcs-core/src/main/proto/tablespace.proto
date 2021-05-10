@@ -56,6 +56,10 @@ message TablespaceRecord {
     	
     	//secondary index records
     	SECONDARY_INDEX = 12;
+
+        //parameter archive info about array and aggregates - contains the list of member ids
+        //relevant information: instanceName, parameterFqn, memberId
+        PARCHIVE_AGGARR_INFO = 13;
  	 }
   
   	optional uint32 tbsIndex = 1;
@@ -100,6 +104,9 @@ message TablespaceRecord {
   	
   	//used for TM_INDEX
   	optional string tmIndexName = 14;
+
+    //used for PARCHIVE_AGGARR_INFO
+    repeated uint32 memberId = 15;
 }
 
 //associated to each bucket

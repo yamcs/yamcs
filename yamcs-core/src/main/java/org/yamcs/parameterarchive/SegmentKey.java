@@ -28,12 +28,7 @@ public class SegmentKey {
     
 
     public byte[] encode() {
-        ByteBuffer bb = ByteBuffer.allocate(17);
-        bb.putInt(parameterId);
-        bb.putInt(parameterGroupId);
-        bb.putLong(segmentStart);
-        bb.put(type);
-        return bb.array();
+        return encode(parameterId, parameterGroupId, segmentStart, type);
     }
 
     public static SegmentKey decode(byte[] b) {
@@ -45,6 +40,15 @@ public class SegmentKey {
         return new SegmentKey(parameterId, parameterGroupId, segmentStart, type);
     }
     
+    public static byte[] encode(int parameterId, int parameterGroupId, long segmentStart, byte type) {
+        ByteBuffer bb = ByteBuffer.allocate(17);
+        bb.putInt(parameterId);
+        bb.putInt(parameterGroupId);
+        bb.putLong(segmentStart);
+        bb.put(type);
+        return bb.array();
+    }
+
     @Override
     public String toString() {
         return "SegmentKey [parameterId=" + parameterId + ", parameterGroupId="

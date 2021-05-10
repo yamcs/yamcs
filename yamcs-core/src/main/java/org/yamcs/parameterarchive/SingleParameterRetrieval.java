@@ -10,7 +10,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.parameterarchive.MultiParameterRetrieval.ArchiveIteratorComparator;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 
 /**
@@ -72,7 +71,7 @@ public class SingleParameterRetrieval {
         for (ParameterId pid : pids) {
             int[] pgids = parameterGroupIds;
             if (pgids == null) {
-                pgids = parchive.getParameterGroupIdDb().getAllGroups(pid.pid);
+                pgids = parchive.getParameterGroupIdDb().getAllGroups(pid.getPid());
             }
 
             if (pgids.length == 0) {
@@ -91,7 +90,7 @@ public class SingleParameterRetrieval {
     // this is the easy case, one single parameter group -> no merging of segments necessary
     private void retrieveValueSingleGroup(ParameterId pid, int parameterGroupId,
             Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
-        ArchiveIterator it = new ArchiveIterator(parchive, pid.pid, parameterGroupId, req);
+        SegmentIterator it = new SegmentIterator(parchive, pid.getPid(), parameterGroupId, req);
         try {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
@@ -108,10 +107,10 @@ public class SingleParameterRetrieval {
             Consumer<ParameterValueArray> consumer)
             throws RocksDBException, IOException {
 
-        PriorityQueue<ArchiveIterator> queue = new PriorityQueue<>(new ArchiveIteratorComparator(req.ascending));
+        PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(req.ascending));
         try {
             for (int pgid : parameterGroupIds) {
-                ArchiveIterator it = new ArchiveIterator(parchive, pid.pid, pgid, req);
+                SegmentIterator it = new SegmentIterator(parchive, pid.getPid(), pgid, req);
                 if (it.isValid()) {
                     queue.add(it);
                 } else { // not really necessary
@@ -121,7 +120,7 @@ public class SingleParameterRetrieval {
             SegmentMerger merger = new SegmentMerger(pid, req, consumer);
 
             while (!queue.isEmpty()) {
-                ArchiveIterator it = queue.poll();
+                SegmentIterator it = queue.poll();
                 sendValuesFromSegment(pid, it.value(), req, merger);
                 it.next();
                 if (it.isValid()) {
@@ -325,6 +324,31 @@ public class SingleParameterRetrieval {
             }
 
             return c;
+        }
+    }
+
+    static class SegmentIteratorComparator implements Comparator<SegmentIterator> {
+        final boolean ascending;
+
+        public SegmentIteratorComparator(boolean ascending) {
+            this.ascending = ascending;
+        }
+
+        @Override
+        public int compare(SegmentIterator it1, SegmentIterator it2) {
+            ParameterValueSegment pvs1 = it1.value();
+            ParameterValueSegment pvs2 = it2.value();
+
+            int c = ascending ? Long.compare(pvs1.getSegmentStart(), pvs2.getSegmentStart())
+                    : Long.compare(pvs2.getSegmentEnd(), pvs1.getSegmentEnd());
+
+            if (c != 0) {
+                return c;
+            }
+            //
+            // make sure the parameters are extracted in the order of their id
+            // (rather than some random order from PriorityQueue)
+            return Integer.compare(it1.getParameterId(), it2.getParameterId());
         }
     }
 

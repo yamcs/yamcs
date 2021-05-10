@@ -260,5 +260,16 @@ public class BasicParameterValue extends RawEngValue {
         return new DoubleRange(min, max, minInclusive, maxInclusive);
     }
 
-   
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" genTime: {").append(TimeEncoding.toString(generationTime)).append("}");
+        if (rawValue != null) {
+            sb.append(" rawValue: {").append(rawValue.toString()).append("}");
+        }
+        if (engValue != null) {
+            sb.append(" engValue: {").append(engValue.toString()).append("}");
+        }
+        return sb.toString();
+    }
 }

@@ -42,7 +42,7 @@ public class ParameterInfoRetrieval {
             throws RocksDBException, IOException {
 
         ParameterRequest req = new ParameterRequest(start, stop, true, false, false, false);
-        ArchiveIterator it = new ArchiveIterator(parchive, pid, parameterGroupId, req);
+        SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req);
 
         try {
             

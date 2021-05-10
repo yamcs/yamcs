@@ -72,7 +72,7 @@ public class ParameterArchiveCli extends Command {
             }
             for (ParameterId p : pids) {
                 console.println("groups for " + p + ": ");
-                int[] groups = pgid.getAllGroups(p.pid);
+                int[] groups = pgid.getAllGroups(p.getPid());
                 for (int g : groups) {
                     console.print(g + ": ");
                     IntArray sia = pgid.getParameterGroup(g);

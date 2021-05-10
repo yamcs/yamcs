@@ -1,38 +1,39 @@
 package org.yamcs.parameterarchive;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.IntArray;
 
 /**
  * 
  * The parameter archive gives each (parameterFqn, rawType, engType) a numeric 32bits pid.
  * 
- * This class stores the association between pid, rawType and engType 
- *  
- * @author nm
- *
+ * This class stores the association between pid, rawType and engType
+ * 
  */
-public class ParameterId {
-    public final int pid;
-    public final Type engType;
-    private final Type rawType;
+public interface ParameterId {
 
-    public ParameterId(int pid, int numericType) {
-        this.pid = pid;
-        this.engType = ParameterIdDb.getEngType(numericType);
-        this.rawType = ParameterIdDb.getRawType(numericType);
-    }
+    public Type getRawType();
 
-    @Override
-    public String toString() {
-        return "ParameterId [pid=" + pid + ", engType=" + engType
-                + ", rawType=" + rawType + "]";
-    }
+    public Type getEngType();
 
-    public Type getRawType() {
-        return rawType;
-    }
+    public int getPid();
 
-    public Type getEngType() {
-        return engType;
-    }
+    public String getParamFqn();
+
+    /**
+     * @return true if the parameter id is not an aggregate or array
+     */
+    public boolean isSimple();
+
+    /**
+     * 
+     * @return true if the parameter has a raw value. It is equivalent with getRawType()==null
+     */
+    public boolean hasRawValue();
+
+    /**
+     * Rreturns the ids of the components for aggregates or arrays. if isSimple() returns true, this method returns
+     * null.
+     */
+    public IntArray getComponents();
 }

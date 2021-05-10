@@ -63,8 +63,8 @@ public class ParameterArchive extends AbstractYamcsService {
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
 
-    private ParameterIdDb parameterIdMap;
-    private ParameterGroupIdDb parameterGroupIdMap;
+    private ParameterIdDb parameterIdDb;
+
     private Tablespace tablespace;
 
     TimePartitionSchema partitioningSchema;
@@ -132,8 +132,7 @@ public class ParameterArchive extends AbstractYamcsService {
                 throw new DatabaseCorruptionException(
                         "More than one tablespace record of type " + trType.name() + " for instance " + yamcsInstance);
             }
-            parameterIdMap = new ParameterIdDb(yamcsInstance, tablespace);
-            parameterGroupIdMap = new ParameterGroupIdDb(yamcsInstance, tablespace);
+            parameterIdDb = new ParameterIdDb(yamcsInstance, tablespace);
 
             TablespaceRecord tr;
             if (trl.isEmpty()) { // new database
@@ -197,11 +196,11 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     public ParameterIdDb getParameterIdDb() {
-        return parameterIdMap;
+        return parameterIdDb;
     }
 
     public ParameterGroupIdDb getParameterGroupIdDb() {
-        return parameterGroupIdMap;
+        return parameterIdDb.getParameterGroupIdDb();
     }
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
@@ -229,7 +228,7 @@ public class ParameterArchive extends AbstractYamcsService {
     private void writeToBatch(WriteBatch writeBatch, Partition p, PGSegment pgs) throws RocksDBException {
         // write the time segment
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
-        byte[] timeKey = new SegmentKey(parameterIdMap.timeParameterId, pgs.getParameterGroupId(),
+        byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
                 pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
         byte[] timeValue = vsEncoder.encode(timeSegment);
         writeBatch.put(timeKey, timeValue);
@@ -244,7 +243,7 @@ public class ParameterArchive extends AbstractYamcsService {
             int parameterId = pgs.getParameterId(i);
 
             if (vs.size() != timeSegment.size()) {
-                String pname = parameterIdMap.getParameterFqnById(parameterId);
+                String pname = parameterIdDb.getParameterFqnById(parameterId);
                 throw new IllegalArgumentException(
                         "Trying to write to archive an engineering value segment whose size (" + vs.size()
                                 + ") is different than the time segment (" + timeSegment.size() + ") "
@@ -260,7 +259,7 @@ public class ParameterArchive extends AbstractYamcsService {
                 BaseSegment rvs = consolidatedRawValues.get(i);
                 if (rvs != null) {
                     if (rvs.size() != timeSegment.size()) {
-                        String pname = parameterIdMap.getParameterFqnById(parameterId);
+                        String pname = parameterIdDb.getParameterFqnById(parameterId);
                         throw new IllegalArgumentException(
                                 "Trying to write to archive an raw value segment whose size (" + rvs.size()
                                         + ") is different than the time segment (" + timeSegment.size() + ") "
@@ -277,7 +276,7 @@ public class ParameterArchive extends AbstractYamcsService {
             }
             ParameterStatusSegment pss = satusSegments.get(i);
             if (pss.size() != timeSegment.size()) {
-                String pname = parameterIdMap.getParameterFqnById(parameterId);
+                String pname = parameterIdDb.getParameterFqnById(parameterId);
                 throw new IllegalArgumentException("Trying to write to archive an parameter status segment whose size ("
                         + pss.size() + ") is different than the time segment (" + timeSegment.size() + ") "
                         + "for parameterId: " + parameterId + "(" + pname + ") and segment: ["
@@ -417,7 +416,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId)
             throws RocksDBException, IOException {
-        byte[] timeKey = new SegmentKey(parameterIdMap.timeParameterId, parameterGroupId, segmentStart,
+        byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, parameterGroupId, segmentStart,
                 SegmentKey.TYPE_ENG_VALUE).encode();
         byte[] tv = tablespace.getRdb(p.partitionDir, false).get(timeKey);
         if (tv == null) {
@@ -473,6 +472,14 @@ public class ParameterArchive extends AbstractYamcsService {
         return tablespace;
     }
 
+    int getMaxSegmentSize() {
+        return maxSegmentSize;
+    }
+
+    public RealtimeArchiveFiller getRealtimeFiller() {
+        return realtimeFiller;
+    }
+
     public static class Partition extends TimeInterval {
         final String partitionDir;
 
@@ -495,13 +502,5 @@ public class ParameterArchive extends AbstractYamcsService {
         public String getPartitionDir() {
             return partitionDir;
         }
-    }
-
-    int getMaxSegmentSize() {
-        return maxSegmentSize;
-    }
-
-    public RealtimeArchiveFiller getRealtimeFiller() {
-        return realtimeFiller;
     }
 }

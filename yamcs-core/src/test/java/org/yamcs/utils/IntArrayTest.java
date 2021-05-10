@@ -110,6 +110,34 @@ public class IntArrayTest {
         }
     }
 
+    @Test
+    public void testCompare() {
+        assertEquals(0, IntArray.compare(IntArray.wrap(), IntArray.wrap()));
+
+        assertEquals(0, IntArray.compare(IntArray.wrap(1), IntArray.wrap(1)));
+
+        assertEquals(2, IntArray.compare(IntArray.wrap(1), IntArray.wrap()));
+
+        assertEquals(1, IntArray.compare(IntArray.wrap(), IntArray.wrap(1)));
+
+        assertEquals(1, IntArray.compare(IntArray.wrap(1), IntArray.wrap(1, 2)));
+
+        assertEquals(2, IntArray.compare(IntArray.wrap(1, 2), IntArray.wrap(1)));
+
+        assertEquals(1, IntArray.compare(IntArray.wrap(1, 2, 4), IntArray.wrap(1, 2, 3, 4)));
+
+        assertEquals(2, IntArray.compare(IntArray.wrap(1, 2, 3, 4), IntArray.wrap(1, 2, 4)));
+
+        assertEquals(1, IntArray.compare(IntArray.wrap(2, 4), IntArray.wrap(1, 2, 3, 4)));
+
+        assertEquals(2, IntArray.compare(IntArray.wrap(1, 2, 3, 4), IntArray.wrap(2, 4)));
+
+        assertEquals(-1, IntArray.compare(IntArray.wrap(1), IntArray.wrap(2)));
+
+        assertEquals(-1, IntArray.compare(IntArray.wrap(1, 2), IntArray.wrap(1, 3)));
+
+    }
+
     List<Integer> toList(IntArray a) {
         return a.stream().boxed().collect(Collectors.toList());
     }

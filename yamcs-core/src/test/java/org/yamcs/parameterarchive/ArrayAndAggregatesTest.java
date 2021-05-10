@@ -3,7 +3,6 @@ package org.yamcs.parameterarchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rocksdb.RocksDBException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ArrayValue;
@@ -86,7 +84,7 @@ public class ArrayAndAggregatesTest {
         filler.addParameter(pv1).flush();
         ParameterId[] pids = pidDb.get("/test/p1[0]");
         assertEquals(1, pids.length);
-        assertEquals(Type.FLOAT, pids[0].engType);
+        assertEquals(Type.FLOAT, pids[0].getEngType());
     }
 
     private ParameterValue getArrayPv(Parameter p, long t) {

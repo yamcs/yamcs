@@ -28,7 +28,7 @@ realtime:
         parameterCache:
             enabled: true
             cacheAll: true
-            duration: 7200
+            duration: 3600
             maxNumEntries: 4096
         recordInitialValues: true
         recordLocalValues: true

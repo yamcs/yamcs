@@ -167,7 +167,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
      * <p>
      * Some segments may just being written to the archive, so care has to be taken by the caller to eliminate duplicate
      * data when using the return of this method combined with reading data from archive.
-     * The {@link ArchiveIterator} does that.
+     * The {@link SegmentIterator} does that.
      * 
      * 
      * @param parameterId

@@ -16,6 +16,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
  *
  */
 public class ArrayValue extends Value {
+
     final Value[] elements;
     final int[] dim;
     final Type elementType;
@@ -210,6 +211,34 @@ public class ArrayValue extends Value {
             sb.append("[").append(x).append("]");
         }
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(dim);
+        result = prime * result + ((elementType == null) ? 0 : elementType.hashCode());
+        result = prime * result + Arrays.hashCode(elements);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ArrayValue other = (ArrayValue) obj;
+        if (!Arrays.equals(dim, other.dim))
+            return false;
+        if (elementType != other.elementType)
+            return false;
+        if (!Arrays.equals(elements, other.elements))
+            return false;
+        return true;
     }
 
     public String toString() {
