@@ -1,3 +1,18 @@
+Version 5.5.0 released 22-Apr-2021
+- Added algorithm status and tracing (currently only working for global algorithms)
+- Added support for XTCE transmission constraints and verifiers (using MatchCriteria, BooleanExpression...)
+- Added java-expression algorithms
+- Added types to system parameters
+- Fixed the realtime parameter archive - it can now be used as a preferred configuration for all systems receiving only realtime data (e.g. testing in an EGSE/Lab setup)
+- CCSDS Frame Processing: allow plugging user defined virtual channels handlers
+
+Version 5.4.5  released 5-Apr-2021
+- Fixed a bug causing the rejection of aggregates with enumeration members when used as command arguments
+
+Version 5.4.4 released 2-Apr-2021
+- Fixed a bug in the TM partitioning flags causing the homepage of Yamcs to not display the packets beyond the top level.
+- Fixed a typo in reading the TCO configuration causing the defaultTof option to be ignored.
+
 Version 5.4.3 released 16-Mar-2021
 - Added some REST calls for getting more detailed information about parameter archive (can be used to investigate problems of missing data). 
 - Added possibility to trace algorithm executions.
