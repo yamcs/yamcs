@@ -58,9 +58,17 @@ import org.yamcs.utils.TimeEncoding;
  * </pre>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
+    protected enum CfeTimeStampFormat {
+        CFE_SB_TIME_32_16_SUBS,
+        CFE_SB_TIME_32_32_SUBS,
+        CFE_SB_TIME_32_32_M_20
+    }
+	
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
+    protected static CfeTimeStampFormat timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_16_SUBS;
+    protected int timestampLength = 6;
 
     public CfsPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
@@ -68,9 +76,29 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
+        
+        this.byteOrder = AbstractPacketPreprocessor.getByteOrder(config);
+        
         if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             this.timeEpoch = TimeEpochs.GPS;
         }
+
+        String format = config.getString("timestampFormat");
+        
+        if(format.equals("CFE_SB_TIME_32_16_SUBS")) {
+            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_16_SUBS;
+            this.timestampLength = 6;
+        } else if(format.equals("CFE_SB_TIME_32_32_SUBS")) {
+            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_SUBS;
+            this.timestampLength = 8;
+        } else if(format.equals("CFE_SB_TIME_32_32_M_20")) {
+            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_M_20;
+            this.timestampLength = 8;
+        } else {
+        	throw new ConfigurationException("Invalid timestampFormat (CFE_SB_TIME_32_16_SUBS, CFE_SB_TIME_32_32_SUBS, or CFE_SB_TIME_32_32_M_20)");
+        }        
+
+        this.checkForSequenceDiscontinuity = config.getBoolean("checkForSequenceDiscontinuity", true);
     }
 
     @Override
@@ -111,17 +139,57 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     long getTimeFromPacket(byte[] packet) {
-        long sec;
-        int subsecs;
+        long sec = 0;
+        long subsecs = 0;
+        long maxSubSecs = 0;
 
-        if (byteOrder == ByteOrder.BIG_ENDIAN) {
+        if (byteOrder == ByteOrder.BIG_ENDIAN) {       	
             sec = ByteArrayUtils.decodeInt(packet, 6) & 0xFFFFFFFFL;
-            subsecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
+
+            switch(this.timestampFormat) {
+                case CFE_SB_TIME_32_16_SUBS: {
+                    subsecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
+                    maxSubSecs = 65536L;
+                    break;
+                }
+                    
+                case CFE_SB_TIME_32_32_SUBS: {
+                    subsecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
+                    maxSubSecs = 4294967296L;
+                    break;
+                }
+                    
+                case CFE_SB_TIME_32_32_M_20: {
+                    subsecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
+                    maxSubSecs = 4294967296L;
+                    break;
+                }
+            }
         } else {
             sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
-            subsecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
+            
+            switch(this.timestampFormat) {
+                case CFE_SB_TIME_32_16_SUBS: {
+                    subsecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
+                    maxSubSecs = 65536L;
+                    break;
+                }
+                    
+                case CFE_SB_TIME_32_32_SUBS: {
+                    subsecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
+                    maxSubSecs = 4294967296L;
+                    break;
+                }
+                    
+                case CFE_SB_TIME_32_32_M_20: {
+                    subsecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
+                    maxSubSecs = 4294967296L;
+                    break;
+                }
+            }
         }
-        return shiftFromEpoch(1000 * sec + subsecs * 1000 / 65536);
+
+        return shiftFromEpoch((1000 * sec) + ((subsecs * 1000) / maxSubSecs));
     }
 
     public boolean checkForSequenceDiscontinuity() {
