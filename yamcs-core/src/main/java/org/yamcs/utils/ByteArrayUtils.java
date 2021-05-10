@@ -283,6 +283,13 @@ public class ByteArrayUtils {
         return x;
     }
 
+    public static long decodeUnsignedInt(byte[] a, int offset) {
+        return ((a[offset] & 0xFF) << 24) +
+                ((a[offset + 1] & 0xFF) << 16) +
+                ((a[offset + 2] & 0xFF) << 8) +
+                ((a[offset + 3] & 0xFF));
+    }
+
     /**
      * Decode short little endian
      * 
@@ -297,6 +304,13 @@ public class ByteArrayUtils {
     
     public static int decodeUnsignedShortLE(byte[] a, int offset) {
         return ((a[offset + 1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
+
+    public static long decodeUnsignedIntLE(byte[] a, int offset) {
+        return ((a[offset + 3] & 0xFF) << 24) +
+                ((a[offset + 2] & 0xFF) << 16) +
+                ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
     }
 }
