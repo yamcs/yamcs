@@ -72,6 +72,7 @@ import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -844,6 +845,10 @@ public class XtceToGpbAssembler {
             for (ValueEnumeration xtceValue : eat.getValueEnumerationList()) {
                 infob.addEnumValue(toEnumValue(xtceValue));
             }
+        } else if (argumentType instanceof BooleanArgumentType) {
+            BooleanArgumentType bat = (BooleanArgumentType) argumentType;
+            infob.setZeroStringValue(bat.getZeroStringValue());
+            infob.setOneStringValue(bat.getOneStringValue());
         }
         return infob.build();
     }
