@@ -1,12 +1,12 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
 
 @Component({
-  selector: 'app-create-event-dialog',
   templateUrl: './CreateEventDialog.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateEventDialog {
 
