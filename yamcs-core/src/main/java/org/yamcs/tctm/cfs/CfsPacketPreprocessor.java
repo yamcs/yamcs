@@ -73,21 +73,27 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     public CfsPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
+    
+    public static long microSecondsToMilliseconds(long microSeconds) {
+        return microSeconds / 1000;
+    }
 
     /**
      * Refer to https://github.com/WindhoverLabs/airliner/blob/develop/core/base/cfe/fsw/src/time/cfe_time_api.c for
-     * details. CFE_TIME_Sub2MicroSecs() -- convert sub-seconds to micro-seconds
+     * details.  
+     * 
+     * convert sub-seconds to micro-seconds
      * 
      */
-    public static long CFE_TIME_Sub2MicroSecs(long subSeconds) {
-        long MicroSeconds;
+    public static long cfeTimeSub2Microsecs(long subSeconds) {
+        long microSeconds;
 
         /* 0xffffdf00 subseconds = 999999 microseconds, so anything greater 
          * than that we set to 999999 microseconds, so it doesn't get to
          * a million microseconds */
 
         if (subSeconds > 0xffffdf00) {
-            MicroSeconds = 999999;
+            microSeconds = 999999;
         } else {
             /*
             **  Convert a 1/2^32 clock tick count to a microseconds count
@@ -105,12 +111,12 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             **  = ( ( ( ( ( x >> 7) * 125) >> 7) * 125) >> 12 )
             */
 
-            MicroSeconds = (((((subSeconds >> 7) * 125) >> 7) * 125) >> 12);
+            microSeconds = (((((subSeconds >> 7) * 125) >> 7) * 125) >> 12);
 
             /* if the Subseconds % 0x4000000 != 0 then we will need to
              * add 1 to the result. the & is a faster way of doing the % */
             if ((subSeconds & 0x3ffffff) != 0) {
-                MicroSeconds++;
+                microSeconds++;
             }
 
             /* In the Micro2SubSecs conversion, we added an extra anomaly
@@ -118,15 +124,15 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
              * 0xFFFFF000. This must be accounted for here. Since we bumped
              * at the half way mark, CFE_TIME_Sub2MicroSecswe must "unbump" at the same mark 
              */
-            if (MicroSeconds > 500000) {
-                MicroSeconds--;
+            if (microSeconds > 500000) {
+                microSeconds--;
             }
 
         } /* end else */
 
-        return (MicroSeconds);
+        return (microSeconds);
 
-    } /* End of CFE_TIME_Sub2MicroSecs() */
+    } /* End of cfeTimeSub2Microsecs */
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
@@ -196,7 +202,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     long getTimeFromPacket(byte[] packet) {
         long sec = 0;
         long subSecs = 0;
-        long microSeconds = 0;
+        long milliSeconds = 0;
 
         if (byteOrder == ByteOrder.BIG_ENDIAN) {
             sec = ByteArrayUtils.decodeInt(packet, 6) & 0xFFFFFFFFL;
@@ -204,19 +210,19 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             switch (CfsPacketPreprocessor.timestampFormat) {
             case CFE_SB_TIME_32_16_SUBS: {
                 subSecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
-                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                milliSeconds = microSecondsToMilliseconds(cfeTimeSub2Microsecs(subSecs));
                 break;
             }
 
             case CFE_SB_TIME_32_32_SUBS: {
                 subSecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
-                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                milliSeconds = microSecondsToMilliseconds(cfeTimeSub2Microsecs(subSecs));
                 break;
             }
 
             case CFE_SB_TIME_32_32_M_20: {
                 subSecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
-                microSeconds = (subSecs >> 12);
+                milliSeconds = microSecondsToMilliseconds((subSecs >> 12));
                 break;
             }
             }
@@ -226,25 +232,25 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             switch (CfsPacketPreprocessor.timestampFormat) {
             case CFE_SB_TIME_32_16_SUBS: {
                 subSecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
-                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                milliSeconds = microSecondsToMilliseconds(cfeTimeSub2Microsecs(subSecs));
                 break;
             }
 
             case CFE_SB_TIME_32_32_SUBS: {
                 subSecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
-                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                milliSeconds = microSecondsToMilliseconds(cfeTimeSub2Microsecs(subSecs));
                 break;
             }
 
             case CFE_SB_TIME_32_32_M_20: {
                 subSecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
-                microSeconds = (subSecs >> 12);
+                milliSeconds = microSecondsToMilliseconds((subSecs >> 12));
                 break;
             }
             }
         }
 
-        return shiftFromEpoch((1000 * sec) + microSeconds);
+        return shiftFromEpoch((1000 * sec) + milliSeconds);
     }
 
     public boolean checkForSequenceDiscontinuity() {
