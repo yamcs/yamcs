@@ -108,8 +108,8 @@ public interface Link {
     }
 
     /**
-     * Called by the LinkManager before startup if the {@link SystemParametersService} service is enabled,
-     * to setup necessary things for later parameter collection.
+     * Called by the LinkManager before startup if the {@link SystemParametersService} service is enabled, to setup
+     * necessary things for later parameter collection.
      * <p>
      * The method is called only on the links that implement the {@link SystemParametersProducer} interface; they are
      * also registered with the {@link SystemParametersService} to be called regularly after the start.
@@ -138,4 +138,19 @@ public interface Link {
     public default Spec getSpec() {
         return null;
     }
+
+    default void reconfigure(YConfiguration config) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Return the current configuration for this link. Subclasses should not return sensitive information such as
+     * passwords.
+     * 
+     * @return
+     */
+    default YConfiguration getConfiguration() {
+        return null;
+    }
+
 }
