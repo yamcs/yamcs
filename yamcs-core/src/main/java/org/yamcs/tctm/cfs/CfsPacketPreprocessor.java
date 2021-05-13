@@ -36,8 +36,7 @@ import org.yamcs.utils.TimeEncoding;
  * </pre>
  * 
  * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used only for decoding the timestamp in the secondary
- * header: the 4 bytes second and 2 bytes
- * subseconds are decoded in little endian.
+ * header: the 4 bytes second and 2 bytes subseconds are decoded in little endian.
  * <p>
  * The primary CCSDS header is always decoded as BIG_ENDIAN.
  * <p>
@@ -64,7 +63,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         CFE_SB_TIME_32_32_SUBS,
         CFE_SB_TIME_32_32_M_20
     }
-	
+
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
@@ -75,29 +74,84 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
+    /**
+     * Refer to https://github.com/WindhoverLabs/airliner/blob/develop/core/base/cfe/fsw/src/time/cfe_time_api.c for
+     * details. CFE_TIME_Sub2MicroSecs() -- convert sub-seconds to micro-seconds
+     * 
+     */
+    public static long CFE_TIME_Sub2MicroSecs(long subSeconds) {
+        long MicroSeconds;
+
+        /* 0xffffdf00 subseconds = 999999 microseconds, so anything greater 
+         * than that we set to 999999 microseconds, so it doesn't get to
+         * a million microseconds */
+
+        if (subSeconds > 0xffffdf00) {
+            MicroSeconds = 999999;
+        } else {
+            /*
+            **  Convert a 1/2^32 clock tick count to a microseconds count
+            **
+            **  Conversion factor is  ( ( 2 ** -32 ) / ( 10 ** -6 ) ).
+            **
+            **  Logic is as follows:
+            **    x * ( ( 2 ** -32 ) / ( 10 ** -6 ) )
+            **  = x * ( ( 10 ** 6  ) / (  2 ** 32 ) )
+            **  = x * ( ( 5 ** 6 ) ( 2 ** 6 ) / ( 2 ** 26 ) ( 2 ** 6) )
+            **  = x * ( ( 5 ** 6 ) / ( 2 ** 26 ) )
+            **  = x * ( ( 5 ** 3 ) ( 5 ** 3 ) / ( 2 ** 7 ) ( 2 ** 7 ) (2 ** 12) )
+            **
+            **  C code equivalent:
+            **  = ( ( ( ( ( x >> 7) * 125) >> 7) * 125) >> 12 )
+            */
+
+            MicroSeconds = (((((subSeconds >> 7) * 125) >> 7) * 125) >> 12);
+
+            /* if the Subseconds % 0x4000000 != 0 then we will need to
+             * add 1 to the result. the & is a faster way of doing the % */
+            if ((subSeconds & 0x3ffffff) != 0) {
+                MicroSeconds++;
+            }
+
+            /* In the Micro2SubSecs conversion, we added an extra anomaly
+             * to get the subseconds to bump up against the end point,
+             * 0xFFFFF000. This must be accounted for here. Since we bumped
+             * at the half way mark, CFE_TIME_Sub2MicroSecswe must "unbump" at the same mark 
+             */
+            if (MicroSeconds > 500000) {
+                MicroSeconds--;
+            }
+
+        } /* end else */
+
+        return (MicroSeconds);
+
+    } /* End of CFE_TIME_Sub2MicroSecs() */
+
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
-        
+
         this.byteOrder = AbstractPacketPreprocessor.getByteOrder(config);
-        
+
         if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             this.timeEpoch = TimeEpochs.GPS;
         }
 
         String format = config.getString("timestampFormat");
-        
-        if(format.equals("CFE_SB_TIME_32_16_SUBS")) {
-            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_16_SUBS;
+
+        if (format.equals("CFE_SB_TIME_32_16_SUBS")) {
+            CfsPacketPreprocessor.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_16_SUBS;
             this.timestampLength = 6;
-        } else if(format.equals("CFE_SB_TIME_32_32_SUBS")) {
-            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_SUBS;
+        } else if (format.equals("CFE_SB_TIME_32_32_SUBS")) {
+            CfsPacketPreprocessor.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_SUBS;
             this.timestampLength = 8;
-        } else if(format.equals("CFE_SB_TIME_32_32_M_20")) {
-            this.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_M_20;
+        } else if (format.equals("CFE_SB_TIME_32_32_M_20")) {
+            CfsPacketPreprocessor.timestampFormat = CfeTimeStampFormat.CFE_SB_TIME_32_32_M_20;
             this.timestampLength = 8;
         } else {
-        	throw new ConfigurationException("Invalid timestampFormat (CFE_SB_TIME_32_16_SUBS, CFE_SB_TIME_32_32_SUBS, or CFE_SB_TIME_32_32_M_20)");
-        }        
+            throw new ConfigurationException(
+                    "Invalid timestampFormat (CFE_SB_TIME_32_16_SUBS, CFE_SB_TIME_32_32_SUBS, or CFE_SB_TIME_32_32_M_20)");
+        }
 
         this.checkForSequenceDiscontinuity = config.getBoolean("checkForSequenceDiscontinuity", true);
     }
@@ -141,56 +195,56 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     long getTimeFromPacket(byte[] packet) {
         long sec = 0;
-        long subsecs = 0;
-        long maxSubSecs = 0;
+        long subSecs = 0;
+        long microSeconds = 0;
 
-        if (byteOrder == ByteOrder.BIG_ENDIAN) {       	
+        if (byteOrder == ByteOrder.BIG_ENDIAN) {
             sec = ByteArrayUtils.decodeInt(packet, 6) & 0xFFFFFFFFL;
 
-            switch(this.timestampFormat) {
-                case CFE_SB_TIME_32_16_SUBS: {
-                    subsecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
-                    maxSubSecs = 65536L;
-                    break;
-                }
-                    
-                case CFE_SB_TIME_32_32_SUBS: {
-                    subsecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
-                    maxSubSecs = 4294967296L;
-                    break;
-                }
-                    
-                case CFE_SB_TIME_32_32_M_20: {
-                    subsecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
-                    maxSubSecs = 4294967296L;
-                    break;
-                }
+            switch (CfsPacketPreprocessor.timestampFormat) {
+            case CFE_SB_TIME_32_16_SUBS: {
+                subSecs = ByteArrayUtils.decodeUnsignedShort(packet, 10);
+                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                break;
+            }
+
+            case CFE_SB_TIME_32_32_SUBS: {
+                subSecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
+                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                break;
+            }
+
+            case CFE_SB_TIME_32_32_M_20: {
+                subSecs = ByteArrayUtils.decodeUnsignedInt(packet, 10);
+                microSeconds = (subSecs >> 12);
+                break;
+            }
             }
         } else {
             sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
-            
-            switch(this.timestampFormat) {
-                case CFE_SB_TIME_32_16_SUBS: {
-                    subsecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
-                    maxSubSecs = 65536L;
-                    break;
-                }
-                    
-                case CFE_SB_TIME_32_32_SUBS: {
-                    subsecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
-                    maxSubSecs = 4294967296L;
-                    break;
-                }
-                    
-                case CFE_SB_TIME_32_32_M_20: {
-                    subsecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
-                    maxSubSecs = 4294967296L;
-                    break;
-                }
+
+            switch (CfsPacketPreprocessor.timestampFormat) {
+            case CFE_SB_TIME_32_16_SUBS: {
+                subSecs = ByteArrayUtils.decodeUnsignedShortLE(packet, 10);
+                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                break;
+            }
+
+            case CFE_SB_TIME_32_32_SUBS: {
+                subSecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
+                microSeconds = CFE_TIME_Sub2MicroSecs(subSecs);
+                break;
+            }
+
+            case CFE_SB_TIME_32_32_M_20: {
+                subSecs = ByteArrayUtils.decodeUnsignedIntLE(packet, 10);
+                microSeconds = (subSecs >> 12);
+                break;
+            }
             }
         }
 
-        return shiftFromEpoch((1000 * sec) + ((subsecs * 1000) / maxSubSecs));
+        return shiftFromEpoch((1000 * sec) + microSeconds);
     }
 
     public boolean checkForSequenceDiscontinuity() {
