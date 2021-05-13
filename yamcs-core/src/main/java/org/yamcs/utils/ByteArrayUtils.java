@@ -283,11 +283,11 @@ public class ByteArrayUtils {
         return x;
     }
 
-    public static long decodeUnsignedInt(byte[] a, int offset) {
-        return ((a[offset] & 0xFF) << 24) +
-                ((a[offset + 1] & 0xFF) << 16) +
-                ((a[offset + 2] & 0xFF) << 8) +
-                ((a[offset + 3] & 0xFF));
+    public static long decodeUnsignedInt(byte[] a, int offset) {        
+        return ((a[offset] & 0xFFL) << 24) +
+                ((a[offset + 1] & 0xFFL) << 16) +
+                ((a[offset + 2] & 0xFFL) << 8) +
+                ((a[offset + 3] & 0xFFL));
     }
 
     /**
@@ -308,9 +308,9 @@ public class ByteArrayUtils {
     }
 
     public static long decodeUnsignedIntLE(byte[] a, int offset) {
-        return ((a[offset + 3] & 0xFF) << 24) +
-                ((a[offset + 2] & 0xFF) << 16) +
-                ((a[offset + 1] & 0xFF) << 8) +
-                ((a[offset] & 0xFF));
+        return ((a[offset + 3] & 0xFFL) << 24) +
+                ((a[offset + 2] & 0xFFL) << 16) +
+                ((a[offset + 1] & 0xFFL) << 8) +
+                ((a[offset] & 0xFFL));
     }
 }
