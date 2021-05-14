@@ -71,20 +71,20 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * The determination of the gradient and offset is done using the least squares method.
  * <p>
  * The number of samples used for computing the coefficients is configurable and has to be minimum 2.
- * <p>
  * <h2>Accuracy and validity</h2>
  * Once the coefficients have been calculated, for each new sample received a deviation is calculated as the delta
  * between the OBT computed using the coefficients and the OBT which is part of the sample (after adjusting for
  * delays). The deviation is compared with the accuracy and validity parameters:
- * <p>
+ *
  * <ul>
  * <li>If the deviation is greater than {@code accuracy} but smaller than {@code validity}, then a recalculation of the
  * coefficients is performed based on the last received samples.</li>
- * <p>
+ *
  * <li>If the deviation is greater than {@code validity} then the coefficients are declared as invalid and all the
  * samples from the buffer except the last one are dropped. The time returned by {@link #getTime(long)} will be invalid
  * until
  * the required number of new samples is received and the next recalculation is performed</li>
+ * </ul>
  * 
  * <h2>Historical coefficients</h2>
  * The service keeps track of multiple intervals corresponding to different on-board time resets. At Yamcs startup
