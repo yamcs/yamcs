@@ -74,6 +74,8 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected static final String CONFIG_KEY_TIME_ENCODING = "timeEncoding";
     protected static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
+    protected static final String CONFIG_KEY_BYTE_ORDER = "byteOrder";
+
     static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
 
     // which error detection algorithm to use (null = no checksum)
@@ -112,7 +114,6 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         configureTimeDecoder(config);
 
         if (config != null) {
-
             if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
                 String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
                 tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class,
@@ -122,8 +123,8 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                             "Cannot find a time correlation service with name " + tcoServiceName);
                 }
             }
+            byteOrder = getByteOrder(config);
         }
-
     }
 
     void configureTimeDecoder(YConfiguration config) {
@@ -278,7 +279,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     }
 
     public static ByteOrder getByteOrder(YConfiguration config) {
-        String order = config.getString("byteOrder", ByteOrder.BIG_ENDIAN.toString());
+        String order = config.getString(CONFIG_KEY_BYTE_ORDER, ByteOrder.BIG_ENDIAN.toString());
         if ("BIG_ENDIAN".equalsIgnoreCase(order)) {
             return ByteOrder.BIG_ENDIAN;
         } else if ("LITTLE_ENDIAN".equalsIgnoreCase(order)) {
