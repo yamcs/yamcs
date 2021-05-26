@@ -1,26 +1,26 @@
-<h6 style="padding-top: 0">ID</h6>
+<div class="block-title" style="padding-top: 0">ID</div>
 <div class="block">
   {{ command.id }}
 </div>
 
-<h6>Command</h6>
+<div class="block-title">Command</div>
 <div class="block">
   {{ command.commandName }}
 </div>
 
-<h6>Time</h6>
+<div class="block-title">Time</div>
 <div class="block">
   {{ command.generationTime | datetime }}
 </div>
 
-<h6>Issuer</h6>
+<div class="block-title">Issuer</div>
 <div class="block">
   {{ command.username }}<ng-container *ngIf="command.origin">@{{ command.origin }}
   </ng-container>
 </div>
 
 <ng-container *ngIf="command.queue">
-  <h6>Queue</h6>
+  <div class="block-title">Queue</div>
   <div class="block">
     {{ command.queue || '-' }}
   </div>
@@ -28,13 +28,13 @@
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 
-<h6 style="padding-top: 0">Source</h6>
+<div class="block-title" style="padding-top: 0">Source</div>
 <div class="block">
   {{ command.source || '-' }}
 </div>
 
 <ng-container *ngIf="command.binary">
-  <h6>Binary</h6>
+  <div class="block-title">Binary</div>
   <div class="block">
     <app-hex [base64String]="command.binary"></app-hex>
   </div>
@@ -42,7 +42,7 @@
 
 <ng-container *ngIf="command.comment">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <h6 style="padding-top: 0">Comment</h6>
+  <div class="block-title" style="padding-top: 0">Comment</div>
   <div class="block">
     {{ command.comment }}
   </div>
@@ -50,7 +50,7 @@
 
 <ng-container *ngIf="command.extra.length">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <h6 style="padding-top: 0">Extra attributes</h6>
+  <div class="block-title" style="padding-top: 0">Extra attributes</div>
   <div class="block">
     <ul>
       <li *ngFor="let extra of command.extra">{{ extra.name }}: {{ extra.value }}</li>
@@ -59,21 +59,21 @@
 </ng-container>
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-<h6 style="padding-top: 0">Yamcs acknowledgments</h6>
+<div class="block-title" style="padding-top: 0">Yamcs acknowledgments</div>
 <div class="block">
   <app-yamcs-acknowledgments-table [command]="command"
                                    [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
 </div>
 
 <ng-container *ngIf="command.extraAcks.length">
-  <h6>Extra acknowledgments</h6>
+  <div class="block-title">Extra acknowledgments</div>
   <div class="block">
     <app-extra-acknowledgments-table [command]="command"
                                      [showIcons]="showIcons"></app-extra-acknowledgments-table>
   </div>
 </ng-container>
 
-<h6>Completion</h6>
+<div class="block-title">Completion</div>
 <div class="block">
   <ng-container *ngIf="command.completed?.status === 'OK'">SUCCESS</ng-container>
   <ng-container *ngIf="command.completed?.status === 'NOK'">

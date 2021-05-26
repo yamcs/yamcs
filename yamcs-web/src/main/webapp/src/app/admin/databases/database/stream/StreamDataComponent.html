@@ -1,5 +1,5 @@
 <ng-container *ngFor="let column of streamData.column; index as i">
-  <h6>{{ column.name }}</h6>
+  <div class="block-title">{{ column.name }}</div>
   <div class="block">
     <ng-container *ngIf="column.value.type !== 'BINARY'">
       {{ (streamData.column[i].value | value) || '-' }}

@@ -306,6 +306,19 @@ a.ya-link.ya-header-link {
   font-size: 12px;
 }
 
+.block-title {
+  font-weight: 500;
+  font-size: 12px;
+  padding-bottom: 0;
+  padding-top: 1em;
+  margin: 0;
+}
+
+.block {
+  font-weight: normal;
+  font-size: 12px;
+}
+
 .dl-horizontal {
   margin-top: 1em;
   margin-bottom: 1em;

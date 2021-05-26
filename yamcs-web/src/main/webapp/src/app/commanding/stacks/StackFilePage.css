@@ -90,16 +90,3 @@ div.entry div.out .body.err {
 .cdk-drag-placeholder {
   opacity: 0.6;
 }
-
-h6 {
-  font-weight: 500;
-  font-size: 12px;
-  padding-bottom: 0;
-  padding-top: 1em;
-  margin: 0;
-}
-
-.block {
-  font-weight: normal;
-  font-size: 12px;
-}

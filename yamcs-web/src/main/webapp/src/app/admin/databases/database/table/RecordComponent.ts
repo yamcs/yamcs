@@ -4,7 +4,6 @@ import { Record, Table } from '../../../../client';
 @Component({
   selector: 'app-record',
   templateUrl: './RecordComponent.html',
-  styleUrls: ['./RecordComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecordComponent {

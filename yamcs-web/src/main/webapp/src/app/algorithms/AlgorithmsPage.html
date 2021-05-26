@@ -8,7 +8,7 @@
     <form [formGroup]="filterForm">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
         <div class="filter-bar" *ngIf="breadcrumb.length">
-          <app-breadcrumb-trial>
+          <app-breadcrumb-trail>
             <app-breadcrumb link="/algorithms"
                             [queryParams]="{c: yamcs.context}"
                             icon="account_tree"></app-breadcrumb>
@@ -16,26 +16,26 @@
                             [link]="item.route"
                             [queryParams]="item.queryParams"
                             [label]="item.name"></app-breadcrumb>
-          </app-breadcrumb-trial>
+          </app-breadcrumb-trail>
         </div>
       </ng-container>
       <div class="filter-bar">
         <app-search-filter [formControl]="filterForm.controls['filter']"
-                          placeholder="Search by name"
-                          icon="search"
-                          (onArrowDown)="selectNext()"
-                          (onArrowUp)="selectPrevious()"
-                          (onEnter)="applySelection()">
+                           placeholder="Search by name"
+                           icon="search"
+                           (onArrowDown)="selectNext()"
+                           (onArrowUp)="selectPrevious()"
+                           (onEnter)="applySelection()">
         </app-search-filter>
         <app-select [options]="scopeOptions" formControlName="scope"></app-select>
       </div>
     </form>
 
     <table mat-table
-            *ngIf="dataSource"
-            class="ya-data-table"
-            style="width: 100%"
-            [dataSource]="dataSource">
+           *ngIf="dataSource"
+           class="ya-data-table"
+           style="width: 100%"
+           [dataSource]="dataSource">
 
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
@@ -50,7 +50,7 @@
           <ng-container *ngIf="!item.spaceSystem">
             <mat-icon class="icon12" style="vertical-align: middle">transform</mat-icon>
             <a [routerLink]="['/algorithms', item.algorithm.qualifiedName]"
-                [queryParams]="{c: yamcs.context}">
+               [queryParams]="{c: yamcs.context}">
               <app-highlight *ngIf="!system"
                              [text]="item.algorithm.qualifiedName"
                              [term]="filterForm.value.filter">
@@ -85,9 +85,9 @@
     </table>
 
     <mat-paginator [pageSize]="pageSize"
-                    [hidePageSize]="true"
-                    [showFirstLastButtons]="true"
-                    [length]="dataSource.totalSize$ | async">
+                   [hidePageSize]="true"
+                   [showFirstLastButtons]="true"
+                   [length]="dataSource.totalSize$ | async">
     </mat-paginator>
   </div>
   <ng-template #empty>

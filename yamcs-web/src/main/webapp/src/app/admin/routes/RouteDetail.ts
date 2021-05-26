@@ -4,7 +4,6 @@ import { Route } from '../../client';
 @Component({
   selector: 'app-route-detail',
   templateUrl: './RouteDetail.html',
-  styleUrls: ['./RouteDetail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RouteDetail {

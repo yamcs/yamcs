@@ -1,14 +1,14 @@
-<h6>Name</h6>
+<div class="block-title">Name</div>
 <div class="block">
   {{ link.name }}
 </div>
 
-<h6>Class</h6>
+<div class="block-title">Class</div>
 <div class="block">
   {{ link.type }}
 </div>
 
-<!--h6>Args</h6>
+<!--div class="block-title">Args</div>
 <div class="block">
   <span [innerHTML]="link.spec | printJson"></span>
 </div-->
@@ -16,18 +16,18 @@
 <br>
 <mat-divider></mat-divider>
 
-<h6>Status</h6>
+<div class="block-title">Status</div>
 <div class="block">
   <app-link-status [link]="link"></app-link-status>
   {{ link.status }}
 </div>
 
-<h6>In Count</h6>
+<div class="block-title">In Count</div>
 <div class="block">
   {{ link.dataInCount | number }}
 </div>
 
-<h6>Out Count</h6>
+<div class="block-title">Out Count</div>
 <div class="block">
   {{ link.dataOutCount | number }}
 </div>
