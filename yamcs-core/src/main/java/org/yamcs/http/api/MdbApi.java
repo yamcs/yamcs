@@ -199,21 +199,37 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
         };
 
+        // Establish only the parameters and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<Parameter> allParameters = new ArrayList<>();
+        mdb.getParameters().stream().filter(hasPrivilege).forEach(parameter -> {
+            allSpaceSystemNames.add(parameter.getSubsystemName());
+            allParameters.add(parameter);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
+
         // Determine search scope within the tree
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<Parameter> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                mdb.getParameters().stream().filter(hasPrivilege).forEach(parameter -> {
+                allParameters.forEach(parameter -> {
                     if (parameter.getQualifiedName().startsWith(request.getSystem())) {
                         candidates.add(parameter);
                     }
                 });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getParameterCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -224,7 +240,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            mdb.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
+            candidates.addAll(allParameters);
         }
 
         // Now do the actual brute-force search
@@ -454,20 +470,36 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Command, c.getQualifiedName());
         };
 
+        // Establish only the commands and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<MetaCommand> allCommands = new ArrayList<>();
+        mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(command -> {
+            allSpaceSystemNames.add(command.getSubsystemName());
+            allCommands.add(command);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<MetaCommand> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(command -> {
+                allCommands.forEach(command -> {
                     if (command.getQualifiedName().startsWith(request.getSystem())) {
                         candidates.add(command);
                     }
                 });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getMetaCommandCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -478,7 +510,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
+            candidates.addAll(allCommands);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
@@ -540,20 +572,36 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, a.getQualifiedName());
         };
 
+        // Establish only the algorithms and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<Algorithm> allAlgorithms = new ArrayList<>();
+        mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(algorithm -> {
+            allSpaceSystemNames.add(algorithm.getSubsystemName());
+            allAlgorithms.add(algorithm);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<Algorithm> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(algorithm -> {
+                allAlgorithms.forEach(algorithm -> {
                     if (algorithm.getQualifiedName().startsWith(request.getSystem())) {
                         candidates.add(algorithm);
                     }
                 });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getAlgorithmCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -564,7 +612,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
+            candidates.addAll(allAlgorithms);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
