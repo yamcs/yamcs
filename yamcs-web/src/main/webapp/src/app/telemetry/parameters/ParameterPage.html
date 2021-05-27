@@ -18,7 +18,8 @@
     <a mat-button
        color="primary"
        [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-       [queryParams]="{c: yamcs.context}">
+       [queryParams]="{c: yamcs.context}"
+       *ngIf="mayReadMissionDatabase()">
       <mat-icon>style</mat-icon>
       VIEW IN MDB
     </a>
@@ -44,7 +45,8 @@
        routerLink="alarms"
        routerLinkActive #rlc="routerLinkActive"
        [active]="rlc.isActive"
-       [queryParams]="{c: yamcs.context}">
+       [queryParams]="{c: yamcs.context}"
+       *ngIf="mayReadAlarms()">
       Alarm History
     </a>
     <a mat-tab-link

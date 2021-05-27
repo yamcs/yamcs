@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '../../client';
+import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -17,7 +18,7 @@ export class AlarmLabel implements OnDestroy {
 
   private statusSubscription: GlobalAlarmStatusSubscription;
 
-  constructor(readonly yamcs: YamcsService) {
+  constructor(readonly yamcs: YamcsService, authService: AuthService) {
     this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
       if (connectionInfo && connectionInfo.instance) {
         /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
@@ -25,13 +26,15 @@ export class AlarmLabel implements OnDestroy {
         }*/
         let context = connectionInfo.instance.name;
         if (connectionInfo.processor) {
-          const options = {
-            instance: connectionInfo.instance.name,
-            processor: connectionInfo.processor.name,
-          };
-          this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
-            this.status$.next(status);
-          });
+          if (authService.getUser()!.hasSystemPrivilege('ReadAlarms')) {
+            const options = {
+              instance: connectionInfo.instance.name,
+              processor: connectionInfo.processor.name,
+            };
+            this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
+              this.status$.next(status);
+            });
+          }
           context += ';' + connectionInfo.processor;
         }
         this.context$.next(context);
