@@ -21,7 +21,7 @@ import org.yamcs.xtce.OutputParameter;
  * Each algorithm gets a class with the following body
  * 
  * <pre>
- * class AlgorithmExecutor_algoName extends AbstractAlgorithmExecutor {
+ * class AlgorithmExecutor_algoName extends AbstractAlgorithmExecutor {@code
  *     
  *     AlgorithmExecutionResult execute(long acqTime, long genTime) throws AlgorithmException {
  *        List<ParameterValue> outputValues = new ArrayList<>();

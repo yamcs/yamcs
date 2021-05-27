@@ -27,7 +27,7 @@ public class IndexedList<K, V> implements Iterable<V> {
         values = new ArrayList<>(list.values);
         keys = new HashMap<>(list.keys);
     }
-    
+
     public IndexedList(int size) {
         values = new ArrayList<>(size);
         keys = new HashMap<>(size * 2);
@@ -67,6 +67,7 @@ public class IndexedList<K, V> implements Iterable<V> {
 
     /**
      * Returns the value mapped to the key or null if there is no such element
+     * 
      * @param key
      * @return
      */
@@ -79,7 +80,8 @@ public class IndexedList<K, V> implements Iterable<V> {
     }
 
     /**
-     * @see {@link List#get(int)}
+     * 
+     * @see List#get(int)
      * @param idx
      * @return
      */
@@ -87,7 +89,6 @@ public class IndexedList<K, V> implements Iterable<V> {
         return values.get(idx);
     }
 
-    
     @Override
     public Iterator<V> iterator() {
         return values.iterator();
@@ -101,11 +102,9 @@ public class IndexedList<K, V> implements Iterable<V> {
         return values.size();
     }
 
-   
-
     public void changeKey(K oldKey, K newKey) {
         Integer x = keys.remove(oldKey);
-        if(x==null) {
+        if (x==null) {
             throw new IllegalArgumentException("key inexistent");
         }
         keys.put(newKey, x);
