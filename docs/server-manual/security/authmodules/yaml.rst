@@ -67,8 +67,8 @@ This file defines which privileges belong to which roles.
         - ControlProcessor
         - ModifyCommandHistory
         - ControlCommandQueue
-        - Command
         - GetMissionDatabase
+        - ReadAlarms
         - ControlAlarms
         - ControlArchiving
 

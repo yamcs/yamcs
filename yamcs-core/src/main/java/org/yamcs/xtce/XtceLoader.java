@@ -46,14 +46,11 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  * <p>
  * Options:
  * <ul>
- * <li>file: the XML file to be loaded. Can be an absolute path or relative to the server directory. Mandatory.
- * </li>
- * <li>autoTmPartitions: if true (default) all the <{@link SequenceContainer} will be automatically set as archive
- * partitions unless they have a parent in the hierarchy that is manually configured for TM partitions. The
- * manual configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the
- * value UseAsArchivingPartition.
- * See <{@link SequenceContainer#useAsArchivePartition(boolean))}
- * </li>
+ * <li>file: the XML file to be loaded. Can be an absolute path or relative to the server directory. Mandatory.</li>
+ * <li>autoTmPartitions: if true (default) all the {@link SequenceContainer} will be automatically set as archive
+ * partitions unless they have a parent in the hierarchy that is manually configured for TM partitions. The manual
+ * configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the value
+ * UseAsArchivingPartition. See {@link SequenceContainer#useAsArchivePartition(boolean)}</li>
  * </ul>
  * 
  * @author mu
@@ -77,7 +74,7 @@ public class XtceLoader implements SpaceSystemLoader {
             String fn = (String) config.get("file");
             this.xtceFileNames = Arrays.asList(fn);
         } else if (config.containsKey("fileset")) {
-            xtceFileNames = new ArrayList<String>();
+            xtceFileNames = new ArrayList<>();
             List<String> fileset;
             if (config.get("fileset") instanceof String) {
                 fileset = Arrays.asList(config.getString("fileset"));
@@ -96,7 +93,7 @@ public class XtceLoader implements SpaceSystemLoader {
         }
         if (config.containsKey("excludeTmContainers")) {
             List<String> ec = config.getList("excludeTmContainers");
-            excludedContainers = new HashSet<String>(ec);
+            excludedContainers = new HashSet<>(ec);
         }
         autoTmPartitions = config.getBoolean("autoTmPartitions", true);
         configHash = Integer.toUnsignedString(config.toString().hashCode());
@@ -121,14 +118,14 @@ public class XtceLoader implements SpaceSystemLoader {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             // Merge multiple character data blocks into a single event (e.g. algorithm text)
             factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
-            
-            //Sonarqube suggestion to protect Java XML Parsers from XXE attack
-            //see https://rules.sonarsource.com/java/RSPEC-2755
+
+            // Sonarqube suggestion to protect Java XML Parsers from XXE attack
+            // see https://rules.sonarsource.com/java/RSPEC-2755
             factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
             XMLEventReader xmlEventReader = factory.createXMLEventReader(in);
-            
+
             while (xmlEventReader.hasNext()) {
                 XMLEvent xmlEvent = xmlEventReader.nextEvent();
                 int eventType = xmlEvent.getEventType();
@@ -149,7 +146,7 @@ public class XtceLoader implements SpaceSystemLoader {
 
     @Override
     public List<SpaceSystem> loadList() throws ConfigurationException, DatabaseLoadException {
-        List<SpaceSystem> result = new ArrayList<SpaceSystem>();
+        List<SpaceSystem> result = new ArrayList<>();
         for (String xtceFileName : xtceFileNames) {
             try {
                 result.add(doLoad(xtceFileName));

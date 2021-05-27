@@ -21,20 +21,26 @@ import org.yamcs.xtce.OutputParameter;
  * Each algorithm gets a class with the following body
  * 
  * <pre>
- * class AlgorithmExecutor_algoName extends AbstractAlgorithmExecutor {@code
- *     
+ * class AlgorithmExecutor_algoName extends AbstractAlgorithmExecutor {
+ * 
  *     AlgorithmExecutionResult execute(long acqTime, long genTime) throws AlgorithmException {
- *        List<ParameterValue> outputValues = new ArrayList<>();
- *        for(int i=0; i<algorithmDef.getOutputList().size; i++) {
+ *        List&lt;ParameterValue&gt; outputValues = new ArrayList&lt;&gt;();
+ *        for(int i = 0; i &lt; algorithmDef.getOutputList().size; i++) {
  *           outputValues.add(new ParameterValue());
  *        }
- *        execute_java_expr(inputValues.get(0), inputValues.get(1)..., );
+ *        execute_java_expr(inputValues.get(0), inputValues.get(1), ...);
  *     }
- *     
- *     void execute_java_expr(ParameterValue [input_name1], ParameterValue [input_name2],...
- *        ParameterValue [output_name1], ParameterValue [output_name2]...) throws AlgorithmException {
+ * 
+ *     void execute_java_expr(
+ *         ParameterValue [input_name1],
+ *         ParameterValue [input_name2],
+ *         ...,
+ *         ParameterValue [output_name1],
+ *         ParameterValue [output_name2],
+ *         ...
+ *     ) throws AlgorithmException {
  *           [algorithm_text]
- *        }
+ *     }
  * }
  * </pre>
  * 
