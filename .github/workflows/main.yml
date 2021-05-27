@@ -23,6 +23,21 @@ jobs:
            name: hs_err_pid
            path: yamcs-core/hs_err*
 
+  javadoc:
+    name: Javadoc ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Test on both Java 8 or 11, because with 8, javadoc
+        # is a lost more strict
+        java: ['1.8', '11']
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Generate javadoc
+        run: mvn -B --no-transfer-progress -DskipTests javadoc:aggregate
 
   web:
     name: Web
@@ -42,11 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - name: Generate javadoc
-        run: mvn -B --no-transfer-progress -DskipTests javadoc:aggregate
       - uses: actions/setup-python@v1
         with:
           python-version: 3.7
