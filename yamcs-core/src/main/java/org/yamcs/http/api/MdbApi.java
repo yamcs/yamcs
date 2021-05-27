@@ -445,26 +445,30 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
+        Predicate<MetaCommand> hasPrivilege = c -> {
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Command, c.getQualifiedName());
+        };
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
-        List<MetaCommand> commands = new ArrayList<>();
+        final List<MetaCommand> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                for (MetaCommand command : mdb.getMetaCommands()) {
+                mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(command -> {
                     if (command.getQualifiedName().startsWith(request.getSystem())) {
-                        commands.add(command);
+                        candidates.add(command);
                     }
-                }
+                });
             } else { // get direct children of the system
                 List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
                         .filter(spaceSystem -> spaceSystem.getMetaCommandCount(true) > 0)
                         .collect(Collectors.toList());
                 for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
-                        commands.addAll(spaceSystem.getMetaCommands());
+                        spaceSystem.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
@@ -473,12 +477,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            commands = new ArrayList<>(mdb.getMetaCommands());
+            mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
 
-        commands = commands.stream().filter(c -> {
+        List<MetaCommand> commands = candidates.stream().filter(c -> {
             if (matcher != null && !matcher.matches(c)) {
                 return false;
             }
@@ -511,11 +515,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
-
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(mdb, request.getName());
+
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
+                !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Command, cmd.getQualifiedName())) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
 
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.FULL);
         observer.complete(cinfo);

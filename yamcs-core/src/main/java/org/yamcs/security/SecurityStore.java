@@ -152,7 +152,6 @@ public class SecurityStore {
 
     private void generatePredefinedPrivileges() {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
-        systemPrivileges.add(SystemPrivilege.Command);
         systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandClearances);

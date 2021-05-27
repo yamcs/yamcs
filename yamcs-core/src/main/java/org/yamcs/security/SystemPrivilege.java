@@ -33,11 +33,6 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlFileTransfers = new SystemPrivilege("ControlFileTransfers");
 
     /**
-     * Allows to issue any commands
-     */
-    public static final SystemPrivilege Command = new SystemPrivilege("Command");
-
-    /**
      * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
      */
     public static final SystemPrivilege CommandOptions = new SystemPrivilege("CommandOptions");

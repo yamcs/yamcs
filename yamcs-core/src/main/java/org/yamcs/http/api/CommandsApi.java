@@ -76,8 +76,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
     @Override
     public void issueCommand(Context ctx, IssueCommandRequest request, Observer<IssueCommandResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.Command);
-
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
@@ -480,7 +478,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         .build();
                 observer.next(entry);
             }
-
 
             @Override
             public void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {

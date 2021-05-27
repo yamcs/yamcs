@@ -13,8 +13,6 @@ ControlCommandClearances
     Allows to clear users for commanding.
 ControlCommandQueue
     Allows to manage command queues.
-Command
-    Allows to issue any command.
 GetMissionDatabase
     Allows to read the entire Mission Database.
 ChangeMissionDatabase
