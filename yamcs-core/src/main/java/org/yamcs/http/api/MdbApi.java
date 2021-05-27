@@ -223,7 +223,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            candidates.addAll(mdb.getParameters());
+            mdb.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
         }
 
         // Now do the actual brute-force search

@@ -56,7 +56,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
       this.telemetryItems.push({ path: 'packets', label: 'Packets' });
     }
-    if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
+    if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
     }
     if (this.user.hasObjectPrivilege('ReadBucket', 'displays')) {
