@@ -14,9 +14,9 @@ ControlCommandClearances
 ControlCommandQueue
     Allows to manage command queues.
 GetMissionDatabase
-    Allows to read the entire Mission Database.
+    Allows to read Mission Database definitions.
 ChangeMissionDatabase
-    Allows online changes to the Mission Database.
+    Allows online changes to Mission Database definitions.
 ReadAlarms
     Allows to read alarms.
 ControlAlarms
@@ -36,7 +36,7 @@ ReadEvents
 ReadThreads
     Allows to read thread information.
 WriteEvents
-    Allows to manually post events.
+    Allows to manually create events.
 WriteTables
     Allows to manually add records to tables.
 ReadTables

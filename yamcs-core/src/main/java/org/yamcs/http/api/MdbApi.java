@@ -195,7 +195,8 @@ public class MdbApi extends AbstractMdbApi<Context> {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Predicate<Parameter> hasPrivilege = p -> {
-            return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
         };
 
         // Determine search scope within the tree
@@ -531,26 +532,30 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listAlgorithms(Context ctx, ListAlgorithmsRequest request,
             Observer<ListAlgorithmsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
+        Predicate<Algorithm> hasPrivilege = a -> {
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, a.getQualifiedName());
+        };
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
-        List<Algorithm> algorithms = new ArrayList<>();
+        final List<Algorithm> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                for (Algorithm algorithm : mdb.getAlgorithms()) {
+                mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(algorithm -> {
                     if (algorithm.getQualifiedName().startsWith(request.getSystem())) {
-                        algorithms.add(algorithm);
+                        candidates.add(algorithm);
                     }
-                }
+                });
             } else { // get direct children of the system
                 List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
                         .filter(spaceSystem -> spaceSystem.getAlgorithmCount(true) > 0)
                         .collect(Collectors.toList());
                 for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
-                        algorithms.addAll(spaceSystem.getAlgorithms());
+                        spaceSystem.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
@@ -559,12 +564,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            algorithms = new ArrayList<>(mdb.getAlgorithms());
+            mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
 
-        algorithms = algorithms.stream().filter(a -> {
+        List<Algorithm> algorithms = candidates.stream().filter(a -> {
             if (matcher != null && !matcher.matches(a)) {
                 return false;
             }
@@ -599,11 +604,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getAlgorithm(Context ctx, GetAlgorithmRequest request, Observer<AlgorithmInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
-
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Algorithm algo = verifyAlgorithm(mdb, request.getName());
+
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
+                !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, algo.getQualifiedName())) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
 
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
         observer.complete(cinfo);

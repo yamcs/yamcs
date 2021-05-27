@@ -188,7 +188,7 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showAlgorithmsItem() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
+    return this.user.hasAnyObjectPrivilegeOfType('ReadAlgorithm');
   }
 
   showEventsItem() {
