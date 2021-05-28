@@ -1,7 +1,12 @@
 package org.yamcs.http.api;
 
-import static org.yamcs.alarms.AlarmStreamer.*;
-
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEAR_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +108,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
@@ -131,7 +137,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         sqlbEvent.limit(pos, limit);
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING "+CNAME_TRIGGER_TIME+" ORDER DESC";
+        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
+                + " ORDER DESC";
         StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
 
             @Override
@@ -150,6 +157,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @Override
     public void listParameterAlarms(Context ctx, ListParameterAlarmsRequest request,
             Observer<ListParameterAlarmsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
@@ -194,6 +202,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @Override
     public void listProcessorAlarms(Context ctx, ListProcessorAlarmsRequest request,
             Observer<ListProcessorAlarmsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         ListProcessorAlarmsResponse.Builder responseb = ListProcessorAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
@@ -232,7 +241,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         }
 
         String state = request.getState();
-        String comment = request.hasComment()? request.getComment():null;
+        String comment = request.hasComment() ? request.getComment() : null;
 
         // TODO permissions on AlarmServer
         String username = ctx.user.getName();
@@ -274,6 +283,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void subscribeAlarms(Context ctx, SubscribeAlarmsRequest request, Observer<AlarmData> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
 
         List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
@@ -323,6 +333,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @Override
     public void subscribeGlobalStatus(Context ctx, SubscribeGlobalStatusRequest request,
             Observer<GlobalAlarmStatus> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
 
         List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();

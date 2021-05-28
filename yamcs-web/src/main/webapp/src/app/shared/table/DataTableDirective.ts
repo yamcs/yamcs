@@ -13,7 +13,6 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
     }
 
     .ya-data-table th, .ya-data-table td {
-      border: 0 1px solid rgba(0, 0, 0, 0.03);
       font-size: 12px;
       line-height: 16px;
       padding-top: 0;

@@ -56,7 +56,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
       this.telemetryItems.push({ path: 'packets', label: 'Packets' });
     }
-    if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
+    if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
     }
     if (this.user.hasObjectPrivilege('ReadBucket', 'displays')) {
@@ -71,7 +71,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
-    if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
+    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', 'stacks')) {
       this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
@@ -188,7 +188,7 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showAlgorithmsItem() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
+    return this.user.hasAnyObjectPrivilegeOfType('ReadAlgorithm');
   }
 
   showEventsItem() {

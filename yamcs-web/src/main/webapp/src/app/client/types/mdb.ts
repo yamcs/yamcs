@@ -204,6 +204,8 @@ export interface ArgumentType {
   rangeMin: number;
   rangeMax: number;
   member: ArgumentMember[];
+  zeroStringValue: string;
+  oneStringValue: string;
 }
 
 export interface ArgumentAssignment {

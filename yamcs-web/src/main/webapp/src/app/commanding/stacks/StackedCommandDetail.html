@@ -1,21 +1,21 @@
-<h6 style="padding-top: 0">Command</h6>
+<div class="block-title" style="padding-top: 0">Command</div>
 <div class="block">
   {{ entry.name | shortName }}
 </div>
 
-<h6>Space system</h6>
+<div class="block-title">Space system</div>
 <div class="block">
   {{ (entry.name | spaceSystemName) || '-' }}
 </div>
 
 <ng-container *ngFor="let alias of entry.command?.alias">
-  <h6>{{ alias.namespace }}</h6>
+  <div class="block-title">{{ alias.namespace }}</div>
   <div class="block">
     {{ alias.name }}
   </div>
 </ng-container>
 
-<h6>Description</h6>
+<div class="block-title">Description</div>
 <div class="block">
   <ng-container *ngIf="entry.command?.longDescription">
     <app-markdown [text]="entry.command?.longDescription"></app-markdown>
@@ -27,7 +27,7 @@
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 
-<h6>Significance</h6>
+<div class="block-title">Significance</div>
 <div class="block">
   <ng-container *ngIf="(entry.command | effectiveSignificance) as significance; else dash">
     <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
@@ -37,7 +37,7 @@
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 
-<h6 style="padding-top: 0">Constraints</h6>
+<div class="block-title" style="padding-top: 0">Constraints</div>
 <div class="block">
   <ng-container *ngIf="entry.command?.constraint as constraints">
     <table yaDataTable>

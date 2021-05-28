@@ -1,7 +1,8 @@
 package org.yamcs.xtce.xml;
 
-import java.io.File;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,12 +57,10 @@ import org.yamcs.xtce.util.HexUtils;
 import org.yamcs.xtce.util.IncompleteType;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
-import org.yamcs.xtce.util.ParameterReference.ParameterResolvedAction;
 import org.yamcs.xtce.util.ParameterReference;
+import org.yamcs.xtce.util.ParameterReference.ParameterResolvedAction;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-
-import static org.yamcs.xtce.XtceDb.*;
 
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
@@ -3254,6 +3253,11 @@ public class XtceStaxReader {
 
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
 
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
+
         typeBuilder.setOneStringValue(readAttribute("oneStringValue", element, "True"));
         typeBuilder.setZeroStringValue(readAttribute("zeroStringValue", element, "False"));
 
@@ -3297,6 +3301,11 @@ public class XtceStaxReader {
             typeBuilder.setSizeInBits(sizeInBits);
         }
 
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -3332,9 +3341,9 @@ public class XtceStaxReader {
 
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
 
-        String value = readAttribute("initialValue", xmlEvent.asStartElement(), null);
-        if (value != null) {
-            typeBuilder.setInitialValue(value);
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
         }
 
         while (true) {
@@ -3399,6 +3408,11 @@ public class XtceStaxReader {
             typeBuilder.setSigned(signed);
         }
 
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -3434,6 +3448,11 @@ public class XtceStaxReader {
 
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
 
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (readBaseTypeProperties(typeBuilder)) {
@@ -3459,6 +3478,11 @@ public class XtceStaxReader {
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
 
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
+
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3490,6 +3514,11 @@ public class XtceStaxReader {
         IncompleteType incompleteType = new IncompleteType(spaceSystem, typeBuilder);
 
         readArgumentBaseTypeAttributes(spaceSystem, element, incompleteType);
+
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
+        }
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3532,6 +3561,11 @@ public class XtceStaxReader {
             typeBuilder.setNumberOfDimensions(dim);
         } else {
             dim = -1;
+        }
+
+        String initialValue = readAttribute("initialValue", xmlEvent.asStartElement(), null);
+        if (initialValue != null) {
+            typeBuilder.setInitialValue(initialValue);
         }
 
         while (true) {
@@ -3730,7 +3764,6 @@ public class XtceStaxReader {
 
         Argument arg = null;
 
-        // name
         StartElement element = xmlEvent.asStartElement();
         String name = readMandatoryAttribute("name", element);
         arg = new Argument(name);
@@ -3757,7 +3790,6 @@ public class XtceStaxReader {
             spaceSystem.addUnresolvedReference(nr);
         }
 
-        // shortDescription
         arg.setShortDescription(readAttribute("shortDescription", element, null));
 
         while (true) {

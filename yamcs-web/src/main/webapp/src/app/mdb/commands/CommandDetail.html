@@ -145,12 +145,12 @@
         </td>
         <td>
           <ng-container *ngIf="verifier.algorithm">
-            <a [routerLink]="['/mdb/algorithms/', verifier.algorithm?.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.algorithm?.qualifiedName }}</a>
+            <a [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
+               [queryParams]="{c: yamcs.context}">{{ verifier.algorithm.qualifiedName }}</a>
           </ng-container>
           <ng-container *ngIf="verifier.container">
-            <a [routerLink]="['/mdb/containers/', verifier.container?.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.container?.qualifiedName }}</a>
+            <a [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
+               [queryParams]="{c: yamcs.context}">{{ verifier.container.qualifiedName }}</a>
           </ng-container>
         </td>
         <td>
@@ -171,7 +171,7 @@
 <dl class="dl-horizontal">
   <dt>Sequence entries</dt>
   <dd>
-    <table *ngIf="command.commandContainer.entry" yaDataTable>
+    <table *ngIf="command.commandContainer?.entry" yaDataTable>
       <tr>
         <th>Type</th>
         <th>Ref</th>
@@ -181,19 +181,24 @@
       <tr *ngFor="let entry of command.commandContainer.entry">
         <ng-container *ngIf="entry.argument">
           <td>Argument</td>
+          <td>{{ entry.argument.name }}</td>
+        </ng-container>
+        <ng-container *ngIf="entry.parameter">
+          <td>Parameter</td>
           <td>
-            {{ entry.argument?.name }}
+            <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
+               [queryParams]="{c: yamcs.context}">{{ entry.parameter.qualifiedName }}</a>
           </td>
         </ng-container>
         <ng-container *ngIf="entry.fixedValue">
           <td>Fixed value</td>
-          <td>0x{{ entry.fixedValue?.hexValue }}</td>
+          <td>0x{{ entry.fixedValue.hexValue }}</td>
         </ng-container>
         <td>{{ entry.locationInBits }}</td>
         <td>{{ entry.referenceLocation }}</td>
       </tr>
     </table>
-    <span *ngIf="!command.commandContainer.entry">-</span>
+    <span *ngIf="!command.commandContainer?.entry">-</span>
   </dd>
 </dl>
 

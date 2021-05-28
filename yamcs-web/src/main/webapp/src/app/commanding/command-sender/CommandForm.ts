@@ -188,9 +188,6 @@ export class CommandForm implements OnChanges {
           case 'integer':
             result[member.name] = Number(control.value);
             break;
-          case 'boolean':
-            result[member.name] = Boolean(control.value);
-            break;
           default:
             result[member.name] = control.value;
         }

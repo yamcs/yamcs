@@ -122,6 +122,14 @@ export class ParameterPage implements OnDestroy {
     return false;
   }
 
+  mayReadAlarms() {
+    return this.authService.getUser()!.hasSystemPrivilege('ReadAlarms');
+  }
+
+  mayReadMissionDatabase() {
+    return this.authService.getUser()!.hasSystemPrivilege('GetMissionDatabase');
+  }
+
   setParameter() {
     const parameter = this.parameter$.value!;
     const dialogRef = this.dialog.open(SetParameterDialog, {

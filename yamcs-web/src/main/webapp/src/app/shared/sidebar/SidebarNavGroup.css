@@ -1,5 +1,5 @@
 .nav-item-group {
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, .654) !important;
   position: relative;
 }
 

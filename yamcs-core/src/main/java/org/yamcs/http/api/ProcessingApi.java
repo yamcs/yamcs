@@ -427,6 +427,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
         Algorithm alg = MdbApi.verifyAlgorithm(xtcedb, request.getName());
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadAlgorithm, alg.getQualifiedName());
 
         observer.complete(algMng.getAlgorithmStatus(alg));
     }

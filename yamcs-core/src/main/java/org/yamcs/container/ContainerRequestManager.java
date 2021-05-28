@@ -38,7 +38,7 @@ public class ContainerRequestManager implements ContainerListener {
 
     public synchronized void subscribe(ContainerConsumer subscriber, SequenceContainer container) {
         if (container == null) {
-            throw new NullPointerException("Null contaienr");
+            throw new NullPointerException("Null container");
         }
         addSubscription(subscriber, container);
     }
@@ -59,7 +59,7 @@ public class ContainerRequestManager implements ContainerListener {
 
     public synchronized void unsubscribe(ContainerConsumer subscriber, SequenceContainer container) {
         if (container == null) {
-            throw new NullPointerException("null container");
+            throw new NullPointerException("Null container");
         }
 
         if (subscriptions.containsKey(container)) {

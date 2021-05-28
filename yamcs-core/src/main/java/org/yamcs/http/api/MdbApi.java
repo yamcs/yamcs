@@ -195,24 +195,41 @@ public class MdbApi extends AbstractMdbApi<Context> {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Predicate<Parameter> hasPrivilege = p -> {
-            return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
         };
+
+        // Establish only the parameters and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<Parameter> allParameters = new ArrayList<>();
+        mdb.getParameters().stream().filter(hasPrivilege).forEach(parameter -> {
+            allSpaceSystemNames.add(parameter.getSubsystemName());
+            allParameters.add(parameter);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
 
         // Determine search scope within the tree
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<Parameter> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                mdb.getParameters().stream().filter(hasPrivilege).forEach(parameter -> {
+                allParameters.forEach(parameter -> {
                     if (parameter.getQualifiedName().startsWith(request.getSystem())) {
                         candidates.add(parameter);
                     }
                 });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getParameterCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
@@ -223,7 +240,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            candidates.addAll(mdb.getParameters());
+            candidates.addAll(allParameters);
         }
 
         // Now do the actual brute-force search
@@ -445,26 +462,46 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
+        Predicate<MetaCommand> hasPrivilege = c -> {
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Command, c.getQualifiedName());
+        };
+
+        // Establish only the commands and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<MetaCommand> allCommands = new ArrayList<>();
+        mdb.getMetaCommands().stream().filter(hasPrivilege).forEach(command -> {
+            allSpaceSystemNames.add(command.getSubsystemName());
+            allCommands.add(command);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
-        List<MetaCommand> commands = new ArrayList<>();
+        final List<MetaCommand> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                for (MetaCommand command : mdb.getMetaCommands()) {
+                allCommands.forEach(command -> {
                     if (command.getQualifiedName().startsWith(request.getSystem())) {
-                        commands.add(command);
+                        candidates.add(command);
                     }
-                }
+                });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getMetaCommandCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
-                        commands.addAll(spaceSystem.getMetaCommands());
+                        spaceSystem.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
@@ -473,12 +510,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            commands = new ArrayList<>(mdb.getMetaCommands());
+            candidates.addAll(allCommands);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
 
-        commands = commands.stream().filter(c -> {
+        List<MetaCommand> commands = candidates.stream().filter(c -> {
             if (matcher != null && !matcher.matches(c)) {
                 return false;
             }
@@ -511,11 +548,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
-
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(mdb, request.getName());
+
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
+                !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Command, cmd.getQualifiedName())) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
 
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.FULL);
         observer.complete(cinfo);
@@ -524,26 +564,46 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listAlgorithms(Context ctx, ListAlgorithmsRequest request,
             Observer<ListAlgorithmsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
+        Predicate<Algorithm> hasPrivilege = a -> {
+            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, a.getQualifiedName());
+        };
+
+        // Establish only the algorithms and space-systems that the user is authorised for
+        Set<String> allSpaceSystemNames = new HashSet<>();
+        List<Algorithm> allAlgorithms = new ArrayList<>();
+        mdb.getAlgorithms().stream().filter(hasPrivilege).forEach(algorithm -> {
+            allSpaceSystemNames.add(algorithm.getSubsystemName());
+            allAlgorithms.add(algorithm);
+        });
+        Set<SpaceSystem> allSpaceSystems = new HashSet<>();
+        for (String spaceSystemName : allSpaceSystemNames) {
+            SpaceSystem spaceSystem = mdb.getSpaceSystem(spaceSystemName);
+            while (!spaceSystem.getName().isEmpty()) {
+                allSpaceSystems.add(spaceSystem);
+                spaceSystem = spaceSystem.getParent();
+            }
+        }
+
         List<SpaceSystem> spaceSystems = new ArrayList<>();
-        List<Algorithm> algorithms = new ArrayList<>();
+        final List<Algorithm> candidates = new ArrayList<>();
         if (request.hasSystem()) {
             if (request.hasQ()) { // get candidates for deep search starting from the system
-                for (Algorithm algorithm : mdb.getAlgorithms()) {
+                allAlgorithms.forEach(algorithm -> {
                     if (algorithm.getQualifiedName().startsWith(request.getSystem())) {
-                        algorithms.add(algorithm);
+                        candidates.add(algorithm);
                     }
-                }
+                });
             } else { // get direct children of the system
-                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
-                        .filter(spaceSystem -> spaceSystem.getAlgorithmCount(true) > 0)
-                        .collect(Collectors.toList());
-                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (!allSpaceSystems.contains(spaceSystem)) {
+                        continue;
+                    }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
-                        algorithms.addAll(spaceSystem.getAlgorithms());
+                        spaceSystem.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
                     } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
@@ -552,12 +612,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 }
             }
         } else {
-            algorithms = new ArrayList<>(mdb.getAlgorithms());
+            candidates.addAll(allAlgorithms);
         }
 
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
 
-        algorithms = algorithms.stream().filter(a -> {
+        List<Algorithm> algorithms = candidates.stream().filter(a -> {
             if (matcher != null && !matcher.matches(a)) {
                 return false;
             }
@@ -592,11 +652,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getAlgorithm(Context ctx, GetAlgorithmRequest request, Observer<AlgorithmInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = ManagementApi.verifyInstance(request.getInstance());
-
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Algorithm algo = verifyAlgorithm(mdb, request.getName());
+
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
+                !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, algo.getQualifiedName())) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
 
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
         observer.complete(cinfo);

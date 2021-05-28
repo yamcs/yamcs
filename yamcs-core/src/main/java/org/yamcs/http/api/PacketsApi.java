@@ -14,16 +14,21 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.yamcs.Processor;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.container.ContainerConsumer;
+import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractPacketsApi;
+import org.yamcs.protobuf.ContainerData;
 import org.yamcs.protobuf.ExportPacketRequest;
 import org.yamcs.protobuf.ExportPacketsRequest;
 import org.yamcs.protobuf.GetPacketRequest;
@@ -32,7 +37,9 @@ import org.yamcs.protobuf.ListPacketNamesResponse;
 import org.yamcs.protobuf.ListPacketsRequest;
 import org.yamcs.protobuf.ListPacketsResponse;
 import org.yamcs.protobuf.StreamPacketsRequest;
+import org.yamcs.protobuf.SubscribeContainersRequest;
 import org.yamcs.protobuf.SubscribePacketsRequest;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -328,30 +335,90 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void subscribePackets(Context ctx, SubscribePacketsRequest request, Observer<TmPacketData> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Stream stream = TableApi.verifyStream(ctx, ydb, request.getStream());
-        StreamSubscriber streamSubscriber = new StreamSubscriber() {
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-                long genTime = (Long) tuple.getColumn(GENTIME_COLUMN);
-                long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
-                int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
-                TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
-                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
-                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
-                        .setSequenceNumber(seqNumber)
-                        .build();
-                observer.next(tm);
-            }
 
-            @Override
-            public void streamClosed(Stream stream) {
-                observer.complete();
+        if (request.hasProcessor()) {
+            XtceDb mdb = XtceDbFactory.getInstance(instance);
+            Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
+            ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
+            ContainerConsumer containerConsumer = result -> {
+                TmPacketData packet = TmPacketData.newBuilder()
+                        .setId(NamedObjectId.newBuilder().setName(result.getContainer().getQualifiedName()))
+                        .setPacket(ByteString.copyFrom(result.getContainerContent()))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
+                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                        .build();
+                observer.next(packet);
+            };
+            observer.setCancelHandler(
+                    () -> containerRequestManager.unsubscribe(containerConsumer, mdb.getRootSequenceContainer()));
+            containerRequestManager.subscribe(containerConsumer, mdb.getRootSequenceContainer());
+
+        } else if (request.hasStream()) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+            Stream stream = TableApi.verifyStream(ctx, ydb, request.getStream());
+            StreamSubscriber streamSubscriber = new StreamSubscriber() {
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                    byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+                    long genTime = (Long) tuple.getColumn(GENTIME_COLUMN);
+                    long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+                    int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
+                    TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                            .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
+                            .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
+                            .setSequenceNumber(seqNumber)
+                            .build();
+                    observer.next(tm);
+                }
+
+                @Override
+                public void streamClosed(Stream stream) {
+                    observer.complete();
+                }
+            };
+            observer.setCancelHandler(() -> stream.removeSubscriber(streamSubscriber));
+            stream.addSubscriber(streamSubscriber);
+        } else {
+            throw new BadRequestException("One of 'processor' or 'stream' must be set");
+        }
+    }
+
+    @Override
+    public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        if (request.getNamesCount() == 0) {
+            throw new BadRequestException("At least one container name must be specified");
+        }
+
+        List<SequenceContainer> containers = new ArrayList<>(request.getNamesCount());
+        for (String name : request.getNamesList()) {
+            SequenceContainer container = mdb.getSequenceContainer(name);
+            if (container == null) {
+                throw new BadRequestException("Unknown container '" + name + "'");
             }
+            containers.add(container);
+        }
+
+        Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
+        ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
+        ContainerConsumer containerConsumer = result -> {
+            ContainerData packet = ContainerData.newBuilder()
+                    .setName(result.getContainer().getQualifiedName())
+                    .setBinary(ByteString.copyFrom(result.getContainerContent()))
+                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
+                    .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                    .build();
+            observer.next(packet);
         };
-        observer.setCancelHandler(() -> stream.removeSubscriber(streamSubscriber));
-        stream.addSubscriber(streamSubscriber);
+        observer.setCancelHandler(() -> {
+            for (SequenceContainer container : containers) {
+                containerRequestManager.unsubscribe(containerConsumer, container);
+            }
+        });
+        for (SequenceContainer container : containers) {
+            containerRequestManager.subscribe(containerConsumer, container);
+        }
     }
 
     /**

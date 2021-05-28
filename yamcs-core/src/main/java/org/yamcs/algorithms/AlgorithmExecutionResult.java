@@ -10,13 +10,11 @@ import org.yamcs.parameter.RawEngValue;
  * The result of the algorithm execution consists of:
  * <ul>
  * <li>a list of input parameter values - optional - the list of parameters which have been used as input to the
- * algorithm.
- * <li>
- * <li>a list of output parameter values - these are {@link ParameterValue} which are then propagated to the Yamcs</li>
- * clients.
+ * algorithm.</li>
+ * <li>a list of output parameter values - these are {@link ParameterValue} which are then propagated to the Yamcs
+ * clients.</li>
  * <li>a return value - this is not an output parameter; used for command verifiers</li>
  * </ul>
- * 
  * 
  * @author nm
  *

@@ -7,7 +7,6 @@ import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 
 @Component({
   templateUrl: './CommandReportPage.html',
-  styleUrls: ['./CommandReportPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandReportPage implements OnDestroy {

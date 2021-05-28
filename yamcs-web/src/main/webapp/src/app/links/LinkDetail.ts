@@ -6,7 +6,6 @@ import { YamcsService } from '../core/services/YamcsService';
 @Component({
   selector: 'app-link-detail',
   templateUrl: './LinkDetail.html',
-  styleUrls: ['./LinkDetail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkDetail {

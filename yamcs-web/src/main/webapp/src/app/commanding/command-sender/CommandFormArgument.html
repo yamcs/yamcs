@@ -19,8 +19,12 @@
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
     <br>
-    <input type="radio" [formControlName]="controlName" value="true"> true
-    <input type="radio" [formControlName]="controlName" value="false"> false
+    <input type="radio"
+           [formControlName]="controlName"
+           [value]="argument.type.oneStringValue"> {{ argument.type.oneStringValue }}
+    <input type="radio"
+           [formControlName]="controlName"
+           [value]="argument.type.zeroStringValue"> {{ argument.type.zeroStringValue }}
   </label>
 
   <label *ngSwitchCase="'time'">

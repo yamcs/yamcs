@@ -28,8 +28,8 @@ import com.google.gson.JsonObject;
 
 /**
  * AuthModule that identifies users against an external identity provider compliant with OpenID Connect (OIDC).
- * 
- * @see https://openid.net/connect/
+ * <p>
+ * See https://openid.net/connect/
  */
 public class OpenIDAuthModule implements AuthModule {
 

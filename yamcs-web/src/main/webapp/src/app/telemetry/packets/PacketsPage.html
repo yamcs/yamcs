@@ -28,20 +28,20 @@
         Packet Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <h6>Generation time</h6>
+        <div class="block-title">Generation time</div>
         <div class="block">
           {{ detailPacket.generationTime | datetime }}
         </div>
-        <h6>Reception time</h6>
+        <div class="block-title">Reception time</div>
         <div class="block">
           {{ detailPacket.receptionTime | datetime }}
           ({{ detailPacket.receptionTime | deltaWith:detailPacket.generationTime }})
         </div>
-        <h6>Size</h6>
+        <div class="block-title">Size</div>
         <div class="block">
           {{ detailPacket.packet | binarySize | formatBytes }}
         </div>
-        <h6>Data</h6>
+        <div class="block-title">Data</div>
         <div class="block">
           <app-hex [base64String]="detailPacket.packet"></app-hex>
         </div>

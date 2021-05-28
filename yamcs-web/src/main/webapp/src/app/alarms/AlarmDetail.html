@@ -1,5 +1,5 @@
 <ng-container *ngIf="alarm.type === 'PARAMETER'">
-  <h6>Parameter</h6>
+  <div class="block-title">Parameter</div>
   <div class="block">
     <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
        [queryParams]="{c: yamcs.context}"
@@ -10,19 +10,19 @@
 </ng-container>
 
 <ng-container *ngIf="alarm.type === 'EVENT'">
-  <h6>Event</h6>
+  <div class="block-title">Event</div>
   <div class="block">
     {{ alarm.id.namespace }}/{{ alarm.id.name }}
   </div>
 </ng-container>
 
-<h6>Severity</h6>
+<div class="block-title">Severity</div>
 <div class="block">
   <app-alarm-level [level]="alarm.severity"></app-alarm-level>
   {{ alarm.severity }}
 </div>
 
-<h6>Violations</h6>
+<div class="block-title">Violations</div>
 <div class="block">
   {{ alarm.violations | number }}
 </div>
@@ -31,7 +31,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Trigger value</h6>
+  <div class="block-title">Trigger value</div>
   <div class="block">
     <app-alarm-level [level]="alarm.severity" [grayscale]="true"></app-alarm-level>
     &nbsp;{{ parameterDetail.triggerValue.engValue | value }}
@@ -42,7 +42,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Live value</h6>
+  <div class="block-title">Live value</div>
   <div class="block">
     <app-expirable [pval]="parameterDetail.currentValue">
       <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
@@ -57,7 +57,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Trigger event</h6>
+  <div class="block-title">Trigger event</div>
   <div class="block">
     {{ eventDetail.triggerEvent.message }}
   </div>
@@ -67,7 +67,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</h6>
+  <div class="block-title">Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</div>
   <div class="block">
     On {{ alarm.acknowledgeInfo.acknowledgeTime | datetime }}
     <ng-container *ngIf="alarm.acknowledgeInfo.acknowledgeMessage">
@@ -82,7 +82,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Shelved by {{ alarm.shelveInfo.shelvedBy }}</h6>
+  <div class="block-title">Shelved by {{ alarm.shelveInfo.shelvedBy }}</div>
   <div class="block">
     On {{ alarm.shelveInfo.shelveTime | datetime }}
     <ng-container *ngIf="alarm.shelveInfo.shelveMessage">
@@ -93,7 +93,7 @@
   </div>
 
   <ng-container *ngIf="alarm.shelveInfo.shelveExpiration">
-    <h6>Shelve Expiration</h6>
+    <div class="block-title">Shelve Expiration</div>
     <div class="block">
       {{ alarm.shelveInfo.shelveExpiration | datetime }}
     </div>

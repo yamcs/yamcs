@@ -60,15 +60,19 @@ service PacketsApi {
   
   // Subscribe to packets
   //
-  // This subscription is performed at stream level. It is not currently possible
-  // to subscribe to the telemetry of a processor (but most of the time the
-  // telemetry in a processor is coming from a stream).
+  // This subscription is performed at stream or processor level.
   //
-  // Because messages are received from a stream, NamedObjectId (which is the
-  // identifier of the packet) is not filled in.
+  // The identifier of the packets is not filled in.
   rpc SubscribePackets(SubscribePacketsRequest) returns (stream TmPacketData) {
     option (yamcs.api.websocket) = {
       topic: "packets"
+    };
+  }
+  
+  // Subscribe to containers
+  rpc SubscribeContainers(SubscribeContainersRequest) returns (stream ContainerData) {
+    option (yamcs.api.websocket) = {
+      topic: "containers"
     };
   }
 }
@@ -169,6 +173,34 @@ message SubscribePacketsRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  // Stream name.
+  // Stream name. This is mutually exclusive with the field ``processor``.
   optional string stream = 2;
+  
+  // Processor name. This is mutually exclusive with the field ``stream``.
+  optional string processor = 3;
+}
+
+message SubscribeContainersRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Container names to subscribe to.
+  repeated string names = 3;
+}
+
+message ContainerData {
+  // Container name.
+  optional string name = 1;
+
+  // When the container's packet was generated (packet time)
+  optional google.protobuf.Timestamp generationTime = 2;
+
+  // Whent the container's packet was received by Yamcs
+  optional google.protobuf.Timestamp receptionTime = 3;
+
+  // Container bytes
+  optional bytes binary = 4;
 }
