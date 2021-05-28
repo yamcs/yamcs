@@ -32,7 +32,7 @@ The packets are inserted into frames which are sent as part of Virtual Channels 
 
 Note that The USLP frames (as well as the TC frames used for commanding) support a second level of multiplexing called Multiplexer Access Point (MAP) which allows multiplexing data inside a VC. The MAP service is not supported by Yamcs.
 
-Currently the built-in way to receive frame dat inside Yamcs is by using the UdpTmFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows receiving frame data from SLE-enabled Ground Stations (such as those from NASA Deep Space Network or ESA ESTRACK). The options described below are valid for both link types.
+Currently the built-in way to receive frame data inside Yamcs is by using the UdpTmFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows receiving frame data from SLE-enabled Ground Stations (such as those from NASA Deep Space Network or ESA ESTRACK). The options described below are valid for both link types.
 
 An example of a UDP TM frame link specification is below:
 
