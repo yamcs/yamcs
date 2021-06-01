@@ -49,7 +49,6 @@ public final class GPBHelper {
                 .setSequenceNumber(sequenceNumber)
                 .setCommandName((String) tuple.getColumn(PreparedCommand.CNAME_CMDNAME))
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime))
-                .setGenerationTimeUTC(TimeEncoding.toString(gentime))
                 .setCommandId(PreparedCommand.getCommandId(tuple));
 
         for (int i = 1; i < tuple.size(); i++) { // first column is constant ProtoDataType.CMD_HISTORY.getNumber()

@@ -473,7 +473,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setCommandName(pc.getCommandName())
                             .setSequenceNumber(pc.getSequenceNumber())
                             .setCommandId(pc.getCommandId())
-                            .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
                             .addAllAttr(pc.getAttributes())
                             .build();
@@ -489,7 +488,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                                     + cmdId.getSequenceNumber())
                             .setOrigin(cmdId.getOrigin())
                             .setCommandName(cmdId.getCommandName())
-                            .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
                             .setCommandId(cmdId);
                     for (Attribute a : attrs) {
