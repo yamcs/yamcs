@@ -23,6 +23,7 @@ import org.yamcs.simulator.pus.PusSimulator;
 import org.yamcs.utils.TimeEncoding;
 
 import com.beust.jcommander.JCommander;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
 
@@ -162,7 +163,7 @@ public class SimulatorCommander extends ProcessRunner {
                 // Stop entire process as soon as one service fails.
                 System.exit(1);
             }
-        });
+        }, MoreExecutors.directExecutor());
 
         // Allow services to shutdown gracefully
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -197,10 +198,10 @@ public class SimulatorCommander extends ProcessRunner {
         losDir.mkdirs();
         File dataDir = new File("data");
         dataDir.mkdirs();
-        
+
         if (runtimeOptions.type == null || runtimeOptions.type.equalsIgnoreCase("col")) {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
-            
+
             simulator = new ColSimulator(losDir, dataDir);
         } else if (runtimeOptions.type.equalsIgnoreCase("pus")) {
             pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
