@@ -85,10 +85,10 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
         int apid = (apidseqcount >> 16) & 0x07FF;
         int seq = (apidseqcount) & 0x3FFF;
-        AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
+        AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger(-1));
         int oldseq = ai.getAndSet(seq);
 
-        if (checkForSequenceDiscontinuity && ((seq - oldseq) & 0x3FFF) != 1) {
+        if (checkForSequenceDiscontinuity && oldseq != -1 && ((seq - oldseq) & 0x3FFF) != 1) {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
