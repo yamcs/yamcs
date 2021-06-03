@@ -175,6 +175,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
 
   private updateURL() {
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         page: this.paginator.pageIndex || null,

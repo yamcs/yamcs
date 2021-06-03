@@ -234,9 +234,10 @@ export class PacketsPage {
 
   private updateURL() {
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        filter: this.name || null,
+        name: this.name || null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

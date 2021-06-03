@@ -6,8 +6,8 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { FileTransferService, Transfer, TransferSubscription } from '../client';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
-import { UploadFileDialog } from './UploadFileDialog';
 import { DownloadFileDialog } from './DownloadFileDialog';
+import { UploadFileDialog } from './UploadFileDialog';
 
 @Component({
   templateUrl: './FileTransferPage.html',
@@ -77,6 +77,7 @@ export class FileTransferPage implements OnDestroy {
   switchService(service: FileTransferService | null) {
     // Update URL
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         service: service?.name || null,

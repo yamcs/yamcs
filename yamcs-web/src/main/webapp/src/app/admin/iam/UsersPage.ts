@@ -88,6 +88,7 @@ export class UsersPage implements AfterViewInit {
   private updateURL() {
     const filterValue = this.filterControl.value;
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         filter: filterValue || null,

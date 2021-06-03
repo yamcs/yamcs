@@ -171,6 +171,7 @@ export class AlarmsPage implements OnDestroy {
 
   private updateURL() {
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         filter: this.filter || null,

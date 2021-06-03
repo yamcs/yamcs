@@ -84,6 +84,7 @@ export class CommandsPage implements AfterViewInit {
   private updateURL() {
     const filterValue = this.filterControl.value;
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         page: this.paginator.pageIndex || null,

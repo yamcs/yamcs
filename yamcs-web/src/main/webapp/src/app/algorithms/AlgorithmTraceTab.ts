@@ -46,6 +46,7 @@ export class AlgorithmTraceTab implements AfterViewInit {
   switchToSection(section: string) {
     this.section$.next(section);
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: { section },
       queryParamsHandling: 'merge',
@@ -94,6 +95,7 @@ export class AlgorithmTraceTab implements AfterViewInit {
       this.refreshData();
       this.switchToSection('runs');
       this.router.navigate([], {
+        replaceUrl: true,
         relativeTo: this.route,
         queryParams: { section: null },
         queryParamsHandling: 'merge',

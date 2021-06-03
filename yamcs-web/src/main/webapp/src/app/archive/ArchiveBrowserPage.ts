@@ -153,6 +153,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         legendParams[option.id] = this.filterForm.value[option.id];
       }
       this.router.navigate([], {
+        replaceUrl: true,
         relativeTo: this.route,
         queryParamsHandling: 'merge',
         queryParams: {
@@ -160,7 +161,6 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           z: this.timeline.getZoom(),
           ...legendParams,
         },
-        replaceUrl: true,
       });
     });
 

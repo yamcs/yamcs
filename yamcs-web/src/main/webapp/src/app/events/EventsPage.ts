@@ -307,6 +307,7 @@ export class EventsPage {
 
   private updateURL() {
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         filter: this.filter || null,

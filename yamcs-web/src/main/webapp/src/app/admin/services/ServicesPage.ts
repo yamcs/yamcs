@@ -89,6 +89,7 @@ export class ServicesPage {
 
   private updateURL() {
     this.router.navigate([], {
+      replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         instance: this.instance || null,
