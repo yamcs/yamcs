@@ -32,6 +32,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -197,7 +198,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             public void onFailure(Throwable t) {
                 notifyFailed(ExceptionUtil.unwind(t));
             }
-        });
+        }, MoreExecutors.directExecutor());
     }
 
     public XtceDb getXtceDb() {

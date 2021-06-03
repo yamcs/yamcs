@@ -466,37 +466,39 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void addedCommand(PreparedCommand pc) {
-                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
-                        .setId(pc.getId())
-                        .setOrigin(pc.getOrigin())
-                        .setCommandName(pc.getCommandName())
-                        .setSequenceNumber(pc.getSequenceNumber())
-                        .setCommandId(pc.getCommandId())
-                        .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
-                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
-                        .addAllAttr(pc.getAttributes())
-                        .build();
-                observer.next(entry);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, pc.getCommandName())) {
+                    CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                            .setId(pc.getId())
+                            .setOrigin(pc.getOrigin())
+                            .setCommandName(pc.getCommandName())
+                            .setSequenceNumber(pc.getSequenceNumber())
+                            .setCommandId(pc.getCommandId())
+                            .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
+                            .addAllAttr(pc.getAttributes())
+                            .build();
+                    observer.next(entry);
+                }
             }
 
             @Override
             public void updatedCommand(CommandId cmdId, long changeDate, List<Attribute> attrs) {
-
-                CommandHistoryEntry.Builder entry = CommandHistoryEntry.newBuilder()
-                        .setId(cmdId.getGenerationTime() + "-" + cmdId.getOrigin() + "-" + cmdId.getSequenceNumber())
-                        .setOrigin(cmdId.getOrigin())
-                        .setCommandName(cmdId.getCommandName())
-                        .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
-                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
-                        .setCommandId(cmdId);
-                for (Attribute a : attrs) {
-                    CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
-                            .setName(a.getKey())
-                            .setValue(ValueUtility.toGbp(a.getValue()))
-                            .build();
-                    entry.addAttr(cha);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, cmdId.getCommandName())) {
+                    CommandHistoryEntry.Builder entry = CommandHistoryEntry.newBuilder()
+                            .setId(cmdId.getGenerationTime() + "-" + cmdId.getOrigin() + "-"
+                                    + cmdId.getSequenceNumber())
+                            .setOrigin(cmdId.getOrigin())
+                            .setCommandName(cmdId.getCommandName())
+                            .setGenerationTime(TimeEncoding.toProtobufTimestamp(cmdId.getGenerationTime()))
+                            .setCommandId(cmdId);
+                    for (Attribute a : attrs) {
+                        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                                .setName(a.getKey())
+                                .setValue(ValueUtility.toGbp(a.getValue()))
+                                .build();
+                        entry.addAttr(cha);
+                    }
+                    observer.next(entry.build());
                 }
-                observer.next(entry.build());
             }
         };
         CommandHistoryFilter subscription = requestManager.subscribeCommandHistory(null, since, listener);

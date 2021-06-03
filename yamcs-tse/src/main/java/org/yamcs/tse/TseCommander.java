@@ -25,6 +25,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 import com.beust.jcommander.JCommander;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
 
@@ -91,7 +92,7 @@ public class TseCommander extends ProcessRunner {
                 // Stop entire process as soon as one service fails.
                 System.exit(1);
             }
-        });
+        }, MoreExecutors.directExecutor());
 
         // Allow services to shutdown gracefully
         Runtime.getRuntime().addShutdownHook(new Thread() {

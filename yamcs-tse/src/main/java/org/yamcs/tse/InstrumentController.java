@@ -18,6 +18,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * Guarantees instruments are used by only one thread at a time, and establishes/closes device connections as-needed.
@@ -85,6 +86,6 @@ public class InstrumentController extends AbstractService {
             public void onFailure(Throwable t) {
                 notifyFailed(t);
             }
-        });
+        }, MoreExecutors.directExecutor());
     }
 }

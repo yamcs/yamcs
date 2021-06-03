@@ -54,6 +54,7 @@ import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
+import com.google.protobuf.util.Timestamps;
 
 public class EventsApi extends AbstractEventsApi<Context> {
 
@@ -483,8 +484,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
             String[] rec = new String[5 + extensionFields.size()];
             int i = 0;
             rec[i++] = event.getSource();
-            rec[i++] = event.getGenerationTimeUTC();
-            rec[i++] = event.getReceptionTimeUTC();
+            rec[i++] = Timestamps.toString(event.getGenerationTime());
+            rec[i++] = Timestamps.toString(event.getReceptionTime());
             rec[i++] = event.getType();
             rec[i++] = event.getMessage();
             for (ExtensionInfo extension : extensionFields) {
@@ -524,11 +525,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
         }
         if (other.hasGenerationTime()) {
             evb.setGenerationTime(TimeEncoding.toProtobufTimestamp(other.getGenerationTime()));
-            evb.setGenerationTimeUTC(TimeEncoding.toString(other.getGenerationTime()));
         }
         if (other.hasReceptionTime()) {
             evb.setReceptionTime(TimeEncoding.toProtobufTimestamp(other.getReceptionTime()));
-            evb.setReceptionTimeUTC(TimeEncoding.toString(other.getReceptionTime()));
         }
         if (other.hasSeqNumber()) {
             evb.setSeqNumber(other.getSeqNumber());

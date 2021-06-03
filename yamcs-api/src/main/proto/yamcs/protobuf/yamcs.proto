@@ -278,9 +278,6 @@ message Event {
   optional string type = 5;
   required string message = 6;
   optional EventSeverity severity = 7[default=INFO];
-
-  optional string generationTimeUTC = 8 [deprecated = true];
-  optional string receptionTimeUTC = 9 [deprecated = true];
   
   // Set by API when event was posted by a user
   optional string createdBy = 10;
