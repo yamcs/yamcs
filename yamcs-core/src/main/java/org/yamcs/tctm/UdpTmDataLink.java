@@ -56,7 +56,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     @Override
     public void doStop() {
-        tmSocket.close();
+        if (tmSocket != null) {
+            tmSocket.close();
+        }
         notifyStopped();
     }
 
@@ -125,6 +127,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     public void doDisable() {
         if (tmSocket != null) {
             tmSocket.close();
+            tmSocket = null;
         }
     }
 
