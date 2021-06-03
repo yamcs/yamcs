@@ -99,8 +99,8 @@ public class TcManagedParameters extends UplinkManagedParameters {
         public TcVcManagedParameters(YConfiguration config, TcManagedParameters mcParams) {
             super(config);
 
-            if (vcId < 0 || vcId > 7) {
-                throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 7.");
+            if (vcId < 0 || vcId > 63) {
+                throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");
             }
             service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
 
