@@ -5,6 +5,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorConfig;
+import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
@@ -122,7 +123,7 @@ public class XtceTmExtractor {
     public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
             SequenceContainer startContainer) {
 
-        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, stats,
+        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime,
                 pdata.getLastValueCache());
         try {
             synchronized (subscription) {
@@ -130,6 +131,9 @@ public class XtceTmExtractor {
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
                         options);
                 cpc.sequenceContainerProcessor.extract(subscribedContainer);
+                String pname = XtceTmRecorder.deriveArchivePartition(result);
+                stats.newPacket(pname, result.getParameterResult().size(), acquisitionTime, generationTime,
+                        buf.sizeInBits());
             }
         } catch (XtceProcessingException e) {
             pdata.eventProducer.sendWarning(e.toString());

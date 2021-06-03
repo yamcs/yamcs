@@ -102,14 +102,12 @@ public class SequenceContainerProcessor {
         }
 
         List<InheritingContainer> inheritingContainers = subscribedContainer.inheritingContainers;
-        boolean hasDerived = false;
         // And then any derived containers
         int bitp = buf.getPosition();
         for (InheritingContainer inherited : inheritingContainers) {
             MatchResult r = inherited.matches(result);
 
             if (r == MatchResult.OK) {
-                hasDerived = true;
                 buf.setPosition(bitp);
                 extract(inherited.container);
                 if (buf.getPosition() > maxposition) {
@@ -118,14 +116,5 @@ public class SequenceContainerProcessor {
             }
         }
         buf.setPosition(maxposition);
-
-        // Finally update the stats. We add the packet into the statistics only if it doesn't have a derived container
-        if (!hasDerived && (result.stats != null)) {
-
-            String pname = subscribedContainer.conainerDef.getQualifiedName();
-            result.stats.newPacket(pname, (entries == null) ? 0 : entries.size(),
-                    result.acquisitionTime, result.generationTime, buf.sizeInBits());
-        }
     }
-
 }

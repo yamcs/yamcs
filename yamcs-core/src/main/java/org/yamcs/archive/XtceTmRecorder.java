@@ -292,19 +292,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
                     rootSequenceContainer);
 
-            List<ContainerExtractionResult> cerList = cpr.getContainerResult();
-            String pname = null;
-            // Derives the archive partition; the first container is the root container.
-            // We take the name of the most specific one with the archive partition flag set
-            for (int i = cerList.size() - 1; i >= 0; i--) {
-                SequenceContainer sc = cerList.get(i).getContainer();
-                if (sc.useAsArchivePartition()) {
-                    pname = sc.getQualifiedName();
-                }
-            }
-            if (pname == null) {
-                pname = cerList.get(0).getContainer().getQualifiedName();
-            }
+            String pname = deriveArchivePartition(cpr);
 
             try {
                 List<Object> c = t.getColumns();
@@ -321,5 +309,23 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 log.error("got exception when saving packet ", e);
             }
         }
+    }
+
+    static public String deriveArchivePartition(ContainerProcessingResult cpr) {
+        List<ContainerExtractionResult> cerList = cpr.getContainerResult();
+        String pname = null;
+        // Derives the archive partition; the first container is the root container.
+        // We take the name of the most specific one with the archive partition flag set
+        for (int i = cerList.size() - 1; i >= 0; i--) {
+            SequenceContainer sc = cerList.get(i).getContainer();
+            if (sc.useAsArchivePartition()) {
+                pname = sc.getQualifiedName();
+            }
+        }
+        if (pname == null) {
+            pname = cerList.get(0).getContainer().getQualifiedName();
+        }
+
+        return pname;
     }
 }
