@@ -1,10 +1,12 @@
-Version 5.5.0 released 22-Apr-2021
+Version 5.5.0 released 1-Jun-2021
 - Added algorithm status and tracing (currently only working for global algorithms)
 - Added support for XTCE transmission constraints and verifiers (using MatchCriteria, BooleanExpression...)
 - Added java-expression algorithms
 - Added types to system parameters
 - Fixed the realtime parameter archive - it can now be used as a preferred configuration for all systems receiving only realtime data (e.g. testing in an EGSE/Lab setup)
 - CCSDS Frame Processing: allow plugging user defined virtual channels handlers
+- Fixed the Parameter Archive to reconstruct aggregate and array parameters out of their components (which are stored separately in the archive)
+- minor tweaks and fixes
 
 Version 5.4.5  released 5-Apr-2021
 - Fixed a bug causing the rejection of aggregates with enumeration members when used as command arguments
