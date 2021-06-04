@@ -1,7 +1,11 @@
 Stream TC Command Releaser
 ==========================
 
-Sends commands to the configured ``tc`` stream.
+Sends commands to the configured ``tc`` streams. 
+
+The service supports sending commands to multiple streams depending on the command name. Each stream can be connected to a different data link, thus allowing Yamcs to control multiple targets concurrently.
+
+The streams where the commands are sent to are defined as part of the :doc:`streamConfig section<../data-management/streams>` in the ``yamcs.<instance>.yaml`` instance configuration file.
 
 
 Class Name
@@ -20,12 +24,10 @@ This service is defined in ``etc/processor.yaml``. Example:
     realtime:
       services:
         - class: org.yamcs.StreamTcCommandReleaser
-          args:
-            stream: "tc_realtime"
 
 
 Configuration Options
 ---------------------
 
 stream (string)
-    **Required.** The stream to send commands to.
+    The stream to send commands to. This option is deprecated in favour of the stream configuration defined at instance level. Among others, that configuration is preferred because it allows having different streams for different instances, whereas the ``processor.yaml`` which defines this service is common for all instances.
