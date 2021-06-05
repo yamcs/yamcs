@@ -61,7 +61,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
     }
 
     public void process(org.yamcs.parameter.ParameterValue pval) {
-        Value value = useRawValue ? pval.getEngValue() : pval.getRawValue();
+        Value value = useRawValue ? pval.getRawValue() : pval.getEngValue();
         if (value == null) {
             return;
         }
