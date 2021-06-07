@@ -76,8 +76,7 @@ public class SequenceEntryProcessor {
             BitBuffer buf1 = buf.slice();
 
             ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.proccessorData, buf1,
-                    pcontext.result,
-                    pcontext.subscription, pcontext.options);
+                    pcontext.result, pcontext.subscription, pcontext.options, false);
             if (!pcontext.options.resultIncludesSubcontainers) {
                 cpc1.provideContainerResult = false;
             }

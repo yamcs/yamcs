@@ -313,17 +313,25 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
     static public String deriveArchivePartition(ContainerProcessingResult cpr) {
         List<ContainerExtractionResult> cerList = cpr.getContainerResult();
+        ContainerExtractionResult root = cerList.get(0);
+
         String pname = null;
         // Derives the archive partition; the first container is the root container.
-        // We take the name of the most specific one with the archive partition flag set
+        // We take the name of the most specific one derived directly from the root,
+        // with the archive partition flag set
         for (int i = cerList.size() - 1; i >= 0; i--) {
-            SequenceContainer sc = cerList.get(i).getContainer();
-            if (sc.useAsArchivePartition()) {
-                pname = sc.getQualifiedName();
+            ContainerExtractionResult cer = cerList.get(i);
+            if (cer.isDerivedFromRoot()) {
+                SequenceContainer sc = cer.getContainer();
+                if (sc.useAsArchivePartition()) {
+                    pname = sc.getQualifiedName();
+                    break;
+                }
             }
         }
+        // if none has the archive partition flag set, we take the name of the root
         if (pname == null) {
-            pname = cerList.get(0).getContainer().getQualifiedName();
+            pname = root.getContainer().getQualifiedName();
         }
 
         return pname;

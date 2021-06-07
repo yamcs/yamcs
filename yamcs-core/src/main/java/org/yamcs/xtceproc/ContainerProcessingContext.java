@@ -13,7 +13,8 @@ import org.yamcs.xtce.XtceDb;
 
 /**
  * Keeps track of where we are when processing a packet.
- *
+ * <p>
+ * One object is used for all containers deriving in a hierarchy
  */
 public class ContainerProcessingContext {
     final ProcessorData proccessorData;
@@ -27,16 +28,18 @@ public class ContainerProcessingContext {
     public final SequenceEntryProcessor sequenceEntryProcessor;
     public final DataEncodingDecoder dataEncodingProcessor;
     public boolean provideContainerResult = true;
+    public final boolean derivedFromRoot;
 
     SequenceEntry currentEntry;
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
-            Subscription subscription, ContainerProcessingOptions options) {
+            Subscription subscription, ContainerProcessingOptions options, boolean derivedFromRoot) {
         this.proccessorData = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
         this.result = result;
         this.options = options;
+        this.derivedFromRoot = derivedFromRoot;
 
         sequenceContainerProcessor = new SequenceContainerProcessor(this);
         sequenceEntryProcessor = new SequenceEntryProcessor(this);

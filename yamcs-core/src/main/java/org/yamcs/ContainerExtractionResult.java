@@ -13,19 +13,22 @@ public class ContainerExtractionResult {
 
     final private long acquisitionTime;
     final private long generationTime;
+    final boolean derivedFromRoot;
 
     public ContainerExtractionResult(SequenceContainer container,
             byte[] containerContent,
             int offset,
             int bitPosition,
             long acquisitionTime,
-            long generationTime) {
+            long generationTime,
+            boolean derivedFromRoot) {
         this.container = container;
         this.containerContent = containerContent;
         this.offset = offset;
         this.bitPosition = bitPosition;
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
+        this.derivedFromRoot = derivedFromRoot;
     }
 
     public SequenceContainer getContainer() {
@@ -57,6 +60,17 @@ public class ContainerExtractionResult {
 
     public long getGenerationTime() {
         return generationTime;
+    }
+
+    /**
+     * 
+     * Return true if this inherits (directly or indirectly) from the root container.
+     * <p>
+     * Return false if this does not inherit from the root container - that means is obtained through container
+     * composition rather than inheritance
+     */
+    public boolean isDerivedFromRoot() {
+        return derivedFromRoot;
     }
 
     @Override

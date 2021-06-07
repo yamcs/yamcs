@@ -129,7 +129,7 @@ public class XtceTmExtractor {
             synchronized (subscription) {
                 SubscribedContainer subscribedContainer = subscription.addSequenceContainer(startContainer);
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
-                        options);
+                        options, true);
                 cpc.sequenceContainerProcessor.extract(subscribedContainer);
                 String pname = XtceTmRecorder.deriveArchivePartition(result);
                 stats.newPacket(pname, result.getParameterResult().size(), acquisitionTime, generationTime,
