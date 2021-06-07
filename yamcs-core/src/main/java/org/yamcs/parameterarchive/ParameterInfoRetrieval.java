@@ -14,22 +14,22 @@ public class ParameterInfoRetrieval {
     final private ParameterArchive parchive;
     private final Logger log = LoggerFactory.getLogger(ParameterInfoRetrieval.class);
 
-    int pid;
+    ParameterId parameterId;
     long start, stop;
 
-    public ParameterInfoRetrieval(ParameterArchive parchive, int pid, long start, long stop) {
+    public ParameterInfoRetrieval(ParameterArchive parchive, ParameterId parameterId, long start, long stop) {
         this.parchive = parchive;
-        this.pid = pid;
+        this.parameterId = parameterId;
         this.start = start;
         this.stop = stop;
     }
 
     public void retrieve(Consumer<ArchiveParameterSegmentInfo> consumer) throws RocksDBException, IOException {
 
-        int[] pgids = parchive.getParameterGroupIdDb().getAllGroups(pid);
+        int[] pgids = parchive.getParameterGroupIdDb().getAllGroups(parameterId.getPid());
 
         if (pgids.length == 0) {
-            log.error("Found no parameter group for parameter Id {}", pid);
+            log.error("Found no parameter group for parameter Id {}", parameterId);
             return;
         }
 
@@ -42,7 +42,7 @@ public class ParameterInfoRetrieval {
             throws RocksDBException, IOException {
 
         ParameterRequest req = new ParameterRequest(start, stop, true, false, false, false);
-        SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req);
+        SegmentIterator it = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
 
         try {
             

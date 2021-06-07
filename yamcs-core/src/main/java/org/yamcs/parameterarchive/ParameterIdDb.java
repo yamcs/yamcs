@@ -344,7 +344,7 @@ public class ParameterIdDb {
     }
 
     /**
-     * returns ParameterId based on numeric id
+     * returns ParameterId based on numeric id or null if it does not exist
      */
     public ParameterId getParameterId(int pid) {
         Entry e = getCachedEntryById(pid);

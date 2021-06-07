@@ -22,7 +22,7 @@ public class SimpleParameterIterator implements ParameterIterator {
 
     public SimpleParameterIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
             ParameterRequest req) {
-        this.it = new SegmentIterator(parchive, parameterId.getPid(), parameterGroupId, req);
+        this.it = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
         this.req = req;
         this.parameterId = parameterId;
         init();

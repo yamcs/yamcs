@@ -181,7 +181,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             pcache = processor.getParameterCache();
         }
 
-        ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
+        ParameterRequest pr = new ParameterRequest(start, stop, true, !useRawValue, useRawValue, true);
         SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
             spdr.retrieve(sampler);
@@ -541,22 +541,20 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ArchivedParameterSegmentsResponse.Builder resp = ArchivedParameterSegmentsResponse.newBuilder();
         ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder();
 
-        pdb.iterate((fqn, paraId) -> {
-            if (paraId.getPid() == pid) {
-                paraInfo.setFqn(fqn);
-                paraInfo.setEngType(paraId.getEngType());
-                paraInfo.setRawType(paraId.getRawType());
-                paraInfo.setPid(pid);
-                return false;
-            }
-            return true;
-        });
-        if (!paraInfo.hasFqn()) {
+        ParameterId paraId = pdb.getParameterId(pid);
+
+        if (paraId == null) {
             throw new NotFoundException("Unknown parameter id " + pid);
         }
+
+        paraInfo.setFqn(paraId.getParamFqn());
+        paraInfo.setEngType(paraId.getEngType());
+        paraInfo.setRawType(paraId.getRawType());
+        paraInfo.setPid(pid);
+
         resp.setParameterInfo(paraInfo.build());
 
-        ParameterInfoRetrieval pir = new ParameterInfoRetrieval(parchive, pid, start, stop);
+        ParameterInfoRetrieval pir = new ParameterInfoRetrieval(parchive, paraId, start, stop);
 
         try {
             pir.retrieve(segInfo -> resp.addSegments(segInfo));

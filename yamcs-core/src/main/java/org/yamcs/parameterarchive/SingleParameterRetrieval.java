@@ -41,14 +41,6 @@ public class SingleParameterRetrieval {
         this.parameterGroupIds = null;
     }
 
-    SingleParameterRetrieval(ParameterArchive parchive, int parameterId, ParameterRequest spvr) {
-        this.req = spvr;
-        this.parchive = parchive;
-        ParameterId pid = parchive.getParameterIdDb().getParameterId(parameterId);
-        this.pids = new ParameterId[] { pid };
-        this.parameterGroupIds = null;
-    }
-
     SingleParameterRetrieval(ParameterArchive parchive, int parameterId, int[] parameterGroupIds,
             ParameterRequest spvr) {
         this.req = spvr;
@@ -90,7 +82,7 @@ public class SingleParameterRetrieval {
     // this is the easy case, one single parameter group -> no merging of segments necessary
     private void retrieveValueSingleGroup(ParameterId pid, int parameterGroupId,
             Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
-        SegmentIterator it = new SegmentIterator(parchive, pid.getPid(), parameterGroupId, req);
+        SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req);
         try {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
@@ -110,7 +102,7 @@ public class SingleParameterRetrieval {
         PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(req.ascending));
         try {
             for (int pgid : parameterGroupIds) {
-                SegmentIterator it = new SegmentIterator(parchive, pid.getPid(), pgid, req);
+                SegmentIterator it = new SegmentIterator(parchive, pid, pgid, req);
                 if (it.isValid()) {
                     queue.add(it);
                 } else { // not really necessary
@@ -348,7 +340,7 @@ public class SingleParameterRetrieval {
             //
             // make sure the parameters are extracted in the order of their id
             // (rather than some random order from PriorityQueue)
-            return Integer.compare(it1.getParameterId(), it2.getParameterId());
+            return Integer.compare(it1.getParameterId().getPid(), it2.getParameterId().getPid());
         }
     }
 

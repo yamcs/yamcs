@@ -47,7 +47,8 @@ import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
  *
  */
 public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> {
-    private final int parameterId, parameterGroupId;
+    private final ParameterId parameterId;
+    private final int parameterGroupId;
     final byte[] rangeStart;
     final byte[] rangeStop;
 
@@ -68,7 +69,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     Iterator<ParameterValueSegment> rtIterator;
     final RealtimeArchiveFiller rtfiller;
 
-    public SegmentIterator(ParameterArchive parchive, int parameterId, int parameterGroupId, ParameterRequest req) {
+    public SegmentIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
+            ParameterRequest req) {
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
@@ -77,16 +79,17 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.retrieveRawValues = req.isRetrieveRawValues();
         this.retrieveParameterStatus = req.isRetrieveParameterStatus();
 
+        int pid = parameterId.getPid();
         partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
         topIt = partitions.iterator();
-        rangeStart = new SegmentKey(parameterId, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
+        rangeStart = new SegmentKey(pid, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
                 (byte) 0).encode();
-        rangeStop = new SegmentKey(parameterId, parameterGroupId, req.stop, Byte.MAX_VALUE).encode();
+        rangeStop = new SegmentKey(pid, parameterGroupId, req.stop, Byte.MAX_VALUE).encode();
 
         rtfiller = parchive.getRealtimeFiller();
 
         if (rtfiller != null && req.isAscending()) {
-            rtIterator = rtfiller.getSegments(parameterId, parameterGroupId, ascending).iterator();
+            rtIterator = rtfiller.getSegments(pid, parameterGroupId, ascending).iterator();
         }
 
         next();
@@ -121,7 +124,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
 
         if (!ascending && rtfiller != null) {
             if (rtIterator == null) {
-                rtIterator = rtfiller.getSegments(parameterId, parameterGroupId, ascending).iterator();
+                rtIterator = rtfiller.getSegments(parameterId.getPid(), parameterGroupId, ascending).iterator();
             }
             if (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
@@ -160,7 +163,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         return parameterGroupId;
     }
 
-    public int getParameterId() {
+    public ParameterId getParameterId() {
         return parameterId;
     }
 

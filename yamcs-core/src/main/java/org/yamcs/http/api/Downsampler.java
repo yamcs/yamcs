@@ -106,9 +106,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         }
 
         int n = timestamps.length;
-        Type engType = t.getEngType();
+        Type type = useRawValue ? t.getRawType() : t.getEngType();
 
-        switch (engType) {
+        switch (type) {
         case FLOAT:
             float[] fv = va.getFloatArray();
             for (int i = 0; i < n; i++) {
