@@ -147,12 +147,17 @@ public class SpaceSystem extends NameDescription {
      * references - the reference will be resolved when all parts are available
      */
     public void addUnresolvedReference(NameReference nr) {
-        // try to resolve it immediately
-        FoundReference foundRef = ReferenceFinder.findReference(this, nr);
-        if (foundRef == null || !foundRef.isComplete()) {
+        if (nr.isAbsolute()) {
+            // do not resolve absolute references, they will be resolved when assembling the MDB
             unresolvedReferences.add(nr);
         } else {
-            foundRef.resolved(nr);
+            // try to resolve it immediately
+            FoundReference foundRef = ReferenceFinder.findReference(this, nr);
+            if (foundRef == null || !foundRef.isComplete()) {
+                unresolvedReferences.add(nr);
+            } else {
+                foundRef.resolved(nr);
+            }
         }
     }
 

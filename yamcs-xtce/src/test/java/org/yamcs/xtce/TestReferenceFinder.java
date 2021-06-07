@@ -14,7 +14,8 @@ public class TestReferenceFinder {
     @Test
     public void testResolveReference() {
         ParameterType ptype = new IntegerParameterType.Builder().setName("test").build();
-        ReferenceFinder refFinder = new ReferenceFinder(s ->{});
+        ReferenceFinder refFinder = new ReferenceFinder(s -> {
+        });
         SpaceSystem root = new SpaceSystem("");
 
         SpaceSystem a = new SpaceSystem("a");
@@ -88,5 +89,20 @@ public class TestReferenceFinder {
 
         rr = refFinder.findReference(root, new NameReference("p2", Type.PARAMETER), a_b2);
         assertNull(rr);
+    }
+
+    @Test
+    public void test2() {
+
+        SpaceSystem root = new SpaceSystem("");
+        SpaceSystem a = new SpaceSystem("a");
+        root.addSpaceSystem(a);
+        root.addSpaceSystem(new SpaceSystem("b"));
+
+        ParameterType ptype = new IntegerParameterType.Builder().setName("test").build();
+        a.addParameterType(ptype);
+
+        FoundReference fr = ReferenceFinder.findReference(a, new NameReference("b/test", Type.PARAMETER_TYPE));
+        assertNull(fr);
     }
 }

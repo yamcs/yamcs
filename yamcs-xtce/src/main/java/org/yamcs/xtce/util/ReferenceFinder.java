@@ -146,7 +146,6 @@ public class ReferenceFinder {
             if (i == path.length - 1) {
                 break;
             }
-
             SpaceSystem ss1 = ss.getSubsystem(path[i]);
 
             if ((ss1 == null) && nr.getType() == Type.PARAMETER) {
@@ -171,10 +170,12 @@ public class ReferenceFinder {
             }
 
             if (ss1 == null) {
+                ss = ss1;
                 break;
             }
             ss = ss1;
         }
+
         if (ss == null) {
             return null;
         }

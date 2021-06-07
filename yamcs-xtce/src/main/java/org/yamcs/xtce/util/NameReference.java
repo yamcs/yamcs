@@ -96,4 +96,8 @@ public class NameReference {
     public String toString() {
         return type + "(" + ref + ")";
     }
+
+    public boolean isAbsolute() {
+        return ref.startsWith("/");
+    }
 }
