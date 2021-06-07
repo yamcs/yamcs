@@ -17,8 +17,9 @@ public class ParameterValueArray {
     final ValueArray engValues;
     final ValueArray rawValues;
     final ParameterStatus[] paramStatus;
-    
-    public ParameterValueArray(long timestamps[], ValueArray engValues, ValueArray rawValues, ParameterStatus[] paramStatus) {
+
+    public ParameterValueArray(long timestamps[], ValueArray engValues, ValueArray rawValues,
+            ParameterStatus[] paramStatus) {
         this.timestamps = timestamps;
         this.engValues = engValues;
         this.rawValues = rawValues;
@@ -38,26 +39,27 @@ public class ParameterValueArray {
     }
 
     /**
-     * @return the type of the engineering values or null if the engineering values were not requested
+     * @return the type of the engineering values or {@link Type#NONE} if the engineering values were not requested
      */
     public Type getEngType() {
-        return engValues == null ? null : engValues.getType();
+        return engValues == null ? Type.NONE : engValues.getType();
     }
 
     /**
-     * @return the type of the raw values or null if there are no raw values in this segment (either because the
-     *         parameter does not have a raw value or because the raw values were not requested/extracted)
+     * @return the type of the raw values or {@link Type#NONE} if there are no raw values in this segment (either
+     *         because the parameter does not have a raw value or because the raw values were not requested/extracted)
      */
     public Type getRawType() {
-        return rawValues == null ? null : rawValues.getType();
+        return rawValues == null ? Type.NONE : rawValues.getType();
     }
 
     public ParameterStatus[] getStatuses() {
         return paramStatus;
     }
-    
+
     /**
      * Return engineering value of the parameter on position idx
+     *
      * @param idx
      * @return
      */

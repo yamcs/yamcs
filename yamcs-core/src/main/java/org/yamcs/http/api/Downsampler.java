@@ -145,6 +145,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
                 process(timestamps[i], lv[i], expireMillis);
             }
             break;
+        case NONE:
+            // No value (for example: pval without raw). Do nothing.
+            break;
         default:
             for (int i = 0; i < n; i++) {
                 process(timestamps[i], Double.NaN, expireMillis);
