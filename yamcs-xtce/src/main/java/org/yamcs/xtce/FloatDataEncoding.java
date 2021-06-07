@@ -110,7 +110,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         switch (getEncoding()) {
         case IEEE754_1985:
         case MILSTD_1750A:
-            return "FloatDataEncoding(sizeInBits=" + sizeInBits + ""
+            return "FloatDataEncoding(sizeInBits=" + sizeInBits + ", byteOrder: " + byteOrder
                     + (defaultCalibrator == null ? "" : (", defaultCalibrator:" + defaultCalibrator))
                     + ")";
         case STRING:
