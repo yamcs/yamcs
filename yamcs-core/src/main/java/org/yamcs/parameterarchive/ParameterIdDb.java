@@ -550,7 +550,8 @@ public class ParameterIdDb {
 
         @Override
         public String toString() {
-            return "Entry [pid=" + pid + ", fqn=" + fqn + "]";
+            return "Entry [pid=" + pid + ", fqn=" + fqn + ", engType: " + getEngType()
+                    + ", rawType: " + getRawType() + "]";
         }
     }
 

@@ -76,23 +76,24 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.parchive = parchive;
         this.ascending = req.isAscending();
         this.retrieveEngValues = req.isRetrieveEngineeringValues();
-        this.retrieveRawValues = req.isRetrieveRawValues();
+        this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.isRetrieveRawValues();
         this.retrieveParameterStatus = req.isRetrieveParameterStatus();
 
         int pid = parameterId.getPid();
-        partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
-        topIt = partitions.iterator();
         rangeStart = new SegmentKey(pid, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
                 (byte) 0).encode();
         rangeStop = new SegmentKey(pid, parameterGroupId, req.stop, Byte.MAX_VALUE).encode();
-
         rtfiller = parchive.getRealtimeFiller();
 
-        if (rtfiller != null && req.isAscending()) {
-            rtIterator = rtfiller.getSegments(pid, parameterGroupId, ascending).iterator();
-        }
+        if (retrieveEngValues || retrieveRawValues || retrieveParameterStatus) {
+            partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
+            topIt = partitions.iterator();
 
-        next();
+            if (rtfiller != null && req.isAscending()) {
+                rtIterator = rtfiller.getSegments(pid, parameterGroupId, ascending).iterator();
+            }
+            next();
+        } // else the iterator will return isValid = false since there is nothing to retrieve
     }
 
     public boolean isValid() {
