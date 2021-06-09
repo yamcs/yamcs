@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
+import { BehaviorSubject } from 'rxjs';
 import { ReplicationInfoSubscription, ReplicationMaster, ReplicationSlave } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -35,6 +36,8 @@ export class ReplicationPage implements OnDestroy {
 
   slavesDataSource = new MatTableDataSource<ReplicationSlave>();
   mastersDataSource = new MatTableDataSource<ReplicationMaster>();
+  hasSlaves$ = new BehaviorSubject<boolean>(false);
+  hasMasters$ = new BehaviorSubject<boolean>(false);
 
   private replicationInfoSubscription: ReplicationInfoSubscription;
 
@@ -46,6 +49,8 @@ export class ReplicationPage implements OnDestroy {
     this.replicationInfoSubscription = yamcs.yamcsClient.createReplicationInfoSubscription(info => {
       this.slavesDataSource.data = info.slaves || [];
       this.mastersDataSource.data = info.masters || [];
+      this.hasSlaves$.next(this.slavesDataSource.data.length > 0);
+      this.hasMasters$.next(this.mastersDataSource.data.length > 0);
     });
   }
 
