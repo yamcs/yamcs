@@ -16,11 +16,11 @@ import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
 import org.yamcs.client.YamcsClient;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Duration;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
@@ -30,7 +30,7 @@ import io.netty.handler.codec.http.QueryStringEncoder;
 
 public class HttpMethodHandler implements MethodHandler {
 
-    private static final Pattern PATTERN_TEMPLATE_VAR = Pattern.compile("\\{([^\\*\\}]+)[\\*]?\\}");
+    private static final Pattern PATTERN_TEMPLATE_VAR = Pattern.compile("\\{([^\\*\\?\\}]+)(\\*|\\?|\\*\\*)?\\}");
 
     private RestClient baseClient;
     private WebSocketClient webSocketClient;
@@ -137,8 +137,9 @@ public class HttpMethodHandler implements MethodHandler {
         Matcher matcher = PATTERN_TEMPLATE_VAR.matcher(template);
         while (matcher.find()) {
             String fieldName = matcher.group(1);
+            boolean optional = "**".equals(matcher.group(2)) || "?".equals(matcher.group(2));
             FieldDescriptor field = inputType.findFieldByName(fieldName);
-            if (!input.hasField(field)) {
+            if (!optional && !input.hasField(field)) {
                 throw new IllegalArgumentException(
                         "Request message is missing mandatory parameter '" + fieldName + "'");
             }
