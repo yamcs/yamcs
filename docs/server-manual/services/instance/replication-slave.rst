@@ -7,8 +7,10 @@ In TCP client mode, it connects to the master defined in the configuration.
 
 The slave keeps track of the id of the last transaction received from the master in a local text file ``yamcs-data/<instance>/replication/slave-lastid.txt``. Each time the connection to the master is estabilished, it sends a request containing the last transaction id +1. The master will start replaying data from that transaction. If the replication slave does not find the file at startup, it will receive all the data that the master has.
 
-There can be two replication slaves running for the same instance, connected to two different masters.
+There can be two or replication slaves running for the same instance, connected to two different masters.
 
+To avoid an infinite message flood caused by a missconfiguration whereby a slave receives and inserts into a stream the data which was extracted from the same stream, each incoming messages contains a 32 bit ``instance id``. This is the id of the instance where the message has originated from. If a slave receives a message with its own instance id it will discard it and not insert it into the stream.
+The instance id is calculated as a hash code from the ``<serverId>.<instanceName>``. The serverId is by default the hostname but can be changed in yamcs.yaml.
 
 
 Class Name
