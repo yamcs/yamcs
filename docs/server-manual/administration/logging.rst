@@ -48,3 +48,40 @@ There are two handlers:
 #. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. The FileHandler in this configuration applies a rotation 20MB with a maximum of 50 files. The theoretic maximum of disk space is therefore 1GB. The most recent log file can be found at ``/opt/yamcs/log/yamcs-server.log.0``. Note that when Yamcs Server is restarted the log files will always rotate even if ``yamcs-server.log.0`` had not yet reached 20MB.
 
 This configuration logs messages coming from ``org.yamcs`` loggers at maximum FINE level. Each handler may apply a further level restriction. This is applied after the former level restriction. For example the above FileHandler has level ALL, however it will never print messages more verbose than FINE.
+
+For specific use cases, Yamcs includes a few custom loggers:
+
+.. rubric:: ``org.yamcs.logging.SyslogHandler``
+
+Writes to syslogd over UDP with messages formatted according to RFC 3164 (BSD syslog).
+
+The formatting of this handler cannot be modified, and does not include full stacktrace information.
+
+``org.yamcs.logging.SyslogHandler.level``
+   Minimum level of loggable messages. Default: ALL.
+
+``org.yamcs.logging.SyslogHandler.host``
+    Syslog host. Defaults to loopback.
+
+``org.yamcs.logging.SyslogHandler.port``
+    Syslog port. Default: 514.
+
+``org.yamcs.logging.SyslogHandler.facility``
+    Syslog facility. Default: 1 (= user-level messages)
+
+
+.. rubric:: ``org.yamcs.logging.WatchedFileHandler``
+
+Handler that watches the file that it is logging to. When that file is deleted, the handler will close and reopen a new file with the same name. This handler is designed to be used with programs like ``logrotate`` that take care of log rotation outside of the JVM. Without the watch functionality, log messages would just continue to be written to the old (rotated) file.
+
+``org.yamcs.logging.WatchedFileHandler.level``
+      Minimum level of loggable messages. Default: ALL.
+
+``org.yamcs.logging.WatchedFileHandler.filename``
+      Name of the file that is logged to. Default: yamcs.log
+
+``org.yamcs.logging.WatchedFileHandler.filter``
+     Instance of ``java.util.logging.Filter``. Default: unfiltered
+
+``org.yamcs.logging.WatchedFileHandler.formatter``
+     Instance of ``java.util.logging.Formatter``. Default: ``java.util.logging.XMLFormatter``
