@@ -2,11 +2,10 @@
 
 # Variables
 # ---------
-# DO NOT MODIFY THIS FILE
+# DO NOT MODIFY THIS FILE (package updates would overwrite your changes)
 # Instead set variables via a script YAMCS_HOME/bin/setenv.sh
 #
 # JMX           Set to 1 to allow remote JMX connections (jconsole).
-#               (only temporarily for debugging purposes !)
 #
 # JAVA_OPTS     Java runtime options
 #
@@ -34,6 +33,7 @@ cd "$YAMCS_HOME"
 
 # Remove user classpath, but allow custom classpath additions via setenv.sh
 CLASSPATH=
+LIBPATH=
 
 if [ -r bin/setenv.sh ]; then
   . bin/setenv.sh
@@ -42,8 +42,12 @@ fi
 if [ "x$CLASSPATH" != x ]; then
   CLASSPATH="$CLASSPATH:"
 fi
+if [ "x$LIBPATH" != x ]; then
+  LIBPATH="$LIBPATH:"
+fi
 
 export CLASSPATH="$CLASSPATH$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
+LIBPATH="$LIBPATH$YAMCS_HOME/lib:$YAMCS_HOME/lib/ext"
 
 if [ -d "$JAVA_HOME" ]; then
   _RUNJAVA="$JAVA_HOME/bin/java"
@@ -55,4 +59,4 @@ if [ "$JMX" = 1 ]; then
   JMX_OPTS="-Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 fi
 
-exec "$_RUNJAVA" $JAVA_OPTS $JMX_OPTS -Djava.util.logging.manager=org.yamcs.logging.YamcsLogManager -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ org.yamcs.YamcsServer "$@"
+exec "$_RUNJAVA" $JAVA_OPTS $JMX_OPTS -Djava.util.logging.manager=org.yamcs.logging.YamcsLogManager -Djava.library.path=$LIBPATH -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ org.yamcs.YamcsServer "$@"
