@@ -203,6 +203,8 @@ export interface ArgumentType {
   enumValue: EnumValue[];
   rangeMin: number;
   rangeMax: number;
+  minChars: number;
+  maxChars: number;
   member: ArgumentMember[];
   zeroStringValue: string;
   oneStringValue: string;

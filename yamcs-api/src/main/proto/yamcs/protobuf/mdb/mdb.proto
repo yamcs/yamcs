@@ -330,16 +330,30 @@ message ArgumentTypeInfo {
   optional string engType = 1;
   optional DataEncodingInfo dataEncoding = 2;
   repeated UnitInfo unitSet = 3;
+  
+  // Enumeration states (only used by enumerated arguments)
   repeated EnumValue enumValue = 5;
+  
+  // Minimum value (only used by integer and float arguments)
   optional double rangeMin = 6;
+  
+  // Maximum value (only used by integer and float arguments)
   optional double rangeMax = 7;
+  
+  // Member information (only used by aggregate arguments)
   repeated ArgumentMemberInfo member = 8;
   
-  // String representation of a boolean zero (only used by arguments of type boolean)
+  // String representation of a boolean zero (only used by boolean arguments)
   optional string zeroStringValue = 9;
   
-  // String representation of a boolean one (only used by arguments of type boolean)
+  // String representation of a boolean one (only used by boolean arguments)
   optional string oneStringValue = 10;
+  
+  // Minimum character count (only used by string arguments)
+  optional int32 minChars = 11;
+  
+  // Maximum character count (only used by string arguments)
+  optional int32 maxChars = 12;
 }
 
 message ArgumentInfo {

@@ -104,6 +104,7 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
@@ -132,6 +133,7 @@ import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
+import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
@@ -849,6 +851,17 @@ public class XtceToGpbAssembler {
             BooleanArgumentType bat = (BooleanArgumentType) argumentType;
             infob.setZeroStringValue(bat.getZeroStringValue());
             infob.setOneStringValue(bat.getOneStringValue());
+        } else if (argumentType instanceof StringArgumentType) {
+            StringArgumentType sat = (StringArgumentType) argumentType;
+            IntegerRange sizeRange = sat.getSizeRangeInCharacters();
+            if (sizeRange != null) {
+                if (sizeRange.getMinInclusive() != Long.MIN_VALUE) {
+                    infob.setMinChars((int) sizeRange.getMinInclusive());
+                }
+                if (sizeRange.getMaxInclusive() != Long.MAX_VALUE) {
+                    infob.setMaxChars((int) sizeRange.getMaxInclusive());
+                }
+            }
         }
         return infob.build();
     }
