@@ -65,7 +65,7 @@ fileCloseTimeSec (integer)
     How many seconds to keep a file open after being accessed by a slave. Default: 300.
 
 expirationDays (double)
-    How many days to keep the replication files before removing them.
+    How many days to keep the replication files before removing them. Default: 7.
  
  
 slaves (list of maps)
