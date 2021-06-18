@@ -297,6 +297,7 @@ export interface Clearance {
   level: string;
   issuedBy: string;
   issueTime: string;
+  hasCommandPrivileges: boolean;
 }
 
 export type ClearanceSubscription = WebSocketCall<void, Clearance>;

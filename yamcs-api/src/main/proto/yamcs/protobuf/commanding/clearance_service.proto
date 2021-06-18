@@ -53,6 +53,7 @@ message ClearanceInfo {
   optional mdb.SignificanceInfo.SignificanceLevelType level = 2;
   optional string issuedBy = 3;
   optional google.protobuf.Timestamp issueTime = 4;
+  optional bool hasCommandPrivileges = 5;
 }
 
 message UpdateClearanceRequest {
