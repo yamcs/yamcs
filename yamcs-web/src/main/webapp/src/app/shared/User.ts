@@ -71,4 +71,8 @@ export class User {
     }
     return false;
   }
+
+  getClearance() {
+    return this.userInfo.clearance;
+  }
 }

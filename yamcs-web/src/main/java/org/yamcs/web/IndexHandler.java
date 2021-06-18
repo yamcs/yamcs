@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.CommandOption;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.Handler;
@@ -115,6 +116,12 @@ public class IndexHandler extends Handler {
         webConfig.put("commandOptions", commandOptions);
         webConfig.put("serverId", yamcs.getServerId());
         webConfig.put("hasTemplates", !yamcs.getInstanceTemplates().isEmpty());
+
+        // Enable clearance-related UI only if there's potential for a processor
+        // that has it enabled (we expect most people to not use this feature).
+        boolean commandClearanceEnabled = ProcessorFactory.getProcessorTypes().entrySet().stream()
+                .anyMatch(entry -> entry.getValue().checkCommandClearance());
+        webConfig.put("commandClearanceEnabled", commandClearanceEnabled);
 
         Map<String, Object> args = new HashMap<>(4);
         args.put("contextPath", httpServer.getContextPath());

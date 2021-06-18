@@ -80,7 +80,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
       this.commandingItems.push({ path: 'queues', label: 'Queues' });
     }
-    if (this.config.commandClearances && this.user.hasSystemPrivilege('ControlCommandClearances')) {
+    if (this.config.commandClearanceEnabled && this.user.hasSystemPrivilege('ControlCommandClearances')) {
       this.commandingItems.push({ path: 'clearances', label: 'Clearances' });
     }
     for (const item of configService.getExtraNavItems('commanding')) {

@@ -8,7 +8,7 @@ export interface WebsiteConfig {
   auth: AuthInfo;
   tag: string;
   events?: EventsConfig;
-  commandClearances: boolean;
+  commandClearanceEnabled: boolean;
   commandExports: boolean;
   twoStageCommanding: boolean;
   commandOptions: CommandOption[];

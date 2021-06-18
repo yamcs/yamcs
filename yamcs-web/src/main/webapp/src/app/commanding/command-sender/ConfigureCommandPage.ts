@@ -75,7 +75,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
         this.templateProvider$.next(null);
       }
 
-      if (this.config.commandClearances) {
+      if (this.config.commandClearanceEnabled) {
         this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
           const significance = effectiveSignificancePipe.transform(command);
           this.cleared$.next(this.isCleared(clearance, significance?.consequenceLevel));
