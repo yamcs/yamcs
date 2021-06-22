@@ -239,11 +239,8 @@ public class XtceDbFactory {
                 if (foundReference == null) { // look for aliases up the hierarchy
                     foundReference = refFinder.findAliasReference(rootSs, nr, ss);
                 }
-                if (foundReference == null) {
-                    throw new DatabaseLoadException("Cannot resolve reference " + nr
-                            + " relative to SpaceSystem '" + ss.getName() + "'");
-                }
-                if (foundReference.isComplete()) {
+
+                if (foundReference != null && foundReference.isComplete()) {
                     foundReference.resolved(nr);
                     resolved = true;
                 } else {

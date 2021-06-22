@@ -81,5 +81,18 @@ xtce-strings-cmd:
 xtce-booleans:
     - type: xtce
       args:
-          file: "src/test/resources/xtce/booleans.xml"          
+          file: "src/test/resources/xtce/booleans.xml"   
+          
+xtce-refsolver:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/refsolver1.xml"
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/refsolver2.xml"
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/refsolver3.xml"
+          
+                 
           

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xtce_template.xsl"?>
+<!--
+	This file contains several examples on how to define string arguments with yamcs
+-->
+<SpaceSystem name="refsolver1" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="Testing Yamcs XTCE processing" operationalStatus="unittest">
+	<TelemetryMetaData>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/refsolver2/bool_type" name="bool1"></Parameter>
+		</ParameterSet>
+	</TelemetryMetaData>
+</SpaceSystem>
