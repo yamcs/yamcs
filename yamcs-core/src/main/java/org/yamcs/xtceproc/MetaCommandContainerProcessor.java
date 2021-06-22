@@ -107,23 +107,23 @@ public class MetaCommandContainerProcessor {
         encodeRawValue(arg.getName(), atype, rawValue, pcontext);
     }
 
-    private void encodeRawValue(String argName, ArgumentType atype, Value rawValue, TcProcessingContext pcontext) {
-        if (atype instanceof BaseDataType) {
-            DataEncoding encoding = ((BaseDataType) atype).getEncoding();
+    private void encodeRawValue(String argName, DataType type, Value rawValue, TcProcessingContext pcontext) {
+        if (type instanceof BaseDataType) {
+            DataEncoding encoding = ((BaseDataType) type).getEncoding();
             if (encoding == null) {
-                throw new CommandEncodingException("No encoding available for type '" + atype.getName()
+                throw new CommandEncodingException("No encoding available for type '" + type.getName()
                         + "' used for argument '" + argName + "'");
             }
             pcontext.deEncoder.encodeRaw(encoding, rawValue);
-        } else if (atype instanceof AggregateArgumentType) {
-            AggregateArgumentType aggtype = (AggregateArgumentType) atype;
+        } else if (type instanceof AggregateDataType) {
+            AggregateDataType aggtype = (AggregateDataType) type;
             AggregateValue aggRawValue = (AggregateValue) rawValue;
             for (Member aggm : aggtype.getMemberList()) {
                 Value mvalue = aggRawValue.getMemberValue(aggm.getName());
                 encodeRawValue(argName + "." + aggm.getName(), (ArgumentType) aggm.getType(), mvalue, pcontext);
             }
-        } else if (atype instanceof ArrayArgumentType) {
-            ArrayArgumentType arrtype = (ArrayArgumentType) atype;
+        } else if (type instanceof ArrayDataType) {
+            ArrayArgumentType arrtype = (ArrayArgumentType) type;
             ArgumentType etype = (ArgumentType) arrtype.getElementType();
             ArrayValue arrayRawValue = (ArrayValue) rawValue;
             for (int i = 0; i < arrayRawValue.flatLength(); i++) {
@@ -131,26 +131,20 @@ public class MetaCommandContainerProcessor {
                 encodeRawValue(argName + arrayRawValue.flatIndexToString(i), etype, valuei, pcontext);
             }
         } else {
-            throw new CommandEncodingException("Arguments of type " + atype + " not supported");
+            throw new CommandEncodingException("Arguments of type " + type + " not supported");
         }
     }
 
     private void fillInParameterEntry(ParameterEntry paraEntry, TcProcessingContext pcontext) {
         Parameter para = paraEntry.getParameter();
-        Value paraValue = pcontext.getParameterValue(para);
+        Value paraValue = pcontext.getRawParameterValue(para);
         if (paraValue == null) {
             throw new CommandEncodingException("No value found for parameter '" + para.getName() + "'");
         }
 
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
-        DataEncoding encoding = ((BaseDataType) ptype).getEncoding();
-        if (encoding == null) {
-            throw new CommandEncodingException("No encoding available for type '" + ptype.getName()
-                    + "' used for parameter '" + para.getName() + "'");
-        }
-        pcontext.deEncoder.encodeRaw(encoding, rawValue);
-
+        encodeRawValue(para.getQualifiedName(), ptype, rawValue, pcontext);
     }
 
     private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {

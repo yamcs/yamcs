@@ -62,13 +62,17 @@ public class TcProcessingContext extends ProcessingData {
         return null;
     }
 
-    public Value getParameterValue(Parameter param) {
+    public Value getRawParameterValue(Parameter param) {
         Value v = paramValues.get(param);
         if (v == null) {
             ParameterValue pv = pdata.getLastValueCache().getValue(param);
             if (pv != null) {
-                v = pv.getEngValue();
+                v = pv.getRawValue();
+                if (v == null) {
+                    v = pv.getEngValue();
+                }
             }
+
         }
         return v;
     }
