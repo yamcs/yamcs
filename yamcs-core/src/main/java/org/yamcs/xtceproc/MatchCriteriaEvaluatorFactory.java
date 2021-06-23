@@ -308,7 +308,12 @@ public class MatchCriteriaEvaluatorFactory {
         ParameterValue pv = null;
         Parameter p = paramRef.getParameter();
         if (p.getDataSource() == DataSource.COMMAND || p.getDataSource() == DataSource.COMMAND_HISTORY) {
-            pv = input.cmdParams.getLastInserted(p);
+            if (input.cmdParams != null) {
+                pv = input.cmdParams.getLastInserted(p);
+            }
+            if (pv == null) {
+                pv = input.cmdParamsCache.getValue(p);
+            }
         } else {
             if (input.tmParams != null) {
                 pv = input.tmParams.getLastInserted(p);
