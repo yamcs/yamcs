@@ -2501,7 +2501,7 @@ public class XtceStaxReader {
     }
 
     private ANDedConditions readAndCondition(SpaceSystem spaceSystem, MetaCommand metaCmd) throws XMLStreamException {
-        log.trace(XTCE_CONDITION);
+        log.trace(XTCE_AND_CONDITIONS);
         checkStartElementPreconditions();
         ANDedConditions cond = new ANDedConditions();
 
@@ -2511,7 +2511,7 @@ public class XtceStaxReader {
                 cond.addConditionExpression(readCondition(spaceSystem, metaCmd));
             } else if (isStartElementWithName(XTCE_OR_CONDITIONS)) {
                 cond.addConditionExpression(readOrCondition(spaceSystem, metaCmd));
-            } else if (isEndElementWithName(XTCE_BOOLEAN_EXPRESSION)) {
+            } else if (isEndElementWithName(XTCE_AND_CONDITIONS)) {
                 return cond;
             } else {
                 logUnknown();
@@ -3880,6 +3880,10 @@ public class XtceStaxReader {
                 });
             } else if (isEndElementWithName(tag)) {
                 if (cmdVerifier != null) {
+                    if (cmdVerifier.getCheckWindow() == null) {
+                        throw new XMLStreamException("No CheckWindow specified for command verifier",
+                                xmlEvent.getLocation());
+                    }
                     if ("Failed".equals(type)) {
                         cmdVerifier.setOnSuccess(TerminationAction.FAIL);
                     } else if ("Complete".equals(type)) {
