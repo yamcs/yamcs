@@ -120,18 +120,18 @@ public class MetaCommandContainerProcessor {
             AggregateValue aggRawValue = (AggregateValue) rawValue;
             for (Member aggm : aggtype.getMemberList()) {
                 Value mvalue = aggRawValue.getMemberValue(aggm.getName());
-                encodeRawValue(argName + "." + aggm.getName(), (ArgumentType) aggm.getType(), mvalue, pcontext);
+                encodeRawValue(argName + "." + aggm.getName(), aggm.getType(), mvalue, pcontext);
             }
         } else if (type instanceof ArrayDataType) {
-            ArrayArgumentType arrtype = (ArrayArgumentType) type;
-            ArgumentType etype = (ArgumentType) arrtype.getElementType();
+            ArrayDataType arrtype = (ArrayDataType) type;
+            DataType etype = arrtype.getElementType();
             ArrayValue arrayRawValue = (ArrayValue) rawValue;
             for (int i = 0; i < arrayRawValue.flatLength(); i++) {
                 Value valuei = arrayRawValue.getElementValue(i);
                 encodeRawValue(argName + arrayRawValue.flatIndexToString(i), etype, valuei, pcontext);
             }
         } else {
-            throw new CommandEncodingException("Arguments of type " + type + " not supported");
+            throw new CommandEncodingException("Arguments or parameters of type " + type + " not supported");
         }
     }
 
