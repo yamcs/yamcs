@@ -182,8 +182,6 @@ public class PusSimulator extends AbstractSimulator {
                 powerDataHandler.setBatteryOn(batNum);
                 transmitRealtimeTM(ack(commandPacket, 7));
             }
-
-            transmitRealtimeTM(ack(commandPacket, 7));
         }, 1500, TimeUnit.MILLISECONDS);
     }
 
