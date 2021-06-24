@@ -200,124 +200,126 @@
 					</EntryList>
 				</CommandContainer>
 				<VerifierSet>
-                                 <!--
-                                    This verifier set is using algorithms for verification. Check the pus-xtce-verif.xml for an example of doing almost the same without algorithms, only XTCE.
-                                    Using algorithms has the advantage that no Failed verifier is required, any verifier can return false or a value to indicate failure.
-                                  -->
 					<ReceivedVerifier name="Accepted">
-						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
-							<AncillaryDataSet>
-								<!--
-									This is a Yamcs XTCE extension which says to only run the algorithm if these inputs are present.
-
-									Without this, the algorithm would run on receiving other packet because all packets (except time) have the subtype pus header parameter.
-									To deal with that, the algorithm could check the inputs for null and return no value but this is more efficient.
-
-									Note that the errorCode is not made mandatory because we want this to run also for the response OK packets.
-									If the subtype.value is 2 we know it was an error so the errorCode has to be there.
-
-									The list here could be reduced to rcvdApid and sentSeq because sentApid is a command argument available right at the beginning
-									and the rcvdSeq is available when the rcvdApid is available.
-
-									sentSeq is coming from the post-processor via command history; if another command has just received an ack, we may get called with it
-									before having our sentSeq available. That is why the sentSeq has to be also mentioned in the list.
-								-->
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-
-							<!--
-								the algorithm will be triggered for response packets corresponding to other commands.
-								We only return when the response is for our command, this is why we compare the received apid with the sent apid
-								and the received sequence count with the sent sequence count
-							-->
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 1) {
-								       return true;
-								    } else if(subtype.value == 2) {
-								       return errorCode.value;
-								    }
-								}
-							</AlgorithmText>
-							<InputSet>
-								<!-- the special /yamcs/cmd/arg namespace means that this is the value of an command argument -->
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
-
-								<!-- the special /yamcs/cmdHist/ namespace means that this is an entry in the command history.
-									In this case the command post-processor will send the sequence count generated before sending the command -->
-								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-
-								<!-- the other references are normal TM parameters -->
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
-								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
-								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
-								<InputParameterInstanceRef parameterRef="tc-ack-acceptance-failure-code" inputName="errorCode" />
-							</InputSet>
-
-						</CustomAlgorithm>
-						<!-- This says that the algorithm will run for maximum 5 seconds from when the command is sent -->
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
 						<CheckWindow timeToStopChecking="PT5S" />
 					</ReceivedVerifier>
 					<ExecutionVerifier name="Started">
-						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 3) {
-								       return true;
-								    } else if(subtype.value == 4) {
-								       return errorCode.value;
-								    }
-								}
-							</AlgorithmText>
-							<InputSet>
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
-								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
-								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
-								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
-								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="errorCode" />
-							</InputSet>
-						</CustomAlgorithm>
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>3</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
 						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
 					</ExecutionVerifier>
 					<CompleteVerifier name="Complete">
-						<CustomAlgorithm name="alg_verif_completed" shortDescription="Verify the PUS completion">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 7) {
-								       return true;
-								    } else if(subtype.value == 8) {
-								       return errorCode.value;
-								    }
-								}
-							</AlgorithmText>
-							<InputSet>
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
-								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
-								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
-								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
-								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="errorCode" />
-							</InputSet>
-
-						</CustomAlgorithm>
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>7</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
 						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
 					</CompleteVerifier>
+					<FailedVerifier>
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<ORedConditions>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>2</Value>
+									</Condition>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>4</Value>
+									</Condition>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>8</Value>
+									</Condition>
+								</ORedConditions>
+							</ANDedConditions>
+						</BooleanExpression>
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
+					</FailedVerifier>
 				</VerifierSet>
 			</MetaCommand>
 		</MetaCommandSet>
