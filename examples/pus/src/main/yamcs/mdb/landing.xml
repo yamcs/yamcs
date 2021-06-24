@@ -56,12 +56,6 @@
 					</DefaultCalibrator>
 				</IntegerDataEncoding>
 			</FloatParameterType>
-			<IntegerParameterType signed="false" name="uint8V">
-				<UnitSet>
-					<Unit>V</Unit>
-				</UnitSet>
-				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
-			</IntegerParameterType>
 			<IntegerParameterType name="uint8V" baseType="/dt/uint8">
 				<UnitSet>
 					<Unit>V</Unit>
