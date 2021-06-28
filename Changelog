@@ -1,3 +1,7 @@
+Version 5.2.2 released 28-June-2021
+- Support character count matches on TSE response
+- Allow printf-style formatting on TSE args
+
 Version 5.2.1 released 8-Jan-2021
 - YamlAuthModule: added a default role used when the user has no role assigned
 
