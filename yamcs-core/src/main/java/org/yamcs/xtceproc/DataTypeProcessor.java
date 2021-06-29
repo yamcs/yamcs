@@ -218,6 +218,7 @@ public class DataTypeProcessor {
                 throw new IllegalArgumentException(
                         "Cannot convert " + v + " to " + type.getName() + "; it is not a valid label");
             }
+            return ValueUtility.getEnumeratedValue(ve.getValue(), ve.getLabel());
         default:
             throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
         }
