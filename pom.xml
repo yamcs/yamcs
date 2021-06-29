@@ -44,12 +44,8 @@
       <id>xpromache</id>
       <name>Nicolae Mihalache</name>
     </developer>
-    <developer>
-      <id>ddw</id>
-      <name>David De Weerdt</name>
-    </developer>
   </developers>
-      
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <nettyVersion>4.1.59.Final</nettyVersion>
@@ -192,7 +188,7 @@
       <dependency>
         <groupId>org.yaml</groupId>
         <artifactId>snakeyaml</artifactId>
-        <version>1.24</version>
+        <version>1.29</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -231,7 +227,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>3.8.1</version>
           <configuration>
             <source>1.8</source>
             <target>1.8</target>
@@ -337,7 +333,7 @@
         <plugin>
           <groupId>org.yamcs</groupId>
           <artifactId>yamcs-maven-plugin</artifactId>
-          <version>1.2.5</version>
+          <version>1.2.6</version>
         </plugin>
       </plugins>
     </pluginManagement>
