@@ -91,7 +91,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void listProcessorTypes(Context ctx, Empty request, Observer<ListProcessorTypesResponse> observer) {
         ListProcessorTypesResponse.Builder response = ListProcessorTypesResponse.newBuilder();
-        List<String> processorTypes = ProcessorFactory.getProcessorTypes();
+        List<String> processorTypes = new ArrayList<>(ProcessorFactory.getProcessorTypes().keySet());
         Collections.sort(processorTypes);
         response.addAllTypes(processorTypes);
         observer.complete(response.build());

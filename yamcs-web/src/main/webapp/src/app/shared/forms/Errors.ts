@@ -11,6 +11,8 @@ const defaultErrors: { [key: string]: any; } = {
   notHex: () => 'invalid hex',
   notInteger: () => 'must be integer',
   required: () => 'this field is required',
+  minlength: () => 'string too small',
+  maxlength: () => 'string too large',
 };
 
 @Component({

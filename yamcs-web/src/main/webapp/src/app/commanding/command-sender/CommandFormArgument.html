@@ -65,6 +65,13 @@
                       [right]="argument.type.rangeMax">
         </app-interval>
       </div>
+      <div class="item"
+           *ngIf="argument.type.minChars !== undefined || argument.type.maxChars !== undefined">
+        chars:
+        <app-interval [left]="argument.type.minChars"
+                      [right]="argument.type.maxChars">
+        </app-interval>
+      </div>
       <div class="item" *ngIf="argument.type?.unitSet">
         {{ argument.type?.unitSet | units }}
       </div>

@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.UpdateClearanceRequest;
 import org.yamcs.security.ClearanceListener;
 import org.yamcs.security.Directory;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
@@ -118,6 +119,9 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
             } else if (clearance.getIssuedBy() == securityStore.getSystemUser().getId()) {
                 clearanceb.setIssuedBy(securityStore.getSystemUser().getName());
             }
+
+            clearanceb.setHasCommandPrivileges(user.isSuperuser()
+                    || !user.getObjectPrivileges(ObjectPrivilegeType.Command).isEmpty());
         }
         return clearanceb.build();
     }

@@ -20,6 +20,14 @@
         <mat-icon class="icon12" style="color: gold; vertical-align: middle">flash_on</mat-icon> superuser
       </dd>
     </ng-container>
+
+    <ng-container *ngIf="config.commandClearanceEnabled">
+      <dt>Command clearance</dt>
+      <dd>
+        <app-significance-level [level]="user.clearance" [grayscale]="true">
+        </app-significance-level>
+      </dd>
+    </ng-container>
   </dl>
 
   <mat-divider></mat-divider>

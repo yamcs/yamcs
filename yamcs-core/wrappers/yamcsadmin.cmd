@@ -9,4 +9,4 @@ cd %YAMCS_HOME%
 rem Enable ansi color processing
 set ENABLE_VIRTUAL_TERMINAL_PROCESSING=1
 
-java -cp "lib\*;lib\ext\*" org.yamcs.cli.YamcsAdminCli %*
+java -cp "lib\*;lib\ext\*" -Djava.library.path="lib;lib\ext" org.yamcs.cli.YamcsAdminCli %*

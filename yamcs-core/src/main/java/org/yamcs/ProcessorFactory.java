@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,15 +22,21 @@ import org.yamcs.utils.YObjectLoader;
  *
  */
 public class ProcessorFactory {
+
     /**
      * Returns the processor types as defined in <tt>processor.yaml</tt>
      */
-    public static List<String> getProcessorTypes() {
+    public static Map<String, ProcessorConfig> getProcessorTypes() {
         if (!YConfiguration.isDefined("processor")) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
         YConfiguration conf = YConfiguration.getConfiguration("processor");
-        return new ArrayList<>(conf.getKeys());
+        Map<String, ProcessorConfig> result = new HashMap<>();
+        for (String processorName : conf.getKeys()) {
+            YConfiguration processorConfig = conf.getConfig(processorName).getConfigOrEmpty("config");
+            result.put(processorName, new ProcessorConfig(processorConfig));
+        }
+        return result;
     }
 
     /**
@@ -118,7 +125,7 @@ public class ProcessorFactory {
         }
         return create(yamcsInstance, name, "test", serviceList, "test", new ProcessorConfig(), null);
     }
-    
+
     /**
      * creates a processor with the services already instantiated. used from unit tests
      * 
@@ -129,7 +136,8 @@ public class ProcessorFactory {
         return create(yamcsInstance, name, "test", Arrays.asList(serviceList), "test", new ProcessorConfig(), null);
     }
 
-    static List<ProcessorServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig, Log targetLog)
+    static List<ProcessorServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig,
+            Log targetLog)
             throws ValidationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
         Set<String> names = new HashSet<>();
@@ -139,9 +147,9 @@ public class ProcessorFactory {
             YConfiguration config;
             String name = null;
             servclass = servconf.getString("class");
-            if(servconf.containsKey("config")) {
+            if (servconf.containsKey("config")) {
                 config = servconf.getConfig("config");
-            } else if(servconf.containsKey("args")) {
+            } else if (servconf.containsKey("args")) {
                 config = servconf.getConfig("args");
             } else {
                 config = YConfiguration.emptyConfig();
