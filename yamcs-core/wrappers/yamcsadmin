@@ -27,4 +27,4 @@ else
 fi
 
 export CLASSPATH="$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
-exec "$_RUNJAVA" -Xmx512m org.yamcs.cli.YamcsAdminCli "$@"
+exec "$_RUNJAVA" -Djava.library.path=$YAMCS_HOME/lib:$YAMCS_HOME/lib/ext -Xmx512m org.yamcs.cli.YamcsAdminCli "$@"

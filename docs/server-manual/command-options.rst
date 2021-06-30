@@ -33,7 +33,7 @@ Command options must be registered against :javadoc:`org.yamcs.YamcsServer`. It 
 
 A registration can only be done once, or else ``addCommandOption()`` will throw an exception. One way of doing so is to put this registration in the static initializer of the components that uses this option (e.g. a command link). Then the command option will only be loaded (and once only) when at least one such link is running.
 
-An alternative method that avoids the use of static initializers, is to implement :javadoc:`org.yamcs.Plugin`, and then put the registration in the ``onLoad()`` lifecycle hook. This hook is called once-only when the server is starting up.
+An alternative method that avoids the use of static initializers, is to implement :javadoc:`org.yamcs.Plugin`, and then put the registration in the ``onLoad`` lifecycle hook. This hook is called once-only when the server is starting up.
 
 .. code-block:: java
 
@@ -41,7 +41,7 @@ An alternative method that avoids the use of static initializers, is to implemen
 
         public static final CommandOption MY_OPTION = ...;
     
-        public void onLoad() { // Called on start-up
+        public void onLoad(YConfiguration config) { // Called on start-up
             YamcsServer yamcs = YamcsServer.getServer();
             yamcs.addCommandOption(MY_OPTION);
         }

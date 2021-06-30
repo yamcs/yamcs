@@ -294,7 +294,10 @@ export class CommandForm implements OnChanges {
   }
 
   private getValidatorsForType(type: ArgumentType) {
-    const validators = [Validators.required];
+    const validators = [];
+    if (type.minChars !== 0) {
+      validators.push(Validators.required);
+    }
     if (type.engType === 'integer') {
       validators.push(requireInteger);
     } else if (type.engType === 'float') {
@@ -305,6 +308,12 @@ export class CommandForm implements OnChanges {
     }
     if (type.rangeMin !== undefined) {
       validators.push(Validators.min(type.rangeMin));
+    }
+    if (type.minChars !== undefined) {
+      validators.push(Validators.minLength(type.minChars));
+    }
+    if (type.maxChars !== undefined) {
+      validators.push(Validators.maxLength(type.maxChars));
     }
     return validators;
   }

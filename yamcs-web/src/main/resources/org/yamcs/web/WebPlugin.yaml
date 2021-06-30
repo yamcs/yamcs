@@ -80,6 +80,7 @@ options:
         to supervised command queues.
     type: BOOLEAN
     default: false
+    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
 
   commandExports:
     title: Show Command Export Functionalities

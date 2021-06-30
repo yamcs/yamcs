@@ -14,7 +14,7 @@ export class ClearancesEnabledGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    return this.config.commandClearances;
+    return this.config.commandClearanceEnabled;
   }
 
   canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {

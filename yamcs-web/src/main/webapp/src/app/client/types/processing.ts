@@ -59,6 +59,7 @@ export interface Processor {
   creator: string;
   hasAlarms: boolean;
   hasCommanding: boolean;
+  checkCommandClearance: boolean;
   state: ServiceState;
   persistent: boolean;
   time: string;
