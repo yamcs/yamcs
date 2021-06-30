@@ -14,10 +14,21 @@ public interface MatchCriteria extends Serializable {
     public Set<Parameter> getDependentParameters();
 
     static String printExpressionReference(ParameterOrArgumentRef ref) {
+        String fullName = ref.getName();
+        PathElement[] path = ref.getMemberPath();
+        if (path != null) {
+            for (PathElement el : path) {
+                if (el.getName() != null) {
+                    fullName += ".";
+                }
+                fullName += el;
+            }
+        }
+
         if (!ref.useCalibratedValue()) {
-            return "'raw://" + ref.getName() + "'";
+            return "'raw://" + fullName + "'";
         } else {
-            return "'" + ref.getName() + "'";
+            return "'" + fullName + "'";
         }
     }
 
