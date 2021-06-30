@@ -89,7 +89,7 @@ public class ByteArrayUtils {
         if (i == -1) {
             throw new IllegalArgumentException("underflow");
         } else {
-            b[i] = (byte) (((b[i] & 0xFF)-1));
+            b[i] = (byte) (((b[i] & 0xFF) - 1));
         }
         return b;
     }
@@ -177,8 +177,7 @@ public class ByteArrayUtils {
                 ((a[offset + 6] & 0xFFl) << 8) +
                 ((a[offset + 7] & 0xFFl));
     }
-    
-    
+
     public static long decodeLongLE(byte[] a, int offset) {
         return ((a[offset] & 0xFFl) +
                 ((a[offset + 1] & 0xFFl) << 8) +
@@ -189,7 +188,7 @@ public class ByteArrayUtils {
                 ((a[offset + 6] & 0xFFl) << 48) +
                 ((a[offset + 7] & 0xFFl) << 56));
     }
-    
+
     public static byte[] encode6Bytes(long x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 40);
         a[offset + 1] = (byte) (x >> 32);
@@ -200,16 +199,16 @@ public class ByteArrayUtils {
 
         return a;
     }
-    
+
     public static long decode6Bytes(byte[] a, int offset) {
-        return  ((a[offset] & 0xFFl) << 40) +
+        return ((a[offset] & 0xFFl) << 40) +
                 ((a[offset + 1] & 0xFFl) << 32) +
                 ((a[offset + 2] & 0xFFl) << 24) +
                 ((a[offset + 3] & 0xFFl) << 16) +
                 ((a[offset + 4] & 0xFFl) << 8) +
                 ((a[offset + 5] & 0xFFl));
     }
-    
+
     public static byte[] encode5Bytes(long x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 32);
         a[offset + 1] = (byte) (x >> 24);
@@ -219,14 +218,15 @@ public class ByteArrayUtils {
 
         return a;
     }
+
     public static long decode5Bytes(byte[] a, int offset) {
-        return  ((a[offset] & 0xFFl) << 32) +
+        return ((a[offset] & 0xFFl) << 32) +
                 ((a[offset + 1] & 0xFFl) << 24) +
                 ((a[offset + 2] & 0xFFl) << 16) +
                 ((a[offset + 3] & 0xFFl) << 8) +
                 ((a[offset + 4] & 0xFFl));
     }
-    
+
     public static int decodeInt(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 24) +
                 ((a[offset + 1] & 0xFF) << 16) +
@@ -248,8 +248,6 @@ public class ByteArrayUtils {
 
         return a;
     }
-    
-
 
     public static int decode3Bytes(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 16) +
@@ -257,12 +255,12 @@ public class ByteArrayUtils {
                 ((a[offset + 2] & 0xFF));
     }
 
-	public static int decode3BytesLE(byte[] a, int offset) {
-		return ((a[offset + 2] & 0xFF) << 16) +
-			   ((a[offset + 1] & 0xFF) << 8) +
-		       ((a[offset] & 0xFF));
-	}
-	
+    public static int decode3BytesLE(byte[] a, int offset) {
+        return ((a[offset + 2] & 0xFF) << 16) +
+                ((a[offset + 1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
+
     public static byte[] encodeShort(int x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 8);
         a[offset + 1] = (byte) (x);
@@ -272,15 +270,22 @@ public class ByteArrayUtils {
     }
 
     public static short decodeShort(byte[] a, int offset) {
-        int x  = ((a[offset] & 0xFF) << 8) +
+        int x = ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
         return (short) x;
     }
 
     public static int decodeUnsignedShort(byte[] a, int offset) {
-        int x  = ((a[offset] & 0xFF) << 8) +
+        int x = ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
         return x;
+    }
+
+    public static long decodeUnsignedInt(byte[] a, int offset) {
+        return ((a[offset] & 0xFFL) << 24) +
+                ((a[offset + 1] & 0xFFL) << 16) +
+                ((a[offset + 2] & 0xFFL) << 8) +
+                ((a[offset + 3] & 0xFFL));
     }
 
     /**
@@ -294,9 +299,16 @@ public class ByteArrayUtils {
         return ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
     }
-    
+
     public static int decodeUnsignedShortLE(byte[] a, int offset) {
         return ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
+    }
+
+    public static long decodeUnsignedIntLE(byte[] a, int offset) {
+        return ((a[offset + 3] & 0xFFL) << 24) +
+                ((a[offset + 2] & 0xFFL) << 16) +
+                ((a[offset + 1] & 0xFFL) << 8) +
+                ((a[offset] & 0xFFL));
     }
 }
