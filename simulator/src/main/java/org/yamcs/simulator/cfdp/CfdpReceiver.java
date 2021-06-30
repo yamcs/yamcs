@@ -220,7 +220,7 @@ public class CfdpReceiver {
 
                 FinishedPacket finished = new FinishedPacket(
                         ConditionCode.NO_ERROR,
-                        false, // data complete
+                        true, // data complete
                         FileStatus.SUCCESSFUL_RETENTION,
                         null,
                         header);

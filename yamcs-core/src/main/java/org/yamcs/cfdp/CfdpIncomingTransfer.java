@@ -584,7 +584,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         } else {
             fpck = new FinishedPacket(
                     code,
-                    false, // data complete
+                    true, // data complete
                     FileStatus.DELIBERATELY_DISCARDED,
                     null,
                     directiveHeader);

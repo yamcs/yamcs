@@ -167,7 +167,8 @@ public class CfdpSender {
     }
 
     private void processFinishedPacket(FinishedPacket packet) {
-        log.info("CFDP data sending finished with code {}", packet.getConditionCode());
+        log.info("CFDP data sending finished; code:{}, data complete: {}", packet.getConditionCode(),
+                packet.isDataComplete());
         dataSenderFuture.cancel(true);
         if (eofSenderFuture != null) {
             eofSenderFuture.cancel(true);
