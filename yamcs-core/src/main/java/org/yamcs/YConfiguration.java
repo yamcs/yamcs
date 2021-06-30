@@ -111,6 +111,18 @@ public class YConfiguration {
         this.parent = parent;
         this.parentKey = parentKey;
     }
+        
+    /**
+     * Load a configuration from the root Map.
+     * parent is set to null.
+     * @param root
+     */
+    public YConfiguration(Map<String, Object> root) {
+        this.root = root;
+        this.parent = null;
+        this.parentKey = null;
+    }
+
 
     /**
      * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.

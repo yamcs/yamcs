@@ -157,7 +157,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
 
     private Cop1TcPacketHandler verifyCop1Link(String instance, String linkName) {
-        ManagementApi.verifyLink(instance, linkName);
+        LinkManagementApi.verifyLink(instance, linkName);
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
         LinkManager lmgr = ysi.getLinkManager();
         Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(linkName);
