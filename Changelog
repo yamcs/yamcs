@@ -1,3 +1,6 @@
+Version 5.2.3 released 12-July-2021
+- authentication default role: assign the default role to users comming from all the realms
+
 Version 5.2.2 released 28-June-2021
 - Support character count matches on TSE response
 - Allow printf-style formatting on TSE args
