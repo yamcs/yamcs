@@ -106,6 +106,12 @@ public class YamlAuthModule implements AuthModule {
             if (required) {
                 throw new AuthorizationException("Cannot find user '" + principal + "' in users.yaml");
             }
+            // user might comes from another authentication real, check if there are default privileges to assign to.
+            roleDefs.forEach((role, types) ->{
+                if(types.containsKey("default")) {
+                    addRolePriviledges(authz, types);
+                }
+            });
         } else {
             if (YConfiguration.getBoolean(userDef, "superuser", false)) {
                 authz.grantSuperuser();
@@ -121,7 +127,7 @@ public class YamlAuthModule implements AuthModule {
                     }
                 }
             }
-            else{ // no roles defined for this user, check if a default role exists
+            else{ // default privileges
                 roleDefs.forEach((role, types) ->{
                     if(types.containsKey("default")) {
                         addRolePriviledges(authz, types);
