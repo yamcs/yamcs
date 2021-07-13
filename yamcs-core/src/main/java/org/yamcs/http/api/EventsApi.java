@@ -6,10 +6,12 @@ import static org.yamcs.StandardTupleDefinitions.SOURCE_COLUMN;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -469,9 +471,12 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 rec[i++] = "" + extension.descriptor.getName();
             }
 
+            String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            String filename = "event_export_" + dateString + ".csv";
+
             HttpBody metadata = HttpBody.newBuilder()
                     .setContentType(MediaType.CSV.toString())
-                    .setFilename("events.csv")
+                    .setFilename(filename)
                     .setData(toByteString(rec))
                     .build();
 

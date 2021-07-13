@@ -5,8 +5,10 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -281,7 +283,15 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
-        String filename = "parameter-data.csv";
+        String filename;
+        String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+        if (ids.size() == 1) {
+            NamedObjectId id = ids.get(0);
+            String parameterName = id.hasNamespace() ? id.getName() : id.getName().substring(1);
+            filename = parameterName.replace('/', '_') + "_export_" + dateString + ".csv";
+        } else {
+            filename = "parameter_export_" + dateString + ".csv";
+        }
 
         boolean addRaw = false;
         boolean addMonitoring = false;
