@@ -294,8 +294,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 throw new BadRequestException("Unexpected option for parameter 'extra': " + extra);
             }
         }
-        ParameterReplayListener l = new CsvParameterStreamer(
+        CsvParameterStreamer l = new CsvParameterStreamer(
                 observer, filename, ids, addRaw, addMonitoring);
+        if (request.hasDelimiter()) {
+            switch (request.getDelimiter()) {
+            case "TAB":
+                l.columnDelimiter = '\t';
+                break;
+            case "SEMICOLON":
+                l.columnDelimiter = ';';
+                break;
+            case "COMMA":
+                l.columnDelimiter = ',';
+                break;
+            default:
+                throw new BadRequestException("Unexpected column delimiter");
+            }
+        }
         observer.setCancelHandler(l::requestReplayAbortion);
         ReplayFactory.replay(instance, ctx.user, repl, l);
     }
@@ -330,6 +345,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         boolean addRaw;
         boolean addMonitoring;
         int recordCount = 0;
+        char columnDelimiter = '\t';
 
         CsvParameterStreamer(Observer<HttpBody> observer, String filename, List<NamedObjectId> ids,
                 boolean addRaw, boolean addMonitoring) {
@@ -351,7 +367,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
             ByteString.Output data = ByteString.newOutput();
             try (Writer writer = new OutputStreamWriter(data, StandardCharsets.UTF_8);
-                    ParameterFormatter formatter = new ParameterFormatter(writer, ids, '\t')) {
+                    ParameterFormatter formatter = new ParameterFormatter(writer, ids, columnDelimiter)) {
                 formatter.setWriteHeader(recordCount == 0);
                 formatter.setPrintRaw(addRaw);
                 formatter.setPrintMonitoring(addMonitoring);

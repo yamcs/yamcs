@@ -61,6 +61,7 @@ export interface DownloadEventsOptions {
   q?: string;
   severity?: EventSeverity;
   source?: string | string[];
+  delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';
 }
 
 export type EventSubscription = WebSocketCall<SubscribeEventsRequest, Event>;

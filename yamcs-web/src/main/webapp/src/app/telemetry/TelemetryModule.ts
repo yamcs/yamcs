@@ -17,6 +17,7 @@ import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
 import { ColorPalette } from './parameters/ColorPalette';
 import { CompareParameterDialog } from './parameters/CompareParameterDialog';
+import { ExportParameterDataDialog } from './parameters/ExportParameterDataDialog';
 import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
 import { ParameterAlarmsTable } from './parameters/ParameterAlarmsTable';
 import { ParameterDetail } from './parameters/ParameterDetail';
@@ -64,6 +65,7 @@ const viewers = [
     CreateDisplayDialog,
     DisplayFilePageDirtyDialog,
     ExportArchiveDataDialog,
+    ExportParameterDataDialog,
     ModifyParameterDialog,
     MultipleParameterTable,
     ParameterAlarmsTable,

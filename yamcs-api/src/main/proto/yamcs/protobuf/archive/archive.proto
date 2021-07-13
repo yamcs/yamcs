@@ -186,4 +186,8 @@ message ExportParameterValuesRequest {
   //  * ``raw``: Raw parameter values
   //  * ``monitoring``: Monitoring status
   repeated string extra = 6;
+  
+  // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
+  // Default: ``TAB``.
+  optional string delimiter = 7;
 }

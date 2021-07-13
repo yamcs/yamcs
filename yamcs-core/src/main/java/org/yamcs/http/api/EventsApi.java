@@ -383,7 +383,23 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         String sql = sqlb.toString();
 
-        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer));
+        char delimiter = '\t';
+        if (request.hasDelimiter()) {
+            switch (request.getDelimiter()) {
+            case "TAB":
+                delimiter = '\t';
+                break;
+            case "SEMICOLON":
+                delimiter = ';';
+                break;
+            case "COMMA":
+                delimiter = ',';
+                break;
+            default:
+                throw new BadRequestException("Unexpected column delimiter");
+            }
+        }
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer, delimiter));
     }
 
     /**
@@ -399,15 +415,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
         if (table == null) {
             throw new BadRequestException("No event archive support for instance '" + instance + "'");
         }
-    }
-
-    private ProtobufRegistry getProtobufRegistry() {
-        YamcsServer yamcs = YamcsServer.getServer();
-        if (protobufRegistry == null) {
-            List<HttpServer> services = yamcs.getGlobalServices(HttpServer.class);
-            protobufRegistry = services.get(0).getProtobufRegistry();
-        }
-        return protobufRegistry;
     }
 
     /**
@@ -440,9 +447,11 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         Observer<HttpBody> observer;
         ProtobufRegistry protobufRegistry;
+        char columnDelimiter;
 
-        CsvEventStreamer(Observer<HttpBody> observer) {
+        CsvEventStreamer(Observer<HttpBody> observer, char columnDelimiter) {
             this.observer = observer;
+            this.columnDelimiter = columnDelimiter;
 
             YamcsServer yamcs = YamcsServer.getServer();
             List<HttpServer> services = yamcs.getGlobalServices(HttpServer.class);
@@ -500,7 +509,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         private ByteString toByteString(String[] rec) {
             ByteString.Output bout = ByteString.newOutput();
-            CsvWriter writer = new CsvWriter(bout, '\t', StandardCharsets.UTF_8);
+            CsvWriter writer = new CsvWriter(bout, columnDelimiter, StandardCharsets.UTF_8);
             try {
                 writer.writeRecord(rec);
             } catch (IOException e) {
