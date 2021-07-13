@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Argument, ArgumentAssignment, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { requireFloat, requireInteger } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
@@ -80,6 +80,7 @@ export class CommandForm implements OnChanges {
   showAll$ = new BehaviorSubject<boolean>(false);
 
   form = new FormGroup({});
+  config: WebsiteConfig;
 
   constructor(configService: ConfigService, authService: AuthService) {
     this.user = authService.getUser()!;
@@ -88,12 +89,14 @@ export class CommandForm implements OnChanges {
     for (const option of this.commandOptions) {
       this.form.addControl('extra__' + option.id, new FormControl(''));
     }
+    this.config = configService.getConfig();
+    this.showAll$.next(!this.config.collapseInitializedArguments);
   }
 
   ngOnChanges() {
     this.arguments = [];
     this.argumentsWithInitial = [];
-    this.showAll$.next(false);
+    this.showAll$.next(!this.config.collapseInitializedArguments);
     for (const key in this.form.controls) {
       if (!key.startsWith('extra__')) {
         this.form.removeControl(key);

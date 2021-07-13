@@ -13,13 +13,15 @@
     </app-command-form-argument>
   </ng-container>
 
-  <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
-    <br *ngIf="arguments.length">
-    <app-text-action (click)="showAll$.next(true)"
-                     icon="double_arrow">
-      Show {{ argumentsWithInitial.length }}
-      argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
-    </app-text-action>
+  <ng-container *ngIf="config.collapseInitializedArguments">
+    <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
+      <br *ngIf="arguments.length">
+      <app-text-action (click)="showAll$.next(true)"
+                       icon="double_arrow">
+        Show {{ argumentsWithInitial.length }}
+        argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
+      </app-text-action>
+    </ng-container>
   </ng-container>
 
   <p>&nbsp;</p>

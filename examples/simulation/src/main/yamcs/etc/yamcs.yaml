@@ -21,6 +21,7 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: "Example: simulation"
+  collapseInitializedArguments: false
 
 # The buckets 'displays' and 'stacks' are used
 # by yamcs-web. Here we choose to map them to
