@@ -170,7 +170,7 @@ export class CommandForm implements OnChanges {
         assignments.push({ name: arg.name, value: jsonValue });
       } else {
         const control = this.form.controls[arg.name];
-        if (!this.isArgumentWithInitialValue(arg.name) || control.touched) {
+        if (!this.isArgumentWithInitialValue(arg.name) || control.dirty) {
           assignments.push({ name: arg.name, value: this.form.value[arg.name] });
         }
       }
