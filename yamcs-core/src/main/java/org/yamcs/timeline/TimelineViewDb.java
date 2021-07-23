@@ -1,23 +1,31 @@
 package org.yamcs.timeline;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import java.util.Base64;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TimelineView;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.*;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class TimelineViewDb {
     static final Random random = new Random();
@@ -25,22 +33,21 @@ public class TimelineViewDb {
     public static final String CNAME_ID = "uuid";
     public static final String CNAME_NAME = "name";
     public static final String CNAME_DESCRIPTION = "description";
-    public static final String CNAME_VIEWS = "views";
+    public static final String CNAME_BANDS = "bands";
 
     static {
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_NAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_DESCRIPTION, DataType.STRING);
-        TIMELINE_DEF.addColumn(CNAME_VIEWS, DataType.array(DataType.ENUM));
+        TIMELINE_DEF.addColumn(CNAME_BANDS, DataType.array(DataType.ENUM));
 
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
-    final static String TIMELINE_TABLE_NAME = "timeline_view";
+    final static String TABLE_NAME = "timeline_view";
 
     final YarchDatabaseInstance ydb;
     final Stream timelineStream;
-
 
     LoadingCache<UUID, TimelineView> viewCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
@@ -82,21 +89,21 @@ public class TimelineViewDb {
     }
 
     private Stream setupTimelineRecording() throws StreamSqlException, ParseException {
-        String streamName = TIMELINE_TABLE_NAME + "_in";
-        if (ydb.getTable(TIMELINE_TABLE_NAME) == null) {
-            String query = "create table " + TIMELINE_TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
+        String streamName = TABLE_NAME + "_in";
+        if (ydb.getTable(TABLE_NAME) == null) {
+            String query = "create table " + TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
                     + ", primary key(uuid))";
             ydb.execute(query);
         }
         if (ydb.getStream(streamName) == null) {
             ydb.execute("create stream " + streamName + TIMELINE_DEF.getStringDefinition());
         }
-        ydb.execute("upsert into " + TIMELINE_TABLE_NAME + " select * from " + streamName);
+        ydb.execute("upsert into " + TABLE_NAME + " select * from " + streamName);
         return ydb.getStream(streamName);
     }
 
     private TimelineView doGetview(UUID uuid) {
-        StreamSqlResult r = ydb.executeUnchecked("select * from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("select * from " + TABLE_NAME + " where uuid = ?", uuid);
         try {
             if (r.hasNext()) {
                 Tuple tuple = r.next();
@@ -116,10 +123,9 @@ public class TimelineViewDb {
 
     private void doDeleteView(UUID uuid) {
         viewCache.invalidate(uuid);
-        StreamSqlResult r = ydb.executeUnchecked("delete from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("delete from " + TABLE_NAME + " where uuid = ?", uuid);
         r.close();
     }
-
 
     // returns null if uuid does not exist
     private TimelineView viewFromCache(UUID uuid) {
@@ -136,21 +142,21 @@ public class TimelineViewDb {
 
     public static TimelineView fromTuple(Tuple tuple) {
         TimelineView.Builder builder = TimelineView.newBuilder()
-                .setUuid(tuple.getColumn(CNAME_ID).toString())
+                .setId(tuple.getColumn(CNAME_ID).toString())
                 .setName(tuple.getColumn(CNAME_NAME))
                 .setDescription(tuple.getColumn(CNAME_DESCRIPTION))
-                .addAllBands(tuple.getColumn(CNAME_VIEWS));
+                .addAllBands(tuple.getColumn(CNAME_BANDS));
         return builder.build();
 
     }
 
     private Tuple toTuple(TimelineView view) {
         Tuple tuple = new Tuple();
-        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(view.getUuid()));
+        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(view.getId()));
         tuple.addColumn(CNAME_NAME, view.getName());
         tuple.addColumn(CNAME_DESCRIPTION, view.getDescription());
         if (!view.getBandsList().isEmpty()) {
-            tuple.addColumn(CNAME_VIEWS, DataType.array(DataType.ENUM), view.getBandsList());
+            tuple.addColumn(CNAME_BANDS, DataType.array(DataType.ENUM), view.getBandsList());
         }
 
         return tuple;
@@ -172,7 +178,6 @@ public class TimelineViewDb {
         }
     }
 
-
     public TimelineView getView(UUID uuid) {
         rwlock.readLock().lock();
         try {
@@ -187,7 +192,7 @@ public class TimelineViewDb {
         try {
             // increase the limit to generate a token when the limit is reached
             StreamSqlStatement stmt = ydb.createStatement(
-                    "select * from " + TIMELINE_TABLE_NAME);
+                    "select * from " + TABLE_NAME);
 
             ydb.execute(stmt, new ResultListener() {
                 int count = 0;

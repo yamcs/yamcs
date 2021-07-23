@@ -14,11 +14,15 @@ export interface UpdateTimelineItemRequest {
 export type TimelineItemType = 'EVENT' | 'MANUAL_ACTIVITY' | 'AUTO_ACTIVITY';
 
 export interface TimelineItem {
-  uuid: string;
+  id: string;
   name: string;
   start: string;
   duration: string;
   type: TimelineItemType;
+}
+
+export interface TimelineBandsPage {
+  bands: TimelineBand[];
 }
 
 export interface TimelineItemsPage {
@@ -29,11 +33,17 @@ export interface GetTimelineItemsOptions {
   type?: TimelineItemType;
 }
 
+export type TimelineBandType = 'BANDEVENT' | 'MILESTONE' | 'TIME' | 'SPACER';
+
 export interface CreateTimelineBandRequest {
   name: string;
+  type: TimelineBandType;
+  extra?: { [key: string]: string; };
 }
 
 export interface TimelineBand {
-  uuid: string;
+  id: string;
+  type: TimelineBandType,
   name: string;
+  extra?: { [key: string]: string; };
 }

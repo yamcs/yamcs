@@ -1,21 +1,35 @@
 package org.yamcs;
 
-import com.google.protobuf.util.Durations;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.yamcs.client.utils.TimeUtils.TIMESTAMP_MAX;
+import static org.yamcs.client.utils.TimeUtils.TIMESTAMP_MIN;
+import static org.yamcs.client.utils.TimeUtils.toTimestamp;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
-import org.yamcs.protobuf.*;
+import org.yamcs.protobuf.TimelineBand;
+import org.yamcs.protobuf.TimelineBandType;
+import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineItemType;
+import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-
-import static org.junit.Assert.*;
-import static org.yamcs.client.utils.TimeUtils.*;
+import com.google.protobuf.util.Durations;
 
 public class TimelineIntegrationTest extends AbstractIntegrationTest {
     private TimelineClient timelineClient;
@@ -54,7 +68,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         assertEquals(item1a.getDuration(), item1b.getDuration());
         assertEquals(item1a.getTagsList(), item1b.getTagsList());
 
-        TimelineItem item1c = timelineClient.getItem(item1b.getUuid()).get();
+        TimelineItem item1c = timelineClient.getItem(item1b.getId()).get();
 
         assertEquals(item1b, item1c);
 
@@ -67,19 +81,19 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         TimelineItem item1e = timelineClient.updateItem(item1d).get();
         assertEquals(item1d, item1e);
 
-        TimelineItem item1f = timelineClient.getItem(item1b.getUuid()).get();
+        TimelineItem item1f = timelineClient.getItem(item1b.getId()).get();
         assertEquals(item1d, item1f);
 
         tags = timelineClient.getTags().get();
         assertEquals(Arrays.asList("tag1", "tag2", "tag3"), tags);
 
-        TimelineItem item1g = timelineClient.deleteItem(item1b.getUuid()).get();
+        TimelineItem item1g = timelineClient.deleteItem(item1b.getId()).get();
         assertEquals(item1d, item1g);
 
         Throwable t = null;
 
         try {
-            timelineClient.getItem(item1b.getUuid()).get();
+            timelineClient.getItem(item1b.getId()).get();
         } catch (ExecutionException e) {
             t = e.getCause();
         }
@@ -121,12 +135,11 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .get();
         Iterator<TimelineItem> iterator = page.iterator();
         TimelineItem item1 = iterator.next();
-        assertEquals("tag2",item1.getTags(0));
-        assertEquals("tag3",item1.getTags(1));
-        assertEquals(false,iterator.hasNext());
+        assertEquals("tag2", item1.getTags(0));
+        assertEquals("tag3", item1.getTags(1));
+        assertEquals(false, iterator.hasNext());
 
     }
-
 
     @Test
     public void testGroup1() throws Exception {
@@ -143,7 +156,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setType(TimelineItemType.EVENT)
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
-                .setGroupUuid(group.getUuid())
+                .setGroupId(group.getId())
                 .build();
         event1 = timelineClient.addItem(event1).get();
         // create event2 in group
@@ -151,23 +164,29 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setType(TimelineItemType.EVENT)
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
-                .setGroupUuid(group.getUuid())
+                .setGroupId(group.getId())
                 .build();
         event2 = timelineClient.addItem(event2).get();
         // try to remove group => error
-        timelineClient.deleteItem(group.getUuid()).handle((item,t)->{assertNotNull(t);return null;}).get();
+        timelineClient.deleteItem(group.getId()).handle((item, t) -> {
+            assertNotNull(t);
+            return null;
+        }).get();
         // remove event1 from group
-        event1 = event1.toBuilder().clearGroupUuid().build();
+        event1 = event1.toBuilder().clearGroupId().build();
         event1 = timelineClient.updateItem(event1).get();
         // try to remove group => error
-        timelineClient.deleteItem(group.getUuid()).handle((item,t)->{assertNotNull(t);return null;}).get();
+        timelineClient.deleteItem(group.getId()).handle((item, t) -> {
+            assertNotNull(t);
+            return null;
+        }).get();
         // remove group via deleteTimelineGroup
-        timelineClient.deleteTimelineGroup(group.getUuid()).get();
+        timelineClient.deleteTimelineGroup(group.getId()).get();
         // verify that group and event2 are gone
-        timelineClient.getItem(group.getUuid()).handle((item, t)-> verifyException(t,"NotFoundException")).get();
-        timelineClient.getItem(event2.getUuid()).handle((item, t)->verifyException(t,"NotFoundException")).get();
+        timelineClient.getItem(group.getId()).handle((item, t) -> verifyException(t, "NotFoundException")).get();
+        timelineClient.getItem(event2.getId()).handle((item, t) -> verifyException(t, "NotFoundException")).get();
         // verify that event1 is still there
-        event1 = timelineClient.getItem(event1.getUuid()).get();
+        event1 = timelineClient.getItem(event1.getId()).get();
         assertNotNull(event1);
     }
 
@@ -203,16 +222,16 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .build();
         activity = timelineClient.addItem(activity).get();
         // try to add event to "group" activity => error
-        event = event.toBuilder().setGroupUuid(activity.getUuid()).build();
-        timelineClient.updateItem(event).handle((item, t)-> verifyException(t,"BadRequestException")).get();
+        event = event.toBuilder().setGroupId(activity.getId()).build();
+        timelineClient.updateItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
         // try to add event to group => ok
-        event = event.toBuilder().setGroupUuid(group.getUuid()).build();
+        event = event.toBuilder().setGroupId(group.getId()).build();
         timelineClient.updateItem(event).get();
         // try to add event to activityGroup => error
-        event = event.toBuilder().setGroupUuid(activityGroup.getUuid()).build();
-        timelineClient.updateItem(event).handle((item, t)-> verifyException(t,"BadRequestException")).get();
+        event = event.toBuilder().setGroupId(activityGroup.getId()).build();
+        timelineClient.updateItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
         // try to add activity to activityGroup => ok
-        activity = activity.toBuilder().setGroupUuid(activityGroup.getUuid()).build();
+        activity = activity.toBuilder().setGroupId(activityGroup.getId()).build();
         timelineClient.updateItem(activity).get();
     }
 
@@ -226,7 +245,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setShared(true)
                 .addTags("tag1")
                 .addTags("tag2")
-                .putAllProperties(Collections.singletonMap("key1", "value1"))
+                .putAllExtra(Collections.singletonMap("key1", "value1"))
                 .build();
 
         TimelineBand band1b = timelineClient.addBand(band1a)
@@ -234,7 +253,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         assertEquals(band1a.getName(), band1b.getName());
         assertEquals(band1a.getDescription(), band1b.getDescription());
         assertEquals(band1a.getTagsList(), band1b.getTagsList());
-        assertEquals(band1a.getPropertiesMap(), band1b.getPropertiesMap());
+        assertEquals(band1a.getExtraMap(), band1b.getExtraMap());
     }
 
     @Test
@@ -261,12 +280,12 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         band1c = timelineClient.addBand(band1c).get();
 
         List<TimelineBand> timelineBands = timelineClient.getBands().get();
-        assertEquals(3,timelineBands.size());
+        assertEquals(3, timelineBands.size());
 
         ydb.execute("update timeline_band set username='blabla'");
         timelineBands = timelineClient.getBands().get();
-        assertEquals(1,timelineBands.size());
-        assertEquals("name1a",timelineBands.get(0).getName());
+        assertEquals(1, timelineBands.size());
+        assertEquals("name1a", timelineBands.get(0).getName());
     }
 
     @Test
@@ -283,14 +302,14 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     }
 
     void verifyEmpty() throws Exception {
-        Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX,null).get();
+        Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, null).get();
         assertFalse(page.iterator().hasNext());
         assertFalse(page.hasNextPage());
     }
 
     private Void verifyException(Throwable t, String type) {
-        ClientException e = (ClientException)t;
-        assertEquals(type,((ClientException) t).getDetail().getType());
+        ClientException e = (ClientException) t;
+        assertEquals(type, ((ClientException) t).getDetail().getType());
         return null;
     }
 }

@@ -1,24 +1,38 @@
 package org.yamcs.timeline;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TimelineBand;
-import org.yamcs.utils.InvalidRequestException;
+import org.yamcs.protobuf.TimelineBandType;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.*;
+import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableColumnDefinition;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class TimelineBandDb {
     static final Random random = new Random();
@@ -31,7 +45,7 @@ public class TimelineBandDb {
     public static final String CNAME_USERNAME = "username";
     public static final String CNAME_TAGS = "tags";
 
-    protected static final String PROP_PREFIX = "PROP";
+    protected static final String PROP_PREFIX = "prop_";
 
     static {
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
@@ -49,7 +63,6 @@ public class TimelineBandDb {
 
     final YarchDatabaseInstance ydb;
     final Stream timelineStream;
-
 
     LoadingCache<UUID, TimelineBand> bandCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
@@ -129,7 +142,6 @@ public class TimelineBandDb {
         r.close();
     }
 
-
     public Collection<String> getTags() {
         rwlock.readLock().lock();
         try {
@@ -154,8 +166,8 @@ public class TimelineBandDb {
     }
 
     public static TimelineBand fromTuple(Tuple tuple) {
-        Map<String,String> properties = new HashMap<String,String>();
-        for(int i=0; i<tuple.size(); i++) {
+        Map<String, String> properties = new HashMap<>();
+        for (int i = 0; i < tuple.size(); i++) {
             ColumnDefinition column = tuple.getColumnDefinition(i);
             if (column.getName().startsWith(PROP_PREFIX)) {
                 String columnName = column.getName().substring(PROP_PREFIX.length());
@@ -163,14 +175,15 @@ public class TimelineBandDb {
             }
         }
         TimelineBand.Builder builder = TimelineBand.newBuilder()
-                .setUuid(tuple.getColumn(CNAME_ID).toString())
+                .setId(tuple.getColumn(CNAME_ID).toString())
                 .setName(tuple.getColumn(CNAME_NAME))
                 .setDescription(tuple.getColumn(CNAME_DESCRIPTION))
+                .setType(TimelineBandType.valueOf((String) tuple.getColumn(CNAME_TYPE)))
                 .setShared(tuple.getColumn(CNAME_SHARED))
                 .setUsername(tuple.getColumn(CNAME_USERNAME))
-                .putAllProperties(properties);
-        if (tuple.getColumn(CNAME_TAGS)!=null) {
-           builder.addAllTags(tuple.getColumn(CNAME_TAGS));
+                .putAllExtra(properties);
+        if (tuple.getColumn(CNAME_TAGS) != null) {
+            builder.addAllTags(tuple.getColumn(CNAME_TAGS));
         }
         return builder.build();
 
@@ -178,14 +191,14 @@ public class TimelineBandDb {
 
     private Tuple toTuple(TimelineBand band) {
         Tuple tuple = new Tuple();
-        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(band.getUuid()));
+        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(band.getId()));
         tuple.addColumn(CNAME_NAME, band.getName());
         tuple.addColumn(CNAME_DESCRIPTION, band.getDescription());
         tuple.addColumn(CNAME_TYPE, band.getType().toString());
         tuple.addColumn(CNAME_SHARED, band.getShared());
         tuple.addColumn(CNAME_USERNAME, band.getUsername());
-        for(Map.Entry<String,String> entry : band.getPropertiesMap().entrySet()) {
-            tuple.addColumn(PROP_PREFIX +entry.getKey(), entry.getValue());
+        for (Map.Entry<String, String> entry : band.getExtraMap().entrySet()) {
+            tuple.addColumn(PROP_PREFIX + entry.getKey(), entry.getValue());
         }
         if (!band.getTagsList().isEmpty()) {
             tuple.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM), band.getTagsList());
@@ -209,7 +222,6 @@ public class TimelineBandDb {
             rwlock.writeLock().unlock();
         }
     }
-
 
     public TimelineBand getBand(UUID uuid) {
         rwlock.readLock().lock();

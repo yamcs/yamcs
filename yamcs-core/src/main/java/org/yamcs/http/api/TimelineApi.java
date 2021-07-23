@@ -81,10 +81,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
         org.yamcs.timeline.TimelineItem item = timelineSource.getItem(uuid);
         if (item == null) {
             throw new NotFoundException("Item " + uuid + " not found");
@@ -99,10 +99,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
 
         org.yamcs.timeline.TimelineItem item = timelineSource.getItem(uuid);
         if (item == null) {
@@ -121,13 +121,13 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
         } else if (request.hasRelativeTime()) {
             RelativeTime relt = request.getRelativeTime();
-            if (!relt.hasUuid()) {
-                throw new BadRequestException("uuid is required in the relative time");
+            if (!relt.hasRelto()) {
+                throw new BadRequestException("relto item is required with relative time");
             }
             if (!relt.hasRelativeStart()) {
                 throw new BadRequestException("relative start is required in the relative time");
             }
-            item.setRelativeItemUuid(parseUuid(relt.getUuid()));
+            item.setRelativeItemUuid(parseUuid(relt.getRelto()));
             item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
         } else {
             throw new BadRequestException("One of start or relativeTime has to be specified");
@@ -136,7 +136,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             item.setDuration(Durations.toMillis(request.getDuration()));
         }
 
-        item.setGroupUuid(request.hasGroupUuid() ? parseUuid(request.getGroupUuid()) : null);
+        item.setGroupUuid(request.hasGroupId() ? parseUuid(request.getGroupId()) : null);
         item.setTags(request.getTagsList());
 
         try {
@@ -228,10 +228,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void getBand(Context ctx, GetBandRequest request, Observer<TimelineBand> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
         TimelineBand band = timelineBandDb.getBand(uuid);
         if (band == null) {
             throw new NotFoundException("Item " + uuid + " not found");
@@ -256,7 +256,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
             @Override
             public void completeExceptionally(Throwable t) {
-                log.warn("Error retrieving timeline items", t);
+                log.warn("Error retrieving timeline bands", t);
                 observer.completeExceptionally(t);
             }
 
@@ -272,10 +272,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
-        if (!request.hasUuid()) {
+        if (!request.hasId()) {
             throw new BadRequestException("No uuid specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
 
         TimelineBand band;
         try {
@@ -307,10 +307,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void getView(Context ctx, GetViewRequest request, Observer<TimelineView> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
         TimelineView view = timelineViewDb.getView(uuid);
         if (view == null) {
             throw new NotFoundException("Item " + uuid + " not found");
@@ -351,10 +351,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
 
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
 
         TimelineView view;
         try {
@@ -374,10 +374,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
-        if (!request.hasUuid()) {
-            throw new BadRequestException("No uuid specified");
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
 
         org.yamcs.timeline.TimelineItem item;
         try {
@@ -398,10 +398,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
-        if (!request.hasUuid()) {
+        if (!request.hasId()) {
             throw new BadRequestException("No uuid specified");
         }
-        UUID uuid = parseUuid(request.getUuid());
+        UUID uuid = parseUuid(request.getId());
 
         org.yamcs.timeline.TimelineItem item;
         try {
@@ -484,13 +484,13 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
         } else if (request.hasRelativeTime()) {
             RelativeTime relt = request.getRelativeTime();
-            if (!relt.hasUuid()) {
-                throw new BadRequestException("uuid is required in the relative time");
+            if (!relt.hasRelto()) {
+                throw new BadRequestException("relto item is required when using relative time");
             }
             if (!relt.hasRelativeStart()) {
-                throw new BadRequestException("relative start is required in the relative time");
+                throw new BadRequestException("relative start is required when using relative time");
             }
-            item.setRelativeItemUuid(parseUuid(relt.getUuid()));
+            item.setRelativeItemUuid(parseUuid(relt.getRelto()));
             item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
         } else {
             throw new BadRequestException("One of start or relativeTime has to be specified");
@@ -500,8 +500,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
         item.setDuration(Durations.toMillis(request.getDuration()));
 
-        if (request.hasGroupUuid()) {
-            item.setGroupUuid(parseUuid(request.getGroupUuid()));
+        if (request.hasGroupId()) {
+            item.setGroupUuid(parseUuid(request.getGroupId()));
         }
         item.setTags(request.getTagsList());
         return item;
@@ -509,20 +509,20 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     private TimelineBand req2Band(AddBandRequest request, String user) {
         return TimelineBand.newBuilder()
-                .setUuid(UUID.randomUUID().toString())
+                .setId(UUID.randomUUID().toString())
                 .setType(request.getType())
                 .setName(request.getName())
                 .setDescription(request.getDescription())
                 .setSource(request.getSource())
                 .setShared(request.getShared())
                 .setUsername(user)
-                .putAllProperties(request.getPropertiesMap())
+                .putAllExtra(request.getExtraMap())
                 .addAllTags(request.getTagsList()).build();
     }
 
     private TimelineView req2View(AddViewRequest request) {
         return TimelineView.newBuilder()
-                .setUuid(UUID.randomUUID().toString())
+                .setId(UUID.randomUUID().toString())
                 .setName(request.getName())
                 .setDescription(request.getDescription())
                 .addAllBands(request.getBandsList()).build();

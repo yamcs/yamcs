@@ -71,8 +71,8 @@ public class TimelineClient {
             requestb.setDuration(item.getDuration());
         }
         requestb.addAllTags(item.getTagsList());
-        if (item.hasGroupUuid()) {
-            requestb.setGroupUuid(item.getGroupUuid());
+        if (item.hasGroupId()) {
+            requestb.setGroupId(item.getGroupId());
         }
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
@@ -83,49 +83,46 @@ public class TimelineClient {
         return addItem(RDB_TIMELINE_SOURCE, item);
     }
 
-    public CompletableFuture<TimelineItem> getItem(String source, String uuid) {
-
+    public CompletableFuture<TimelineItem> getItem(String source, String id) {
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         GetItemRequest.Builder requestb = GetItemRequest.newBuilder()
                 .setInstance(instance)
                 .setSource(source)
-                .setUuid(uuid);
+                .setId(id);
         timelineService.getItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<TimelineItem> deleteItem(String uuid) {
-        return deleteItem(RDB_TIMELINE_SOURCE, uuid);
+    public CompletableFuture<TimelineItem> deleteItem(String id) {
+        return deleteItem(RDB_TIMELINE_SOURCE, id);
     }
 
-    public CompletableFuture<TimelineItem> deleteItem(String source, String uuid) {
-
+    public CompletableFuture<TimelineItem> deleteItem(String source, String id) {
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         DeleteItemRequest.Builder requestb = DeleteItemRequest.newBuilder()
                 .setInstance(instance)
                 .setSource(source)
-                .setUuid(uuid);
+                .setId(id);
         timelineService.deleteItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<TimelineItem> deleteTimelineGroup(String uuid) {
-        return deleteTimelineGroup(RDB_TIMELINE_SOURCE, uuid);
+    public CompletableFuture<TimelineItem> deleteTimelineGroup(String id) {
+        return deleteTimelineGroup(RDB_TIMELINE_SOURCE, id);
     }
 
-    public CompletableFuture<TimelineItem> deleteTimelineGroup(String source, String uuid) {
-
+    public CompletableFuture<TimelineItem> deleteTimelineGroup(String source, String id) {
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         DeleteTimelineGroupRequest.Builder requestb = DeleteTimelineGroupRequest.newBuilder()
                 .setInstance(instance)
                 .setSource(source)
-                .setUuid(uuid);
+                .setId(id);
         timelineService.deleteTimelineGroup(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<TimelineItem> getItem(String uuid) {
-        return getItem(RDB_TIMELINE_SOURCE, uuid);
+    public CompletableFuture<TimelineItem> getItem(String id) {
+        return getItem(RDB_TIMELINE_SOURCE, id);
     }
 
     public CompletableFuture<Map<String, TimelineSourceCapabilities>> getSources() {
@@ -160,14 +157,14 @@ public class TimelineClient {
     }
 
     public CompletableFuture<TimelineItem> updateItem(String source, TimelineItem item) {
-        if (!item.hasUuid()) {
-            throw new IllegalArgumentException("the intem needs an UUID");
+        if (!item.hasId()) {
+            throw new IllegalArgumentException("the item needs an id");
         }
 
         UpdateItemRequest.Builder requestb = UpdateItemRequest.newBuilder()
                 .setInstance(instance)
                 .setSource(source)
-                .setUuid(item.getUuid());
+                .setId(item.getId());
 
         if (item.hasStart()) {
             requestb.setStart(item.getStart());
@@ -179,8 +176,8 @@ public class TimelineClient {
             requestb.setDuration(item.getDuration());
         }
         requestb.addAllTags(item.getTagsList());
-        if (item.hasGroupUuid()) {
-            requestb.setGroupUuid(item.getGroupUuid());
+        if (item.hasGroupId()) {
+            requestb.setGroupId(item.getGroupId());
         }
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.updateItem(null, requestb.build(), new ResponseObserver<>(f));
@@ -199,7 +196,7 @@ public class TimelineClient {
                 .setType(band.getType())
                 .setInstance(instance);
         requestb.addAllTags(band.getTagsList());
-        requestb.putAllProperties(band.getPropertiesMap());
+        requestb.putAllExtra(band.getExtraMap());
         if (band.hasName()) {
             requestb.setName(band.getName());
         }

@@ -23,14 +23,14 @@ service TimelineApi {
   // Get an item
   rpc GetItem(GetItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
-      get: "/api/timeline/{instance}/items/{uuid}"
+      get: "/api/timeline/{instance}/items/{id}"
     };
   }
   
   // Update an item
   rpc UpdateItem(UpdateItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
-      patch: "/api/timeline/{instance}/items/{uuid}"
+      patch: "/api/timeline/{instance}/items/{id}"
       body: "*"
     };
   }
@@ -45,14 +45,14 @@ service TimelineApi {
   // Delete an item
   rpc DeleteItem(DeleteItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
-      delete: "/api/timeline/{instance}/items/{uuid}"
+      delete: "/api/timeline/{instance}/items/{id}"
     };
   }
 
   // Delete a group
   rpc DeleteTimelineGroup(DeleteTimelineGroupRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
-      delete: "/api/timeline/{instance}/groups/{uuid}"
+      delete: "/api/timeline/{instance}/groups/{id}"
     };
   }
 
@@ -76,7 +76,7 @@ service TimelineApi {
     };
   }
   
-  // Add a band. The band must not have the uuid set.
+  // Add a band. The band must not have the id set.
   rpc AddBand(AddBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/bands"
@@ -87,7 +87,7 @@ service TimelineApi {
   // Get a band
   rpc GetBand(GetBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
-      get: "/api/timeline/{instance}/bands/{uuid}"
+      get: "/api/timeline/{instance}/bands/{id}"
     };
   }
 
@@ -102,7 +102,7 @@ service TimelineApi {
   // Delete a band
   rpc DeleteBand(DeleteBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
-      delete: "/api/timeline/{instance}/bands/{uuid}"
+      delete: "/api/timeline/{instance}/bands/{id}"
     };
   }
 
@@ -117,7 +117,7 @@ service TimelineApi {
   // Get a view
   rpc GetView(GetViewRequest) returns (TimelineView) {
     option (yamcs.api.route) = {
-      get: "/api/timeline/{instance}/views/{uuid}"
+      get: "/api/timeline/{instance}/views/{id}"
     };
   }
 
@@ -131,13 +131,15 @@ service TimelineApi {
   // Delete a view
   rpc DeleteView(DeleteViewRequest) returns (TimelineView) {
     option (yamcs.api.route) = {
-      delete: "/api/timeline/{instance}/views/{uuid}"
+      delete: "/api/timeline/{instance}/views/{id}"
     };
   }
 }
 
 message RelativeTime {
-	optional string uuid = 1;
+	// Identifier of the item that this time is relative to.
+	optional string relto = 1;
+	
 	optional google.protobuf.Duration relativeStart = 2;
 }
 
@@ -160,14 +162,18 @@ enum TimelineItemType {
   }
   
 message TimelineItem {
-  optional string uuid = 1;
+  // Item identifier
+  optional string id = 1;
+  
+  // Item name
   optional string name = 2;
+  
   optional TimelineItemType type = 3;
   optional google.protobuf.Timestamp start = 4;
   optional google.protobuf.Duration duration = 5;
   repeated string tags = 6;
-  //if this item is part of a group, this is the group UUID
-  optional string groupUuid = 7;
+  //if this item is part of a group, this is the group identifier
+  optional string groupId = 7;
     
   //if this item time specification is relative to another item, relativeTime contains a reference
   // to that item as well as the relative start (the duration is the same as given by the duration above)
@@ -183,13 +189,13 @@ enum TimelineBandType {
 }
 
 message TimelineBand {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
-  //unique identifier (uuid) for the band
-  optional string uuid = 2;
+  // Band identifier
+  optional string id = 2;
 
-  // band name
+  // Band name
   optional string name = 3;
 
   //user who has created the band
@@ -205,29 +211,29 @@ message TimelineBand {
   repeated string tags = 7;
 
   //a query filter which can be used to limit additionally the items which are part of the band
-//  optional string filter = 8;
+  //optional string filter = 8;
 
-  // type
+  // Type of band
   optional TimelineBandType type = 9;
 
-  // description
+  // Band description
   optional string description = 10;
 
-  //other properties used by yamcs-web to render the item on this band
-  map<string, string> properties = 11;
+  // Additional properties used by yamcs-web to render this band
+  map<string, string> extra = 11;
 }
 
 message TimelineView {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
-  //unique identifier (uuid) for the view
-  optional string uuid = 2;
+  // View identifier
+  optional string id = 2;
 
-  // view name
+  // View name
   optional string name = 3;
 
-  // view description
+  // View description
   optional string description = 4;
 
   // array of bands
@@ -236,16 +242,16 @@ message TimelineView {
 
 /******************* Items ***********************/
 message CreateItemRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
   
-  //item source
+  // Item source
   optional string source = 2;
   
-  //item name
+  // Item name
   optional string name = 3;
   
-  //item type
+  // Type of item
   optional TimelineItemType type = 4;
 
   //item start. The start and the relativeTime (below) are mutually exclusive
@@ -257,8 +263,8 @@ message CreateItemRequest {
   //tags
   repeated string tags = 7;
   
-  //if this item is part of a group, this is the group UUID
-  optional string groupUuid = 8;
+  //if this item is part of a group, this is the group identifier
+  optional string groupId = 8;
     
   //if this item time specification is relative to another item, relativeTime contains a reference
   // to that item as well as the relative start (the duration is the same as given by the duration above)
@@ -266,25 +272,25 @@ message CreateItemRequest {
 }
 
 message GetItemRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
-  //item source
+  // Item source
   optional string source = 2;
-  //item id
-  optional string uuid = 3;
+  // Item identifier
+  optional string id = 3;
 }
 
 message UpdateItemRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
-  //item source
+  // Item source
   optional string source = 2;
 
-  //item id
-  optional string uuid = 3;
+  // Item identifier
+  optional string id = 3;
   
-  //item name
+  // Item name
   optional string name = 4; 
 
   //new start time
@@ -296,8 +302,8 @@ message UpdateItemRequest {
   //new tags
   repeated string tags = 7;
 
-  //new group UUID
-  optional string groupUuid = 8;
+  //new group identifier
+  optional string groupId = 8;
 
   //new relative time
   optional RelativeTime relativeTime = 9;
@@ -306,10 +312,12 @@ message UpdateItemRequest {
 message ListItemsRequest {
   //Yamcs instance name
   optional string instance = 1;
-  //item source
+
+  // Item source
   optional string source = 2;
       
   optional int32 limit = 3;
+
   //retrieve the next page
   optional string next = 4;
   
@@ -324,22 +332,22 @@ message DeleteItemRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  //item source
+  // Item source
   optional string source = 2;
 
-  //item id
-  optional string uuid = 3;
+  // Item identifier
+  optional string id = 3;
 }
 
 message DeleteTimelineGroupRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  //item source
+  // Item source
   optional string source = 2;
 
-  //group id
-  optional string uuid = 3;
+  // Group identifier
+  optional string id = 3;
 }
 
 message ListItemsResponse {
@@ -356,7 +364,7 @@ message TimelineSourceCapabilities {
 }
 
 message ListSourcesRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 }
 
@@ -365,7 +373,7 @@ message ListSourcesResponse {
 }
 
 message ListTimelineTagsRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
   optional string source = 2;
@@ -379,10 +387,10 @@ message ListTimelineTagsResponse {
 
 /******************* Bands ***********************/
 message AddBandRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
-  // band name
+  // Band name
   optional string name = 2;
 
   //if true, all users have access to this band, otherwise only the user who has created it 
@@ -391,28 +399,28 @@ message AddBandRequest {
   //the band contains only items from this source
   optional string source = 4;
 
-  //the items containing these tags will be part of the timeline
+  // Items containing these tags will be part of the timeline
   repeated string tags = 5;
   
   //a query filter which can be used to limit additionally the items which are part of the band
-//  optional string filter = 6;
+  //  optional string filter = 6;
   
-  // type
+  // Type of band
   optional TimelineBandType type = 7;
 
-  // description
+  // Band description
   optional string description = 8;
 
-
-  //other properties used by yamcs-web to render the item on this band
-  map<string, string> properties = 9;
+  // Additional properties used by yamcs-web to render this band
+  map<string, string> extra = 9;
 }
 
 message GetBandRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
-  //item id
-  optional string uuid = 3;
+
+  // Item identifier
+  optional string id = 3;
 }
 
 message ListBandsRequest {
@@ -424,8 +432,8 @@ message DeleteBandRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  //item id
-  optional string uuid = 3;
+  // Item identifier
+  optional string id = 3;
 }
 
 message ListBandsResponse {
@@ -438,10 +446,10 @@ message AddViewRequest {
   //Yamcs instance name
   optional string instance = 1;
 
-  // view name
+  // View name
   optional string name = 2;
 
-  // view description
+  // View description
   optional string description = 3;
 
   //the bands from this view
@@ -449,14 +457,15 @@ message AddViewRequest {
 }
 
 message GetViewRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
-  //item id
-  optional string uuid = 3;
+
+  // Item identifier
+  optional string id = 3;
 }
 
 message ListViewsRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 }
 
@@ -464,13 +473,11 @@ message DeleteViewRequest {
   // Yamcs instance name.
   optional string instance = 1;
 
-  //item id
-  optional string uuid = 3;
+  // Item identifier
+  optional string id = 3;
 }
 
 message ListViewsResponse {
   repeated TimelineView views = 1;
 }
 /******************* End Views ***********************/
-
-

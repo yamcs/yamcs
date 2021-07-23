@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { AbsoluteTimeAxis, Event, EventLine, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
+import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
 import { TimelineItem } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -24,7 +24,7 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
   private timeline: Timeline;
   private moveInterval?: number;
 
-  private eventLine: EventLine;
+  private bands: Line<any>[] = [];
 
   constructor(
     title: Title,
@@ -51,16 +51,23 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
 
     new MouseTracker(this.timeline);
 
-    const axis = new AbsoluteTimeAxis(this.timeline);
-    axis.label = 'Time';
-    // axis.frozen = true;
-    axis.utc = true;
-
-    this.eventLine = new EventLine(this.timeline);
-    this.eventLine.label = 'Events';
-
-    const activityLine = new EventLine(this.timeline);
-    activityLine.label = 'Activities';
+    this.yamcs.yamcsClient.getTimelineBands(this.yamcs.instance!).then(page => {
+      for (const band of (page.bands || [])) {
+        if (band.type === 'TIME') {
+          const axis = new AbsoluteTimeAxis(this.timeline);
+          axis.label = band.name;
+          axis.timezone = band.extra!.timezone;
+          console.log('tz is', axis.timezone);
+          // axis.frozen = true;
+          this.bands.push(axis);
+        } else if (band.type === 'BANDEVENT') {
+          const eventLine = new EventLine(this.timeline);
+          eventLine.label = band.name;
+          this.bands.push(eventLine);
+        }
+      }
+      this.refreshData();
+    });
 
     this.timeline.addEventListener('eventclick', evt => {
       const dialogRef = this.dialog.open(EditItemDialog, {
@@ -74,14 +81,27 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
   }
 
   refreshData() {
-    this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
-      type: 'EVENT',
-    }).then(page => {
-      this.populateEvents(page.items || []);
-    }).catch(err => this.messageService.showError(err));
+    const queriedBands: EventLine[] = [];
+    const promises = [];
+    for (const band of this.bands) {
+      if (band instanceof EventLine) {
+        queriedBands.push(band);
+        promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
+          type: 'EVENT',
+        }));
+      }
+    }
+    if (promises.length) {
+      Promise.all(promises).then(responses => {
+        for (let i = 0; i < responses.length; i++) {
+          const band = queriedBands[i];
+          this.populateEvents(band, responses[i].items || []);
+        }
+      }).catch(err => this.messageService.showError(err));
+    }
   }
 
-  private populateEvents(items: TimelineItem[]) {
+  private populateEvents(band: EventLine, items: TimelineItem[]) {
     const data: Event[] = [];
     for (const item of items) {
       const start = utils.toDate(item.start).getTime();
@@ -93,7 +113,7 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
       };
       data.push(event);
     }
-    this.eventLine.data = data;
+    band.data = data;
   }
 
   openCreateItemDialog() {

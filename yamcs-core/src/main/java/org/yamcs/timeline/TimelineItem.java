@@ -152,7 +152,7 @@ public abstract class TimelineItem {
 
     public org.yamcs.protobuf.TimelineItem toProtoBuf() {
         org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
-        protob.setUuid(id.toString());
+        protob.setId(id.toString());
         protob.setStart(TimeEncoding.toProtobufTimestamp(start));
         protob.setDuration(Durations.fromMillis(duration));
         if (name != null) {
@@ -161,7 +161,7 @@ public abstract class TimelineItem {
 
         if (relativeItemUuid != null) {
             RelativeTime relTime = RelativeTime.newBuilder()
-                    .setUuid(relativeItemUuid.toString())
+                    .setRelto(relativeItemUuid.toString())
                     .setRelativeStart(Durations.fromMillis(relativeStart))
                     .build();
             protob.setRelativeTime(relTime);

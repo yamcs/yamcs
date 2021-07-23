@@ -16,7 +16,7 @@ import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditComm
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
-import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineItem, TimelineItemsPage, UpdateTimelineItemRequest } from './types/timeline';
+import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, UpdateTimelineItemRequest } from './types/timeline';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -315,6 +315,12 @@ export default class YamcsClient implements HttpHandler {
     return await this.doFetch(url, {
       method: 'DELETE',
     });
+  }
+
+  async getTimelineBands(instance: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/bands`;
+    const response = await this.doFetch(url);
+    return await response.json() as TimelineBandsPage;
   }
 
   async getTimelineItems(instance: string, options: GetTimelineItemsOptions = {}) {

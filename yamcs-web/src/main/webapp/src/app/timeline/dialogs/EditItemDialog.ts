@@ -39,7 +39,7 @@ export class EditItemDialog {
   }
 
   save() {
-    this.yamcs.yamcsClient.updateTimelineItem(this.yamcs.instance!, this.data.item.uuid, {
+    this.yamcs.yamcsClient.updateTimelineItem(this.yamcs.instance!, this.data.item.id, {
       name: this.form.value['name'],
       start: utils.toISOString(this.form.value['start']),
       duration: this.form.value['duration'],
@@ -49,7 +49,7 @@ export class EditItemDialog {
 
   delete() {
     if (confirm(`Are you sure you want to delete this item?`)) {
-      this.yamcs.yamcsClient.deleteTimelineItem(this.yamcs.instance!, this.data.item.uuid)
+      this.yamcs.yamcsClient.deleteTimelineItem(this.yamcs.instance!, this.data.item.id)
         .then(() => this.dialogRef.close())
         .catch(err => this.messageService.showError(err));
     }
