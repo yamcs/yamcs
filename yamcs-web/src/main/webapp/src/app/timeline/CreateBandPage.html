@@ -1,0 +1,56 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <a mat-icon-button routerLink=".."
+       [queryParams]="{c: yamcs.context}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create band
+  </app-instance-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="typeForm" novalidate autocomplete="off">
+      <label>
+        Type<br>
+        <app-select [options]="typeOptions" formControlName="type">
+        </app-select>
+      </label>
+    </form>
+
+    <p>&nbsp;</p>
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+
+    <form *ngIf="typeForm.value.type === 'timescale'"
+          [formGroup]="timescaleForm"
+          novalidate
+          autocomplete="off">
+      <label>
+        Label <span class="hint">(required)</span><br>
+        <input type="text" formControlName="name" style="width: 100%">
+      </label>
+      <br>
+      <label>
+        Timezone<br>
+        <app-timezone-select formControlName="timezone"></app-timezone-select>
+      </label>
+    </form>
+
+    <form *ngIf="typeForm.value.type === 'eventBand'"
+          [formGroup]="eventBandForm"
+          novalidate
+          autocomplete="off">
+      <label>
+        Name<br>
+        <input type="text" formControlName="name" style="width: 100%">
+      </label>
+    </form>
+
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <button class="ya-button" routerLink=".." [queryParams]="{c: yamcs.context}">Cancel</button>
+      <button class="ya-button primary" type="submit" (click)="onConfirm()"
+              [disabled]="!timescaleForm.valid">CREATE</button>
+    </div>
+  </div>
+</app-instance-page>

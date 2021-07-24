@@ -182,10 +182,8 @@ message TimelineItem {
 }
 
 enum TimelineBandType {
-  BANDEVENT = 1;
-  MILESTONE = 2;
-  TIME = 3;
-  SPACER = 4;
+  TIME_RULER = 1;
+  EVENT_BAND = 2;
 }
 
 message TimelineBand {
@@ -274,8 +272,10 @@ message CreateItemRequest {
 message GetItemRequest {
   // Yamcs instance name
   optional string instance = 1;
+
   // Item source
   optional string source = 2;
+
   // Item identifier
   optional string id = 3;
 }

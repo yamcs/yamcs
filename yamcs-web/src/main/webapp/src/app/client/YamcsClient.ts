@@ -339,6 +339,13 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as TimelineBand;
   }
 
+  async deleteTimelineBand(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/bands/${id}`;
+    return await this.doFetch(url, {
+      method: 'DELETE'
+    });
+  }
+
   async createTimelineItem(instance: string, options: CreateTimelineItemRequest) {
     const body = JSON.stringify(options);
     const url = `${this.apiUrl}/timeline/${instance}/items`;

@@ -3,7 +3,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
-import { TimelinePage } from './TimelinePage';
+import { BandsPage } from './BandsPage';
+import { CreateBandPage } from './CreateBandPage';
+import { TimelineChartPage } from './TimelineChartPage';
 
 const routes: Routes = [
   {
@@ -16,7 +18,18 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        component: TimelinePage,
+        redirectTo: 'chart',
+      }, {
+        path: 'chart',
+        component: TimelineChartPage,
+      }, {
+        path: 'bands',
+        pathMatch: 'full',
+        component: BandsPage,
+      }, {
+        path: 'bands/create',
+        pathMatch: 'full',
+        component: CreateBandPage,
       }
     ]
   }
@@ -29,5 +42,7 @@ const routes: Routes = [
 export class TimelineRoutingModule { }
 
 export const routingComponents = [
-  TimelinePage,
+  BandsPage,
+  CreateBandPage,
+  TimelineChartPage,
 ];

@@ -33,7 +33,7 @@ export interface GetTimelineItemsOptions {
   type?: TimelineItemType;
 }
 
-export type TimelineBandType = 'BANDEVENT' | 'MILESTONE' | 'TIME' | 'SPACER';
+export type TimelineBandType = 'TIME_RULER' | 'EVENT_BAND';
 
 export interface CreateTimelineBandRequest {
   name: string;

@@ -12,11 +12,11 @@ import { EditItemDialog } from './dialogs/EditItemDialog';
 
 
 @Component({
-  templateUrl: './TimelinePage.html',
-  styleUrls: ['./TimelinePage.css'],
+  templateUrl: './TimelineChartPage.html',
+  styleUrls: ['./TimelineChartPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimelinePage implements AfterViewInit, OnDestroy {
+export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
   @ViewChild('container', { static: true })
   container: ElementRef;
@@ -32,7 +32,7 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private messageService: MessageService,
   ) {
-    title.setTitle('Timeline');
+    title.setTitle('Timeline Chart');
   }
 
   ngAfterViewInit() {
@@ -53,14 +53,13 @@ export class TimelinePage implements AfterViewInit, OnDestroy {
 
     this.yamcs.yamcsClient.getTimelineBands(this.yamcs.instance!).then(page => {
       for (const band of (page.bands || [])) {
-        if (band.type === 'TIME') {
+        if (band.type === 'TIME_RULER') {
           const axis = new AbsoluteTimeAxis(this.timeline);
           axis.label = band.name;
           axis.timezone = band.extra!.timezone;
-          console.log('tz is', axis.timezone);
           // axis.frozen = true;
           this.bands.push(axis);
-        } else if (band.type === 'BANDEVENT') {
+        } else if (band.type === 'EVENT_BAND') {
           const eventLine = new EventLine(this.timeline);
           eventLine.label = band.name;
           this.bands.push(eventLine);

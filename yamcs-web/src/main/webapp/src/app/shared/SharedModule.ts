@@ -59,6 +59,7 @@ import { Errors } from './forms/Errors';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
+import { TimezoneSelect } from './forms/TimezoneSelect';
 import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
 import { Markdown } from './markdown/Markdown';
@@ -225,6 +226,7 @@ const sharedComponents = [
   TableContainer,
   TextAction,
   TimestampTracker,
+  TimezoneSelect,
   ToolbarActions,
   WarningMessage,
 ];

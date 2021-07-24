@@ -1,0 +1,12 @@
+<app-select [options]="areaOptions" [formControl]="areaControl">
+</app-select>
+<ng-container *ngIf="(locationOptions$ | async).length">
+  &nbsp;
+  <app-select [options]="locationOptions$ | async" [formControl]="locationControl">
+  </app-select>
+</ng-container>
+<ng-container *ngIf="(sublocationOptions$ | async).length">
+  &nbsp;
+  <app-select [options]="sublocationOptions$ | async" [formControl]="sublocationControl">
+  </app-select>
+</ng-container>

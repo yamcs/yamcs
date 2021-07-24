@@ -1,16 +1,17 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
-import { MessageService } from '../../core/services/MessageService';
-import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import tznames from '../../shared/tznames';
+import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { MessageService } from '../core/services/MessageService';
+import { YamcsService } from '../core/services/YamcsService';
+import { Option } from '../shared/forms/Select';
+import tznames from '../shared/tznames';
 
 @Component({
-  templateUrl: './CreateBandDialog.html',
+  templateUrl: './CreateBandPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CreateBandDialog {
+export class CreateBandPage {
 
   typeOptions: Option[] = [
     { id: 'timescale', label: 'Time Ruler' },
@@ -25,11 +26,13 @@ export class CreateBandDialog {
   eventBandForm: FormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<CreateBandDialog>,
+    title: Title,
     formBuilder: FormBuilder,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private messageService: MessageService,
+    private router: Router,
   ) {
+    title.setTitle('Create a Band');
     for (const tz of tznames) {
       this.tzOptions.push({ id: tz, label: tz });
     }
@@ -38,21 +41,23 @@ export class CreateBandDialog {
     });
     this.timescaleForm = formBuilder.group({
       name: ['', [Validators.required]],
-      timezone: ['', [Validators.required]],
+      timezone: ['UTC', [Validators.required]],
     });
     this.eventBandForm = formBuilder.group({
       name: ['', [Validators.required]],
     });
   }
 
-  save() {
+  onConfirm() {
+    const formValue = this.timescaleForm.value;
+
     this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
-      name: this.timescaleForm.value['name'],
+      name: formValue.name,
       type: 'TIME_RULER',
       extra: {
-        timezone: this.timescaleForm.value['timezone'],
+        timezone: formValue.timezone,
       }
-    }).then(item => this.dialogRef.close(item))
+    }).then(() => this.router.navigateByUrl(`/timeline/chart?c=${this.yamcs.context}`))
       .catch(err => this.messageService.showError(err));
   }
 }
