@@ -1,7 +1,5 @@
 package org.yamcs.timeline;
 
-import java.util.Base64;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -28,7 +26,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class TimelineViewDb {
-    static final Random random = new Random();
     public static final TupleDefinition TIMELINE_DEF = new TupleDefinition();
     public static final String CNAME_ID = "uuid";
     public static final String CNAME_NAME = "name";
@@ -162,8 +159,8 @@ public class TimelineViewDb {
         return tuple;
     }
 
+    @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
-
     }
 
     public TimelineView addView(TimelineView view) {
@@ -195,12 +192,9 @@ public class TimelineViewDb {
                     "select * from " + TABLE_NAME);
 
             ydb.execute(stmt, new ResultListener() {
-                int count = 0;
-
                 @Override
                 public void next(Tuple tuple) {
                     consumer.next(fromTuple(tuple));
-                    count++;
                 }
 
                 @Override
@@ -220,11 +214,4 @@ public class TimelineViewDb {
             rwlock.readLock().unlock();
         }
     }
-
-    private static String getRandomToken() {
-        byte[] b = new byte[16];
-        random.nextBytes(b);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
-    }
-
 }

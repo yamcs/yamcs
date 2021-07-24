@@ -46,13 +46,13 @@ export class CreateBandDialog {
   }
 
   save() {
-    this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
+    /*this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
       name: this.timescaleForm.value['name'],
       type: 'TIME_RULER',
       extra: {
         timezone: this.timescaleForm.value['timezone'],
       }
     }).then(item => this.dialogRef.close(item))
-      .catch(err => this.messageService.showError(err));
+      .catch(err => this.messageService.showError(err));*/
   }
 }

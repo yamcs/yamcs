@@ -56,10 +56,10 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         if (band.type === 'TIME_RULER') {
           const axis = new AbsoluteTimeAxis(this.timeline);
           axis.label = band.name;
-          axis.timezone = band.extra!.timezone;
+          axis.timezone = band.properties!.timezone;
           // axis.frozen = true;
           this.bands.push(axis);
-        } else if (band.type === 'EVENT_BAND') {
+        } else if (band.type === 'ITEM_BAND') {
           const eventLine = new EventLine(this.timeline);
           eventLine.label = band.name;
           this.bands.push(eventLine);

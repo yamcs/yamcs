@@ -30,7 +30,7 @@ service TimelineApi {
   // Update an item
   rpc UpdateItem(UpdateItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
-      patch: "/api/timeline/{instance}/items/{id}"
+      put: "/api/timeline/{instance}/items/{id}"
       body: "*"
     };
   }
@@ -98,6 +98,13 @@ service TimelineApi {
     };
   }
 
+  // Update a band
+  rpc UpdateBand(UpdateBandRequest) returns (TimelineBand) {
+    option (yamcs.api.route) = {
+      put: "/api/timeline/{instance}/bands/{id}"
+      body: "*"
+    };
+  }
 
   // Delete a band
   rpc DeleteBand(DeleteBandRequest) returns (TimelineBand) {
@@ -183,7 +190,7 @@ message TimelineItem {
 
 enum TimelineBandType {
   TIME_RULER = 1;
-  EVENT_BAND = 2;
+  ITEM_BAND = 2;
 }
 
 message TimelineBand {
@@ -218,7 +225,7 @@ message TimelineBand {
   optional string description = 10;
 
   // Additional properties used by yamcs-web to render this band
-  map<string, string> extra = 11;
+  map<string, string> properties = 11;
 }
 
 message TimelineView {
@@ -291,7 +298,7 @@ message UpdateItemRequest {
   optional string id = 3;
   
   // Item name
-  optional string name = 4; 
+  optional string name = 4;
 
   //new start time
   optional google.protobuf.Timestamp start = 5;
@@ -412,7 +419,7 @@ message AddBandRequest {
   optional string description = 8;
 
   // Additional properties used by yamcs-web to render this band
-  map<string, string> extra = 9;
+  map<string, string> properties = 9;
 }
 
 message GetBandRequest {
@@ -421,6 +428,29 @@ message GetBandRequest {
 
   // Item identifier
   optional string id = 3;
+}
+
+message UpdateBandRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Band identifier
+  optional string id = 2;
+  
+  // Band name
+  optional string name = 3;
+  
+  // Band description
+  optional string description = 4;
+  
+  //if true, all users have access to this band, otherwise only the user who has created it
+  optional bool shared = 5;
+  
+  // Items containing these tags will be part of the timeline
+  repeated string tags = 6;
+  
+  // Additional properties used by yamcs-web to render this band
+  map<string, string> properties = 7;
 }
 
 message ListBandsRequest {

@@ -1,11 +1,7 @@
 package org.yamcs.timeline;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -13,10 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.TimelineBand;
-import org.yamcs.protobuf.TimelineBandType;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableColumnDefinition;
@@ -35,7 +28,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class TimelineBandDb {
-    static final Random random = new Random();
     public static final TupleDefinition TIMELINE_DEF = new TupleDefinition();
     public static final String CNAME_ID = "uuid";
     public static final String CNAME_NAME = "name";
@@ -59,28 +51,27 @@ public class TimelineBandDb {
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
-    final static String TIMELINE_TABLE_NAME = "timeline_band";
+    final static String TABLE_NAME = "timeline_band";
 
     final YarchDatabaseInstance ydb;
-    final Stream timelineStream;
+    final Stream bandStream;
 
     LoadingCache<UUID, TimelineBand> bandCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build(
-                    new CacheLoader<UUID, TimelineBand>() {
-                        @Override
-                        public TimelineBand load(UUID uuid) {
-                            return doGetBand(uuid);
-                        }
-                    });
+            .build(new CacheLoader<UUID, TimelineBand>() {
+                @Override
+                public TimelineBand load(UUID uuid) {
+                    return doGetBand(uuid);
+                }
+            });
 
     public TimelineBandDb(String yamcsInstance) throws InitException {
         log = new Log(getClass(), yamcsInstance);
 
         ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
-            timelineStream = setupTimelineRecording();
+            bandStream = setupTimelineRecording();
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
@@ -104,30 +95,30 @@ public class TimelineBandDb {
     }
 
     private Stream setupTimelineRecording() throws StreamSqlException, ParseException {
-        String streamName = TIMELINE_TABLE_NAME + "_in";
-        if (ydb.getTable(TIMELINE_TABLE_NAME) == null) {
-            String query = "create table " + TIMELINE_TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
+        String streamName = TABLE_NAME + "_in";
+        if (ydb.getTable(TABLE_NAME) == null) {
+            String query = "create table " + TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
                     + ", primary key(uuid))";
             ydb.execute(query);
         }
         if (ydb.getStream(streamName) == null) {
             ydb.execute("create stream " + streamName + TIMELINE_DEF.getStringDefinition());
         }
-        ydb.execute("upsert into " + TIMELINE_TABLE_NAME + " select * from " + streamName);
+        ydb.execute("upsert into " + TABLE_NAME + " select * from " + streamName);
         return ydb.getStream(streamName);
     }
 
     private TimelineBand doGetBand(UUID uuid) {
-        StreamSqlResult r = ydb.executeUnchecked("select * from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("select * from " + TABLE_NAME + " where uuid = ?", uuid);
         try {
             if (r.hasNext()) {
                 Tuple tuple = r.next();
                 try {
-                    TimelineBand band = fromTuple(tuple);
+                    TimelineBand band = new TimelineBand(tuple);
                     log.trace("Read band from db {}", band);
                     return band;
                 } catch (Exception e) {
-                    log.error("Cannot decode tuple {} intro timeline band", tuple);
+                    log.error("Cannot decode tuple {} to band", tuple);
                 }
             }
         } finally {
@@ -138,14 +129,14 @@ public class TimelineBandDb {
 
     private void doDeleteBand(UUID uuid) {
         bandCache.invalidate(uuid);
-        StreamSqlResult r = ydb.executeUnchecked("delete from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("delete from " + TABLE_NAME + " where uuid = ?", uuid);
         r.close();
     }
 
     public Collection<String> getTags() {
         rwlock.readLock().lock();
         try {
-            TableColumnDefinition tcd = ydb.getTable(TIMELINE_TABLE_NAME).getColumnDefinition(CNAME_TAGS);
+            TableColumnDefinition tcd = ydb.getTable(TABLE_NAME).getColumnDefinition(CNAME_TAGS);
             return Collections.unmodifiableSet(tcd.getEnumValues().keySet());
         } finally {
             rwlock.readLock().unlock();
@@ -165,58 +156,30 @@ public class TimelineBandDb {
         }
     }
 
-    public static TimelineBand fromTuple(Tuple tuple) {
-        Map<String, String> properties = new HashMap<>();
-        for (int i = 0; i < tuple.size(); i++) {
-            ColumnDefinition column = tuple.getColumnDefinition(i);
-            if (column.getName().startsWith(PROP_PREFIX)) {
-                String columnName = column.getName().substring(PROP_PREFIX.length());
-                properties.put(columnName, tuple.getColumn(column.getName()));
-            }
-        }
-        TimelineBand.Builder builder = TimelineBand.newBuilder()
-                .setId(tuple.getColumn(CNAME_ID).toString())
-                .setName(tuple.getColumn(CNAME_NAME))
-                .setDescription(tuple.getColumn(CNAME_DESCRIPTION))
-                .setType(TimelineBandType.valueOf((String) tuple.getColumn(CNAME_TYPE)))
-                .setShared(tuple.getColumn(CNAME_SHARED))
-                .setUsername(tuple.getColumn(CNAME_USERNAME))
-                .putAllExtra(properties);
-        if (tuple.getColumn(CNAME_TAGS) != null) {
-            builder.addAllTags(tuple.getColumn(CNAME_TAGS));
-        }
-        return builder.build();
-
-    }
-
-    private Tuple toTuple(TimelineBand band) {
-        Tuple tuple = new Tuple();
-        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(band.getId()));
-        tuple.addColumn(CNAME_NAME, band.getName());
-        tuple.addColumn(CNAME_DESCRIPTION, band.getDescription());
-        tuple.addColumn(CNAME_TYPE, band.getType().toString());
-        tuple.addColumn(CNAME_SHARED, band.getShared());
-        tuple.addColumn(CNAME_USERNAME, band.getUsername());
-        for (Map.Entry<String, String> entry : band.getExtraMap().entrySet()) {
-            tuple.addColumn(PROP_PREFIX + entry.getKey(), entry.getValue());
-        }
-        if (!band.getTagsList().isEmpty()) {
-            tuple.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM), band.getTagsList());
-        }
-
-        return tuple;
-    }
-
+    @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
-
     }
 
     public TimelineBand addBand(TimelineBand band) {
         rwlock.writeLock().lock();
         try {
-            Tuple tuple = toTuple(band);
+            Tuple tuple = band.toTuple();
             log.debug("Adding timeline band to RDB: {}", tuple);
-            timelineStream.emitTuple(tuple);
+            bandStream.emitTuple(tuple);
+            return band;
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
+    public TimelineBand updateBand(TimelineBand band) {
+        rwlock.writeLock().lock();
+        try {
+            doDeleteBand(band.getId());
+
+            Tuple tuple = band.toTuple();
+            log.debug("Updating timeline band in RDB: {}", tuple);
+            bandStream.emitTuple(tuple);
             return band;
         } finally {
             rwlock.writeLock().unlock();
@@ -235,17 +198,13 @@ public class TimelineBandDb {
     public void listBands(String user, BandListener consumer) {
         rwlock.readLock().lock();
         try {
-            // increase the limit to generate a token when the limit is reached
             StreamSqlStatement stmt = ydb.createStatement(
-                    "select * from " + TIMELINE_TABLE_NAME + " where shared or username = ?", user);
+                    "select * from " + TABLE_NAME + " where shared or username = ?", user);
 
             ydb.execute(stmt, new ResultListener() {
-                int count = 0;
-
                 @Override
                 public void next(Tuple tuple) {
-                    consumer.next(fromTuple(tuple));
-                    count++;
+                    consumer.next(new TimelineBand(tuple));
                 }
 
                 @Override
@@ -265,11 +224,4 @@ public class TimelineBandDb {
             rwlock.readLock().unlock();
         }
     }
-
-    private static String getRandomToken() {
-        byte[] b = new byte[16];
-        random.nextBytes(b);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
-    }
-
 }

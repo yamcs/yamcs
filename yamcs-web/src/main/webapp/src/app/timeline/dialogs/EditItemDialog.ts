@@ -40,6 +40,7 @@ export class EditItemDialog {
 
   save() {
     this.yamcs.yamcsClient.updateTimelineItem(this.yamcs.instance!, this.data.item.id, {
+      ...this.data.item,
       name: this.form.value['name'],
       start: utils.toISOString(this.form.value['start']),
       duration: this.form.value['duration'],

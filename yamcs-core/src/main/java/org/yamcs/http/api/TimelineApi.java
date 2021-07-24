@@ -36,6 +36,7 @@ import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineView;
+import org.yamcs.protobuf.UpdateBandRequest;
 import org.yamcs.protobuf.UpdateItemRequest;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.AutomatedActivity;
@@ -215,10 +216,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void addBand(Context ctx, AddBandRequest request, Observer<TimelineBand> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
-        TimelineBand band = req2Band(request, ctx.user.getName());
+        org.yamcs.timeline.TimelineBand band = req2Band(request, ctx.user.getName());
         try {
             band = timelineBandDb.addBand(band);
-            observer.complete(band);
+            observer.complete(band.toProtobuf());
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -232,11 +233,11 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new BadRequestException("No id specified");
         }
         UUID uuid = parseUuid(request.getId());
-        TimelineBand band = timelineBandDb.getBand(uuid);
+        org.yamcs.timeline.TimelineBand band = timelineBandDb.getBand(uuid);
         if (band == null) {
             throw new NotFoundException("Item " + uuid + " not found");
         } else {
-            observer.complete(band);
+            observer.complete(band.toProtobuf());
         }
     }
 
@@ -250,8 +251,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         timelineBandDb.listBands(ctx.user.getName(), new BandListener() {
 
             @Override
-            public void next(TimelineBand band) {
-                resp.addBands(band);
+            public void next(org.yamcs.timeline.TimelineBand band) {
+                resp.addBands(band.toProtobuf());
             }
 
             @Override
@@ -268,16 +269,45 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     }
 
     @Override
+    public void updateBand(Context ctx, UpdateBandRequest request, Observer<TimelineBand> observer) {
+        TimelineService timelineService = verifyService(request.getInstance());
+        TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
+
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
+        }
+        UUID uuid = parseUuid(request.getId());
+
+        org.yamcs.timeline.TimelineBand band = timelineBandDb.getBand(uuid);
+        if (band == null) {
+            throw new NotFoundException("Band " + uuid + " not found");
+        }
+
+        if (request.hasName()) {
+            band.setName(request.getName());
+        }
+        band.setTags(request.getTagsList());
+        band.setProperties(request.getPropertiesMap());
+
+        try {
+            band = timelineBandDb.updateBand(band);
+            observer.complete(band.toProtobuf());
+        } catch (InvalidRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
     public void deleteBand(Context ctx, DeleteBandRequest request, Observer<TimelineBand> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
         if (!request.hasId()) {
-            throw new BadRequestException("No uuid specified");
+            throw new BadRequestException("No id specified");
         }
         UUID uuid = parseUuid(request.getId());
 
-        TimelineBand band;
+        org.yamcs.timeline.TimelineBand band;
         try {
             band = timelineBandDb.deleteBand(uuid);
         } catch (InvalidRequestException e) {
@@ -286,7 +316,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (band == null) {
             throw new NotFoundException("Band " + uuid + " not found");
         } else {
-            observer.complete(band);
+            observer.complete(band.toProtobuf());
         }
     }
 
@@ -507,17 +537,26 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         return item;
     }
 
-    private TimelineBand req2Band(AddBandRequest request, String user) {
-        return TimelineBand.newBuilder()
-                .setId(UUID.randomUUID().toString())
-                .setType(request.getType())
-                .setName(request.getName())
-                .setDescription(request.getDescription())
-                .setSource(request.getSource())
-                .setShared(request.getShared())
-                .setUsername(user)
-                .putAllExtra(request.getExtraMap())
-                .addAllTags(request.getTagsList()).build();
+    private org.yamcs.timeline.TimelineBand req2Band(AddBandRequest request, String user) {
+        org.yamcs.timeline.TimelineBand band = new org.yamcs.timeline.TimelineBand(UUID.randomUUID());
+
+        if (!request.hasType()) {
+            throw new BadRequestException("Type is mandatory");
+        }
+        band.setType(request.getType());
+
+        if (request.hasName()) {
+            band.setName(request.getName());
+        }
+        if (request.hasDescription()) {
+            band.setDescription(request.getDescription());
+        }
+        band.setShared(request.getShared());
+        band.setUsername(user);
+        band.setTags(request.getTagsList());
+        band.setProperties(request.getPropertiesMap());
+
+        return band;
     }
 
     private TimelineView req2View(AddViewRequest request) {

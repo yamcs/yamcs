@@ -1,0 +1,8 @@
+<app-instance-page *ngIf="band$ | async as band">
+  <app-instance-toolbar>Update band</app-instance-toolbar>
+
+  <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
+                       [band]="band"></app-edit-time-ruler>
+  <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
+                      [band]="band"></app-edit-item-band>
+</app-instance-page>

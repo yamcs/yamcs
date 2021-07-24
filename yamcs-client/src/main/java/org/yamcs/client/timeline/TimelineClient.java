@@ -196,7 +196,7 @@ public class TimelineClient {
                 .setType(band.getType())
                 .setInstance(instance);
         requestb.addAllTags(band.getTagsList());
-        requestb.putAllExtra(band.getExtraMap());
+        requestb.putAllProperties(band.getPropertiesMap());
         if (band.hasName()) {
             requestb.setName(band.getName());
         }

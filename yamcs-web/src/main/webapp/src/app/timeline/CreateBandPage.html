@@ -7,50 +7,28 @@
     </a> Create band
   </app-instance-toolbar>
 
-  <div class="form-content ya-form">
-    <form [formGroup]="typeForm" novalidate autocomplete="off">
-      <label>
-        Type<br>
-        <app-select [options]="typeOptions" formControlName="type">
-        </app-select>
-      </label>
-    </form>
+  <app-create-band-wizard-step step="1"></app-create-band-wizard-step>
 
-    <p>&nbsp;</p>
-    <div class="section-divider">
-      <mat-divider></mat-divider>
-    </div>
-
-    <form *ngIf="typeForm.value.type === 'timescale'"
-          [formGroup]="timescaleForm"
-          novalidate
-          autocomplete="off">
-      <label>
-        Label <span class="hint">(required)</span><br>
-        <input type="text" formControlName="name" style="width: 100%">
-      </label>
-      <br>
-      <label>
-        Timezone<br>
-        <app-timezone-select formControlName="timezone"></app-timezone-select>
-      </label>
-    </form>
-
-    <form *ngIf="typeForm.value.type === 'eventBand'"
-          [formGroup]="eventBandForm"
-          novalidate
-          autocomplete="off">
-      <label>
-        Name<br>
-        <input type="text" formControlName="name" style="width: 100%">
-      </label>
-    </form>
-
-    <p>&nbsp;</p>
-    <div class="action-bar">
-      <button class="ya-button" routerLink=".." [queryParams]="{c: yamcs.context}">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!timescaleForm.valid">CREATE</button>
-    </div>
+  <div class="band-type-list">
+    <a class="band-type"
+       routerLink="time-ruler"
+       [queryParams]="{c: yamcs.context}">
+      <mat-card>
+        <mat-card-title>Time Ruler</mat-card-title>
+        <mat-card-content>
+          Displays absolute time, formatted in a timezone of your choice.
+        </mat-card-content>
+      </mat-card>
+    </a>
+    <a class="band-type"
+       routerLink="item-band"
+       [queryParams]="{c: yamcs.context}">
+      <mat-card>
+        <mat-card-title>Item Band</mat-card-title>
+        <mat-card-content>
+          Shows a selection of timeline items.<br><br>
+        </mat-card-content>
+      </mat-card>
+    </a>
   </div>
 </app-instance-page>

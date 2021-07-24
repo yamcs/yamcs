@@ -5,10 +5,7 @@ export interface CreateTimelineItemRequest {
   type: TimelineItemType;
 }
 
-export interface UpdateTimelineItemRequest {
-  name?: string;
-  start?: string;
-  duration?: string;
+export interface UpdateTimelineItemRequest extends CreateTimelineItemRequest {
 }
 
 export type TimelineItemType = 'EVENT' | 'MANUAL_ACTIVITY' | 'AUTO_ACTIVITY';
@@ -33,17 +30,29 @@ export interface GetTimelineItemsOptions {
   type?: TimelineItemType;
 }
 
-export type TimelineBandType = 'TIME_RULER' | 'EVENT_BAND';
+export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND';
 
 export interface CreateTimelineBandRequest {
   name: string;
   type: TimelineBandType;
-  extra?: { [key: string]: string; };
+  shared: boolean;
+  tags?: string[];
+  properties?: { [key: string]: string; };
 }
 
 export interface TimelineBand {
   id: string;
   type: TimelineBandType,
+  shared: boolean;
   name: string;
-  extra?: { [key: string]: string; };
+  tags?: string[];
+  properties?: { [key: string]: string; };
+  username: string;
+}
+
+export interface UpdateTimelineBandRequest {
+  name: string;
+  shared: boolean;
+  tags?: string[];
+  properties?: { [key: string]: string; };
 }

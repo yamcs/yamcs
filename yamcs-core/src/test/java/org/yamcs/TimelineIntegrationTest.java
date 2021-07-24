@@ -119,7 +119,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .addTags("tag3")
                 .build();
         TimelineBand band1a = TimelineBand.newBuilder()
-                .setType(TimelineBandType.BANDEVENT)
+                .setType(TimelineBandType.ITEM_BAND)
                 .setName("name1a")
                 .setShared(true)
                 .addTags("tag2")
@@ -239,13 +239,13 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     public void testBand1() throws Exception {
         verifyEmpty();
         TimelineBand band1a = TimelineBand.newBuilder()
-                .setType(TimelineBandType.BANDEVENT)
+                .setType(TimelineBandType.ITEM_BAND)
                 .setName("name")
                 .setDescription("description")
                 .setShared(true)
                 .addTags("tag1")
                 .addTags("tag2")
-                .putAllExtra(Collections.singletonMap("key1", "value1"))
+                .putAllProperties(Collections.singletonMap("key1", "value1"))
                 .build();
 
         TimelineBand band1b = timelineClient.addBand(band1a)
@@ -253,24 +253,24 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         assertEquals(band1a.getName(), band1b.getName());
         assertEquals(band1a.getDescription(), band1b.getDescription());
         assertEquals(band1a.getTagsList(), band1b.getTagsList());
-        assertEquals(band1a.getExtraMap(), band1b.getExtraMap());
+        assertEquals(band1a.getPropertiesMap(), band1b.getPropertiesMap());
     }
 
     @Test
     public void testBand2() throws Exception {
         verifyEmpty();
         TimelineBand band1a = TimelineBand.newBuilder()
-                .setType(TimelineBandType.BANDEVENT)
+                .setType(TimelineBandType.ITEM_BAND)
                 .setName("name1a")
                 .setShared(true)
                 .build();
         TimelineBand band1b = TimelineBand.newBuilder()
-                .setType(TimelineBandType.BANDEVENT)
+                .setType(TimelineBandType.ITEM_BAND)
                 .setName("name1b")
                 .setShared(false)
                 .build();
         TimelineBand band1c = TimelineBand.newBuilder()
-                .setType(TimelineBandType.BANDEVENT)
+                .setType(TimelineBandType.ITEM_BAND)
                 .setName("name1c")
                 .setShared(false)
                 .build();

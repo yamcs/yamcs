@@ -5,6 +5,9 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { BandsPage } from './BandsPage';
 import { CreateBandPage } from './CreateBandPage';
+import { CreateItemBandPage } from './CreateItemBandPage';
+import { CreateTimeRulerPage } from './CreateTimeRulerPage';
+import { EditBandPage } from './EditBandPage';
 import { TimelineChartPage } from './TimelineChartPage';
 
 const routes: Routes = [
@@ -30,6 +33,18 @@ const routes: Routes = [
         path: 'bands/create',
         pathMatch: 'full',
         component: CreateBandPage,
+      }, {
+        path: 'bands/create/item-band',
+        pathMatch: 'full',
+        component: CreateItemBandPage,
+      }, {
+        path: 'bands/create/time-ruler',
+        pathMatch: 'full',
+        component: CreateTimeRulerPage,
+      }, {
+        path: 'bands/:band',
+        pathMatch: 'full',
+        component: EditBandPage,
       }
     ]
   }
@@ -44,5 +59,8 @@ export class TimelineRoutingModule { }
 export const routingComponents = [
   BandsPage,
   CreateBandPage,
+  CreateItemBandPage,
+  CreateTimeRulerPage,
+  EditBandPage,
   TimelineChartPage,
 ];

@@ -16,7 +16,7 @@ import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditComm
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
-import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, UpdateTimelineItemRequest } from './types/timeline';
+import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest } from './types/timeline';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -323,6 +323,12 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as TimelineBandsPage;
   }
 
+  async getTimelineBand(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/bands/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as TimelineBand;
+  }
+
   async getTimelineItems(instance: string, options: GetTimelineItemsOptions = {}) {
     const url = `${this.apiUrl}/timeline/${instance}/items`;
     const response = await this.doFetch(url + this.queryString(options));
@@ -335,6 +341,16 @@ export default class YamcsClient implements HttpHandler {
     const response = await this.doFetch(url, {
       body,
       method: 'POST',
+    });
+    return await response.json() as TimelineBand;
+  }
+
+  async updateTimelineBand(instance: string, id: string, options: UpdateTimelineBandRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/bands/${id}`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PUT',
     });
     return await response.json() as TimelineBand;
   }
@@ -361,7 +377,7 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/timeline/${instance}/items/${id}`;
     const response = await this.doFetch(url, {
       body,
-      method: 'PATCH',
+      method: 'PUT',
     });
     return await response.json() as TimelineItem;
   }

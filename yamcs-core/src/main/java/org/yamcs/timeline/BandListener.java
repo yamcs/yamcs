@@ -1,10 +1,8 @@
 package org.yamcs.timeline;
 
-import org.yamcs.protobuf.TimelineBand;
-
 public interface BandListener {
     void next(TimelineBand band);
-    
+
     /**
      * 
      * If a paged request has been performed, the token can be used to retrieve the next chunk.

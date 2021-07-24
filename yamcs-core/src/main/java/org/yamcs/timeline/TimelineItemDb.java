@@ -187,7 +187,6 @@ public class TimelineItemDb implements TimelineSource {
     private void updateDependentStart(TimelineItem item) {
         String query = "update " + TIMELINE_TABLE_NAME + " set start = " + CNAME_RELTIME_START + " + ? where "
                 + CNAME_RELTIME_ID + " = ?";
-        System.out.println("query: " + query);
         StreamSqlResult r = ydb.executeUnchecked(query, item.getStart(), item.getId());
         r.close();
     }
@@ -229,7 +228,6 @@ public class TimelineItemDb implements TimelineSource {
                 Tuple tuple = r.next();
                 try {
                     TimelineItem item = TimelineItem.fromTuple(tuple);
-                    System.out.println("read tuple: " + tuple);
                     log.trace("Read item from db {}", item);
                     return item;
                 } catch (Exception e) {
@@ -338,8 +336,6 @@ public class TimelineItemDb implements TimelineSource {
             }
             sqlBuilder.limit(limit + 1);
 
-            System.out.println("statement=" + sqlBuilder.toString() + " with arguments " +
-                    sqlBuilder.getQueryArguments().toArray());
             StreamSqlStatement stmt = ydb.createStatement(sqlBuilder.toString(),
                     sqlBuilder.getQueryArguments().toArray());
             ydb.execute(stmt, new ResultListener() {
