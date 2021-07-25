@@ -9,6 +9,7 @@ import * as utils from '../shared/utils';
 import { CreateBandDialog } from './dialogs/CreateBandDialog';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
+import { JumpToDialog } from './dialogs/JumpToDialog';
 import { addDefaultProperties } from './itemBand/ItemBandStyles';
 
 
@@ -189,6 +190,19 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
   jumpToNow() {
     this.timeline.panTo(new Date().getTime());
+  }
+
+  openJumpToDialog() {
+    const currentDate = this.timeline.center;
+    const dialogRef = this.dialog.open(JumpToDialog, {
+      width: '400px',
+      data: { date: new Date(currentDate) },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.timeline.panTo(result.date.getTime());
+      }
+    });
   }
 
   ngOnDestroy() {
