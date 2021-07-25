@@ -9,6 +9,7 @@ import * as utils from '../shared/utils';
 import { CreateBandDialog } from './dialogs/CreateBandDialog';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
+import { addDefaultProperties } from './itemBand/ItemBandStyles';
 
 
 @Component({
@@ -62,6 +63,23 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         } else if (band.type === 'ITEM_BAND') {
           const eventLine = new EventLine(this.timeline);
           eventLine.label = band.name;
+
+          const properties = addDefaultProperties(band.properties || {});
+          eventLine.eventColor = properties.itemBackgroundColor;
+          eventLine.borderColor = properties.itemBorderColor;
+          eventLine.borderWidth = properties.itemBorderWidth;
+          eventLine.cornerRadius = properties.itemCornerRadius;
+          eventLine.eventHeight = properties.itemHeight;
+          eventLine.eventMarginLeft = properties.itemMarginLeft;
+          eventLine.textColor = properties.itemTextColor;
+          eventLine.textOverflow = properties.itemTextOverflow;
+          eventLine.textSize = properties.itemTextSize;
+          eventLine.marginBottom = properties.marginBottom;
+          eventLine.marginTop = properties.marginTop;
+          eventLine.wrap = properties.multiline;
+          eventLine.spaceBetween = properties.spaceBetweenItems;
+          eventLine.lineSpacing = properties.spaceBetweenLines;
+
           this.bands.push(eventLine);
         }
       }

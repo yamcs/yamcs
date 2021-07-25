@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { MessageService } from '../core/services/MessageService';
-import { YamcsService } from '../core/services/YamcsService';
+import { MessageService } from '../../core/services/MessageService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './CreateTimeRulerPage.html',
@@ -23,6 +23,7 @@ export class CreateTimeRulerPage {
     title.setTitle('Configure Time Ruler');
     this.form = formBuilder.group({
       name: ['', [Validators.required]],
+      description: null,
       timezone: ['UTC', [Validators.required]],
     });
   }
@@ -32,6 +33,7 @@ export class CreateTimeRulerPage {
 
     this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
       name: formValue.name,
+      description: formValue.description,
       type: 'TIME_RULER',
       shared: true,
       properties: {

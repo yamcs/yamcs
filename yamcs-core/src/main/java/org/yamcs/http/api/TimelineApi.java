@@ -286,6 +286,9 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (request.hasName()) {
             band.setName(request.getName());
         }
+        if (request.hasDescription()) {
+            band.setDescription(request.getDescription());
+        }
         band.setTags(request.getTagsList());
         band.setProperties(request.getPropertiesMap());
 

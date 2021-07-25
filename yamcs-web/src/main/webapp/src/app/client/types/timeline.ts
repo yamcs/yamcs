@@ -34,6 +34,7 @@ export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND';
 
 export interface CreateTimelineBandRequest {
   name: string;
+  description: string;
   type: TimelineBandType;
   shared: boolean;
   tags?: string[];
@@ -45,6 +46,7 @@ export interface TimelineBand {
   type: TimelineBandType,
   shared: boolean;
   name: string;
+  description: string;
   tags?: string[];
   properties?: { [key: string]: string; };
   username: string;
@@ -52,6 +54,7 @@ export interface TimelineBand {
 
 export interface UpdateTimelineBandRequest {
   name: string;
+  description: string;
   shared: boolean;
   tags?: string[];
   properties?: { [key: string]: string; };

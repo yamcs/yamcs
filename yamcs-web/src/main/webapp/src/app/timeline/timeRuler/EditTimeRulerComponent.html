@@ -1,10 +1,15 @@
-<div class="form-content ya-form" *ngIf="band">
+<div class="form-content ya-form">
   <form [formGroup]="form"
         novalidate
         autocomplete="off">
     <label>
       Label <span class="hint">(required)</span><br>
       <input type="text" formControlName="name" style="width: 100%">
+    </label>
+    <br>
+    <label>
+      Timezone<br>
+      <app-timezone-select formControlName="timezone"></app-timezone-select>
     </label>
   </form>
   <p>&nbsp;</p>

@@ -3,9 +3,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } f
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { TimelineBand, UpdateTimelineBandRequest } from '../client/types/timeline';
-import { MessageService } from '../core/services/MessageService';
-import { YamcsService } from '../core/services/YamcsService';
+import { TimelineBand, UpdateTimelineBandRequest } from '../../client/types/timeline';
+import { MessageService } from '../../core/services/MessageService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-edit-time-ruler',
@@ -31,17 +31,19 @@ export class EditTimeRulerComponent implements AfterViewInit, OnDestroy {
   ) {
     this.form = this.formBuilder.group({
       name: [null, [Validators.required]],
+      description: null,
       timezone: [null, [Validators.required]],
-    });
-    this.formSubscription = this.form.valueChanges.subscribe(() => {
-      this.dirty$.next(true);
     });
   }
 
   ngAfterViewInit() {
     this.form.setValue({
       name: this.band.name,
+      description: this.band.description || '',
       timezone: this.band.properties!['timezone'],
+    });
+    this.formSubscription = this.form.valueChanges.subscribe(() => {
+      this.dirty$.next(true);
     });
   }
 
@@ -49,6 +51,7 @@ export class EditTimeRulerComponent implements AfterViewInit, OnDestroy {
     const formValue = this.form.value;
     const options: UpdateTimelineBandRequest = {
       name: formValue.name,
+      description: formValue.description,
       shared: this.band.shared,
       tags: this.band.tags || [],
       properties: {

@@ -3,9 +3,10 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } f
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { TimelineBand, UpdateTimelineBandRequest } from '../client/types/timeline';
-import { MessageService } from '../core/services/MessageService';
-import { YamcsService } from '../core/services/YamcsService';
+import { TimelineBand, UpdateTimelineBandRequest } from '../../client/types/timeline';
+import { MessageService } from '../../core/services/MessageService';
+import { YamcsService } from '../../core/services/YamcsService';
+import { addDefaultProperties } from './ItemBandStyles';
 
 @Component({
   selector: 'app-edit-item-band',
@@ -31,15 +32,34 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
   ) {
     this.form = this.formBuilder.group({
       name: [null, [Validators.required]],
-    });
-    this.formSubscription = this.form.valueChanges.subscribe(() => {
-      this.dirty$.next(true);
+      description: null,
+      properties: this.formBuilder.group({
+        itemBackgroundColor: [null, [Validators.required]],
+        itemBorderColor: [null, [Validators.required]],
+        itemBorderWidth: [null, [Validators.required]],
+        itemCornerRadius: [null, [Validators.required]],
+        itemHeight: [null, [Validators.required]],
+        itemMarginLeft: [null, [Validators.required]],
+        itemTextColor: [null, [Validators.required]],
+        itemTextOverflow: [null, [Validators.required]],
+        itemTextSize: [null, [Validators.required]],
+        marginBottom: [null, [Validators.required]],
+        marginTop: [null, [Validators.required]],
+        multiline: [null, [Validators.required]],
+        spaceBetweenItems: [null, [Validators.required]],
+        spaceBetweenLines: [null, [Validators.required]],
+      })
     });
   }
 
   ngAfterViewInit() {
     this.form.setValue({
       name: this.band.name,
+      description: this.band.description || '',
+      properties: addDefaultProperties(this.band.properties || {}),
+    });
+    this.formSubscription = this.form.valueChanges.subscribe(() => {
+      this.dirty$.next(true);
     });
   }
 
@@ -47,8 +67,10 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
     const formValue = this.form.value;
     const options: UpdateTimelineBandRequest = {
       name: formValue.name,
+      description: formValue.description,
       shared: this.band.shared,
       tags: this.band.tags || [],
+      properties: formValue.properties,
     };
 
     this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, this.band.id, options)

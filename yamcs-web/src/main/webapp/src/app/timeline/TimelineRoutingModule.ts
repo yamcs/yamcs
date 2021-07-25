@@ -5,10 +5,10 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { BandsPage } from './BandsPage';
 import { CreateBandPage } from './CreateBandPage';
-import { CreateItemBandPage } from './CreateItemBandPage';
-import { CreateTimeRulerPage } from './CreateTimeRulerPage';
 import { EditBandPage } from './EditBandPage';
+import { CreateItemBandPage } from './itemBand/CreateItemBandPage';
 import { TimelineChartPage } from './TimelineChartPage';
+import { CreateTimeRulerPage } from './timeRuler/CreateTimeRulerPage';
 
 const routes: Routes = [
   {

@@ -4,9 +4,10 @@ import { CreateBandWizardStep } from './CreateBandWizardStep';
 import { CreateBandDialog } from './dialogs/CreateBandDialog';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
-import { EditItemBandComponent } from './EditItemBandComponent';
-import { EditTimeRulerComponent } from './EditTimeRulerComponent';
+import { EditItemBandComponent } from './itemBand/EditItemBandComponent';
+import { ItemBandStyles } from './itemBand/ItemBandStyles';
 import { routingComponents, TimelineRoutingModule } from './TimelineRoutingModule';
+import { EditTimeRulerComponent } from './timeRuler/EditTimeRulerComponent';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { routingComponents, TimelineRoutingModule } from './TimelineRoutingModul
     EditItemDialog,
     EditItemBandComponent,
     EditTimeRulerComponent,
+    ItemBandStyles,
   ],
 })
 export class TimelineModule {
