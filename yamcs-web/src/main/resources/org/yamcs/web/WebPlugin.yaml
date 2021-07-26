@@ -70,6 +70,14 @@ options:
       - This feature is primarily intended for an operational setting.
     type: BOOLEAN
     default: false
+  
+  collapseInitializedArguments:
+    title: Collapse Initialized Arguments
+    description:
+      - Controls the display of argument fields of a command form. If true,
+        arguments with an initial value are collapsed by default.
+    type: BOOLEAN
+    default: true
 
   commandClearances:
     title: Require Level-based Command Clearance

@@ -179,4 +179,8 @@ message ExportEventsRequest {
   
   // Text to search for in the message.
   optional string q = 6;
+
+  // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
+  // Default: ``TAB``.
+  optional string delimiter = 7;
 }

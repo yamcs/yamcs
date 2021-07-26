@@ -2,17 +2,15 @@ import { Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { DownloadParameterValuesOptions } from '../../client';
-import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import * as utils from '../../shared/utils';
-import { subtractDuration } from '../../shared/utils';
+import { DownloadEventsOptions } from '../client';
+import { YamcsService } from '../core/services/YamcsService';
+import { Option } from '../shared/forms/Select';
+import * as utils from '../shared/utils';
 
 @Component({
-  selector: 'app-export-archive-data-dialog',
-  templateUrl: './ExportArchiveDataDialog.html',
+  templateUrl: './ExportEventsDialog.html',
 })
-export class ExportArchiveDataDialog implements OnDestroy {
+export class ExportEventsDialog implements OnDestroy {
 
   delimiterOptions: Option[] = [
     { id: 'COMMA', label: 'Comma' },
@@ -27,24 +25,23 @@ export class ExportArchiveDataDialog implements OnDestroy {
   form = new FormGroup({
     start: new FormControl(null),
     stop: new FormControl(null),
+    severity: new FormControl(null, Validators.required),
+    q: new FormControl(null),
+    source: new FormControl(null),
     delimiter: new FormControl(null, Validators.required),
   });
 
   constructor(
-    private dialogRef: MatDialogRef<ExportArchiveDataDialog>,
+    private dialogRef: MatDialogRef<ExportEventsDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) private data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-    let start = data.start;
-    let stop = data.stop;
-    if (!start || !stop) {
-      stop = yamcs.getMissionTime();
-      start = subtractDuration(stop, 'PT1H');
-    }
-
     this.form.setValue({
-      start: utils.toISOString(start),
-      stop: utils.toISOString(stop),
+      start: data.start ? utils.toISOString(data.start) : '',
+      stop: data.stop ? utils.toISOString(data.stop) : '',
+      q: data.q || '',
+      source: data.source || '',
+      severity: data.severity,
       delimiter: 'TAB',
     });
 
@@ -61,9 +58,9 @@ export class ExportArchiveDataDialog implements OnDestroy {
 
   private updateURL() {
     if (this.form.valid) {
-      const dlOptions: DownloadParameterValuesOptions = {
-        parameters: this.data.parameterIds,
+      const dlOptions: DownloadEventsOptions = {
         delimiter: this.form.value['delimiter'],
+        severity: this.form.value['severity'],
       };
       if (this.form.value['start']) {
         dlOptions.start = utils.toISOString(this.form.value['start']);
@@ -71,7 +68,13 @@ export class ExportArchiveDataDialog implements OnDestroy {
       if (this.form.value['stop']) {
         dlOptions.stop = utils.toISOString(this.form.value['stop']);
       }
-      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
+      if (this.form.value['q']) {
+        dlOptions.q = this.form.value['q'];
+      }
+      if (this.form.value['source']) {
+        dlOptions.source = this.form.value['source'];
+      }
+      const url = this.yamcs.yamcsClient.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);
     } else {
       this.downloadURL$.next(null);

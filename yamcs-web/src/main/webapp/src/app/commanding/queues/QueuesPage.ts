@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CommandQueue, ConnectionInfo, QueueEventsSubscription, QueueStatisticsSubscription } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -20,7 +21,7 @@ export class QueuesPage implements OnDestroy {
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue; } = {};
 
-  constructor(yamcs: YamcsService, title: Title) {
+  constructor(yamcs: YamcsService, title: Title, messageService: MessageService) {
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
@@ -29,7 +30,7 @@ export class QueuesPage implements OnDestroy {
         this.cqueueByName[cqueue.name] = cqueue;
       }
       this.emitChange();
-    });
+    }).catch(err => messageService.showError(err));
 
     this.queueSubscription = yamcs.yamcsClient.createQueueStatisticsSubscription({
       instance: yamcs.instance!,

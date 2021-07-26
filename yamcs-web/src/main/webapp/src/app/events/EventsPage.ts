@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../animations';
-import { DownloadEventsOptions, GetEventsOptions } from '../client';
+import { GetEventsOptions } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, ExtraColumnInfo } from '../core/services/ConfigService';
 import { Synchronizer } from '../core/services/Synchronizer';
@@ -17,6 +17,7 @@ import * as utils from '../shared/utils';
 import { subtractDuration } from '../shared/utils';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
+import { ExportEventsDialog } from './ExportEventsDialog';
 
 
 const defaultInterval = 'PT1H';
@@ -265,27 +266,7 @@ export class EventsPage {
       options.source = this.source;
     }
 
-    const dlOptions: DownloadEventsOptions = {
-      severity: this.severity as any,
-    };
-    if (this.validStart) {
-      dlOptions.start = this.validStart.toISOString();
-    }
-    if (this.validStop) {
-      dlOptions.stop = this.validStop.toISOString();
-    }
-    if (this.filter) {
-      dlOptions.q = this.filter;
-    }
-    if (this.source) {
-      dlOptions.source = this.source;
-    }
-
-    const client = this.yamcs.yamcsClient;
-    this.dataSource.loadEvents(options).then(events => {
-      const downloadURL = client.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
-      this.downloadURL$.next(downloadURL);
-    });
+    this.dataSource.loadEvents(options);
   }
 
   loadMoreData() {
@@ -333,6 +314,21 @@ export class EventsPage {
       if (result) {
         this.jumpToNow();
       }
+    });
+  }
+
+  exportEvents() {
+    this.dialog.open(ExportEventsDialog, {
+      width: '400px',
+      data: {
+        severity: this.severity,
+        severityOptions: this.severityOptions,
+        start: this.validStart,
+        stop: this.validStop,
+        q: this.filter,
+        source: this.source || 'ANY',
+        sourceOptions: this.sourceOptions$.value,
+      },
     });
   }
 }

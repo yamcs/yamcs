@@ -1,6 +1,7 @@
 package org.yamcs.client.archive;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ import org.yamcs.protobuf.ListCommandsRequest;
 import org.yamcs.protobuf.ListCommandsResponse;
 import org.yamcs.protobuf.ListCompletenessIndexRequest;
 import org.yamcs.protobuf.ListEventIndexRequest;
+import org.yamcs.protobuf.ListEventSourcesRequest;
+import org.yamcs.protobuf.ListEventSourcesResponse;
 import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.ListPacketIndexRequest;
@@ -746,6 +749,14 @@ public class ArchiveClient {
         CompletableFuture<Ranges> f = new CompletableFuture<>();
         parameterArchiveService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(ranges -> ranges.getRangeList());
+    }
+
+    public CompletableFuture<List<String>> getEventSources() {
+        ListEventSourcesRequest.Builder requestb = ListEventSourcesRequest.newBuilder()
+                .setInstance(instance);
+        CompletableFuture<ListEventSourcesResponse> f = new CompletableFuture<>();
+        eventService.listEventSources(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> new ArrayList<>(response.getSourceList()));
     }
 
     public CompletableFuture<Void> dumpTable(String table, StreamReceiver<Row> consumer) {

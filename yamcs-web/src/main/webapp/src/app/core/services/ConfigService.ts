@@ -11,6 +11,7 @@ export interface WebsiteConfig {
   commandClearanceEnabled: boolean;
   commandExports: boolean;
   twoStageCommanding: boolean;
+  collapseInitializedArguments: boolean;
   commandOptions: CommandOption[];
   hasTemplates: boolean;
   logoutRedirectUrl: string;
