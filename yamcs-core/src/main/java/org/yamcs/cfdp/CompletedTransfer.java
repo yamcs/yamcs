@@ -90,10 +90,12 @@ public class CompletedTransfer implements CfdpFileTransfer {
     @Override
     public TransferDirection getDirection() {
         String str = tuple.getColumn(COL_DIRECTION);
-        try {
-            return TransferDirection.valueOf(str);
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown transfer direction {} retrieved from archive", str);
+        if (str != null) {
+            try {
+                return TransferDirection.valueOf(str);
+            } catch (IllegalArgumentException e) {
+                log.warn("Unknown transfer direction {} retrieved from archive", str);
+            }
         }
         return null;
     }
@@ -118,8 +120,8 @@ public class CompletedTransfer implements CfdpFileTransfer {
     @Override
     public CfdpTransactionId getTransactionId() {
         if (tuple.hasColumn(COL_SEQUENCE_NUMBER)) {
-        return new CfdpTransactionId(tuple.getLongColumn(COL_SOURCE_ID),
-                tuple.getIntColumn(COL_SEQUENCE_NUMBER));
+            return new CfdpTransactionId(tuple.getLongColumn(COL_SOURCE_ID),
+                    tuple.getIntColumn(COL_SEQUENCE_NUMBER));
         } else {
             return null;
         }
@@ -138,6 +140,13 @@ public class CompletedTransfer implements CfdpFileTransfer {
 
     @Override
     public boolean isReliable() {
+        Object isReliablResult = tuple.getColumn(COL_RELIABLE);
+
+        // NOTE: Maybe we should change the return types of methods in
+        // the FileTransfer interface to Optional instead of doing this.
+        if (isReliablResult == null) {
+            return false;
+        }
         return tuple.getColumn(COL_RELIABLE);
     }
 
