@@ -191,6 +191,7 @@ message TimelineItem {
 enum TimelineBandType {
   TIME_RULER = 1;
   ITEM_BAND = 2;
+  SPACER = 3;
 }
 
 message TimelineBand {

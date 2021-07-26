@@ -37,7 +37,7 @@ export const defaultProperties: ItemBandProperties = {
   spaceBetweenLines: 2,
 };
 
-export function addDefaultProperties(partial: Partial<ItemBandProperties>) {
+export function addDefaultItemBandProperties(partial: Partial<ItemBandProperties>) {
   return mergeProperties(defaultProperties, partial);
 }
 

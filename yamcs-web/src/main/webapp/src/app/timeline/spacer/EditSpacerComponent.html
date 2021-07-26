@@ -3,7 +3,7 @@
         novalidate
         autocomplete="off">
     <label>
-      Label <span class="hint">(required)</span><br>
+      Label <span class="hint">(optional)</span><br>
       <input type="text" formControlName="name" style="width: 100%">
     </label>
     <br>
@@ -11,11 +11,14 @@
       Description <span class="hint">(optional)</span><br>
       <textarea formControlName="description" rows="3"></textarea>
     </label>
+
     <br>
-    <label>
-      Timezone<br>
-      <app-timezone-select formControlName="timezone"></app-timezone-select>
-    </label>
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+
+    <h4>Styles</h4>
+    <app-spacer-styles [form]="form"></app-spacer-styles>
   </form>
   <p>&nbsp;</p>
   <div class="action-bar">

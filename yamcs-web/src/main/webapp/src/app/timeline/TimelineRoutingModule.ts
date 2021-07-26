@@ -7,6 +7,7 @@ import { BandsPage } from './BandsPage';
 import { CreateBandPage } from './CreateBandPage';
 import { EditBandPage } from './EditBandPage';
 import { CreateItemBandPage } from './itemBand/CreateItemBandPage';
+import { CreateSpacerPage } from './spacer/CreateSpacerPage';
 import { TimelineChartPage } from './TimelineChartPage';
 import { CreateTimeRulerPage } from './timeRuler/CreateTimeRulerPage';
 
@@ -38,6 +39,10 @@ const routes: Routes = [
         pathMatch: 'full',
         component: CreateItemBandPage,
       }, {
+        path: 'bands/create/spacer',
+        pathMatch: 'full',
+        component: CreateSpacerPage,
+      }, {
         path: 'bands/create/time-ruler',
         pathMatch: 'full',
         component: CreateTimeRulerPage,
@@ -60,6 +65,7 @@ export const routingComponents = [
   BandsPage,
   CreateBandPage,
   CreateItemBandPage,
+  CreateSpacerPage,
   CreateTimeRulerPage,
   EditBandPage,
   TimelineChartPage,

@@ -4,12 +4,13 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { defaultProperties } from './SpacerStyles';
 
 @Component({
-  templateUrl: './CreateTimeRulerPage.html',
+  templateUrl: './CreateSpacerPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CreateTimeRulerPage {
+export class CreateSpacerPage {
 
   form: FormGroup;
 
@@ -20,11 +21,13 @@ export class CreateTimeRulerPage {
     private messageService: MessageService,
     private router: Router,
   ) {
-    title.setTitle('Configure Time Ruler');
+    title.setTitle('Configure Spacer');
     this.form = formBuilder.group({
-      name: ['', [Validators.required]],
+      name: '',
       description: '',
-      timezone: ['UTC', [Validators.required]],
+      properties: formBuilder.group({
+        height: [defaultProperties.height, [Validators.required]],
+      })
     });
   }
 
@@ -34,11 +37,9 @@ export class CreateTimeRulerPage {
     this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
       name: formValue.name,
       description: formValue.description,
-      type: 'TIME_RULER',
+      type: 'SPACER',
       shared: true,
-      properties: {
-        timezone: formValue.timezone,
-      }
+      properties: formValue.properties,
     }).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
       .catch(err => this.messageService.showError(err));
   }

@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
 import { TimelineItem } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
@@ -10,7 +11,8 @@ import { CreateBandDialog } from './dialogs/CreateBandDialog';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
-import { addDefaultProperties } from './itemBand/ItemBandStyles';
+import { addDefaultItemBandProperties } from './itemBand/ItemBandStyles';
+import { addDefaultSpacerProperties } from './spacer/SpacerStyles';
 
 
 @Component({
@@ -27,12 +29,14 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   private moveInterval?: number;
 
   private bands: Line<any>[] = [];
+  private idByBand = new Map<Line<any>, string>();
 
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private messageService: MessageService,
+    private router: Router,
   ) {
     title.setTitle('Timeline Chart');
   }
@@ -61,11 +65,12 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           axis.timezone = band.properties!.timezone;
           // axis.frozen = true;
           this.bands.push(axis);
+          this.idByBand.set(axis, band.id);
         } else if (band.type === 'ITEM_BAND') {
           const eventLine = new EventLine(this.timeline);
           eventLine.label = band.name;
 
-          const properties = addDefaultProperties(band.properties || {});
+          const properties = addDefaultItemBandProperties(band.properties || {});
           eventLine.eventColor = properties.itemBackgroundColor;
           eventLine.borderColor = properties.itemBorderColor;
           eventLine.borderWidth = properties.itemBorderWidth;
@@ -82,9 +87,28 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           eventLine.lineSpacing = properties.spaceBetweenLines;
 
           this.bands.push(eventLine);
+          this.idByBand.set(eventLine, band.id);
+        } else if (band.type === 'SPACER') {
+          const spacer = new EventLine(this.timeline);
+          spacer.label = band.name;
+
+          const properties = addDefaultSpacerProperties(band.properties || {});
+          spacer.eventHeight = properties.height;
+          spacer.marginTop = 0;
+          spacer.marginBottom = 0;
+
+          this.bands.push(spacer);
+          this.idByBand.set(spacer, band.id);
         }
       }
       this.refreshData();
+    });
+
+    this.timeline.addEventListener('headerclick', evt => {
+      const id = this.idByBand.get(evt.line);
+      if (id) {
+        this.router.navigateByUrl(`/timeline/bands/${id}?c=${this.yamcs.context}`);
+      }
     });
 
     this.timeline.addEventListener('eventclick', evt => {

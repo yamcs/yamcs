@@ -30,7 +30,7 @@ export interface GetTimelineItemsOptions {
   type?: TimelineItemType;
 }
 
-export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND';
+export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND' | 'SPACER';
 
 export interface CreateTimelineBandRequest {
   name: string;
