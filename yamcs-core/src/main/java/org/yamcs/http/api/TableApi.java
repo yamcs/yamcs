@@ -61,6 +61,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.ArrayDataType;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -691,73 +692,85 @@ public class TableApi extends AbstractTableApi<Context> {
         List<Value> result = new ArrayList<>();
         for (ColumnDefinition cdef : tdef.getColumnDefinitions()) {
             Object column = tuple.getColumn(cdef.getName());
-            Value.Builder v = Value.newBuilder();
-            if (column == null) {
-                v.setType(Type.NONE);
-            } else {
-                switch (cdef.getType().val) {
-                case SHORT:
-                    v.setType(Type.SINT32);
-                    v.setSint32Value((Short) column);
-                    break;
-                case DOUBLE:
-                    v.setType(Type.DOUBLE);
-                    v.setDoubleValue((Double) column);
-                    break;
-                case BINARY:
-                    v.setType(Type.BINARY);
-                    v.setBinaryValue(ByteString.copyFrom((byte[]) column));
-                    break;
-                case INT:
-                    v.setType(Type.SINT32);
-                    v.setSint32Value((Integer) column);
-                    break;
-                case TIMESTAMP:
-                    v.setType(Type.TIMESTAMP);
-                    v.setTimestampValue((Long) column);
-                    v.setStringValue(TimeEncoding.toString((Long) column));
-                    break;
-                case HRES_TIMESTAMP:
-                    v.setType(Type.TIMESTAMP);
-                    long m = ((Instant) column).getMillis();
-                    v.setTimestampValue(m);
-                    v.setStringValue(TimeEncoding.toString(m));
-                    break;
-                case ENUM:
-                case STRING:
-                    v.setType(Type.STRING);
-                    v.setStringValue((String) column);
-                    break;
-                case BOOLEAN:
-                    v.setType(Type.BOOLEAN);
-                    v.setBooleanValue((Boolean) column);
-                    break;
-                case LONG:
-                    v.setType(Type.SINT64);
-                    v.setSint64Value((Long) column);
-                    break;
-                case PARAMETER_VALUE:
-                    org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
-                    v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
-                    break;
-                case PROTOBUF:
-                    v.setType(Type.BINARY);
-                    MessageLite message = (MessageLite) column;
-                    v.setBinaryValue(message.toByteString());
-                    break;
-                case UUID:
-                    v.setType(Type.STRING);
-                    v.setStringValue(((java.util.UUID) column).toString());
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Tuple column type " + cdef.getType().val + " is currently not supported");
-                }
-            }
-            result.add(v.build());
+            result.add(toTupleValue(cdef.getType(), column));
         }
 
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Value toTupleValue(DataType type, Object column) {
+        Value.Builder v = Value.newBuilder();
+        if (column == null) {
+            v.setType(Type.NONE);
+        } else {
+            switch (type.val) {
+            case SHORT:
+                v.setType(Type.SINT32);
+                v.setSint32Value((Short) column);
+                break;
+            case DOUBLE:
+                v.setType(Type.DOUBLE);
+                v.setDoubleValue((Double) column);
+                break;
+            case BINARY:
+                v.setType(Type.BINARY);
+                v.setBinaryValue(ByteString.copyFrom((byte[]) column));
+                break;
+            case INT:
+                v.setType(Type.SINT32);
+                v.setSint32Value((Integer) column);
+                break;
+            case TIMESTAMP:
+                v.setType(Type.TIMESTAMP);
+                v.setTimestampValue((Long) column);
+                v.setStringValue(TimeEncoding.toString((Long) column));
+                break;
+            case HRES_TIMESTAMP:
+                v.setType(Type.TIMESTAMP);
+                long m = ((Instant) column).getMillis();
+                v.setTimestampValue(m);
+                v.setStringValue(TimeEncoding.toString(m));
+                break;
+            case ENUM:
+            case STRING:
+                v.setType(Type.STRING);
+                v.setStringValue((String) column);
+                break;
+            case BOOLEAN:
+                v.setType(Type.BOOLEAN);
+                v.setBooleanValue((Boolean) column);
+                break;
+            case LONG:
+                v.setType(Type.SINT64);
+                v.setSint64Value((Long) column);
+                break;
+            case PARAMETER_VALUE:
+                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
+                v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
+                break;
+            case PROTOBUF:
+                v.setType(Type.BINARY);
+                MessageLite message = (MessageLite) column;
+                v.setBinaryValue(message.toByteString());
+                break;
+            case UUID:
+                v.setType(Type.STRING);
+                v.setStringValue(((java.util.UUID) column).toString());
+                break;
+            case ARRAY:
+                v.setType(Type.ARRAY);
+                DataType elementType = ((ArrayDataType) type).getElementType();
+                for (Object o : (List<Object>) column) {
+                    v.addArrayValue(toTupleValue(elementType, o));
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Tuple column type " + type.val + " is currently not supported");
+            }
+        }
+        return v.build();
     }
 
     public final static List<ColumnData> toColumnDataList(Tuple tuple) {

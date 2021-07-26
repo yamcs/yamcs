@@ -18,6 +18,10 @@ export interface TimelineItem {
   type: TimelineItemType;
 }
 
+export interface TimelineViewsPage {
+  views: TimelineView[];
+}
+
 export interface TimelineBandsPage {
   bands: TimelineBand[];
 }
@@ -58,4 +62,20 @@ export interface UpdateTimelineBandRequest {
   shared: boolean;
   tags?: string[];
   properties?: { [key: string]: string; };
+}
+
+export interface TimelineView {
+  id: string;
+  name: string;
+  bands?: TimelineBand[];
+}
+
+export interface CreateTimelineViewRequest {
+  name: string;
+  bands?: string[];
+}
+
+export interface UpdateTimelineViewRequest {
+  name: string;
+  bands?: string[];
 }

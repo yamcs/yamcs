@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.TimelineView;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -36,33 +35,32 @@ public class TimelineViewDb {
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_NAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_DESCRIPTION, DataType.STRING);
-        TIMELINE_DEF.addColumn(CNAME_BANDS, DataType.array(DataType.ENUM));
-
+        TIMELINE_DEF.addColumn(CNAME_BANDS, DataType.array(DataType.UUID));
     }
+
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
     final static String TABLE_NAME = "timeline_view";
 
     final YarchDatabaseInstance ydb;
-    final Stream timelineStream;
+    final Stream viewStream;
 
     LoadingCache<UUID, TimelineView> viewCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build(
-                    new CacheLoader<UUID, TimelineView>() {
-                        @Override
-                        public TimelineView load(UUID uuid) {
-                            return doGetview(uuid);
-                        }
-                    });
+            .build(new CacheLoader<UUID, TimelineView>() {
+                @Override
+                public TimelineView load(UUID uuid) {
+                    return doGetview(uuid);
+                }
+            });
 
     public TimelineViewDb(String yamcsInstance) throws InitException {
         log = new Log(getClass(), yamcsInstance);
 
         ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
-            timelineStream = setupTimelineRecording();
+            viewStream = setupTimelineRecording();
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
@@ -105,7 +103,7 @@ public class TimelineViewDb {
             if (r.hasNext()) {
                 Tuple tuple = r.next();
                 try {
-                    TimelineView view = fromTuple(tuple);
+                    TimelineView view = new TimelineView(tuple);
                     log.trace("Read view from db {}", view);
                     return view;
                 } catch (Exception e) {
@@ -137,28 +135,6 @@ public class TimelineViewDb {
         }
     }
 
-    public static TimelineView fromTuple(Tuple tuple) {
-        TimelineView.Builder builder = TimelineView.newBuilder()
-                .setId(tuple.getColumn(CNAME_ID).toString())
-                .setName(tuple.getColumn(CNAME_NAME))
-                .setDescription(tuple.getColumn(CNAME_DESCRIPTION))
-                .addAllBands(tuple.getColumn(CNAME_BANDS));
-        return builder.build();
-
-    }
-
-    private Tuple toTuple(TimelineView view) {
-        Tuple tuple = new Tuple();
-        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(view.getId()));
-        tuple.addColumn(CNAME_NAME, view.getName());
-        tuple.addColumn(CNAME_DESCRIPTION, view.getDescription());
-        if (!view.getBandsList().isEmpty()) {
-            tuple.addColumn(CNAME_BANDS, DataType.array(DataType.ENUM), view.getBandsList());
-        }
-
-        return tuple;
-    }
-
     @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
     }
@@ -166,9 +142,23 @@ public class TimelineViewDb {
     public TimelineView addView(TimelineView view) {
         rwlock.writeLock().lock();
         try {
-            Tuple tuple = toTuple(view);
+            Tuple tuple = view.toTuple();
             log.debug("Adding timeline view to RDB: {}", tuple);
-            timelineStream.emitTuple(tuple);
+            viewStream.emitTuple(tuple);
+            return view;
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
+    public TimelineView updateView(TimelineView view) {
+        rwlock.writeLock().lock();
+        try {
+            doDeleteView(view.getId());
+
+            Tuple tuple = view.toTuple();
+            log.debug("Updating timeline view in RDB: {}", tuple);
+            viewStream.emitTuple(tuple);
             return view;
         } finally {
             rwlock.writeLock().unlock();
@@ -194,7 +184,7 @@ public class TimelineViewDb {
             ydb.execute(stmt, new ResultListener() {
                 @Override
                 public void next(Tuple tuple) {
-                    consumer.next(fromTuple(tuple));
+                    consumer.next(new TimelineView(tuple));
                 }
 
                 @Override

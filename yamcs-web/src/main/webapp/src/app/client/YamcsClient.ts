@@ -16,7 +16,7 @@ import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditComm
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
-import { CreateTimelineBandRequest, CreateTimelineItemRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest } from './types/timeline';
+import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -314,6 +314,45 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/service-accounts/${name}`;
     return await this.doFetch(url, {
       method: 'DELETE',
+    });
+  }
+
+  async getTimelineViews(instance: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/views`;
+    const response = await this.doFetch(url);
+    return await response.json() as TimelineViewsPage;
+  }
+
+  async getTimelineView(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/views/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as TimelineView;
+  }
+
+  async createTimelineView(instance: string, options: CreateTimelineViewRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/views`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as TimelineView;
+  }
+
+  async updateTimelineView(instance: string, id: string, options: UpdateTimelineViewRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/timeline/${instance}/views/${id}`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PUT',
+    });
+    return await response.json() as TimelineView;
+  }
+
+  async deleteTimelineView(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/views/${id}`;
+    return await this.doFetch(url, {
+      method: 'DELETE'
     });
   }
 

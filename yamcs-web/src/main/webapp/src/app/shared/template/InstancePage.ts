@@ -93,6 +93,7 @@ export class InstancePage implements OnInit, OnDestroy {
     }
 
     this.timelineItems.push({ path: 'chart', label: 'Chart' });
+    this.timelineItems.push({ path: 'views', label: 'Views' });
     this.timelineItems.push({ path: 'bands', label: 'Bands' });
     this.timelineItems.push({ path: 'items', label: 'Items' });
 

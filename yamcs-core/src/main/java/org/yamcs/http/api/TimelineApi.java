@@ -1,7 +1,10 @@
 package org.yamcs.http.api;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
@@ -38,6 +41,7 @@ import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineView;
 import org.yamcs.protobuf.UpdateBandRequest;
 import org.yamcs.protobuf.UpdateItemRequest;
+import org.yamcs.protobuf.UpdateViewRequest;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.AutomatedActivity;
 import org.yamcs.timeline.BandListener;
@@ -246,13 +250,12 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
-        ListBandsResponse.Builder resp = ListBandsResponse.newBuilder();
-
+        List<TimelineBand> bands = new ArrayList<>();
         timelineBandDb.listBands(ctx.user.getName(), new BandListener() {
 
             @Override
             public void next(org.yamcs.timeline.TimelineBand band) {
-                resp.addBands(band.toProtobuf());
+                bands.add(band.toProtobuf());
             }
 
             @Override
@@ -263,6 +266,9 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
             @Override
             public void complete(String token) {
+                Collections.sort(bands, (b1, b2) -> b1.getName().compareToIgnoreCase(b2.getName()));
+                ListBandsResponse.Builder resp = ListBandsResponse.newBuilder()
+                        .addAllBands(bands);
                 observer.complete(resp.build());
             }
         });
@@ -327,10 +333,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void addView(Context ctx, AddViewRequest request, Observer<TimelineView> observer) {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
-        TimelineView view = req2View(request);
+        org.yamcs.timeline.TimelineView view = req2View(request);
         try {
             view = timelineViewDb.addView(view);
-            observer.complete(view);
+            observer.complete(enrichView(timelineService, view));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -344,11 +350,11 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new BadRequestException("No id specified");
         }
         UUID uuid = parseUuid(request.getId());
-        TimelineView view = timelineViewDb.getView(uuid);
+        org.yamcs.timeline.TimelineView view = timelineViewDb.getView(uuid);
         if (view == null) {
             throw new NotFoundException("Item " + uuid + " not found");
         } else {
-            observer.complete(view);
+            observer.complete(enrichView(timelineService, view));
         }
     }
 
@@ -357,13 +363,12 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
 
-        ListViewsResponse.Builder resp = ListViewsResponse.newBuilder();
-
+        List<TimelineView> views = new ArrayList<>();
         timelineViewDb.listViews(new ViewListener() {
 
             @Override
-            public void next(TimelineView view) {
-                resp.addViews(view);
+            public void next(org.yamcs.timeline.TimelineView view) {
+                views.add(enrichView(timelineService, view));
             }
 
             @Override
@@ -374,9 +379,45 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
             @Override
             public void complete(String token) {
+                Collections.sort(views, (v1, v2) -> v1.getName().compareToIgnoreCase(v2.getName()));
+                ListViewsResponse.Builder resp = ListViewsResponse.newBuilder()
+                        .addAllViews(views);
                 observer.complete(resp.build());
             }
         });
+    }
+
+    @Override
+    public void updateView(Context ctx, UpdateViewRequest request, Observer<TimelineView> observer) {
+        TimelineService timelineService = verifyService(request.getInstance());
+        TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
+
+        if (!request.hasId()) {
+            throw new BadRequestException("No id specified");
+        }
+        UUID uuid = parseUuid(request.getId());
+
+        org.yamcs.timeline.TimelineView view = timelineViewDb.getView(uuid);
+        if (view == null) {
+            throw new NotFoundException("View " + uuid + " not found");
+        }
+
+        if (request.hasName()) {
+            view.setName(request.getName());
+        }
+        if (request.hasDescription()) {
+            view.setDescription(request.getDescription());
+        }
+        view.setBands(request.getBandsList().stream()
+                .map(id -> UUID.fromString(id))
+                .collect(Collectors.toList()));
+
+        try {
+            view = timelineViewDb.updateView(view);
+            observer.complete(enrichView(timelineService, view));
+        } catch (InvalidRequestException e) {
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
     @Override
@@ -389,7 +430,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
         UUID uuid = parseUuid(request.getId());
 
-        TimelineView view;
+        org.yamcs.timeline.TimelineView view;
         try {
             view = timelineViewDb.deleteView(uuid);
         } catch (InvalidRequestException e) {
@@ -398,8 +439,21 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (view == null) {
             throw new NotFoundException("Band " + uuid + " not found");
         } else {
-            observer.complete(view);
+            observer.complete(view.toProtobuf());
         }
+    }
+
+    private TimelineView enrichView(TimelineService service, org.yamcs.timeline.TimelineView view) {
+        TimelineBandDb bandDb = service.getTimelineBandDb();
+        TimelineView.Builder b = TimelineView.newBuilder(view.toProtobuf());
+        b.clearBands();
+        for (UUID bandId : view.getBands()) {
+            org.yamcs.timeline.TimelineBand enrichedBand = bandDb.getBand(bandId);
+            if (enrichedBand != null) {
+                b.addBands(enrichedBand.toProtobuf());
+            }
+        }
+        return b.build();
     }
 
     @Override
@@ -562,12 +616,18 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         return band;
     }
 
-    private TimelineView req2View(AddViewRequest request) {
-        return TimelineView.newBuilder()
-                .setId(UUID.randomUUID().toString())
-                .setName(request.getName())
-                .setDescription(request.getDescription())
-                .addAllBands(request.getBandsList()).build();
+    private org.yamcs.timeline.TimelineView req2View(AddViewRequest request) {
+        List<UUID> bands = request.getBandsList().stream()
+                .map(id -> UUID.fromString(id))
+                .collect(Collectors.toList());
+
+        org.yamcs.timeline.TimelineView view = new org.yamcs.timeline.TimelineView(UUID.randomUUID());
+        view.setName(request.getName());
+        if (view.toProtobuf().hasDescription()) {
+            view.setDescription(request.getDescription());
+        }
+        view.setBands(bands);
+        return view;
     }
 
     private static UUID parseUuid(String uuid) {

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { YamcsService } from '../core/services/YamcsService';
 
@@ -9,8 +8,6 @@ import { YamcsService } from '../core/services/YamcsService';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateBandPage {
-
-  timescaleForm: FormGroup;
 
   constructor(
     title: Title,

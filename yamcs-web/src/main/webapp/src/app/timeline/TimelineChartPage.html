@@ -2,17 +2,47 @@
   <app-instance-toolbar>
     Timeline Chart
     &nbsp;&nbsp;&nbsp;
-    <button mat-button
+
+    <ng-container *ngIf="views$ | async as views">
+      <button *ngIf="view$ | async"
+              mat-button
+              [matMenuTriggerFor]="viewMenu">
+        {{ (view$ | async)?.name || 'select view' }}
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #viewMenu="matMenu" class="ya-menu">
+        <button mat-menu-item *ngFor="let view of views"
+                (click)="switchView(view)">{{ view.name }}</button>
+        <mat-divider></mat-divider>
+        <a mat-menu-item routerLink="/timeline/views/create"
+           [queryParams]="{c: yamcs.context}">
+          <mat-icon>add</mat-icon>
+          Create view
+        </a>
+      </mat-menu>
+    </ng-container>
+
+    <a mat-button
+       color="primary"
+       routerLink="/timeline/views/create"
+       [queryParams]="{c: yamcs.context}"
+       *ngIf="!(view$ | async)">
+      <mat-icon>add</mat-icon>
+      CREATE VIEW
+    </a>
+    <button *ngIf="view$ | async as view"
+            mat-button
             color="primary"
-            (click)="openCreateItemDialog()">
-      <mat-icon>add_circle_outline</mat-icon>
-      ADD ITEM
+            (click)="openEditViewDialog(view)">
+      <mat-icon>settings</mat-icon>
+      EDIT VIEW
     </button>
     <button mat-button
             color="primary"
-            (click)="openCreateBandDialog()">
+            (click)="openCreateItemDialog()"
+            *ngIf="view$ | async">
       <mat-icon>add_circle_outline</mat-icon>
-      ADD BAND
+      ADD ITEM
     </button>
   </app-instance-toolbar>
 

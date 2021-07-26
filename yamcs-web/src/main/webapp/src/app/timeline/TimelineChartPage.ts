@@ -1,15 +1,16 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
-import { TimelineItem } from '../client/types/timeline';
+import { BehaviorSubject } from 'rxjs';
+import { TimelineItem, TimelineView } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
-import { CreateBandDialog } from './dialogs/CreateBandDialog';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
+import { EditViewDialog } from './dialogs/EditViewDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
 import { addDefaultItemBandProperties } from './itemBand/ItemBandStyles';
 import { addDefaultSpacerProperties } from './spacer/SpacerStyles';
@@ -25,6 +26,9 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   @ViewChild('container', { static: true })
   container: ElementRef;
 
+  views$ = new BehaviorSubject<TimelineView[]>([]);
+  view$ = new BehaviorSubject<TimelineView | null>(null);
+
   private timeline: Timeline;
   private moveInterval?: number;
 
@@ -36,12 +40,36 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private messageService: MessageService,
+    readonly route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Timeline Chart');
   }
 
   ngAfterViewInit() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    const requestedView = queryParams.get('view');
+
+    this.yamcs.yamcsClient.getTimelineViews(this.yamcs.instance!).then(page => {
+      this.views$.next(page.views || []);
+
+      // Respect the requested view (from query param)
+      // But default to the first if unspecified.
+      let view = null;
+      for (const candidate of (page.views || [])) {
+        if (requestedView === candidate.id) {
+          view = candidate;
+          break;
+        }
+      }
+      if (!view && !requestedView) {
+        view = page.views?.length ? page.views[0] : null;
+      }
+      if (view) {
+        this.switchView(view);
+      }
+    });
+
     this.timeline = new Timeline(this.container.nativeElement);
     // this.timeline.sidebar!.backgroundColor = '#fcfcfc';
 
@@ -57,8 +85,41 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
     new MouseTracker(this.timeline);
 
-    this.yamcs.yamcsClient.getTimelineBands(this.yamcs.instance!).then(page => {
-      for (const band of (page.bands || [])) {
+    this.timeline.addEventListener('headerclick', evt => {
+      const id = this.idByBand.get(evt.line);
+      if (id) {
+        this.router.navigateByUrl(`/timeline/bands/${id}?c=${this.yamcs.context}`);
+      }
+    });
+
+    this.timeline.addEventListener('eventclick', evt => {
+      const dialogRef = this.dialog.open(EditItemDialog, {
+        width: '600px',
+        data: { item: evt.event.data.item }
+      });
+      dialogRef.afterClosed().subscribe(() => this.refreshData());
+    });
+
+    this.refreshData();
+  }
+
+  switchView(view: TimelineView | null) {
+    // Update URL
+    this.router.navigate([], {
+      replaceUrl: true,
+      relativeTo: this.route,
+      queryParams: {
+        view: view?.id || null,
+      },
+      queryParamsHandling: 'merge',
+    });
+
+    this.view$.next(view);
+    for (const line of this.timeline.getLines()) {
+      this.timeline.removeLine(line);
+    }
+    if (view) {
+      for (const band of (view.bands || [])) {
         if (band.type === 'TIME_RULER') {
           const axis = new AbsoluteTimeAxis(this.timeline);
           axis.label = band.name;
@@ -102,24 +163,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         }
       }
       this.refreshData();
-    });
-
-    this.timeline.addEventListener('headerclick', evt => {
-      const id = this.idByBand.get(evt.line);
-      if (id) {
-        this.router.navigateByUrl(`/timeline/bands/${id}?c=${this.yamcs.context}`);
-      }
-    });
-
-    this.timeline.addEventListener('eventclick', evt => {
-      const dialogRef = this.dialog.open(EditItemDialog, {
-        width: '600px',
-        data: { item: evt.event.data.item }
-      });
-      dialogRef.afterClosed().subscribe(() => this.refreshData());
-    });
-
-    this.refreshData();
+    }
   }
 
   refreshData() {
@@ -165,11 +209,21 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe(() => this.refreshData());
   }
 
-  openCreateBandDialog() {
-    const dialogRef = this.dialog.open(CreateBandDialog, {
-      width: '600px',
+  openEditViewDialog(view: TimelineView) {
+    const dialogRef = this.dialog.open(EditViewDialog, {
+      width: '70%',
+      height: '100%',
+      autoFocus: false,
+      position: {
+        right: '0',
+      },
+      data: { view }
     });
-    dialogRef.afterClosed().subscribe(() => this.refreshData());
+    dialogRef.afterClosed().subscribe(updatedView => {
+      if (updatedView) {
+        this.switchView(updatedView);
+      }
+    });
   }
 
   toggleMove(x: number) {

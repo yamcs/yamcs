@@ -5,11 +5,14 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { BandsPage } from './BandsPage';
 import { CreateBandPage } from './CreateBandPage';
+import { CreateViewPage } from './CreateViewPage';
 import { EditBandPage } from './EditBandPage';
+import { EditViewPage } from './EditViewPage';
 import { CreateItemBandPage } from './itemBand/CreateItemBandPage';
 import { CreateSpacerPage } from './spacer/CreateSpacerPage';
 import { TimelineChartPage } from './TimelineChartPage';
 import { CreateTimeRulerPage } from './timeRuler/CreateTimeRulerPage';
+import { ViewsPage } from './ViewsPage';
 
 const routes: Routes = [
   {
@@ -26,6 +29,18 @@ const routes: Routes = [
       }, {
         path: 'chart',
         component: TimelineChartPage,
+      }, {
+        path: 'views',
+        pathMatch: 'full',
+        component: ViewsPage,
+      }, {
+        path: 'views/create',
+        pathMatch: 'full',
+        component: CreateViewPage,
+      }, {
+        path: 'views/:view',
+        pathMatch: 'full',
+        component: EditViewPage,
       }, {
         path: 'bands',
         pathMatch: 'full',
@@ -67,6 +82,9 @@ export const routingComponents = [
   CreateItemBandPage,
   CreateSpacerPage,
   CreateTimeRulerPage,
+  CreateViewPage,
   EditBandPage,
+  EditViewPage,
   TimelineChartPage,
+  ViewsPage,
 ];

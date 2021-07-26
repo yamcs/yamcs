@@ -1,10 +1,9 @@
 package org.yamcs.timeline;
 
-import org.yamcs.protobuf.TimelineView;
-
 public interface ViewListener {
+
     void next(TimelineView view);
-    
+
     /**
      * 
      * If a paged request has been performed, the token can be used to retrieve the next chunk.

@@ -47,8 +47,8 @@ public class TimelineBandDb {
         TIMELINE_DEF.addColumn(CNAME_USERNAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_TYPE, DataType.ENUM);
         TIMELINE_DEF.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM));
-
     }
+
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
     final static String TABLE_NAME = "timeline_band";
