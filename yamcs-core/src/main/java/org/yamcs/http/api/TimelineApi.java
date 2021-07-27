@@ -42,6 +42,7 @@ import org.yamcs.protobuf.TimelineView;
 import org.yamcs.protobuf.UpdateBandRequest;
 import org.yamcs.protobuf.UpdateItemRequest;
 import org.yamcs.protobuf.UpdateViewRequest;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.AutomatedActivity;
 import org.yamcs.timeline.BandListener;
@@ -67,6 +68,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void createItem(Context ctx, CreateItemRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -82,6 +84,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void getItem(Context ctx, GetItemRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -100,6 +103,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void updateItem(Context ctx, UpdateItemRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -154,6 +158,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void listItems(Context ctx, ListItemsRequest request, Observer<ListItemsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -200,6 +205,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void listSources(Context ctx, ListSourcesRequest request, Observer<ListSourcesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         ListSourcesResponse.Builder lsrb = ListSourcesResponse.newBuilder().putAllSources(timelineService.getSources());
         observer.complete(lsrb.build());
@@ -207,6 +213,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void listTags(Context ctx, ListTimelineTagsRequest request, Observer<ListTimelineTagsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -218,6 +225,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void addBand(Context ctx, AddBandRequest request, Observer<TimelineBand> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
         org.yamcs.timeline.TimelineBand band = req2Band(request, ctx.user.getName());
@@ -231,6 +239,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void getBand(Context ctx, GetBandRequest request, Observer<TimelineBand> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
         if (!request.hasId()) {
@@ -247,6 +256,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void listBands(Context ctx, ListBandsRequest request, Observer<ListBandsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
@@ -276,6 +286,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void updateBand(Context ctx, UpdateBandRequest request, Observer<TimelineBand> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
@@ -308,6 +319,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void deleteBand(Context ctx, DeleteBandRequest request, Observer<TimelineBand> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
@@ -331,6 +343,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void addView(Context ctx, AddViewRequest request, Observer<TimelineView> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
         org.yamcs.timeline.TimelineView view = req2View(request);
@@ -344,6 +357,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void getView(Context ctx, GetViewRequest request, Observer<TimelineView> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
         if (!request.hasId()) {
@@ -360,6 +374,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void listViews(Context ctx, ListViewsRequest request, Observer<ListViewsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
 
@@ -389,6 +404,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void updateView(Context ctx, UpdateViewRequest request, Observer<TimelineView> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
 
@@ -422,6 +438,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void deleteView(Context ctx, DeleteViewRequest request, Observer<TimelineView> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineViewDb timelineViewDb = timelineService.getTimelineViewDb();
 
@@ -458,6 +475,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void deleteItem(Context ctx, DeleteItemRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
@@ -482,6 +500,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     @Override
     public void deleteTimelineGroup(Context ctx, DeleteTimelineGroupRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);

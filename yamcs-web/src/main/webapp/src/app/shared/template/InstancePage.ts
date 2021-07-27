@@ -92,10 +92,14 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
-    this.timelineItems.push({ path: 'chart', label: 'Chart' });
-    this.timelineItems.push({ path: 'views', label: 'Views' });
-    this.timelineItems.push({ path: 'bands', label: 'Bands' });
-    this.timelineItems.push({ path: 'items', label: 'Items' });
+    if (this.user.hasSystemPrivilege('ReadTimeline')) {
+      this.timelineItems.push({ path: 'chart', label: 'Chart' });
+    }
+    if (this.user.hasSystemPrivilege('ControlTimeline')) {
+      this.timelineItems.push({ path: 'views', label: 'Views' });
+      this.timelineItems.push({ path: 'bands', label: 'Bands' });
+      this.timelineItems.push({ path: 'items', label: 'Items' });
+    }
 
     if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
       this.mdbItems.push({ path: '', label: 'Overview' });

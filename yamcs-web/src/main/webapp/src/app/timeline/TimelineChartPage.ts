@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
 import { BehaviorSubject } from 'rxjs';
 import { TimelineItem, TimelineView } from '../client/types/timeline';
+import { AuthService } from '../core/services/AuthService';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
@@ -43,6 +44,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     private messageService: MessageService,
     readonly route: ActivatedRoute,
     private router: Router,
+    private authService: AuthService,
   ) {
     title.setTitle('Timeline Chart');
   }
@@ -306,6 +308,10 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         this.timeline.panTo(result.date.getTime());
       }
     });
+  }
+
+  mayControlTimeline() {
+    return this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
   }
 
   private getBandForLine(line: Line<any>) {
