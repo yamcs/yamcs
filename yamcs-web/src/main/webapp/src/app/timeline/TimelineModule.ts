@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { CreateBandWizardStep } from './CreateBandWizardStep';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
+import { EditBandDialog } from './dialogs/EditBandDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
 import { EditViewDialog } from './dialogs/EditViewDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
@@ -23,6 +24,7 @@ import { EditTimeRulerComponent } from './timeRuler/EditTimeRulerComponent';
     BandMultiSelect,
     CreateItemDialog,
     CreateBandWizardStep,
+    EditBandDialog,
     EditItemDialog,
     EditItemBandComponent,
     EditSpacerComponent,

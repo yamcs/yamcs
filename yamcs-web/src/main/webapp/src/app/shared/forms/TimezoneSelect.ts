@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import tznames from '../tznames';
@@ -31,7 +31,7 @@ export class TimezoneSelect implements ControlValueAccessor {
 
   private onChange = (_: string | null) => { };
 
-  constructor() {
+  constructor(private changeDetection: ChangeDetectorRef) {
     this.processTznames();
     this.areaControl.valueChanges.subscribe(() => {
       const area = this.areaControl.value || null;
@@ -131,6 +131,7 @@ export class TimezoneSelect implements ControlValueAccessor {
       this.sublocationControl.setValue(null);
       this.onChange(null);
     }
+    this.changeDetection.detectChanges();
   }
 
   registerOnChange(fn: any) {

@@ -9,6 +9,7 @@ import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
+import { EditBandDialog } from './dialogs/EditBandDialog';
 import { EditItemDialog } from './dialogs/EditItemDialog';
 import { EditViewDialog } from './dialogs/EditViewDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
@@ -33,7 +34,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   private moveInterval?: number;
 
   private bands: Line<any>[] = [];
-  private idByBand = new Map<Line<any>, string>();
+  private idByLine = new Map<Line<any>, string>();
 
   constructor(
     title: Title,
@@ -86,9 +87,23 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     new MouseTracker(this.timeline);
 
     this.timeline.addEventListener('headerclick', evt => {
-      const id = this.idByBand.get(evt.line);
+      const id = this.idByLine.get(evt.line);
       if (id) {
-        this.router.navigateByUrl(`/timeline/bands/${id}?c=${this.yamcs.context}`);
+        const band = this.view$.value!.bands!.filter(b => b.id === id)[0];
+        const dialogRef = this.dialog.open(EditBandDialog, {
+          width: '70%',
+          height: '100%',
+          autoFocus: false,
+          position: {
+            right: '0',
+          },
+          data: { band }
+        });
+        dialogRef.afterClosed().subscribe(updatedBand => {
+          if (updatedBand) {
+            this.refreshView();
+          }
+        });
       }
     });
 
@@ -101,6 +116,15 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     });
 
     this.refreshData();
+  }
+
+  refreshView() {
+    const view = this.view$.value;
+    if (view) {
+      this.yamcs.yamcsClient.getTimelineView(this.yamcs.instance!, view.id)
+        .then(updatedView => this.switchView(updatedView))
+        .catch(err => this.messageService.showError(err));
+    }
   }
 
   switchView(view: TimelineView | null) {
@@ -126,7 +150,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           axis.timezone = band.properties!.timezone;
           // axis.frozen = true;
           this.bands.push(axis);
-          this.idByBand.set(axis, band.id);
+          this.idByLine.set(axis, band.id);
         } else if (band.type === 'ITEM_BAND') {
           const eventLine = new EventLine(this.timeline);
           eventLine.label = band.name;
@@ -148,7 +172,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           eventLine.lineSpacing = properties.spaceBetweenLines;
 
           this.bands.push(eventLine);
-          this.idByBand.set(eventLine, band.id);
+          this.idByLine.set(eventLine, band.id);
         } else if (band.type === 'SPACER') {
           const spacer = new EventLine(this.timeline);
           spacer.label = band.name;
@@ -159,7 +183,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           spacer.marginBottom = 0;
 
           this.bands.push(spacer);
-          this.idByBand.set(spacer, band.id);
+          this.idByLine.set(spacer, band.id);
         }
       }
       this.refreshData();

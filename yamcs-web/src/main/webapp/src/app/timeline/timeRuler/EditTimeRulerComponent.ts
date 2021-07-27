@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -16,6 +16,12 @@ export class EditTimeRulerComponent implements AfterViewInit, OnDestroy {
 
   @Input()
   band: TimelineBand;
+
+  @Output()
+  onConfirm = new EventEmitter<TimelineBand>();
+
+  @Output()
+  onCancel = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -47,7 +53,7 @@ export class EditTimeRulerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  onConfirm() {
+  doOnConfirm() {
     const formValue = this.form.value;
     const options: UpdateTimelineBandRequest = {
       name: formValue.name,
@@ -59,7 +65,7 @@ export class EditTimeRulerComponent implements AfterViewInit, OnDestroy {
       }
     };
     this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, this.band.id, options)
-      .then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
+      .then(band => this.onConfirm.emit(band))
       .catch(err => this.messageService.showError(err));
   }
 

@@ -1,10 +1,18 @@
 <app-instance-page *ngIf="band$ | async as band">
-  <app-instance-toolbar>Update band</app-instance-toolbar>
+  <app-instance-toolbar>Edit band</app-instance-toolbar>
 
-  <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
-                      [band]="band"></app-edit-item-band>
-  <app-edit-spacer *ngIf="band.type === 'SPACER'"
-                   [band]="band"></app-edit-spacer>
-  <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
-                       [band]="band"></app-edit-time-ruler>
+  <div class="form-content ya-form">
+    <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
+                        [band]="band"
+                        (onConfirm)="onConfirm($event)"
+                        (onCancel)="location.back()"></app-edit-item-band>
+    <app-edit-spacer *ngIf="band.type === 'SPACER'"
+                     [band]="band"
+                     (onConfirm)="onConfirm($event)"
+                     (onCancel)="location.back()"></app-edit-spacer>
+    <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
+                         [band]="band"
+                         (onConfirm)="onConfirm($event)"
+                         (onCancel)="location.back()"></app-edit-time-ruler>
+  </div>
 </app-instance-page>
