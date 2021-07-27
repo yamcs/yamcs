@@ -33,7 +33,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   private timeline: Timeline;
   private moveInterval?: number;
 
-  private bands: Line<any>[] = [];
+  private lines: Line<any>[] = [];
   private idByLine = new Map<Line<any>, string>();
 
   constructor(
@@ -149,7 +149,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           axis.label = band.name;
           axis.timezone = band.properties!.timezone;
           // axis.frozen = true;
-          this.bands.push(axis);
+          this.lines.push(axis);
           this.idByLine.set(axis, band.id);
         } else if (band.type === 'ITEM_BAND') {
           const eventLine = new EventLine(this.timeline);
@@ -171,7 +171,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           eventLine.spaceBetween = properties.spaceBetweenItems;
           eventLine.lineSpacing = properties.spaceBetweenLines;
 
-          this.bands.push(eventLine);
+          this.lines.push(eventLine);
           this.idByLine.set(eventLine, band.id);
         } else if (band.type === 'SPACER') {
           const spacer = new EventLine(this.timeline);
@@ -182,7 +182,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           spacer.marginTop = 0;
           spacer.marginBottom = 0;
 
-          this.bands.push(spacer);
+          this.lines.push(spacer);
           this.idByLine.set(spacer, band.id);
         }
       }
@@ -191,11 +191,12 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   }
 
   refreshData() {
-    const queriedBands: EventLine[] = [];
+    const queriedLines: EventLine[] = [];
     const promises = [];
-    for (const band of this.bands) {
-      if (band instanceof EventLine) {
-        queriedBands.push(band);
+    for (const line of this.lines) {
+      const band = this.getBandForLine(line);
+      if (band && band.type === 'ITEM_BAND') {
+        queriedLines.push(line as EventLine);
         promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
           type: 'EVENT',
         }));
@@ -204,14 +205,14 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     if (promises.length) {
       Promise.all(promises).then(responses => {
         for (let i = 0; i < responses.length; i++) {
-          const band = queriedBands[i];
-          this.populateEvents(band, responses[i].items || []);
+          const line = queriedLines[i];
+          this.populateEvents(line, responses[i].items || []);
         }
       }).catch(err => this.messageService.showError(err));
     }
   }
 
-  private populateEvents(band: EventLine, items: TimelineItem[]) {
+  private populateEvents(line: EventLine, items: TimelineItem[]) {
     const data: Event[] = [];
     for (const item of items) {
       const start = utils.toDate(item.start).getTime();
@@ -223,7 +224,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
       };
       data.push(event);
     }
-    band.data = data;
+    line.data = data;
   }
 
   openCreateItemDialog() {
@@ -305,6 +306,17 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         this.timeline.panTo(result.date.getTime());
       }
     });
+  }
+
+  private getBandForLine(line: Line<any>) {
+    const id = this.idByLine.get(line);
+    if (id) {
+      for (const band of this.view$.value?.bands || []) {
+        if (band.id === id) {
+          return band;
+        }
+      }
+    }
   }
 
   ngOnDestroy() {
