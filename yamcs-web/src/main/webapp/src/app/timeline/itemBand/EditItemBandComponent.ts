@@ -54,7 +54,8 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
         multiline: [null, [Validators.required]],
         spaceBetweenItems: [null, [Validators.required]],
         spaceBetweenLines: [null, [Validators.required]],
-      })
+      }),
+      tags: [[], []],
     });
   }
 
@@ -63,6 +64,7 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
       name: this.band.name,
       description: this.band.description || '',
       properties: addDefaultItemBandProperties(this.band.properties || {}),
+      tags: this.band.tags || [],
     });
     this.formSubscription = this.form.valueChanges.subscribe(() => {
       this.dirty$.next(true);
@@ -75,7 +77,7 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
       name: formValue.name,
       description: formValue.description,
       shared: this.band.shared,
-      tags: this.band.tags || [],
+      tags: formValue.tags,
       properties: formValue.properties,
     };
 

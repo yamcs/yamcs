@@ -40,19 +40,19 @@ export class CreateItemBandPage {
         multiline: [defaultProperties.multiline, [Validators.required]],
         spaceBetweenItems: [defaultProperties.spaceBetweenItems, [Validators.required]],
         spaceBetweenLines: [defaultProperties.spaceBetweenLines, [Validators.required]],
-      })
+      }),
+      tags: [[], []],
     });
   }
 
   onConfirm() {
     const formValue = this.form.value;
-
     this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
       name: formValue.name,
       description: formValue.description,
       type: 'ITEM_BAND',
       shared: true,
-      tags: [],
+      tags: formValue.tags,
       properties: formValue.properties,
     }).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
       .catch(err => this.messageService.showError(err));

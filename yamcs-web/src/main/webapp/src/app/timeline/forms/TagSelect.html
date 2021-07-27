@@ -1,0 +1,11 @@
+<ng-container *ngIf="tags$ | async as tags">
+  <app-label *ngFor="let tag of tags" backgroundColor="#cdeefd">
+    {{ tag }}
+    <mat-icon class="tag-icon" (click)="removeTag(tag)">close</mat-icon>
+  </app-label>
+</ng-container>
+<input type="text"
+       [formControl]="control"
+       (keydown.enter)="addTag()"
+       placeholder="Add Tag"
+       style="width: 120px; display: inline-block">

@@ -26,6 +26,10 @@ export interface TimelineBandsPage {
   bands: TimelineBand[];
 }
 
+export interface TimelineTagsPage {
+  tags: string[];
+}
+
 export interface TimelineItemsPage {
   items: TimelineItem[];
 }

@@ -1,0 +1,13 @@
+.tag-icon {
+  vertical-align: middle;
+  font-size: 12px !important;
+  line-height: 16px;
+  height: 16px;
+  width: 16px;
+  color: grey;
+  cursor: pointer;
+}
+
+.tag-icon:hover {
+  color: inherit;
+}
