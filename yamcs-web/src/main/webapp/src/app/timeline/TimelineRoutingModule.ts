@@ -9,6 +9,7 @@ import { CreateViewPage } from './CreateViewPage';
 import { EditBandPage } from './EditBandPage';
 import { EditViewPage } from './EditViewPage';
 import { CreateItemBandPage } from './itemBand/CreateItemBandPage';
+import { ItemsPage } from './ItemsPage';
 import { CreateSpacerPage } from './spacer/CreateSpacerPage';
 import { TimelineChartPage } from './TimelineChartPage';
 import { CreateTimeRulerPage } from './timeRuler/CreateTimeRulerPage';
@@ -65,6 +66,10 @@ const routes: Routes = [
         path: 'bands/:band',
         pathMatch: 'full',
         component: EditBandPage,
+      }, {
+        path: 'items',
+        pathMatch: 'full',
+        component: ItemsPage,
       }
     ]
   }
@@ -85,6 +90,7 @@ export const routingComponents = [
   CreateViewPage,
   EditBandPage,
   EditViewPage,
+  ItemsPage,
   TimelineChartPage,
   ViewsPage,
 ];
