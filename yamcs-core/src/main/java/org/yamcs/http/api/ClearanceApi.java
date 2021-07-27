@@ -103,7 +103,9 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
 
         ClearanceInfo.Builder clearanceb = ClearanceInfo.newBuilder()
-                .setUsername(user.getName());
+                .setUsername(user.getName())
+                .setHasCommandPrivileges(user.isSuperuser()
+                        || !user.getObjectPrivileges(ObjectPrivilegeType.Command).isEmpty());
 
         Clearance clearance = user.getClearance();
         if (clearance != null) {
@@ -119,9 +121,6 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
             } else if (clearance.getIssuedBy() == securityStore.getSystemUser().getId()) {
                 clearanceb.setIssuedBy(securityStore.getSystemUser().getName());
             }
-
-            clearanceb.setHasCommandPrivileges(user.isSuperuser()
-                    || !user.getObjectPrivileges(ObjectPrivilegeType.Command).isEmpty());
         }
         return clearanceb.build();
     }
