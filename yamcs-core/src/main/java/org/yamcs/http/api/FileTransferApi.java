@@ -266,12 +266,17 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         TransferInfo.Builder tib = TransferInfo.newBuilder()
                 .setId(transfer.getId())
                 .setState(transfer.getTransferState())
-                .setBucket(transfer.getBucketName())
                 .setDirection(transfer.getDirection())
-                .setTotalSize(transfer.getTotalSize())
+
                 .setSizeTransferred(transfer.getTransferredSize())
                 .setReliable(transfer.isReliable());
 
+        if (transfer.getTotalSize() >= 0) {
+            tib.setTotalSize(transfer.getTotalSize());
+        }
+        if(transfer.getBucketName()!=null) {
+            tib.setBucket(transfer.getBucketName());
+        }
         if (transfer.getObjectName() != null) {
             tib.setObjectName(transfer.getObjectName());
         }

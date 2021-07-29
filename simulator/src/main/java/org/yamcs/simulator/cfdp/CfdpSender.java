@@ -61,9 +61,16 @@ public class CfdpSender {
     private CfdpHeader dataHeader;
     int eofAckCount = 0;
 
-    public CfdpSender(AbstractSimulator simulator, File file, int destinationId) throws FileNotFoundException {
+    // allow to simulate packet loss by skipping some pdus
+    int[] skippedPdus;
+    int skipIdx = 0;
+    int pduCount = 0;
+
+    public CfdpSender(AbstractSimulator simulator, File file, int destinationId, int[] skippedPdus)
+            throws FileNotFoundException {
         this.simulator = simulator;
         this.file = file;
+        this.skippedPdus = skippedPdus;
         this.raf = new RandomAccessFile(file, "r");
         if (file.length() > Integer.MAX_VALUE) {
             throw new UnsupportedOperationException("Large files not supported");
@@ -119,9 +126,13 @@ public class CfdpSender {
             NakPacket nak = (NakPacket) packet;
             resendQueue.clear();
             for (SegmentRequest sr : nak.getSegmentRequests()) {
-                for (long offset = sr.getSegmentStart(); offset < sr.getSegmentEnd(); offset += PDU_SIZE) {
-                    long end = Math.min(offset + PDU_SIZE, sr.getSegmentEnd());
-                    resendQueue.add(new DataToResend(offset, end));
+                if (sr.getSegmentStart() == 0 && sr.getSegmentEnd() == 0) {
+                    hasToSendMetadata = true;
+                } else {
+                    for (long offset = sr.getSegmentStart(); offset < sr.getSegmentEnd(); offset += PDU_SIZE) {
+                        long end = Math.min(offset + PDU_SIZE, sr.getSegmentEnd());
+                        resendQueue.add(new DataToResend(offset, end));
+                    }
                 }
             }
         } else if (packet instanceof AckPacket) {
@@ -162,7 +173,7 @@ public class CfdpSender {
         } else {
             log.info("CFDP sending EOF");
             EofPacket eof = new EofPacket(ConditionCode.NO_ERROR, checksum, fileSize, null, directiveHeader);
-            simulator.transmitCfdp(eof);
+            transmitCfdp(eof);
         }
     }
 
@@ -175,7 +186,7 @@ public class CfdpSender {
         }
         AckPacket ack = new AckPacket(FileDirectiveCode.FINISHED, FileDirectiveSubtypeCode.FINISHED_BY_END_SYSTEM,
                 packet.getConditionCode(), TransactionStatus.TERMINATED, directiveHeader);
-        simulator.transmitCfdp(ack);
+        transmitCfdp(ack);
     }
 
     private void sendFileData(long start, long end, boolean addToChecksum) {
@@ -194,7 +205,7 @@ public class CfdpSender {
         }
 
         FileDataPacket fdp = new FileDataPacket(data, start, dataHeader);
-        simulator.transmitCfdp(fdp);
+        transmitCfdp(fdp);
     }
 
     private void abort() {
@@ -209,7 +220,25 @@ public class CfdpSender {
                 file.getPath(), file.getPath(),
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 null, directiveHeader);
-        simulator.transmitCfdp(metadata);
+        transmitCfdp(metadata);
+    }
+
+    private void transmitCfdp(CfdpPacket packet) {
+        boolean skip = false;
+        while (skipIdx < skippedPdus.length && skippedPdus[skipIdx] < pduCount) {
+            skipIdx++;
+        }
+
+        if (skipIdx < skippedPdus.length) {
+            if (skippedPdus[skipIdx] == pduCount) {
+                log.info("Dropping (simulating packet loss) PDU {}: {}", pduCount, packet);
+                skip = true;
+            }
+        }
+        pduCount++;
+        if (!skip) {
+            simulator.transmitCfdp(packet);
+        }
     }
 
     static class DataToResend {

@@ -5,6 +5,12 @@ import java.util.Objects;
 
 import org.yamcs.cfdp.CfdpUtils;
 
+/**
+ * The SegmentRequest is part of a NAK PDU to indicate a missing part of a file.
+ * <p>
+ * segmentStart=segmentEnd=0 means that the metadata PDU was missing.
+ *
+ */
 public class SegmentRequest {
     private long segmentStart;
     private long segmentEnd;

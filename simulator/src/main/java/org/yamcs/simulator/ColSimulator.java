@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -360,11 +363,19 @@ public class ColSimulator extends AbstractSimulator {
         ByteBuffer bb = commandPacket.getUserDataBuffer();
         int destinationId = bb.getInt();
         String fileName = readNullTerminatedString(bb);
+
+        int[] skippedPdus = new int[bb.remaining() / 4];
+        int k = 0;
+        while (bb.remaining() >= 4) {
+            skippedPdus[k++] = bb.getInt();
+        }
+        Arrays.sort(skippedPdus);
+
         if (checkFile(fileName)) {
             File f = new File(dataDir, fileName);
-            log.info("CFDP download file {}", fileName);
+            log.info("CFDP download file {} skippedPdus: {}", fileName, Arrays.toString(skippedPdus));
             try {
-                cfdpSender = new CfdpSender(this, f, destinationId);
+                cfdpSender = new CfdpSender(this, f, destinationId, skippedPdus);
                 cfdpSender.start();
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
             } catch (FileNotFoundException e) {

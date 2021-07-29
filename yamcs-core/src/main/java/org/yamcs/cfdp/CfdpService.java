@@ -463,6 +463,10 @@ public class CfdpService extends AbstractYamcsService
                 transfer = instantiateIncomingTransaction(packet);
                 if (transfer != null) {
                     pendingTransfers.put(transfer.getTransactionId(), transfer);
+                    OngoingCfdpTransfer t1 = transfer;
+                    executor.submit(() -> {
+                        dbStream.emitTuple(CompletedTransfer.toInitialTuple(t1));
+                    });
                 }
             }
         }

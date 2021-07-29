@@ -81,9 +81,6 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
              AckLimitReached: suspend
            receiverFaultHandlers:
              AckLimitReached: suspend
-
-          
-
             
 
               
@@ -103,11 +100,13 @@ incomingBucket (string)
     The name of the bucket where the CFDP incoming files are saved if no specific ones are defined per local or remote entity. Default: ``cfdpDown``
 
 localEntiess (map)
-    A list of entity definition used to give names to the local (Yamcs) entity identifiers as well as configure which bucket is used for storing the files received for that entity. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files. The bucket is optional and if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too int the general bucket configured with the incomingBucket.
+    A list of entity definitions used to give names to the local (Yamcs) entity identifiers as well as to configure which bucket is used for storing the files received for that entity. The names can be used in the REST calls when initiating transfers. The list has to contain all identifiers which will be used by the remote system to send files.  If a PDU is received to an identifier not in this map, the PDU will be dropped and no transaction will be started.
+    The ``bucket`` is optional; if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too in the general bucket configured with the ``incomingBucket``.
     
 remoteEntities (map)
-    A list of entity definition used to give names to the remote (spacecraft) entity identifiers. The names can be used in the REST call. The list has to contain all identifiers which will be used by the remote system to send files. If a PDU is received from an identifier not in this map, the PDU will be dropped and no transaction will be started. 
-    The list can contain also a bucket name used if the matching local entity does not define a bucket. In the example above if a file is downlink having source (remote) id = 7 and destination (Yamcs) id = 12, it will end up in bucket3.
+    A list of entity definitions used to give names to the remote (spacecraft) entity identifiers. The names can be used in the REST call when initiating transfers.
+    The list has to contain all identifiers which will be used by the remote system to send files. If a PDU is received from an identifier not in this map, the PDU will be dropped and no transaction will be started.
+    The list can contain also a bucket name used if the matching local entity does not define a bucket. In the example above if a file is downlinked having source (spacecraft) id = 7 and destination (Yamcs) id = 12, it will end up in bucket3.
 
 entityIdLength (integer)
     The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the 

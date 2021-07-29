@@ -152,8 +152,13 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addColumn(COL_SERVER_ID, serverId);
         t.addTimestampColumn(COL_CREATION_TIME, transfer.getCreationTime());
         t.addColumn(COL_BUCKET, transfer.getBucketName());
-        t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
-        t.addColumn(COL_REMOTE_PATH, transfer.getRemotePath());
+
+        if (transfer.getObjectName() != null) {
+            t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
+        }
+        if (transfer.getRemotePath() != null) {
+            t.addColumn(COL_REMOTE_PATH, transfer.getRemotePath());
+        }
         t.addEnumColumn(COL_DIRECTION, transfer.getDirection().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_RELIABLE, transfer.isReliable());
