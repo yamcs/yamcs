@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -9,10 +9,10 @@ import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
 
 @Component({
-  selector: 'app-export-archive-data-dialog',
-  templateUrl: './ExportArchiveDataDialog.html',
+  templateUrl: './ExportParameterDataDialog.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExportArchiveDataDialog implements OnDestroy {
+export class ExportParameterDataDialog implements OnDestroy {
 
   delimiterOptions: Option[] = [
     { id: 'COMMA', label: 'Comma' },
@@ -31,7 +31,7 @@ export class ExportArchiveDataDialog implements OnDestroy {
   });
 
   constructor(
-    private dialogRef: MatDialogRef<ExportArchiveDataDialog>,
+    private dialogRef: MatDialogRef<ExportParameterDataDialog>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) private data: any,
   ) {
@@ -43,8 +43,8 @@ export class ExportArchiveDataDialog implements OnDestroy {
     }
 
     this.form.setValue({
-      start: utils.toISOString(start),
-      stop: utils.toISOString(stop),
+      start: data.start ? utils.toISOString(data.start) : '',
+      stop: data.stop ? utils.toISOString(data.stop) : '',
       delimiter: 'TAB',
     });
 
@@ -62,7 +62,7 @@ export class ExportArchiveDataDialog implements OnDestroy {
   private updateURL() {
     if (this.form.valid) {
       const dlOptions: DownloadParameterValuesOptions = {
-        parameters: this.data.parameterIds,
+        parameters: this.data.parameter,
         delimiter: this.form.value['delimiter'],
       };
       if (this.form.value['start']) {

@@ -1,7 +1,14 @@
 package org.yamcs.replication;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +30,7 @@ import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.Wakeup;
 import org.yamcs.utils.DecodingException;
 
+import com.google.common.io.ByteStreams;
 import com.google.protobuf.TextFormat;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -57,21 +65,37 @@ public class ReplicationServer extends AbstractYamcsService {
     private Map<String, ReplicationMaster> masters = new HashMap<>();
     private Map<String, ReplicationSlave> slaves = new HashMap<>();
     Set<Channel> activeChannels = Collections.newSetFromMap(new ConcurrentHashMap<Channel, Boolean>());
-    String tlsCert;
-    String tlsKey;
-    SslContext sslCtx = null;
+    SslContext sslCtx;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         port = config.getInt("port");
-        tlsCert = config.getString("tlsCert", null);
-        if (tlsCert != null) {
-            tlsKey = config.getString("tlsKey");
+
+        if (config.containsKey("tlsCert")) {
+            List<String> tlsCerts;
+            String tlsKey = config.getString("tlsKey");
+            if (config.isList("tlsCert")) {
+                tlsCerts = config.getList("tlsCert");
+            } else {
+                tlsCerts = Arrays.asList(config.getString("tlsCert"));
+            }
+
             try {
-                sslCtx = SslContextBuilder.forServer(new File(tlsCert), new File(tlsKey)).build();
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                for (String cert : tlsCerts) {
+                    try (InputStream certIn = Files.newInputStream(Paths.get(cert))) {
+                        ByteStreams.copy(certIn, buf);
+                    }
+                }
+                try (InputStream chain = new ByteArrayInputStream(buf.toByteArray());
+                        InputStream key = new FileInputStream(tlsKey)) {
+                    sslCtx = SslContextBuilder.forServer(chain, key).build();
+                }
             } catch (SSLException e) {
-                throw new InitException("Failed to initialize the TLS: " + e.toString());
+                throw new InitException("Failed to initialize TLS: " + e.toString());
+            } catch (IOException e) {
+                throw new InitException("Failed to process TLS certificates", e);
             }
         }
     }

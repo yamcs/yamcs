@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '../../client';
+import { GetParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import * as utils from '../../shared/utils';
+import { ExportParameterDataDialog } from './ExportParameterDataDialog';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
 const defaultInterval = 'PT1H';
@@ -44,7 +46,7 @@ export class ParameterDataTab {
   dataSource: ParameterDataDataSource;
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private dialog: MatDialog) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
@@ -105,20 +107,7 @@ export class ParameterDataTab {
       options.stop = this.validStop.toISOString();
     }
 
-    const dlOptions: DownloadParameterValuesOptions = {
-      parameters: [this.qualifiedName]
-    };
-    if (this.validStart) {
-      dlOptions.start = this.validStart.toISOString();
-    }
-    if (this.validStop) {
-      dlOptions.stop = this.validStop.toISOString();
-    }
-
-    this.dataSource.loadParameterValues(options).then(pvals => {
-      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
-      this.downloadURL$.next(downloadURL);
-    });
+    this.dataSource.loadParameterValues(options);
   }
 
   /**
@@ -133,5 +122,16 @@ export class ParameterDataTab {
       options.start = this.validStart.toISOString();
     }
     this.dataSource.loadMoreData(options);
+  }
+
+  exportParameterData() {
+    this.dialog.open(ExportParameterDataDialog, {
+      width: '400px',
+      data: {
+        parameter: this.qualifiedName,
+        start: this.validStart,
+        stop: this.validStop,
+      }
+    });
   }
 }

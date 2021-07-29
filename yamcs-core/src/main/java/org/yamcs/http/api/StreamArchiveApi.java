@@ -5,8 +5,10 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -281,7 +283,15 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
-        String filename = "parameter-data.csv";
+        String filename;
+        String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+        if (ids.size() == 1) {
+            NamedObjectId id = ids.get(0);
+            String parameterName = id.hasNamespace() ? id.getName() : id.getName().substring(1);
+            filename = parameterName.replace('/', '_') + "_export_" + dateString + ".csv";
+        } else {
+            filename = "parameter_export_" + dateString + ".csv";
+        }
 
         boolean addRaw = false;
         boolean addMonitoring = false;
@@ -294,8 +304,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 throw new BadRequestException("Unexpected option for parameter 'extra': " + extra);
             }
         }
-        ParameterReplayListener l = new CsvParameterStreamer(
+        CsvParameterStreamer l = new CsvParameterStreamer(
                 observer, filename, ids, addRaw, addMonitoring);
+        if (request.hasDelimiter()) {
+            switch (request.getDelimiter()) {
+            case "TAB":
+                l.columnDelimiter = '\t';
+                break;
+            case "SEMICOLON":
+                l.columnDelimiter = ';';
+                break;
+            case "COMMA":
+                l.columnDelimiter = ',';
+                break;
+            default:
+                throw new BadRequestException("Unexpected column delimiter");
+            }
+        }
         observer.setCancelHandler(l::requestReplayAbortion);
         ReplayFactory.replay(instance, ctx.user, repl, l);
     }
@@ -330,6 +355,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         boolean addRaw;
         boolean addMonitoring;
         int recordCount = 0;
+        char columnDelimiter = '\t';
 
         CsvParameterStreamer(Observer<HttpBody> observer, String filename, List<NamedObjectId> ids,
                 boolean addRaw, boolean addMonitoring) {
@@ -351,7 +377,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
             ByteString.Output data = ByteString.newOutput();
             try (Writer writer = new OutputStreamWriter(data, StandardCharsets.UTF_8);
-                    ParameterFormatter formatter = new ParameterFormatter(writer, ids, '\t')) {
+                    ParameterFormatter formatter = new ParameterFormatter(writer, ids, columnDelimiter)) {
                 formatter.setWriteHeader(recordCount == 0);
                 formatter.setPrintRaw(addRaw);
                 formatter.setPrintMonitoring(addMonitoring);

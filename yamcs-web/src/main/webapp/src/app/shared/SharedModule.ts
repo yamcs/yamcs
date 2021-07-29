@@ -38,7 +38,6 @@ import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
-import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { OpenIDCallbackGuard } from '../core/guards/OpenIDCallbackGuard';
@@ -263,7 +262,6 @@ const guards = [
   ClearContextGuard,
   AttachContextGuard,
   MayControlCommandQueueGuard,
-  MayControlServicesGuard,
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   OpenIDCallbackGuard,

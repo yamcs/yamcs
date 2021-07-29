@@ -59,6 +59,8 @@ export class ParameterPage implements OnDestroy {
       }
 
       this.updateTitle();
+    }).catch(err => {
+      this.messageService.showError(err);
     });
 
     if (this.parameterValueSubscription) {

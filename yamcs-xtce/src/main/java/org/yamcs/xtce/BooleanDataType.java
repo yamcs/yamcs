@@ -35,6 +35,7 @@ public class BooleanDataType extends BaseDataType {
         super(t);
     }
 
+    @Override
     protected void setInitialValue(Object initialValue) {
         if (initialValue instanceof Boolean) {
             this.initialValue = (Boolean) initialValue;
@@ -45,6 +46,7 @@ public class BooleanDataType extends BaseDataType {
         }
     }
 
+    @Override
     public Boolean getInitialValue() {
         return initialValue;
     }
@@ -52,6 +54,7 @@ public class BooleanDataType extends BaseDataType {
     /**
      * Returns {@link Boolean#parseBoolean(String)}
      */
+    @Override
     public Boolean parseString(String stringValue) {
         if (oneStringValue.equalsIgnoreCase(stringValue)) {
             return Boolean.TRUE;
@@ -60,6 +63,15 @@ public class BooleanDataType extends BaseDataType {
         } else {
             throw new IllegalArgumentException(
                     "Invalid initialValue, should be '" + oneStringValue + "' or '" + zeroStringValue + "'");
+        }
+    }
+
+    @Override
+    public String toString(Object o) {
+        if (o instanceof Boolean) {
+            return (Boolean) o ? oneStringValue : zeroStringValue;
+        } else {
+            throw new IllegalArgumentException("Can only convert a boolean value, not " + o.getClass());
         }
     }
 
