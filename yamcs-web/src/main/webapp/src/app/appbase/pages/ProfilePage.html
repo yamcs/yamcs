@@ -24,7 +24,7 @@
     <ng-container *ngIf="config.commandClearanceEnabled">
       <dt>Command clearance</dt>
       <dd>
-        <app-significance-level [level]="user.clearance" [grayscale]="true">
+        <app-significance-level [level]="user.getClearance()" [grayscale]="true">
         </app-significance-level>
       </dd>
     </ng-container>

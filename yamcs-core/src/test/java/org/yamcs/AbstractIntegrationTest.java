@@ -82,7 +82,7 @@ public abstract class AbstractIntegrationTest {
                 .clearAll();
     }
 
-    private static void setupYamcs() throws Exception {
+    protected static void setupYamcs() throws Exception {
         Path dataDir = Paths.get("/tmp/yamcs-IntegrationTest-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
 

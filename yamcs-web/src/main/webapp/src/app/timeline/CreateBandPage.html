@@ -1,0 +1,44 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <a mat-icon-button routerLink=".."
+       [queryParams]="{c: yamcs.context}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create band
+  </app-instance-toolbar>
+
+  <app-create-band-wizard-step step="1"></app-create-band-wizard-step>
+
+  <div class="band-type-list">
+    <a class="band-type"
+       routerLink="time-ruler"
+       [queryParams]="{c: yamcs.context}">
+      <mat-card>
+        <mat-card-title>Time Ruler</mat-card-title>
+        <mat-card-content>
+          Displays absolute time, formatted in a timezone of your choice.
+        </mat-card-content>
+      </mat-card>
+    </a>
+    <a class="band-type"
+       routerLink="item-band"
+       [queryParams]="{c: yamcs.context}">
+      <mat-card>
+        <mat-card-title>Item Band</mat-card-title>
+        <mat-card-content>
+          Shows a selection of timeline items.<br><br>
+        </mat-card-content>
+      </mat-card>
+    </a>
+    <a class="band-type"
+       routerLink="spacer"
+       [queryParams]="{c: yamcs.context}">
+      <mat-card>
+        <mat-card-title>Spacer</mat-card-title>
+        <mat-card-content>
+          Inserts empty vertical space.<br><br>
+        </mat-card-content>
+      </mat-card>
+    </a>
+  </div>
+</app-instance-page>

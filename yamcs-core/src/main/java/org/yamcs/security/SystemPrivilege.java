@@ -96,6 +96,16 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ControlTimeCorrelation = new SystemPrivilege("ControlTimeCorrelation");
 
+    /**
+     * Allows to view the timeline
+     */
+    public static final SystemPrivilege ReadTimeline = new SystemPrivilege("ReadTimeline");
+
+    /**
+     * Allows to modify the timeline
+     */
+    public static final SystemPrivilege ControlTimeline = new SystemPrivilege("ControlTimeline");
+
     private String name;
 
     public SystemPrivilege(String name) {

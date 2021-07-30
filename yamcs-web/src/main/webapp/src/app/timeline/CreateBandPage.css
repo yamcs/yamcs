@@ -1,0 +1,11 @@
+a.band-type {
+  display: inline-block;
+  width: 260px;
+  margin: 20px;
+  vertical-align: top;
+  text-decoration: none;
+}
+
+a.band-type:hover .mat-card {
+  background-color: #f2f2f2;
+}

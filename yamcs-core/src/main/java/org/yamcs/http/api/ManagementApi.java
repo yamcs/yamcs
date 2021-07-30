@@ -81,6 +81,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.templating.Template;
 import org.yamcs.templating.Variable;
 import org.yamcs.time.TimeService;
+import org.yamcs.timeline.TimelineService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.FilterParser;
@@ -838,6 +839,9 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
         if (!ysi.getServicesWithConfig(FileTransferService.class).isEmpty()) {
             instanceb.addCapabilities("file-transfer");
+        }
+        if (!ysi.getServicesWithConfig(TimelineService.class).isEmpty()) {
+            instanceb.addCapabilities("timeline");
         }
         return instanceb.build();
     }

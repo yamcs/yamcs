@@ -96,6 +96,10 @@ const routes: Routes = [
         loadChildren: () => import('src/app/links/LinksModule').then(m => m.LinksModule),
         canActivate: [AuthGuard],
       }, {
+        path: 'timeline',
+        loadChildren: () => import('src/app/timeline/TimelineModule').then(m => m.TimelineModule),
+        canActivate: [AuthGuard],
+      }, {
         path: 'telemetry',
         loadChildren: () => import('src/app/telemetry/TelemetryModule').then(m => m.TelemetryModule),
         canActivate: [AuthGuard],

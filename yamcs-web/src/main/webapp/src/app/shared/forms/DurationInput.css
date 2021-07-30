@@ -1,0 +1,13 @@
+.duration-input {
+  display: inline-block;
+}
+
+input {
+  margin: 0 !important;
+}
+
+.duration-input input {
+  display: inline-block;
+  width: 100px;
+  margin-right: 5px !important;
+}

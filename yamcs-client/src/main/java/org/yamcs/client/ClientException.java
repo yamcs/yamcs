@@ -50,5 +50,14 @@ public class ClientException extends Exception {
         public Any getDetail() {
             return detail;
         }
+
+        @Override
+        public String toString() {
+            return "ExceptionData{" +
+                    "type='" + type + '\'' +
+                    ", message='" + message + '\'' +
+                    ", detail=" + detail +
+                    '}';
+        }
     }
 }

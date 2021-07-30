@@ -28,10 +28,14 @@ function renderAggregateControlValues(prefix: string, value: AggregateValue): { 
 /**
  * Returns the stringified initial form value for a Value object.
  */
-function renderValue(value: Value) {
+function renderValue(value: Value, argument?: Argument) {
   switch (value.type) {
     case 'BOOLEAN':
-      return '' + value.booleanValue;
+      if (argument) {
+        return value.booleanValue ? argument.type.oneStringValue : argument.type.zeroStringValue;
+      } else { // TODO support this with booleans inside aggregates too
+        return '' + value.booleanValue;
+      }
     case 'FLOAT':
       return '' + value.floatValue;
     case 'DOUBLE':
@@ -126,7 +130,7 @@ export class CommandForm implements OnChanges {
           if (this.templateProvider) {
             const previousValue = this.templateProvider.getAssignment(argument.name);
             if (previousValue !== undefined) {
-              const stringValue = renderValue(previousValue);
+              const stringValue = renderValue(previousValue, argument);
               if (stringValue === argument.initialValue) {
                 this.argumentsWithInitial.push(argument);
               } else {
@@ -250,7 +254,7 @@ export class CommandForm implements OnChanges {
       if (templateProvider) {
         const previousValue = templateProvider.getAssignment(argument.name);
         if (previousValue !== undefined) {
-          initialValue = renderValue(previousValue);
+          initialValue = renderValue(previousValue, argument);
         }
       }
 

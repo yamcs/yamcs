@@ -11,6 +11,7 @@ services:
       name: "realtime"
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
   - name: tm_realtime

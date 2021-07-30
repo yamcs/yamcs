@@ -1,0 +1,12 @@
+.bands-from, .bands-to {
+  border: 1px solid #d3d3d3;
+  flex: 1 1 auto;
+}
+
+.bands-from th, .bands-to th {
+  text-align: center;
+}
+
+.bands-from td, .bands-to td {
+  cursor: pointer;
+}

@@ -32,11 +32,14 @@ export class InstancePage implements OnInit, OnDestroy {
   telemetryExpanded = false;
   commandingActive = false;
   commandingExpanded = false;
+  timelineActive = false;
+  timelineExpanded = false;
   mdbActive = false;
   mdbExpanded = false;
 
   telemetryItems: NavItem[] = [];
   commandingItems: NavItem[] = [];
+  timelineItems: NavItem[] = [];
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
@@ -89,6 +92,15 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
+    if (this.user.hasSystemPrivilege('ReadTimeline')) {
+      this.timelineItems.push({ path: 'chart', label: 'Chart' });
+    }
+    if (this.user.hasSystemPrivilege('ControlTimeline')) {
+      this.timelineItems.push({ path: 'views', label: 'Views' });
+      this.timelineItems.push({ path: 'bands', label: 'Bands' });
+      this.timelineItems.push({ path: 'items', label: 'Items' });
+    }
+
     if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
       this.mdbItems.push({ path: '', label: 'Overview' });
       this.mdbItems.push({ path: 'parameters', label: 'Parameters' });
@@ -120,6 +132,7 @@ export class InstancePage implements OnInit, OnDestroy {
       this.mdbActive = false;
       this.commandingActive = false;
       this.telemetryActive = false;
+      this.timelineActive = false;
       this.collapseAllGroups();
       if (url.match(/\/mdb.*/)) {
         this.mdbActive = true;
@@ -130,6 +143,9 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/telemetry.*/)) {
         this.telemetryActive = true;
         this.telemetryExpanded = true;
+      } else if (url.match(/\/timeline.*/)) {
+        this.timelineActive = true;
+        this.timelineExpanded = true;
       }
     });
   }
@@ -162,6 +178,7 @@ export class InstancePage implements OnInit, OnDestroy {
   private collapseAllGroups() {
     this.telemetryExpanded = false;
     this.commandingExpanded = false;
+    this.timelineExpanded = false;
     this.mdbExpanded = false;
   }
 
@@ -181,6 +198,12 @@ export class InstancePage implements OnInit, OnDestroy {
     const expanded = this.mdbExpanded;
     this.collapseAllGroups();
     this.mdbExpanded = !expanded;
+  }
+
+  toggleTimelineGroup() {
+    const expanded = this.timelineExpanded;
+    this.collapseAllGroups();
+    this.timelineExpanded = !expanded;
   }
 
   showLinksItem() {

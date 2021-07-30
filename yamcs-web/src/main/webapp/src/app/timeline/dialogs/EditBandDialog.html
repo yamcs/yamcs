@@ -1,0 +1,15 @@
+<div class="mat-typography ya-form" *ngIf="data.band as band" style="max-width: 600px;">
+  <h2>Edit Band</h2>
+  <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
+                      [band]="band"
+                      (onConfirm)="onConfirm($event)"
+                      (onCancel)="onCancel()"></app-edit-item-band>
+  <app-edit-spacer *ngIf="band.type === 'SPACER'"
+                   [band]="band"
+                   (onConfirm)="onConfirm($event)"
+                   (onCancel)="onCancel()"></app-edit-spacer>
+  <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
+                       [band]="band"
+                       (onConfirm)="onConfirm($event)"
+                       (onCancel)="onCancel()"></app-edit-time-ruler>
+</div>

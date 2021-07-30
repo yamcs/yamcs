@@ -52,6 +52,26 @@ export function subtractDuration(date: Date, isoDuration: string) {
   return dt;
 }
 
+export function convertProtoDurationToMillis(protoDuration: string) {
+  if (!protoDuration.endsWith("s")) {
+    throw new Error(`Invalid proto duration: ${protoDuration}`);
+  }
+  const parts = protoDuration.substring(0, protoDuration.length - 1).split(".", 2);
+  if (parts.length === 1) {
+    return Number(parts[0]) * 1000;
+  } else {
+    const seconds = Number(parts[0]);
+    let millisString = parts[1].substr(0, 3);
+    let millis = Number(millisString);
+    if (millisString.length === 1) {
+      millis *= 100;
+    } else if (millisString.length === 2) {
+      millis *= 10;
+    }
+    return (seconds * 1000) + millis;
+  }
+}
+
 /**
  * Converts an ISO duration string to the equivalent number of milliseconds.
  * This only works with seconds, minutes, hours and days.

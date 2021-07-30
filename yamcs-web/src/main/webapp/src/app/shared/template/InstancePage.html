@@ -87,6 +87,22 @@
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
+      <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
+        <app-sidebar-nav-group *ngIf=" timelineItems.length"
+                               label="Timeline" icon="pending_actions"
+                               [active]="timelineActive"
+                               [expanded]="timelineExpanded"
+                               (toggle)="toggleTimelineGroup()">
+          <app-sidebar-nav-item *ngFor="let item of timelineItems"
+                                [routerLink]="'/timeline/' + item.path"
+                                [queryParams]="{c: yamcs.context}"
+                                [exact]="item.path === ''"
+                                [subitem]="true">
+            {{ item.label }}
+          </app-sidebar-nav-item>
+        </app-sidebar-nav-group>
+      </ng-container>
+
       <app-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
                             routerLink="/filetransfer"
                             [queryParams]="{c: yamcs.context}">

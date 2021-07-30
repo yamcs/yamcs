@@ -27,6 +27,7 @@ import org.yamcs.client.base.WebSocketClientCallback;
 import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.client.storage.StorageClient;
+import org.yamcs.client.timeline.TimelineClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
@@ -499,6 +500,11 @@ public class YamcsClient {
         instance = Objects.requireNonNull(instance);
         processor = Objects.requireNonNull(processor);
         return new ProcessorClient(methodHandler, instance, processor);
+    }
+
+    public TimelineClient createTimelineClient(String instance, String processor) {
+        instance = Objects.requireNonNull(instance);
+        return new TimelineClient(methodHandler, instance);
     }
 
     public String getHost() {
