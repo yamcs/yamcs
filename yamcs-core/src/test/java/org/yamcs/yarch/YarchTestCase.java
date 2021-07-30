@@ -71,6 +71,20 @@ public abstract class YarchTestCase {
         context = new ExecutionContext(ydb);
     }
 
+    /**
+     * Reloads the database from disk (without removing the data)
+     */
+    protected void reloadDb() {
+        YarchDatabase.removeInstance(instance);
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        rse.dropTablespace(instance);
+        rse.createTablespace(instance);
+
+        ydb = YarchDatabase.getInstance(instance);
+        context = new ExecutionContext(ydb);
+
+    }
+
     protected void execute(String cmd, Object... args) throws StreamSqlException, ParseException {
         ydb.executeDiscardingResult(cmd, args);
     }

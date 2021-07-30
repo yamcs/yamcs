@@ -427,4 +427,11 @@ public class DataType {
     public byte getTypeId() {
         return id;
     }
+
+    /**
+     * Return true if this data type is an enum or a composite type (array) containing an enum
+     */
+    public boolean hasEnums() {
+        return val == _type.ENUM;
+    }
 }

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.yamcs.LoggingUtils;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 /**
@@ -23,7 +24,6 @@ public class ArrayTest extends YarchTestCase {
         for (int i = 0; i < n; i++) {
             s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(i, Arrays.asList("tag" + i, "tag" + (i + 1)))));
         }
-
     }
 
     @Test
@@ -38,6 +38,35 @@ public class ArrayTest extends YarchTestCase {
             List<String> tags = t.getColumn("tag");
             assertEquals(Arrays.asList("tag" + i, "tag" + (i + 1)), tags);
         }
+    }
+
+    @Test
+    public void testAcrossShutdown() throws Exception {
+
+        execute("create table testAcrossShutdown(id int, tag enum[], primary key(id))");
+        execute("create stream testAcrossShutdown_in(id long, tag enum[])");
+        execute("upsert into testAcrossShutdown select * from testAcrossShutdown_in");
+        Stream s = ydb.getStream("testAcrossShutdown_in");
+        s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(10, Arrays.asList("aa", "bb", "cc"))));
+
+        List<Tuple> tlist = fetchAllFromTable("testAcrossShutdown");
+        assertEquals(1, tlist.size());
+        Tuple t = tlist.get(0);
+        assertEquals(10, t.getIntColumn("id"));
+
+        List<String> tags = t.getColumn("tag");
+        assertEquals(Arrays.asList("aa", "bb", "cc"), tags);
+
+        reloadDb();
+
+        List<Tuple> tlist1 = fetchAllFromTable("testAcrossShutdown");
+        assertEquals(1, tlist1.size());
+
+        Tuple t1 = tlist1.get(0);
+        assertEquals(10, t1.getIntColumn("id"));
+
+        List<String> tags1 = t1.getColumn("tag");
+        assertEquals(Arrays.asList("aa", "bb", "cc"), tags1);
     }
 
     @Test

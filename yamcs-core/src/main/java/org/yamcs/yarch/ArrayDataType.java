@@ -13,6 +13,14 @@ public class ArrayDataType extends DataType {
         return elementType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasEnums() {
+        return elementType.hasEnums();
+    }
+
     @Override
     public int hashCode() {
         return 31 + elementType.hashCode();

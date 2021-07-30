@@ -94,7 +94,7 @@ class TableDefinitionSerializer {
         TableColumnInfo.Builder infob = TableColumnInfo.newBuilder();
         infob.setName(cdef.getName());
         infob.setType(cdef.getType().name());
-        if (cdef.getType() == DataType.ENUM) {
+        if (cdef.getType().hasEnums()) {
             BiMap<String, Short> enumValues = cdef.getEnumValues();
             if (enumValues != null) {
                 List<EnumValue> enumValueList = new ArrayList<>();
@@ -117,7 +117,7 @@ class TableDefinitionSerializer {
         DataType type = DataType.byName(tci.getType());
         TableColumnDefinition tcd = new TableColumnDefinition(name, type);
 
-        if (type == DataType.ENUM) {
+        if (type.hasEnums()) {
             BiMap<String, Short> m = HashBiMap.create();
             for (EnumValue val : tci.getEnumValueList()) {
                 m.put(val.getLabel(), (short) val.getValue());
@@ -143,7 +143,6 @@ class TableDefinitionSerializer {
             TableColumnDefinition cdef = fromProtobuf(tci);
             valueDef.add(cdef);
         }
-
         TableDefinition tdef = new TableDefinition(protodef.getFormatVersion(), keyDef, valueDef);
 
         try {
