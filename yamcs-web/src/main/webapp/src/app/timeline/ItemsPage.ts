@@ -21,6 +21,7 @@ export class ItemsPage implements AfterViewInit {
   displayedColumns = [
     'select',
     'name',
+    'tags',
     'start',
     'duration',
     'type',

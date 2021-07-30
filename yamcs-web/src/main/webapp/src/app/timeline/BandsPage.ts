@@ -20,6 +20,7 @@ export class BandsPage implements AfterViewInit {
     'select',
     'name',
     'description',
+    'tags',
     'type',
     'actions',
   ];
