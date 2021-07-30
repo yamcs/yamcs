@@ -1,14 +1,16 @@
+Version 5.5.3 released 30-Jul-2021
+- first version of the Yamcs Timeline
+- minor tweaks and fixes
+
 Version 5.5.2 released 22-Jun-2021
 - Fixed XTCE reference solver of types para->Type->BaseType which were defined in reverse order in different files.
 - Fixed parameter archive retrieval of raw values only.
 - yamcs-web: fixed replication page not showing info.
 
-
 Version 5.5.1 released 8-Jun-2021
 - Fixed (again) the name of the packets shown on yamcs-web front page (TM statistics)
 - Fixed an XTCE reference solving bug
 - Fixed the retrieval from parameter archive with the option useRawValue=true
-
 
 Version 5.5.0 released 1-Jun-2021
 - Added algorithm status and tracing (currently only working for global algorithms)
