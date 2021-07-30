@@ -36,10 +36,16 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     private YarchDatabaseInstance ydb;
 
     @Before
-    public void prepareTests() throws InterruptedException {
+    public void prepareTests() throws Exception {
         timelineClient = yamcsClient.createTimelineClient(yamcsInstance, "realtime");
         ydb = YarchDatabase.getInstance(yamcsInstance);
 
+        for (TimelineItem item : timelineClient.getItems(null, null, null).get()) {
+            timelineClient.deleteItem(item.getId()).get();
+        }
+        for (TimelineBand band : timelineClient.getBands().get()) {
+            timelineClient.deleteBand(band.getId()).get();
+        }
     }
 
     @Test

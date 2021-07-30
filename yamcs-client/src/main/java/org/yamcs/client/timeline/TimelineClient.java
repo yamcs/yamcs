@@ -14,6 +14,7 @@ import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AddBandRequest;
 import org.yamcs.protobuf.CreateItemRequest;
+import org.yamcs.protobuf.DeleteBandRequest;
 import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
 import org.yamcs.protobuf.GetItemRequest;
@@ -43,9 +44,13 @@ public class TimelineClient {
 
     public CompletableFuture<Page<TimelineItem>> getItems(Instant start, Instant stop, String band) {
         ListItemsRequest.Builder requestb = ListItemsRequest.newBuilder()
-                .setInstance(instance)
-                .setStart(toTimestamp(start))
-                .setStop(toTimestamp(stop));
+                .setInstance(instance);
+        if (start != null) {
+            requestb.setStart(toTimestamp(start));
+        }
+        if (stop != null) {
+            requestb.setStop(toTimestamp(stop));
+        }
         if (band != null) {
             requestb.setBand(band);
         }
@@ -189,6 +194,15 @@ public class TimelineClient {
         CompletableFuture<ListBandsResponse> f = new CompletableFuture<>();
         timelineService.listBands(null, request.build(), new ResponseObserver<>(f));
         return f.thenApply(r -> r.getBandsList());
+    }
+
+    public CompletableFuture<TimelineBand> deleteBand(String id) {
+        CompletableFuture<TimelineBand> f = new CompletableFuture<>();
+        DeleteBandRequest.Builder requestb = DeleteBandRequest.newBuilder()
+                .setInstance(instance)
+                .setId(id);
+        timelineService.deleteBand(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
     }
 
     public CompletableFuture<TimelineBand> addBand(TimelineBand band) {
