@@ -33,7 +33,7 @@ export class CreateViewPage {
     this.yamcs.yamcsClient.createTimelineView(this.yamcs.instance!, {
       name: formValue.name,
       bands: formValue.bands.map((v: TimelineBand) => v.id),
-    }).then(() => this.router.navigateByUrl(`/timeline/views?c=${this.yamcs.context}`))
+    }).then(view => this.router.navigateByUrl(`/timeline/chart?c=${this.yamcs.context}&view=${view.id}`))
       .catch(err => this.messageService.showError(err));
   }
 }

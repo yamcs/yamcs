@@ -29,6 +29,7 @@ export class CreateItemDialog {
       name: ['', Validators.required],
       start: [utils.toISOString(yamcs.getMissionTime()), Validators.required],
       duration: ['', Validators.required],
+      tags: [[], []],
     });
   }
 
@@ -37,6 +38,7 @@ export class CreateItemDialog {
       name: this.form.value['name'],
       start: utils.toISOString(this.form.value['start']),
       duration: this.form.value['duration'],
+      tags: this.form.value['tags'],
       type: 'EVENT',
     }).then(item => this.dialogRef.close(item))
       .catch(err => this.messageService.showError(err));

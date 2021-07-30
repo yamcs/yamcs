@@ -3,9 +3,14 @@ export interface CreateTimelineItemRequest {
   start: string;
   duration: string;
   type: TimelineItemType;
+  tags?: string[];
 }
 
-export interface UpdateTimelineItemRequest extends CreateTimelineItemRequest {
+export interface UpdateTimelineItemRequest {
+  name: string;
+  start: string;
+  duration: string;
+  tags?: string[];
 }
 
 export type TimelineItemType = 'EVENT' | 'MANUAL_ACTIVITY' | 'AUTO_ACTIVITY';
@@ -35,7 +40,7 @@ export interface TimelineItemsPage {
 }
 
 export interface GetTimelineItemsOptions {
-  type?: TimelineItemType;
+  band?: string;
 }
 
 export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND' | 'SPACER';

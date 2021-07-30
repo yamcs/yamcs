@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { UpdateTimelineItemRequest } from '../../client/types/timeline';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
@@ -35,16 +36,19 @@ export class EditItemDialog {
       name: [item.name, Validators.required],
       start: [item.start, Validators.required],
       duration: [item.duration, Validators.required],
+      tags: [item.tags || [], []],
     });
   }
 
   save() {
-    this.yamcs.yamcsClient.updateTimelineItem(this.yamcs.instance!, this.data.item.id, {
-      ...this.data.item,
-      name: this.form.value['name'],
-      start: utils.toISOString(this.form.value['start']),
-      duration: this.form.value['duration'],
-    }).then(item => this.dialogRef.close(item))
+    const formValue = this.form.value;
+    const options: UpdateTimelineItemRequest = {
+      name: formValue.name,
+      start: utils.toISOString(formValue.start),
+      duration: formValue.duration,
+      tags: formValue.tags,
+    };
+    this.yamcs.yamcsClient.updateTimelineItem(this.yamcs.instance!, this.data.item.id, options).then(item => this.dialogRef.close(item))
       .catch(err => this.messageService.showError(err));
   }
 

@@ -41,7 +41,7 @@ public class TimelineClient {
         timelineService = new TimelineApiClient(handler);
     }
 
-    public CompletableFuture<Page<TimelineItem>> getItems(Instant start, Instant stop, TimelineBand band) {
+    public CompletableFuture<Page<TimelineItem>> getItems(Instant start, Instant stop, String band) {
         ListItemsRequest.Builder requestb = ListItemsRequest.newBuilder()
                 .setInstance(instance)
                 .setStart(toTimestamp(start))

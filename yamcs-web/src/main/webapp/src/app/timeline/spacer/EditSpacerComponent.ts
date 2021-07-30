@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -35,6 +35,7 @@ export class EditSpacerComponent implements AfterViewInit, OnDestroy {
     private messageService: MessageService,
     private router: Router,
     readonly location: Location,
+    private changeDetection: ChangeDetectorRef,
   ) {
     this.form = this.formBuilder.group({
       name: null,
@@ -51,6 +52,7 @@ export class EditSpacerComponent implements AfterViewInit, OnDestroy {
       description: this.band.description || '',
       properties: addDefaultSpacerProperties(this.band.properties || {}),
     });
+    this.changeDetection.detectChanges();
     this.formSubscription = this.form.valueChanges.subscribe(() => {
       this.dirty$.next(true);
     });

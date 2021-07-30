@@ -169,12 +169,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (request.hasStart()) {
             interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
-        if (request.hasStart()) {
+        if (request.hasStop()) {
             interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         ItemFilter filter = new ItemFilter(interval);
         if (request.hasBand()) {
-            filter.setTags(request.getBand().getTagsList());
+            UUID bandId = UUID.fromString(request.getBand());
+            org.yamcs.timeline.TimelineBand band = timelineService.getTimelineBandDb().getBand(bandId);
+            filter.setTags(band.getTags());
         }
 
         ListItemsResponse.Builder resp = ListItemsResponse.newBuilder();

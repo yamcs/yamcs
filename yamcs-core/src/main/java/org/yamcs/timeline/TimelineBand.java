@@ -81,6 +81,10 @@ public class TimelineBand {
         this.username = username;
     }
 
+    public List<String> getTags() {
+        return tags;
+    }
+
     public void setTags(List<String> tags) {
         this.tags.clear();
         this.tags.addAll(tags);

@@ -200,7 +200,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
       if (band && band.type === 'ITEM_BAND') {
         queriedLines.push(line as EventLine);
         promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
-          type: 'EVENT',
+          band: band.id,
         }));
       }
     }

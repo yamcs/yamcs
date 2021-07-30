@@ -340,7 +340,8 @@ message ListItemsRequest {
   optional google.protobuf.Timestamp start = 5;
   optional google.protobuf.Timestamp stop = 6;
   
-  optional TimelineBand band = 7;
+  // Include only items matching a specific band's tags
+  optional string band = 7;
 }
 
 

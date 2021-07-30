@@ -131,7 +131,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         Page<TimelineItem> page = timelineClient.getItems(
                 Instant.parse("2020-01-20T00:00:00Z"),
                 Instant.parse("2020-01-22T00:00:00Z"),
-                band1a)
+                band1a.getId())
                 .get();
         Iterator<TimelineItem> iterator = page.iterator();
         TimelineItem item1 = iterator.next();
