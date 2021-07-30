@@ -40,6 +40,8 @@ export interface TimelineItemsPage {
 }
 
 export interface GetTimelineItemsOptions {
+  start?: string;
+  stop?: string;
   band?: string;
 }
 

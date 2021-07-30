@@ -3,7 +3,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { TimelineItem, TimelineView } from '../client/types/timeline';
 import { AuthService } from '../core/services/AuthService';
 import { MessageService } from '../core/services/MessageService';
@@ -74,14 +75,39 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     });
 
     this.timeline = new Timeline(this.container.nativeElement);
+
+    const changeEvents = new Subject();
+    this.timeline.addEventListener('viewportchange', (event: any) => {
+      changeEvents.next(event);
+    });
+    changeEvents.pipe(
+      debounceTime(400),
+    ).forEach((event: any) => {
+      this.refreshData();
+      this.router.navigate([], {
+        replaceUrl: true,
+        relativeTo: this.route,
+        queryParamsHandling: 'merge',
+        queryParams: {
+          start: new Date(event.start).toISOString(),
+          stop: new Date(event.stop).toISOString(),
+        }
+      });
+    });
     // this.timeline.sidebar!.backgroundColor = '#fcfcfc';
 
-    // Show Today
-    const start = this.yamcs.getMissionTime();
-    start.setUTCHours(0, 0, 0, 0);
-    const stop = new Date(start.getTime());
-    stop.setUTCDate(start.getUTCDate() + 1);
-    this.timeline.setBounds(start.getTime(), stop.getTime());
+    if (queryParams.get('start') && queryParams.get('stop')) {
+      const start = utils.toDate(queryParams.get('start'));
+      const stop = utils.toDate(queryParams.get('stop'));
+      this.timeline.setBounds(start.getTime(), stop.getTime());
+    } else {
+      // Show Today
+      const start = this.yamcs.getMissionTime();
+      start.setUTCHours(0, 0, 0, 0);
+      const stop = new Date(start.getTime());
+      stop.setUTCDate(start.getUTCDate() + 1);
+      this.timeline.setBounds(start.getTime(), stop.getTime());
+    }
 
     const locator = new TimeLocator(this.timeline, () => this.yamcs.getMissionTime().getTime());
     locator.knobColor = 'salmon';
@@ -195,12 +221,20 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   refreshData() {
     const queriedLines: EventLine[] = [];
     const promises = [];
+
+    // Load beyond the edges (for pan purposes)
+    const viewportRange = this.timeline.stop - this.timeline.start;
+    const loadStart = this.timeline.start - viewportRange;
+    const loadStop = this.timeline.stop + viewportRange;
+
     for (const line of this.lines) {
       const band = this.getBandForLine(line);
       if (band && band.type === 'ITEM_BAND') {
         queriedLines.push(line as EventLine);
         promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
           band: band.id,
+          start: new Date(loadStart).toISOString(),
+          stop: new Date(loadStop).toISOString(),
         }));
       }
     }
