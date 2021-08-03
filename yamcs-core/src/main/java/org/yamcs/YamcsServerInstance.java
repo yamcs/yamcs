@@ -18,6 +18,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -142,6 +143,7 @@ public class YamcsServerInstance extends AbstractService {
         }
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         ydb.close();
+        RdbStorageEngine.removeInstance(ydb);
         YarchDatabase.removeInstance(instanceName);
         notifyStopped();
     }
