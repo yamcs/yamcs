@@ -43,6 +43,17 @@ address (string)
 port (integer)
     The port to which Yamcs will bind waiting for HTTP clients. Default: ``8090``
 
+tlsCert (string or list of strings)
+    If specified, the server will be listening for TLS connections. TLS is used for encrypting the data.
+
+    In case the file is a bundle containing multiple certificates, the certificates must be ordered from leaf to root.
+
+    Multiple certificate files may also be provided as an array. Again, certificates must then be ordered from leaf to root, between the files and also between certificates within the files.
+
+tlsKey (string)
+    **Required** if ``tlsCert`` is specified. The key to the certificate.
+
+
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
     
