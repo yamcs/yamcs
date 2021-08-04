@@ -5,6 +5,7 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,7 +123,7 @@ public class RefXtceCommandingTest {
     @Test
     public void testAggregateCmdArg() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        List<ArgumentAssignment> arguments = new ArrayList<>();
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 23.4}");
         arguments.add(argumentAssignment1);
         byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
@@ -132,10 +133,34 @@ public class RefXtceCommandingTest {
         assertEquals(23.4, bb.getDouble(), 1e-5);
     }
 
+    @Test
+    public void testAggregateCmdArgInitialValue() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command4");
+        List<ArgumentAssignment> arguments = new ArrayList<>();
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42}");
+        arguments.add(argumentAssignment1);
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals(12, b.length);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        assertEquals(42, bb.getInt());
+        assertEquals(3.14, bb.getDouble(), 1e-5);
+    }
+
+    @Test
+    public void testAggregateCmdArgInitialValue2() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command4");
+        List<ArgumentAssignment> arguments = new ArrayList<>();
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals(12, b.length);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        assertEquals(7, bb.getInt());
+        assertEquals(3.14, bb.getDouble(), 1e-5);
+    }
+
     @Test(expected = org.yamcs.ErrorInCommand.class)
     public void testAggregateCmdArgOutOfRange() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        List<ArgumentAssignment> arguments = new ArrayList<>();
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("arg1", "{m1: 42, m2: 123.4}");
         arguments.add(argumentAssignment1);
         metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();

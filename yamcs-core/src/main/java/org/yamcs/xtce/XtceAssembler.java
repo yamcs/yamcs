@@ -324,9 +324,13 @@ public class XtceAssembler {
 
         doc.writeStartElement("MemberList");
         for (Member member : type.getMemberList()) {
+            DataType mtype = member.getType();
             doc.writeStartElement("Member");
             writeNameDescription(doc, member);
-            doc.writeAttribute("typeRef", member.getType().getName());
+            doc.writeAttribute("typeRef", mtype.getName());
+            if (member.getInitialValue() != null) {
+                doc.writeAttribute("initialValue", member.getInitialValue().toString());
+            }
             doc.writeEndElement();
         }
         doc.writeEndElement();

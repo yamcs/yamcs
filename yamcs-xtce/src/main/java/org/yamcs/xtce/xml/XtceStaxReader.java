@@ -722,27 +722,24 @@ public class XtceStaxReader {
         member.setShortDescription(readAttribute("shortDescription", element, null));
 
         String typeRef = readMandatoryAttribute("typeRef", element);
+        String initialValue = readAttribute("initialValue", element, null);
 
         if (paramOrAggreg) {
-            ParameterType ptype = spaceSystem.getParameterType(typeRef);
-            if (ptype != null) {
-                member.setDataType(ptype);
-            } else {
-                NameReference nr = new NameReference(typeRef, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
-                    member.setDataType((ParameterType) nd);
-                });
-                spaceSystem.addUnresolvedReference(nr);
-            }
+            NameReference nr = new NameReference(typeRef, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+                member.setDataType((ParameterType) nd);
+                if (initialValue != null) {
+                    member.setInitialValue(initialValue);
+                }
+            });
+            spaceSystem.addUnresolvedReference(nr);
         } else {
-            ArgumentType atype = spaceSystem.getArgumentType(typeRef);
-            if (atype != null) {
-                member.setDataType(atype);
-            } else {
-                NameReference nr = new NameReference(typeRef, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
-                    member.setDataType((ArgumentType) nd);
-                });
-                spaceSystem.addUnresolvedReference(nr);
-            }
+            NameReference nr = new NameReference(typeRef, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
+                member.setDataType((ArgumentType) nd);
+                if (initialValue != null) {
+                    member.setInitialValue(initialValue);
+                }
+            });
+            spaceSystem.addUnresolvedReference(nr);
         }
         return member;
     }

@@ -203,7 +203,13 @@
 			<xtce:AggregateArgumentType name="aggr_arg_type1">
 				<xtce:MemberList>
 					<xtce:Member name="m1" typeRef="u32" />
-					<xtce:Member name="m2" typeRef="f64limit100" />
+					<xtce:Member name="m2" typeRef="f64limit100"/>
+				</xtce:MemberList>
+			</xtce:AggregateArgumentType>
+			<xtce:AggregateArgumentType name="aggr_arg_with_initial_values">
+				<xtce:MemberList>
+					<xtce:Member name="m1" typeRef="u32" initialValue="7"/>
+					<xtce:Member name="m2" typeRef="f64limit100" initialValue="3.14"/>
 				</xtce:MemberList>
 			</xtce:AggregateArgumentType>
 			<xtce:IntegerArgumentType name="u32" signed="false">
@@ -266,6 +272,16 @@
 					<xtce:Argument name="arg1" argumentTypeRef="barray" />
 				</xtce:ArgumentList>
 				<xtce:CommandContainer name="command3">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="command4">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="aggr_arg_with_initial_values" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command4">
 					<xtce:EntryList>
 						<xtce:ArgumentRefEntry argumentRef="arg1" />
 					</xtce:EntryList>
