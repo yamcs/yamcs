@@ -45,6 +45,13 @@
         <mat-icon>add_circle_outline</mat-icon>
         ADD ITEM
       </button>
+      <button mat-button
+              color="primary"
+              (click)="saveSnapshot()"
+              *ngIf="view$ | async">
+        <mat-icon>photo_camera</mat-icon>
+        SAVE SNAPSHOT
+      </button>
     </ng-container>
   </app-instance-toolbar>
 

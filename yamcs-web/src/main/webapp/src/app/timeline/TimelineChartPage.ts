@@ -349,6 +349,18 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     });
   }
 
+  saveSnapshot() {
+    const a = document.createElement('a');
+    try {
+      a.href = this.timeline.toDataURL();
+      a.download = 'timeline_' + this.view$.value!.name + '_export.png';
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      document.body.removeChild(a);
+    }
+  }
+
   mayControlTimeline() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
   }
