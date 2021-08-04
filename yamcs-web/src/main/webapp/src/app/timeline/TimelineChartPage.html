@@ -90,4 +90,10 @@
 
   <div #container class="timeline-container">
   </div>
+
+  <div class="info">
+    <span *ngIf="viewportRange$ | async as viewportRange">
+      {{ viewportRange?.start | datetime:false }} &ndash; {{ viewportRange?.stop | datetime }}
+    </span>
+  </div>
 </app-instance-page>

@@ -7,3 +7,12 @@
   left: 0;
   right: 0;
 }
+
+.info {
+  position: absolute;
+  bottom: 35px;
+  right: 0;
+  padding: 0 16px;
+  opacity: 0.75;
+  font-size: small;
+}

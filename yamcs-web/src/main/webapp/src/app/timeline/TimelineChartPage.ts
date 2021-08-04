@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbsoluteTimeAxis, Event, EventLine, Line, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { TimelineItem, TimelineView } from '../client/types/timeline';
 import { AuthService } from '../core/services/AuthService';
@@ -17,6 +17,11 @@ import { EditViewDialog } from './dialogs/EditViewDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
 import { addDefaultItemBandProperties } from './itemBand/ItemBandStyles';
 import { addDefaultSpacerProperties } from './spacer/SpacerStyles';
+
+interface TimeRange {
+  start: Date;
+  stop: Date;
+}
 
 
 @Component({
@@ -34,6 +39,8 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
   private timeline: Timeline;
   private moveInterval?: number;
+
+  viewportRange$ = new BehaviorSubject<TimeRange | null>(null);
 
   private lines: Line[] = [];
 
@@ -75,21 +82,23 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
     this.timeline = new Timeline(this.container.nativeElement);
 
-    const changeEvents = new Subject();
     this.timeline.addViewportChangeListener(event => {
-      changeEvents.next(event);
+      this.viewportRange$.next({
+        start: new Date(event.start),
+        stop: new Date(event.stop),
+      });
     });
-    changeEvents.pipe(
+    this.viewportRange$.pipe(
       debounceTime(400),
-    ).forEach((event: any) => {
+    ).forEach(range => {
       this.refreshData();
       this.router.navigate([], {
         replaceUrl: true,
         relativeTo: this.route,
         queryParamsHandling: 'merge',
         queryParams: {
-          start: new Date(event.start).toISOString(),
-          stop: new Date(event.stop).toISOString(),
+          start: range!.start.toISOString(),
+          stop: range!.stop.toISOString(),
         }
       });
     });
