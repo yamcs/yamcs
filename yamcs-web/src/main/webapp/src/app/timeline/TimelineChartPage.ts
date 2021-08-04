@@ -35,8 +35,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   private timeline: Timeline;
   private moveInterval?: number;
 
-  private lines: Line<any>[] = [];
-  private idByLine = new Map<Line<any>, string>();
+  private lines: Line[] = [];
 
   constructor(
     title: Title,
@@ -77,7 +76,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     this.timeline = new Timeline(this.container.nativeElement);
 
     const changeEvents = new Subject();
-    this.timeline.addEventListener('viewportchange', (event: any) => {
+    this.timeline.addViewportChangeListener(event => {
       changeEvents.next(event);
     });
     changeEvents.pipe(
@@ -114,28 +113,25 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
     new MouseTracker(this.timeline);
 
-    this.timeline.addEventListener('headerclick', evt => {
-      const id = this.idByLine.get(evt.line);
-      if (id) {
-        const band = this.view$.value!.bands!.filter(b => b.id === id)[0];
-        const dialogRef = this.dialog.open(EditBandDialog, {
-          width: '70%',
-          height: '100%',
-          autoFocus: false,
-          position: {
-            right: '0',
-          },
-          data: { band }
-        });
-        dialogRef.afterClosed().subscribe(updatedBand => {
-          if (updatedBand) {
-            this.refreshView();
-          }
-        });
-      }
+    this.timeline.addHeaderClickListener(evt => {
+      const band = evt.line.data.band;
+      const dialogRef = this.dialog.open(EditBandDialog, {
+        width: '70%',
+        height: '100%',
+        autoFocus: false,
+        position: {
+          right: '0',
+        },
+        data: { band }
+      });
+      dialogRef.afterClosed().subscribe(updatedBand => {
+        if (updatedBand) {
+          this.refreshView();
+        }
+      });
     });
 
-    this.timeline.addEventListener('eventclick', evt => {
+    this.timeline.addEventClickListener(evt => {
       const dialogRef = this.dialog.open(EditItemDialog, {
         width: '600px',
         data: { item: evt.event.data.item }
@@ -168,50 +164,50 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
     this.view$.next(view);
     for (const line of this.timeline.getLines()) {
-      this.timeline.removeLine(line);
+      this.timeline.removeChild(line);
     }
     if (view) {
       for (const band of (view.bands || [])) {
         if (band.type === 'TIME_RULER') {
-          const axis = new AbsoluteTimeAxis(this.timeline);
-          axis.label = band.name;
-          axis.timezone = band.properties!.timezone;
+          const line = new AbsoluteTimeAxis(this.timeline);
+          line.label = band.name;
+          line.timezone = band.properties!.timezone;
           // axis.frozen = true;
-          this.lines.push(axis);
-          this.idByLine.set(axis, band.id);
+          line.data = { band };
+          this.lines.push(line);
         } else if (band.type === 'ITEM_BAND') {
-          const eventLine = new EventLine(this.timeline);
-          eventLine.label = band.name;
+          const line = new EventLine(this.timeline);
+          line.label = band.name;
+          line.data = { band };
 
           const properties = addDefaultItemBandProperties(band.properties || {});
-          eventLine.eventColor = properties.itemBackgroundColor;
-          eventLine.borderColor = properties.itemBorderColor;
-          eventLine.borderWidth = properties.itemBorderWidth;
-          eventLine.cornerRadius = properties.itemCornerRadius;
-          eventLine.eventHeight = properties.itemHeight;
-          eventLine.eventMarginLeft = properties.itemMarginLeft;
-          eventLine.textColor = properties.itemTextColor;
-          eventLine.textOverflow = properties.itemTextOverflow;
-          eventLine.textSize = properties.itemTextSize;
-          eventLine.marginBottom = properties.marginBottom;
-          eventLine.marginTop = properties.marginTop;
-          eventLine.wrap = properties.multiline;
-          eventLine.spaceBetween = properties.spaceBetweenItems;
-          eventLine.lineSpacing = properties.spaceBetweenLines;
+          line.eventColor = properties.itemBackgroundColor;
+          line.borderColor = properties.itemBorderColor;
+          line.borderWidth = properties.itemBorderWidth;
+          line.cornerRadius = properties.itemCornerRadius;
+          line.eventHeight = properties.itemHeight;
+          line.eventMarginLeft = properties.itemMarginLeft;
+          line.textColor = properties.itemTextColor;
+          line.textOverflow = properties.itemTextOverflow;
+          line.textSize = properties.itemTextSize;
+          line.marginBottom = properties.marginBottom;
+          line.marginTop = properties.marginTop;
+          line.wrap = properties.multiline;
+          line.spaceBetween = properties.spaceBetweenItems;
+          line.lineSpacing = properties.spaceBetweenLines;
 
-          this.lines.push(eventLine);
-          this.idByLine.set(eventLine, band.id);
+          this.lines.push(line);
         } else if (band.type === 'SPACER') {
-          const spacer = new EventLine(this.timeline);
-          spacer.label = band.name;
+          const line = new EventLine(this.timeline);
+          line.label = band.name;
+          line.data = { band };
 
           const properties = addDefaultSpacerProperties(band.properties || {});
-          spacer.eventHeight = properties.height;
-          spacer.marginTop = 0;
-          spacer.marginBottom = 0;
+          line.eventHeight = properties.height;
+          line.marginTop = 0;
+          line.marginBottom = 0;
 
-          this.lines.push(spacer);
-          this.idByLine.set(spacer, band.id);
+          this.lines.push(line);
         }
       }
       this.refreshData();
@@ -228,8 +224,8 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     const loadStop = this.timeline.stop + viewportRange;
 
     for (const line of this.lines) {
-      const band = this.getBandForLine(line);
-      if (band && band.type === 'ITEM_BAND') {
+      const band = line.data.band;
+      if (band.type === 'ITEM_BAND') {
         queriedLines.push(line as EventLine);
         promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
           band: band.id,
@@ -249,18 +245,18 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   }
 
   private populateEvents(line: EventLine, items: TimelineItem[]) {
-    const data: Event[] = [];
+    const events: Event[] = [];
     for (const item of items) {
       const start = utils.toDate(item.start).getTime();
       const event: Event = {
         start,
         stop: start + utils.convertProtoDurationToMillis(item.duration),
-        title: item.name,
+        label: item.name,
         data: { item },
       };
-      data.push(event);
+      events.push(event);
     }
-    line.data = data;
+    line.events = events;
   }
 
   openCreateItemDialog() {
@@ -346,17 +342,6 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
 
   mayControlTimeline() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
-  }
-
-  private getBandForLine(line: Line<any>) {
-    const id = this.idByLine.get(line);
-    if (id) {
-      for (const band of this.view$.value?.bands || []) {
-        if (band.id === id) {
-          return band;
-        }
-      }
-    }
   }
 
   ngOnDestroy() {
