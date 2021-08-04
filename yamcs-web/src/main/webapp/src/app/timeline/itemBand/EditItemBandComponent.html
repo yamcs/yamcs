@@ -1,32 +1,26 @@
-<form [formGroup]="form"
-      novalidate
-      autocomplete="off">
-  <label>
-    Label <span class="hint">(required)</span><br>
-    <input type="text" formControlName="name">
-  </label>
-  <br>
-  <label>
-    Description <span class="hint">(optional)</span><br>
-    <textarea formControlName="description" rows="3"></textarea>
-  </label>
-  <br>
-  <label>
-    Tags<br>
-    <app-tag-select formControlName="tags"></app-tag-select>
-  </label>
+<ng-container *ngIf="formConfigured$ | async">
+  <form [formGroup]="form">
+    <label>
+      Label <span class="hint">(required)</span><br>
+      <input type="text" formControlName="name">
+    </label>
+    <br>
+    <label>
+      Description <span class="hint">(optional)</span><br>
+      <textarea formControlName="description" rows="3"></textarea>
+    </label>
+    <br>
+    <label>
+      Tags<br>
+      <app-tag-select formControlName="tags"></app-tag-select>
+    </label>
 
-  <br>
-  <div class="section-divider">
-    <mat-divider></mat-divider>
-  </div>
+    <br>
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
 
-  <h4>Styles</h4>
-  <app-item-band-styles [form]="form"></app-item-band-styles>
-</form>
-<p>&nbsp;</p>
-<div class="action-bar">
-  <button class="ya-button" (click)="onCancel.emit()">Cancel</button>
-  <button class="ya-button primary" type="submit" (click)="doOnConfirm()"
-          [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
-</div>
+    <h4>Styles</h4>
+    <app-item-band-styles [form]="form"></app-item-band-styles>
+  </form>
+</ng-container>

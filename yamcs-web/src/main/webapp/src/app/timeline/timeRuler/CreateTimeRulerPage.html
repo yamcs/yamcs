@@ -18,11 +18,13 @@
         Description <span class="hint">(optional)</span><br>
         <textarea formControlName="description" rows="3"></textarea>
       </label>
-      <br>
-      <label>
-        Timezone<br>
-        <app-timezone-select formControlName="timezone"></app-timezone-select>
-      </label>
+      <ng-container formGroupName="properties">
+        <br>
+        <label>
+          Timezone<br>
+          <app-timezone-select formControlName="timezone"></app-timezone-select>
+        </label>
+      </ng-container>
     </form>
     <p>&nbsp;</p>
     <div class="action-bar">

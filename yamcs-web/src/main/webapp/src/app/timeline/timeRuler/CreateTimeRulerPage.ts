@@ -24,7 +24,9 @@ export class CreateTimeRulerPage {
     this.form = formBuilder.group({
       name: ['', [Validators.required]],
       description: '',
-      timezone: ['UTC', [Validators.required]],
+      properties: formBuilder.group({
+        timezone: ['UTC', [Validators.required]],
+      }),
     });
   }
 
@@ -36,9 +38,7 @@ export class CreateTimeRulerPage {
       description: formValue.description,
       type: 'TIME_RULER',
       shared: true,
-      properties: {
-        timezone: formValue.timezone,
-      }
+      properties: formValue.properties,
     }).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
       .catch(err => this.messageService.showError(err));
   }
