@@ -172,7 +172,6 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           const line = new AbsoluteTimeAxis(this.timeline);
           line.label = band.name;
           line.timezone = band.properties!.timezone;
-          // axis.frozen = true;
           line.data = { band };
           this.lines.push(line);
         } else if (band.type === 'ITEM_BAND') {
@@ -181,6 +180,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           line.data = { band };
 
           const properties = addDefaultItemBandProperties(band.properties || {});
+          line.frozen = properties.frozen;
           line.eventColor = properties.itemBackgroundColor;
           line.borderColor = properties.itemBorderColor;
           line.borderWidth = properties.itemBorderWidth;

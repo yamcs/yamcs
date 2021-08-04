@@ -41,6 +41,7 @@ export class EditItemBandComponent implements AfterViewInit, OnDestroy {
       name: [null, [Validators.required]],
       description: null,
       properties: this.formBuilder.group({
+        frozen: [null, [Validators.required]],
         itemBackgroundColor: [null, [Validators.required]],
         itemBorderColor: [null, [Validators.required]],
         itemBorderWidth: [null, [Validators.required]],

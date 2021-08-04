@@ -26,6 +26,7 @@ export class CreateItemBandPage {
       name: ['', [Validators.required]],
       description: '',
       properties: formBuilder.group({
+        frozen: [defaultProperties.frozen, [Validators.required]],
         itemBackgroundColor: [defaultProperties.itemBackgroundColor, [Validators.required]],
         itemBorderColor: [defaultProperties.itemBorderColor, [Validators.required]],
         itemBorderWidth: [defaultProperties.itemBorderWidth, [Validators.required]],

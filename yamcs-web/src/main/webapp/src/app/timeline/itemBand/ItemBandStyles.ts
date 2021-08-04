@@ -4,6 +4,7 @@ import { Option } from '../../shared/forms/Select';
 
 export interface ItemBandProperties {
   [key: string]: any,
+  frozen: boolean,
   itemBackgroundColor: string,
   itemBorderColor: string,
   itemBorderWidth: number,
@@ -21,6 +22,7 @@ export interface ItemBandProperties {
 }
 
 export const defaultProperties: ItemBandProperties = {
+  frozen: false,
   itemBackgroundColor: '#77b1e1',
   itemBorderColor: '#3d94c7',
   itemBorderWidth: 1,

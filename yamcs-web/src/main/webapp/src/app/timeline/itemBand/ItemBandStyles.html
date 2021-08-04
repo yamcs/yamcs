@@ -2,9 +2,21 @@
   <table class="style-table" yaSimpleTable formGroupName="properties">
     <tr>
       <td class="property">
+        Frozen
+        <app-help dialogTitle="Frozen">
+          Fix this line to the top of the view. Frozen bands are
+          always rendered above other bands.
+        </app-help>
+      </td>
+      <td class="widget">
+        <mat-slide-toggle formControlName="frozen"></mat-slide-toggle>
+      </td>
+    </tr>
+    <tr>
+      <td class="property">
         Multiline
         <app-help dialogTitle="Multiline">
-          When enabled, items are drawn on multiple lines if otherwise there would be collisions.
+          Draw items on multiple lines if otherwise there would be collisions.
         </app-help>
       </td>
       <td class="widget">
