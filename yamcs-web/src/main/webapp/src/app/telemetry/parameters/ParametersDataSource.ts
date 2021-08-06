@@ -3,6 +3,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { GetParametersOptions, NamedObjectId, Parameter, ParameterSubscription, ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
+import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
 
 export class ListItem {
   spaceSystem: boolean;
@@ -23,7 +24,11 @@ export class ParametersDataSource extends DataSource<ListItem> {
 
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, private synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    private synchronizer: Synchronizer,
+    private memberPathPipe: MemberPathPipe,
+  ) {
     super();
   }
 
@@ -52,7 +57,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       for (const parameter of (page.parameters || [])) {
         items.push({
           spaceSystem: false,
-          name: parameter.qualifiedName,
+          name: this.memberPathPipe.transform(parameter)!,
           parameter: parameter,
         });
       }
@@ -72,7 +77,10 @@ export class ParametersDataSource extends DataSource<ListItem> {
   }
 
   private startSubscription(parameters: Parameter[]) {
-    const ids = parameters.map(p => ({ name: p.qualifiedName }));
+    const ids = parameters.map(p => {
+      const fullPath = this.memberPathPipe.transform(p)!;
+      return { name: fullPath };
+    });
     if (ids.length) {
       this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
         instance: this.yamcs.instance!,
