@@ -260,7 +260,7 @@ public class TseDataLink extends AbstractLink {
                         eventLoopGroup.schedule(() -> createBootstrap(), 10, TimeUnit.SECONDS);
                     }
                 });
-            } else {
+            } else if (isRunningAndEnabled()) {
                 log.info("Cannot establish link to {}:{}: {}. Retrying in 10s",
                         host, port, f.cause().getMessage());
                 eventLoopGroup.schedule(() -> createBootstrap(), 10, TimeUnit.SECONDS);
@@ -270,6 +270,11 @@ public class TseDataLink extends AbstractLink {
 
     @Override
     protected void doStop() {
+        if (channel == null) {
+            notifyStopped();
+            return;
+        }
+
         channel.close().addListener(f -> {
             if (f.isSuccess()) {
                 notifyStopped();
