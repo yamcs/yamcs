@@ -119,6 +119,7 @@ import { TabDetailIcon } from './template/TabDetailIcon';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
+import { TitleCopy } from './title-copy/TitleCopy';
 import { AlarmLabel } from './widgets/AlarmLabel';
 import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
@@ -227,6 +228,7 @@ const sharedComponents = [
   TextAction,
   TimestampTracker,
   TimezoneSelect,
+  TitleCopy,
   ToolbarActions,
   WarningMessage,
 ];

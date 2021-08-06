@@ -6,6 +6,7 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
+      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')"></app-title-copy>
     </ng-container>
     &nbsp;&nbsp;&nbsp;
     <button *ngIf="isWritable() && maySetParameter() && !(offset$ | async)"
