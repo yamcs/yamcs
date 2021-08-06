@@ -243,23 +243,23 @@ public class MdbApi extends AbstractMdbApi<Context> {
             candidates.addAll(allParameters);
         }
 
-        // Now do the actual brute-force search
-        List<Parameter> filteredCandidates = candidates.stream()
-                .filter(p -> parameterTypeMatches((Parameter) p, request.getTypeList()))
-                .filter(p -> !request.hasSource() || parameterSourceMatches((Parameter) p, request.getSource()))
-                .collect(Collectors.toList());
-
         // Match parameters
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
-        List<NameDescription> matches = filteredCandidates.stream()
+        List<NameDescription> matches = candidates.stream()
+                .filter(p -> !request.hasSource() || parameterSourceMatches((Parameter) p, request.getSource()))
+                .filter(item -> parameterTypeMatches(item.getParameterType(), request.getTypeList()))
                 .filter(item -> matcher == null || matcher.matches(item))
                 .collect(Collectors.toList());
 
         // If requested, match also member paths inside parameters
         if (request.getSearchMembers() && request.hasQ()) {
             List<NameDescription> memberMatches = new ArrayList<>();
-            for (Parameter parameter : filteredCandidates) {
-                memberMatches.addAll(MdbSearchHelpers.searchEntries(parameter, request.getQ()));
+            for (Parameter parameter : candidates) {
+                if (!request.hasSource() || parameterSourceMatches(parameter, request.getSource())) {
+                    MdbSearchHelpers.searchEntries(parameter, request.getQ()).stream()
+                            .filter(entry -> parameterTypeMatches(entry.entryType, request.getTypeList()))
+                            .forEach(memberMatches::add);
+                }
             }
             matches.addAll(memberMatches);
         }
@@ -665,12 +665,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
         observer.complete(cinfo);
     }
 
-    private boolean parameterTypeMatches(Parameter p, List<String> types) {
+    private boolean parameterTypeMatches(ParameterType ptype, List<String> types) {
         if (types.isEmpty()) {
             return true;
         }
-        return p.getParameterType() != null
-                && types.contains(p.getParameterType().getTypeAsString());
+        return ptype != null && types.contains(ptype.getTypeAsString());
     }
 
     private boolean parameterSourceMatches(Parameter p, DataSourceType source) {

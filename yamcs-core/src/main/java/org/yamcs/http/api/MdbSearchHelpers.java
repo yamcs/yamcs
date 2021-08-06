@@ -170,12 +170,14 @@ public class MdbSearchHelpers {
     static class EntryMatch extends NameDescription {
         public Parameter parameter;
         public PathElement[] entryPath;
+        public ParameterType entryType;
 
         private EntryMatch(Entry entry) {
             super(new MdbSearchHelpers.Builder()
                     .setQualifiedName(entry.parameter.getQualifiedName()));
             this.entryPath = entry.path;
             this.parameter = entry.parameter;
+            this.entryType = entry.ptype;
             String name = entryPath[0].getName().substring(entry.parameter.getQualifiedName().length());
             entryPath[0] = new PathElement(name.isEmpty() ? null : name, entryPath[0].getIndex());
         }
