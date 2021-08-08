@@ -10,6 +10,7 @@ import { AbsoluteTimeAxis, Event, EventLine, MouseTracker, Timeline, TimeLocator
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { IndexGroup } from '../client';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
@@ -73,6 +74,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private dateTimePipe: DateTimePipe,
+    private messageService: MessageService,
   ) {
     title.setTitle('Archive Browser');
 
@@ -212,6 +214,27 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     this.timeline.addEventMouseOutListener(evt => {
       this.tooltipInstance.hide();
     });
+  }
+
+  fitAll() {
+    const promises = [];
+    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+      limit: 1,
+      order: 'asc',
+    }));
+    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+      limit: 1,
+      order: 'desc',
+    }));
+    Promise.all(promises).then(res => {
+      const startPromise = res[0];
+      const stopPromise = res[1];
+      if (startPromise.packet?.length && stopPromise.packet?.length) {
+        const start = utils.toDate(startPromise.packet[0].generationTime);
+        const stop = utils.toDate(stopPromise.packet[0].generationTime);
+        this.timeline.setBounds(start.getTime(), stop.getTime());
+      }
+    }).catch(err => this.messageService.showError(err));
   }
 
   jumpToToday() {
