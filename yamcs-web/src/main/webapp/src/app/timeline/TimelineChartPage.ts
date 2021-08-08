@@ -18,7 +18,7 @@ import { JumpToDialog } from './dialogs/JumpToDialog';
 import { addDefaultItemBandProperties } from './itemBand/ItemBandStyles';
 import { addDefaultSpacerProperties } from './spacer/SpacerStyles';
 
-interface TimeRange {
+interface DateRange {
   start: Date;
   stop: Date;
 }
@@ -40,7 +40,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   private timeline: Timeline;
   private moveInterval?: number;
 
-  viewportRange$ = new BehaviorSubject<TimeRange | null>(null);
+  viewportRange$ = new BehaviorSubject<DateRange | null>(null);
 
   private lines: Line[] = [];
 
@@ -191,14 +191,14 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           const properties = addDefaultItemBandProperties(band.properties || {});
           line.frozen = properties.frozen;
           line.eventColor = properties.itemBackgroundColor;
-          line.borderColor = properties.itemBorderColor;
-          line.borderWidth = properties.itemBorderWidth;
-          line.cornerRadius = properties.itemCornerRadius;
+          line.eventBorderColor = properties.itemBorderColor;
+          line.eventBorderWidth = properties.itemBorderWidth;
+          line.eventCornerRadius = properties.itemCornerRadius;
           line.eventHeight = properties.itemHeight;
           line.eventMarginLeft = properties.itemMarginLeft;
-          line.textColor = properties.itemTextColor;
-          line.textOverflow = properties.itemTextOverflow;
-          line.textSize = properties.itemTextSize;
+          line.eventTextColor = properties.itemTextColor;
+          line.eventTextOverflow = properties.itemTextOverflow;
+          line.eventTextSize = properties.itemTextSize;
           line.marginBottom = properties.marginBottom;
           line.marginTop = properties.marginTop;
           line.wrap = properties.multiline;
@@ -333,7 +333,8 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   }
 
   jumpToNow() {
-    this.timeline.panTo(new Date().getTime());
+    const missionTime = this.yamcs.getMissionTime();
+    this.timeline.panTo(missionTime.getTime());
   }
 
   openJumpToDialog() {
