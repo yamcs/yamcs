@@ -50,10 +50,15 @@ service IndexesApi {
   }
 
   // Streams back index records
+  //
+  // .. warning::
+  //     Avoid using this method. It is tagged for removal. Use other methods
+  //     that are specific in which type of index they are fetching.
   rpc StreamIndex(StreamIndexRequest) returns (stream IndexResult) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamIndex"
       body: "*"
+      deprecated: true
     };
   }
 
