@@ -32,6 +32,7 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -73,6 +74,7 @@ import com.google.protobuf.Empty;
 public class CommandsApi extends AbstractCommandsApi<Context> {
 
     private static final Pattern PATTERN_COMMAND_ID = Pattern.compile("([0-9]+)(-(.*))?-([0-9]+)");
+    private static final Log log = new Log(CommandsApi.class);
 
     @Override
     public void issueCommand(Context ctx, IssueCommandRequest request, Observer<IssueCommandResponse> observer) {
@@ -282,6 +284,10 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
 
+        if (request.hasPos()) {
+            log.warn("DEPRECATION WARNING: Do not use pos, use continuationToken instead");
+        }
+
         CommandPageToken nextToken = null;
         if (request.hasNext()) {
             String next = request.getNext();
@@ -313,6 +319,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         }
 
         sqlb.descend(desc);
+
+        // TODO: remove, not correct with permission filter below
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
@@ -330,6 +338,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                     if (count <= limit) {
                         responseb.addEntry(entry);
                         last = entry;
+                    } else {
+                        stream.close();
                     }
                 }
             }
