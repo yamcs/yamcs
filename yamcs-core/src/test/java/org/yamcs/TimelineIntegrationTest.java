@@ -51,11 +51,15 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testGetSources() throws Exception {
         Map<String, TimelineSourceCapabilities> sources = timelineClient.getSources().get();
-        assertEquals(1, sources.size());
+        assertEquals(2, sources.size());
         TimelineSourceCapabilities c = sources.get("rdb");
         assertNotNull(c);
         assertFalse(c.getReadOnly());
         assertTrue(c.getHasActivityGroups());
+
+        c = sources.get("commands");
+        assertNotNull(c);
+        assertTrue(c.getReadOnly());
     }
 
     @Test
@@ -315,7 +319,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
 
     private Void verifyException(Throwable t, String type) {
         ClientException e = (ClientException) t;
-        assertEquals(type, ((ClientException) t).getDetail().getType());
+        assertEquals(type, e.getDetail().getType());
         return null;
     }
 }

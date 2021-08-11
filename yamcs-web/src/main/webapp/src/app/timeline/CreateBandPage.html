@@ -9,36 +9,54 @@
 
   <app-create-band-wizard-step step="1"></app-create-band-wizard-step>
 
-  <div class="band-type-list">
-    <a class="band-type"
-       routerLink="time-ruler"
-       [queryParams]="{c: yamcs.context}">
-      <mat-card>
-        <mat-card-title>Time Ruler</mat-card-title>
-        <mat-card-content>
-          Displays absolute time, formatted in a timezone of your choice.
-        </mat-card-content>
-      </mat-card>
-    </a>
-    <a class="band-type"
-       routerLink="item-band"
-       [queryParams]="{c: yamcs.context}">
-      <mat-card>
-        <mat-card-title>Item Band</mat-card-title>
-        <mat-card-content>
-          Shows a selection of timeline items.<br><br>
-        </mat-card-content>
-      </mat-card>
-    </a>
-    <a class="band-type"
-       routerLink="spacer"
-       [queryParams]="{c: yamcs.context}">
-      <mat-card>
-        <mat-card-title>Spacer</mat-card-title>
-        <mat-card-content>
-          Inserts empty vertical space.<br><br>
-        </mat-card-content>
-      </mat-card>
-    </a>
+  <div class="panel-content">
+    <div class="category-title">General</div>
+    <div class="band-type-list">
+      <a class="band-type"
+         routerLink="time-ruler"
+         [queryParams]="{c: yamcs.context}">
+        <div class="card">
+          <div class="card-title">Time Ruler</div>
+          <div class="card-content">
+            Display absolute time, formatted in a timezone of choice.
+          </div>
+        </div>
+      </a>
+      <a class="band-type"
+         routerLink="item-band"
+         [queryParams]="{c: yamcs.context}">
+        <div class="card">
+          <div class="card-title">Item Band</div>
+          <div class="card-content">
+            Show a selection of timeline items.
+          </div>
+        </div>
+      </a>
+      <a class="band-type"
+         routerLink="spacer"
+         [queryParams]="{c: yamcs.context}">
+        <div class="card">
+          <div class="card-title">Spacer</div>
+          <div class="card-content">
+            Insert empty vertical space.
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <p>&nbsp;</p>
+    <div class="category-title">Yamcs entities</div>
+    <div class="band-type-list">
+      <a class="band-type"
+         routerLink="command-band"
+         [queryParams]="{c: yamcs.context}">
+        <div class="card">
+          <div class="card-title">Commands</div>
+          <div class="card-content">
+            Display issued commands.
+          </div>
+        </div>
+      </a>
+    </div>
   </div>
 </app-instance-page>

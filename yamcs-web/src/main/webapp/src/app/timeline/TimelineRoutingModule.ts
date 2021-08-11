@@ -4,6 +4,7 @@ import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { BandsPage } from './BandsPage';
+import { CreateCommandBandPage } from './commandBand/CreateCommandBandPage';
 import { CreateBandPage } from './CreateBandPage';
 import { CreateViewPage } from './CreateViewPage';
 import { EditBandPage } from './EditBandPage';
@@ -63,6 +64,10 @@ const routes: Routes = [
         pathMatch: 'full',
         component: CreateTimeRulerPage,
       }, {
+        path: 'bands/create/command-band',
+        pathMatch: 'full',
+        component: CreateCommandBandPage,
+      }, {
         path: 'bands/:band',
         pathMatch: 'full',
         component: EditBandPage,
@@ -84,6 +89,7 @@ export class TimelineRoutingModule { }
 export const routingComponents = [
   BandsPage,
   CreateBandPage,
+  CreateCommandBandPage,
   CreateItemBandPage,
   CreateSpacerPage,
   CreateTimeRulerPage,

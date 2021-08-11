@@ -49,11 +49,11 @@ import org.yamcs.timeline.BandListener;
 import org.yamcs.timeline.ItemFilter;
 import org.yamcs.timeline.ItemGroup;
 import org.yamcs.timeline.ItemListener;
+import org.yamcs.timeline.ItemProvider;
 import org.yamcs.timeline.ManualActivity;
 import org.yamcs.timeline.TimelineBandDb;
 import org.yamcs.timeline.TimelineEvent;
 import org.yamcs.timeline.TimelineService;
-import org.yamcs.timeline.TimelineSource;
 import org.yamcs.timeline.TimelineViewDb;
 import org.yamcs.timeline.ViewListener;
 import org.yamcs.utils.InvalidRequestException;
@@ -70,7 +70,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void createItem(Context ctx, CreateItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         org.yamcs.timeline.TimelineItem item = req2Item(request);
@@ -86,16 +86,16 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void getItem(Context ctx, GetItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
             throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getId());
-        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(uuid);
+        String id = request.getId();
+        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(id);
         if (item == null) {
-            throw new NotFoundException("Item " + uuid + " not found");
+            throw new NotFoundException("Item " + id + " not found");
         } else {
             observer.complete(item.toProtoBuf());
         }
@@ -105,17 +105,17 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void updateItem(Context ctx, UpdateItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
             throw new BadRequestException("No id specified");
         }
-        UUID uuid = parseUuid(request.getId());
 
-        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(uuid);
+        String id = request.getId();
+        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(id);
         if (item == null) {
-            throw new NotFoundException("Item " + uuid + " not found");
+            throw new NotFoundException("Item " + id + " not found");
         }
 
         if (request.hasName()) {
@@ -160,7 +160,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void listItems(Context ctx, ListItemsRequest request, Observer<ListItemsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         String next = request.hasNext() ? request.getNext() : null;
@@ -217,7 +217,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void listTags(Context ctx, ListTimelineTagsRequest request, Observer<ListTimelineTagsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         ListTimelineTagsResponse.Builder responseb = ListTimelineTagsResponse.newBuilder()
                 .addAllTags(timelineSource.getTags());
@@ -479,7 +479,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void deleteItem(Context ctx, DeleteItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         if (!request.hasId()) {
             throw new BadRequestException("No id specified");
@@ -504,7 +504,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void deleteTimelineGroup(Context ctx, DeleteTimelineGroupRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        TimelineSource timelineSource = verifySource(timelineService,
+        ItemProvider timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         if (!request.hasId()) {
             throw new BadRequestException("No uuid specified");
@@ -525,8 +525,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     }
 
-    private TimelineSource verifySource(TimelineService timelineService, String source) {
-        TimelineSource ts = timelineService.getSource(source);
+    private ItemProvider verifySource(TimelineService timelineService, String source) {
+        ItemProvider ts = timelineService.getSource(source);
         if (ts == null) {
             throw new BadRequestException("Invalid source '" + source + "'");
         }
@@ -555,25 +555,26 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineItemType type = request.getType();
         org.yamcs.timeline.TimelineItem item;
 
+        UUID newId = UUID.randomUUID();
         switch (type) {
         case EVENT:
-            TimelineEvent event = new TimelineEvent(UUID.randomUUID());
+            TimelineEvent event = new TimelineEvent(newId.toString());
             item = event;
             break;
         case ITEM_GROUP:
-            ItemGroup itemGroup = new ItemGroup(UUID.randomUUID());
+            ItemGroup itemGroup = new ItemGroup(newId);
             item = itemGroup;
             break;
         case MANUAL_ACTIVITY:
-            ManualActivity manualActivity = new ManualActivity(UUID.randomUUID());
+            ManualActivity manualActivity = new ManualActivity(newId);
             item = manualActivity;
             break;
         case AUTO_ACTIVITY:
-            AutomatedActivity autoActivity = new AutomatedActivity(UUID.randomUUID());
+            AutomatedActivity autoActivity = new AutomatedActivity(newId);
             item = autoActivity;
             break;
         case ACTIVITY_GROUP:
-            ActivityGroup activityGroup = new ActivityGroup(UUID.randomUUID());
+            ActivityGroup activityGroup = new ActivityGroup(newId);
             item = activityGroup;
             break;
         default:

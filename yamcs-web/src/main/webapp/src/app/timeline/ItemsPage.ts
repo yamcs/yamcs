@@ -93,7 +93,7 @@ export class ItemsPage implements AfterViewInit {
   }
 
   private refreshData() {
-    this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!).then(page => {
+    this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, { source: 'rdb' }).then(page => {
       this.selection.matchNewValues(page.items || []);
       this.dataSource.data = page.items || [];
     }).catch(err => this.messageService.showError(err));

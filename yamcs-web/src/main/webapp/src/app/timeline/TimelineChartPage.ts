@@ -217,6 +217,12 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
           line.marginBottom = 0;
 
           this.lines.push(line);
+        } else if (band.type === 'COMMAND_BAND') {
+          const line = new EventLine(this.timeline);
+          line.label = band.name;
+          line.data = { band };
+
+          this.lines.push(line);
         }
       }
       this.refreshData();
@@ -237,6 +243,15 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
       if (band.type === 'ITEM_BAND') {
         queriedLines.push(line as EventLine);
         promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
+          source: 'rdb',
+          band: band.id,
+          start: new Date(loadStart).toISOString(),
+          stop: new Date(loadStop).toISOString(),
+        }));
+      } else if (band.type === 'COMMAND_BAND') {
+        queriedLines.push(line as EventLine);
+        promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
+          source: 'commands',
           band: band.id,
           start: new Date(loadStart).toISOString(),
           stop: new Date(loadStop).toISOString(),
@@ -257,9 +272,10 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     const events: Event[] = [];
     for (const item of items) {
       const start = utils.toDate(item.start).getTime();
+      const duration = utils.convertProtoDurationToMillis(item.duration);
       const event: Event = {
         start,
-        stop: start + utils.convertProtoDurationToMillis(item.duration),
+        stop: duration ? start + duration : undefined,
         label: item.name,
         data: { item },
       };

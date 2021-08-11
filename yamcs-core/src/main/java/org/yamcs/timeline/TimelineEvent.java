@@ -2,8 +2,6 @@ package org.yamcs.timeline;
 
 import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
 
-import java.util.UUID;
-
 import org.yamcs.protobuf.TimelineItem.Builder;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.yarch.Tuple;
@@ -19,7 +17,7 @@ import org.yamcs.yarch.Tuple;
  */
 public class TimelineEvent extends TimelineItem {
 
-    public TimelineEvent(UUID id) {
+    public TimelineEvent(String id) {
         super(id);
     }
 
