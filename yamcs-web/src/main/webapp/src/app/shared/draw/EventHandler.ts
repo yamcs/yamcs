@@ -49,6 +49,10 @@ export class EventHandler {
   }
 
   private onMouseOut(event: MouseEvent) {
+    if (this.prevEnteredRegion && this.prevEnteredRegion.mouseOut) {
+      this.prevEnteredRegion.mouseOut();
+      this.prevEnteredRegion = undefined;
+    }
   }
 
   private onMouseMove(event: MouseEvent) {
