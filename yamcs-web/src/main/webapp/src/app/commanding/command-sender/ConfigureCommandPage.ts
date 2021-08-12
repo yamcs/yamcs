@@ -179,8 +179,8 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
   }
 
   getAssignment(argumentName: string) {
-    if (this.entry.assignment) {
-      for (const assignment of this.entry.assignment) {
+    if (this.entry.assignments) {
+      for (const assignment of this.entry.assignments) {
         if (assignment.name === argumentName) {
           return assignment.value;
         }

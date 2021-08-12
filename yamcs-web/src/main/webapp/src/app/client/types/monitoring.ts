@@ -92,8 +92,6 @@ export interface IssueCommandResponse {
   origin: string;
   sequenceNumber: number;
   commandName: string;
-  source: string;
-  hex: string;
   binary: string;
   username: string;
   queue?: string;
@@ -117,7 +115,7 @@ export interface CommandHistoryEntry {
   sequenceNumber: number;
   generationTime: string;
   attr: CommandHistoryAttribute[];
-  assignment: CommandAssignment[];
+  assignments: CommandAssignment[];
 }
 
 export interface CommandHistoryPage {

@@ -222,7 +222,8 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
                 .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
                 .setSource(preparedCommand.getSource())
-                .setUsername(preparedCommand.getUsername());
+                .setUsername(preparedCommand.getUsername())
+                .addAllAssignments(preparedCommand.getAssignments());
 
         byte[] binary = preparedCommand.getBinary();
         if (binary != null) {

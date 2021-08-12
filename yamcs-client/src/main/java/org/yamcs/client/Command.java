@@ -4,9 +4,12 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import org.yamcs.protobuf.Commanding.CommandAssignment;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.IssueCommandResponse;
@@ -15,15 +18,15 @@ public class Command implements Comparable<Command> {
 
     private static final String ATTR_BINARY = "binary";
     private static final String ATTR_QUEUE = "queue";
-    private static final String ATTR_SOURCE = "source";
     private static final String ATTR_USERNAME = "username";
     private static final String ATTR_COMMENT = "comment";
+    private static final String LEGACY_ATTR_SOURCE = "source";
     private static final String[] STANDARD_ATTRIBUTES = new String[] {
             ATTR_BINARY,
             ATTR_COMMENT,
             ATTR_QUEUE,
-            ATTR_SOURCE,
             ATTR_USERNAME,
+            LEGACY_ATTR_SOURCE,
     };
 
     private static final String PREFIX_COMMAND_COMPLETE = "CommandComplete";
@@ -47,14 +50,17 @@ public class Command implements Comparable<Command> {
     private final String origin;
     private final int sequenceNumber;
     private final Instant generationTime;
+    private final String source;
     private Map<String, Object> attributes = new LinkedHashMap<>();
 
-    public Command(String id, String name, String origin, int sequenceNumber, Instant generationTime) {
+    public Command(String id, String name, List<CommandAssignment> assignments, String origin, int sequenceNumber,
+            Instant generationTime) {
         this.id = id;
         this.name = name;
         this.origin = origin;
         this.sequenceNumber = sequenceNumber;
         this.generationTime = generationTime;
+        this.source = buildSource(name, assignments);
     }
 
     public Command(IssueCommandResponse response) {
@@ -63,6 +69,8 @@ public class Command implements Comparable<Command> {
         this.origin = response.getOrigin();
         this.sequenceNumber = response.getSequenceNumber();
         this.generationTime = Helpers.toInstant(response.getGenerationTime());
+        this.source = buildSource(name, response.getAssignmentsList());
+
         if (response.hasBinary()) {
             attributes.put(ATTR_BINARY, response.getBinary().toByteArray());
         }
@@ -72,9 +80,21 @@ public class Command implements Comparable<Command> {
         if (response.hasUsername()) {
             attributes.put(ATTR_USERNAME, response.getUsername());
         }
-        if (response.hasSource()) {
-            attributes.put(ATTR_SOURCE, response.getSource());
-        }
+    }
+
+    private static String buildSource(String name, List<CommandAssignment> assignments) {
+        StringBuilder buf = new StringBuilder(name).append("(");
+        buf.append(assignments.stream()
+                .filter(CommandAssignment::getUserInput)
+                .map(assignment -> {
+                    Object value = Helpers.parseValue(assignment.getValue());
+                    if (value instanceof String) {
+                        return assignment.getName() + ": \"" + value + "\"";
+                    } else {
+                        return assignment.getName() + ": " + value;
+                    }
+                }).collect(Collectors.joining(", ")));
+        return buf.append(")").toString();
     }
 
     public String getId() {
@@ -115,7 +135,7 @@ public class Command implements Comparable<Command> {
      * String representation of the command
      */
     public String getSource() {
-        return (String) attributes.get(ATTR_SOURCE);
+        return source;
     }
 
     /**

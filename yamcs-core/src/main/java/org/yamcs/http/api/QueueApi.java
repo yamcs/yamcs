@@ -278,7 +278,8 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 .setPendingTransmissionConstraints(activeCommand.isPendingTransmissionConstraints())
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
-                .setUsername(pc.getUsername());
+                .setUsername(pc.getUsername())
+                .addAllAssignments(pc.getAssignments());
 
         if (pc.getBinary() != null) {
             entryb.setBinary(ByteString.copyFrom(pc.getBinary()));

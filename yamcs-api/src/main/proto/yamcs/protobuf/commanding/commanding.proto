@@ -45,7 +45,8 @@ message CommandQueueEntry {
   optional string origin = 15;
   optional int32 sequenceNumber = 16;
   optional string commandName = 17;
-  optional string source = 5;
+  optional string source = 5 [deprecated=true];
+  repeated CommandAssignment assignments = 18;
   optional bytes binary = 6;
   optional string username = 7;
   optional string uuid = 9;
@@ -110,5 +111,6 @@ message CommandHistoryEntry {
   optional CommandId commandId = 1;
   repeated CommandHistoryAttribute attr = 3;
   optional google.protobuf.Timestamp generationTime = 6;
-  repeated CommandAssignment assignment = 5;
+  repeated CommandAssignment assignment = 5 [deprecated=true];
+  repeated CommandAssignment assignments = 11;
 }

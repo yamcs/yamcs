@@ -64,10 +64,13 @@ public final class GPBHelper {
                 if (assignmentProto != null) {
                     AssignmentInfo assignmentInfo = (AssignmentInfo) assignmentProto;
                     for (Assignment assignment : assignmentInfo.getAssignmentList()) {
-                        che.addAssignment(CommandAssignment.newBuilder()
+                        CommandAssignment commandAssignment = CommandAssignment.newBuilder()
                                 .setName(assignment.getName())
                                 .setValue(assignment.getValue())
-                                .setUserInput(assignment.hasUserInput() && assignment.getUserInput()));
+                                .setUserInput(assignment.hasUserInput() && assignment.getUserInput())
+                                .build();
+                        che.addAssignment(commandAssignment);
+                        che.addAssignments(commandAssignment);
                     }
                 }
             } else {
