@@ -77,7 +77,7 @@ public class Comparison implements MatchCriteria {
         }
         try {
             if (useCalibratedValue) {
-                dtype.parseString(stringValue);
+                dtype.convertType(stringValue);
             } else {
                 dtype.parseStringForRawValue(stringValue);
             }

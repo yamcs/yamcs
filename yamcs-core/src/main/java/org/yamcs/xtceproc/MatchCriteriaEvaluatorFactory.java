@@ -132,7 +132,7 @@ public class MatchCriteriaEvaluatorFactory {
                     dtype = DataTypeUtil.getMemberType(dtype, ref.getMemberPath());
                 }
                 if (ref.useCalibratedValue()) {
-                    rValue = resolveValue(dtype.parseString(stringValue));
+                    rValue = resolveValue(dtype.convertType(stringValue));
                 } else {
                     rValue = resolveValue(dtype.parseStringForRawValue(stringValue));
                 }

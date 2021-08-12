@@ -126,27 +126,29 @@ public class AggregateDataType extends NameDescription implements DataType {
     /**
      * Parse the initial value as a JSON string.
      * <p>
-     * This allows to specify only partially the values, the rest are copied from the member initial value or
-     * the type definition (an exception is thrown if there is any member for which the value cannot be determined).
+     * This allows to specify only partially the values, the rest are copied from the member initial value or the type
+     * definition (an exception is thrown if there is any member for which the value cannot be determined).
      * 
-     * 
-     * @param initialValue
      * @return a map containing the values for all members.
      * @throws IllegalArgumentException
      *             if the string cannot be parsed or if values cannot be determined for all members
-     * 
      */
-    public Map<String, Object> parseString(String initialValue) {
-        // parse it as json
-        try {
-            JsonElement je = new JsonParser().parse(initialValue);
-            if (je instanceof JsonObject) {
-                return fromJson((JsonObject) je);
-            } else {
-                throw new IllegalArgumentException("Expected JSON object but found " + je.getClass());
+    @Override
+    public Map<String, Object> convertType(Object value) {
+        if (value instanceof String) {
+            // Parse as JSON
+            try {
+                JsonElement je = new JsonParser().parse((String) value);
+                if (je instanceof JsonObject) {
+                    return fromJson((JsonObject) je);
+                } else {
+                    throw new IllegalArgumentException("Expected JSON object but found " + je.getClass());
+                }
+            } catch (JsonParseException jpe) {
+                throw new IllegalArgumentException(jpe.toString());
             }
-        } catch (JsonParseException jpe) {
-            throw new IllegalArgumentException(jpe.toString());
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
     }
 
@@ -161,7 +163,7 @@ public class AggregateDataType extends NameDescription implements DataType {
                 } else {
                     v = jsel.toString();
                 }
-                r.put(memb.getName(), memb.getType().parseString(v));
+                r.put(memb.getName(), memb.getType().convertType(v));
             } else {
                 Object v = memb.getInitialValue();
                 if (v == null) {
@@ -221,7 +223,7 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     @Override
     public Map<String, Object> getInitialValue() {
-        Map<String, Object> r = new HashMap<String, Object>();
+        Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
             Object v = memb.getInitialValue();
             if (v == null) {

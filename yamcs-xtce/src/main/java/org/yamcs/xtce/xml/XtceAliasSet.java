@@ -11,14 +11,15 @@ public class XtceAliasSet implements Serializable {
     private static final long serialVersionUID = 6841708656383592099L;
 
     private HashMap<String, String> aliases = new HashMap<>();
-    
+
+    @SuppressWarnings("serial")
     public static XtceAliasSet NO_ALIAS = new XtceAliasSet() {
+        @Override
         public void addAlias(String namespace, String alias) {
             throw new UnsupportedOperationException();
         };
     };
-    
-    
+
     /**
      * Add alias name, only one name per namespace is possible
      * 

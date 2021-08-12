@@ -7,9 +7,9 @@ public abstract class FloatDataType extends NumericDataType {
     Double initialValue;
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. For Telemetry the valid
-     * range is always
-     * applied before calibration, regardless of the value of validRangeAppliesToCalibrated. For commanding,
-     * if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link DataEncoding.
+     * range is always applied before calibration, regardless of the value of validRangeAppliesToCalibrated. For
+     * commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link
+     * DataEncoding.
      * 
      */
     FloatValidRange validRange;
@@ -29,7 +29,7 @@ public abstract class FloatDataType extends NumericDataType {
                 this.sizeInBits = baseType.sizeInBits;
             }
 
-            if(builder.validRange == null && baseType.validRange != null) {
+            if (builder.validRange == null && baseType.validRange != null) {
                 this.validRange = baseType.validRange;
             }
         }
@@ -43,18 +43,14 @@ public abstract class FloatDataType extends NumericDataType {
         this.sizeInBits = t.sizeInBits;
     }
 
+    @Override
     public Double getInitialValue() {
         return initialValue;
     }
 
+    @Override
     protected void setInitialValue(Object initialValue) {
-        if (initialValue instanceof String) {
-            this.initialValue = parseString((String) initialValue);
-        } else if (initialValue instanceof Number) {
-            this.initialValue = ((Number) initialValue).doubleValue();
-        } else {
-            throw new IllegalArgumentException("Invalid initialValue");
-        }
+        this.initialValue = convertType(initialValue);
     }
 
     public int getSizeInBits() {
@@ -66,11 +62,18 @@ public abstract class FloatDataType extends NumericDataType {
     }
 
     @Override
-    public Double parseString(String stringValue) {
-        if (sizeInBits == 32) {
-            return (double) Float.parseFloat(stringValue);
+    public Double convertType(Object value) {
+        if (value instanceof String) {
+            String stringValue = (String) value;
+            if (sizeInBits == 32) {
+                return (double) Float.parseFloat(stringValue);
+            } else {
+                return Double.parseDouble(stringValue);
+            }
+        } else if (value instanceof Number) {
+            return ((Number) value).doubleValue();
         } else {
-            return Double.parseDouble(stringValue);
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
     }
 

@@ -57,7 +57,7 @@ public class MetaCommandProcessor {
         BitBuffer bitbuf = new BitBuffer(new byte[procConf.getMaxCommandSize()]);
         TcProcessingContext pcontext = new TcProcessingContext(mc, pdata, params, bitbuf, 0);
 
-        Map<String, String> argAssignment = new HashMap<>();
+        Map<String, Object> argAssignment = new HashMap<>();
         for (ArgumentAssignment aa : argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
         }
@@ -89,21 +89,15 @@ public class MetaCommandProcessor {
     }
 
     /**
-     * Builds the argument values args based on the argAssignment (which is basically the user input) and on the
-     * inheritance assignments
+     * Builds the argument values based on the user-provided arguments, initial values, and container-inherited
+     * assignments.
      * 
-     * The argAssignment is emptied as values are being used so if at the end of the call there are still assignment not
-     * used -> invalid argument provided
+     * The args are emptied as values are being used. If at the end of the call there are unused assignment, then one or
+     * more invalid arguments were provided.
      * 
      * This function is called recursively.
-     * 
-     * @param argAssignmentList
-     * 
-     * @param args
-     * @param argAssignment
-     * @throws ErrorInCommand
      */
-    private static void collectAndCheckArguments(TcProcessingContext pcontext, Map<String, String> argAssignment)
+    private static void collectAndCheckArguments(TcProcessingContext pcontext, Map<String, Object> args)
             throws ErrorInCommand {
 
         List<Argument> argList = pcontext.getCommand().getEffectiveArgumentList();
@@ -117,7 +111,7 @@ public class MetaCommandProcessor {
                 }
                 Value argValue = null;
                 Object argObj = null;
-                if (!argAssignment.containsKey(a.getName())) {
+                if (!args.containsKey(a.getName())) {
                     argObj = a.getInitialValue();
                     if (argObj == null) {
                         argObj = a.getArgumentType().getInitialValue();
@@ -128,10 +122,9 @@ public class MetaCommandProcessor {
                         continue;
                     }
                 } else {
-                    String stringValue = argAssignment.remove(a.getName());
+                    Object value = args.remove(a.getName());
                     try {
-                        argObj = a.getArgumentType().parseString(stringValue);
-
+                        argObj = a.getArgumentType().convertType(value);
                     } catch (Exception e) {
                         throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                     }

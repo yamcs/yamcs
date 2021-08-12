@@ -11,8 +11,7 @@ import org.yamcs.protobuf.Yamcs.Value;
  */
 public interface DataType {
     /**
-     * String which represents the type.
-     * This string will be presented to the users of the system.
+     * String which represents the type. This string will be presented to the users of the system.
      * 
      * @return
      */
@@ -25,14 +24,19 @@ public interface DataType {
     String getName();
 
     /**
-     * Parse a value represented as string
+     * Converts to the canonical (boxed) java representation of this type.
+     * <p>
+     * For example, if <tt>value</tt> is a <tt>String</tt>, an integer-like DataType should parse the String value, and
+     * return an Integer result.
      * 
-     * @param v
-     * @return - a java object representation
+     * 
+     * @param value
+     *            value to be converted, use boxed primitive values.
+     * @return The preferred java object representation
      * @throws IllegalArgumentException
-     *             if the string cannot be parsed
+     *             when the provided value cannot be represented by this type.
      */
-    Object parseString(String v);
+    Object convertType(Object value);
 
     /**
      * parses the string into a java object according to the parameter encoding
@@ -45,7 +49,7 @@ public interface DataType {
     Object parseStringForRawValue(String stringValue);
 
     /**
-     * Converts a value to a string. This should be the reverse of {@link #parseString(String)}.
+     * Converts a value to a string.
      * 
      * @param v
      * @return

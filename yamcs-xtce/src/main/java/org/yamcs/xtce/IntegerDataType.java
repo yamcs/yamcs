@@ -17,10 +17,9 @@ public abstract class IntegerDataType extends NumericDataType {
     Long initialValue;
 
     /**
-     * XTCE: The Valid Range bounds the universe of possible values this Parameter may have.
-     * For Telemetry the valid range is always applied before calibration, regardless of the value of
-     * validRangeAppliesToCalibrated.
-     * For commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link
+     * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. For Telemetry the valid
+     * range is always applied before calibration, regardless of the value of validRangeAppliesToCalibrated. For
+     * commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link
      * DataEncoding.
      */
     IntegerValidRange validRange;
@@ -69,14 +68,9 @@ public abstract class IntegerDataType extends NumericDataType {
         return sizeInBits;
     }
 
+    @Override
     protected void setInitialValue(Object initialValue) {
-        if (initialValue instanceof Long) {
-            this.initialValue = (Long) initialValue;
-        } else if (initialValue instanceof String) {
-            this.initialValue = parseString((String) initialValue);
-        } else {
-            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
-        }
+        this.initialValue = convertType(initialValue);
     }
 
     /**
@@ -93,13 +87,13 @@ public abstract class IntegerDataType extends NumericDataType {
         this.initialValue = initialValue;
     }
 
+    @Override
     public Long getInitialValue() {
         return (Long) initialValue;
     }
 
     /**
-     * Parses the string into a Long
-     * Base 10 (decimal) form is assumed unless:
+     * In case the provided value is a String, it is parsed to a Long Base 10 (decimal) form unless:
      * <ul>
      * <li>if preceded by a 0b or 0B, value is in base two (binary form)</li>
      * <li>if preceded by a 0o or 0O, values is in base 8 (octal) form</li>
@@ -112,55 +106,64 @@ public abstract class IntegerDataType extends NumericDataType {
      * of bits
      */
     @Override
-    public Long parseString(String stringValue) {
-        String sv = stringValue.replace("_", "");
-        if (sv.length() == 0)
-            throw new NumberFormatException("Zero length string");
-
-        int off = 0;
-
-        char sv0 = sv.charAt(0);
-        boolean negative = false;
-        int radix = 10;
-
-        if (sv0 == '-') {
-            if (!signed) {
-                throw new NumberFormatException("negative number specified for unsigned integer");
+    public Long convertType(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        } else if (value instanceof String) {
+            String stringValue = (String) value;
+            String sv = stringValue.replace("_", "");
+            if (sv.length() == 0) {
+                throw new NumberFormatException("Zero length string");
             }
-            negative = true;
-            off++;
-        } else if (sv0 == '+') {
-            off++;
-        }
 
-        if (sv.startsWith("0b", off) || sv.startsWith("0B", off)) {
-            off += 2;
-            radix = 2;
-        } else if (sv.startsWith("0o", off) || sv.startsWith("0O", off)) {
-            off += 2;
-            radix = 8;
-        } else if (sv.startsWith("0x", off) || sv.startsWith("0X", off)) {
-            off += 2;
-            radix = 16;
-        }
+            int off = 0;
 
-        if (sv.startsWith("-", off) || sv.startsWith("+", off))
-            throw new NumberFormatException("Sign character in the middle of the number");
-        BigInteger bn = new BigInteger(sv.substring(off), radix);
+            char sv0 = sv.charAt(0);
+            boolean negative = false;
+            int radix = 10;
 
-        int bs = sizeInBits;
-        if (signed) {
-            bs--;
+            if (sv0 == '-') {
+                if (!signed) {
+                    throw new NumberFormatException("negative number specified for unsigned integer");
+                }
+                negative = true;
+                off++;
+            } else if (sv0 == '+') {
+                off++;
+            }
+
+            if (sv.startsWith("0b", off) || sv.startsWith("0B", off)) {
+                off += 2;
+                radix = 2;
+            } else if (sv.startsWith("0o", off) || sv.startsWith("0O", off)) {
+                off += 2;
+                radix = 8;
+            } else if (sv.startsWith("0x", off) || sv.startsWith("0X", off)) {
+                off += 2;
+                radix = 16;
+            }
+
+            if (sv.startsWith("-", off) || sv.startsWith("+", off)) {
+                throw new NumberFormatException("Sign character in the middle of the number");
+            }
+            BigInteger bn = new BigInteger(sv.substring(off), radix);
+
+            int bs = sizeInBits;
+            if (signed) {
+                bs--;
+            }
+            if (bn.bitLength() > bs) {
+                throw new NumberFormatException("Number " + stringValue + " does not fit the bit size (" + sizeInBits
+                        + (signed ? "/signed" : "unsigned") + ")");
+            }
+            long x = bn.longValue();
+            if (negative) {
+                x = -x;
+            }
+            return x;
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
-        if (bn.bitLength() > bs) {
-            throw new NumberFormatException("Number " + stringValue + " does not fit the bit size (" + sizeInBits
-                    + (signed ? "/signed" : "unsigned") + ")");
-        }
-        long x = bn.longValue();
-        if (negative) {
-            x = -x;
-        }
-        return x;
     }
 
     @Override

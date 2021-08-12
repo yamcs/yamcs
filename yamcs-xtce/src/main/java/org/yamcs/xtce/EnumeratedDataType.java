@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 public class EnumeratedDataType extends BaseDataType {
     private static final long serialVersionUID = 2L;
     String initialValue;
-    
+
     protected HashMap<Long, ValueEnumeration> enumeration = new HashMap<>();
 
     protected List<ValueEnumeration> enumerationList = new ArrayList<>();
@@ -22,18 +22,16 @@ public class EnumeratedDataType extends BaseDataType {
         this.enumerationList = builder.enumerationList;
         this.ranges = builder.ranges;
 
-       
         if (builder.baseType != null && builder.baseType instanceof EnumeratedDataType) {
             EnumeratedDataType baseType = (EnumeratedDataType) builder.baseType;
-            if(builder.enumerationList.isEmpty()) {
+            if (builder.enumerationList.isEmpty()) {
                 enumerationList.addAll(baseType.enumerationList);
             }
-            if(builder.ranges.isEmpty()) {
+            if (builder.ranges.isEmpty()) {
                 ranges.addAll(baseType.ranges);
             }
         }
-        
-        
+
         for (ValueEnumeration ve : enumerationList) {
             enumeration.put(ve.value, ve);
         }
@@ -53,14 +51,12 @@ public class EnumeratedDataType extends BaseDataType {
         this.initialValue = t.initialValue;
     }
 
+    @Override
     protected void setInitialValue(Object initialValue) {
-        if(initialValue instanceof String) {
-            this.initialValue = (String)initialValue;
-        } else {
-            throw new IllegalArgumentException("Unsupported type for initial value "+initialValue.getClass());
-        }
+        this.initialValue = convertType(initialValue);
     }
-    
+
+    @Override
     public String getInitialValue() {
         return initialValue;
     }
@@ -119,7 +115,6 @@ public class EnumeratedDataType extends BaseDataType {
         return false;
     }
 
-
     public List<ValueEnumeration> getValueEnumerationList() {
         return Collections.unmodifiableList(enumerationList);
     }
@@ -128,12 +123,13 @@ public class EnumeratedDataType extends BaseDataType {
         return Collections.unmodifiableList(ranges);
     }
 
-    /**
-     * returns stringValue
-     */
     @Override
-    public String parseString(String stringValue) {
-        return stringValue;
+    public String convertType(Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
+        }
     }
 
     @Override
@@ -152,13 +148,13 @@ public class EnumeratedDataType extends BaseDataType {
 
         public Builder() {
         }
- 
+
         public Builder(EnumeratedDataType dataType) {
             super(dataType);
             this.enumerationList = dataType.enumerationList;
             this.ranges = dataType.ranges;
         }
-        
+
         public T addEnumerationValue(long value, String label) {
             ValueEnumeration valEnum = new ValueEnumeration(value, label);
             enumerationList.add(valEnum);
@@ -201,7 +197,7 @@ public class EnumeratedDataType extends BaseDataType {
                     return new ValueEnumeration(key, range.getLabel());
                 }
             }
-            
+
             return null;
         }
 

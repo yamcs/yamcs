@@ -124,7 +124,7 @@ public class DataTypeProcessor {
 
     private static Value convertToArrayType(ArrayDataType type, Value v) {
         if (v.getType() == Type.STRING) {
-            return DataTypeProcessor.getValueForType(type, type.parseString(v.getStringValue()));
+            return DataTypeProcessor.getValueForType(type, type.convertType(v.getStringValue()));
         } else if (v.getType() == Type.ARRAY) {
             ArrayValue arrayValue = (ArrayValue) v;
             ArrayValue r = new ArrayValue(arrayValue.getDimensions(), v.getType());
@@ -141,7 +141,7 @@ public class DataTypeProcessor {
 
     private static Value convertToAggregateType(AggregateDataType type, Value v) {
         if (v.getType() == Type.STRING) {
-            return DataTypeProcessor.getValueForType(type, type.parseString(v.getStringValue()));
+            return DataTypeProcessor.getValueForType(type, type.convertType(v.getStringValue()));
         } else if (v.getType() == Type.AGGREGATE) {
             AggregateValue aggrValue = (AggregateValue) v;
             AggregateValue r = new AggregateValue(type.getMemberNames());

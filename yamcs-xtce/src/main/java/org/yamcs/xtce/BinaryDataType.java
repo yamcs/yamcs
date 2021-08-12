@@ -1,7 +1,7 @@
 package org.yamcs.xtce;
 
-import java.util.List;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
@@ -27,22 +27,17 @@ public class BinaryDataType extends BaseDataType {
         setInitialValue(builder);
     }
 
-    @Override
-    protected void setInitialValue(Object initialValue) {
-        if (initialValue instanceof String) {
-            this.initialValue = parseString((String) initialValue);
-        } else if (initialValue instanceof byte[]) {
-            this.initialValue = (byte[]) initialValue;
-        } else {
-            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
-        }
-    }
-
     protected BinaryDataType(BinaryDataType t) {
         super(t);
         this.sizeRangeInBytes = t.sizeRangeInBytes;
     }
 
+    @Override
+    protected void setInitialValue(Object initialValue) {
+        this.initialValue = convertType(initialValue);
+    }
+
+    @Override
     public byte[] getInitialValue() {
         return initialValue;
     }
@@ -64,8 +59,14 @@ public class BinaryDataType extends BaseDataType {
      * parse the hexadecimal stringValue into byte[]
      */
     @Override
-    public byte[] parseString(String stringValue) {
-        return hexStringToArray(stringValue);
+    public byte[] convertType(Object value) {
+        if (value instanceof String) {
+            return hexStringToArray((String) value);
+        } else if (value instanceof byte[]) {
+            return (byte[]) value;
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
+        }
     }
 
     @Override
@@ -78,8 +79,8 @@ public class BinaryDataType extends BaseDataType {
     }
 
     /**
-     * Converts a hex string into a byte array.
-     * If the string has an odd number of hex digits, a 0 is prepended in front.
+     * Converts a hex string into a byte array. If the string has an odd number of hex digits, a 0 is prepended in
+     * front.
      * 
      * if the string contains something else than 0-9, a-f, a NumberFormatException is thrown from Integer.parseInt with
      * radix 16
@@ -131,6 +132,7 @@ public class BinaryDataType extends BaseDataType {
             this.sizeRangeInBytes = sizeRangeInBytes;
         }
 
+        @Override
         public void setAncillaryData(List<AncillaryData> ancillaryData) {
             super.setAncillaryData(ancillaryData);
 

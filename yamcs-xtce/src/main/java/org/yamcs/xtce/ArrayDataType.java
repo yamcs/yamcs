@@ -39,7 +39,7 @@ public class ArrayDataType extends NameDescription implements DataType {
             if (builder.initialValue instanceof Object[]) {
                 this.initialValue = (Object[]) builder.initialValue;
             } else {
-                this.initialValue = parseString(builder.initialValue.toString());
+                this.initialValue = convertType(builder.initialValue.toString());
             }
         }
     }
@@ -138,12 +138,16 @@ public class ArrayDataType extends NameDescription implements DataType {
      * The return is an java array (Object[]). For multi dimensional arrays each Object it itself an Object[] and so on
      * to reach the number of dimensions,
      * <p>
-     * The final Object is of type as returned by the element type {@link DataType#parseString(String)}
+     * The final Object is of type as returned by the element type {@link DataType#convertType(Object)}
      * 
      */
     @Override
-    public Object[] parseString(String stringValue) {
-        return parse(stringValue, false);
+    public Object[] convertType(Object value) {
+        if (value instanceof String) {
+            return parse((String) value, false);
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
+        }
     }
 
     @Override
@@ -177,7 +181,7 @@ public class ArrayDataType extends NameDescription implements DataType {
             }
         } else {
             for (int i = 0; i < jarr.size(); i++) {
-                r[i] = type.parseString(jarr.get(i).getAsString());
+                r[i] = type.convertType(jarr.get(i).getAsString());
             }
         }
 
@@ -245,6 +249,7 @@ public class ArrayDataType extends NameDescription implements DataType {
             return self();
         }
 
+        @Override
         public T setInitialValue(String initialValue) {
             this.initialValue = initialValue;
             return self();

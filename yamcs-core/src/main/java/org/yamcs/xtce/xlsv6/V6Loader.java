@@ -1691,7 +1691,7 @@ public class V6Loader extends V6LoaderBase {
         if (hasColumn(cells, IDX_CMD_DEFVALUE)) {
             String v = cells[IDX_CMD_DEFVALUE].getContents();
             try {
-                arg.setInitialValue(atype.build().parseString(v));
+                arg.setInitialValue(atype.build().convertType(v));
             } catch (Exception e) {
                 throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }

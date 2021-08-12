@@ -71,15 +71,6 @@ public abstract class BaseDataType extends NameDescription implements DataType {
 
     protected abstract void setInitialValue(Object initialValue);
 
-    /**
-     * Used to parse string such as an initial value
-     * 
-     * @param stringValue
-     * @return
-     */
-    @Override
-    public abstract Object parseString(String stringValue);
-
     @Override
     public String toString(Object o) {
         return o.toString();
