@@ -1,4 +1,4 @@
-import { AlarmRange, ArgumentAssignment, NamedObjectId } from './mdb';
+import { AlarmRange, NamedObjectId } from './mdb';
 
 export interface Value {
   type: 'AGGREGATE'
@@ -78,10 +78,10 @@ export interface Range {
 }
 
 export interface IssueCommandOptions {
+  args?: {[key: string]: any};
   origin?: string;
   sequenceNumber?: number;
   dryRun?: boolean;
-  assignment?: ArgumentAssignment[];
   comment?: string;
   extra?: { [key: string]: Value; };
 }
@@ -126,7 +126,6 @@ export interface CommandHistoryPage {
 export interface GetCommandHistoryOptions {
   start?: string;
   stop?: string;
-  pos?: number;
   limit?: number;
   next?: string;
   q?: string;

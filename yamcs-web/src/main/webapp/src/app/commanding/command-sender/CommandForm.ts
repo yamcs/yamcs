@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentAssignment, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
+import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { requireFloat, requireInteger } from '../../shared/forms/validators';
@@ -28,14 +28,10 @@ function renderAggregateControlValues(prefix: string, value: AggregateValue): { 
 /**
  * Returns the stringified initial form value for a Value object.
  */
-function renderValue(value: Value, argument?: Argument) {
+function renderValue(value: Value) {
   switch (value.type) {
     case 'BOOLEAN':
-      if (argument) {
-        return value.booleanValue ? argument.type.oneStringValue : argument.type.zeroStringValue;
-      } else { // TODO support this with booleans inside aggregates too
-        return '' + value.booleanValue;
-      }
+      return '' + value.booleanValue;
     case 'FLOAT':
       return '' + value.floatValue;
     case 'DOUBLE':
@@ -130,8 +126,12 @@ export class CommandForm implements OnChanges {
           if (this.templateProvider) {
             const previousValue = this.templateProvider.getAssignment(argument.name);
             if (previousValue !== undefined) {
-              const stringValue = renderValue(previousValue, argument);
-              if (stringValue === argument.initialValue) {
+              const stringValue = renderValue(previousValue);
+              let initialValue = argument.initialValue;
+              if (argument.type.engType === 'boolean') {
+                initialValue = '' + (argument.type.oneStringValue === initialValue);
+              }
+              if (stringValue === initialValue) {
                 this.argumentsWithInitial.push(argument);
               } else {
                 this.arguments.push(argument);
@@ -166,23 +166,27 @@ export class CommandForm implements OnChanges {
     }
   }
 
-  getAssignments(): ArgumentAssignment[] {
-    const assignments: ArgumentAssignment[] = [];
+  getAssignments(): {[key: string]: any} {
+    const assignments: {[key: string]: any} = {};
     for (const arg of [...this.arguments, ...this.argumentsWithInitial]) {
       if (arg.type.engType === 'aggregate') {
-        const jsonValue = JSON.stringify(this.getMemberAssignments(arg.name + '.', arg));
-        assignments.push({ name: arg.name, value: jsonValue });
+        const value = this.getMemberAssignments(arg.name + '.', arg);
+        assignments[arg.name] = value;
       } else {
         const control = this.form.controls[arg.name];
         if (!this.isArgumentWithInitialValue(arg.name) || control.dirty) {
-          assignments.push({ name: arg.name, value: this.form.value[arg.name] });
+          if (arg.type.engType === 'boolean') {
+            assignments[arg.name] = (this.form.value[arg.name] === 'true');
+          } else {
+            assignments[arg.name] = this.form.value[arg.name];
+          }
         }
       }
     }
     return assignments;
   }
 
-  getMemberAssignments(prefix: string, argument: Argument | Member): { [key: string]: any; } {
+  getMemberAssignments(prefix: string, argument: Argument | Member) {
     const result: { [key: string]: any; } = {};
     for (const member of argument.type.member || []) {
       if (member.type.engType === 'aggregate') {
@@ -190,6 +194,8 @@ export class CommandForm implements OnChanges {
       } else {
         const control = this.form.controls[prefix + member.name];
         switch (member.type.engType) {
+          case 'boolean':
+            result[member.name] = (control.value === 'true');
           case 'float':
           case 'double':
           case 'integer':
@@ -249,12 +255,17 @@ export class CommandForm implements OnChanges {
     if (argument.type.engType === 'aggregate') {
       this.addAggregateControl(argument, templateProvider);
     } else {
-      let initialValue = argument.initialValue;
+      let initialValue;
+      if (argument.type.engType === 'boolean' && argument.initialValue) {
+        initialValue = '' + (argument.initialValue === argument.type.oneStringValue);
+      } else {
+        initialValue = argument.initialValue;
+      }
 
       if (templateProvider) {
         const previousValue = templateProvider.getAssignment(argument.name);
         if (previousValue !== undefined) {
-          initialValue = renderValue(previousValue, argument);
+          initialValue = renderValue(previousValue);
         }
       }
 

@@ -106,13 +106,13 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   sendCommand() {
     this.armControl.setValue(false);
 
-    const assignments = this.commandForm.getAssignments();
+    const args = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
     const extra = this.commandForm.getExtraOptions();
 
     const qname = this.command$.value!.qualifiedName;
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
-      assignment: assignments,
+      args,
       comment,
       extra,
     }).then(response => {

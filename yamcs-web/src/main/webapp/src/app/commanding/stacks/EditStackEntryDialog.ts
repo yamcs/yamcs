@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { ArgumentAssignment, Command, Value } from '../../client';
+import { Command, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
@@ -10,9 +10,9 @@ import { StackEntry } from './StackEntry';
 
 export interface CommandResult {
   command: Command;
-  assignments: ArgumentAssignment[];
-  comment?: string;
+  args: { [key: string]: any };
   extra: { [key: string]: Value; };
+  comment?: string;
 }
 
 
@@ -22,9 +22,10 @@ export class StackEntryTemplateProvider implements TemplateProvider {
   }
 
   getAssignment(argumentName: string) {
-    for (const arg of this.entry.arguments) {
-      if (arg.name === argumentName) {
-        return { type: 'STRING', stringValue: arg.value } as Value;
+    for (const argName in this.entry.args) {
+      if (argName === argumentName) {
+        const value = this.entry.args[argName];
+        return { type: 'STRING', stringValue: value } as Value;
       }
     }
   }
@@ -86,7 +87,7 @@ export class EditStackEntryDialog {
   handleOK() {
     const result: CommandResult = {
       command: this.selectedCommand$.value!,
-      assignments: this.commandForm.getAssignments(),
+      args: this.commandForm.getAssignments(),
       comment: this.commandForm.getComment(),
       extra: this.commandForm.getExtraOptions(),
     };

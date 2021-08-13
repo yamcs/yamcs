@@ -109,9 +109,9 @@
                 [{{ item.key}}: {{ item.value | value }}]
               </span>
               <table class="args">
-                <tr *ngFor="let arg of entry.arguments">
+                <tr *ngFor="let arg of entry.args | keyvalue">
                   <td class="key" width="1">
-                    {{ arg.name }}
+                    {{ arg.key }}
                   </td>
                   <td class="value">{{ arg.value }}</td>
                 </tr>

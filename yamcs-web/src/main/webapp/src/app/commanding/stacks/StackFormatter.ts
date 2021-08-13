@@ -23,10 +23,10 @@ export class StackFormatter {
       if (entry.comment) {
         entryEl.setAttribute('comment', entry.comment);
       }
-      for (const argument of entry.arguments) {
+      for (const argName in entry.args) {
         const argumentEl = doc.createElement('commandArgument');
-        argumentEl.setAttribute('argumentName', argument.name);
-        argumentEl.setAttribute('argumentValue', argument.value);
+        argumentEl.setAttribute('argumentName', argName);
+        argumentEl.setAttribute('argumentValue', entry.args[argName]);
         entryEl.appendChild(argumentEl);
       }
       rootEl.appendChild(entryEl);
