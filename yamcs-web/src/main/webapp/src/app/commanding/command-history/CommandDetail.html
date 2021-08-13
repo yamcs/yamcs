@@ -4,11 +4,26 @@
 </div>
 
 <div class="block-title">Command</div>
-<div class="block">
+<div class="block command-text">
   {{ command.commandName }}
+  <table class="args">
+    <tr *ngFor="let arg of command.userAssignments">
+      <td class="key" width="1">{{ arg.name }}</td>
+      <td class="value">{{ arg.value | value }}</td>
+    </tr>
+  </table>
 </div>
 
-<div class="block-title">Time</div>
+<ng-container *ngIf="command.binary">
+  <div class="block-title">Binary</div>
+  <div class="block">
+    <app-hex [base64String]="command.binary"></app-hex>
+  </div>
+</ng-container>
+
+<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+
+<div class="block-title" style="padding-top: 0">Time</div>
 <div class="block">
   {{ command.generationTime | datetime }}
 </div>
@@ -23,20 +38,6 @@
   <div class="block-title">Queue</div>
   <div class="block">
     {{ command.queue || '-' }}
-  </div>
-</ng-container>
-
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
-<div class="block-title" style="padding-top: 0">Source</div>
-<div class="block">
-  {{ command.source || '-' }}
-</div>
-
-<ng-container *ngIf="command.binary">
-  <div class="block-title">Binary</div>
-  <div class="block">
-    <app-hex [base64String]="command.binary"></app-hex>
   </div>
 </ng-container>
 

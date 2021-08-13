@@ -8,6 +8,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 @Component({
   selector: 'app-queued-commands-table',
   templateUrl: './QueuedCommandsTable.html',
+  styleUrls: ['./QueuedCommandsTable.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QueuedCommandsTable implements AfterViewInit {
@@ -49,7 +50,7 @@ export class QueuedCommandsTable implements AfterViewInit {
   }
 
   releaseEntry(entry: CommandQueueEntry) {
-    if (confirm(`Are you sure you want to accept this command?\n\n ${entry.source}`)) {
+    if (confirm(`Are you sure you want to accept this command?\n\n ${entry.commandName}`)) {
       this.yamcs.yamcsClient.editCommandQueueEntry(entry.instance, entry.processorName, entry.queueName, entry.uuid, {
         state: 'released',
       });
@@ -57,7 +58,7 @@ export class QueuedCommandsTable implements AfterViewInit {
   }
 
   rejectEntry(entry: CommandQueueEntry) {
-    if (confirm(`Are you sure you want to reject this command?\n\n ${entry.source}`)) {
+    if (confirm(`Are you sure you want to reject this command?\n\n ${entry.commandName}`)) {
       this.yamcs.yamcsClient.editCommandQueueEntry(entry.instance, entry.processorName, entry.queueName, entry.uuid, {
         state: 'rejected',
       });

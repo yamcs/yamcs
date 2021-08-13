@@ -55,7 +55,17 @@
   <ng-container matColumnDef="source">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Command</th>
     <td mat-cell *matCellDef="let entry">
-      {{ entry.source || '-' }}
+      {{ entry.commandName }}
+      <table class="args">
+        <ng-container *ngFor="let arg of entry.assignments">
+          <ng-container *ngIf="arg.userInput">
+            <tr>
+              <td class="key" width="1">{{ arg.name }}</td>
+              <td class="value">{{ arg.value | value }}</td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </table>
     </td>
   </ng-container>
 

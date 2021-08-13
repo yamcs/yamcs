@@ -19,7 +19,6 @@ export class CommandHistoryRecord {
 
   username: string;
 
-  source: string;
   binary: string;
 
   comment?: string;
@@ -45,18 +44,6 @@ export class CommandHistoryRecord {
     this.origin = entry.origin;
     this.sequenceNumber = entry.sequenceNumber;
     this.commandName = entry.commandName;
-
-    this.source = entry.commandName + '(';
-    for (const assignment of (entry.assignments || [])) {
-      this.assignments.push(assignment);
-      if (assignment.userInput) {
-        this.userAssignments.push(assignment);
-      }
-    }
-    this.source += this.userAssignments.map(assignment => {
-      return assignment.name + ': ' + utils.printValue(assignment.value);
-    }).join(', ');
-    this.source += ')';
 
     for (const attr of entry.attr) {
       if (attr.name === 'username') {
