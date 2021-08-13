@@ -127,6 +127,13 @@ public class EnumeratedDataType extends BaseDataType {
     public String convertType(Object value) {
         if (value instanceof String) {
             return (String) value;
+        } else if (value instanceof Number) {
+            ValueEnumeration e = enumValue(((Number) value).longValue());
+            if (e != null) {
+                return e.label;
+            } else {
+                throw new IllegalArgumentException("Cannot find enumeration for number '" + value + "'");
+            }
         } else {
             throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
