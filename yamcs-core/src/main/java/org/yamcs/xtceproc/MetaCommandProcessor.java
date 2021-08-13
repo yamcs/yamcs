@@ -30,13 +30,13 @@ public class MetaCommandProcessor {
         this.pdata = pdata;
     }
 
-    public CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList)
+    public CommandBuildResult buildCommand(MetaCommand mc, Map<String, String> argAssignmentList)
             throws ErrorInCommand {
         return buildCommand(pdata, mc, argAssignmentList);
     }
 
     public static CommandBuildResult buildCommand(ProcessorData pdata, MetaCommand mc,
-            List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
+            Map<String, String> argAssignmentList) throws ErrorInCommand {
         if (mc.isAbstract()) {
             throw new ErrorInCommand("Will not build command " + mc.getQualifiedName() + " because it is abstract");
         }
@@ -57,10 +57,8 @@ public class MetaCommandProcessor {
         BitBuffer bitbuf = new BitBuffer(new byte[procConf.getMaxCommandSize()]);
         TcProcessingContext pcontext = new TcProcessingContext(mc, pdata, params, bitbuf, 0);
 
-        Map<String, Object> argAssignment = new HashMap<>();
-        for (ArgumentAssignment aa : argAssignmentList) {
-            argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
-        }
+        Map<String, Object> argAssignment = new HashMap<>(argAssignmentList);
+
         List<ArgumentAssignment> inheritedAssignment = mc.getEffectiveArgumentAssignmentList();
 
         for (ArgumentAssignment aa : inheritedAssignment) {

@@ -3,8 +3,8 @@ package org.yamcs.xtceproc;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,7 +15,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -92,10 +91,10 @@ public class XtceBooleansTest {
     @Test
     public void testNumericCmdTrue() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("bool1", "true"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("bool1", "true");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 1 };
         assertArrayEquals(expected, b);
     }
@@ -103,10 +102,10 @@ public class XtceBooleansTest {
     @Test
     public void testNumericCmdFalse() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("bool1", "false"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("bool1", "false");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 0 };
         assertArrayEquals(expected, b);
     }
@@ -114,10 +113,10 @@ public class XtceBooleansTest {
     @Test
     public void testStringCmdTrue() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command2");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("bool2", "yes!"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("bool2", "yes!");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'y', 'e', 's', '!' };
         assertArrayEquals(expected, b);
     }
@@ -125,10 +124,10 @@ public class XtceBooleansTest {
     @Test
     public void testStringCmdFalse() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command2");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("bool2", "nooo"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("bool2", "nooo");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'n', 'o', 'o', 'o' };
         assertArrayEquals(expected, b);
     }

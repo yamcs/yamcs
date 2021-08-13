@@ -2,8 +2,8 @@ package org.yamcs.commanding;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MetaCommand;
@@ -63,7 +62,7 @@ public class CommandingManager extends AbstractService {
     /**
      * pc is a command whose source is included. parse the source populate the binary part and the definition.
      */
-    public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin,
+    public PreparedCommand buildCommand(MetaCommand mc, Map<String, String> argAssignmentList, String origin,
             int seq, User user) throws ErrorInCommand, YamcsException {
         log.debug("Building command {} with arguments {}", mc.getName(), argAssignmentList);
 
@@ -76,9 +75,7 @@ public class CommandingManager extends AbstractService {
         pc.setBinary(cbr.getCmdPacket());
         pc.setUsername(user.getName());
 
-        Set<String> userAssignedArgumentNames = argAssignmentList.stream()
-                .map(a -> a.getArgumentName())
-                .collect(Collectors.toSet());
+        Set<String> userAssignedArgumentNames = new HashSet<>(argAssignmentList.keySet());
         pc.setArgAssignment(cbr.getArgs(), userAssignedArgumentNames);
 
         return pc;

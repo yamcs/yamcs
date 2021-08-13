@@ -5,7 +5,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +56,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
@@ -93,7 +95,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         int sequenceNumber = 0;
         boolean dryRun = false;
         String comment = null;
-        List<ArgumentAssignment> assignments = new ArrayList<>();
+        Map<String, String> assignments = new LinkedHashMap<>();
 
         if (request.hasOrigin()) { // TODO remove this override?
             origin = request.getOrigin();
@@ -108,7 +110,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             comment = request.getComment();
         }
         for (Assignment a : request.getAssignmentList()) {
-            assignments.add(new ArgumentAssignment(a.getName(), a.getValue()));
+            assignments.put(a.getName(), a.getValue());
         }
 
         // Prepare the command
@@ -162,21 +164,21 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             sb.append(cmd.getQualifiedName());
             sb.append("(");
             boolean first = true;
-            for (ArgumentAssignment aa : assignments) {
-                Argument a = preparedCommand.getMetaCommand().getArgument(aa.getArgumentName());
+            for (Entry<String, String> assignment : assignments.entrySet()) {
+                Argument a = preparedCommand.getMetaCommand().getArgument(assignment.getKey());
                 if (!first) {
                     sb.append(", ");
                 } else {
                     first = false;
                 }
-                sb.append(aa.getArgumentName()).append(": ");
+                sb.append(assignment.getKey()).append(": ");
 
                 boolean needDelimiter = a != null && (a.getArgumentType() instanceof StringArgumentType
                         || a.getArgumentType() instanceof EnumeratedArgumentType);
                 if (needDelimiter) {
                     sb.append("\"");
                 }
-                sb.append(aa.getArgumentValue());
+                sb.append(assignment.getValue());
                 if (needDelimiter) {
                     sb.append("\"");
                 }

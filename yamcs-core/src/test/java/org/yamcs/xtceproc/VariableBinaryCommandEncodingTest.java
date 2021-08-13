@@ -1,28 +1,28 @@
 package org.yamcs.xtceproc;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.stream.XMLStreamException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
-import static org.junit.Assert.assertArrayEquals;
-
 /**
- * Tests that a command containing a variable-length binary argument can be
- * encoded correctly.
+ * Tests that a command containing a variable-length binary argument can be encoded correctly.
  */
 public class VariableBinaryCommandEncodingTest {
 
@@ -41,13 +41,13 @@ public class VariableBinaryCommandEncodingTest {
     @Test
     public void testCommandEncoding() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
-        arguments.add(new ArgumentAssignment("size", Integer.toString(data.length)));
-        arguments.add(new ArgumentAssignment("data", StringConverter.arrayToHexString(data)));
-        arguments.add(new ArgumentAssignment("value", "3.14"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("size", Integer.toString(data.length));
+        args.put("data", StringConverter.arrayToHexString(data));
+        args.put("value", "3.14");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = createPacket(data, 3.14F, true);
 
         assertArrayEquals(expected, b);
@@ -56,16 +56,16 @@ public class VariableBinaryCommandEncodingTest {
     @Test
     public void testCommandEncodingWithoutSize() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
         StringBuilder builder = new StringBuilder();
         for (byte b : data) {
             builder.append(String.format("%02X", b));
         }
-        arguments.add(new ArgumentAssignment("data", builder.toString()));
-        arguments.add(new ArgumentAssignment("value", "3.14"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        args.put("data", builder.toString());
+        args.put("value", "3.14");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = createPacket(data, 3.14F, false);
 
         assertArrayEquals(expected, b);
@@ -74,19 +74,19 @@ public class VariableBinaryCommandEncodingTest {
     @Test(expected = ErrorInCommand.class)
     public void testCommandEncodingWithoutSizeTooSmall() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        arguments.add(new ArgumentAssignment("data", "01"));
-        arguments.add(new ArgumentAssignment("value", "3.14"));
-        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("data", "01");
+        args.put("value", "3.14");
+        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
     }
 
     @Test(expected = ErrorInCommand.class)
     public void testCommandEncodingWithoutSizeTooLong() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        arguments.add(new ArgumentAssignment("data", "01020304050607"));
-        arguments.add(new ArgumentAssignment("value", "3.14"));
-        metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("data", "01020304050607");
+        args.put("value", "3.14");
+        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
     }
 
     private byte[] createPacket(byte[] data, float value, boolean withSize) throws IOException {

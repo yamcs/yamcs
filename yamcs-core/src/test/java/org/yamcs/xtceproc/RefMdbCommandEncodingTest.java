@@ -7,10 +7,8 @@ import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,7 +21,6 @@ import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
@@ -47,8 +44,8 @@ public class RefMdbCommandEncodingTest {
     public void intArgTcAbs() throws ErrorInCommand {
         // encode command
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC_ABS");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
     }
@@ -57,12 +54,10 @@ public class RefMdbCommandEncodingTest {
     public void floatCommand() throws ErrorInCommand {
         // encode command
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("float_arg", "-30");
-        arguments.add(argumentAssignment1);
-        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("double_arg", "1");
-        arguments.add(argumentAssignment2);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("float_arg", "-30");
+        args.put("double_arg", "1");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertTrue(b[0] != 0);
     }
@@ -75,8 +70,8 @@ public class RefMdbCommandEncodingTest {
 
         try {
             // should complain that parameter has not been assigned
-            List<ArgumentAssignment> arguments = new LinkedList<>();
-            metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            Map<String, String> args = new HashMap<>();
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         } catch (ErrorInCommand e) {
             errorInCommand = true;
         }
@@ -87,16 +82,12 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void stringCommand() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/STRING_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg", "aaaa");
-        arguments.add(argumentAssignment1);
-        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("terminatedString_arg", "bbbb");
-        arguments.add(argumentAssignment2);
-        ArgumentAssignment argumentAssignment3 = new ArgumentAssignment("prependedSizeString_arg", "cccc");
-        arguments.add(argumentAssignment3);
-        ArgumentAssignment argumentAssignment4 = new ArgumentAssignment("fixedString_arg", "dddd");
-        arguments.add(argumentAssignment4);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("string_arg", "aaaa");
+        args.put("terminatedString_arg", "bbbb");
+        args.put("prependedSizeString_arg", "cccc");
+        args.put("fixedString_arg", "dddd");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         byte[] expectedResult = {
                 97, 97, 97, 97, 0, // aaaa
@@ -111,12 +102,10 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void cgsLikeStringCommand() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CGS_LIKE_STRING_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg1", "aaaa");
-        arguments.add(argumentAssignment1);
-        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("string_arg2", "bbbb");
-        arguments.add(argumentAssignment2);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("string_arg1", "aaaa");
+        args.put("string_arg2", "bbbb");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         byte[] expectedResult = {
                 0, 4, 97, 97, 97, 97, 0, 0, // aaaa
@@ -129,12 +118,10 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void binaryCommand() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BINARY_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("binary_arg1", "0102");
-        arguments.add(argumentAssignment1);
-        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("binary_arg2", "0A1B");
-        arguments.add(argumentAssignment2);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("binary_arg1", "0102");
+        args.put("binary_arg2", "0A1B");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         byte[] expectedResult = {
                 0x01, 0x02, 0, 0, 0,
@@ -147,10 +134,9 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void littleEndianUint() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/LE_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("p2", "0x12");
-        arguments.add(argumentAssignment1);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("p2", "0x12");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         assertEquals(0x0A0B, bb.getShort());
@@ -160,10 +146,9 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void booleanCommandTrue() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "true");
-        arguments.add(argumentAssignment1);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("bool_arg1", "true");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals(0b11000000, b[0] & 0xFF);
     }
@@ -171,15 +156,13 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void booleanCommandFalseTrue() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "false");
-        arguments.add(argumentAssignment1);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("bool_arg1", "false");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         // - assigned false
         // - default argument assignemnt true
         assertEquals(0b01000000, b[0] & 0xFF);
-
     }
 
     @Test
@@ -187,27 +170,27 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
 
         try {
-            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060707", "p2",
+            Map<String, String> args = getArgAssignment("p1", "0X0102030405060707", "p2",
                     "0xF102030405060708", "p3", "-18374120213919168760");
-            metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Cannot assign value to p1"));
         }
 
         try {
-            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2",
+            Map<String, String> args = getArgAssignment("p1", "0X0102030405060708", "p2",
                     "0xF10203040506070A", "p3", "-18374120213919168760");
-            metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Cannot assign value to p2"));
         }
 
         try {
-            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2",
+            Map<String, String> args = getArgAssignment("p1", "0X0102030405060708", "p2",
                     "0xF102030405060708", "p3", "-0X0102030405060707");
-            metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
             fail("Should throw an exception");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Cannot assign value to p3"));
@@ -217,9 +200,9 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void int64CommandArgumentEncoding() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
-        List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708",
+        Map<String, String> args = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708",
                 "p3", "-0X0102030405060708");
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals("0102030405060708F102030405060708FEFDFCFBFAF9F8F8", StringConverter.arrayToHexString(b));
     }
 
@@ -228,16 +211,16 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = XtceDbFactory.createInstanceByConfig("refmdb")
                 .getMetaCommand("/REFMDB/SUBSYS1/STRING_ENCODED_ARG_TC");
         assertNotNull(mc);
-        List<ArgumentAssignment> aaList = Arrays.asList(
-                new ArgumentAssignment("uint_arg", "1"),
-                new ArgumentAssignment("int_arg", "-2"), // with calibration applied
-                new ArgumentAssignment("float_arg", "-3.01"),
-                new ArgumentAssignment("string_arg", "string with \n special chars \""),
-                new ArgumentAssignment("binary_arg", "010A"),
-                new ArgumentAssignment("enumerated_arg", "value1"),
-                new ArgumentAssignment("boolean_arg", "false"));
+        Map<String, String> args = new HashMap<>();
+        args.put("uint_arg", "1");
+        args.put("int_arg", "-2"); // with calibration applied
+        args.put("float_arg", "-3.01");
+        args.put("string_arg", "string with \n special chars \"");
+        args.put("binary_arg", "010A");
+        args.put("enumerated_arg", "value1");
+        args.put("boolean_arg", "false");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         String result = new String(b);
         String expected = "1,-3,-3.01,string with \n special chars \",010A,1,False,";
 
@@ -248,39 +231,37 @@ public class RefMdbCommandEncodingTest {
     public void testCustomCalibTc() throws Exception {
         MetaCommand mc = XtceDbFactory.createInstanceByConfig("refmdb")
                 .getMetaCommand("/REFMDB/SUBSYS1/CUSTOM_CALIB_TC");
-        List<ArgumentAssignment> arguments = Arrays.asList(
-                new ArgumentAssignment("p1", "10"),
-                new ArgumentAssignment("p2", "20.08553692318766774092"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, String> args = new HashMap<>();
+        args.put("p1", "10");
+        args.put("p2", "20.08553692318766774092");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals("0000000D0003", StringConverter.arrayToHexString(b));
     }
 
-    private List<ArgumentAssignment> getArgAssignment(String... v) {
+    private Map<String, String> getArgAssignment(String... v) {
         if ((v.length & 0x1) != 0) {
             throw new IllegalArgumentException("Please pass an even number of arguments: arg1,value1,arg2,value2...");
         }
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, String> args = new HashMap<>();
         for (int i = 0; i < v.length; i += 2) {
-            ArgumentAssignment arg = new ArgumentAssignment(v[i], v[i + 1]);
-            arguments.add(arg);
+            args.put(v[i], v[i + 1]);
         }
-        return arguments;
+        return args;
     }
 
     @Test
     public void testOneIntArg() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(mc);
-        byte[] b = metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCDEFAB", StringConverter.arrayToHexString(b));
-
     }
 
     @Test
     public void testFixedValue() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
         assertNotNull(mc);
-        byte[] b = metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
     }
 
@@ -288,21 +269,20 @@ public class RefMdbCommandEncodingTest {
     public void testIntegerArg() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
         assertNotNull(mc);
-        byte[] b = metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
-
     }
 
     @Test
     public void testFloatArg() throws Exception {
-
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("float_arg", "-10.23"),
-                new ArgumentAssignment("double_arg", "25.4"));
+        Map<String, String> args = new HashMap<>();
+        args.put("float_arg", "-10.23");
+        args.put("double_arg", "25.4");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals(16, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
@@ -314,15 +294,15 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testLittleEndianFloatArg() throws Exception {
-
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/LE_FLOAT_INT_ARG_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("float_arg", "1.0"),
-                new ArgumentAssignment("uint_arg1", "2"),
-                new ArgumentAssignment("uint_arg2", "3"));
+        Map<String, String> args = new HashMap<>();
+        args.put("float_arg", "1.0");
+        args.put("uint_arg1", "2");
+        args.put("uint_arg2", "3");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals(12, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -337,12 +317,13 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("uint8_arg", "1"),
-                new ArgumentAssignment("uint16_arg", "2"),
-                new ArgumentAssignment("int32_arg", "-3"),
-                new ArgumentAssignment("uint64_arg", "4"));
+        Map<String, String> args = new HashMap<>();
+        args.put("uint8_arg", "1");
+        args.put("uint16_arg", "2");
+        args.put("int32_arg", "-3");
+        args.put("uint64_arg", "4");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals(31, b.length);
 
         CcsdsPacket p = new CcsdsPacket(b);
@@ -357,20 +338,20 @@ public class RefMdbCommandEncodingTest {
         assertEquals(2, bb.getShort(17));
         assertEquals(-3, bb.getInt(19));
         assertEquals(4, bb.getLong(23));
-
     }
 
     @Test
     public void testValidIntegerRange() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         assertNotNull(mc);
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("uint8_arg", "5"),
-                new ArgumentAssignment("uint16_arg", "2"),
-                new ArgumentAssignment("int32_arg", "-3"),
-                new ArgumentAssignment("uint64_arg", "4"));
+        Map<String, String> args = new HashMap<>();
+        args.put("uint8_arg", "5");
+        args.put("uint16_arg", "2");
+        args.put("int32_arg", "-3");
+        args.put("uint64_arg", "4");
         ErrorInCommand e = null;
         try {
-            metaCommandProcessor.buildCommand(mc, aaList);
+            metaCommandProcessor.buildCommand(mc, args);
         } catch (ErrorInCommand e1) {
             e = e1;
         }
@@ -383,12 +364,13 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("p1", "1"),
-                new ArgumentAssignment("p2", "1"),
-                new ArgumentAssignment("p3", "-3.2"),
-                new ArgumentAssignment("p4", "value2"));
+        Map<String, String> args = new HashMap<>();
+        args.put("p1", "1");
+        args.put("p2", "1");
+        args.put("p3", "-3.2");
+        args.put("p4", "value2");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals(9, b.length);
 
         ByteBuffer bb = ByteBuffer.wrap(b);
@@ -407,14 +389,15 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("p1", "1"),
-                new ArgumentAssignment("p2", "1"),
-                new ArgumentAssignment("p3", "-3.2"),
-                new ArgumentAssignment("p4", "invalidenum"));
+        Map<String, String> args = new HashMap<>();
+        args.put("p1", "1");
+        args.put("p2", "1");
+        args.put("p3", "-3.2");
+        args.put("p4", "invalidenum");
 
         ErrorInCommand e = null;
         try {
-            metaCommandProcessor.buildCommand(mc, aaList);
+            metaCommandProcessor.buildCommand(mc, args);
         } catch (ErrorInCommand e1) {
             e = e1;
         }
@@ -425,12 +408,13 @@ public class RefMdbCommandEncodingTest {
     @Test(expected = ErrorInCommand.class)
     public void testExceptionOnReassigningInheritanceArgument() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
-        List<ArgumentAssignment> assignments = Arrays.asList(new ArgumentAssignment("uint8_arg", "2"),
-                new ArgumentAssignment("uint16_arg", "2"),
-                new ArgumentAssignment("int32_arg", "2"),
-                new ArgumentAssignment("uint64_arg", "2"),
-                new ArgumentAssignment("ccsds-apid", "123")); // Already assigned by parent
-        metaCommandProcessor.buildCommand(mc, assignments);
+        Map<String, String> args = new HashMap<>();
+        args.put("uint8_arg", "2");
+        args.put("uint16_arg", "2");
+        args.put("int32_arg", "2");
+        args.put("uint64_arg", "2");
+        args.put("ccsds-apid", "123"); // Already assigned by parent
+        metaCommandProcessor.buildCommand(mc, args);
     }
 
     @Test
@@ -440,8 +424,9 @@ public class RefMdbCommandEncodingTest {
         String tstring = "2020-01-01T00:00:00.123Z";
         long tlong = TimeEncoding.parse(tstring);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("t1", tstring));
-        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
+        Map<String, String> args = new HashMap<>();
+        args.put("t1", tstring);
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, args);
         Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
 
         assertEquals(tlong, v1.getTimestampValue());
@@ -449,7 +434,6 @@ public class RefMdbCommandEncodingTest {
         assertEquals(4, cmdb.length);
         int gpsTime = ByteArrayUtils.decodeInt(cmdb, 0);
         assertEquals(TimeEncoding.toGpsTimeMillisec(tlong) / 1000, gpsTime);
-
     }
 
     @Test
@@ -457,9 +441,9 @@ public class RefMdbCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
         assertNotNull(mc);
 
-        List<ArgumentAssignment> aaList = Arrays.asList(
-                new ArgumentAssignment("arg1", "{member1: 3, member2: 'value2'}"));
-        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, aaList);
+        Map<String, String> args = new HashMap<>();
+        args.put("arg1", "{member1: 3, member2: 'value2'}");
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, args);
 
         byte[] cmdb = cbr.getCmdPacket();
         assertEquals("0380", StringConverter.arrayToHexString(cmdb));
