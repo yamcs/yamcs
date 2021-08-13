@@ -3,6 +3,7 @@ package org.yamcs.commanding;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +50,7 @@ public class PreparedCommand {
     boolean disableCommandVerifiers = false;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
-    private Map<Argument, ArgumentValue> argAssignment;
+    private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
     private Set<String> userAssignedArgumentNames;
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
@@ -292,7 +293,7 @@ public class PreparedCommand {
 
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
         if (assignments != null) {
-            pc.argAssignment = new HashMap<>();
+            pc.argAssignment = new LinkedHashMap<>();
             for (Assignment assignment : assignments.getAssignmentList()) {
                 Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
                 Value v = ValueUtility.fromGpb(assignment.getValue());
