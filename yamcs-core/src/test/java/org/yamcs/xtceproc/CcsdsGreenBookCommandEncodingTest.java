@@ -37,7 +37,7 @@ public class CcsdsGreenBookCommandEncodingTest {
         // encode command
         MetaCommand mc = xtcedb.getMetaCommand("/SpaceVehicle/PWHTMR");
         assertEquals(32, mc.getCommandContainer().getSizeInBits());
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         args.put("TimerStartStop", "TIMER_START");
 
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();

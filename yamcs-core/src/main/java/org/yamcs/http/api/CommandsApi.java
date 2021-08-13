@@ -95,7 +95,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         int sequenceNumber = 0;
         boolean dryRun = false;
         String comment = null;
-        Map<String, String> assignments = new LinkedHashMap<>();
 
         if (request.hasOrigin()) { // TODO remove this override?
             origin = request.getOrigin();
@@ -109,8 +108,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         if (request.hasComment()) {
             comment = request.getComment();
         }
-        for (Assignment a : request.getAssignmentList()) {
-            assignments.put(a.getName(), a.getValue());
+
+        Map<String, Object> assignments = new LinkedHashMap<>();
+        if (request.getAssignmentCount() > 0) {
+            for (Assignment a : request.getAssignmentList()) {
+                assignments.put(a.getName(), a.getValue());
+            }
+        } else if (request.hasArgs()) {
+            assignments.putAll(GpbWellKnownHelper.toJava(request.getArgs()));
         }
 
         // Prepare the command
@@ -164,7 +169,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             sb.append(cmd.getQualifiedName());
             sb.append("(");
             boolean first = true;
-            for (Entry<String, String> assignment : assignments.entrySet()) {
+            for (Entry<String, Object> assignment : assignments.entrySet()) {
                 Argument a = preparedCommand.getMetaCommand().getArgument(assignment.getKey());
                 if (!first) {
                     sb.append(", ");

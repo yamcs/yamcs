@@ -4,9 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.yamcs.client.utils.TimeUtils.TIMESTAMP_MAX;
-import static org.yamcs.client.utils.TimeUtils.TIMESTAMP_MIN;
-import static org.yamcs.client.utils.TimeUtils.toTimestamp;
+import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MAX;
+import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MIN;
+import static org.yamcs.client.utils.WellKnownTypes.toTimestamp;
 
 import java.time.Instant;
 import java.util.Arrays;

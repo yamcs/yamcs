@@ -30,15 +30,15 @@ public class MetaCommandProcessor {
         this.pdata = pdata;
     }
 
-    public CommandBuildResult buildCommand(MetaCommand mc, Map<String, String> argAssignmentList)
+    public CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList)
             throws ErrorInCommand {
         return buildCommand(pdata, mc, argAssignmentList);
     }
 
     public static CommandBuildResult buildCommand(ProcessorData pdata, MetaCommand mc,
-            Map<String, String> argAssignmentList) throws ErrorInCommand {
+            Map<String, Object> argAssignmentList) throws ErrorInCommand {
         if (mc.isAbstract()) {
-            throw new ErrorInCommand("Will not build command " + mc.getQualifiedName() + " because it is abstract");
+            throw new ErrorInCommand("Not building command " + mc.getQualifiedName() + " because it is abstract");
         }
 
         ProcessorConfig procConf = pdata.getProcessorConfig();

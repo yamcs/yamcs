@@ -14,6 +14,7 @@ import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.FromCacheOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.GetOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.TimeoutOption;
+import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
@@ -27,7 +28,6 @@ import org.yamcs.protobuf.EditQueueRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.GetProcessorRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
@@ -48,6 +48,7 @@ import org.yamcs.protobuf.UpdateParameterRequest.ActionType;
 import org.yamcs.protobuf.Yamcs.Value;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 
 public class ProcessorClient {
@@ -157,13 +158,8 @@ public class ProcessorClient {
         IssueCommandRequest.Builder requestb = IssueCommandRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(command);
-        for (Entry<String, ?> entry : arguments.entrySet()) {
-            String stringValue = String.valueOf(entry.getValue());
-            requestb.addAssignment(Assignment.newBuilder()
-                    .setName(entry.getKey())
-                    .setValue(stringValue));
-        }
+                .setName(command)
+                .setArgs(WellKnownTypes.toStruct(arguments));
         CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
         commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(Command::new);
@@ -414,6 +410,7 @@ public class ProcessorClient {
 
         private CommandsApiClient commandService;
         private IssueCommandRequest.Builder requestb;
+        private Struct.Builder argsb;
 
         CommandBuilder(ProcessorClient client, String command) {
             this(client.commandService, client.instance, client.processor, command);
@@ -425,26 +422,11 @@ public class ProcessorClient {
                     .setInstance(instance)
                     .setProcessor(processor)
                     .setName(command);
+            argsb = Struct.newBuilder();
         }
 
-        public CommandBuilder withArgument(String name, long value) {
-            requestb.addAssignment(Assignment.newBuilder()
-                    .setName(name)
-                    .setValue(Long.toString(value)));
-            return this;
-        }
-
-        public CommandBuilder withArgument(String name, String value) {
-            requestb.addAssignment(Assignment.newBuilder()
-                    .setName(name)
-                    .setValue(value));
-            return this;
-        }
-
-        public CommandBuilder withArgument(String name, boolean value) {
-            requestb.addAssignment(Assignment.newBuilder()
-                    .setName(name)
-                    .setValue(Boolean.toString(value)));
+        public CommandBuilder withArgument(String name, Object value) {
+            argsb.putFields(name, WellKnownTypes.toValue(value));
             return this;
         }
 
@@ -490,7 +472,8 @@ public class ProcessorClient {
 
         public CompletableFuture<Command> issue() {
             CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
-            commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
+            IssueCommandRequest request = requestb.setArgs(argsb).build();
+            commandService.issueCommand(null, request, new ResponseObserver<>(f));
             return f.thenApply(Command::new);
         }
     }

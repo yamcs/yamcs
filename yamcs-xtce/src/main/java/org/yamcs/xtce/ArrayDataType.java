@@ -142,9 +142,12 @@ public class ArrayDataType extends NameDescription implements DataType {
      * 
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Object[] convertType(Object value) {
         if (value instanceof String) {
             return parse((String) value, false);
+        } else if (value instanceof List) {
+            return toArray((List<Object>) value, numberOfDimensions - 1, false);
         } else {
             throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
@@ -185,6 +188,30 @@ public class ArrayDataType extends NameDescription implements DataType {
             }
         }
 
+        return r;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object[] toArray(List<Object> arr, int numDim, boolean raw) {
+        Object[] r = new Object[arr.size()];
+        if (numDim > 0) {
+            for (int i = 0; i < arr.size(); i++) {
+                Object el = arr.get(i);
+                if (!(el instanceof List)) {
+                    throw new IllegalArgumentException(
+                            "Expected '" + el + "' to be an array but instead it is: " + el.getClass());
+                }
+                r[i] = toArray((List<Object>) el, numDim - 1, raw);
+            }
+        } else if (raw) {
+            for (int i = 0; i < arr.size(); i++) {
+                r[i] = type.parseStringForRawValue((String) arr.get(i));
+            }
+        } else {
+            for (int i = 0; i < arr.size(); i++) {
+                r[i] = type.convertType(arr.get(i));
+            }
+        }
         return r;
     }
 

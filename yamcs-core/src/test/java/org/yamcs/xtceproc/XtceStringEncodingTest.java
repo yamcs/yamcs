@@ -40,7 +40,7 @@ public class XtceStringEncodingTest {
     // null terminated string in fixed size buffer
     public void testFixedSizeString1() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string1", "abc");
         args.put("para1", "258");
@@ -53,7 +53,7 @@ public class XtceStringEncodingTest {
     // null terminated string in fixed size buffer but the string is as long as the buffer so there is no terminator
     public void testFixedSizeString1_noterminator() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string1", "abcdef");
         args.put("para1", "258");
@@ -66,7 +66,7 @@ public class XtceStringEncodingTest {
     // fixed size string in fixed size buffer
     public void testFixedSizeString2() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command2");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string2", "abcdef");
         args.put("para1", "258");
@@ -79,7 +79,7 @@ public class XtceStringEncodingTest {
     // null terminated string in undefined buffer
     public void testFixedSizeString3() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command3");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string3", "ab");
         args.put("para1", "258");
@@ -92,7 +92,7 @@ public class XtceStringEncodingTest {
     // null terminated string in undefined buffer - max size
     public void testFixedSizeString3_max() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command3");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string3", "abcde");
         args.put("para1", "258");
@@ -105,7 +105,7 @@ public class XtceStringEncodingTest {
     // null terminated string in undefined buffer exceeding the size
     public void testFixedSizeString3_too_long() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command3");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string3", "abcdef");
         args.put("para1", "258");
@@ -116,7 +116,7 @@ public class XtceStringEncodingTest {
     // prefixed size string in buffer whose size is given by another argument
     public void testFixedSizeString4() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command4");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("buf_length", "6");
         args.put("string4", "abc");
@@ -137,7 +137,7 @@ public class XtceStringEncodingTest {
     // prefixed size string in buffer whose size is given by another argument which is too long
     public void testFixedSizeString4_too_long() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command4");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("buf_length", "7");
         args.put("string4", "ab");
@@ -149,7 +149,7 @@ public class XtceStringEncodingTest {
     // too long prefixed size string in buffer whose size is given by another argument
     public void testFixedSizeString4_too_long2() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command4");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("buf_length", "4");
         args.put("string4", "abcd");
@@ -161,7 +161,7 @@ public class XtceStringEncodingTest {
     // prefixed size string in undefined buffer
     public void testFixedSizeString5() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command5");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string5", "ab");
         args.put("para1", "258");
@@ -175,7 +175,7 @@ public class XtceStringEncodingTest {
     // prefixed size string in undefined buffer exceeding max size
     public void testFixedSizeString5_too_long() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command5");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string5", "abcde");
         args.put("para1", "258");
@@ -188,7 +188,7 @@ public class XtceStringEncodingTest {
     @Test
     public void testStringEncodedAsBinary() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command6");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("string6", "ab");
         args.put("para1", "258");

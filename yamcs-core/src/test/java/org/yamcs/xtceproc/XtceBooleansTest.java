@@ -91,7 +91,7 @@ public class XtceBooleansTest {
     @Test
     public void testNumericCmdTrue() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", "true");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -102,7 +102,7 @@ public class XtceBooleansTest {
     @Test
     public void testNumericCmdFalse() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", "false");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -113,7 +113,7 @@ public class XtceBooleansTest {
     @Test
     public void testStringCmdTrue() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command2");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("bool2", "yes!");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -124,11 +124,33 @@ public class XtceBooleansTest {
     @Test
     public void testStringCmdFalse() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command2");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         args.put("bool2", "nooo");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'n', 'o', 'o', 'o' };
+        assertArrayEquals(expected, b);
+    }
+
+    @Test
+    public void testNativeTrueArgument() throws Exception {
+        MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
+        Map<String, Object> args = new HashMap<>();
+
+        args.put("bool1", true);
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] expected = { 1 };
+        assertArrayEquals(expected, b);
+    }
+
+    @Test
+    public void testNativeFalseArgument() throws Exception {
+        MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
+        Map<String, Object> args = new HashMap<>();
+
+        args.put("bool1", false);
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] expected = { 0 };
         assertArrayEquals(expected, b);
     }
 

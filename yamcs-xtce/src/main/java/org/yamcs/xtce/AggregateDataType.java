@@ -134,6 +134,7 @@ public class AggregateDataType extends NameDescription implements DataType {
      *             if the string cannot be parsed or if values cannot be determined for all members
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> convertType(Object value) {
         if (value instanceof String) {
             // Parse as JSON
@@ -147,6 +148,8 @@ public class AggregateDataType extends NameDescription implements DataType {
             } catch (JsonParseException jpe) {
                 throw new IllegalArgumentException(jpe.toString());
             }
+        } else if (value instanceof Map) {
+            return fromMap((Map<String, Object>) value);
         } else {
             throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
@@ -179,6 +182,32 @@ public class AggregateDataType extends NameDescription implements DataType {
         if (jobj.size() > 0) {
             throw new IllegalArgumentException("Unknown members "
                     + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+        }
+        return r;
+    }
+
+    private Map<String, Object> fromMap(Map<String, Object> map) {
+        // Provided map may be immutable. So make a copy where we can remove.
+        Map<String, Object> input = new HashMap<>(map);
+        Map<String, Object> r = new HashMap<>(input.size());
+        for (Member memb : memberList) {
+            if (input.containsKey(memb.getName())) {
+                Object el = input.remove(memb.getName());
+                r.put(memb.getName(), memb.getType().convertType(el));
+            } else {
+                Object v = memb.getInitialValue();
+                if (v == null) {
+                    v = memb.getType().getInitialValue();
+                }
+                if (v == null) {
+                    throw new IllegalArgumentException("No value could be determined for member '"
+                            + memb.getName() + "' (its corresponding type does not have an initial value)");
+                }
+                r.put(memb.getName(), v);
+            }
+        }
+        if (input.size() > 0) {
+            throw new IllegalArgumentException("Unknown members " + input.keySet());
         }
         return r;
     }

@@ -41,7 +41,7 @@ public class VariableBinaryCommandEncodingTest {
     @Test
     public void testCommandEncoding() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
         args.put("size", Integer.toString(data.length));
@@ -56,7 +56,7 @@ public class VariableBinaryCommandEncodingTest {
     @Test
     public void testCommandEncodingWithoutSize() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
         StringBuilder builder = new StringBuilder();
@@ -74,7 +74,7 @@ public class VariableBinaryCommandEncodingTest {
     @Test(expected = ErrorInCommand.class)
     public void testCommandEncodingWithoutSizeTooSmall() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         args.put("data", "01");
         args.put("value", "3.14");
         metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -83,7 +83,7 @@ public class VariableBinaryCommandEncodingTest {
     @Test(expected = ErrorInCommand.class)
     public void testCommandEncodingWithoutSizeTooLong() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
-        Map<String, String> args = new HashMap<>();
+        Map<String, Object> args = new HashMap<>();
         args.put("data", "01020304050607");
         args.put("value", "3.14");
         metaCommandProcessor.buildCommand(mc, args).getCmdPacket();

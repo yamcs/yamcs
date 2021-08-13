@@ -62,7 +62,7 @@ public class CommandingManager extends AbstractService {
     /**
      * pc is a command whose source is included. parse the source populate the binary part and the definition.
      */
-    public PreparedCommand buildCommand(MetaCommand mc, Map<String, String> argAssignmentList, String origin,
+    public PreparedCommand buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList, String origin,
             int seq, User user) throws ErrorInCommand, YamcsException {
         log.debug("Building command {} with arguments {}", mc.getName(), argAssignmentList);
 
