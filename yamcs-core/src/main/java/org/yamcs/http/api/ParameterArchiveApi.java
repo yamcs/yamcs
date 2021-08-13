@@ -467,6 +467,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     private static Ranges.Range toGPBRange(Range r) {
         Ranges.Range.Builder b = Ranges.Range.newBuilder();
         b.setCount(r.totalCount());
+        b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
+        b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
         b.setTimeStart(TimeEncoding.toString(r.start));
         b.setTimeStop(TimeEncoding.toString(r.stop));
         for (int i = 0; i < r.valueCount(); i++) {

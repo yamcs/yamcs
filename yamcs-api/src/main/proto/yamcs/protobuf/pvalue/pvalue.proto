@@ -115,14 +115,20 @@ message TimeSeries {
 message Ranges {
     message Range {
         // Generation time of a parameter value.
-        optional string timeStart = 1;
-            
-        // If the value changes, ``timeStop`` is the generation time of the new value.
-        // If the parameter expires or the ``maxGap`` has been set, ``timeStop`` is
+        optional google.protobuf.Timestamp start = 7;
+
+        // If the value changes, ``stop`` is the generation time of the new value.
+        // If the parameter expires or the ``maxGap`` has been set, ``stop`` is
         // the generation time of the last value plus the expiration time or the
         // ``maxGap``.
-        optional string timeStop = 2;
-    
+        optional google.protobuf.Timestamp stop = 8;
+
+        // Deprecated. Use ``start`` instead.
+        optional string timeStart = 1 [deprecated = true];
+
+        // Deprecated. Use ``stop`` instead.
+        optional string timeStop = 2 [deprecated = true];
+
         // Number of parameter values received in the interval.
         // This is the total count of parameters in the interval.
         // If the count does not match the sum(counts), it means that not all the values have been sent
@@ -130,7 +136,7 @@ message Ranges {
         
         // Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows 
         // specifying the minimum length of the range returned.
-        // Practically we guarantee that timeStop-timeStart >= minRange (mind the leap seconds!).
+        // Practically we guarantee that stop-start >= minRange (mind the leap seconds!).
         //
         // If the minRange parameter is set, the returning ranges may include multiple values.
         // These are given by the engValues and counts below. 

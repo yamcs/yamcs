@@ -71,9 +71,10 @@ export interface Sample {
 }
 
 export interface Range {
-  timeStart: string;
-  timeStop: string;
-  engValue: Value;
+  start: string;
+  stop: string;
+  engValues: Value[];
+  counts: number[];
   count: number;
 }
 
