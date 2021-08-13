@@ -19,7 +19,7 @@ service CommandsApi {
 
   // Issue a command
   //
-  // After validating the input parameters, the command will be added to the appropriate
+  // After validating the input parameters, the command is added to the appropriate
   // command queue for further dispatch.
   rpc IssueCommand(IssueCommandRequest) returns (IssueCommandResponse) {
     option (yamcs.api.route) = {
@@ -81,7 +81,7 @@ message ListCommandsRequest {
   // Default: ``0``
   // 
   // This option is deprecated and will be removed in a later version.
-  // Use the provided "continuationToken" instead.
+  // Use the returned continuationToken instead.
   optional int64 pos = 2 [deprecated = true];
   
   // The maximum number of returned records per page. Choose this value too
@@ -96,6 +96,7 @@ message ListCommandsRequest {
   // Text to search in the name of the command.
   optional string q = 5;
 
+  // Continuation token returned by a previous page response.
   optional string next = 6;
   
   // Filter the lower bound of the command's generation time. Specify a date
@@ -121,12 +122,13 @@ message IssueCommandRequest {
   
   // Command name.
   optional string name = 8;
-  
-  // The name/value assignments for this command.
-  repeated Assignment assignment = 1 [deprecated=true];
 
   // The name/value assignments for this command.
   optional google.protobuf.Struct args = 16;
+
+  // The name/value assignments for this command.
+  // Deprecated: use ``args`` instead.
+  repeated Assignment assignment = 1 [deprecated=true];
 
   // The origin of the command. Typically a hostname.
   optional string origin = 2;
@@ -173,8 +175,16 @@ message IssueCommandResponse {
   optional string origin = 7;
   optional int32 sequenceNumber = 8;
   optional string commandName = 9;
+
+  // Deprecated. If you require a string representation of this
+  // command, you can build it based on the fields ``commandName``
+  // and ``assignments``.
   optional string source = 2 [deprecated=true];
+
+  // Deprecated. If you require a hex representation of this
+  // command, you can build it based on the field ``binary``.
   optional string hex = 3 [deprecated=true];
+
   repeated CommandAssignment assignments = 12;
   optional bytes binary = 4;
   optional string username = 11;
@@ -196,6 +206,10 @@ message UpdateCommandHistoryRequest {
 
 message ListCommandsResponse {
   repeated CommandHistoryEntry entry = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
 }
 

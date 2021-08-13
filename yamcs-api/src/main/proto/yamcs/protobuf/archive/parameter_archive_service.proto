@@ -265,10 +265,12 @@ message ArchivedParametersInfoResponse {
 }
 
 message ArchiveParameterSegmentInfo {
-  //multiple parameters are grouped such that all in one group have the same timestamps
-  // for example all parameters extracted from one TM packet have usually the same timestamp
-  //this way we can have a unique segment storing the timestamps for a group of parameters
-  //the groupId can be used to retrieve all parameters from the same group
+  // Multiple parameters are grouped such that all in one group have
+  // the same timestamps. For example: all parameters extracted from
+  // one TM packet usually have the same timestamp.
+  // This way we have a unique segment storing the timestamps for a
+  // group of parameters. The groupId can be used to retrieve all parameters
+  // from the same group.
   optional uint32 groupId = 1;
   
   //the segment start
@@ -281,23 +283,23 @@ message ArchiveParameterSegmentInfo {
   optional uint32 count = 4;
 }
 
-// the message contains the recorded segments for the requested parameter
+// Recorded segments for the requested parameter
 message ArchivedParameterSegmentsResponse {
   optional ArchivedParameterInfo parameterInfo = 1;
   repeated ArchiveParameterSegmentInfo segments = 2;
 }
 
 message GetArchivedParameterGroupRequest {
-  //Yamcs instance
+  // Yamcs instance name
   optional string instance = 1;
 
-  //group id
+  // Group identifier
   optional uint32 gid = 2;
 }
 message ArchivedParameterGroupResponse {
-  //group id
+  // Group identifier
   optional uint32 gid = 1;
   
-  //parameters which are part of the group
+  // Parameters belonging to the group
   repeated ArchivedParameterInfo parameters = 2;
 }

@@ -335,7 +335,7 @@ message ListItemsRequest {
       
   optional int32 limit = 3;
 
-  //retrieve the next page
+  // Continuation token returned by a previous page response.
   optional string next = 4;
   
   optional google.protobuf.Timestamp start = 5;
@@ -370,6 +370,10 @@ message DeleteTimelineGroupRequest {
 
 message ListItemsResponse {
   repeated TimelineItem items = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
 }
 

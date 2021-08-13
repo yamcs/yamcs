@@ -105,6 +105,7 @@ message ListPacketsRequest {
   // The archived name of the packets. Names must match exactly.
   repeated string name = 5;
 
+  // Continuation token returned by a previous page response.
   optional string next = 6;
   
   // Filter the lower bound of the packet's generation time. Specify a date
@@ -118,6 +119,10 @@ message ListPacketsRequest {
 
 message ListPacketsResponse {
   repeated TmPacketData packet = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
   optional string continuationToken = 2;
 }
 
