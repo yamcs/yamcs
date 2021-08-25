@@ -48,10 +48,12 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                 boolean randomize = config.getBoolean("randomizeCltu", false);
                 cltuGenerator = new BchCltuGenerator(randomize, startSeq, tailSeq);
             } else if ("LDPC64".equals(cltuEncoding)) {
+                checkSuperfluosLdpcRandomizationOption(config);
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc64CltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc64CltuGenerator(startSeq, tailSeq);
             } else if ("LDPC256".equals(cltuEncoding)) {
+                checkSuperfluosLdpcRandomizationOption(config);
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc256CltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
@@ -72,6 +74,12 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         }
     }
 
+    static void checkSuperfluosLdpcRandomizationOption(YConfiguration config) {
+        if (!config.getBoolean("randomizeCltu", true)) {
+            throw new ConfigurationException(
+                    "CLTU randomization is always enabled for the LDPC codec, please remove the randomizeCltu option");
+        }
+    }
     
     @Override
     public long getDataInCount() {

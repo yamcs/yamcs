@@ -30,9 +30,9 @@ public class Randomizer {
         }
     }
     
-   static void xor(byte[] buf, byte[] seq) {
+    static void xor(byte[] buf, int offset, int length, byte[] seq) {
         int j=0;
-        for(int i=0; i<buf.length; i++) {
+        for (int i = offset; i < length; i++) {
             buf[i]= (byte) (buf[i]^seq[j]);
             j++;
             if(j==255) j=0;
@@ -44,16 +44,22 @@ public class Randomizer {
     * @param buf
     */
     public static void randomizeTm(byte[] buf) {
-        xor(buf, tmseq);
+        xor(buf, 0, buf.length, tmseq);
     }
     
     /**
      * Randomize the buffer according to CCSDS 231.0-B-3 pseudo-randomizer
-     * @param buf
+     * 
      */
     public static void randomizeTc(byte[] buf) {
-        xor(buf, tcseq);
+        xor(buf, 0, buf.length, tcseq);
     }
     
-  
+    /**
+     * Randomize the buffer starting at offset for length bytes according to CCSDS 231.0-B-3 pseudo-randomizer
+     * 
+     */
+    public static void randomizeTc(byte[] buf, int offset, int length) {
+        xor(buf, offset, length, tcseq);
+    }
 }

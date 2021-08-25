@@ -7,10 +7,10 @@ This section describes Yamcs support for parts of the following CCSDS specificat
 * AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/732x0b3e1.pdf>`_
 * TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
 * Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
-* TC Synchronization and Channel Coding `CCSDS 231.0-B-3 <https://public.ccsds.org/Pubs/231x0b3.pdf>`_
+* TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/231x0b4.pdf>`_
 * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
-* Space Packet Protocol `CCSDS 133.0-B-1 <https://public.ccsds.org/Pubs/133x0b1c2.pdf>`_
-* Encapsulation Service `CCSDS 133.1-B-2 <https://public.ccsds.org/Pubs/133x1b2c2.pdf>`_
+* Space Packet Protocol `CCSDS 133.0-B-2 <https://public.ccsds.org/Pubs/133x0b2e1.pdf>`_
+* Encapsulation Service `CCSDS 133.1-B-3 <https://public.ccsds.org/Pubs/133x1b3e1.pdf>`_
 
 These specifications are dealing with multiplexing and to a certain extent encoding data for transmission on a space link.
 
@@ -154,15 +154,14 @@ An example of a UDP TC frame link specification is below:
 
     - name: UDP_FRAME_OUT
       class: org.yamcs.tctm.ccsds.UdpTcFrameLink
-      args:
-        host: localhost
-        port: 10018
-        spacecraftId: 0xAB
-        maxFrameLength: 1024
-        cltuEncoding: BCH
-        priorityScheme: FIFO
-        randomizeCltu: false
-        virtualChannels:
+      host: localhost
+      port: 10018
+      spacecraftId: 0xAB
+      maxFrameLength: 1024
+      cltuEncoding: BCH
+      priorityScheme: FIFO
+      randomizeCltu: false
+      virtualChannels:
           - vcId: 0
             service: "PACKET" 
             priority: 1
@@ -199,7 +198,8 @@ cltuTailSequence (string)
     This parameter can optionally set the CLTU tail sequence in hexadecimal if different than the CCSDS specs.
     
 randomizeCltu (boolean)
-    Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on. 
+    Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on.
+    Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard).
  
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.

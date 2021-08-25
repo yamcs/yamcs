@@ -1,5 +1,6 @@
 package org.yamcs.tctm.ccsds.error;
 
+import org.yamcs.tctm.ccsds.Randomizer;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class Ldpc64CltuGenerator extends CltuGenerator {
@@ -9,13 +10,8 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
             (byte) 0xAA,
             0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55 };
 
-    final byte[] startSeq;
-    final byte[] tailSeq;
-
     public Ldpc64CltuGenerator(byte[] startSeq, byte[] tailSeq) {
-        super(true);
-        this.startSeq = startSeq;
-        this.tailSeq = tailSeq;
+        super(startSeq, tailSeq);
     }
 
     public Ldpc64CltuGenerator(boolean withTail) {
@@ -24,9 +20,6 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
 
     @Override
     public byte[] makeCltu(byte[] frameData) {
-        if (randomize) {
-            randomize(frameData);
-        }
         int numBlocks = (frameData.length - 1) / 8 + 1;
         int length = startSeq.length + 16 * numBlocks + tailSeq.length;
 
@@ -40,7 +33,8 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
         int n = frameData.length / 8;
         for (int i = 0; i < n; i++) {
             System.arraycopy(frameData, inOffset, encData, outOffset, 8);
-            Ldpc64Encoder.encode(encData, inOffset, encData, outOffset + 8);
+            Ldpc64Encoder.encode(encData, outOffset, encData, outOffset + 8);
+            Randomizer.randomizeTc(encData, outOffset, 16);
             inOffset += 8;
             outOffset += 16;
         }
@@ -51,6 +45,7 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
                 encData[outOffset + d + i] = 0x55;
             }
             Ldpc64Encoder.encode(encData, outOffset, encData, outOffset + 8);
+            Randomizer.randomizeTc(encData, outOffset, 16);
             outOffset += 16;
         }
         if (tailSeq.length > 0) { // tail sequence

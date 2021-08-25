@@ -1,5 +1,7 @@
 package org.yamcs.tctm.ccsds.error;
 
+import org.yamcs.tctm.ccsds.Randomizer;
+
 /**
  * Makes CLTUs from command transfer frames as per
  * CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
@@ -12,24 +14,21 @@ public class BchCltuGenerator extends CltuGenerator {
     public static final byte[] CCSDS_TAIL_SEQ = { (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, (byte) 0xC5,
             (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, 0x79 };
 
-    
-    final byte[] startSeq;
-    final byte[] tailSeq;
+    public final boolean randomize;
     
     public BchCltuGenerator(boolean randomize) {
         this(randomize, CCSDS_START_SEQ, CCSDS_TAIL_SEQ);
     }
 
     public BchCltuGenerator(boolean randomize, byte[] startSeq, byte[] tailSeq) {
-        super(randomize);
-        this.startSeq = startSeq;
-        this.tailSeq = tailSeq;
+        super(startSeq, tailSeq);
+        this.randomize = randomize;
     }
 
     @Override
     public byte[] makeCltu(byte[] data) {
         if (randomize) {
-            randomize(data);
+            Randomizer.randomizeTc(data);
         }
         int numBlocks = (data.length - 1) / 7 + 1;
         int length = startSeq.length + 8 * numBlocks + tailSeq.length;

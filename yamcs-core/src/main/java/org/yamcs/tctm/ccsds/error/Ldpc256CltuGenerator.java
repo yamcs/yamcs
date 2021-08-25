@@ -1,26 +1,22 @@
 package org.yamcs.tctm.ccsds.error;
 
+import org.yamcs.tctm.ccsds.Randomizer;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class Ldpc256CltuGenerator extends CltuGenerator {
-    static final public byte[] CCSDS_START_SEQ = new byte[] {0x03, 0x47, 0x76, (byte)0xC7, 0x27, 0x28, (byte)0x95, (byte)0xB0};
-    final byte[] startSeq;
-    final byte[] tailSeq;
-    
+    static final public byte[] CCSDS_START_SEQ = new byte[] { 0x03, 0x47, 0x76, (byte) 0xC7, 0x27, 0x28, (byte) 0x95,
+            (byte) 0xB0 };
+
     public Ldpc256CltuGenerator() {
         this(CCSDS_START_SEQ, EMPTY_SEQ);
     }
+
     public Ldpc256CltuGenerator(byte[] startSeq, byte[] tailSeq) {
-        super(true);
-        this.startSeq = startSeq;
-        this.tailSeq = tailSeq;
+        super(startSeq, tailSeq);
     }
-    
+
     @Override
     public byte[] makeCltu(byte[] frameData) {
-        if (randomize) {
-            randomize(frameData);
-        }
         int numBlocks = (frameData.length - 1) / 32 + 1;
         int length = startSeq.length + 64 * numBlocks + tailSeq.length;
 
@@ -34,7 +30,8 @@ public class Ldpc256CltuGenerator extends CltuGenerator {
         int n = frameData.length / 32;
         for (int i = 0; i < n; i++) {
             System.arraycopy(frameData, inOffset, encData, outOffset, 32);
-            Ldpc256Encoder.encode(encData, inOffset, encData, outOffset + 32);
+            Ldpc256Encoder.encode(encData, outOffset, encData, outOffset + 32);
+            Randomizer.randomizeTc(encData, outOffset, 64);
             inOffset += 32;
             outOffset += 64;
         }
@@ -45,7 +42,8 @@ public class Ldpc256CltuGenerator extends CltuGenerator {
                 encData[outOffset + d + i] = 0x55;
             }
             Ldpc256Encoder.encode(encData, outOffset, encData, outOffset + 32);
-            outOffset+=64;
+            Randomizer.randomizeTc(encData, outOffset, 64);
+            outOffset += 64;
         }
         if (tailSeq.length > 0) { // tail sequence
             System.arraycopy(tailSeq, 0, encData, outOffset, tailSeq.length);

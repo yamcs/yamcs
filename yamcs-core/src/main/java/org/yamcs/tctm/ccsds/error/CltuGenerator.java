@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds.error;
 
-import org.yamcs.tctm.ccsds.Randomizer;
 
 /**
  *  Makes CLTUs from command transfer frames as per 
@@ -11,19 +10,17 @@ import org.yamcs.tctm.ccsds.Randomizer;
  */
 public abstract class CltuGenerator {
     public final static byte[] EMPTY_SEQ = {};
+    protected final byte[] startSeq;
+    protected final byte[] tailSeq;
     
     public enum Encoding {
         BCH, LDCP64, LDPC256
     };
-    final protected boolean randomize;
 
-    public CltuGenerator(boolean randomize) {
-        this.randomize = randomize;
+    public CltuGenerator(byte[] startSeq, byte[] tailSeq) {
+        this.startSeq = startSeq;
+        this.tailSeq = tailSeq;
     }
-    
-    public void randomize(byte[] data) {
-        Randomizer.randomizeTc(data);
-    }
-    
+
     public abstract byte[] makeCltu(byte[] data);
 }
