@@ -6,6 +6,7 @@ import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
 import { ImageViewer } from './displays/ImageViewer';
 import { MultipleParameterTable } from './displays/MultipleParameterTable';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
+import { OpiDisplayViewerControls } from './displays/OpiDisplayViewerControls';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
 import { ParameterTableViewerControls } from './displays/ParameterTableViewerControls';
 import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
@@ -44,6 +45,7 @@ const directives = [
 const viewers = [
   ImageViewer,
   OpiDisplayViewer,
+  OpiDisplayViewerControls,
   ParameterTableViewer,
   ParameterTableViewerControls,
   ScriptViewer,
