@@ -34,6 +34,7 @@ public class AlgorithmExecutionResult {
     public AlgorithmExecutionResult(Object returnValue, List<ParameterValue> outputValues) {
         this(null, returnValue, outputValues);
     }
+
     public AlgorithmExecutionResult(List<ParameterValue> outputValues) {
         this(null, null, outputValues);
     }
@@ -45,5 +46,17 @@ public class AlgorithmExecutionResult {
      */
     public AlgorithmExecutionResult(ParameterValue outputValue) {
         this(null, null, Arrays.asList(outputValue));
+    }
+
+    public List<RawEngValue> getInputValues() {
+        return inputValues;
+    }
+
+    public List<ParameterValue> getOutputValues() {
+        return outputValues;
+    }
+
+    public Object getReturnValue() {
+        return returnValue;
     }
 }
