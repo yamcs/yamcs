@@ -5,9 +5,9 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class IntegerDataTypeTest {
+    
     @Test
     public void testParseString() {
-      
         testParseString(getidt(3, false), "", 7, true); //empty string -> exception
         testParseString(getidt(3, false), "abc", 7, true); //invalid characters -> exception
         testParseString(getidt(3, false), "0b+111", 7, true);//sign in the middle -> exception
@@ -37,18 +37,17 @@ public class IntegerDataTypeTest {
         testParseString(getidt(10, true), "0O77", 7*8+7, false);
         
         testParseString(getidt(32, false), "3735928559", 3735928559L, false);
-        
     }
 
     private void testParseString(IntegerDataType idt, String stringValue, long expected, boolean exceptionExpected) {
         NumberFormatException nfe = null;
         long actual = -1;
         try {
-            actual = idt.parseString(stringValue);
+            actual = idt.convertType(stringValue);
         } catch (NumberFormatException e) {
             nfe = e;
         }
-        if(exceptionExpected) {
+        if (exceptionExpected) {
             assertNotNull(nfe);
         } else {
             assertNull(nfe);
@@ -64,10 +63,10 @@ public class IntegerDataTypeTest {
         idt = getidt(64, true);
         assertNull(idt.getInitialValue());
         
-        Long x = idt.parseString("-0x7FFFFFFF_00000000");
-        assertEquals("-9223372032559808512", x.toString());
-        
+        Long x = idt.convertType("-0x7FFFFFFF_00000000");
+        assertEquals("-9223372032559808512", x.toString());        
     }
+
     private IntegerDataType getidt(int sizeInBits, boolean signed) {
         IntegerParameterType.Builder idt = new IntegerParameterType.Builder().setName("test");
         idt.setSigned(signed);

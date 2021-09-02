@@ -34,7 +34,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-public class TimelineItemDb implements TimelineSource {
+public class TimelineItemDb implements ItemProvider {
     static final Random random = new Random();
     public static final TupleDefinition TIMELINE_DEF = new TupleDefinition();
     public static final String CNAME_START = "start";
@@ -60,7 +60,7 @@ public class TimelineItemDb implements TimelineSource {
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
-    final static String TIMELINE_TABLE_NAME = "timeline";
+    final static String TABLE_NAME = "timeline";
 
     final YarchDatabaseInstance ydb;
     final Stream timelineStream;
@@ -89,16 +89,16 @@ public class TimelineItemDb implements TimelineSource {
     }
 
     private Stream setupTimelineRecording() throws StreamSqlException, ParseException {
-        String streamName = TIMELINE_TABLE_NAME + "_in";
-        if (ydb.getTable(TIMELINE_TABLE_NAME) == null) {
-            String query = "create table " + TIMELINE_TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
+        String streamName = TABLE_NAME + "_in";
+        if (ydb.getTable(TABLE_NAME) == null) {
+            String query = "create table " + TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
                     + ", primary key(start, uuid), index(reltime_id))";
             ydb.execute(query);
         }
         if (ydb.getStream(streamName) == null) {
             ydb.execute("create stream " + streamName + TIMELINE_DEF.getStringDefinition());
         }
-        ydb.execute("upsert into " + TIMELINE_TABLE_NAME + " select * from " + streamName);
+        ydb.execute("upsert into " + TABLE_NAME + " select * from " + streamName);
         return ydb.getStream(streamName);
     }
 
@@ -142,6 +142,7 @@ public class TimelineItemDb implements TimelineSource {
     @Override
     public TimelineItem updateItem(TimelineItem item) {
         rwlock.writeLock().lock();
+        UUID itemId = UUID.fromString(item.getId());
         try {
             if (item.getRelativeItemUuid() != null) {
                 TimelineItem relItem = fromCache(item.getRelativeItemUuid());
@@ -149,7 +150,7 @@ public class TimelineItemDb implements TimelineSource {
                     throw new InvalidRequestException(
                             "Referenced relative item uuid " + item.getRelativeItemUuid() + " does not exist");
                 }
-                verifyRelTimeCircularity(item.getId(), relItem);
+                verifyRelTimeCircularity(itemId, relItem);
                 item.setStart(relItem.getStart() + item.getRelativeStart());
             }
 
@@ -168,9 +169,9 @@ public class TimelineItemDb implements TimelineSource {
                     throw new InvalidRequestException(
                             "An activity group " + groupItem.getId() + " can only contain activity items");
                 }
-                verifyGroupCircularity(item.getId(), groupItem);
+                verifyGroupCircularity(itemId, groupItem);
             }
-            doDeleteItem(item.getId());
+            doDeleteItem(itemId);
 
             Tuple tuple = item.toTuple();
             log.debug("Updating timeline item in RDB: {}", tuple);
@@ -185,14 +186,14 @@ public class TimelineItemDb implements TimelineSource {
 
     // update the start time of all items having their time specified as relative to this
     private void updateDependentStart(TimelineItem item) {
-        String query = "update " + TIMELINE_TABLE_NAME + " set start = " + CNAME_RELTIME_START + " + ? where "
+        String query = "update " + TABLE_NAME + " set start = " + CNAME_RELTIME_START + " + ? where "
                 + CNAME_RELTIME_ID + " = ?";
         StreamSqlResult r = ydb.executeUnchecked(query, item.getStart(), item.getId());
         r.close();
     }
 
     private void verifyRelTimeCircularity(UUID uuid, TimelineItem relItem) {
-        if (uuid.equals(relItem.getId())) {
+        if (uuid.toString().equals(relItem.getId())) {
             throw new InvalidRequestException("Circular relative time reference for " + uuid);
         }
 
@@ -207,7 +208,7 @@ public class TimelineItemDb implements TimelineSource {
     }
 
     private void verifyGroupCircularity(UUID uuid, TimelineItem groupItem) {
-        if (uuid.equals(groupItem.getId())) {
+        if (uuid.toString().equals(groupItem.getId())) {
             throw new InvalidRequestException("Circular relative time reference for " + uuid);
         }
 
@@ -222,7 +223,7 @@ public class TimelineItemDb implements TimelineSource {
     }
 
     private TimelineItem doGetItem(UUID uuid) {
-        StreamSqlResult r = ydb.executeUnchecked("select * from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("select * from " + TABLE_NAME + " where uuid = ?", uuid);
         try {
             if (r.hasNext()) {
                 Tuple tuple = r.next();
@@ -242,7 +243,8 @@ public class TimelineItemDb implements TimelineSource {
     }
 
     @Override
-    public TimelineItem getItem(UUID uuid) {
+    public TimelineItem getItem(String id) {
+        UUID uuid = UUID.fromString(id);
         rwlock.readLock().lock();
         try {
             return fromCache(uuid);
@@ -261,7 +263,7 @@ public class TimelineItemDb implements TimelineSource {
             }
 
             StreamSqlResult r = ydb.executeUnchecked(
-                    "select uuid from " + TIMELINE_TABLE_NAME + " where " + CNAME_GROUP_ID + " = ?", uuid);
+                    "select uuid from " + TABLE_NAME + " where " + CNAME_GROUP_ID + " = ?", uuid);
             if (r.hasNext()) {
                 UUID id = r.next().getColumn(CNAME_ID);
                 throw new InvalidRequestException(
@@ -270,7 +272,7 @@ public class TimelineItemDb implements TimelineSource {
             r.close();
 
             r = ydb.executeUnchecked(
-                    "select uuid from " + TIMELINE_TABLE_NAME + " where " + CNAME_RELTIME_ID + " = ?", uuid);
+                    "select uuid from " + TABLE_NAME + " where " + CNAME_RELTIME_ID + " = ?", uuid);
             if (r.hasNext()) {
                 UUID id = r.next().getColumn(CNAME_ID);
                 throw new InvalidRequestException(
@@ -296,7 +298,7 @@ public class TimelineItemDb implements TimelineSource {
 
             // delete all events from the group
             StreamSqlResult r = ydb.executeUnchecked(
-                    "select uuid from " + TIMELINE_TABLE_NAME + " where " + CNAME_GROUP_ID + " = ?", uuid);
+                    "select uuid from " + TABLE_NAME + " where " + CNAME_GROUP_ID + " = ?", uuid);
             while (r.hasNext()) {
                 UUID id = r.next().getColumn(CNAME_ID);
                 deleteItem(id);
@@ -313,7 +315,7 @@ public class TimelineItemDb implements TimelineSource {
 
     private void doDeleteItem(UUID uuid) {
         itemCache.invalidate(uuid);
-        StreamSqlResult r = ydb.executeUnchecked("delete from " + TIMELINE_TABLE_NAME + " where uuid = ?", uuid);
+        StreamSqlResult r = ydb.executeUnchecked("delete from " + TABLE_NAME + " where uuid = ?", uuid);
         r.close();
     }
 
@@ -321,7 +323,7 @@ public class TimelineItemDb implements TimelineSource {
     public void getItems(int limit, String token, ItemFilter filter, ItemListener consumer) {
         rwlock.readLock().lock();
         try {
-            SqlBuilder sqlBuilder = new SqlBuilder(TIMELINE_TABLE_NAME);
+            SqlBuilder sqlBuilder = new SqlBuilder(TABLE_NAME);
             sqlBuilder.select("*");
 
             TimeInterval interval = filter.getTimeInterval();
@@ -382,7 +384,7 @@ public class TimelineItemDb implements TimelineSource {
     public Collection<String> getTags() {
         rwlock.readLock().lock();
         try {
-            TableColumnDefinition tcd = ydb.getTable(TIMELINE_TABLE_NAME).getColumnDefinition(CNAME_TAGS);
+            TableColumnDefinition tcd = ydb.getTable(TABLE_NAME).getColumnDefinition(CNAME_TAGS);
             return Collections.unmodifiableSet(tcd.getEnumValues().keySet());
         } finally {
             rwlock.readLock().unlock();
@@ -402,6 +404,7 @@ public class TimelineItemDb implements TimelineSource {
         }
     }
 
+    @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
 
     }

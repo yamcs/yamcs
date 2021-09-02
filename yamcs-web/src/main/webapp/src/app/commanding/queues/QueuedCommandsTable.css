@@ -1,0 +1,14 @@
+.args {
+  margin: 0;
+  margin-left: 10px;
+}
+
+.args .key {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+.args .value {
+  color: #0055aa;
+  padding-left: 10px;
+}

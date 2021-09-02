@@ -6,16 +6,23 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { AbsoluteTimeAxis, Event, EventLine, MouseTracker, Timeline, TimeLocator, Tool } from '@fqqb/timeline';
+import { BehaviorSubject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { IndexGroup } from '../client';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
+import * as utils from '../shared/utils';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { JumpToDialog } from './JumpToDialog';
-import { Event, Range, Timeline, TimelineOptions } from './timeline';
 import { TimelineTooltip } from './TimelineTooltip';
 
+interface DateRange {
+  start: Date;
+  stop: Date;
+}
 
 @Component({
   templateUrl: './ArchiveBrowserPage.html',
@@ -47,14 +54,14 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   filterForm: FormGroup;
 
-  timeline: Timeline;
+  private timeline: Timeline;
+  private moveInterval?: number;
 
-  rangeSelection$ = new BehaviorSubject<Range | null>(null);
-  viewportRange$ = new BehaviorSubject<Range | null>(null);
+  rangeSelection$ = new BehaviorSubject<DateRange | null>(null);
+  viewportRange$ = new BehaviorSubject<DateRange | null>(null);
+  tool$ = new BehaviorSubject<Tool>('hand');
 
   private tooltipInstance: TimelineTooltip;
-
-  private timeSubscription: Subscription;
 
   private packetNames: string[] = [];
 
@@ -65,8 +72,9 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     private router: Router,
     private overlay: Overlay,
     private dialog: MatDialog,
-    private dateTimePipe: DateTimePipe,
     private snackBar: MatSnackBar,
+    private dateTimePipe: DateTimePipe,
+    private messageService: MessageService,
   ) {
     title.setTitle('Archive Browser');
 
@@ -88,20 +96,14 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       this.filterForm.addControl(option.id, new FormControl(checked));
     }
 
-    this.timeSubscription = yamcs.time$.subscribe(time => {
-      if (this.timeline && time) {
-        this.timeline.setWallclockTime(time);
-      }
-    });
-
     const bodyRef = new ElementRef(document.body);
-    const positionStrategy = this.overlay.position().connectedTo(bodyRef, {
-      originX: 'start',
-      originY: 'top',
-    }, {
-      overlayX: 'start',
-      overlayY: 'top',
-    });
+    const positionStrategy = this.overlay.position().flexibleConnectedTo(bodyRef)
+      .withPositions([{
+        originX: 'start',
+        originY: 'top',
+        overlayX: 'start',
+        overlayY: 'top',
+      }]).withPush(false);
 
     const overlayRef = this.overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(TimelineTooltip);
@@ -118,36 +120,23 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     // even if there's no data for the visible range
     this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(packetNames => {
       this.packetNames = packetNames;
-
-      // Initialize only after a timeout, because otherwise
-      // we get the wrong width from the container. Not sure why
-      // but it reports 200px too much without the timeout. Possibly
-      // comes from the sidebar which has not fully initialized yet.
-      window.setTimeout(() => this.initializeTimeline());
+      this.initializeTimeline();
     });
   }
 
-  initializeTimeline() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    const t = queryParams.get('t');
-    let z;
-    if (queryParams.has('z')) {
-      z = Number(queryParams.get('z'));
-    }
-    const opts: TimelineOptions = {
-      initialDate: t || this.yamcs.getMissionTime().toISOString(),
-      zoom: z || 12,
-      pannable: 'X_ONLY',
-      wallclock: false,
-      sidebarWidth: 200,
-    };
-    this.timeline = new Timeline(this.container.nativeElement, opts);
+  private initializeTimeline() {
+    this.timeline = new Timeline(this.container.nativeElement);
 
-    this.timeline.on('viewportChanged', () => {
+    this.timeline.addViewportChangeListener(event => {
       this.viewportRange$.next({
-        start: this.timeline.visibleStart,
-        stop: this.timeline.visibleStop,
+        start: new Date(event.start),
+        stop: new Date(event.stop),
       });
+    });
+    this.viewportRange$.pipe(
+      debounceTime(400),
+    ).forEach(range => {
+      this.refreshData();
       const legendParams: Params = {};
       for (const option of this.legendOptions) {
         legendParams[option.id] = this.filterForm.value[option.id];
@@ -157,389 +146,145 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         relativeTo: this.route,
         queryParamsHandling: 'merge',
         queryParams: {
-          t: this.timeline.visibleCenter.toISOString(),
-          z: this.timeline.getZoom(),
+          start: new Date(range!.start).toISOString(),
+          stop: new Date(range!.stop).toISOString(),
           ...legendParams,
-        },
+        }
       });
     });
 
-    this.timeline.on('eventMouseEnter', evt => {
-      const userObject = evt.userObject as Event;
-      let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
-      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop!)}<br>`;
-      if (userObject.data.count >= 0) {
-        const sec = (Date.parse(userObject.stop as string) - Date.parse(userObject.start as string)) / 1000;
-        ttText += `Count: ${userObject.data.count}`;
-        if (userObject.data.count > 1) {
-          ttText += ` (${(userObject.data.count / sec).toFixed(3)} Hz)`;
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.get('start') && queryParams.get('stop')) {
+      const start = utils.toDate(queryParams.get('start'));
+      const stop = utils.toDate(queryParams.get('stop'));
+      this.timeline.setBounds(start.getTime(), stop.getTime());
+    } else {
+      // Show Today
+      const start = this.yamcs.getMissionTime();
+      start.setUTCHours(0, 0, 0, 0);
+      const stop = new Date(start.getTime());
+      stop.setUTCDate(start.getUTCDate() + 1);
+      this.timeline.setBounds(start.getTime(), stop.getTime());
+    }
+
+    const locator = new TimeLocator(this.timeline, () => this.yamcs.getMissionTime().getTime());
+    locator.knobColor = 'salmon';
+
+    new MouseTracker(this.timeline);
+    const axis = new AbsoluteTimeAxis(this.timeline);
+    axis.label = 'UTC';
+    axis.timezone = 'UTC';
+    axis.frozen = true;
+    axis.fullHeight = true;
+
+    this.timeline.addEventClickListener(clickEvent => {
+      const { start, stop } = clickEvent.event;
+      if (start && stop) {
+        this.timeline.setSelection(start, stop);
+      } else {
+        this.timeline.clearSelection();
+      }
+    });
+    this.timeline.addViewportSelectionListener(evt => {
+      if (evt.selection) {
+        this.rangeSelection$.next({
+          start: new Date(evt.selection.start),
+          stop: new Date(evt.selection.stop),
+        });
+      } else {
+        this.rangeSelection$.next(null);
+      }
+    });
+    this.timeline.addEventMouseMoveListener(evt => {
+      const { start, stop, data } = evt.event;
+      let ttText = data.name + '<br>';
+      ttText += `Start: ${this.dateTimePipe.transform(new Date(start))}<br>`;
+      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(new Date(stop!))}<br>`;
+      if (data.count >= 0) {
+        const sec = (stop! - start) / 1000;
+        ttText += `Count: ${data.count}`;
+        if (data.count > 1) {
+          ttText += ` (${(data.count / sec).toFixed(3)} Hz)`;
         }
-      } else if (userObject.data.description) {
-        ttText += userObject.data.description;
+      } else if (data.description) {
+        ttText += data.description;
       }
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
-
-    this.timeline.on('eventClick', evt => {
-      const userObject = evt.userObject as Event;
-      this.timeline.selectRange(userObject.start, userObject.stop!);
-    });
-
-    this.timeline.on('grabStart', () => {
+    this.timeline.addEventMouseOutListener(evt => {
       this.tooltipInstance.hide();
     });
+  }
 
-    this.timeline.on('eventMouseLeave', evt => {
-      this.tooltipInstance.hide();
-    });
-
-    this.timeline.on('viewportHover', evt => {
-      if (evt.x === undefined) {
-        this.tooltipInstance.hide();
+  fitAll() {
+    const promises = [];
+    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+      limit: 1,
+      order: 'asc',
+    }));
+    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+      limit: 1,
+      order: 'desc',
+    }));
+    Promise.all(promises).then(res => {
+      const startPromise = res[0];
+      const stopPromise = res[1];
+      if (startPromise.packet?.length && stopPromise.packet?.length) {
+        const start = utils.toDate(startPromise.packet[0].generationTime);
+        const stop = utils.toDate(stopPromise.packet[0].generationTime);
+        this.timeline.setBounds(start.getTime(), stop.getTime());
       }
-    });
+    }).catch(err => this.messageService.showError(err));
+  }
 
-    this.timeline.on('rangeSelectionChanged', evt => {
-      this.rangeSelection$.next(evt.range || null);
-    });
-
-    this.timeline.on('loadRange', evt => {
-      let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
-      if (this.filterForm.value['completeness']) {
-        completenessPromise = this.yamcs.yamcsClient.getCompletenessIndex(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        });
-      }
-
-      let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
-      if (this.filterForm.value['packets']) {
-        tmPromise = this.yamcs.yamcsClient.getPacketIndex(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        });
-      }
-
-      let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
-      if (this.filterForm.value['parameters']) {
-        parameterPromise = this.yamcs.yamcsClient.getParameterIndex(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        });
-      }
-
-      let commandPromise: Promise<IndexGroup[]> = Promise.resolve([]);
-      if (this.filterForm.value['commands']) {
-        commandPromise = this.yamcs.yamcsClient.getCommandIndex(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        });
-      }
-
-      let eventPromise: Promise<IndexGroup[]> = Promise.resolve([]);
-      if (this.filterForm.value['events']) {
-        eventPromise = this.yamcs.yamcsClient.getEventIndex(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        });
-      }
-
-      Promise.all([
-        this.yamcs.yamcsClient.getTags(this.yamcs.instance!, {
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-        }),
-        completenessPromise,
-        tmPromise,
-        parameterPromise,
-        commandPromise,
-        eventPromise,
-      ]).then(responses => {
-        const tags = responses[0].tag || [];
-        const completenessGroups = responses[1];
-        const tmGroups = responses[2];
-        const parameterGroups = responses[3];
-        const commandGroups = responses[4];
-        const eventGroups = responses[5];
-
-        const bands = [];
-
-        if (tags.length) {
-          const events: Event[] = [];
-          for (const tag of tags) {
-            const event: Event = {
-              start: tag.startUTC,
-              stop: tag.stopUTC,
-              milestone: false,
-              title: tag.name,
-              backgroundColor: tag.color,
-              foregroundColor: 'black',
-              data: {
-                id: tag.id,
-                description: tag.description,
-              }
-            };
-            events.push(event);
-          }
-          bands.push({
-            id: 'Tags',
-            type: 'EventBand',
-            label: 'Tags',
-            interactive: true,
-            interactiveSidebar: false,
-            style: {
-              marginTop: 4,
-              marginBottom: 4,
-            },
-            events,
-          });
-        }
-
-        for (let i = 0; i < completenessGroups.length; i++) {
-          const group = completenessGroups[i];
-          const events: Event[] = [];
-          for (const entry of group.entry) {
-            const event: Event = {
-              start: entry.start,
-              stop: entry.stop,
-              milestone: false,
-              data: {
-                count: entry.count,
-              }
-            };
-            if (entry.count > 1) {
-              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
-            }
-            events.push(event);
-          }
-          const extraStyles: { [key: string]: any; } = {};
-          if (i < completenessGroups.length - 1) {
-            extraStyles['dividerColor'] = 'transparent';
-          }
-          bands.push({
-            id: group.id.name,
-            type: 'EventBand',
-            label: group.id.name,
-            interactive: true,
-            interactiveSidebar: false,
-            wrap: false,
-            style: {
-              ...extraStyles,
-              backgroundColor: this.completenessBg,
-              textColor: this.completenessFg,
-              marginTop: 4,
-              marginBottom: 4,
-            },
-            events,
-          });
-        }
-
-        if (this.filterForm.value['packets']) {
-          for (let i = 0; i < this.packetNames.length; i++) {
-            const packetName = this.packetNames[i];
-            const events: Event[] = [];
-            for (const group of tmGroups) {
-              if (group.id.name !== packetName) {
-                continue;
-              }
-              for (const entry of group.entry) {
-                const event: Event = {
-                  start: entry.start,
-                  stop: entry.stop,
-                  milestone: false,
-                  data: {
-                    count: entry.count,
-                  }
-                };
-                if (entry.count > 1) {
-                  const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-                  event.title = `${(entry.count / sec).toFixed(1)} Hz`;
-                }
-                events.push(event);
-              }
-            }
-            const extraStyles: { [key: string]: any; } = {};
-            if (i < this.packetNames.length - 1) {
-              extraStyles['dividerColor'] = 'transparent';
-            }
-            bands.push({
-              id: packetName,
-              type: 'EventBand',
-              label: packetName,
-              interactive: true,
-              interactiveSidebar: false,
-              wrap: false,
-              style: {
-                ...extraStyles,
-                backgroundColor: this.packetsBg,
-                textColor: this.packetsFg,
-                marginTop: 4,
-                marginBottom: 4,
-              },
-              events,
-            });
-          }
-        }
-
-        for (let i = 0; i < parameterGroups.length; i++) {
-          const group = parameterGroups[i];
-          const events: Event[] = [];
-          for (const entry of group.entry) {
-            const event: Event = {
-              start: entry.start,
-              stop: entry.stop,
-              milestone: false,
-              data: {
-                count: entry.count,
-              }
-            };
-            if (entry.count > 1) {
-              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
-            }
-            events.push(event);
-          }
-          const extraStyles: { [key: string]: any; } = {};
-          if (i < parameterGroups.length - 1) {
-            extraStyles['dividerColor'] = 'transparent';
-          }
-          bands.push({
-            id: group.id.name,
-            type: 'EventBand',
-            label: group.id.name,
-            interactive: true,
-            interactiveSidebar: false,
-            wrap: false,
-            style: {
-              ...extraStyles,
-              backgroundColor: this.parametersBg,
-              textColor: this.parametersFg,
-              marginTop: 4,
-              marginBottom: 4,
-            },
-            events,
-          });
-        }
-
-        for (let i = 0; i < commandGroups.length; i++) {
-          const group = commandGroups[i];
-          const events: Event[] = [];
-          for (const entry of group.entry) {
-            const event: Event = {
-              start: entry.start,
-              stop: entry.stop,
-              data: {
-                count: entry.count,
-              }
-            };
-            if (entry.count > 1) {
-              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
-            }
-            events.push(event);
-          }
-          const extraStyles: { [key: string]: any; } = {};
-          if (i < commandGroups.length - 1) {
-            extraStyles['dividerColor'] = 'transparent';
-          }
-          bands.push({
-            id: group.id.name,
-            type: 'EventBand',
-            label: group.id.name,
-            interactive: true,
-            interactiveSidebar: false,
-            wrap: false,
-            style: {
-              ...extraStyles,
-              backgroundColor: this.commandsBg,
-              textColor: this.commandsFg,
-              marginTop: 4,
-              marginBottom: 4,
-            },
-            events,
-          });
-        }
-
-        for (let i = 0; i < eventGroups.length; i++) {
-          const group = eventGroups[i];
-          const events: Event[] = [];
-          for (const entry of group.entry) {
-            const event: Event = {
-              start: entry.start,
-              stop: entry.stop,
-              data: {
-                count: entry.count,
-              }
-            };
-            if (entry.count > 1) {
-              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
-            }
-            events.push(event);
-          }
-          const extraStyles: { [key: string]: any; } = {};
-          if (i < eventGroups.length - 1) {
-            extraStyles['dividerColor'] = 'transparent';
-          }
-          bands.push({
-            id: group.id.name,
-            type: 'EventBand',
-            label: group.id.name,
-            interactive: true,
-            interactiveSidebar: false,
-            wrap: false,
-            style: {
-              ...extraStyles,
-              backgroundColor: this.eventsBg,
-              textColor: this.eventsFg,
-              marginTop: 4,
-              marginBottom: 4,
-            },
-            events,
-          });
-        }
-
-        this.timeline.setData({
-          header: [
-            { type: 'Timescale', label: '', tz: 'UTC', grabAction: 'select' },
-          ],
-          body: bands,
-        });
-      });
-    });
-
-    this.timeline.render();
+  jumpToToday() {
+    const dt = this.yamcs.getMissionTime();
+    dt.setUTCHours(0, 0, 0, 0);
+    const start = dt.getTime();
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    const stop = dt.getTime();
+    this.timeline.setBounds(start, stop);
   }
 
   jumpToNow() {
     const missionTime = this.yamcs.getMissionTime();
-    this.timeline.reveal(missionTime);
+    this.timeline.panTo(missionTime.getTime());
   }
 
-  jumpTo() {
-    const currentDate = this.timeline.visibleCenter;
+  openJumpToDialog() {
+    const currentDate = this.timeline.center;
     const dialogRef = this.dialog.open(JumpToDialog, {
       width: '400px',
-      data: {
-        date: currentDate,
-      },
+      data: { date: new Date(currentDate) },
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.timeline.reveal(result.date);
+        this.timeline.panTo(result.date.getTime());
       }
     });
   }
 
-  refresh() {
-    const currentDate = this.timeline.visibleCenter;
-    this.timeline.reveal(currentDate);
+  toggleMove(x: number) {
+    this.timeline.panBy(x);
+    window.clearInterval(this.moveInterval);
+    this.moveInterval = window.setInterval(() => this.timeline.panBy(x), 50);
+  }
+
+  untoggleMove() {
+    window.clearInterval(this.moveInterval);
+    this.moveInterval = undefined;
+  }
+
+  pageLeft() {
+    const { start, stop } = this.timeline;
+    const x = this.timeline.distanceBetween(start, stop);
+    this.timeline.panBy(-x);
+  }
+
+  pageRight() {
+    const { start, stop } = this.timeline;
+    const x = this.timeline.distanceBetween(start, stop);
+    this.timeline.panBy(x);
   }
 
   zoomIn() {
@@ -550,12 +295,9 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     this.timeline.zoomOut();
   }
 
-  goBackward() {
-    this.timeline.goBackward();
-  }
-
-  goForward() {
-    this.timeline.goForward();
+  setTool(tool: Tool) {
+    this.tool$.next(tool);
+    this.timeline.setActiveTool(tool);
   }
 
   replayRange() {
@@ -604,12 +346,278 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   }
 
   updateLegend() {
-    this.refresh();
+    this.refreshData();
+  }
+
+  refreshData() {
+    // Load beyond the edges (for pan purposes)
+    const viewportRange = this.timeline.stop - this.timeline.start;
+    const start = new Date(this.timeline.start - viewportRange).toISOString();
+    const stop = new Date(this.timeline.stop + viewportRange).toISOString();
+
+    let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    if (this.filterForm.value['completeness']) {
+      completenessPromise = this.yamcs.yamcsClient.getCompletenessIndex(
+        this.yamcs.instance!, { start, stop, limit: 1000 });
+    }
+
+    let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    if (this.filterForm.value['packets']) {
+      tmPromise = this.yamcs.yamcsClient.getPacketIndex(
+        this.yamcs.instance!, { start, stop, limit: 1000 });
+    }
+
+    let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    if (this.filterForm.value['parameters']) {
+      parameterPromise = this.yamcs.yamcsClient.getParameterIndex(
+        this.yamcs.instance!, { start, stop, limit: 1000 });
+    }
+
+    let commandPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    if (this.filterForm.value['commands']) {
+      commandPromise = this.yamcs.yamcsClient.getCommandIndex(
+        this.yamcs.instance!, { start, stop, limit: 1000 });
+    }
+
+    let eventPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    if (this.filterForm.value['events']) {
+      eventPromise = this.yamcs.yamcsClient.getEventIndex(
+        this.yamcs.instance!, { start, stop, limit: 1000 });
+    }
+
+    Promise.all([
+      completenessPromise,
+      tmPromise,
+      parameterPromise,
+      commandPromise,
+      eventPromise,
+    ]).then(responses => {
+      const completenessGroups = responses[0];
+      const tmGroups = responses[1];
+      const parameterGroups = responses[2];
+      const commandGroups = responses[3];
+      const eventGroups = responses[4];
+
+      for (const line of this.timeline.getLines()) {
+        if (!(line instanceof AbsoluteTimeAxis)) {
+          this.timeline.removeChild(line);
+        }
+      }
+      for (let i = 0; i < completenessGroups.length; i++) {
+        if (i === 0) {
+          const spacer = new EventLine(this.timeline);
+          spacer.label = 'Completeness';
+          spacer.backgroundColor = this.timeline.backgroundEvenColor;
+          spacer.eventHeight = 30;
+          spacer.marginTop = 0;
+          spacer.marginBottom = 0;
+        }
+        const group = completenessGroups[i];
+        const events: Event[] = [];
+        for (const entry of group.entry) {
+          const start = utils.toDate(entry.start).getTime();
+          const stop = utils.toDate(entry.stop).getTime();
+          const event: Event = {
+            start, stop, data: {
+              name: group.id.name,
+              count: entry.count,
+            }
+          };
+          if (entry.count > 1) {
+            const sec = (stop - start) / 1000;
+            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
+          }
+          events.push(event);
+        }
+        const line = new EventLine(this.timeline);
+        line.label = group.id.name;
+        line.borderWidth = 0;
+        line.wrap = false;
+        line.events = events;
+        line.marginTop = 0;
+        line.marginBottom = i === completenessGroups.length - 1 ? 30 : 0;
+        line.eventColor = this.completenessBg;
+        line.eventTextColor = this.completenessFg;
+        line.eventBorderWidth = 0;
+        line.eventCornerRadius = 0;
+        line.eventTextOverflow = 'hide';
+        line.backgroundColor = this.timeline.backgroundOddColor;
+      }
+
+      if (this.filterForm.value['packets']) {
+        for (let i = 0; i < this.packetNames.length; i++) {
+          if (i === 0) {
+            const spacer = new EventLine(this.timeline);
+            spacer.label = 'Packets';
+            spacer.backgroundColor = this.timeline.backgroundEvenColor;
+            spacer.eventHeight = 30;
+            spacer.marginTop = 0;
+            spacer.marginBottom = 0;
+          }
+          const packetName = this.packetNames[i];
+          const events: Event[] = [];
+          for (const group of tmGroups) {
+            if (group.id.name !== packetName) {
+              continue;
+            }
+            for (const entry of group.entry) {
+              const start = utils.toDate(entry.start).getTime();
+              const stop = utils.toDate(entry.stop).getTime();
+              const event: Event = {
+                start, stop, data: {
+                  name: group.id.name,
+                  count: entry.count,
+                }
+              };
+              if (entry.count > 1) {
+                const sec = (stop - start) / 1000;
+                event.label = `${(entry.count / sec).toFixed(1)} Hz`;
+              }
+              events.push(event);
+            }
+          }
+          const line = new EventLine(this.timeline);
+          line.label = packetName;
+          line.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
+          line.wrap = false;
+          line.events = events;
+          line.marginTop = 0;
+          line.marginBottom = i === this.packetNames.length - 1 ? 30 : 0;
+          line.eventColor = this.packetsBg;
+          line.eventTextColor = this.packetsFg;
+          line.eventBorderWidth = 0;
+          line.eventCornerRadius = 0;
+          line.eventTextOverflow = 'hide';
+          line.backgroundColor = this.timeline.backgroundOddColor;
+        }
+      }
+
+      for (let i = 0; i < parameterGroups.length; i++) {
+        if (i === 0) {
+          const spacer = new EventLine(this.timeline);
+          spacer.label = 'Parameters';
+          spacer.backgroundColor = this.timeline.backgroundEvenColor;
+          spacer.eventHeight = 30;
+          spacer.marginTop = 0;
+          spacer.marginBottom = 0;
+        }
+        const group = parameterGroups[i];
+        const events: Event[] = [];
+        for (const entry of group.entry) {
+          const start = utils.toDate(entry.start).getTime();
+          const stop = utils.toDate(entry.stop).getTime();
+          const event: Event = {
+            start, stop, data: {
+              name: group.id.name,
+              count: entry.count,
+            }
+          };
+          if (entry.count > 1) {
+            const sec = (stop - start) / 1000;
+            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
+          }
+          events.push(event);
+        }
+        const line = new EventLine(this.timeline);
+        line.label = group.id.name;
+        line.borderWidth = 0;
+        line.wrap = false;
+        line.events = events;
+        line.marginTop = 0;
+        line.marginBottom = i === parameterGroups.length - 1 ? 30 : 0;
+        line.eventColor = this.parametersBg;
+        line.eventTextColor = this.parametersFg;
+        line.eventBorderWidth = 0;
+        line.eventCornerRadius = 0;
+        line.eventTextOverflow = 'hide';
+        line.backgroundColor = this.timeline.backgroundOddColor;
+      }
+
+      for (let i = 0; i < commandGroups.length; i++) {
+        if (i === 0) {
+          const spacer = new EventLine(this.timeline);
+          spacer.label = 'Commands';
+          spacer.backgroundColor = this.timeline.backgroundEvenColor;
+          spacer.eventHeight = 30;
+          spacer.marginTop = 0;
+          spacer.marginBottom = 0;
+        }
+        const group = commandGroups[i];
+        const events: Event[] = [];
+        for (const entry of group.entry) {
+          const start = utils.toDate(entry.start).getTime();
+          const stop = utils.toDate(entry.stop).getTime();
+          const event: Event = {
+            start, stop, data: {
+              name: group.id.name,
+              count: entry.count,
+            }
+          };
+          if (entry.count > 1) {
+            const sec = (stop - start) / 1000;
+            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
+          }
+          events.push(event);
+        }
+        const line = new EventLine(this.timeline);
+        line.label = group.id.name;
+        line.borderWidth = 0;
+        line.wrap = false;
+        line.events = events;
+        line.marginTop = 0;
+        line.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
+        line.eventColor = this.commandsBg;
+        line.eventTextColor = this.commandsFg;
+        line.eventBorderWidth = 0;
+        line.eventCornerRadius = 0;
+        line.eventTextOverflow = 'hide';
+        line.backgroundColor = this.timeline.backgroundOddColor;
+      }
+
+      for (let i = 0; i < eventGroups.length; i++) {
+        if (i === 0) {
+          const spacer = new EventLine(this.timeline);
+          spacer.label = 'Events';
+          spacer.backgroundColor = this.timeline.backgroundEvenColor;
+          spacer.eventHeight = 30;
+          spacer.marginTop = 0;
+          spacer.marginBottom = 0;
+        }
+        const group = eventGroups[i];
+        const events: Event[] = [];
+        for (const entry of group.entry) {
+          const start = utils.toDate(entry.start).getTime();
+          const stop = utils.toDate(entry.stop).getTime();
+          const event: Event = {
+            start, stop, data: {
+              name: group.id.name,
+              count: entry.count,
+            }
+          };
+          if (entry.count > 1) {
+            const sec = (stop - start) / 1000;
+            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
+          }
+          events.push(event);
+        }
+        const line = new EventLine(this.timeline);
+        line.label = group.id.name;
+        line.borderWidth = 0;
+        line.wrap = false;
+        line.events = events;
+        line.marginTop = 0;
+        line.marginBottom = i === eventGroups.length - 1 ? 30 : 0;
+        line.eventColor = this.eventsBg;
+        line.eventTextColor = this.eventsFg;
+        line.eventBorderWidth = 0;
+        line.eventCornerRadius = 0;
+        line.eventTextOverflow = 'hide';
+        line.backgroundColor = this.timeline.backgroundOddColor;
+      }
+    });
   }
 
   ngOnDestroy() {
-    if (this.timeSubscription) {
-      this.timeSubscription.unsubscribe();
-    }
+    this.timeline.disconnect();
   }
 }

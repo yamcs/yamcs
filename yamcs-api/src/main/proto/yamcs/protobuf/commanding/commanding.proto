@@ -45,14 +45,21 @@ message CommandQueueEntry {
   optional string origin = 15;
   optional int32 sequenceNumber = 16;
   optional string commandName = 17;
-  optional string source = 5;
+
+  // Deprecated. If you require a string representation of this
+  // command, you can build it based on the fields ``commandName``
+  // and ``assignments``.
+  optional string source = 5 [deprecated=true];
+  
+  repeated CommandAssignment assignments = 18;
   optional bytes binary = 6;
   optional string username = 7;
   optional string uuid = 9;
   optional string comment = 11;
   optional google.protobuf.Timestamp generationTime = 12;
-  //if this is set to true , it means the command has been accepted for being released out of the queue 
-  //but it is still there because it is pending transmission contraints
+  
+  // If true, the command has been accepted and is due for release
+  // as soon as transmission constraints are satisfied.
   optional bool pendingTransmissionConstraints = 13;
 }
 
@@ -110,5 +117,9 @@ message CommandHistoryEntry {
   optional CommandId commandId = 1;
   repeated CommandHistoryAttribute attr = 3;
   optional google.protobuf.Timestamp generationTime = 6;
-  repeated CommandAssignment assignment = 5;
+
+  // Deprecated. Use the field ``assignments`` instead.
+  repeated CommandAssignment assignment = 5 [deprecated=true];
+
+  repeated CommandAssignment assignments = 11;
 }

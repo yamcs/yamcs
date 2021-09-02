@@ -39,7 +39,7 @@ public class ArrayDataType extends NameDescription implements DataType {
             if (builder.initialValue instanceof Object[]) {
                 this.initialValue = (Object[]) builder.initialValue;
             } else {
-                this.initialValue = parseString(builder.initialValue.toString());
+                this.initialValue = convertType(builder.initialValue.toString());
             }
         }
     }
@@ -138,12 +138,19 @@ public class ArrayDataType extends NameDescription implements DataType {
      * The return is an java array (Object[]). For multi dimensional arrays each Object it itself an Object[] and so on
      * to reach the number of dimensions,
      * <p>
-     * The final Object is of type as returned by the element type {@link DataType#parseString(String)}
+     * The final Object is of type as returned by the element type {@link DataType#convertType(Object)}
      * 
      */
     @Override
-    public Object[] parseString(String stringValue) {
-        return parse(stringValue, false);
+    @SuppressWarnings("unchecked")
+    public Object[] convertType(Object value) {
+        if (value instanceof String) {
+            return parse((String) value, false);
+        } else if (value instanceof List) {
+            return toArray((List<Object>) value, numberOfDimensions - 1, false);
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
+        }
     }
 
     @Override
@@ -177,10 +184,34 @@ public class ArrayDataType extends NameDescription implements DataType {
             }
         } else {
             for (int i = 0; i < jarr.size(); i++) {
-                r[i] = type.parseString(jarr.get(i).getAsString());
+                r[i] = type.convertType(jarr.get(i).getAsString());
             }
         }
 
+        return r;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object[] toArray(List<Object> arr, int numDim, boolean raw) {
+        Object[] r = new Object[arr.size()];
+        if (numDim > 0) {
+            for (int i = 0; i < arr.size(); i++) {
+                Object el = arr.get(i);
+                if (!(el instanceof List)) {
+                    throw new IllegalArgumentException(
+                            "Expected '" + el + "' to be an array but instead it is: " + el.getClass());
+                }
+                r[i] = toArray((List<Object>) el, numDim - 1, raw);
+            }
+        } else if (raw) {
+            for (int i = 0; i < arr.size(); i++) {
+                r[i] = type.parseStringForRawValue((String) arr.get(i));
+            }
+        } else {
+            for (int i = 0; i < arr.size(); i++) {
+                r[i] = type.convertType(arr.get(i));
+            }
+        }
         return r;
     }
 
@@ -245,6 +276,7 @@ public class ArrayDataType extends NameDescription implements DataType {
             return self();
         }
 
+        @Override
         public T setInitialValue(String initialValue) {
             this.initialValue = initialValue;
             return self();

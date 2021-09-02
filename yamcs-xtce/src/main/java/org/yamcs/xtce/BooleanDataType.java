@@ -37,13 +37,7 @@ public class BooleanDataType extends BaseDataType {
 
     @Override
     protected void setInitialValue(Object initialValue) {
-        if (initialValue instanceof Boolean) {
-            this.initialValue = (Boolean) initialValue;
-        } else if (initialValue instanceof String) {
-            this.initialValue = parseString((String) initialValue);
-        } else {
-            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
-        }
+        this.initialValue = convertType(initialValue);
     }
 
     @Override
@@ -51,18 +45,22 @@ public class BooleanDataType extends BaseDataType {
         return initialValue;
     }
 
-    /**
-     * Returns {@link Boolean#parseBoolean(String)}
-     */
     @Override
-    public Boolean parseString(String stringValue) {
-        if (oneStringValue.equalsIgnoreCase(stringValue)) {
-            return Boolean.TRUE;
-        } else if (zeroStringValue.equalsIgnoreCase(stringValue)) {
-            return Boolean.FALSE;
+    public Boolean convertType(Object value) {
+        if (value instanceof String) {
+            String stringValue = (String) value;
+            if (oneStringValue.equalsIgnoreCase(stringValue)) {
+                return Boolean.TRUE;
+            } else if (zeroStringValue.equalsIgnoreCase(stringValue)) {
+                return Boolean.FALSE;
+            } else {
+                throw new IllegalArgumentException(
+                        "Invalid initialValue, should be '" + oneStringValue + "' or '" + zeroStringValue + "'");
+            }
+        } else if (value instanceof Boolean) {
+            return (Boolean) value;
         } else {
-            throw new IllegalArgumentException(
-                    "Invalid initialValue, should be '" + oneStringValue + "' or '" + zeroStringValue + "'");
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
     }
 

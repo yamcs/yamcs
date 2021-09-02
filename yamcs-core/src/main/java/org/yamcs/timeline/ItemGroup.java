@@ -11,7 +11,7 @@ import org.yamcs.yarch.Tuple;
 public class ItemGroup extends TimelineItem {
 
     public ItemGroup(UUID id) {
-        super(id);
+        super(id.toString());
     }
 
     public ItemGroup(Tuple tuple) {

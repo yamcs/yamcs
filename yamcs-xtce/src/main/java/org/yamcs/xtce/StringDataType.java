@@ -7,10 +7,9 @@ public class StringDataType extends BaseDataType {
     String initialValue;
 
     /**
-     * For telemetry, specify as UTF-8 or UTF-16 value to match the encoding.
-     * This range check will be applied before conversion to the host string data type.
-     * For commanding, the range check occurs on the string host data type encoding,
-     * whatever that is -- before injection on the command link.
+     * For telemetry, specify as UTF-8 or UTF-16 value to match the encoding. This range check will be applied before
+     * conversion to the host string data type. For commanding, the range check occurs on the string host data type
+     * encoding, whatever that is -- before injection on the command link.
      */
     IntegerRange sizeRangeInCharacters;
 
@@ -33,14 +32,12 @@ public class StringDataType extends BaseDataType {
         this.sizeRangeInCharacters = t.sizeRangeInCharacters;
     }
 
+    @Override
     protected void setInitialValue(Object initialValue) {
-        if (initialValue instanceof String) {
-            this.initialValue = (String) initialValue;
-        } else {
-            throw new IllegalArgumentException("Unsupported type for initial value " + initialValue.getClass());
-        }
+        this.initialValue = convertType(initialValue);
     }
 
+    @Override
     public String getInitialValue() {
         return (String) initialValue;
     }
@@ -50,8 +47,12 @@ public class StringDataType extends BaseDataType {
     }
 
     @Override
-    public Object parseString(String stringValue) {
-        return stringValue;
+    public String convertType(Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
+        }
     }
 
     @Override

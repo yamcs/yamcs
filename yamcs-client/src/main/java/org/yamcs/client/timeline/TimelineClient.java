@@ -1,6 +1,6 @@
 package org.yamcs.client.timeline;
 
-import static org.yamcs.client.utils.TimeUtils.toTimestamp;
+import static org.yamcs.client.utils.WellKnownTypes.toTimestamp;
 
 import java.time.Instant;
 import java.util.List;

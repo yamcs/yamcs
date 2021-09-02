@@ -1,5 +1,9 @@
 package org.yamcs.xtce.xlsv7;
 
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMD_SPACESYSTEM_NAME;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -128,8 +132,6 @@ import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ParameterReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
-
-import static org.yamcs.xtce.XtceDb.*;
 
 import com.google.common.primitives.UnsignedLongs;
 import com.google.gson.JsonElement;
@@ -800,7 +802,7 @@ public class V7Loader extends V7LoaderBase {
             param.setDataSource(dataSource);
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
-                param.setInitialValue(ptype.parseString(initValue));
+                param.setInitialValue(ptype.convertType(initValue));
             }
 
             XtceAliasSet xas = getAliases(firstRow, cells);
@@ -1601,7 +1603,7 @@ public class V7Loader extends V7LoaderBase {
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
-            arg.setInitialValue(atype.parseString(v));
+            arg.setInitialValue(atype.convertType(v));
         }
 
         if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {

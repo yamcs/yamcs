@@ -2187,7 +2187,7 @@ public class XtceStaxReader {
         if (ptype != null) {
             parameter.setParameterType(ptype);
             if (initialValue != null) {
-                parameter.setInitialValue(ptype.parseString(initialValue));
+                parameter.setInitialValue(ptype.convertType(initialValue));
             }
         } else {
             final Parameter p = parameter;
@@ -2195,7 +2195,7 @@ public class XtceStaxReader {
                 ParameterType ptype1 = (ParameterType) nd;
                 p.setParameterType(ptype1);
                 if (initialValue != null) {
-                    p.setInitialValue(ptype1.parseString(initialValue));
+                    p.setInitialValue(ptype1.convertType(initialValue));
                 }
             });
             spaceSystem.addUnresolvedReference(nr);
@@ -2864,7 +2864,7 @@ public class XtceStaxReader {
     private DynamicIntegerValue readDynamicValue(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_DYNAMIC_VALUE);
 
-        StartElement startElement = checkStartElementPreconditions();
+        checkStartElementPreconditions();
         DynamicIntegerValue v = null;
 
         while (true) {
@@ -3772,7 +3772,7 @@ public class XtceStaxReader {
         if (atype != null) {
             arg.setArgumentType(atype);
             if (initialValue != null) {
-                arg.setInitialValue(atype.parseString(initialValue));
+                arg.setInitialValue(atype.convertType(initialValue));
             }
         } else {
             final Argument arg1 = arg;
@@ -3780,7 +3780,7 @@ public class XtceStaxReader {
                     .addResolvedAction(nd -> {
                         ArgumentType atype1 = (ArgumentType) nd;
                         if (initialValue != null) {
-                            arg1.setInitialValue(atype1.parseString(initialValue));
+                            arg1.setInitialValue(atype1.convertType(initialValue));
                         }
                         arg1.setArgumentType(atype1);
                     });

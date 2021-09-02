@@ -1,6 +1,6 @@
 package org.yamcs.xtceproc;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.yamcs.commanding.ArgumentValue;
@@ -33,7 +33,9 @@ public class TcProcessingContext extends ProcessingData {
 
     public TcProcessingContext(MetaCommand metaCmd, ProcessorData pdata, Map<Parameter, Value> paramValues,
             BitBuffer bitbuf, int bitPosition) {
-        super(pdata.getLastValueCache(), null, new HashMap<Argument, ArgumentValue>(), new LastValueCache(), null);
+        super(pdata.getLastValueCache(), null,
+                new LinkedHashMap<Argument, ArgumentValue>() /* preserve insertion order */,
+                new LastValueCache(), null);
         this.metaCmd = metaCmd;
         this.bitbuf = bitbuf;
         this.pdata = pdata;
@@ -44,9 +46,8 @@ public class TcProcessingContext extends ProcessingData {
     }
 
     /**
-     * Look up an argument by name only, for cases in which we do not have the
-     * full argument definition, such as arguments used for defining the length
-     * of other variable-length arguments.
+     * Look up an argument by name only, for cases in which we do not have the full argument definition, such as
+     * arguments used for defining the length of other variable-length arguments.
      *
      * @param argName
      *            the name of the argument

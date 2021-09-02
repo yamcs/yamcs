@@ -11,47 +11,84 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 
+// Methods for working with 'tags'.
+//
+// .. warning::
+//     This API is going to be removed. Use Yamcs Timeline instead
+//     by adding the service ``org.yamcs.timeline.TimelineService``
+//     to your instance configuration.
 service TagApi {
 
   // List tags
+  //
+  // .. warning::
+  //     This method is going to be removed. Use Yamcs Timeline instead
+  //     by adding the service ``org.yamcs.timeline.TimelineService``
+  //     to your instance configuration.
   rpc ListTags(ListTagsRequest) returns (ListTagsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/tags"
+      deprecated: true
     };
   }
   
   // Get a tag
+  //
+  // .. warning::
+  //     This method is going to be removed. Use Yamcs Timeline instead
+  //     by adding the service ``org.yamcs.timeline.TimelineService``
+  //     to your instance configuration.
   rpc GetTag(GetTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+      deprecated: true
     };
   }
   
   // Create a tag
+  //
+  // .. warning::
+  //     This method is going to be removed. Use Yamcs Timeline instead
+  //     by adding the service ``org.yamcs.timeline.TimelineService``
+  //     to your instance configuration.
   rpc CreateTag(CreateTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tags"
       body: "*"
+      deprecated: true
     };
   }
   
   // Update a tag
+  //
+  // .. warning::
+  //     This method is going to be removed. Use Yamcs Timeline instead
+  //     by adding the service ``org.yamcs.timeline.TimelineService``
+  //     to your instance configuration.
   rpc UpdateTag(EditTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       patch: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
       body: "*"
+      deprecated: true
       additional_bindings: {
         // Temporary, until Yamcs Studio stops using this
         put: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
         body: "*"
+        deprecated: true
       }
     };
   }
   
   // Delete a tag
+  //
+  // .. warning::
+  //     This method is going to be removed. Use Yamcs Timeline instead
+  //     by adding the service ``org.yamcs.timeline.TimelineService``
+  //     to your instance configuration.
   rpc DeleteTag(DeleteTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       delete: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+      deprecated: true
     };
   } 
 }

@@ -47,7 +47,7 @@ public class Condition implements BooleanExpression {
             DataType ptype = leftRef.getDataType();
             if (ptype != null) {
                 if (leftRef.useCalibratedValue()) {
-                    ptype.parseString(rightValue);
+                    ptype.convertType(rightValue);
                 } else {
                     ptype.parseStringForRawValue(rightValue);
                 }

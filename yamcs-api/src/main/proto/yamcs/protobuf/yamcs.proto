@@ -52,7 +52,7 @@ message Value {
 }
 
 // An aggregate value is an ordered list of (member name, member value).
-// We use two arrays in order to be able to send just the values (since
+// Two arrays are used in order to be able to send just the values (since
 // the names will not change)
 message AggregateValue {
    repeated string name = 1;
@@ -263,9 +263,11 @@ message Event {
     INFO = 0;
     WARNING = 1;
     ERROR = 2;
+
     //the levels below are compatible with XTCE
     // we left the 4 out since it could be used 
     // for warning if we ever decide to get rid of the old ones
+
     WATCH = 3;
     DISTRESS = 5;
     CRITICAL = 6;

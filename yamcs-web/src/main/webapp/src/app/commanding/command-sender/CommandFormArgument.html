@@ -21,10 +21,10 @@
     <br>
     <input type="radio"
            [formControlName]="controlName"
-           [value]="argument.type.oneStringValue"> {{ argument.type.oneStringValue }}
+           value="true"> {{ argument.type.oneStringValue }}
     <input type="radio"
            [formControlName]="controlName"
-           [value]="argument.type.zeroStringValue"> {{ argument.type.zeroStringValue }}
+           value="false"> {{ argument.type.zeroStringValue }}
   </label>
 
   <label *ngSwitchCase="'time'">

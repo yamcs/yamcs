@@ -3,6 +3,16 @@
   position: relative;
 }
 
+.central-pane {
+  position: absolute;
+  top: 0;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  overflow: auto;
+  padding: 24px;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

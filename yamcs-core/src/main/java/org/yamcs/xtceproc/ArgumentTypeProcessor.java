@@ -41,8 +41,8 @@ import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TimeEpoch;
-import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
+import org.yamcs.xtce.ValueEnumeration;
 
 /**
  * Handles conversions from engineering value to raw value according to the parameter type and encoding

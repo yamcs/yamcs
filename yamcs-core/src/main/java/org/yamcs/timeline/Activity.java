@@ -16,7 +16,7 @@ public abstract class Activity extends TimelineItem {
     String failureReason;
 
     public Activity(UUID id) {
-        super(id);
+        super(id.toString());
     }
 
     Activity(Tuple tuple) {

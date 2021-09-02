@@ -21,9 +21,6 @@ service FileTransferApi {
   rpc ListFileTransferServices(ListFileTransferServicesRequest) returns (ListFileTransferServicesResponse) {
     option (yamcs.api.route) = {
       get: "/api/filetransfer/{instance}/services"
-      additional_bindings: {
-         get: "/api/cfdp/{instance}/services"
-      }
     };
   }
 
@@ -31,12 +28,6 @@ service FileTransferApi {
   rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
       get: "/api/filetransfer/{instance}/{serviceName}/transfers"
-      additional_bindings: {        
-        get: "/api/cfdp/{instance}/{serviceName}/transfers"
-      }
-      additional_bindings: {
-        get: "/api/cfdp/{instance}/transfers"
-      }
     };
   }
   
@@ -44,12 +35,6 @@ service FileTransferApi {
   rpc GetTransfer(GetTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
       get: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}"
-      additional_bindings: {
-        get: "/api/cfdp/{instance}/{serviceName}/transfers/{id}"
-      }
-      additional_bindings: {
-        get: "/api/cfdp/{instance}/transfers/{id}"
-      }
     };
   }
   
@@ -58,14 +43,6 @@ service FileTransferApi {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/transfers"
       body: "*"
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/{serviceName}/transfers"
-        body: "*"
-      }
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/transfers"
-        body: "*"
-      }
     };
   }
   
@@ -73,12 +50,6 @@ service FileTransferApi {
   rpc PauseTransfer(PauseTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:pause"
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:pause"
-      }
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/transfers/{id}:pause"
-      }
     };
   }
 
@@ -89,12 +60,6 @@ service FileTransferApi {
   rpc CancelTransfer(CancelTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:cancel"
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:cancel"
-      }
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/transfers/{id}:cancel"
-      }
     };
   }
   
@@ -102,12 +67,6 @@ service FileTransferApi {
   rpc ResumeTransfer(ResumeTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:resume"
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/{serviceName}/transfers/{id}:resume"
-      }
-      additional_bindings: {
-        post: "/api/cfdp/{instance}/transfers/{id}:resume"
-      }
     };
   }
   
@@ -115,9 +74,6 @@ service FileTransferApi {
   rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
     option (yamcs.api.websocket) = {
       topic: "file-transfers"
-      additional_bindings: {
-         topic: "cfdp-transfers"
-      }
     };
   }
 }

@@ -6,3 +6,24 @@
   font-size: 14px !important;
   vertical-align: middle;
 }
+
+.command-text {
+  font-size: 10px;
+  line-height: 12px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.command-text .args {
+  margin: 0;
+  margin-left: 10px;
+}
+
+.command-text .args .key {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+.command-text .args .value {
+  color: #0055aa;
+  padding-left: 10px;
+}

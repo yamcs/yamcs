@@ -19,8 +19,13 @@ const OPS_DATASOURCE = "ops://";
 @Component({
   selector: 'app-opi-display-viewer',
   template: `
-    <div #displayContainer style="width: 100%; height: 100%"></div>
+    <div class="display-frame">
+      <div class="display-frame-inner">
+        <div #displayContainer style="display: inline-block"></div>
+      </div>
+    </div>
   `,
+  styleUrls: ['./OpiDisplayViewer.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
@@ -88,7 +93,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
               pv.disconnected = true;
             }
           }
-          if (data.values && data.values.length) {
+          if (data.values?.length) {
             const samples = new Map<string, Sample>();
             for (const pval of data.values) {
               pval.id = this.idMapping[pval.numericId];
@@ -109,7 +114,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     const time = utils.toDate(pval.generationTime);
     const severity = this.toAlarmSeverity(pval);
     const sample: Sample = { time, severity, value: undefined };
-    if (pval.engValue) { // Can be unset of acquisitionStatus is invalid
+    if (pval.engValue) { // Can be unset if acquisitionStatus is invalid
       sample.value = utils.convertValue(pval.engValue);
       if (pval.engValue.type === 'ENUMERATED') {
         sample.valueIndex = Number(pval.engValue.sint64Value);
@@ -224,6 +229,14 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   public hasPendingChanges() {
     return false;
+  }
+
+  public zoomIn() {
+    this.display.scale += 0.1;
+  }
+
+  public zoomOut() {
+    this.display.scale -= 0.1;
   }
 
   ngOnDestroy() {

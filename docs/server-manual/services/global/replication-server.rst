@@ -37,8 +37,12 @@ Configuration Options
 port  (integer)
     **Required** The port to listen for TCP connections.               
 
-tlsCert (string)
-    If specified, the server will be listening for TLS connections. The TLS is used for encrypting the data, client certificates are not supported. If TLS is enabled, all connections have to be encrypted, the server does not support TLS and non-TLS connections simultaneously.
+tlsCert (string or list of strings)
+    If specified, the server will be listening for TLS connections. TLS is used for encrypting the data, client certificates are not supported. If TLS is enabled, all connections have to be encrypted, the server does not support TLS and non-TLS connections simultaneously.
+
+    In case the file is a bundle containing multiple certificates, the certificates must be ordered from leaf to root.
+
+    Multiple certificate files may also be provided as an array. Again, certificates must then be ordered from leaf to root, between the files and also between certificates within the files.
 
 tlsKey (string)
-    **Required** if the tlsCert is specified. The key to the certificate.
+    **Required** if ``tlsCert`` is specified. The key to the certificate.

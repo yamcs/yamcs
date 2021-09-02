@@ -10,7 +10,7 @@ import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { CommandArgument, StackEntry } from './StackEntry';
+import { StackEntry } from './StackEntry';
 import { StackFormatter } from './StackFormatter';
 
 @Component({
@@ -242,7 +242,7 @@ export class StackFilePage implements OnDestroy {
 
   private async runEntry(entry: StackEntry) {
     return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
-      assignment: entry.arguments,
+      args: entry.args,
       extra: entry.extra,
     }).then(response => {
       entry.executionNumber = ++this.executionCounter;
@@ -310,19 +310,17 @@ export class StackFilePage implements OnDestroy {
   }
 
   private parseEntry(node: Element): StackEntry {
-    const args: CommandArgument[] = [];
+    const args: {[key: string]: any} = {};
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i] as Element;
       if (child.nodeName === 'commandArgument') {
-        args.push({
-          name: this.getStringAttribute(child, 'argumentName'),
-          value: this.getStringAttribute(child, 'argumentValue'),
-        });
+        const argumentName = this.getStringAttribute(child, 'argumentName');
+        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
       }
     }
     const entry: StackEntry = {
       name: this.getStringAttribute(node, 'qualifiedName'),
-      arguments: args,
+      args,
     };
 
     if (node.hasAttribute('comment')) {
@@ -349,7 +347,7 @@ export class StackFilePage implements OnDestroy {
       if (result) {
         const entry: StackEntry = {
           name: result.command.qualifiedName,
-          arguments: result.assignments,
+          args: result.args,
           comment: result.comment,
           extra: result.extra,
           command: result.command,
@@ -395,7 +393,7 @@ export class StackFilePage implements OnDestroy {
       if (result) {
         const changedEntry: StackEntry = {
           name: result.command.qualifiedName,
-          arguments: result.assignments,
+          args: result.args,
           comment: result.comment,
           extra: result.extra,
           command: result.command,
@@ -437,7 +435,7 @@ export class StackFilePage implements OnDestroy {
     if (entry) {
       const copiedEntry: StackEntry = {
         name: entry.name,
-        arguments: [...entry.arguments],
+        args: { ...entry.args },
         comment: entry.comment,
         command: entry.command,
       };

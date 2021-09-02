@@ -1,6 +1,7 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -41,21 +42,21 @@ public class AggregateUtilTest {
     public void testPatchAggregate() {
         Parameter p = getAggregateParameter("p");
         AggregateParameterType adt = (AggregateParameterType) p.getParameterType();
-        Map<String, Object> m = adt.parseString("{ m1: 3, m2: { s1: 5, s2:7}}");
+        Map<String, Object> m = adt.convertType("{ m1: 3, m2: { s1: 5, s2:7}}");
         Value v = DataTypeProcessor.getValueForType(adt, m);
 
         ParameterValue pv = new ParameterValue(p);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
         PathElement[] pem1 = AggregateUtil.parseReference("m1");
         PathElement[] pes2 = AggregateUtil.parseReference("m2.s2");
 
         PartialParameterValue patch1 = new PartialParameterValue(p, pem1);
-        patch1.setEngineeringValue(ValueUtility.getSint32Value(31));
+        patch1.setEngValue(ValueUtility.getSint32Value(31));
         AggregateUtil.updateMember(pv, patch1);
         assertEquals(31, AggregateUtil.getMemberValue(pv.getEngValue(), pem1).getSint32Value());
 
         PartialParameterValue patch2 = new PartialParameterValue(p, pes2);
-        patch2.setEngineeringValue(ValueUtility.getSint32Value(51));
+        patch2.setEngValue(ValueUtility.getSint32Value(51));
         AggregateUtil.updateMember(pv, patch2);
 
         assertEquals(51, AggregateUtil.getMemberValue(pv.getEngValue(), pes2).getSint32Value());
@@ -70,15 +71,15 @@ public class AggregateUtilTest {
         ArrayParameterType apt = aptb.build();
         p.setParameterType(apt);
 
-        Object[] o = apt.parseString("[1,2,3,4]");
+        Object[] o = apt.convertType("[1,2,3,4]");
         Value v = DataTypeProcessor.getValueForType(apt, o);
 
         ParameterValue pv = new ParameterValue(p);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
 
         PathElement[] pe3 = AggregateUtil.parseReference("[2]");
         PartialParameterValue patch1 = new PartialParameterValue(p, pe3);
-        patch1.setEngineeringValue(ValueUtility.getSint32Value(100));
+        patch1.setEngValue(ValueUtility.getSint32Value(100));
 
         AggregateUtil.updateMember(pv, patch1);
         assertEquals(100, AggregateUtil.getMemberValue(pv.getEngValue(), pe3).getSint32Value());
@@ -89,16 +90,16 @@ public class AggregateUtilTest {
     public void testPatchArrayInsideAggregate() {
         Parameter p = getArrayInsideAggregateParameter();
         AggregateParameterType adt = (AggregateParameterType) p.getParameterType();
-        Map<String, Object> m = adt.parseString("{ m1: 3, m2: { s1: 5, a2:[7, 9, 10]}}");
+        Map<String, Object> m = adt.convertType("{ m1: 3, m2: { s1: 5, a2:[7, 9, 10]}}");
         Value v = DataTypeProcessor.getValueForType(adt, m);
 
         ParameterValue pv = new ParameterValue(p);
-        pv.setEngineeringValue(v);
+        pv.setEngValue(v);
 
         PathElement[] pea1 = AggregateUtil.parseReference("m2.a2[1]");
 
         PartialParameterValue patch1 = new PartialParameterValue(p, pea1);
-        patch1.setEngineeringValue(ValueUtility.getSint32Value(1000));
+        patch1.setEngValue(ValueUtility.getSint32Value(1000));
         AggregateUtil.updateMember(pv, patch1);
 
         assertEquals(1000, AggregateUtil.getMemberValue(pv.getEngValue(), pea1).getSint32Value());

@@ -45,15 +45,16 @@ message ParameterValue {
     optional google.protobuf.Timestamp generationTime = 5;
     optional AcquisitionStatus acquisitionStatus = 6;
     
-    //this field has been originally created for compatibility with Airbus CGS/CD-MCS system
-    //when it was set to false, then the acquisitionStatus was also set to INVALID;
-    //it has been therefore removed from yamcs
+    // Deprecated: this field was originally introduced for compatibility
+    // with Airbus CGS/CD-MCS system. It was redundant, because when false,
+    // the acquisitionStatus is also set to INVALID.
     optional bool processingStatus = 7 [deprecated = true];
     optional MonitoringResult monitoringResult = 8;
     optional RangeCondition rangeCondition = 9;
 
-    // same as the Timestamps above 
+    // Deprecated. Use ``acquisitionTime`` instead.
     optional string acquisitionTimeUTC = 11 [deprecated = true];
+    // Deprecated. Use ``generationTime`` instead.
     optional string generationTimeUTC = 12 [deprecated = true];
 
     // Context-dependent ranges
@@ -114,14 +115,20 @@ message TimeSeries {
 message Ranges {
     message Range {
         // Generation time of a parameter value.
-        optional string timeStart = 1;
-            
-        // If the value changes, ``timeStop`` is the generation time of the new value.
-        // If the parameter expires or the ``maxGap`` has been set, ``timeStop`` is
+        optional google.protobuf.Timestamp start = 7;
+
+        // If the value changes, ``stop`` is the generation time of the new value.
+        // If the parameter expires or the ``maxGap`` has been set, ``stop`` is
         // the generation time of the last value plus the expiration time or the
         // ``maxGap``.
-        optional string timeStop = 2;
-    
+        optional google.protobuf.Timestamp stop = 8;
+
+        // Deprecated. Use ``start`` instead.
+        optional string timeStart = 1 [deprecated = true];
+
+        // Deprecated. Use ``stop`` instead.
+        optional string timeStop = 2 [deprecated = true];
+
         // Number of parameter values received in the interval.
         // This is the total count of parameters in the interval.
         // If the count does not match the sum(counts), it means that not all the values have been sent
@@ -129,7 +136,7 @@ message Ranges {
         
         // Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows 
         // specifying the minimum length of the range returned.
-        // Practically we guarantee that timeStop-timeStart >= minRange (mind the leap seconds!).
+        // Practically we guarantee that stop-start >= minRange (mind the leap seconds!).
         //
         // If the minRange parameter is set, the returning ranges may include multiple values.
         // These are given by the engValues and counts below. 

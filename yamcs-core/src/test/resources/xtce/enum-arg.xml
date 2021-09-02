@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        name="EnumArgTest"
+        xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <EnumeratedArgumentType name="PHASE_Type">
+                <UnitSet/>
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="SAFE"/>
+                    <Enumeration value="1" label="LEOP"/>
+                    <Enumeration value="2" label="ASCENT"/>
+                    <Enumeration value="3" label="MISSION"/>
+                    <Enumeration value="4" label="STORAGE"/>
+                    <Enumeration value="5" label="DEBORBIT"/>
+                </EnumerationList>
+            </EnumeratedArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand name="cmd1">
+                <ArgumentList>
+                    <Argument name="phase" argumentTypeRef="PHASE_Type" />
+                </ArgumentList>
+                <CommandContainer name="cmd1_container">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="phase" />
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>

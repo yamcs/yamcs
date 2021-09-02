@@ -1,0 +1,12 @@
+.title-copy {
+  margin-left: 10px;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
+
+.title-copy:hover {
+  color: #1b61b9;
+}

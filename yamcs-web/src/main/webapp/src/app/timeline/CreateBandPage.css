@@ -1,11 +1,41 @@
+div.category-title {
+  font-size: 18px;
+  line-height: 1.5;
+  margin-bottom: 1em;
+}
+
 a.band-type {
   display: inline-block;
   width: 260px;
-  margin: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
   vertical-align: top;
   text-decoration: none;
 }
 
-a.band-type:hover .mat-card {
+.card {
+  border: 1px solid rgba(0, 0, 0, .12);
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.card-title {
+  align-items: center;
+  display: flex;
+  padding: 15px;
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .87);
+}
+
+.card-content {
+  padding: 0 15px 15px;
+  min-height: 2.4em;
+  font-size: 15px;
+  color: rgba(0, 0, 0, .54);
+}
+
+a.band-type:hover .card {
   background-color: #f2f2f2;
 }

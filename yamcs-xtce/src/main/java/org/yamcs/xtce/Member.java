@@ -23,15 +23,15 @@ public class Member extends NameDescription {
         super(name);
         this.type = type;
     }
+
     /**
-     * Used to set the initial calibrated values of Parameters.
-     * Will overwrite an initial value defined for the DataType
+     * Used to set the initial calibrated values of Parameters. Will overwrite an initial value defined for the DataType
      * 
      * @param initialValue
      *            - initial calibrated value
      */
-    public void setInitialValue(String initialValue) {
-        this.initialValue = type.parseString(initialValue);
+    public void setInitialValue(Object initialValue) {
+        this.initialValue = type.convertType(initialValue);
     }
 
     public void setDataType(DataType dtype) {
@@ -41,9 +41,10 @@ public class Member extends NameDescription {
     public DataType getType() {
         return type;
     }
-    
+
     /**
      * Get the initial value of the member.
+     *
      * @return
      */
     public Object getInitialValue() {

@@ -2,8 +2,9 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier;
@@ -28,7 +28,8 @@ public class CcsdsGreenBookCommandEncodingTest {
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
+        metaCommandProcessor = new MetaCommandProcessor(
+                new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
     }
 
     @Test
@@ -36,10 +37,10 @@ public class CcsdsGreenBookCommandEncodingTest {
         // encode command
         MetaCommand mc = xtcedb.getMetaCommand("/SpaceVehicle/PWHTMR");
         assertEquals(32, mc.getCommandContainer().getSizeInBits());
-        List<ArgumentAssignment> arguments = new LinkedList<>();
-        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("TimerStartStop", "TIMER_START");
-        arguments.add(argumentAssignment1);
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        Map<String, Object> args = new HashMap<>();
+        args.put("TimerStartStop", "TIMER_START");
+
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals(Levels.critical, mc.getDefaultSignificance().getConsequenceLevel());
 
         assertEquals("FF0000001E000001", StringConverter.arrayToHexString(b));
@@ -54,5 +55,4 @@ public class CcsdsGreenBookCommandEncodingTest {
         assertEquals(600000, cw.getTimeToStopChecking());
         assertEquals(TimeWindowIsRelativeToType.LastVerifier, cw.getTimeWindowIsRelativeTo());
     }
-
 }

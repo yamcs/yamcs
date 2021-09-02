@@ -32,14 +32,14 @@ All timestamps are returned as UTC and formatted according to ISO 8601. For exam
 
 .. rubric:: Error Handling
 
-When an exception is caught while handling an HTTP request, the server will try to give some feedback to the client by wrapping it in a generic exception message like so:
+When an exception is caught while handling an HTTP request, the server provides feedback to the client by returning a generic exception message:
 
 .. code-block:: typescript
 
     {
       "exception" : {
-        "type": string, // Short
-        "msg": string // Long
+        "type": string, // Short message
+        "msg": string // Long message
       }
     }
 

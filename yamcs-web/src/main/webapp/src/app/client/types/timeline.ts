@@ -40,12 +40,13 @@ export interface TimelineItemsPage {
 }
 
 export interface GetTimelineItemsOptions {
+  source: string;
   start?: string;
   stop?: string;
   band?: string;
 }
 
-export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND' | 'SPACER';
+export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND' | 'SPACER' | 'COMMAND_BAND';
 
 export interface CreateTimelineBandRequest {
   name: string;

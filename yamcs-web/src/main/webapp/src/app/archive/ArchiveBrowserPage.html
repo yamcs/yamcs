@@ -20,7 +20,7 @@
 
     <button mat-icon-button
             color="primary"
-            (click)="refresh()"
+            (click)="refreshData()"
             matTooltip="Refresh view">
       <mat-icon>refresh</mat-icon>
     </button>
@@ -28,11 +28,58 @@
 
   <div style="height: 24px; margin: 6px">
     <form [formGroup]="filterForm">
-      <button class="ya-button" style="margin-right: 0;" (click)="goBackward()">&lt;</button>
-      <button class="ya-button" style="margin-left: 0; margin-right: 0;" (click)="jumpToNow()">Now</button>
-      <button class="ya-button" style="margin-left: 0" (click)="goForward()">&gt;</button>
+      <button class="ya-button" (click)="pageLeft()">
+        <mat-icon>west</mat-icon>
+      </button>
+      <button class="ya-button"
+              (mousedown)="toggleMove(-50)"
+              (mouseup)="untoggleMove()"
+              (mouseleave)="untoggleMove()">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button class="ya-button"
+              (mousedown)="toggleMove(50)"
+              (mouseup)="untoggleMove()"
+              (mouseleave)="untoggleMove()">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+      <button class="ya-button" (click)="pageRight()">
+        <mat-icon>east</mat-icon>
+      </button>
       &nbsp;
-      <button class="ya-button" (click)="jumpTo()">Jump to...</button>
+      <button class="ya-button" (click)="fitAll()">
+        <mat-icon>fit_screen</mat-icon>
+        Fit all
+      </button>
+      <button class="ya-button" (click)="jumpToToday()">
+        <mat-icon>today</mat-icon>
+        Today
+      </button>
+      <button class="ya-button" (click)="jumpToNow()">
+        <mat-icon>my_location</mat-icon>
+      </button>
+      <button class="ya-button" (click)="openJumpToDialog()">
+        <mat-icon>directions</mat-icon>
+        Jump to...
+      </button>
+      &nbsp;
+      <button class="ya-button" (click)="zoomIn()">
+        <mat-icon>add</mat-icon>
+      </button>
+      <button class="ya-button" (click)="zoomOut()">
+        <mat-icon>remove</mat-icon>
+      </button>
+      &nbsp;
+      <button class="ya-button"
+              [class.active]="((tool$ | async) === 'hand')" (click)="setTool('hand')"
+              matTooltip="Use pan tool">
+        <mat-icon>pan_tool</mat-icon>
+      </button>
+      <button class="ya-button"
+              [class.active]="((tool$ | async) === 'range-select')" (click)="setTool('range-select')"
+              matTooltip="Use range selection tool">
+        <mat-icon>highlight_alt</mat-icon>
+      </button>
 
       &nbsp;&nbsp;&nbsp;&nbsp;
       <label *ngFor="let option of legendOptions"
@@ -70,8 +117,6 @@
         range. Note that a single index block does not necessarily mean that there was no gap in the data. When zooming
         in, more gaps may appear.</p>
       <p>Pan around by grabbing the canvas.</p>
-      <p>Some actions require you to make a selection. To do so either select an index block or start a selection by
-        clicking on the timescale band.</p>
     </app-help>
   </div>
 </app-instance-page>

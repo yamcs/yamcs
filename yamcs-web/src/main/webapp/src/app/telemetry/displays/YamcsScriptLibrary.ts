@@ -1,4 +1,3 @@
-import { ArgumentAssignment } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -13,13 +12,8 @@ export class YamcsScriptLibrary {
   ) { }
 
   issueCommand(qname: string, args: { [key: string]: any; }) {
-    const assignments: ArgumentAssignment[] = [];
-    for (const name in args) {
-      assignments.push({ name, value: args[name] });
-    }
-
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
-      assignment: assignments,
+      args,
     }).catch(err => this.messageService.showError(err));
   }
 }

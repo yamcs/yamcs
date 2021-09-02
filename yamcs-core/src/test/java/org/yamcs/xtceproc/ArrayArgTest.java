@@ -1,22 +1,24 @@
 package org.yamcs.xtceproc;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.stream.XMLStreamException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests that a command containing an array argument
@@ -40,12 +42,11 @@ public class ArrayArgTest {
     @Test
     public void testCommandEncoding() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, Object> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("length", "5"));
-        arguments.add(new ArgumentAssignment("array1", "[1,2,3,4,5]"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments)
-                .getCmdPacket();
+        args.put("length", "5");
+        args.put("array1", "[1,2,3,4,5]");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
     }
@@ -53,11 +54,10 @@ public class ArrayArgTest {
     @Test
     public void testCommandEncodingAutomaticLength() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, Object> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("array1", "[1,2,3,4,5]"));
-        byte[] b = metaCommandProcessor.buildCommand(mc, arguments)
-                .getCmdPacket();
+        args.put("array1", "[1,2,3,4,5]");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
     }
@@ -65,20 +65,31 @@ public class ArrayArgTest {
     @Test(expected = ErrorInCommand.class)
     public void testCommandEncodingInvalidLength() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, Object> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("length", "3"));// length does not match the array length
-        arguments.add(new ArgumentAssignment("array1", "[1,2,3,4,5]"));
-        metaCommandProcessor.buildCommand(mc, arguments);
+        args.put("length", "3");// length does not match the array length
+        args.put("array1", "[1,2,3,4,5]");
+        metaCommandProcessor.buildCommand(mc, args);
     }
 
     @Test(expected = ErrorInCommand.class)
     public void testMaxLengthExceeded() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
-        List<ArgumentAssignment> arguments = new LinkedList<>();
+        Map<String, Object> args = new HashMap<>();
 
-        arguments.add(new ArgumentAssignment("array1", "[1,2,3,4,5,6]"));
-        metaCommandProcessor.buildCommand(mc, arguments);
+        args.put("array1", "[1,2,3,4,5,6]");
+        metaCommandProcessor.buildCommand(mc, args);
     }
 
+    @Test
+    public void testNativeArrayArgument() throws ErrorInCommand, IOException {
+        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        Map<String, Object> args = new HashMap<>();
+
+        args.put("length", 5);
+        args.put("array1", Arrays.asList(1, 2, 3, 4, 5));
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+
+        assertEquals("00050102030405", StringConverter.arrayToHexString(b));
+    }
 }

@@ -15,14 +15,13 @@ public class ArrayDataTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void test1() {
-        type2d.parseString("[1, 2,3]");
+        type2d.convertType("[1, 2,3]");
     }
 
     @Test
     public void test2() {
-        Object[] o = (Object[]) type2d.parseString("[[1, 2], [3, 4]]");
+        Object[] o = (Object[]) type2d.convertType("[[1, 2], [3, 4]]");
         long[][] arr = { { 1, 2 }, { 3, 4 } };
         assertArrayEquals(arr, o);
     }
-
 }

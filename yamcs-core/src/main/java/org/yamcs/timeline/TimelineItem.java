@@ -31,7 +31,7 @@ import com.google.protobuf.util.Durations;
  *
  */
 public abstract class TimelineItem {
-    protected final UUID id;
+    protected final String id;
     protected long start, duration;
 
     // if the item start is relative to another item
@@ -49,7 +49,7 @@ public abstract class TimelineItem {
     protected List<String> tags;
 
     protected TimelineItem(Tuple tuple) {
-        this.id = tuple.getColumn(CNAME_ID);
+        this.id = ((UUID) tuple.getColumn(CNAME_ID)).toString();
         this.start = tuple.getTimestampColumn(CNAME_START);
         this.duration = tuple.getLongColumn(CNAME_DURATION);
         if (tuple.hasColumn(CNAME_NAME)) {
@@ -60,7 +60,7 @@ public abstract class TimelineItem {
         }
     }
 
-    public TimelineItem(UUID id) {
+    public TimelineItem(String id) {
         this.id = id;
     }
 
@@ -136,7 +136,7 @@ public abstract class TimelineItem {
         this.description = description;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
@@ -175,7 +175,7 @@ public abstract class TimelineItem {
 
     public Tuple toTuple() {
         Tuple tuple = new Tuple();
-        tuple.addColumn(CNAME_ID, DataType.UUID, id);
+        tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(id));
         tuple.addTimestampColumn(CNAME_START, start);
         tuple.addColumn(CNAME_DURATION, duration);
         if (name != null) {

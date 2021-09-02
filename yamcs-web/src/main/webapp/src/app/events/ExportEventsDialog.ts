@@ -72,7 +72,8 @@ export class ExportEventsDialog implements OnDestroy {
         dlOptions.q = this.form.value['q'];
       }
       if (this.form.value['source']) {
-        dlOptions.source = this.form.value['source'];
+        const source = this.form.value['source'];
+        dlOptions.source = (source !== 'ANY') ? source : null;
       }
       const url = this.yamcs.yamcsClient.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);

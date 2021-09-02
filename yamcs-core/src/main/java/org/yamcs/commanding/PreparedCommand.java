@@ -3,6 +3,7 @@ package org.yamcs.commanding;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +16,7 @@ import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Commanding.CommandAssignment;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -48,7 +50,7 @@ public class PreparedCommand {
     boolean disableCommandVerifiers = false;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
-    private Map<Argument, ArgumentValue> argAssignment;
+    private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
     private Set<String> userAssignedArgumentNames;
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
@@ -151,6 +153,7 @@ public class PreparedCommand {
     public String getLoggingId() {
         return id.getCommandName() + "-" + id.getSequenceNumber();
     }
+
     public String getOrigin() {
         return id.getOrigin();
     }
@@ -210,6 +213,20 @@ public class PreparedCommand {
         al.add(assignmentb.build());
 
         return new Tuple(td, al.toArray());
+    }
+
+    public List<CommandAssignment> getAssignments() {
+        List<CommandAssignment> assignments = new ArrayList<>();
+        if (getArgAssignment() != null) {
+            for (Entry<Argument, ArgumentValue> entry : getArgAssignment().entrySet()) {
+                assignments.add(CommandAssignment.newBuilder()
+                        .setName(entry.getKey().getName())
+                        .setValue(ValueUtility.toGbp(entry.getValue().getEngValue()))
+                        .setUserInput(userAssignedArgumentNames.contains(entry.getKey().getName()))
+                        .build());
+            }
+        }
+        return assignments;
     }
 
     public void setBinary(byte[] b) {
@@ -276,7 +293,7 @@ public class PreparedCommand {
 
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
         if (assignments != null) {
-            pc.argAssignment = new HashMap<>();
+            pc.argAssignment = new LinkedHashMap<>();
             for (Assignment assignment : assignments.getAssignmentList()) {
                 Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
                 Value v = ValueUtility.fromGpb(assignment.getValue());

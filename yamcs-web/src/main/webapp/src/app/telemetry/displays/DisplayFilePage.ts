@@ -11,6 +11,7 @@ import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
 import { OpiDisplayViewer } from './OpiDisplayViewer';
+import { OpiDisplayViewerControls } from './OpiDisplayViewerControls';
 import { ParameterTableViewer } from './ParameterTableViewer';
 import { ParameterTableViewerControls } from './ParameterTableViewerControls';
 import { ScriptViewer } from './ScriptViewer';
@@ -120,6 +121,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     if (this.filename.toLowerCase().endsWith('.opi')) {
       const opiDisplayViewer = this.createViewer(OpiDisplayViewer);
+      const controls = this.createViewerControls(OpiDisplayViewerControls);
+      controls.init(opiDisplayViewer as OpiDisplayViewer);
       this.viewer = opiDisplayViewer;
     } else if (this.filename.toLowerCase().endsWith('.par')) {
       const parameterTableViewer = this.createViewer(ParameterTableViewer);

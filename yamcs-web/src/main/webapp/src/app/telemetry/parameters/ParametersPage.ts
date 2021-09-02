@@ -9,6 +9,7 @@ import { GetParametersOptions } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
+import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
 import { ListItem, ParametersDataSource } from './ParametersDataSource';
 
 @Component({
@@ -89,9 +90,10 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     synchronizer: Synchronizer,
+    memberPathPipe: MemberPathPipe,
   ) {
     title.setTitle('Parameters');
-    this.dataSource = new ParametersDataSource(yamcs, synchronizer);
+    this.dataSource = new ParametersDataSource(yamcs, synchronizer, memberPathPipe);
   }
 
   ngAfterViewInit() {
@@ -160,6 +162,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     };
     if (this.filter) {
       options.q = this.filter;
+      options.searchMembers = true;
     }
     if (this.type) {
       options.type = this.type;

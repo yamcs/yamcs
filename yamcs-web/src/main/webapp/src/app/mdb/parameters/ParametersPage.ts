@@ -22,7 +22,6 @@ export class ParametersPage implements AfterViewInit {
     source: new FormControl('ANY'),
   });
 
-  shortName = false;
   pageSize = 100;
 
   @ViewChild('top', { static: true })
@@ -135,6 +134,7 @@ export class ParametersPage implements AfterViewInit {
     };
     if (this.filter) {
       options.q = this.filter;
+      options.searchMembers = true;
     }
     if (this.type) {
       options.type = this.type;
