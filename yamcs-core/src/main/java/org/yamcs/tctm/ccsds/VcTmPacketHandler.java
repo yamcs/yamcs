@@ -18,7 +18,7 @@ import org.yamcs.utils.YObjectLoader;
 
 /**
  * Handles packets from one VC
- * 
+ *
  * @author nm
  *
  */
@@ -74,8 +74,9 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
 
         if (frame.containsOnlyIdleData()) {
             if (log.isTraceEnabled()) {
-                log.trace("Dropping idle frame for VC {}", frame.getVirtualChannelId());
+                log.trace("Dropping idle frame for VC {}, SEQ {}", frame.getVirtualChannelId(), frame.getVcFrameSeq());
             }
+            lastFrameSeq = frame.getVcFrameSeq();
             idleFrameCount++;
             return;
         }
