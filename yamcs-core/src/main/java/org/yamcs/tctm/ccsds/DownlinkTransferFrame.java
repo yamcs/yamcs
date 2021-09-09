@@ -89,8 +89,10 @@ public abstract class DownlinkTransferFrame {
         if(vcFrameSeq == -1 ) {
             return -1;
         }
-        
-        long delta = prevFrameSeq < vcFrameSeq ? vcFrameSeq - prevFrameSeq :  vcFrameSeq + getSeqCountWrapArround() - prevFrameSeq;
+
+        long delta = prevFrameSeq < vcFrameSeq
+                   ? vcFrameSeq - prevFrameSeq
+                   : vcFrameSeq + getSeqCountWrapArround() - prevFrameSeq + 1;
         delta--;
         if (delta > getSeqInterruptionDelta()) {
             return -1;
