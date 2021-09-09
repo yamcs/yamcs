@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -2233,7 +2234,10 @@ public class XtceStaxReader {
                 p.setDataSource(DataSource.valueOf(v.toUpperCase()));
             } catch (IllegalArgumentException e) {
                 throw new XMLStreamException(
-                        "invalid dataSource '" + v + "'. Valid values: " + DataSource.values());
+                        "invalid dataSource '" + v + "'. Valid values: "
+                                + Stream.of(DataSource.values())
+                                        .map(ds -> ds.name().toLowerCase())
+                                        .collect(Collectors.joining(", ")));
             }
 
         }
