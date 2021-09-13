@@ -77,7 +77,7 @@ export class UploadFileDialog {
     );
 
     // Collect combined success/failure result
-    let anyError;
+    let anyError: any;
     let errorCount = 0;
     for (const promise of promises) {
       try {
