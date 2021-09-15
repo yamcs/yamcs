@@ -47,6 +47,7 @@ export interface Parameter extends NameDescription {
   | 'EXTERNAL1'
   | 'EXTERNAL2'
   | 'EXTERNAL3'
+  | 'GROUND'
   | 'LOCAL'
   | 'SYSTEM'
   | 'TELEMETERED';
