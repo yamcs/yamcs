@@ -69,6 +69,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     { id: 'EXTERNAL1', label: 'External 1' },
     { id: 'EXTERNAL2', label: 'External 2' },
     { id: 'EXTERNAL3', label: 'External 3' },
+    { id: 'GROUND', label: 'Ground' },
     { id: 'LOCAL', label: 'Local' },
     { id: 'SYSTEM', label: 'System' },
     { id: 'TELEMETERED', label: 'Telemetered' },

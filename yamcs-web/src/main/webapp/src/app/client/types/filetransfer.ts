@@ -11,8 +11,8 @@ export interface FileTransferService {
 export interface FileTransferCapabilities {
   upload: boolean;
   download: boolean;
-  reliable: boolean;
-  remotePath : boolean;
+  reliability: boolean;
+  remotePath: boolean;
 }
 
 export interface Entity {
