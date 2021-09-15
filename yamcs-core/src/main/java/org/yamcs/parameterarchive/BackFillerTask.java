@@ -13,9 +13,6 @@ class BackFillerTask extends AbstractArchiveFiller {
     // ParameterGroup_id -> PGSegment
     protected Map<Integer, PGSegment> pgSegments = new HashMap<>();
 
-    // ignore any data older than this
-    // when doing backfilling, there is a warming up interval - the replay is started with older data
-    protected long collectionStart;
 
 
     private Processor processor;
@@ -23,10 +20,6 @@ class BackFillerTask extends AbstractArchiveFiller {
 
     public BackFillerTask(ParameterArchive parameterArchive) {
         super(parameterArchive);
-    }
-
-    void setCollectionStart(long collectionStart) {
-        this.collectionStart = collectionStart;
     }
 
     void flush() {
