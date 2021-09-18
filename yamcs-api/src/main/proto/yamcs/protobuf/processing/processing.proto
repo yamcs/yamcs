@@ -318,6 +318,10 @@ message SetParameterValueRequest {
   
   // The new value.
   optional Value value = 4;
+
+  // The generation time of the value. If specified, must be a date
+  // string in ISO 8601 format.
+  optional google.protobuf.Timestamp generationTime = 5;
 }
 
 message BatchGetParameterValuesRequest {
@@ -342,6 +346,10 @@ message BatchSetParameterValuesRequest {
   message SetParameterValueRequest {
     optional NamedObjectId id = 1;
     optional Value value = 2;
+
+    // The generation time of the value. If specified, must be a date
+    // string in ISO 8601 format.
+    optional google.protobuf.Timestamp generationTime = 3;
   }
   
   // Yamcs instance name.
