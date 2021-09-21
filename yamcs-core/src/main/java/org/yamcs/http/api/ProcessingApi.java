@@ -280,6 +280,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             pv = new PartialParameterValue(p, pid.getPath());
         }
         pv.setEngValue(v);
+        if (request.hasGenerationTime()) {
+            pv.setGenerationTime(TimeEncoding
+                    .fromProtobufTimestamp(request.getGenerationTime()));
+        }
         try {
             mgr.updateParameters(Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
@@ -386,6 +390,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 pv = new PartialParameterValue(p, pid.getPath());
             }
             pv.setEngValue(ValueUtility.fromGpb(r.getValue()));
+            if (r.hasGenerationTime()) {
+                pv.setGenerationTime(TimeEncoding
+                        .fromProtobufTimestamp(r.getGenerationTime()));
+            }
             List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
                     k -> new ArrayList<>());
             l.add(pv);
