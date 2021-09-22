@@ -932,8 +932,10 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                 clients[i] = ci.getId();
             }
             try {
-                String[] in = instanceDotName.split("\\.", 2);
-                processorControl.connectToProcessor(in[0], in[1], clients);
+                int idx = instanceDotName.lastIndexOf('.');
+                String instance = instanceDotName.substring(0, idx);
+                String processor = instanceDotName.substring(idx + 1);
+                processorControl.connectToProcessor(instance, processor, clients);
             } catch (Exception e) {
                 showMessage(e.toString());
             }
