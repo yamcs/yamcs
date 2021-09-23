@@ -229,11 +229,13 @@ public class ReplicationSlave extends AbstractYamcsService {
      */
     public ChannelHandler newChannelHandler() throws YamcsException {
         if (slaveChannelHandler != null) {
-            throw new YamcsException("There is already a connection open to this slave");
+            log.warn("There is already a connection open to this slave, shutting it down.");
+            slaveChannelHandler.shutdown();           
         }
         slaveChannelHandler = new SlaveChannelHandler(this);
         return slaveChannelHandler;
     }
+
 
     public class SlaveChannelHandler extends ChannelInboundHandlerAdapter {
         ReplicationSlave replSlave;
