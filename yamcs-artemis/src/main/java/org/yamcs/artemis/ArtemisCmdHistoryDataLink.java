@@ -30,12 +30,12 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
 
     public ArtemisCmdHistoryDataLink(String instance) {
         this.instance = instance;
-        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
     @Override
     protected void doStart() {
         try {
+            locator = AbstractArtemisTranslatorService.getServerLocator(instance);
             session = locator.createSessionFactory().createSession();
             CmdHistoryTupleTranslator translator = new CmdHistoryTupleTranslator();
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -69,6 +69,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
         try {
             session.stop();
             session.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             notifyFailed(e);

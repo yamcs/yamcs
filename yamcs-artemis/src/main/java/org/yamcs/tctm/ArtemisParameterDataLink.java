@@ -34,11 +34,12 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     final String artemisAddress; 
     ClientSession artemisSession;
     ServerLocator locator;
+    String instance;
     
     public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
         ppdb = XtceDbFactory.getInstance(instance);
         this.artemisAddress = artemisAddress;
-        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+        this.instance = instance;
     }
 
 
@@ -127,6 +128,7 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     @Override
     protected void doStart() {
         try {
+            locator = AbstractArtemisTranslatorService.getServerLocator(instance);
             artemisSession = locator.createSessionFactory().createSession();
             String queue = artemisAddress+"-ArtemisPpProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
@@ -144,6 +146,7 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     protected void doStop() {
         try {
             artemisSession.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);

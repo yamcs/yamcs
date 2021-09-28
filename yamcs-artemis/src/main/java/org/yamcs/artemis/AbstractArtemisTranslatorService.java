@@ -64,7 +64,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
     };
 
     public AbstractArtemisTranslatorService(String instance, List<String> streamNames, TupleTranslator translator) throws ConfigurationException {
-        this.locator = getServerLocator(instance);
+       
         this.instance = instance;
         YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
 
@@ -92,6 +92,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
 
     @Override
     protected void doStart() {
+        this.locator = getServerLocator(instance);
         for(Stream s:streams) {
             final SimpleString hornetAddress = new SimpleString(instance+"."+s.getName());
             log.debug("Starting providing tuples from stream {} as messages on {} ActiveMQ address", s.getName(), hornetAddress.toString());
@@ -126,6 +127,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
         for(Stream s:streams) {
             s.removeSubscriber(streamSubscribers.get(s));
         }
+        locator.close();
         notifyStopped();
     }
     

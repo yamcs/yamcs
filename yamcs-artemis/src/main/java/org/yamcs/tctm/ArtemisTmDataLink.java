@@ -36,12 +36,12 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     final String artemisAddress;
     ClientSession artemisSession;
     ServerLocator locator;
-    
+    String instance;
 
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
         this.artemisAddress = artemisAddress;
         timeService = YamcsServer.getTimeService(instance);
-        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+        this.instance = instance;
     }
 
 
@@ -108,6 +108,7 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     @Override
     protected void doStart() {
         try {
+            locator = AbstractArtemisTranslatorService.getServerLocator(instance);
             artemisSession = locator.createSessionFactory().createSession();
             String queue = artemisAddress + "-ActiveMQTmProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
@@ -125,6 +126,7 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     protected void doStop() {
         try {
             artemisSession.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);
