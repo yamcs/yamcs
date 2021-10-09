@@ -170,6 +170,10 @@ public class PGSegment {
         return timeSegment.getSegmentStart();
     }
 
+    /**
+     * 
+     * @return timestamp of the last parameter in this segment
+     */
     public long getSegmentEnd() {
         return timeSegment.getSegmentEnd();
     }

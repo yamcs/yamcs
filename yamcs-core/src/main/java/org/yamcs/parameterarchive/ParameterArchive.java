@@ -25,6 +25,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.PartitionedTimeInterval;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -226,6 +227,8 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+        removeOldOverlappingSegments(writeBatch, pgs);
+
         // write the time segment
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
@@ -287,6 +290,25 @@ public class ParameterArchive extends AbstractYamcsService {
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
             byte[] pssValue = vsEncoder.encode(pss);
             writeBatch.put(pssKey, pssValue);
+        }
+    }
+
+    private void removeOldOverlappingSegments(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+        long segStart = pgs.getSegmentStart();
+        long segEnd = pgs.getSegmentEnd();
+        int pgid = pgs.getParameterGroupId();
+
+        byte[] timeKeyStart = new SegmentKey(parameterIdDb.timeParameterId, pgid, segStart, (byte) 0).encode();
+        byte[] timeKeyEnd = new SegmentKey(parameterIdDb.timeParameterId, pgid, segEnd, Byte.MAX_VALUE).encode();
+        writeBatch.deleteRange(timeKeyStart, timeKeyEnd);
+        IntArray parameterIds = pgs.parameterIds;
+
+        for (int i = 0; i < parameterIds.size(); i++) {
+            int pid = parameterIds.get(i);
+
+            byte[] paraKeyStart = new SegmentKey(pid, pgid, segStart, (byte) 0).encode();
+            byte[] paraKeyEnd = new SegmentKey(pid, pgid, segEnd, Byte.MAX_VALUE).encode();
+            writeBatch.deleteRange(paraKeyStart, paraKeyEnd);
         }
     }
 
