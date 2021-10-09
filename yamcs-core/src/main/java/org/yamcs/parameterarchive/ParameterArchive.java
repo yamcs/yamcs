@@ -207,7 +207,7 @@ public class ParameterArchive extends AbstractYamcsService {
         pgs.consolidate();
         Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
-            writeToBatch(writeBatch, p, pgs);
+            writeToBatch(writeBatch, pgs);
             tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
         }
     }
@@ -219,13 +219,13 @@ public class ParameterArchive extends AbstractYamcsService {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
                 assert (segStart == pgs.getSegmentStart());
-                writeToBatch(writeBatch, p, pgs);
+                writeToBatch(writeBatch, pgs);
             }
             tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
         }
     }
 
-    private void writeToBatch(WriteBatch writeBatch, Partition p, PGSegment pgs) throws RocksDBException {
+    private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
         // write the time segment
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
