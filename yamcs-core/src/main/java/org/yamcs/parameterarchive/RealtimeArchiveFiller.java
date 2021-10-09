@@ -230,11 +230,11 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     log.warn("Time jumped in the past; current timestamp: {}, new timestamp: {}. Flushing old data.",
                             TimeEncoding.toString(segHead.getSegmentStart()), TimeEncoding.toString(t));
                     flush();
-                } else if (t < segHead.getSegmentStart()) {
+                } else if (t < segHead.getSegmentStart() - sortingThreshold) {
                     log.warn("Dropping old data with timestamp {} (minimum allowed is {})."
                             + "Unsorted data received in the realtime filler? Consider using a backfiller instead",
                             TimeEncoding.toString(t),
-                            TimeEncoding.toString(segments[head].getSegmentStart() - sortingThreshold));
+                            TimeEncoding.toString(segHead.getSegmentStart() - sortingThreshold));
                     return;
                 } else {
                     writeToArchive(t);
@@ -374,6 +374,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (seg == null) {
                     continue;
                 }
+
                 ParameterValueSegment pvs = seg.getParameterValue(pid);
                 if (pvs != null) {
                     r.add(pvs);

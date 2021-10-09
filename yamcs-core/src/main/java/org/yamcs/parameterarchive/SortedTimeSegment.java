@@ -49,8 +49,10 @@ public class SortedTimeSegment extends BaseSegment {
                     + " intervalStart: " + TimeEncoding.toString(getIntervalStart(segmentStart))
                     + ", instant: " + TimeEncoding.toString(instant));
         }
+
         if (instant < segmentStart) {
-            throw new IllegalArgumentException("The timestamp has to be bigger than the segmentStart");
+            tsarray.add((int) (segmentStart - instant));
+            segmentStart = instant;
         }
 
         return tsarray.insert((int) (instant - segmentStart));
@@ -200,17 +202,6 @@ public class SortedTimeSegment extends BaseSegment {
             }
         }
         return r;
-    }
-
-    /**
-     * sets the segmentStart to the first timestamp of the segment (and adjusts all the other times accordingly)
-     */
-    void trimSegmentStart() {
-        int diff = tsarray.get(0);
-        if (diff != 0) {
-            tsarray.add(-diff);
-            segmentStart += diff;
-        }
     }
 
     public String toString() {
