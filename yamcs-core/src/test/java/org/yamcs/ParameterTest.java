@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -161,7 +162,7 @@ public class ParameterTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testInvalidAggregateMember() throws Exception {
+    public void testInvalidAggregateMember_noabort() throws Exception {
         ParameterSubscription subscription = yamcsClient.createParameterSubscription();
         ParameterCaptor captor = ParameterCaptor.of(subscription);
 
@@ -169,10 +170,30 @@ public class ParameterTest extends AbstractIntegrationTest {
                 .setInstance(yamcsInstance)
                 .setProcessor("realtime")
                 .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.invalid_member"))
+                .setAbortOnInvalid(false)
                 .setSendFromCache(false)
                 .build();
         subscription.sendMessage(request);
         captor.expectTimelyInvalidIdentifier();
+    }
+
+    @Test(expected = ClientException.class)
+    public void testInvalidAggregateMember_abort() throws Exception {
+        ParameterSubscription subscription = yamcsClient.createParameterSubscription();
+
+        SubscribeParametersRequest request = SubscribeParametersRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/aggregate_para1.invalid_member"))
+                .setAbortOnInvalid(true)
+                .setSendFromCache(false)
+                .build();
+        subscription.sendMessage(request);
+        try {
+            subscription.get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw (Exception) e.getCause();
+        }
     }
 
     @Test

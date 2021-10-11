@@ -118,6 +118,8 @@ public class WebSocketObserver implements Observer<Message> {
             throw new IllegalStateException("Observer already completed");
         }
         completed = true;
+
+        ctx.requestFuture.completeExceptionally(t);
     }
 
     @Override

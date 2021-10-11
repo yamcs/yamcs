@@ -85,6 +85,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                     BadRequestException ex = new BadRequestException(e);
                     ex.setDetail(NamedObjectList.newBuilder().addAllList(invalid).build());
                     responseObserver.completeExceptionally(ex);
+                    throw ex; // Throw up, to have WebSocketFrameHandler send an exception reply
                 } else {
                     if (idList.size() == e.getInvalidParameters().size()) {
                         log.warn("Received subscribe attempt with only invalid parameters");
