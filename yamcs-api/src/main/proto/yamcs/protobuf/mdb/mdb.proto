@@ -294,9 +294,16 @@ message ArgumentMemberInfo {
   optional ArgumentTypeInfo type = 6;
 }
 
+message ParameterDimensionInfo {
+  optional int64 fixedValue = 1;
+  optional ParameterInfo parameter = 2;
+  optional int64 slope = 3;
+  optional int64 intercept = 4;
+}
+
 message ArrayInfo {
   optional ParameterTypeInfo type = 1;
-  optional int32 dimensions = 2;
+  repeated ParameterDimensionInfo dimensions = 3;
 }
 
 message UsedByInfo {
