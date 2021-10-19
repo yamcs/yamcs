@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
@@ -49,6 +50,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     private router: Router,
     private synchronizer: Synchronizer,
     private messageService: MessageService,
+    @Inject(APP_BASE_HREF) private baseHref: string,
   ) {
     this.storageClient = yamcs.createStorageClient();
   }
@@ -154,6 +156,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
+    this.display.imagesPrefix = `${this.baseHref}static/`;
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {
