@@ -27,6 +27,11 @@
                 "glob": "**/*",
                 "input": "src/assets/",
                 "output": "/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@yamcs/opi/dist/images/",
+                "output": "/"
               }
             ],
             "styles": [

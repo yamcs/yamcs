@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { AbsoluteTimeAxis, Event, EventLine, MouseTracker, Timeline, TimeLocator, Tool } from '@fqqb/timeline';
+import { Event, EventBand, MouseTracker, Timeline, TimeLocator, TimeRuler, Tool } from '@fqqb/timeline';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { IndexGroup } from '../client';
@@ -157,21 +157,21 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     if (queryParams.get('start') && queryParams.get('stop')) {
       const start = utils.toDate(queryParams.get('start'));
       const stop = utils.toDate(queryParams.get('stop'));
-      this.timeline.setBounds(start.getTime(), stop.getTime());
+      this.timeline.setViewRange(start.getTime(), stop.getTime());
     } else {
       // Show Today
       const start = this.yamcs.getMissionTime();
       start.setUTCHours(0, 0, 0, 0);
       const stop = new Date(start.getTime());
       stop.setUTCDate(start.getUTCDate() + 1);
-      this.timeline.setBounds(start.getTime(), stop.getTime());
+      this.timeline.setViewRange(start.getTime(), stop.getTime());
     }
 
     const locator = new TimeLocator(this.timeline, () => this.yamcs.getMissionTime().getTime());
     locator.knobColor = 'salmon';
 
     new MouseTracker(this.timeline);
-    const axis = new AbsoluteTimeAxis(this.timeline);
+    const axis = new TimeRuler(this.timeline);
     axis.label = 'UTC';
     axis.timezone = 'UTC';
     axis.frozen = true;
@@ -232,7 +232,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       if (startPromise.packet?.length && stopPromise.packet?.length) {
         const start = utils.toDate(startPromise.packet[0].generationTime);
         const stop = utils.toDate(stopPromise.packet[0].generationTime);
-        this.timeline.setBounds(start.getTime(), stop.getTime());
+        this.timeline.setViewRange(start.getTime(), stop.getTime());
       }
     }).catch(err => this.messageService.showError(err));
   }
@@ -243,7 +243,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     const start = dt.getTime();
     dt.setUTCDate(dt.getUTCDate() + 1);
     const stop = dt.getTime();
-    this.timeline.setBounds(start, stop);
+    this.timeline.setViewRange(start, stop);
   }
 
   jumpToNow() {
@@ -398,14 +398,14 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       const commandGroups = responses[3];
       const eventGroups = responses[4];
 
-      for (const line of this.timeline.getLines()) {
-        if (!(line instanceof AbsoluteTimeAxis)) {
+      for (const line of this.timeline.getBands()) {
+        if (!(line instanceof TimeRuler)) {
           this.timeline.removeChild(line);
         }
       }
       for (let i = 0; i < completenessGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
+          const spacer = new EventBand(this.timeline);
           spacer.label = 'Completeness';
           spacer.backgroundColor = this.timeline.backgroundEvenColor;
           spacer.eventHeight = 30;
@@ -429,10 +429,10 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           }
           events.push(event);
         }
-        const line = new EventLine(this.timeline);
+        const line = new EventBand(this.timeline);
         line.label = group.id.name;
         line.borderWidth = 0;
-        line.wrap = false;
+        line.multiline = false;
         line.events = events;
         line.marginTop = 0;
         line.marginBottom = i === completenessGroups.length - 1 ? 30 : 0;
@@ -447,7 +447,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       if (this.filterForm.value['packets']) {
         for (let i = 0; i < this.packetNames.length; i++) {
           if (i === 0) {
-            const spacer = new EventLine(this.timeline);
+            const spacer = new EventBand(this.timeline);
             spacer.label = 'Packets';
             spacer.backgroundColor = this.timeline.backgroundEvenColor;
             spacer.eventHeight = 30;
@@ -476,10 +476,10 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
               events.push(event);
             }
           }
-          const line = new EventLine(this.timeline);
+          const line = new EventBand(this.timeline);
           line.label = packetName;
           line.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
-          line.wrap = false;
+          line.multiline = false;
           line.events = events;
           line.marginTop = 0;
           line.marginBottom = i === this.packetNames.length - 1 ? 30 : 0;
@@ -494,7 +494,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
       for (let i = 0; i < parameterGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
+          const spacer = new EventBand(this.timeline);
           spacer.label = 'Parameters';
           spacer.backgroundColor = this.timeline.backgroundEvenColor;
           spacer.eventHeight = 30;
@@ -518,10 +518,10 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           }
           events.push(event);
         }
-        const line = new EventLine(this.timeline);
+        const line = new EventBand(this.timeline);
         line.label = group.id.name;
         line.borderWidth = 0;
-        line.wrap = false;
+        line.multiline = false;
         line.events = events;
         line.marginTop = 0;
         line.marginBottom = i === parameterGroups.length - 1 ? 30 : 0;
@@ -535,7 +535,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
       for (let i = 0; i < commandGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
+          const spacer = new EventBand(this.timeline);
           spacer.label = 'Commands';
           spacer.backgroundColor = this.timeline.backgroundEvenColor;
           spacer.eventHeight = 30;
@@ -559,10 +559,10 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           }
           events.push(event);
         }
-        const line = new EventLine(this.timeline);
+        const line = new EventBand(this.timeline);
         line.label = group.id.name;
         line.borderWidth = 0;
-        line.wrap = false;
+        line.multiline = false;
         line.events = events;
         line.marginTop = 0;
         line.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
@@ -576,7 +576,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
       for (let i = 0; i < eventGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
+          const spacer = new EventBand(this.timeline);
           spacer.label = 'Events';
           spacer.backgroundColor = this.timeline.backgroundEvenColor;
           spacer.eventHeight = 30;
@@ -600,10 +600,10 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           }
           events.push(event);
         }
-        const line = new EventLine(this.timeline);
+        const line = new EventBand(this.timeline);
         line.label = group.id.name;
         line.borderWidth = 0;
-        line.wrap = false;
+        line.multiline = false;
         line.events = events;
         line.marginTop = 0;
         line.marginBottom = i === eventGroups.length - 1 ? 30 : 0;

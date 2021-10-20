@@ -41,6 +41,7 @@ import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.MemberInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
+import org.yamcs.protobuf.Mdb.ParameterDimensionInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
@@ -105,6 +106,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
@@ -685,7 +687,28 @@ public class XtceToGpbAssembler {
         if (parameterType instanceof ArrayParameterType) {
             ArrayParameterType apt = (ArrayParameterType) parameterType;
             ArrayInfo.Builder arrayInfob = ArrayInfo.newBuilder();
-            arrayInfob.setDimensions(apt.getNumberOfDimensions());
+            List<IntegerValue> dims = apt.getSize();
+            for (int i = 0; i < apt.getNumberOfDimensions(); i++) {
+                if (dims != null) { // XTCE 1.2+
+                    IntegerValue dim = dims.get(i);
+                    if (dim instanceof FixedIntegerValue) {
+                        arrayInfob.addDimensions(ParameterDimensionInfo.newBuilder()
+                                .setFixedValue(((FixedIntegerValue) dim).getValue()));
+                    } else if (dim instanceof DynamicIntegerValue) {
+                        ParameterDimensionInfo.Builder dimb = ParameterDimensionInfo.newBuilder();
+                        DynamicIntegerValue dynamicValue = (DynamicIntegerValue) dim;
+                        ParameterInstanceRef ref = dynamicValue.getParameterInstanceRef();
+                        if (ref != null) {
+                            dimb.setParameter(toParameterInfo(ref.getParameter(), DetailLevel.SUMMARY));
+                            dimb.setSlope(dynamicValue.getSlope());
+                            dimb.setIntercept(dynamicValue.getIntercept());
+                        }
+                        arrayInfob.addDimensions(dimb);
+                    }
+                } else { // XTCE 1.1
+                    arrayInfob.addDimensions(ParameterDimensionInfo.getDefaultInstance());
+                }
+            }
 
             if (apt.getElementType() instanceof ParameterType) {
                 ParameterType elementType = (ParameterType) apt.getElementType();

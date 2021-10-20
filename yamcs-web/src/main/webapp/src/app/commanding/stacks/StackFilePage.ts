@@ -241,11 +241,13 @@ export class StackFilePage implements OnDestroy {
   }
 
   private async runEntry(entry: StackEntry) {
+    const executionNumber = ++this.executionCounter;
     return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
+      sequenceNumber: executionNumber,
       args: entry.args,
       extra: entry.extra,
     }).then(response => {
-      entry.executionNumber = ++this.executionCounter;
+      entry.executionNumber = executionNumber;
       entry.id = response.id;
 
       // It's possible the WebSocket received data before we
@@ -258,7 +260,7 @@ export class StackFilePage implements OnDestroy {
       // Refresh subject, to be sure
       this.entries$.next([...this.entries$.value]);
     }).catch(err => {
-      entry.executionNumber = ++this.executionCounter;
+      entry.executionNumber = executionNumber;
       entry.err = err.message || err;
     });
   }
@@ -310,7 +312,7 @@ export class StackFilePage implements OnDestroy {
   }
 
   private parseEntry(node: Element): StackEntry {
-    const args: {[key: string]: any} = {};
+    const args: { [key: string]: any; } = {};
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i] as Element;
       if (child.nodeName === 'commandArgument') {
