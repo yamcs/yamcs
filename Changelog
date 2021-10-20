@@ -1,3 +1,6 @@
+Version 5.5.5 released 20-Oct-2021
+- yamcs-web: fixed display of command arguments in the command history
+
 Version 5.5.4 released 20-Oct-2021
 - Fixed the CLTU randomization sequence to conform to CCSDS 231.0 issue 4 when LDPC coding is enabled.
 - Accept numeric value of an enumeration command argument

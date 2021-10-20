@@ -1,6 +1,8 @@
 # System-wide services
 services:
   - class: org.yamcs.http.HttpServer
+    args:
+       nThreads: 0
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
