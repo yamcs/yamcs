@@ -1,5 +1,13 @@
-Version 5.5.4
-- fixed the CLTU randomization sequence to conform to CCSDS 231.0 issue 4 when LDPC coding is enabled.
+Version 5.5.4 released 20-Oct-2021
+- Fixed the CLTU randomization sequence to conform to CCSDS 231.0 issue 4 when LDPC coding is enabled.
+- Accept numeric value of an enumeration command argument
+- Fixed lost frame count calculation
+- Allow DataSource=ground for parameters
+- Fixed CFDP reliable option not showing 
+- Fixed duplicate data in the parameter archive
+- Allow specification of generation time in set parameter value requests
+- minor tweaks and fixes
+
 
 Version 5.5.3 released 30-Jul-2021
 - first version of the Yamcs Timeline
