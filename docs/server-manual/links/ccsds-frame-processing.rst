@@ -108,6 +108,12 @@ clcwStream (string)
     Can be used to specify the name of the stream where the Command Link Control Words (CLCW) will be sent. The CLCW is the mechanism used by COP-1 to acknolwedge uplinked frames. For TM and USLP frames, there is an OCF flag part of the frame header indicating the presence or not of the CLCW. For AOS frames it has to be configured with the ``ocfPresent`` flag below.
     If present, the CLCW is also extracted from idle frames (i.e. frames that are inserted when no data needs to be transmitted in order to keep the constant bitrate required for downlink).
     
+goodFrameStream (string)
+    If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
+    
+badFrameStream (string)
+    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid. 
+
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration. 
 
@@ -139,6 +145,7 @@ packetPreprocessorClassName and packetPreprocessorArgs
 
 vcaHandlerClassName:
     **Required if the service = VCA** Specifies the name of the class which handles data for this virtual channel. The class has to implement :javadoc:`~org.yamcs.tctm.ccsds.VcDownlinkHandler` interface. Optionally it can implement :javadoc:`~org.yamcs.tctm.Link` interface to appear as a data link (e.g. in yamcs-web). An example implementation of such class can be found in the ccsds-frames example project.
+    
 
 
 Telecommand Frame Processing
@@ -206,6 +213,9 @@ virtualChannels (map)
 
 errorDetection (string)
     One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field.
+    
+frameMaxRate (double)
+    maximum number of command frames to send per second. This option is specific to the UDP TC link.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -242,11 +252,7 @@ cop1TxLimit (integer)
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
-goodFrameStream (string)
-    If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
-    
-badFrameStream (string)
-    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid. 
+
     
            
 Priority Schemes
