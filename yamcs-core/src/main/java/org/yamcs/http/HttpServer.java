@@ -136,6 +136,8 @@ public class HttpServer extends AbstractYamcsService {
     // we want to give the possiblity to make request-scoped instances
     private Map<String, Supplier<Handler>> extraHandlers = new HashMap<>();
 
+    private int nThreads;
+
     @Override
     public Spec getSpec() {
         Spec gpbSpec = new Spec();
@@ -191,6 +193,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.mutuallyExclusive("tlsKey", "bindings");
 
         spec.requireTogether("tlsCert", "tlsKey");
+        spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
         return spec;
     }
 
@@ -264,6 +267,7 @@ public class HttpServer extends AbstractYamcsService {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+        nThreads = config.getInt("nThreads");
 
         addApi(new AlarmsApi());
         addApi(new BucketsApi());
@@ -359,7 +363,7 @@ public class HttpServer extends AbstractYamcsService {
 
         // Note that by default (i.e. with nThreads = 0), Netty will limit the number
         // of worker threads to 2*number of CPU cores
-        workerGroup = new NioEventLoopGroup(0,
+        workerGroup = new NioEventLoopGroup(nThreads,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
         for (Binding binding : bindings) {
