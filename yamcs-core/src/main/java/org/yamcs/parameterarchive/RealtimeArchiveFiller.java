@@ -59,6 +59,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     final private Log log;
     ExecutorService executor;
     Map<Integer, SegmentQueue> queues = new HashMap<>();
+    private YamcsServer yamcsServer;
 
     // int flushInterval; // seconds
 
@@ -100,10 +101,34 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
         return spec;
     }
+    
+    /**
+     * Gets the Yamcs server reference. Code in this class should call this method
+     * rather than <code>YamcsServer.getServer()</code> so the server can be mocked
+     * for unit testing.
+     * 
+     * @return the Yamcs server reference
+     */
+    private synchronized YamcsServer getYamcsServer() {
+        if (yamcsServer == null) {
+            yamcsServer = YamcsServer.getServer();
+        }
+        return yamcsServer;
+    }
+    
+    /**
+     * Sets the Yamcs server to use. Default scope for unit testing. Should only
+     * be called by unit tests.
+     * 
+     * @param yamcsServer the Yamcs server to use, perhaps a mock object
+     */
+    synchronized void setYamcsServer(YamcsServer yamcsServer) {
+        this.yamcsServer = yamcsServer;
+    }
 
     protected void start() {
         // subscribe to the realtime processor
-        realtimeProcessor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
+        realtimeProcessor = getYamcsServer().getProcessor(yamcsInstance, processorName);
         if (realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '" + processorName + "' in instance " + yamcsInstance);
         }
@@ -129,7 +154,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         }
         executor.shutdown();
         if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-            log.warn("Timedout before flusing all pending segments");
+            log.warn("Timed out before flushing all pending segments");
         }
     }
 
@@ -154,14 +179,14 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                             "Time jumped in the past; current timestamp: {}, new timestamp: {}. Flushing old data.",
                             TimeEncoding.toString(segStart), TimeEncoding.toString(t));
                     segQueue.flush(pgs -> scheduleWriteToArchive(pgs));
-                } else if (t < segQueue.getStart() - sortingThreshold) {
+                } else if (t < segStart - sortingThreshold) {
                     log.warn("Dropping old data with timestamp {} (minimum allowed is {})."
                             + "Unsorted data received in the realtime filler? Consider using a backfiller instead",
                             TimeEncoding.toString(t),
                             TimeEncoding.toString(segStart - sortingThreshold));
                     return;
                 } else {
-                    segQueue.sendToArchive(segStart - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
+                    segQueue.sendToArchive(t - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
                 }
             }
 
@@ -272,13 +297,23 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             return segments[head].getSegmentStart();
         }
 
+        /**
+         * Add the record to the queue.
+         * <p>
+         * Given the queue state s1, s2, s3... sn, it is inserted into the sk such that the
+         * t is in the same interval as sk and either sk is not full, or t<sk.end.
+         * <p>
+         * If not such a segment exists, a new segment is created and inserted in the queue (if the queue is not full).
+         * <p>
+         * Returns true if the record has been added or false if the queue was full.
+         */
         public synchronized boolean addRecord(long t, List<BasicParameterValue> values) {
 
             boolean added = false;
             int k = head;
             long tintv = getInterval(t);
 
-            for (; k != tail; k = (k + 1) & MASK) {
+            for (; k != tail; k = inc(k)) {
                 PGSegment seg = segments[k];
                 long kintv = seg.getInterval();
                 if (kintv < tintv) {
@@ -298,7 +333,10 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             }
 
             if (!added) {// new segment to be added on position k
-                if (segments[tail] != null) {
+                // If there is only one slot free, then the queue is already full.
+                // if segments[tail] is not null, it means it hasn't been written to the archive yet (async operation),
+                // we do not want to overwrite it because it won't be found in the retrieval
+                if (inc(tail) == head || segments[tail] != null) {
                     return false;
                 }
 
@@ -306,10 +344,10 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 seg.addRecord(t, values);
 
                 // shift everything between k and tail to the right
-                for (int i = k; i < tail; i = (i + 1) & MASK) {
-                    segments[(i + 1) & MASK] = segments[i];
+                for (int i = k; i != tail; i = inc(i)) {
+                    segments[inc(i)] = segments[i];
                 }
-                tail = (tail + 1) & MASK;
+                tail = inc(tail);
 
                 // insert on position k
                 segments[k] = seg;
@@ -317,6 +355,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             }
             return true;
         }
+
+
 
         /**
          * send to archive all segments which are either from an older interval than t1 or are full and their end is
@@ -335,7 +375,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     break;
                 }
                 int _head = head;
-                head = (head + 1) & MASK;
+                head = inc(head);
                 toArchive(_head, f);
             }
         }
@@ -343,7 +383,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         synchronized void flush(Function<PGSegment, CompletableFuture<Void>> f) {
             while (head != tail) {
                 toArchive(head, f);
-                head = (head + 1) & MASK;
+                head = inc(head);
             }
         }
 
@@ -387,8 +427,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             List<ParameterValueSegment> r = new ArrayList<>();
 
             int k = head;
-            while (k != tail && segments[(k - 1) & MASK] != null) {
-                k = (k - 1) & MASK;
+            while (k != tail && segments[dec(k)] != null) {
+                k = dec(k);
             }
 
             while (k != tail) {
@@ -401,7 +441,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (pvs != null) {
                     r.add(pvs);
                 }
-                k = (k + 1) & MASK;
+                k = inc(k);
             }
 
             return r;
@@ -410,7 +450,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         private List<ParameterValueSegment> getSegmentsDescending(int pid) {
             List<ParameterValueSegment> r = new ArrayList<>();
 
-            int k = (tail - 1) & MASK;
+            int k = dec(tail);
 
             while (true) {
                 PGSegment seg = segments[k];
@@ -421,10 +461,24 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (pvs != null) {
                     r.add(pvs);
                 }
-                k = (k - 1) & MASK;
+                k = dec(k);
             }
 
             return r;
+        }
+
+        /**
+         * Circularly increment k
+         */
+        static final int inc(int k) {
+            return (k + 1) & MASK;
+        }
+
+        /**
+         * Circularly decrement k
+         */
+        static final int dec(int k) {
+            return (k - 1) & MASK;
         }
     }
 }
