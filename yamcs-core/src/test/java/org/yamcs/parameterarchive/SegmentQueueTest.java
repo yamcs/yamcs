@@ -13,6 +13,10 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.utils.ValueUtility;
 
 public class SegmentQueueTest {
+    
+    /** The size of an interval, in milliseconds. (2^23 seconds) */
+    private static final long INTERVAL_SIZE_MILLIS = 8388608000L;
+    
     @Test
     public void test1() {
 
@@ -62,6 +66,46 @@ public class SegmentQueueTest {
         pvsegList = sq.getPVSegments(1, true);
         testEquals(pvsegList, Arrays.asList(Arrays.asList(t1 - 1, t1), Arrays.asList(t1 + 1, t1 + 2)));
 
+    }
+    
+    /**
+     * Tests that with an empty queue no segments are returned.
+     */
+    @Test
+    public void testEmptyQueue() {
+        SegmentQueue sq = new SegmentQueue(1, IntArray.wrap(1), 2);
+        assertTrue(sq.isEmpty());
+        assertEquals(0, sq.getPVSegments(1, false).size());
+        assertEquals(0, sq.getPVSegments(1, true).size());
+    }
+    
+    /**
+     * Tests that the queue is full when one slot is still open, so that <code>head!=tail</code>.
+     */
+    @Test
+    public void testQueueCapacity() {
+        SegmentQueue sq = new SegmentQueue(1, IntArray.wrap(1), 2);
+        
+        // Add one value in each separate interval, until the cache has only one
+        // slot free.
+        for (int i=0; i < SegmentQueue.QSIZE - 1; ++i) {
+            List<BasicParameterValue> plist = getParaList(i * INTERVAL_SIZE_MILLIS);
+            assertTrue(sq.addRecord(i * INTERVAL_SIZE_MILLIS, plist));
+            assertEquals(i+1, sq.size());
+            assertEquals(i+1, sq.getPVSegments(1, false).size());
+            assertEquals(i+1, sq.getPVSegments(1, true).size());
+        }
+
+        // Inserting another value in a new interval should fail, since then the queue would
+        // be full, with <code>head==tail</code>, which looks the same as an empty queue.
+        assertEquals(sq.size(), SegmentQueue.QSIZE - 1);
+        List<BasicParameterValue> plist = getParaList(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS);
+        assertFalse(sq.addRecord(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS, plist));
+        assertFalse(sq.isEmpty());
+        
+        // We should be able to retrieve all segments in the queue.
+        assertEquals(SegmentQueue.QSIZE-1, sq.getPVSegments(1, false).size());
+        assertEquals(SegmentQueue.QSIZE-1, sq.getPVSegments(1, true).size());
     }
 
     private void testEquals(List<ParameterValueSegment> pvsegList, List<List<Long>> l) {

@@ -59,6 +59,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     final private Log log;
     ExecutorService executor;
     Map<Integer, SegmentQueue> queues = new HashMap<>();
+    private YamcsServer yamcsServer;
 
     // int flushInterval; // seconds
 
@@ -100,10 +101,34 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
         return spec;
     }
+    
+    /**
+     * Gets the Yamcs server reference. Code in this class should call this method
+     * rather than <code>YamcsServer.getServer()</code> so the server can be mocked
+     * for unit testing.
+     * 
+     * @return the Yamcs server reference
+     */
+    private synchronized YamcsServer getYamcsServer() {
+        if (yamcsServer == null) {
+            yamcsServer = YamcsServer.getServer();
+        }
+        return yamcsServer;
+    }
+    
+    /**
+     * Sets the Yamcs server to use. Default scope for unit testing. Should only
+     * be called by unit tests.
+     * 
+     * @param yamcsServer the Yamcs server to use, perhaps a mock object
+     */
+    synchronized void setYamcsServer(YamcsServer yamcsServer) {
+        this.yamcsServer = yamcsServer;
+    }
 
     protected void start() {
         // subscribe to the realtime processor
-        realtimeProcessor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
+        realtimeProcessor = getYamcsServer().getProcessor(yamcsInstance, processorName);
         if (realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '" + processorName + "' in instance " + yamcsInstance);
         }
@@ -129,7 +154,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         }
         executor.shutdown();
         if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-            log.warn("Timedout before flusing all pending segments");
+            log.warn("Timed out before flushing all pending segments");
         }
     }
 
@@ -161,7 +186,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                             TimeEncoding.toString(segStart - sortingThreshold));
                     return;
                 } else {
-                    segQueue.sendToArchive(segStart - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
+                    segQueue.sendToArchive(t - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
                 }
             }
 
@@ -298,7 +323,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             }
 
             if (!added) {// new segment to be added on position k
-                if (segments[tail] != null) {
+                // If there is only one slot free, then the queue is already full.
+                if (((tail+1) & MASK) == head) {
                     return false;
                 }
 
