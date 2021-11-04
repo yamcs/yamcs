@@ -65,7 +65,7 @@ public class MultiParameterRetrieval {
             }
             merger.flush();
         } catch (ConsumerAbortException e) {
-            log.debug("Stoped early due to receiving ConsumerAbortException");
+            log.debug("Stopped early due to receiving ConsumerAbortException");
         } finally {
             queue.forEach(it -> it.close());
         }
