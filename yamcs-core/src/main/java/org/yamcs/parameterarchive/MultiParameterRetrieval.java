@@ -8,8 +8,7 @@ import java.util.PriorityQueue;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.TimeEncoding;
@@ -20,18 +19,22 @@ public class MultiParameterRetrieval {
     final AggrrayBuilder[] aggarrayBuilders;
 
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
-    private final Logger log = LoggerFactory.getLogger(MultiParameterRetrieval.class);
+    private final Log log;
 
     public MultiParameterRetrieval(ParameterArchive parchive, MultipleParameterRequest mpvr) {
         this.parchive = parchive;
         this.mpvr = mpvr;
         this.aggarrayBuilders = new AggrrayBuilder[0];
+        this.log = new Log(this.getClass(), parchive.getYamcsInstance());
     }
 
     public void retrieve(Consumer<ParameterIdValueList> consumer) throws RocksDBException, IOException {
+        log.trace("Starting a parameter retrieval: {}", mpvr);
+
         ParameterGroupIdDb pgDb = parchive.getParameterGroupIdDb();
         PriorityQueue<ParameterIterator> queue = new PriorityQueue<>(new IteratorComparator(mpvr.ascending));
         int[] parameterGroupIds = mpvr.parameterGroupIds;
+
 
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
             ParameterId paraId = mpvr.parameterIds[i];
@@ -48,7 +51,10 @@ public class MultiParameterRetrieval {
                 }
             }
         }
+        log.trace("Got {} parallel iterators", queue.size());
+
         Merger merger = new Merger(mpvr, consumer);
+
 
         try {
             while (!queue.isEmpty()) {
@@ -69,6 +75,7 @@ public class MultiParameterRetrieval {
         } finally {
             queue.forEach(it -> it.close());
         }
+        log.trace("Retrieval finished");
     }
 
     private void queueIterator(PriorityQueue<ParameterIterator> queue,
