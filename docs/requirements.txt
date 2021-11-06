@@ -1,4 +1,4 @@
-Sphinx==3.0.3
+Sphinx
 sphinxcontrib-fulltoc
 protobuf
 pyyaml
