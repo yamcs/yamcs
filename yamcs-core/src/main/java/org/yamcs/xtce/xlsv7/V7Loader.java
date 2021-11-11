@@ -1275,22 +1275,27 @@ public class V7Loader extends V7LoaderBase {
 
     private int addEntry(SequenceContainer container, int absoluteoffset, int counter, Cell[] cells) {
         String paraname = getContent(cells, CN_CONT_ENTRY);
-        int relpos = 0;
+        Position rapos = Position.RELATIVE_ZERO;
         if (hasColumn(cells, CN_CONT_RELPOS)) {
-            relpos = Integer.decode(getContent(cells, CN_CONT_RELPOS));
+            rapos = getPosition(ctx, getContent(cells, CN_CMD_POSITION));
         }
 
         int pos;
         ReferenceLocationType location;
-        // absoluteOffset = -1 means we have to add relative entries.
-        // We prefer absolute if possible because we can process them without processing the previous ones
-        if (absoluteoffset != -1) {
-            absoluteoffset += relpos;
-            pos = absoluteoffset;
-            location = ReferenceLocationType.CONTAINER_START;
+        if (rapos.relative) {
+            // absoluteOffset = -1 means we have to add relative entries.
+            // We prefer absolute if possible because we can process them without processing the previous ones
+            if (absoluteoffset != -1) {
+                absoluteoffset += rapos.pos;
+                pos = absoluteoffset;
+                location = ReferenceLocationType.CONTAINER_START;
+            } else {
+                pos = rapos.pos;
+                location = ReferenceLocationType.PREVIOUS_ENTRY;
+            }
         } else {
-            pos = relpos;
-            location = ReferenceLocationType.PREVIOUS_ENTRY;
+            pos = rapos.pos;
+            location = ReferenceLocationType.CONTAINER_START;
         }
         // the repeat string will contain the number of times a measurement (or container) should be
         // repeated. It is a String because at this point it can be either a number or a reference to another
