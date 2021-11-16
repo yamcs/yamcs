@@ -196,7 +196,7 @@ priorityScheme (string)
     One of ``FIFO``, ``ABSOLUTE`` or ``POLLING_VECTOR``. This configures the priority of the different Virtual Channels. The different schemes are described below.
     
 cltuEncoding (string)
-    One of ``BCH``, ``LDPC64`` or ``LDPC256``. If this parameter is present, the TC transfer frames will be encoded into CLTUs and this parameter configures the code to be used. If this parameter is not present, the frames will not be encapsulated into CLTUs and the following related parameters are ignored.
+    One of ``BCH``, ``LDPC64``, ``LDPC256``, or ``CUSTOM``. If this parameter is present, the TC transfer frames will be encoded into CLTUs and this parameter configures the code to be used. If this parameter is not present, the frames will not be encapsulated into CLTUs and the following related parameters are ignored. If the value is ``CUSTOM``, the CLTU generator class must be specified as indicated below.
 
 cltuStartSequence (string)
     This parameter can optionally set the  CLTU start sequence in hexadecimal if different than the CCSDS specs.
@@ -208,6 +208,12 @@ randomizeCltu (boolean)
     Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on.
     Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard).
  
+cltuGeneratorClassName (string)
+    **Required if cltuEncoding is CUSTOM.** Specifies the name of the class which constructs the CLTU from the frame, if a custom format is required.
+
+cltuGeneratorArgs
+    Optional if cltuEncoding is CUSTOM, ignored otherwise. Arguments to pass to the constructor for the CLTU generator classs.
+
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
 
@@ -250,7 +256,7 @@ cop1TxLimit (integer)
     If COP-1 is enabled, this specifies the number of retransmissions for each un-acknolwedged frame before suspending operations.
            
 bdAbsolutePriority (false)
-    If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
+    If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchronization has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
 
     

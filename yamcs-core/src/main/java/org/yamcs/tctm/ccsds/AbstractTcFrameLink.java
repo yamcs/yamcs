@@ -18,6 +18,7 @@ import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
@@ -57,9 +58,20 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc256CltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
+            } else if ("CUSTOM".equals(cltuEncoding)) {
+            	String cltuGeneratorClassName = config.getString("cltuGeneratorClassName", null);
+            	if (cltuGeneratorClassName == null) {
+            		throw new ConfigurationException("CUSTOM cltu generator requires value for cltuGeneratorClassName");
+            	}
+            	if (!config.containsKey("cltuGeneratorArgs")) {
+            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName);
+            	} else {
+            		YConfiguration args = config.getConfig("cltuGeneratorArgs");
+            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName, args);
+            	}
             } else {
                 throw new ConfigurationException(
-                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64 or LDPC256");
+                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64, LDPC256, or CUSTOM");
             }
         }
 

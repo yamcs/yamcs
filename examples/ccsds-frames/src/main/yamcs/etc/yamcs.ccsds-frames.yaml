@@ -113,6 +113,29 @@ dataLinks:
             packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
             stream: "tm_dump"
           #vcId 63 is reserved for idle data and it does not have to be defined
+  - name: UDP_CUSTOM_CLTU_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    enabledAtStartup: false
+    host: localhost #host and port where to send the frames to
+    port: 10019
+    spacecraftId: 0xAB
+    maxFrameLength: 1024
+    cltuEncoding: CUSTOM
+    cltuGeneratorClassName: org.yamcs.examples.ccsdsframes.SampleCltuGenerator
+    cltuGeneratorArgs:
+      frameMultiple: 256
+    virtualChannels:
+         - vcId: 0
+           service: "PACKET" 
+           commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+           commandPostprocessorArgs:
+              errorDetection:
+                  type: 16-SUM
+              enforceEvenNumberOfBytes: true
+           stream: "tc_realtime" #which yamcs stream to get the data from
+           useCop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
+           clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
+           initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
 
 mdb:
   # Configuration of the active loaders
