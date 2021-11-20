@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -89,7 +89,6 @@ export class CommandHistoryPage {
     authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private componentFactoryResolver: ComponentFactoryResolver,
     private printService: PrintService,
     title: Title,
     synchronizer: Synchronizer,
@@ -252,7 +251,6 @@ export class CommandHistoryPage {
 
   printReport() {
     const data = this.dataSource.records$.value.slice().reverse();
-    const factory = this.componentFactoryResolver.resolveComponentFactory(CommandHistoryPrintable);
-    this.printService.printComponent(factory, 'Command Report', data);
+    this.printService.printComponent(CommandHistoryPrintable, 'Command Report', data);
   }
 }

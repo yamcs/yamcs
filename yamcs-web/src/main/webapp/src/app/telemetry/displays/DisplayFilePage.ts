@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, ElementRef, OnDestroy, Type, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, Type, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import * as ace from 'brace';
@@ -52,7 +52,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     router: Router,
-    private componentFactoryResolver: ComponentFactoryResolver,
     private title: Title,
     configService: ConfigService,
   ) {
@@ -142,18 +141,16 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   }
 
   private createViewer<T extends Viewer>(viewer: Type<T>): T {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(viewer);
     const viewContainerRef = this.viewerHost.viewContainerRef;
     viewContainerRef.clear();
-    const componentRef = viewContainerRef.createComponent(componentFactory);
+    const componentRef = viewContainerRef.createComponent(viewer);
     return componentRef.instance;
   }
 
   private createViewerControls<T>(controls: Type<T>) {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(controls);
     const viewContainerRef = this.controlsHost.viewContainerRef;
     viewContainerRef.clear();
-    const componentRef = viewContainerRef.createComponent(componentFactory);
+    const componentRef = viewContainerRef.createComponent(controls);
     return componentRef.instance;
   }
 

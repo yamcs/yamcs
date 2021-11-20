@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ComponentFactory, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Type, ViewChild } from '@angular/core';
 import { PrintService } from '../../core/services/PrintService';
 import { Printable } from './Printable';
 import { PrintableDirective } from './PrintableDirective';
@@ -19,14 +19,14 @@ export class PrintZone {
 
   constructor(private printService: PrintService) {
     this.printService.printOrders$.subscribe(order => {
-      this.createAndPrint(order.factory, order.title, order.data);
+      this.createAndPrint(order.componentType, order.title, order.data);
     });
   }
 
-  private createAndPrint(factory: ComponentFactory<Printable>, pageTitle: string, data: any) {
+  private createAndPrint(componentType: Type<Printable>, pageTitle: string, data: any) {
     const viewContainerRef = this.printableHost.viewContainerRef;
     viewContainerRef.clear();
-    const componentRef = viewContainerRef.createComponent(factory);
+    const componentRef = viewContainerRef.createComponent(componentType);
     (<Printable>componentRef.instance).pageTitle = pageTitle;
     (<Printable>componentRef.instance).data = data;
 
