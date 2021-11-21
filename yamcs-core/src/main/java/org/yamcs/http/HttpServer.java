@@ -299,6 +299,11 @@ public class HttpServer extends AbstractYamcsService {
 
         AuthHandler authHandler = new AuthHandler(tokenStore);
         addHandler("auth", () -> authHandler);
+
+        FaviconHandler faviconHandler = new FaviconHandler();
+        for (String path : FaviconHandler.HANDLED_PATHS) {
+            addHandler(path, () -> faviconHandler);
+        }
     }
 
     public void addStaticRoot(Path staticRoot) {
