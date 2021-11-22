@@ -12,7 +12,7 @@
       </app-search-filter>
       <app-column-chooser #columnChooser
                           [columns]="columns"
-                          preferenceKey="commands"></app-column-chooser>
+                          preferenceKey="mdb-commands"></app-column-chooser>
     </div>
 
     <app-table-container>
@@ -53,6 +53,19 @@
         <ng-container matColumnDef="shortDescription">
           <th mat-header-cell *matHeaderCellDef>Description</th>
           <td mat-cell *matCellDef="let command">{{ command.shortDescription || '-' }}</td>
+        </ng-container>
+
+        <ng-container *ngFor="let aliasColumn of aliasColumns$ | async"
+                      [matColumnDef]="aliasColumn.id">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">
+            {{ aliasColumn.label }}
+          </th>
+          <td mat-cell *matCellDef="let command">
+            <ng-container *ngIf="(command | alias:aliasColumn.id) as name; else dash">
+              <app-highlight [text]="name" [term]="filterControl.value">
+              </app-highlight>
+            </ng-container>
+          </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>

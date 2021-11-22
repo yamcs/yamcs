@@ -351,6 +351,7 @@ export interface GetParametersOptions {
   q?: string;
   system?: string;
   searchMembers?: boolean;
+  details?: boolean;
   pos?: number;
   limit?: number;
 }

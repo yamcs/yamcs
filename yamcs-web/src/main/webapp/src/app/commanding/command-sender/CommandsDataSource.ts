@@ -43,6 +43,20 @@ export class CommandsDataSource extends DataSource<ListItem> {
     });
   }
 
+  getAliasNamespaces() {
+    const namespaces: string[] = [];
+    for (const item of this.items$.value) {
+      if (item.command?.alias) {
+        for (const alias of item.command.alias) {
+          if (alias.namespace && namespaces.indexOf(alias.namespace) === -1) {
+            namespaces.push(alias.namespace);
+          }
+        }
+      }
+    }
+    return namespaces.sort();
+  }
+
   disconnect() {
     this.items$.complete();
     this.totalSize$.complete();
