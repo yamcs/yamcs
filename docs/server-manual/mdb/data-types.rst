@@ -190,18 +190,19 @@ The spreadsheet format allows to define a data type with  a boolean data encodin
 String data type
 ----------------
 
-In Yamcs the string data is represented as a java (unicode) String value. The encoding to/from the wire is performed using a string data encoding with one of the supported java charsets <https://docs.oracle.com/javase/8/docs/api/java/nio/charset/Charset.html>`_ (UTF-8, ISO-8859-1, etc)
+In Yamcs the string data is represented as a java (unicode) String value. The encoding to/from the wire is performed using a string data encoding with one of the supported `Java Charsets <https://docs.oracle.com/javase/8/docs/api/java/nio/charset/Charset.html>`_ (UTF-8, ISO-8859-1, etc)
 
 In addition to converting the bytes to unicode character, a typical problem in decoding telemetry is to know the boundary of the string inside the packet. To comply with XTCE Yamcs implements a "string in a buffer" approach:
 
 - conceptually the packet contains a buffer (or a box) where the string has to be extracted from or encoded into.
 - the buffer can be the same size with the string or larger than the string. If the buffer is larger than the string, it will be filled by Yamcs with 0 for commands or some filler which is ignored by Yamcs for telemetry.
 - if the buffer is larger than the string, the buffer size can be fixed or its size can be determined from the value of a parameter/argument.
-- inside the buffer: 
-  - the string can fill completely the buffer (so the size of the string is determined by the size of the buffer).
-  - the size of the string can be encoded at the beginning of the buffer (in front of the string)
-  - or the string can be terminated by a special character (or by the end of the buffer, whichever comes first).
-  
+- inside the buffer:
+
+   - the string can fill completely the buffer (so the size of the string is determined by the size of the buffer).
+   - the size of the string can be encoded at the beginning of the buffer (in front of the string)
+   - or the string can be terminated by a special character (or by the end of the buffer, whichever comes first).
+
 One case which is not supported by Yamcs (nor by XTCE) is a fixed size string inside a fixed size buffer with the string not filling completely the buffer. For this case you can limit the size of the buffer to the size of the string and define another parameter for the remaining of the buffer, or simply define an offset for the next container entry.
 
 The size of the buffer is in number of bytes - depending on the encoding used, a character of the string may be encoded on multiple bytes (for example UTF-8 encodes each character in one to four bytes).
@@ -209,7 +210,7 @@ The size of the buffer is in number of bytes - depending on the encoding used, a
 Finally, please note that although XTCE defines a number of bits for the buffer size or for the size tag, Yamcs only supports encoding these on an integer number of bytes (e.g. encoding strings on partial bytes is not supported) so the number of bits has to be divisible by 8.
 
 
-**Example 1: string encoded in a fixed size buffer with a null terminator**
+.. rubric:: Example 1: string encoded in a fixed size buffer with a null terminator
 
 The buffer is 6 bytes long (meaning that the next parameter will come after the 6 bytes even if the string is shorter). 
 If the terminator is not found, it is not considered an error and the string will be 6 bytes long.
@@ -232,11 +233,11 @@ Note that it may cause the string to include nulls but that is not a problem in 
 This example can be defined in the spreadsheet with the encoding ``terminated(0x00, UTF-8, 48)``. If there is no terminator (so the string covers all the time the buffer), the equivalent spreadsheet encoding is ``fixed(48, UTF-8)``.
 
 
-**Example 2:  prefixed size string encoded in undefined buffer**
+.. rubric:: Example 2: prefixed size string encoded in undefined buffer
 The buffer is not explicitely defined so it is effectively as long as the prefix + string.
-The maxSizeInBits refers to the size of the buffer, so in this example the maximum size of the string will be 4.
+The ``maxSizeInBits`` refers to the size of the buffer, so in this example the maximum size of the string will be 4.
 
-Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value. Yamcs will accept the XML file without the ``DynamicValue`` section but the file will not validate with XTCE 1.2 xsd. An alternative for the ``_yamcs_ignore`` would be to derive the buffer length from the packet length.
+Note the ``_yamcs_ignore`` parameter reference which is used to workaround XTCE mandating a dynamic value. Yamcs will accept the XML file without the ``DynamicValue`` section but the file will not validate with XTCE 1.2 xsd. An alternative for the ``_yamcs_ignore`` would be to derive the buffer length from the packet length.
 
 .. code-block:: xml
 
@@ -253,12 +254,13 @@ Note the _yamcs_ignore parameter reference which is used to workaround XTCE mand
 
 This example can be best defined in the spreadsheet with the encoding ``PrependedSize(16)``. The maximum size cannot be defined, so the effective maximum size will be the remaining of the packet.
 
-**Example 3: null terminated string encoded in undefined buffer**
+.. rubric:: Example 3: null terminated string encoded in undefined buffer
+
 This examples provdides string argument type whose size is variable. The buffer is not defined which means the buffer will be effectively the string + terminator.
 
 The maxSizeInBits refers to the maximum size of the buffer; it means that the maximum size of the string in binary is ``maxSizeInBits/8 - 1``.
 
-Note the _yamcs_ignore parameter reference which is used to workaround XTCE mandating a dynamic value. Yamcs will accept the XML file without the ``DynamicValue`` section but the file will not validate with XTCE 1.2 xsd. An alternative for the ``_yamcs_ignore`` would be to define an argument for the buffer length but that would be inconvenient for the user.
+Note the _``yamcs_ignore`` parameter reference which is used to workaround XTCE mandating a dynamic value. Yamcs will accept the XML file without the ``DynamicValue`` section but the file will not validate with XTCE 1.2 xsd. An alternative for the ``_yamcs_ignore`` would be to define an argument for the buffer length but that would be inconvenient for the user.
 
 .. code-block:: xml
 
@@ -273,9 +275,14 @@ Note the _yamcs_ignore parameter reference which is used to workaround XTCE mand
         </StringDataEncoding>
     </StringArgumentType>
 
-More XTCE examples can be found in `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-tm.xml>`_ and `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-cmd.xml>`_
+More XTCE examples:
 
-More Spreadsheet examples can be found in `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/mdb/refmdb.xls>`_
+* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-tm.xml>`_
+* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-cmd.xml>`_
+
+More Spreadsheet examples:
+
+* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/mdb/refmdb.xls>`_
 
 Finally, we mention that string values can also be encoded with a binary encoder; the translation from string to binary is using the `String#getBytes <https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-->`_ method.
 
@@ -289,7 +296,8 @@ As for strings, Yamcs only supports types which are an integer number of bytes.
 
 Unlike strings, when encoding binary values there is no distinction between the value being encoded and the buffer in which the value is encoded: the value always fills the buffer.
 
-**Example 1: binary parameter type of fixed size**
+
+.. rubric:: Example 1: binary parameter type of fixed size
 
 .. code-block:: xml
 
@@ -302,8 +310,9 @@ Unlike strings, when encoding binary values there is no distinction between the 
     </BinaryParameterType>
 
 A parameter of this type will always be 16 bytes in length. 
-    
-**Example 2: binary parameter type of variable size with the size given by another parameter**
+
+
+.. rubric:: Example 2: binary parameter type of variable size with the size given by another parameter
 
 The example below defines a parameter type whose size is given by another parameter named ``size``. That parameter has to be of integer type and preceede the binary one in the packet.
 
@@ -322,7 +331,7 @@ The example below defines a parameter type whose size is given by another parame
 Note the ``<LinearAdjustment>`` construct which allows to convert from number of bytes to number of bits required by the ``<SizeInBits>`` element.
 
 
-**Example 3: binary argument type of variable size with the size encoded in front of the data**
+.. rubric:: Example 3: binary argument type of variable size with the size encoded in front of the data
 
 The example above needs another parameter for the data size. When used in command it has the disatvantage that the user needs to enter the number of bytes in addition to the bytes themselves (with the risk of introducing inconsistencies). Yamcs allows to use an algorithm which will perform the encoding without the addition of the extra argument:
 
