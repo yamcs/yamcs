@@ -189,6 +189,16 @@ export interface ClientConnectionInfo {
   httpRequest: HttpRequestInfo;
 }
 
+export interface SessionInfo {
+  id: string;
+  username: string;
+  ipAddress: string;
+  hostname: string;
+  startTime: string;
+  lastAccessTime: string;
+  expirationTime: string;
+}
+
 export interface ResultSet {
   columns: any;
   rows: any;

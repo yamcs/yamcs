@@ -3,6 +3,7 @@ package org.yamcs.http.auth;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
@@ -36,15 +37,18 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
 import org.yamcs.security.OpenIDAuthModule;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SessionManager;
 import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
+import org.yamcs.security.UserSession;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.FileUtils;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -276,7 +280,6 @@ public class AuthHandler extends Handler {
         if (authenticationInfo == null) {
             try {
                 authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode)).get();
-
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
@@ -297,9 +300,20 @@ public class AuthHandler extends Handler {
         // using the /auth/spnego route (= alternative refresh).
         String refreshToken = null;
         if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
+            createSession(ctx, authenticationInfo.getUsername());
             refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
         }
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
+    }
+
+    private UserSession createSession(HandlerContext ctx, String username) {
+        Channel channel = ctx.getNettyChannelHandlerContext().channel();
+        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+        String ipAddress = address.getAddress().getHostAddress();
+        String hostname = address.getHostName();
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        SessionManager sessionManager = securityStore.getSessionManager();
+        return sessionManager.createSession(username, ipAddress, hostname);
     }
 
     /**

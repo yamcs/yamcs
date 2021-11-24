@@ -41,6 +41,11 @@ public class SecurityStore {
     private Directory directory;
 
     /**
+     * Tracks user sessions (associated with refresh tokens).
+     */
+    private SessionManager sessionManager;
+
+    /**
      * If true, successful login attempts of users that were not previously known by Yamcs (e.g. when authenticating to
      * Yamcs), are by default inactivated.
      */
@@ -75,6 +80,7 @@ public class SecurityStore {
         generatePredefinedPrivileges();
 
         directory = new Directory();
+        sessionManager = new SessionManager();
         blockUnknownUsers = config.getBoolean("blockUnknownUsers");
         accessTokenLifespan = config.getInt("accessTokenLifespan");
 
@@ -259,6 +265,10 @@ public class SecurityStore {
 
     public Directory getDirectory() {
         return directory;
+    }
+
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     public List<AuthModule> getAuthModules() {

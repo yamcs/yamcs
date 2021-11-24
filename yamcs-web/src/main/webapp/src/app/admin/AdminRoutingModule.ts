@@ -38,6 +38,7 @@ import { RocksDbDatabasePage } from './rocksdb/RocksDbDatabasePage';
 import { RocksDbDatabasesPage } from './rocksdb/RocksDbDatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
+import { SessionsPage } from './sessions/SessionsPage';
 import { AdminPage } from './shared/AdminPage';
 import { ThreadPage } from './threads/ThreadPage';
 import { ThreadsPage } from './threads/ThreadsPage';
@@ -58,6 +59,10 @@ const routes: Routes = [
       {
         path: 'http-traffic',
         component: HttpTrafficPage,
+      },
+      {
+        path: 'sessions',
+        component: SessionsPage,
       },
       {
         path: 'routes',
@@ -281,6 +286,7 @@ export const routingComponents = [
   RoutesPage,
   ServiceAccountsPage,
   ServicesPage,
+  SessionsPage,
   StreamPage,
   StreamColumnsTab,
   StreamDataTab,

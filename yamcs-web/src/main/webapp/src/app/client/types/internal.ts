@@ -5,9 +5,8 @@ import { SpaceSystem } from './mdb';
 import { IndexGroup, Range, Sample } from './monitoring';
 import { Processor } from './processing';
 import { CommandQueue } from './queue';
-import { Bucket, GroupInfo, Instance, InstanceTemplate, RocksDbDatabase, RoleInfo, Service, UserInfo } from './system';
+import { Bucket, GroupInfo, Instance, InstanceTemplate, RocksDbDatabase, RoleInfo, Service, SessionInfo, UserInfo } from './system';
 import { Record, Stream, Table } from './table';
-
 
 export interface EventsWrapper {
   event: Event[];
@@ -47,6 +46,10 @@ export interface GroupsWrapper {
 
 export interface RolesWrapper {
   roles: RoleInfo[];
+}
+
+export interface SessionsWrapper {
+  sessions: SessionInfo[];
 }
 
 export interface CommandQueuesWrapper {

@@ -49,6 +49,7 @@ import org.yamcs.http.api.QueueApi;
 import org.yamcs.http.api.ReplicationApi;
 import org.yamcs.http.api.RocksDbApi;
 import org.yamcs.http.api.ServerApi;
+import org.yamcs.http.api.SessionsApi;
 import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TagApi;
@@ -293,6 +294,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new ServerApi(this));
         addApi(new StreamArchiveApi());
         addApi(new RocksDbApi());
+        addApi(new SessionsApi());
         addApi(new TableApi());
         addApi(new TagApi());
         addApi(new TimeApi());

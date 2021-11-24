@@ -91,8 +91,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static final AttributeKey<String> CTX_CONTEXT_PATH = AttributeKey.valueOf("contextPath");
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("httpRequest");
-    public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
     public static final AttributeKey<String> CTX_USERNAME = AttributeKey.valueOf("username");
+    public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
 
