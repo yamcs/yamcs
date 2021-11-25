@@ -321,7 +321,6 @@ message ProcessorManagementRequest {
   optional string name = 3; //processor name
   optional string type = 4; //only for CREATE
   optional string config = 5; //only for CREATE - used to be called spec
-  repeated int32 clientId = 6; //for CREATE and CONNECT
   optional bool persistent = 7[default=false]; //only for CREATE
 }
 

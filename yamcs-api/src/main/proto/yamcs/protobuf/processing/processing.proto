@@ -248,9 +248,6 @@ message CreateProcessorRequest {
   // **Required.** The name of the processor. Must be unique for the Yamcs instance.
   optional string name = 2;
   
-  // The client IDs that should be connected to this processor.
-  repeated int32 clientId = 3;
-  
   // Keep the processor when terminated. Default: ``no``.
   optional bool persistent = 4;
   

@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,7 +13,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.yamcs.ConnectedClient;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
@@ -158,15 +154,12 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         if (request.hasPersistent()) {
             reqb.setPersistent(request.getPersistent());
         }
-        Set<Integer> clientIds = new HashSet<>(request.getClientIdList());
-        // this will remove any invalid clientIds from the set
-        verifyPermissions(reqb.getPersistent(), processorType, clientIds, ctx.user);
+        verifyPermissions(reqb.getPersistent(), processorType, ctx.user);
 
         if (request.hasConfig()) {
             reqb.setConfig(request.getConfig());
         }
 
-        reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), ctx.user.getName());
@@ -546,18 +539,15 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         // same time with some values just coming in and the list expanding.
         List<ParameterValue> pvals = Collections.synchronizedList(new ArrayList<>());
 
-        ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, new ParameterWithIdConsumer() {
-            @Override
-            public void update(int subscriptionId, List<ParameterValueWithId> params) {
-                if (!cf.isDone()) {
-                    for (ParameterValueWithId pvwi : params) {
-                        pvals.add(pvwi.toGbpParameterValue());
-                    }
-                    // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
-                    // receiving all parameters
-                    if (pvals.size() == ids.size()) {
-                        cf.complete(pvals);
-                    }
+        ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, (subscriptionId, params) -> {
+            if (!cf.isDone()) {
+                for (ParameterValueWithId pvwi : params) {
+                    pvals.add(pvwi.toGbpParameterValue());
+                }
+                // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
+                // receiving all parameters
+                if (pvals.size() == ids.size()) {
+                    cf.complete(pvals);
                 }
             }
         });
@@ -626,35 +616,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         return b.build();
     }
 
-    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
-            throws ForbiddenException {
-        String username = user.getName();
+    private void verifyPermissions(boolean persistent, String processorType, User user) throws ForbiddenException {
         if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             if (persistent) {
                 throw new ForbiddenException("No permission to create persistent processors");
             }
             if (!"Archive".equals(processorType)) {
                 throw new ForbiddenException("No permission to create processors of type " + processorType);
-            }
-            verifyClientsBelongToUser(username, clientIds);
-        }
-    }
-
-    /**
-     * verifies that clients with ids are all belonging to this username. If not, throw a ForbiddenException If there is
-     * any invalid id (maybe client disconnected), remove it from the set
-     */
-    public static void verifyClientsBelongToUser(String username, Set<Integer> clientIds) throws ForbiddenException {
-        ManagementService mgrsrv = ManagementService.getInstance();
-        for (Iterator<Integer> it = clientIds.iterator(); it.hasNext();) {
-            int id = it.next();
-            ConnectedClient client = mgrsrv.getClient(id);
-            if (client == null) {
-                it.remove();
-            } else {
-                if (!username.equals(client.getUser().getName())) {
-                    throw new ForbiddenException("Not allowed to connect clients other than your own");
-                }
             }
         }
     }

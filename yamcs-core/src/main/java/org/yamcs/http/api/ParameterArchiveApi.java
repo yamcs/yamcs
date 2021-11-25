@@ -48,7 +48,7 @@ import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
-import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.protobuf.StringMessage;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;

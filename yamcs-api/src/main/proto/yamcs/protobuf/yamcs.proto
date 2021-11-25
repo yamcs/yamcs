@@ -5,18 +5,6 @@ option java_package = "org.yamcs.protobuf";
 
 import "google/protobuf/timestamp.proto";
 
-message StringMessage {
-  required string message = 1;
-}
-
-message Instant {
-  required int64 instant = 1;
-}
-
-message MessagingAddress {
-  required string address = 1;
-}
-
 // Union type for storing a value
 message Value {
   enum Type {

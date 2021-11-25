@@ -5,14 +5,6 @@ Yamcs provides a WebSocket API for data subscriptions. A typical use case would 
 
 WebSocket allows to upgrade a regular HTTP connection to a bi-directional communication channel. Yamcs supports an RPC-style API over this channel where clients choose what topics they want to subscribe (or unsubscribe) by sending a request in a specific format.
 
-.. note::
-
-    Users that have been using Yamcs versions prior to 5.x.x may be familiar with our previous WebSocket conventions on the old endpoint ``/_websocket``. This documentation describes the new conventions applied on the endpoint ``/api/websocket``. These build on lessons learned over the years. In particular:
-    
-    * Subscription and unsubscription of multiple topics is now easier to manage on one and the same connection.
-    * Topics that previously could be subscribed to only once (for example listening to a specific stream), can now be subscribed any number of times.
-    * There is no longer server state on a shared ``instance`` or ``processor`` associated to a WebSocket connection. All RPC calls expect you to be explicit about which instance or processor you are subscribing to (if the topic requires this information).
-
 
 Connection
 ----------
