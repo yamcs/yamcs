@@ -1,17 +1,26 @@
 <app-admin-page>
   <app-admin-toolbar>
-    Client connections
-    &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            [disabled]="!isGroupCloseEnabled()"
-            (click)="closeSelectedConnections()">
-      <mat-icon>close</mat-icon>
-      KILL
-    </button>
+    HTTP traffic
   </app-admin-toolbar>
 
   <div class="panel-content">
+    <ng-container *ngIf="traffic$ | async as traffic">
+      <dl class="dl-horizontal no-lead">
+        <dt>Cumulative Read</dt>
+        <dd>{{ traffic.readBytes | formatBytes }}</dd>
+        <dt>Cumulative Written</dt>
+        <dd>{{ traffic.writtenBytes | formatBytes }}</dd>
+        <dt>Rx</dt>
+        <dd>{{ (traffic.readThroughput * 8) | dataRate }}</dd>
+        <dt>Tx</dt>
+        <dd>{{ (traffic.writeThroughput * 8) | dataRate }}</dd>
+      </dl>
+    </ng-container>
+
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+    <h4>Current Connections</h4>
     <app-table-container>
       <table mat-table
              [dataSource]="dataSource"
@@ -21,18 +30,6 @@
              matSortActive="id"
              matSortDirection="asc"
              matSortDisableClear>
-
-        <ng-container cdkColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-            <input type="checkbox" (change)="$event ? masterToggle() : null"
-                   [checked]="selection.hasValue() && isAllSelected()">
-          </th>
-          <td mat-cell *cdkCellDef="let row" class="checkbox">
-            <input type="checkbox" (click)="$event.stopPropagation()"
-                   (change)="$event ? selection.toggle(row) : null"
-                   [checked]="selection.isSelected(row)">
-          </td>
-        </ng-container>
 
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">Id</th>
@@ -66,12 +63,12 @@
 
         <ng-container matColumnDef="readThroughput">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Rx</th>
-          <td mat-cell *matCellDef="let conn">{{ (conn.readThroughput * 8)  | dataRate }}</td>
+          <td mat-cell *matCellDef="let conn">{{ (conn.readThroughput * 8) | dataRate }}</td>
         </ng-container>
 
         <ng-container matColumnDef="writeThroughput">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Tx</th>
-          <td mat-cell *matCellDef="let conn">{{ (conn.writeThroughput * 8)  | dataRate }}</td>
+          <td mat-cell *matCellDef="let conn">{{ (conn.writeThroughput * 8) | dataRate }}</td>
         </ng-container>
 
         <ng-container matColumnDef="request">
@@ -82,27 +79,21 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="authorization">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Authorization</th>
+          <td mat-cell *matCellDef="let conn">
+            {{ conn.username || '-' }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let conn">
-            <mat-menu #connMenu="matMenu" overlapTrigger="false" class="ya-menu">
-              <button mat-menu-item
-                      (click)="closeConnection(conn.id)">
-                Kill
-              </button>
-            </mat-menu>
-            <button mat-button [matMenuTriggerFor]="connMenu"
-                    (click)="$event.stopPropagation()"
-                    class="icon">
-              <mat-icon>more_vert</mat-icon>
-            </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [class.selected]="selection.isSelected(row)"
-            (click)="toggleOne(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
       <mat-paginator [pageSize]="100"
                      [hidePageSize]="true"

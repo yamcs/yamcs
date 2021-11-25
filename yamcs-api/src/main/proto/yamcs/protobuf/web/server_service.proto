@@ -56,17 +56,10 @@ service ServerApi {
     };
   }
 
-  // List client connections
-  rpc ListClientConnections(google.protobuf.Empty) returns (ListClientConnectionsResponse) {
+  // Get HTTP traffic
+  rpc GetHttpTraffic(google.protobuf.Empty) returns (HttpTraffic) {
     option (yamcs.api.route) = {
-      get: "/api/connections"
-    };
-  }
-  
-  // Close a client connection
-  rpc CloseConnection(CloseConnectionRequest) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      delete: "/api/connections/{id}"
+      get: "/api/http-traffic"
     };
   }
 }
@@ -88,12 +81,12 @@ message ListTopicsResponse {
   repeated TopicInfo topics = 1;
 }
 
-message ListClientConnectionsResponse {
-  repeated ClientConnectionInfo connections = 1;
-}
-
-message CloseConnectionRequest {
-  optional string id = 1;
+message HttpTraffic {
+  optional uint64 readBytes = 1;
+  optional uint64 writtenBytes = 2;
+  optional uint64 readThroughput = 3;
+  optional uint64 writeThroughput = 4;
+  repeated ClientConnectionInfo connections = 5;
 }
 
 message RouteInfo {
@@ -202,4 +195,5 @@ message ClientConnectionInfo {
   optional uint64 readThroughput = 8;
   optional uint64 writeThroughput = 9;
   optional HttpRequestInfo httpRequest = 10;
+  optional string username = 11;
 }

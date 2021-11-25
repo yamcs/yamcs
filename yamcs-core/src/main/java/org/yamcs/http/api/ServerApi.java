@@ -36,12 +36,11 @@ import org.yamcs.http.Topic;
 import org.yamcs.protobuf.AbstractServerApi;
 import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
-import org.yamcs.protobuf.CloseConnectionRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.GetServerInfoResponse.CommandOptionInfo;
 import org.yamcs.protobuf.GetServerInfoResponse.PluginInfo;
 import org.yamcs.protobuf.GetThreadRequest;
-import org.yamcs.protobuf.ListClientConnectionsResponse;
+import org.yamcs.protobuf.HttpTraffic;
 import org.yamcs.protobuf.ListRoutesResponse;
 import org.yamcs.protobuf.ListThreadsRequest;
 import org.yamcs.protobuf.ListThreadsResponse;
@@ -57,9 +56,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 
 public class ServerApi extends AbstractServerApi<Context> {
@@ -202,9 +203,22 @@ public class ServerApi extends AbstractServerApi<Context> {
     }
 
     @Override
-    public void listClientConnections(Context ctx, Empty request, Observer<ListClientConnectionsResponse> observer) {
+    public void getHttpTraffic(Context ctx, Empty request, Observer<HttpTraffic> observer) {
         if (!ctx.user.isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
+        }
+
+        HttpTraffic.Builder responseb = HttpTraffic.newBuilder();
+
+        GlobalTrafficShapingHandler globalTrafficHandler = httpServer.getGlobalTrafficShapingHandler();
+        if (globalTrafficHandler != null) {
+            TrafficCounter counter = globalTrafficHandler.trafficCounter();
+            if (counter != null) {
+                responseb.setReadThroughput(counter.lastReadThroughput());
+                responseb.setWriteThroughput(counter.lastWriteThroughput());
+                responseb.setReadBytes(counter.cumulativeReadBytes());
+                responseb.setWrittenBytes(counter.cumulativeWrittenBytes());
+            }
         }
 
         List<ClientConnectionInfo> result = new ArrayList<>();
@@ -232,6 +246,11 @@ public class ServerApi extends AbstractServerApi<Context> {
                 }
             }
 
+            String username = channel.attr(HttpRequestHandler.CTX_USERNAME).get();
+            if (username != null) {
+                connectionb.setUsername(username);
+            }
+
             HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
             if (httpRequest != null) {
                 HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
@@ -239,7 +258,7 @@ public class ServerApi extends AbstractServerApi<Context> {
                         .setProtocol(httpRequest.protocolVersion().text())
                         .setMethod(httpRequest.method().name())
                         .setUri(httpRequest.uri());
-                String userAgent = httpRequest.headers().getAsString("User-Agent");
+                String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
                 if (userAgent != null) {
                     httpRequestb.setUserAgent(userAgent);
                 }
@@ -250,7 +269,6 @@ public class ServerApi extends AbstractServerApi<Context> {
             result.add(connectionb.build());
         }
 
-        ListClientConnectionsResponse.Builder responseb = ListClientConnectionsResponse.newBuilder();
         responseb.addAllConnections(result);
         observer.complete(responseb.build());
     }
@@ -373,15 +391,6 @@ public class ServerApi extends AbstractServerApi<Context> {
         } else {
             throw new NotFoundException("No thread with ID " + request.getId());
         }
-    }
-
-    @Override
-    public void closeConnection(Context ctx, CloseConnectionRequest request, Observer<Empty> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
-        httpServer.closeChannel(request.getId());
-        observer.complete(Empty.getDefaultInstance());
     }
 
     private ThreadGroupInfo toThreadGroupInfo(ThreadGroup group) {

@@ -31,7 +31,6 @@ import org.yamcs.api.WebSocketTopic;
 import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.http.api.BucketsApi;
 import org.yamcs.http.api.ClearanceApi;
-import org.yamcs.http.api.ClientsApi;
 import org.yamcs.http.api.CommandsApi;
 import org.yamcs.http.api.Cop1Api;
 import org.yamcs.http.api.DatabaseApi;
@@ -88,6 +87,7 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
@@ -111,6 +111,7 @@ public class HttpServer extends AbstractYamcsService {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ChannelGroup clientChannels;
+    private GlobalTrafficShapingHandler globalTrafficHandler;
 
     private List<Api<Context>> apis = new ArrayList<>();
     private List<Route> routes = new ArrayList<>();
@@ -274,7 +275,6 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new BucketsApi());
         addApi(new FileTransferApi());
         addApi(new ClearanceApi());
-        addApi(new ClientsApi());
         addApi(new CommandsApi());
         addApi(new Cop1Api());
         addApi(new DatabaseApi());
@@ -373,13 +373,17 @@ public class HttpServer extends AbstractYamcsService {
         workerGroup = new NioEventLoopGroup(nThreads,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
+        // Measure global traffic, we also add a channel-specific measurer in channel-init.
+        globalTrafficHandler = new GlobalTrafficShapingHandler(workerGroup, 5000);
+
         for (Binding binding : bindings) {
-            createAndBindBootstrap(workerGroup, binding);
+            createAndBindBootstrap(workerGroup, binding, globalTrafficHandler);
             log.debug("Serving from {}{}", binding, contextPath);
         }
     }
 
-    private void createAndBindBootstrap(EventLoopGroup workerGroup, Binding binding)
+    private void createAndBindBootstrap(EventLoopGroup workerGroup, Binding binding,
+            GlobalTrafficShapingHandler globalTrafficHandler)
             throws InterruptedException, SSLException, IOException {
         SslContext sslContext = null;
         if (binding.isTLS()) {
@@ -391,7 +395,7 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(this, sslContext));
+                .childHandler(new HttpServerChannelInitializer(this, sslContext, globalTrafficHandler));
 
         // Bind and start to accept incoming connections.
         InetAddress address = binding.getAddress();
@@ -432,6 +436,10 @@ public class HttpServer extends AbstractYamcsService {
         return protobufRegistry;
     }
 
+    public GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+        return globalTrafficHandler;
+    }
+
     public JsonFormat.Parser getJsonParser() {
         return jsonParser;
     }
@@ -462,6 +470,7 @@ public class HttpServer extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        globalTrafficHandler.release();
         ListeningExecutorService closers = listeningDecorator(Executors.newCachedThreadPool());
         ListenableFuture<?> future1 = closers.submit(() -> {
             return workerGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();

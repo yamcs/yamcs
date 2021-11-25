@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { ConnectionsPage } from './connections/ConnectionsPage';
 import { DatabasePage } from './databases/database/DatabasePage';
 import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
 import { StreamColumnsTab } from './databases/database/stream/StreamColumnsTab';
@@ -18,6 +17,7 @@ import { TableScriptTab } from './databases/database/table/TableScriptTab';
 import { DatabaseTablesTab } from './databases/database/tables/DatabaseTablesTab';
 import { DatabasesPage } from './databases/databases/DatabasesPage';
 import { AdminHomePage } from './home/AdminHomePage';
+import { HttpTrafficPage } from './http-traffic/HttpTrafficPage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
 import { CreateUserPage } from './iam/CreateUserPage';
@@ -56,8 +56,8 @@ const routes: Routes = [
         component: AdminHomePage,
       },
       {
-        path: 'connections',
-        component: ConnectionsPage,
+        path: 'http-traffic',
+        component: HttpTrafficPage,
       },
       {
         path: 'routes',
@@ -257,7 +257,6 @@ export class AdminRoutingModule { }
 
 export const routingComponents = [
   AdminHomePage,
-  ConnectionsPage,
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
@@ -270,6 +269,7 @@ export const routingComponents = [
   EditUserPage,
   GroupsPage,
   GroupPage,
+  HttpTrafficPage,
   LeapSecondsPage,
   PluginsPage,
   ProcessorTypesPage,

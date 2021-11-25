@@ -167,6 +167,14 @@ export interface ConnectionInfo {
   processor?: Processor;
 }
 
+export interface HttpTraffic {
+  readBytes: number;
+  writtenBytes: number;
+  readThroughput: number;
+  writeThroughput: number;
+  connections: ClientConnectionInfo[];
+}
+
 export interface ClientConnectionInfo {
   id: string;
   open: boolean;
