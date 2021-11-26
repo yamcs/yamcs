@@ -3,10 +3,8 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
@@ -32,12 +30,10 @@ import org.yamcs.protobuf.RebuildCcsdsIndexRequest;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
-import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
@@ -190,7 +186,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         if (indexServer == null) {
             throw new BadRequestException("CCSDS Tm Index not enabled for instance '" + instance + "'");
         }
-        
+
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -208,52 +204,6 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         String next = request.hasNext() ? request.getNext() : null;
 
         handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
-    }
-
-    @Override
-    public void streamIndex(Context ctx, StreamIndexRequest request, Observer<IndexResult> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        TmIndexService indexService = getIndexService(instance);
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-
-        if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
-        }
-        if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
-        }
-
-        for (String name : request.getPacketnamesList()) {
-            requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
-        }
-
-        Set<String> filter = new HashSet<>();
-        for (String name : request.getFiltersList()) {
-            filter.add(name.toLowerCase());
-        }
-
-        if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
-            requestb.setSendAllTm(true);
-            requestb.setSendAllPp(true);
-            requestb.setSendAllCmd(true);
-            requestb.setSendAllEvent(true);
-            if (indexService != null) {
-                requestb.setSendCompletenessIndex(true);
-            }
-        } else {
-            requestb.setSendAllTm(filter.contains("tm") && requestb.getTmPacketCount() == 0);
-            requestb.setSendAllPp(filter.contains("pp"));
-            requestb.setSendAllCmd(filter.contains("commands"));
-            requestb.setSendAllEvent(filter.contains("events"));
-            if (filter.contains("completeness") && indexService == null) {
-                throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
-            }
-            requestb.setSendCompletenessIndex(filter.contains("completeness"));
-        }
-
-        streamIndexResults(indexService, requestb.build(), observer);
     }
 
     @Override
@@ -461,55 +411,6 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         } catch (InvalidTokenException e) {
             observer.completeExceptionally(new BadRequestException("Invalid token specified"));
         }
-    }
-
-    private static void streamIndexResults(TmIndexService tmIndex, IndexRequest request,
-            Observer<IndexResult> observer) {
-
-        IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, -1, null,
-                new IndexRequestListener() {
-
-                    private IndexResult.Builder indexResult;
-
-                    @Override
-                    public void begin(IndexType type, String tblName) {
-                        if (indexResult != null) {
-                            observer.next(indexResult.build());
-                        }
-                        indexResult = newBuilder(type.name(), tblName);
-                    }
-
-                    @Override
-                    public void processData(ArchiveRecord record) {
-                        indexResult.addRecords(record);
-                        if (indexResult.getRecordsCount() > 500) {
-                            observer.next(indexResult.build());
-                            indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
-                        }
-                    }
-
-                    @Override
-                    public void finished(String token, boolean success) {
-                        if (success) {
-                            if (indexResult != null && indexResult.getRecordsCount() > 0) {
-                                observer.next(indexResult.build());
-                            }
-                            observer.complete();
-                        } else {
-                            observer.completeExceptionally(
-                                    new InternalServerErrorException("Failure while streaming index"));
-                        }
-                    }
-
-                    private IndexResult.Builder newBuilder(String type, String tblName) {
-                        IndexResult.Builder b = IndexResult.newBuilder().setType(type);
-                        if (tblName != null) {
-                            b.setTableName(tblName);
-                        }
-                        return b;
-                    }
-                });
-        p.run();
     }
 
     private static void streamArchiveRecords(TmIndexService tmIndex, IndexRequest request,

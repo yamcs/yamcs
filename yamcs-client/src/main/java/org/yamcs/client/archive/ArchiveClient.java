@@ -15,9 +15,6 @@ import org.yamcs.client.Helpers;
 import org.yamcs.client.Page;
 import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.StreamSender;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.FilterOption;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.IndexOption;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.AscendingOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.LimitOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.ListOption;
@@ -74,7 +71,6 @@ import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
 import org.yamcs.protobuf.StreamEventsRequest;
-import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamPacketsRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
@@ -90,7 +86,6 @@ import org.yamcs.protobuf.TagApiClient;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
@@ -365,50 +360,6 @@ public class ArchiveClient {
 
             @Override
             public void next(ArchiveRecord message) {
-                consumer.accept(message);
-            }
-
-            @Override
-            public void completeExceptionally(Throwable t) {
-                f.completeExceptionally(t);
-            }
-
-            @Override
-            public void complete() {
-                f.complete(null);
-            }
-        });
-        return f;
-    }
-
-    public CompletableFuture<Void> streamIndex(StreamReceiver<IndexResult> consumer, Instant start, Instant stop,
-            IndexOption... options) {
-        StreamIndexRequest.Builder requestb = StreamIndexRequest.newBuilder()
-                .setInstance(instance);
-        if (start != null) {
-            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
-        }
-        if (stop != null) {
-            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
-        }
-        for (IndexOption option : options) {
-            if (option instanceof FilterOption) {
-                for (String filter : ((FilterOption) option).filter) {
-                    requestb.addFilters(filter);
-                }
-            } else if (option instanceof PacketOption) {
-                for (String packet : ((PacketOption) option).packets) {
-                    requestb.addPacketnames(packet);
-                }
-            } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
-            }
-        }
-        CompletableFuture<Void> f = new CompletableFuture<>();
-        indexService.streamIndex(null, requestb.build(), new Observer<IndexResult>() {
-
-            @Override
-            public void next(IndexResult message) {
                 consumer.accept(message);
             }
 
@@ -1039,36 +990,6 @@ public class ArchiveClient {
 
             public MinimumRangeOption(long millis) {
                 this.millis = millis;
-            }
-        }
-    }
-
-    public static final class IndexOptions {
-
-        public static interface IndexOption {
-        }
-
-        public static IndexOption filter(String... filter) {
-            return new FilterOption(filter);
-        }
-
-        public static IndexOption packets(String... packets) {
-            return new PacketOption(packets);
-        }
-
-        static final class FilterOption implements IndexOption {
-            final String[] filter;
-
-            public FilterOption(String... filter) {
-                this.filter = filter;
-            }
-        }
-
-        static final class PacketOption implements IndexOption {
-            final String[] packets;
-
-            public PacketOption(String... packets) {
-                this.packets = packets;
             }
         }
     }
