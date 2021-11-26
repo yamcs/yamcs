@@ -59,37 +59,6 @@ message NamedObjectList {
   repeated NamedObjectId list = 1;
 }
 
-//requesting index (histogram) information about tm packets, pp groups and commands
-message IndexRequest {
-  required string instance = 1;
-  optional int64 start = 2;
-  optional int64 stop = 3;
-
-  //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
-  //if not specified, the fully qualified canonical names will be sent
-  optional string defaultNamespace = 4;
-
-  //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
-  optional bool sendAllTm = 5[default=false];
-  repeated NamedObjectId tmPacket = 6;
-
-  //if sendAllPp is true, then all PP groups are sent, otherwise those in the ppGroup list (which can be empty)
-  optional bool sendAllPp = 7[default=false];
-  repeated NamedObjectId ppGroup = 8;
-
-  optional bool sendCompletenessIndex = 9[default=false];
-
-  //if sendAllCmd is true, then all command names  are sent, otherwise those in the cmdName list (which can be empty)
-  optional bool sendAllCmd = 10 [default=false];
-  repeated NamedObjectId cmdName = 11;
-
-  //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
-  optional bool sendAllEvent = 12 [default=false];
-  repeated NamedObjectId eventSource = 13;
-  
-  optional uint32 mergeTime = 16;
-}
-
 //contains histogram data
 message ArchiveRecord {
   optional NamedObjectId id = 1;
