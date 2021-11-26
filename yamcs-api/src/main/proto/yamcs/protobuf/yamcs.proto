@@ -182,11 +182,3 @@ message ReplayStatus {
   // In case state is ERROR
   optional string errorMessage = 3;
 }
-
-message TmPacketData {
-  required bytes packet = 2;
-  optional int32 sequenceNumber = 4;
-  optional NamedObjectId id = 5;
-  optional google.protobuf.Timestamp receptionTime = 8;
-  optional google.protobuf.Timestamp generationTime = 9;
-}

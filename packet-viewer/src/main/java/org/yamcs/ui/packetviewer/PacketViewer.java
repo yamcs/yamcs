@@ -89,7 +89,7 @@ import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.SubscribePacketsRequest;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.tctm.CcsdsPacketInputStream;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketInputStream;
