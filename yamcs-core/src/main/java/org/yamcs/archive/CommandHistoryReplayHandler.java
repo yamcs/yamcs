@@ -2,8 +2,8 @@ package org.yamcs.archive;
 
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 import com.google.protobuf.MessageLite;
 

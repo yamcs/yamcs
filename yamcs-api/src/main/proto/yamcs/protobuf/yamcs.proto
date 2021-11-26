@@ -104,22 +104,6 @@ message ReplaySpeed {
   optional float param = 2;
 }
 
-enum ProtoDataType {
-  //error in replay
-  DT_ERROR = 1;
-
-  //the replay status has changed (e.g. stopped or closed) the body contains a ReplayStatus
-  STATE_CHANGE = 2;
-
-  TM_PACKET = 3;
-  PP = 4;
-  EVENT = 5;
-  ARCHIVE_INDEX = 6;
-  ARCHIVE_TAG = 7;
-  PARAMETER = 8;
-  CMD_HISTORY = 9;
-}
-
 //used to replay (concurrently) TM packets, parameters and events
 message ReplayRequest {
   // **Required.** The time at which the replay should start. 

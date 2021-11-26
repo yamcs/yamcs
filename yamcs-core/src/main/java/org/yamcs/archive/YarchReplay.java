@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -25,6 +24,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
@@ -183,9 +183,8 @@ public class YarchReplay implements StreamSubscriber {
             sb.append(" ORDER DESC");
         }
 
-        ReplaySpeed rs= currentRequest.getSpeed();
+        ReplaySpeed rs = currentRequest.getSpeed();
 
-        
         switch (rs.getType()) {
         case AFAP:
         case STEP_BY_STEP: // Step advancing is controlled from within this class
