@@ -34,6 +34,8 @@ import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.Event;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.IndexEntry;
 import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -44,8 +46,6 @@ import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
@@ -123,7 +123,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         // Give Yamcs some time to establish the subscription and empty the websocket of any message that might have
         // been pending
         Thread.sleep(2000);
-        
+
         captor.clear();
         captor.assertSilence();
 
@@ -277,7 +277,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         // Give Yamcs some time to establish the subscription and empty the websocket of any message that might have
         // been pending
         Thread.sleep(2000);
-        
+
         captor.clear();
         captor.assertSilence();
 

@@ -11,6 +11,7 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/events/events.proto";
 
 
 message AcknowledgeInfo {
@@ -118,7 +119,7 @@ message ParameterAlarmData {
 }
 
 message EventAlarmData {
-  optional Event triggerEvent = 1;
-  optional Event mostSevereEvent = 2;
-  optional Event currentEvent = 3;
+  optional events.Event triggerEvent = 1;
+  optional events.Event mostSevereEvent = 2;
+  optional events.Event currentEvent = 3;
 }

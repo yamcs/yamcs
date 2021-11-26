@@ -1,6 +1,7 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -15,8 +16,8 @@ import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.CreateEventRequest;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.EventAlarmData;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
 import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
@@ -233,7 +234,6 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.setGenerationTime(TimeEncoding.parse("2022-01-19T23:59:00"));
         packetGenerator.generate_PKT1_10(0, 3, 51);
-
 
         GlobalAlarmStatus s1 = captor.expectTimely();
         assertEquals(2, s1.getUnacknowledgedCount());

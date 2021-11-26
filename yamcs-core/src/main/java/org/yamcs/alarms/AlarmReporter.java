@@ -14,9 +14,9 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
@@ -28,7 +28,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
  * Generates alarm events for a processor, by subscribing to all relevant parameters.
  */
 public class AlarmReporter extends AbstractProcessorService implements ProcessorService {
-
 
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms = new HashMap<>();
