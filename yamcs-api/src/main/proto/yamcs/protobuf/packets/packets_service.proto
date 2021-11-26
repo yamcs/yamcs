@@ -10,7 +10,6 @@ import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
-import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/packets/packets.proto";
 
 

@@ -140,35 +140,6 @@ service ManagementApi {
       post: "/api/services/{instance}/{name}:stop"
     };
   }
-  
-  // List links
-  rpc ListLinks(ListLinksRequest) returns (ListLinksResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/links/{instance?}"
-    };
-  }
-  
-  // Get a link
-  rpc GetLink(GetLinkRequest) returns (LinkInfo) {
-    option (yamcs.api.route) = {
-      get: "/api/links/{instance}/{name}"
-    };
-  }
-
-  // Update a link
-  rpc UpdateLink(EditLinkRequest) returns (LinkInfo) {
-    option (yamcs.api.route) = {
-      patch: "/api/links/{instance}/{name}"
-      body: "*"
-    };
-  }
-  
-  // Receive link updates
-  rpc SubscribeLinks(SubscribeLinksRequest) returns (stream LinkEvent) {
-    option (yamcs.api.websocket) = {
-      topic: "links"
-    };
-  }
 }
 
 /*service states coming from guava (numbers have to correspond)*/
@@ -338,41 +309,6 @@ message ProcessorRequest {
   optional ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
 }
 
-message LinkInfo {
-  reserved 5,8;
-  optional string instance = 1;
-  optional string name = 2;
-  optional string type = 3;
-  optional string spec = 4;
-  optional bool disabled = 6;
-  optional string status = 7;
-  optional int64 dataInCount = 10;
-  optional int64 dataOutCount = 11;
-  optional string detailedStatus = 9;
-
-  //if this is a sublink of an aggregated data link, this is the name of the parent
-  optional string parentName = 12;
-}
-
-message LinkEvent {
-  enum Type {
-    // A new link was registered. You also receive this event directly after you subscribe,
-    //  for every link that is registered at that time.
-    REGISTERED = 1;
-    // A link was unregistered.
-    UNREGISTERED = 2;
-    // A link was updated in one of its attributes, for example the dataCount has increased,
-    // or the status has changed.
-    UPDATED = 3;
-  }
-  optional Type type = 1;
-  optional LinkInfo linkInfo = 2;
-}
-
-message SubscribeLinksRequest {
-  optional string instance = 1;
-}
-
 message ServiceInfo {
   optional string instance = 1;
   optional string name = 2;
@@ -527,33 +463,4 @@ message StopInstanceRequest {
 message RestartInstanceRequest {
   // Yamcs instance name.
   optional string instance = 1;
-}
-
-message ListLinksRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-}
-
-message ListLinksResponse {
-  repeated LinkInfo links = 1;
-}
-
-message GetLinkRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-
-  // Link name. 
-  optional string name = 2;
-}
-
-message EditLinkRequest {
-  // Yamcs instance name.
-  optional string instance = 3;
-
-  // Link name.
-  optional string name = 4;
-  
-  // The state of the link. Either ``enabled`` or ``disabled``.
-  optional string state = 1;
-  optional bool resetCounters = 2;
 }

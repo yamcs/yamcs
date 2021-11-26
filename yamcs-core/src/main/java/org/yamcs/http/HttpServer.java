@@ -39,6 +39,7 @@ import org.yamcs.http.api.EventsApi;
 import org.yamcs.http.api.FileTransferApi;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.api.IndexesApi;
+import org.yamcs.http.api.LinksApi;
 import org.yamcs.http.api.ManagementApi;
 import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.MdbOverrideApi;
@@ -280,6 +281,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new EventsApi());
         addApi(new IamApi());
         addApi(new IndexesApi());
+        addApi(new LinksApi());
         addApi(new ManagementApi());
         addApi(new MdbApi());
         addApi(new MdbOverrideApi());

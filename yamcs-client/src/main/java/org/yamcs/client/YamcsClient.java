@@ -31,7 +31,6 @@ import org.yamcs.client.timeline.TimelineClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
-import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.FileTransferApiClient;
@@ -40,7 +39,6 @@ import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
-import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
@@ -69,6 +67,9 @@ import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.links.EditLinkRequest;
+import org.yamcs.protobuf.links.LinkInfo;
+import org.yamcs.protobuf.links.LinksApiClient;
 
 import com.google.protobuf.Empty;
 
@@ -97,6 +98,7 @@ public class YamcsClient {
     private AlarmsApiClient alarmService;
     private TimeApiClient timeService;
     private ManagementApiClient managementService;
+    private LinksApiClient linkService;
     private EventsApiClient eventService;
     private ProcessingApiClient processingService;
     private IamApiClient iamService;
@@ -128,6 +130,7 @@ public class YamcsClient {
 
         alarmService = new AlarmsApiClient(methodHandler);
         eventService = new EventsApiClient(methodHandler);
+        linkService = new LinksApiClient(methodHandler);
         iamService = new IamApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
@@ -417,7 +420,7 @@ public class YamcsClient {
                 .setState("enabled")
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.updateLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -428,7 +431,7 @@ public class YamcsClient {
                 .setState("disabled")
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.updateLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 
