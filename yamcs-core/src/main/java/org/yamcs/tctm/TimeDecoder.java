@@ -8,8 +8,8 @@ import org.yamcs.utils.ByteSupplier;
  */
 public interface TimeDecoder {
     /**
-     * Decodes the time from the packet and returns the time in milliseconds.
-     * The value returned can be either absolute or relative (this has to be known by the caller)
+     * Decodes the time from the packet and returns the time in milliseconds. The value returned can be either absolute
+     * or relative (this has to be known by the caller)
      * 
      * @param byteSupplier
      *            - the bytes will be read from here.
@@ -21,7 +21,7 @@ public interface TimeDecoder {
      * Returns the time in an unspecified unit.
      * <p>
      * Can be used when the on-board time is free running.
-     * <p>
+     * 
      * @param byteSupplier
      *            - the bytes will be read from here.
      * @return time
@@ -29,8 +29,8 @@ public interface TimeDecoder {
     public long decodeRaw(ByteSupplier byteSupplier);
 
     /**
-     * Decodes the time from the binary buffer and returns the time in milliseconds.
-     * The value returned can be either absolute or relative (this has to be known by the caller)
+     * Decodes the time from the binary buffer and returns the time in milliseconds. The value returned can be either
+     * absolute or relative (this has to be known by the caller)
      * 
      * It is assumed that the buffer will contain enough data; if not, an {@link ArrayIndexOutOfBoundsException} will be
      * thrown.

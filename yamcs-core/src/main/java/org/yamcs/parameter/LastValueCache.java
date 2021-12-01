@@ -104,7 +104,6 @@ public class LastValueCache {
      * Configure the parameter cache to remember at least capacity values for the parameter.
      * <p>
      * The size has to be at least 2 (because size 1 is by default)
-     * <p>
      * 
      * @throws IllegalArgumentException
      *             if the capacity is smaller than 2 or the parameter is a constant.
@@ -256,6 +255,7 @@ public class LastValueCache {
             return end == -1;
         }
 
+        @Override
         public String toString() {
 
             if (end == -1) {

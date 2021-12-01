@@ -11,7 +11,7 @@ public interface YamcsService extends Service {
     /**
      * Returns the valid configuration options for this service.
      * 
-     * @return the argument specification, or <tt>null</tt> if the args should not be validated.
+     * @return the argument specification, or {@code null} if the args should not be validated.
      */
     public default Spec getSpec() {
         return null;
@@ -28,7 +28,7 @@ public interface YamcsService extends Service {
      * Initialize this service. This is called before the service is started. All operations should finish fast.
      * 
      * @param yamcsInstance
-     *            The yamcs instance, or <tt>null</tt> if this is a global service.
+     *            The yamcs instance, or {@code null} if this is a global service.
      * @param serviceName
      *            The service name.
      * @param config

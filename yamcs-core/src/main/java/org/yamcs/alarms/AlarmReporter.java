@@ -76,7 +76,7 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
     }
 
     /**
-     * Sends an event if an alarm condition for the active context has been triggered <tt>minViolations</tt> times. This
+     * Sends an event if an alarm condition for the active context has been triggered {@code minViolations} times. This
      * configuration does not affect events for parameters that go back to normal, or that change severity levels while
      * the alarm is already active.
      */

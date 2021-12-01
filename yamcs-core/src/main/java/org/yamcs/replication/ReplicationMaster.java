@@ -27,9 +27,9 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.StreamInfo;
@@ -55,7 +55,6 @@ import io.netty.handler.ssl.SslContextBuilder;
  * 
  * Implements the master part of the replication. At any moment there is one current file where the replication data is
  * written.
- * <p>
  * 
  * @author nm
  *
@@ -183,6 +182,7 @@ public class ReplicationMaster extends AbstractYamcsService {
 
         return spec;
     }
+
     private void initCurrentFile() throws IOException, InitException {
         if (replFiles.isEmpty()) {
             openNewFile(null);
@@ -601,7 +601,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 if (!Files.isDirectory(path)) {
                     String name = path.getFileName().toString();
                     if (name.matches("RPL_[0-9a-fA-F]{16}\\.dat")) {
-                        Path newPath = replicationDir.resolve(name.replace("RPL_", serviceName+"_"));
+                        Path newPath = replicationDir.resolve(name.replace("RPL_", serviceName + "_"));
                         log.info("Renaming {} to {}", path, newPath);
                         Files.move(path, newPath, StandardCopyOption.ATOMIC_MOVE);
                     }

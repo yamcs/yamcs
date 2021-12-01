@@ -104,7 +104,7 @@ public class Spec {
     }
 
     /**
-     * Add a condition that is only verified when <tt>key.equals(value)</tt>
+     * Add a condition that is only verified when {@code key.equals(value)}
      * 
      * @param key
      *            the name of an option
@@ -271,7 +271,7 @@ public class Spec {
     }
 
     /**
-     * Returns a copy of the given arguments but with all secret arguments masked as <tt>*****</tt>.
+     * Returns a copy of the given arguments but with all secret arguments masked as {@code *****}.
      * <p>
      * This method does not validate the arguments, however it will throw random exceptions if the input does not match
      * the expected structure. It is therefore best to validate the arguments before passing them.
@@ -591,7 +591,7 @@ public class Spec {
         }
 
         /**
-         * In case the {@link #type} is set to {@link OptionType#MAP}, setting this property to <tt>true</tt> will cause
+         * In case the {@link #type} is set to {@link OptionType#MAP}, setting this property to {@code true} will cause
          * defaults within elements of that type to be applied even if the option itself is not defined.
          * <p>
          * Note that this is not a recursive property. You need to specify at every level if so required.
