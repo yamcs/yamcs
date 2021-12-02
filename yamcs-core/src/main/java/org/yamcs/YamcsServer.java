@@ -1202,18 +1202,10 @@ public class YamcsServer {
                         Template template = new Template(name, source);
 
                         Path metaFile = p.resolve("meta.yaml");
-                        Path varFile = p.resolve("variables.yaml");
                         Map<String, Object> metaDef = new HashMap<>();
                         if (Files.exists(metaFile)) {
                             try (InputStream in = Files.newInputStream(metaFile)) {
                                 metaDef = new Yaml().load(in);
-                            }
-                        } else if (Files.exists(varFile)) {
-                            LOG.warn("DEPRECATED: Templates should use meta.yaml instead of variables.yaml"
-                                    + " (move variables.yaml content under a 'variables' key in meta.yaml)");
-                            try (InputStream in = Files.newInputStream(varFile)) {
-                                List<Map<String, Object>> varDefs = new Yaml().load(in);
-                                metaDef.put("variables", varDefs);
                             }
                         }
 
