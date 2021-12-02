@@ -61,6 +61,7 @@ import org.yamcs.yarch.protobuf.Db;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
+import com.google.protobuf.util.Timestamps;
 
 public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
@@ -139,35 +140,35 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2, values.size());
         ParameterValue p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-01-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:00.000Z"), p1_1_6.getGenerationTime());
 
         values = captor.expectTimely();
         assertEquals(3, values.size());
         ParameterValue pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:00.010Z"), pp_para_uint.getGenerationTime());
 
         ParameterValue pp_para_enum_nc = values.get(1);
         assertEquals("/REFMDB/SUBSYS1/processed_para_enum_nc", pp_para_enum_nc.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:00.010Z"), pp_para_uint.getGenerationTime());
         assertEquals(1, pp_para_enum_nc.getRawValue().getUint32Value());
         assertEquals("one_why not", pp_para_enum_nc.getEngValue().getStringValue());
 
         ParameterValue pp_para_double = values.get(2);
         assertEquals("/REFMDB/SUBSYS1/processed_para_double", pp_para_double.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:00.010Z"), pp_para_uint.getGenerationTime());
 
         values = captor.expectTimely();
         assertEquals(1, values.size());
         pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
-        assertEquals("2015-01-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:00.030Z"), pp_para_uint.getGenerationTime());
 
         values = captor.expectTimely();
         assertEquals(2, values.size());
         p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-01-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-01-01T10:01:01.000Z"), p1_1_6.getGenerationTime());
     }
 
     @Test
@@ -222,7 +223,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, values.size());
         ParameterValue pv1 = values.get(0);
         assertEquals("/REFMDB/tm2_para1", pv1.getId().getName());
-        assertEquals("2019-01-01T10:01:00.000Z", pv1.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2019-01-01T10:01:00.000Z"), pv1.getGenerationTime());
         assertEquals(20, pv1.getEngValue().getUint32Value());
 
         values = captor.expectTimely();
@@ -230,11 +231,11 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         ParameterValue pv2 = values.get(0);
         assertEquals("/REFMDB/col-packet_id", pv2.getId().getName());
-        assertEquals("2019-01-01T10:01:00.000Z", pv2.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2019-01-01T10:01:00.000Z"), pv2.getGenerationTime());
 
         ParameterValue pv3 = values.get(1);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", pv3.getId().getName());
-        assertEquals("2019-01-01T10:01:00.000Z", pv3.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2019-01-01T10:01:00.000Z"), pv3.getGenerationTime());
         assertEquals(packetGenerator.pIntegerPara1_1_7, pv3.getEngValue().getUint32Value());
     }
 
@@ -291,20 +292,20 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2, values.size());
         ParameterValue p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-02-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-02-01T10:01:00.000Z"), p1_1_6.getGenerationTime());
 
         values = captor.expectTimely();
         assertEquals(1, values.size());
         ParameterValue pp_para_uint = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
-        assertEquals("2015-02-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-02-01T10:01:00.030Z"), pp_para_uint.getGenerationTime());
 
         values = captor.expectTimely();
 
         assertEquals(2, values.size());
         p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-02-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-02-01T10:01:01.000Z"), p1_1_6.getGenerationTime());
     }
 
     @Test

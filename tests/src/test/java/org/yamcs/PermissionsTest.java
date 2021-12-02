@@ -28,6 +28,8 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
 
+import com.google.protobuf.util.Timestamps;
+
 public class PermissionsTest extends AbstractIntegrationTest {
 
     private ProcessorClient processorClient;
@@ -69,7 +71,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         assertEquals(2, values.size());
         ParameterValue pv0 = values.get(0);
-        assertEquals("2015-03-02T10:10:00.000Z", pv0.getGenerationTimeUTC());
+        assertEquals(Timestamps.parse("2015-03-02T10:10:00.000Z"), pv0.getGenerationTime());
 
         // Check that string parameter replay is denied
         try {
