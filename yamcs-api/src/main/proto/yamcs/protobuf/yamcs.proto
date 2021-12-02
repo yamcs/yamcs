@@ -70,23 +70,6 @@ message ArchiveRecord {
   map<string, string> extra = 10;
 }
 
-message ArchiveTag {
-  optional int32 id = 1;
-  optional string name = 2;
-  optional int64 start = 3;
-  optional int64 stop = 4;
-  optional string description = 5;
-  optional string color = 6;
-
-  optional google.protobuf.Timestamp startUTC = 7;
-  optional google.protobuf.Timestamp stopUTC = 8;
-}
-
-message TagResult {
-  optional string instance = 1;
-  repeated ArchiveTag tag = 2;
-}
-
 enum EndAction {
   LOOP = 1;
   QUIT = 2;

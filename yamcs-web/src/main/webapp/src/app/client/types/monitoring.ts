@@ -79,7 +79,7 @@ export interface Range {
 }
 
 export interface IssueCommandOptions {
-  args?: {[key: string]: any};
+  args?: { [key: string]: any };
   origin?: string;
   sequenceNumber?: number;
   dryRun?: boolean;
@@ -264,24 +264,6 @@ export interface IndexEntry {
   start: string;
   stop: string;
   count: number;
-}
-
-export interface GetTagsOptions {
-  start?: string;
-  stop?: string;
-}
-
-export interface TagsPage {
-  tag: ArchiveTag[];
-}
-
-export interface ArchiveTag {
-  id: number;
-  name: string;
-  startUTC: string;
-  stopUTC: string;
-  description: string;
-  color: string;
 }
 
 export interface Gap {

@@ -36,9 +36,6 @@ import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
-import org.yamcs.protobuf.CreateTagRequest;
-import org.yamcs.protobuf.DeleteTagRequest;
-import org.yamcs.protobuf.EditTagRequest;
 import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.GetParameterRangesRequest;
@@ -56,8 +53,6 @@ import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.ListPacketIndexRequest;
 import org.yamcs.protobuf.ListParameterIndexRequest;
-import org.yamcs.protobuf.ListTagsRequest;
-import org.yamcs.protobuf.ListTagsResponse;
 import org.yamcs.protobuf.PacketsApiClient;
 import org.yamcs.protobuf.ParameterArchiveApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -83,10 +78,8 @@ import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.TableApiClient;
-import org.yamcs.protobuf.TagApiClient;
 import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
@@ -105,7 +98,6 @@ public class ArchiveClient {
     private AlarmsApiClient alarmService;
     private TableApiClient tableService;
     private EventsApiClient eventService;
-    private TagApiClient tagService;
     private PacketsApiClient packetService;
 
     public ArchiveClient(MethodHandler handler, String instance) {
@@ -117,7 +109,6 @@ public class ArchiveClient {
         alarmService = new AlarmsApiClient(handler);
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
-        tagService = new TagApiClient(handler);
         packetService = new PacketsApiClient(handler);
     }
 
@@ -567,46 +558,6 @@ public class ArchiveClient {
                 f.complete(null);
             }
         });
-        return f;
-    }
-
-    public CompletableFuture<ArchiveTag> createTag(CreateTagRequest request) {
-        CreateTagRequest.Builder requestb = request.toBuilder()
-                .setInstance(instance);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.createTag(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
-    public CompletableFuture<List<ArchiveTag>> listTags(Instant start, Instant stop) {
-        ListTagsRequest.Builder requestb = ListTagsRequest.newBuilder()
-                .setInstance(instance);
-        if (start != null) {
-            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
-        }
-        if (stop != null) {
-            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
-        }
-        CompletableFuture<ListTagsResponse> f = new CompletableFuture<>();
-        tagService.listTags(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(ListTagsResponse::getTagList);
-    }
-
-    public CompletableFuture<ArchiveTag> updateTag(EditTagRequest request) {
-        EditTagRequest.Builder requestb = request.toBuilder()
-                .setInstance(instance);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.updateTag(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
-    public CompletableFuture<ArchiveTag> deleteTag(long tagTime, int tagId) {
-        DeleteTagRequest.Builder requestb = DeleteTagRequest.newBuilder()
-                .setInstance(instance)
-                .setTagTime(tagTime)
-                .setTagId(tagId);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.deleteTag(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 

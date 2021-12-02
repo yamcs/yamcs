@@ -52,7 +52,6 @@ import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.api.SessionsApi;
 import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
-import org.yamcs.http.api.TagApi;
 import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.api.TimeCorrelationApi;
 import org.yamcs.http.api.TimelineApi;
@@ -296,7 +295,6 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new RocksDbApi());
         addApi(new SessionsApi());
         addApi(new TableApi());
-        addApi(new TagApi());
         addApi(new TimeApi());
         addApi(new TimeCorrelationApi());
         addApi(new TimelineApi());

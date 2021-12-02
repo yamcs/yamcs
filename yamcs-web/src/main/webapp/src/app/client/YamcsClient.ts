@@ -10,7 +10,7 @@ import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfe
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, HttpTraffic, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
@@ -18,12 +18,6 @@ import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, 
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
 import { WebSocketClient } from './WebSocketClient';
-
-
-
-
-
-
 
 
 export default class YamcsClient implements HttpHandler {
@@ -1103,12 +1097,6 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/mdb/${instance}/containers${qualifiedName}`;
     const response = await this.doFetch(url);
     return await response.json() as Container;
-  }
-
-  async getTags(instance: string, options: GetTagsOptions = {}) {
-    const url = `${this.apiUrl}/archive/${instance}/tags`;
-    const response = await this.doFetch(url + this.queryString(options));
-    return await response.json() as TagsPage;
   }
 
   async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {
