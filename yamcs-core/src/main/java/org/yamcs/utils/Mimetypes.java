@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Maps files to Internet media types based on their file extension.
  * <p>
- * The mapping is read from a file <tt>mime.types</tt> which must be available in the classpath root.
+ * The mapping is read from a file {@code mime.types} which must be available in the classpath root.
  */
 public class Mimetypes {
 

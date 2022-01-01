@@ -376,9 +376,6 @@
               <artifactId>maven-javadoc-plugin</artifactId>
               <configuration>
                 <source>8</source>
-                <additionalJOptions>
-                  <additionalJOption>--no-module-directories</additionalJOption>
-                </additionalJOptions>
               </configuration>
             </plugin>
           </plugins>

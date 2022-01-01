@@ -38,7 +38,7 @@ public interface AuthModule {
      * Identify the subject based on the given information.
      * 
      * @param token
-     * @return an info object containing the principal of the subject, or <tt>null</tt> if the login failed
+     * @return an info object containing the principal of the subject, or {@code null} if the login failed
      */
     AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException;
 

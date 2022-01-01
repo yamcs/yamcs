@@ -115,7 +115,7 @@ public class YConfiguration {
     /**
      * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
      * <p>
-     * This method is intended for client tools and make store or use files from <tt>~/.yamcs</tt>.
+     * This method is intended for client tools and make store or use files from {@code ~/.yamcs}.
      */
     public synchronized static void setupTool() {
         File userConfigDirectory = new File(System.getProperty("user.home"), ".yamcs");
@@ -321,7 +321,9 @@ public class YConfiguration {
      * If the key is pointing to a map, creates and returns a configuration object out of that map
      * <p>
      * The returned object will have its parent set to this object
-     * <p>If the key does not exist a ConfigurationException is thrown.
+     * <p>
+     * If the key does not exist a ConfigurationException is thrown.
+     *
      * @param key
      * @return
      */
@@ -332,11 +334,12 @@ public class YConfiguration {
 
     /**
      * Same as {@link #getConfig(String)} but return an empty config if the key does not exist.
+     *
      * @param key
      * @return
      */
     public YConfiguration getConfigOrEmpty(String key) {
-        if(root.containsKey(key)) {
+        if (root.containsKey(key)) {
             return getConfig(key);
         } else {
             return YConfiguration.emptyConfig();

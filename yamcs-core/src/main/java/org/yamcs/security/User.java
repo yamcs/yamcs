@@ -24,7 +24,7 @@ import org.yamcs.security.protobuf.UserAccountRecordDetail;
  * <li>Object privileges that grant the user the right to perform an action on a specific object.
  * </ul>
  * 
- * Additionally a special attribute <tt>superuser</tt> may have been granted to a user. Users with this attribute are
+ * Additionally a special attribute {@code superuser} may have been granted to a user. Users with this attribute are
  * not subjected to privilege checking (i.e. they are allowed everything, even without being assigned privileges).
  */
 public class User extends Account {

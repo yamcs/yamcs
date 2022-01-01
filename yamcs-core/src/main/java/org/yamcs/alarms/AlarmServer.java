@@ -66,13 +66,13 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     /**
-     * Returns the active alarm for the specified <tt>subject</tt> if it also matches the specified <tt>id</tt>.
+     * Returns the active alarm for the specified {@code subject} if it also matches the specified {@code id}.
      * 
      * @param subject
      *            the subject to look for.
      * @param id
      *            the expected id of the active alarm.
-     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     * @return the active alarm, or {@code null} if no alarm was found
      * @throws AlarmSequenceException
      *             when the specified id does not match the id of the active alarm
      */
@@ -88,11 +88,11 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     /**
-     * Returns the active alarm for the specified <tt>subject</tt>.
+     * Returns the active alarm for the specified {@code subject}.
      * 
      * @param subject
      *            the subject to look for.
-     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     * @return the active alarm, or {@code null} if no alarm was found
      */
     public ActiveAlarm<T> getActiveAlarm(S subject) {
         return activeAlarms.get(subject);

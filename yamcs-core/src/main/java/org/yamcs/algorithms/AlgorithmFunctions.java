@@ -16,7 +16,7 @@ import org.yamcs.xtceproc.ProcessorData;
 /**
  * Library of functions available from within Algorithm scripts using this naming scheme:
  * <p>
- * The java method <tt>AlgorithmFunctions.[method]</tt> is available in scripts as <tt>Yamcs.[method]</tt>
+ * The java method {@code AlgorithmFunctions.[method]} is available in scripts as {@code Yamcs.[method]}
  */
 public class AlgorithmFunctions {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmFunctions.class);
