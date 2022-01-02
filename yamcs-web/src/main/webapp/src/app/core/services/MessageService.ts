@@ -2,8 +2,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { BehaviorSubject, filter, map, Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
