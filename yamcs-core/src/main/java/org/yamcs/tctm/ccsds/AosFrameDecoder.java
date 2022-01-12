@@ -89,7 +89,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
         dataOffset += aosParams.insertZoneLength;
 
-        atf.setVcFrameSeq(ByteArrayUtils.decode3Bytes(data, offset + 2));
+        atf.setVcFrameSeq(ByteArrayUtils.decodeUnsigned3Bytes(data, offset + 2));
 
         if (vmp.ocfPresent) {
             dataEnd -= 4;

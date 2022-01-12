@@ -148,7 +148,7 @@ public class ColSimulator extends AbstractSimulator {
         byte[] p1 = new byte[p.length + 4];
         System.arraycopy(p, 0, p1, 4, p.length);
         p1[0] = (byte) 0xFE;
-        ByteArrayUtils.encodeShort(p1.length, p1, 2);
+        ByteArrayUtils.encodeUnsignedShort(p1.length, p1, 2);
         return p1;
     }
 

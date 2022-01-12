@@ -77,7 +77,7 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
             return null;
         }
         
-        ByteArrayUtils.encodeShort(binary.length - 7, binary, 4);// set packet length
+        ByteArrayUtils.encodeUnsignedShort(binary.length - 7, binary, 4);// set packet length
         int seqCount = seqFiller.fill(binary);
         commandHistoryPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
 
