@@ -31,7 +31,7 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>../packet-viewer/etc</directory>
+      <directory>../packet-viewer/etc-packaged</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>
 
