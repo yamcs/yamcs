@@ -214,6 +214,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     /**
      * retrieve the subscribed values from cache
+     * 
      * @param subscriptionId
      * @return
      */
@@ -224,15 +225,15 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             throw new InvalidRequestIdentification("Invalid subcription id", subscriptionId);
         }
         long now = prm.processor.getCurrentTime();
-        
+
         List<ParameterValue> values = prm.getValuesFromCache(subscr.params.keySet());
         List<ParameterValueWithId> pvlist = new ArrayList<>(values.size());
         for (ParameterValue pv : values) {
-            if(pv.isExpired(now)) {
+            if (pv.isExpired(now)) {
                 pv = new ParameterValue(pv);
                 pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
             }
-            if(subscr.checkExpiration && pv.hasExpirationTime()) {
+            if (subscr.checkExpiration && pv.hasExpirationTime()) {
                 subscr.pvexp.put(pv.getParameter(), pv);
             }
             List<ParameterWithId> l = subscr.params.get(pv.getParameter());
@@ -242,11 +243,19 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
             addValueForAllIds(pvlist, l, pv);
         }
-        
+
         return pvlist;
     }
-    
 
+    /**
+     * Retrieve a list of parameter values from cache. This call does not block.
+     * 
+     * @param idList
+     * @param user
+     * @return
+     * @throws InvalidIdentification
+     * @throws NoPermissionException
+     */
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
         List<ParameterWithId> plist = checkNames(idList);
@@ -302,7 +311,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
      */
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
-        if(subscriptionId == subscribeAllId) {
+        if (subscriptionId == subscribeAllId) {
             updateAllSubscription(subscriptionId, items);
             return;
         }
@@ -333,8 +342,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     private void updateAllSubscription(int subscriptionId, List<ParameterValue> items) {
         List<ParameterValueWithId> plist = new ArrayList<>(items.size());
-        for(ParameterValue pv: items) {
-            plist.add(new ParameterValueWithId(pv, NamedObjectId.newBuilder().setName(pv.getParameterQualifiedName()).build()));
+        for (ParameterValue pv : items) {
+            plist.add(new ParameterValueWithId(pv,
+                    NamedObjectId.newBuilder().setName(pv.getParameterQualifiedName()).build()));
         }
         listener.update(subscriptionId, plist);
     }
@@ -446,7 +456,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for (ParameterValue pv : items) {
             Parameter p = pv.getParameter();
             ParameterValue oldPv;
-            if(pv.hasExpirationTime()) {
+            if (pv.hasExpirationTime()) {
                 oldPv = subscription.pvexp.put(p, pv);
             } else {
                 oldPv = subscription.pvexp.remove(p);
