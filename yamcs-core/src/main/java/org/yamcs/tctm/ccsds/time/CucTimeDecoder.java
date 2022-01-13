@@ -1,6 +1,6 @@
 package org.yamcs.tctm.ccsds.time;
 
-import org.yamcs.tctm.TimeDecoder;
+import org.yamcs.time.TimeDecoder;
 import org.yamcs.utils.ByteSupplier;
 
 /**
@@ -54,10 +54,45 @@ public class CucTimeDecoder implements TimeDecoder {
         }
     }
 
+    @Override
+    public long decode(byte[] buf, int offset) {
+        return decode(getSupplier(buf, offset));
+    }
+
+    /**
+     * Returns the time in an unspecified unit.
+     * <p>
+     * Can be used when the on-board time is free running.
+     * 
+     * <p>
+     * It is assumed that the buffer will contain enough data; if not, an {@link ArrayIndexOutOfBoundsException} will be
+     * thrown.
+     * 
+     * @param buf
+     *            the time will be read from this buffer at the given offset.
+     * @param offset
+     *            offset in the buffer where to read the time from
+     * @return time
+     * 
+     */
+    @Override
+    public long decodeRaw(byte[] buf, int offset) {
+        return decodeRaw(getSupplier(buf, offset));
+    }
+
+    static ByteSupplier getSupplier(byte[] buf, int offset) {
+        return new ByteSupplier() {
+            int o = offset;
+
+            @Override
+            public byte getAsByte() {
+                return buf[o++];
+            }
+        };
+    }
     /**
      * Assuming that the basic time unit is second, return the number of milliseconds.
      */
-    @Override
     public long decode(ByteSupplier s) {
         int btBytes, ftBytes;
         if (basicTimeBytes < 0) {
@@ -104,7 +139,6 @@ public class CucTimeDecoder implements TimeDecoder {
      * <p>
      * If the length of the basicTime and fractional time is greater than 8, an exception is thrown.
      */
-    @Override
     public long decodeRaw(ByteSupplier s) {
         int n;
         if (basicTimeBytes < 0) {
@@ -137,5 +171,4 @@ public class CucTimeDecoder implements TimeDecoder {
         return "CucTimeDecoder [basicTimeBytes=" + basicTimeBytes
                 + " fractionalTimeBytes=" + fractionalTimeBytes + "]";
     }
-
 }

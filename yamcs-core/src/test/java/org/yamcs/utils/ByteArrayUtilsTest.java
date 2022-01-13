@@ -6,9 +6,6 @@ import static org.yamcs.utils.StringConverter.*;
 import org.junit.Test;
 
 public class ByteArrayUtilsTest {
-
-
-
     @Test
     public void testPlusOne() {
         assertEquals("0102", plusOne("0101"));
