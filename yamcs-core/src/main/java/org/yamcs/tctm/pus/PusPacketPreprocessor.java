@@ -6,6 +6,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -88,6 +89,10 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         super(yamcsInstance, config);
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
         timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
+        if (timeDecoder == null) {
+            this.timeDecoder = new CucTimeDecoder(-1);
+            this.timeEpoch = TimeEpochs.GPS;
+        }
     }
 
     @Override
