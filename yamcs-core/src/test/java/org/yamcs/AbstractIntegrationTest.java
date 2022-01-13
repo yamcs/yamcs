@@ -158,7 +158,7 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void connectionFailed(ClientException exception) {
+        public void connectionFailed(Throwable cause) {
         }
 
         @Override

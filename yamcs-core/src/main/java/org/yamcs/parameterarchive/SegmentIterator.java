@@ -129,7 +129,6 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             }
             if (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
-                System.out.println("got from realtime filler segment of size: " + curValue.size());
             }
         }
     }

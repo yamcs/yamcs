@@ -7,11 +7,7 @@ import org.codehaus.janino.SimpleCompiler;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-
-import org.yamcs.yarch.streamsql.AggregateExpression;
-import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public abstract class CompilableAggregateExpression extends AggregateExpression {
 

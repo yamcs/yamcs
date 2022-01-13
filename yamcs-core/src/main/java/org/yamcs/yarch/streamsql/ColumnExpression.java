@@ -5,13 +5,10 @@ import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FieldReturnCompiledExpression;
 import org.yamcs.yarch.ProtobufDataType;
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 
 import java.util.Set;
 
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -115,8 +112,9 @@ public class ColumnExpression extends Expression {
         case STRING:
         case ENUM:
             return DataType.STRING;
+        default:
+            throw new GenericStreamSqlException("Cannot use protobuf fields of type '" + type + "' in sql expressions");
         }
-        throw new GenericStreamSqlException("Cannot use protobuf fields of type '" + type + "' in sql expressions");
     }
 
     @Override

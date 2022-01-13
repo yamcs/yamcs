@@ -30,7 +30,7 @@ public class CommandQueue {
     private String name;
     private Set<String> users = new HashSet<>();
     private Set<String> groups = new HashSet<>();
-    private Levels minLevel = Levels.none;
+    private Levels minLevel = Levels.NONE;
 
     private ConcurrentLinkedQueue<ActiveCommand> commands = new ConcurrentLinkedQueue<>();
     QueueState defaultState;
@@ -106,7 +106,7 @@ public class CommandQueue {
             return false;
         }
 
-        Levels level = Levels.none;
+        Levels level = Levels.NONE;
 
         if (metaCmd.getEffectiveDefaultSignificance() != null) {
             level = metaCmd.getEffectiveDefaultSignificance().getConsequenceLevel();

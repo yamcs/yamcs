@@ -186,7 +186,7 @@ public class AggrrayBuilder {
     }
 
     public void clear() {
-
+        rootBuilder.clear();
     }
 
     interface ValueBuilder {
@@ -194,7 +194,6 @@ public class AggrrayBuilder {
 
         void clear();
     }
-
 
     class BasicValueBuilder implements ValueBuilder {
         Value v;
@@ -304,4 +303,5 @@ public class AggrrayBuilder {
             }
         }
     }
+
 }

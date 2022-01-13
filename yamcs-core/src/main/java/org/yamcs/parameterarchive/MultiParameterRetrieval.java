@@ -40,7 +40,7 @@ public class MultiParameterRetrieval {
             ParameterId paraId = mpvr.parameterIds[i];
 
             ParameterRequest req = new ParameterRequest(mpvr.start, mpvr.stop, mpvr.ascending, mpvr.retrieveEngValues,
-                    mpvr.retrieveRawValues & paraId.hasRawValue(), mpvr.retrieveParamStatus);
+                    mpvr.retrieveRawValues && paraId.hasRawValue(), mpvr.retrieveParamStatus);
 
             if (parameterGroupIds != null) {
                 queueIterator(queue, paraId, parameterGroupIds[i], req);

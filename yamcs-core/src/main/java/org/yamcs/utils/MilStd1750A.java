@@ -64,8 +64,7 @@ public class MilStd1750A {
             return 0;
         }
         m = m >> 14;
-        long r = ((m << 8) & 0xFFFFFF_00_0000L) | ((e << 16) & 0xFF_0000) | (m & 0xFFFF);
-        return r;
+        return ((m << 8) & 0xFFFFFF_00_0000L) | ((e << 16) & 0xFF_0000) | (m & 0xFFFF);
     }
 
     /**

@@ -328,7 +328,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     private Transaction getProtoTransaction(MessageLite msg) {
-        Transaction tx = new Transaction() {
+        return new Transaction() {
             @Override
             public byte getType() {
                 return Message.STREAM_INFO;
@@ -352,7 +352,6 @@ public class ReplicationMaster extends AbstractYamcsService {
                 return instanceId;
             }
         };
-        return tx;
     }
 
     public ChannelHandler newChannelHandler(Request req) {

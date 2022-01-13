@@ -48,9 +48,7 @@ public class ParameterRequest {
     }
 
     public ParameterRequest copy() {
-        ParameterRequest req1 = new ParameterRequest(start, stop, ascending, retrieveEngineeringValues,
+        return new ParameterRequest(start, stop, ascending, retrieveEngineeringValues,
                 retrieveRawValues, retrieveParameterStatus);
-
-        return req1;
     }
 }

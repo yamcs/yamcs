@@ -11,19 +11,19 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     protected Stream stream;
     final DataType dataType;
     final TupleDefinition tdefTemplate;
-    public final static String CNAME_TRIGGER_TIME = "triggerTime";
-    public final static String CNAME_CLEARED_BY = "clearedBy";
-    public final static String CNAME_CLEAR_MSG = "clearedMessage";
-    public final static String CNAME_CLEARED_TIME = "clearedTime";
+    public static final String CNAME_TRIGGER_TIME = "triggerTime";
+    public static final String CNAME_CLEARED_BY = "clearedBy";
+    public static final String CNAME_CLEAR_MSG = "clearedMessage";
+    public static final String CNAME_CLEARED_TIME = "clearedTime";
 
-    public final static String CNAME_ACK_BY = "acknowledgedBy";
-    public final static String CNAME_ACK_MSG = "acknowledgeMessage";
-    public final static String CNAME_ACK_TIME = "acknowledgeTime";
+    public static final String CNAME_ACK_BY = "acknowledgedBy";
+    public static final String CNAME_ACK_MSG = "acknowledgeMessage";
+    public static final String CNAME_ACK_TIME = "acknowledgeTime";
 
-    public final static String CNAME_SHELVED_BY = "shelvedBy";
-    public final static String CNAME_SHELVED_MSG = "shelvedMessage";
-    public final static String CNAME_SHELVED_TIME = "shelvedTime";
-    public final static String CNAME_SHELVE_DURATION = "shelvedDuration";
+    public static final String CNAME_SHELVED_BY = "shelvedBy";
+    public static final String CNAME_SHELVED_MSG = "shelvedMessage";
+    public static final String CNAME_SHELVED_TIME = "shelvedTime";
+    public static final String CNAME_SHELVE_DURATION = "shelvedDuration";
 
     public AlarmStreamer(Stream s, DataType dataType, TupleDefinition tdefTemplate) {
         this.stream = s;

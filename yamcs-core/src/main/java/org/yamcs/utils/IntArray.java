@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * int array
+ * expandable array of ints
  * 
  * 
  * @author nm

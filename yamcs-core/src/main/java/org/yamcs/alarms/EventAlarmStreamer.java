@@ -15,11 +15,11 @@ import org.yamcs.yarch.Stream;
  */
 public class EventAlarmStreamer extends AlarmStreamer<Event> {
 
-    static public final DataType EVENT_DATA_TYPE = DataType
+    public static final DataType EVENT_DATA_TYPE = DataType
             .protobuf(Event.class.getName());
-    static public final String CNAME_TRIGGER = "triggerEvent";
-    static public final String CNAME_CLEAR = "clearEvent";
-    static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedEvent";
+    public static final String CNAME_TRIGGER = "triggerEvent";
+    public static final String CNAME_CLEAR = "clearEvent";
+    public static final String CNAME_SEVERITY_INCREASED = "severityIncreasedEvent";
     
     public EventAlarmStreamer(Stream s) {
        super(s, EVENT_DATA_TYPE, StandardTupleDefinitions.EVENT_ALARM);

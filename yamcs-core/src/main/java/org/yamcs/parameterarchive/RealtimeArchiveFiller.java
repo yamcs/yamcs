@@ -21,7 +21,6 @@ import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.Spec.OptionType;
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
@@ -53,10 +52,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     final String yamcsInstance;
     Processor realtimeProcessor;
     int subscriptionId;
-    protected final ParameterIdDb parameterIdMap;
-    protected final ParameterGroupIdDb parameterGroupIdMap;
-    final ParameterArchive parameterArchive;
-    final private Log log;
     ExecutorService executor;
     Map<Integer, SegmentQueue> queues = new HashMap<>();
     private YamcsServer yamcsServer;
@@ -73,11 +68,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
     public RealtimeArchiveFiller(ParameterArchive parameterArchive, YConfiguration config) {
         super(parameterArchive);
-        this.parameterArchive = parameterArchive;
-        this.parameterIdMap = parameterArchive.getParameterIdDb();
-        this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
         this.yamcsInstance = parameterArchive.getYamcsInstance();
-        log = new Log(this.getClass(), yamcsInstance);
 
         // flushInterval = config.getInt("flushInterval", 300);
         processorName = config.getString("processorName", processorName);
@@ -212,8 +203,12 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         }, executor);
     }
 
+    /**
+     * Called when risking running out of memory, drop all data
+     */
     @Override
     protected void abort() {
+        queues.clear();
     }
 
     private int getDefaultNumThreads() {

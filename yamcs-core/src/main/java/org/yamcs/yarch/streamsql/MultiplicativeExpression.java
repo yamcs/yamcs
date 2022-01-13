@@ -2,12 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import java.util.List;
 
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.MultOp;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-
-
 
 public class MultiplicativeExpression extends Expression {
     List<MultOp> ops;

@@ -636,7 +636,7 @@ public class ArchiveClient {
         }
         CompletableFuture<ListTagsResponse> f = new CompletableFuture<>();
         tagService.listTags(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getTagList());
+        return f.thenApply(ListTagsResponse::getTagList);
     }
 
     public CompletableFuture<ArchiveTag> updateTag(EditTagRequest request) {
@@ -674,7 +674,7 @@ public class ArchiveClient {
         }
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
         alarmService.listAlarms(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getAlarmsList());
+        return f.thenApply(ListAlarmsResponse::getAlarmsList);
     }
 
     public CompletableFuture<List<TableRecord>> listRecords(String table) {
@@ -728,7 +728,7 @@ public class ArchiveClient {
                 .setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         CompletableFuture<TimeSeries> f = new CompletableFuture<>();
         parameterArchiveService.getParameterSamples(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getSampleList());
+        return f.thenApply(TimeSeries::getSampleList);
     }
 
     public CompletableFuture<List<Range>> getRanges(String parameter, Instant start, Instant stop,
@@ -749,7 +749,7 @@ public class ArchiveClient {
         }
         CompletableFuture<Ranges> f = new CompletableFuture<>();
         parameterArchiveService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(ranges -> ranges.getRangeList());
+        return f.thenApply(Ranges::getRangeList);
     }
 
     public CompletableFuture<List<String>> getEventSources() {

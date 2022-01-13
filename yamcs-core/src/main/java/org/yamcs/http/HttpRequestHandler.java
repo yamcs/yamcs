@@ -222,6 +222,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             return;
+        default: // continue below
         }
 
         Handler handler = httpServer.createHandler(path[1]);
@@ -236,7 +237,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             contentExpected = true;
             return;
         }
-
         // Too bad.
         sendPlainTextError(ctx, req, NOT_FOUND);
     }

@@ -60,10 +60,6 @@ public class ConnectedWebSocketClient extends ConnectedClient {
         wsHandler.sendData(dataType, data);
     }
 
-    @Override
-    public void processorQuit() {
-    }
-
     public void socketClosed() {
         resources.forEach(WebSocketResource::socketClosed);
     }

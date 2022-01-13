@@ -248,7 +248,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         b.setOrder(order);
         b.addAllUsers(queue.getUsers());
         b.addAllGroups(queue.getGroups());
-        if (queue.getMinLevel() != Levels.none) {
+        if (queue.getMinLevel() != Levels.NONE) {
             b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
         }
         if (queue.getStateExpirationRemainingS() != -1) {

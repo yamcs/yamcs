@@ -549,17 +549,17 @@ public class XtceToGpbAssembler {
 
     public static SignificanceLevelType toSignificanceLevelType(Levels level) {
         switch (level) {
-        case none:
+        case NONE:
             return SignificanceLevelType.NONE;
-        case watch:
+        case WATCH:
             return SignificanceLevelType.WATCH;
-        case warning:
+        case WARNING:
             return SignificanceLevelType.WARNING;
-        case distress:
+        case DISTRESS:
             return SignificanceLevelType.DISTRESS;
-        case critical:
+        case CRITICAL:
             return SignificanceLevelType.CRITICAL;
-        case severe:
+        case SEVERE:
             return SignificanceLevelType.SEVERE;
         default:
             throw new IllegalStateException("Unexpected level " + level);
@@ -658,8 +658,7 @@ public class XtceToGpbAssembler {
             for (UnitType ut : bdt.getUnitSet()) {
                 infob.addUnitSet(toUnitInfo(ut));
             }
-        }
-        if (parameterType instanceof AggregateParameterType) {
+        } else if (parameterType instanceof AggregateParameterType) {
             AggregateParameterType apt = (AggregateParameterType) parameterType;
             for (Member member : apt.getMemberList()) {
                 MemberInfo.Builder memberb = MemberInfo.newBuilder();
@@ -683,8 +682,7 @@ public class XtceToGpbAssembler {
                 }
                 infob.addMember(memberb);
             }
-        }
-        if (parameterType instanceof ArrayParameterType) {
+        } else if (parameterType instanceof ArrayParameterType) {
             ArrayParameterType apt = (ArrayParameterType) parameterType;
             ArrayInfo.Builder arrayInfob = ArrayInfo.newBuilder();
             List<IntegerValue> dims = apt.getSize();
@@ -715,7 +713,10 @@ public class XtceToGpbAssembler {
                 arrayInfob.setType(toParameterTypeInfo(elementType, detail));
             }
             infob.setArrayInfo(arrayInfob);
+        } else {
+            throw new IllegalStateException("unknown parameter type " + parameterType);
         }
+
         if (detail == DetailLevel.FULL) {
             if (parameterType instanceof BaseDataType) {
                 BaseDataType bdt = (BaseDataType) parameterType;
@@ -1106,22 +1107,22 @@ public class XtceToGpbAssembler {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
         resultb.setLabel(xtceAlarmItem.getEnumerationLabel());
         switch (xtceAlarmItem.getAlarmLevel()) {
-        case normal:
+        case NORMAL:
             resultb.setLevel(AlarmLevelType.NORMAL);
             break;
-        case watch:
+        case WATCH:
             resultb.setLevel(AlarmLevelType.WATCH);
             break;
-        case warning:
+        case WARNING:
             resultb.setLevel(AlarmLevelType.WARNING);
             break;
-        case distress:
+        case DISTRESS:
             resultb.setLevel(AlarmLevelType.DISTRESS);
             break;
-        case critical:
+        case CRITICAL:
             resultb.setLevel(AlarmLevelType.CRITICAL);
             break;
-        case severe:
+        case SEVERE:
             resultb.setLevel(AlarmLevelType.SEVERE);
             break;
         default:

@@ -6,8 +6,11 @@ import java.util.List;
 
 import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.FileDirective;
+import org.yamcs.logging.Log;
 
 public class MetadataPacket extends CfdpPacket implements FileDirective {
+    static final Log log = new Log(MetadataPacket.class);
+
     private long fileSize;
     private LV sourceFileName;
     private LV destinationFileName;
@@ -65,6 +68,8 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
             case 5:
                 flowLabel = tempTLV;
                 break;
+            default:
+                log.debug("Ignoring unknown TLV: {} ", tempTLV);
             }
         }
     }

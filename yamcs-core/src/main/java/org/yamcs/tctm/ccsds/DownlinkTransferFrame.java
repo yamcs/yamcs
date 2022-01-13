@@ -1,7 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
 import org.yamcs.time.Instant;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Transfer frame is an interface covering the three CCSDS transfer frames types:

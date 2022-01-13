@@ -5,20 +5,20 @@ import com.google.protobuf.Any;
 @SuppressWarnings("serial")
 public class ClientException extends Exception {
 
-    private ExceptionData detail;
+    private final ExceptionData detail;
 
     public ClientException(String message) {
-        super(message);
+        this(message, null);
+    }
+
+    public ClientException(Throwable t) {
+        this(null, t);
     }
 
     public ClientException(String message, Throwable t) {
         super(message, t);
+        this.detail = null;
     }
-
-    public ClientException(Throwable t) {
-        super(t);
-    }
-
     public ClientException(ExceptionData detail) {
         super(detail.getMessage());
         this.detail = detail;

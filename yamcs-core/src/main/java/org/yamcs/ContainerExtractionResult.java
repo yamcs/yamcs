@@ -6,13 +6,13 @@ import org.yamcs.xtce.SequenceContainer;
  * Holds the definition of a container, the content of its slice and some positioning information inside that slice
  */
 public class ContainerExtractionResult {
-    final private SequenceContainer container;
-    final private byte[] containerContent;
-    final private int offset;
-    final private int bitPosition;
+    private final SequenceContainer container;
+    private final byte[] containerContent;
+    private final int offset;
+    private final int bitPosition;
 
-    final private long acquisitionTime;
-    final private long generationTime;
+    private final long acquisitionTime;
+    private final long generationTime;
     final boolean derivedFromRoot;
 
     public ContainerExtractionResult(SequenceContainer container,

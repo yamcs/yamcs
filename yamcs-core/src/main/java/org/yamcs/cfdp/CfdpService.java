@@ -82,6 +82,8 @@ public class CfdpService extends AbstractYamcsService
     static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
     static final String ETYPE_PDU_DECODING_ERROR = "PDU_DECODING_ERROR";
 
+    static final String BUCKET_OPT = "bucket";
+
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
 
@@ -135,7 +137,7 @@ public class CfdpService extends AbstractYamcsService
         Spec entitySpec = new Spec();
         entitySpec.addOption("name", OptionType.STRING);
         entitySpec.addOption("id", OptionType.INTEGER);
-        entitySpec.addOption("bucket", OptionType.STRING).withDefault(null);
+        entitySpec.addOption(BUCKET_OPT, OptionType.STRING).withDefault(null);
 
         Spec spec = new Spec();
         spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
@@ -251,8 +253,8 @@ public class CfdpService extends AbstractYamcsService
                     throw new ConfigurationException("A local entity named '" + name + "' has already been configured");
                 }
                 Bucket bucket = null;
-                if (c.containsKey("bucket")) {
-                    bucket = getBucket(c.getString("bucket"), c.getBoolean("global", true));
+                if (c.containsKey(BUCKET_OPT)) {
+                    bucket = getBucket(c.getString(BUCKET_OPT), c.getBoolean("global", true));
                 }
                 EntityConf ent = new EntityConf(id, name, bucket);
                 localEntities.put(name, ent);
@@ -267,8 +269,8 @@ public class CfdpService extends AbstractYamcsService
                     throw new ConfigurationException("A local entity named '" + name + "' has already been configured");
                 }
                 Bucket bucket = null;
-                if (c.containsKey("bucket")) {
-                    bucket = getBucket(c.getString("bucket"), c.getBoolean("global", true));
+                if (c.containsKey(BUCKET_OPT)) {
+                    bucket = getBucket(c.getString(BUCKET_OPT), c.getBoolean("global", true));
                 }
                 EntityConf ent = new EntityConf(id, name, bucket);
                 remoteEntities.put(name, ent);

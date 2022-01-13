@@ -67,19 +67,19 @@ public class AlarmRanges implements Serializable {
 
     public void addRange(DoubleRange range, AlarmLevels level) {
         switch (level) {
-        case watch:
+        case WATCH:
             addWatchRange(range);
             break;
-        case warning:
+        case WARNING:
             addWarningRange(range);
             break;
-        case distress:
+        case DISTRESS:
             addDistressRange(range);
             break;
-        case critical:
+        case CRITICAL:
             addCriticalRange(range);
             break;
-        case severe:
+        case SEVERE:
             addSevereRange(range);
             break;
         default:

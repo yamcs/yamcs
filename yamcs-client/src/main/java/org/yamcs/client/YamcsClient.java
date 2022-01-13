@@ -151,9 +151,9 @@ public class YamcsClient {
             authorizationCode = baseClient.authorizeKerberos(spnegoInfo);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw new UnauthorizedException();
         }
 
@@ -161,14 +161,15 @@ public class YamcsClient {
             baseClient.loginWithAuthorizationCode(authorizationCode);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw e;
         }
         Credentials creds = baseClient.getCredentials();
         creds.setSpnegoInfo(spnegoInfo); // Can get reused when the access token expires
     }
+
 
     public synchronized void login(String username, char[] password) throws ClientException {
         pollServer();
@@ -176,9 +177,9 @@ public class YamcsClient {
             baseClient.login(username, password);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw e;
         }
     }
@@ -197,22 +198,21 @@ public class YamcsClient {
                     Throwable cause = e.getCause();
                     if (cause instanceof UnauthorizedException) {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
                             cl.connectionFailed((UnauthorizedException) cause);
                         }
-                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+                        logConnectionFailed(cause);
                         throw (UnauthorizedException) cause; // Jump out
                     } else {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
+                            cl.connectionFailed(cause);
                         }
-                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+                        logConnectionFailed(cause);
                     }
                 } catch (TimeoutException e) {
                     for (ConnectionListener cl : connectionListeners) {
-                        cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                        cl.connectionFailed(e);
                     }
-                    log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+                    logConnectionFailed(e);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     for (ConnectionListener cl : connectionListeners) {
@@ -279,16 +279,16 @@ public class YamcsClient {
             return;
         } catch (SSLException | GeneralSecurityException | TimeoutException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw new ClientException("Cannot connect WebSocket client", e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
+                cl.connectionFailed(cause);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+            logConnectionFailed(cause);
             if (cause instanceof WebSocketHandshakeException && cause.getMessage().contains("401")) {
                 throw new UnauthorizedException();
             } else if (cause instanceof ClientException) {
@@ -676,4 +676,9 @@ public class YamcsClient {
             return client;
         }
     }
+
+    private void logConnectionFailed(Throwable cause) {
+        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+    }
+
 }

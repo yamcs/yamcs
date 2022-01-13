@@ -32,7 +32,7 @@ import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.util.DoubleRange;
-
+import static org.yamcs.xtce.xml.Constants.*;
 /**
  * 
  * Experimental export of Mission Database to XTCE.
@@ -240,7 +240,7 @@ public class XtceAssembler {
         writeNameReferenceAttribute(doc, "parameterTypeRef", (NameDescription) ptype); // Required attribute
 
         if (parameter.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", parameter.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, parameter.getInitialValue().toString());
         }
         writeNameDescription(doc, parameter);
         if (hasNonDefaultProperties(parameter)) {
@@ -329,7 +329,7 @@ public class XtceAssembler {
             writeNameDescription(doc, member);
             doc.writeAttribute("typeRef", mtype.getName());
             if (member.getInitialValue() != null) {
-                doc.writeAttribute("initialValue", member.getInitialValue().toString());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, member.getInitialValue().toString());
             }
             doc.writeEndElement();
         }
@@ -340,13 +340,13 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("IntegerParameterType");
         if (ptype.getSizeInBits() != 32) {
-            doc.writeAttribute("sizeInBits", Integer.toString(ptype.getSizeInBits()));
+            doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(ptype.getSizeInBits()));
         }
         if (!ptype.isSigned()) {
             doc.writeAttribute("signed", "false");
         }
         if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
         if (ptype.getValidRange() != null) {
@@ -370,9 +370,9 @@ public class XtceAssembler {
     private void writeFloatParameterType(XMLStreamWriter doc, FloatParameterType ptype)
             throws XMLStreamException {
         doc.writeStartElement("FloatParameterType");
-        doc.writeAttribute("sizeInBits", Integer.toString(ptype.getSizeInBits()));
+        doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(ptype.getSizeInBits()));
         if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
         if (ptype.getValidRange() != null) {
@@ -457,7 +457,7 @@ public class XtceAssembler {
         for (EnumerationAlarmItem eai : list) {
             doc.writeStartElement("EnumerationAlarm");
             doc.writeAttribute("enumerationLabel", eai.getEnumerationLabel());
-            doc.writeAttribute("alarmLevel", eai.getAlarmLevel().name());
+            doc.writeAttribute("alarmLevel", eai.getAlarmLevel().xtceName);
             doc.writeEndElement();// EnumerationAlarm
         }
 
@@ -469,9 +469,9 @@ public class XtceAssembler {
         doc.writeStartElement("BooleanParameterType");
         if (ptype.getInitialValue() != null) {
             if (ptype.getInitialValue()) {
-                doc.writeAttribute("initialValue", ptype.getOneStringValue());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getOneStringValue());
             } else {
-                doc.writeAttribute("initialValue", ptype.getZeroStringValue());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getZeroStringValue());
             }
         }
         doc.writeAttribute("oneStringValue", ptype.getOneStringValue());
@@ -491,12 +491,12 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("AbsoluteTimeParameterType");
         if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
         writeUnitSet(doc, ptype.getUnitSet());
 
-        doc.writeStartElement("Encoding");
+        doc.writeStartElement(ELEM_ENCODING);
         if (ptype.getScale() != 1) {
             doc.writeAttribute("scale", Double.toString(ptype.getScale()));
         }
@@ -546,7 +546,7 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryParameterType");
         if (ptype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", ptype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
 
@@ -596,7 +596,7 @@ public class XtceAssembler {
 
     private void writeEnumeratedDataType(XMLStreamWriter doc, EnumeratedDataType type) throws XMLStreamException {
         if (type.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", type.getInitialValue());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, type.getInitialValue());
         }
         writeNameDescription(doc, type);
         doc.writeStartElement("EnumerationList");
@@ -628,10 +628,10 @@ public class XtceAssembler {
     private void writeIntegerArgumentType(XMLStreamWriter doc, IntegerArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("IntegerArgumentType");
-        doc.writeAttribute("sizeInBits", Integer.toString(atype.getSizeInBits()));
+        doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(atype.getSizeInBits()));
         doc.writeAttribute("signed", atype.isSigned() ? "true" : "false");
         if (atype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", atype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getInitialValue().toString());
         }
         writeNameDescription(doc, atype);
         if (atype.getValidRange() != null) {
@@ -655,9 +655,9 @@ public class XtceAssembler {
     private void writeFloatArgumentType(XMLStreamWriter doc, FloatArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("FloatArgumentType");
-        doc.writeAttribute("sizeInBits", Integer.toString(atype.getSizeInBits()));
+        doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(atype.getSizeInBits()));
         if (atype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", atype.getInitialValue().toString());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getInitialValue().toString());
         }
         writeNameDescription(doc, atype);
         if (atype.getValidRange() != null) {
@@ -690,9 +690,9 @@ public class XtceAssembler {
         doc.writeStartElement("BooleanArgumentType");
         if (ptype.getInitialValue() != null) {
             if (ptype.getInitialValue()) {
-                doc.writeAttribute("initialValue", ptype.getOneStringValue());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getOneStringValue());
             } else {
-                doc.writeAttribute("initialValue", ptype.getZeroStringValue());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getZeroStringValue());
             }
         }
         doc.writeAttribute("oneStringValue", ptype.getOneStringValue());
@@ -710,7 +710,7 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryArgumentType");
         if (atype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", StringConverter.arrayToHexString(atype.getInitialValue()));
+            doc.writeAttribute(ATTR_INITIAL_VALUE, StringConverter.arrayToHexString(atype.getInitialValue()));
         }
         writeNameDescription(doc, atype);
         writeUnitSet(doc, atype.getUnitSet());
@@ -725,13 +725,13 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("AbsoluteTimeArgumentType");
         if (atype.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", atype.getInitialValue());
+            doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getInitialValue());
         }
         writeNameDescription(doc, atype);
 
         writeUnitSet(doc, atype.getUnitSet());
 
-        doc.writeStartElement("Encoding");
+        doc.writeStartElement(ELEM_ENCODING);
         if (atype.getScale() != 1) {
             doc.writeAttribute("scale", Double.toString(atype.getScale()));
         }
@@ -783,7 +783,7 @@ public class XtceAssembler {
         } else if (iv instanceof DynamicIntegerValue) {
             doc.writeStartElement("DynamicValue");
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", div.getParameterInstanceRef());
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, div.getParameterInstanceRef());
             doc.writeEndElement();
         }
 
@@ -799,7 +799,7 @@ public class XtceAssembler {
     private void writeParameterInstanceRef(XMLStreamWriter doc, String elementName, ParameterInstanceRef pinstRef)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
-        doc.writeAttribute("parameterRef", getNameReference(pinstRef));
+        doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(pinstRef));
         if (pinstRef.getInstance() != 0) {
             doc.writeAttribute("instance", Integer.toString(pinstRef.getInstance()));
         }
@@ -813,7 +813,7 @@ public class XtceAssembler {
     private void writeParameterInstanceRef(XMLStreamWriter doc, String elementName, ArgumentInstanceRef pref)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
-        doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + pref.getName());
+        doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + pref.getName());
         if (!pref.useCalibratedValue()) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
@@ -843,22 +843,22 @@ public class XtceAssembler {
 
         switch (encoding.getEncoding()) {
         case ONES_COMPLEMENT:
-            doc.writeAttribute("encoding", "onesComplement");
+            doc.writeAttribute(ATTR_ENCODING, "onesComplement");
             break;
         case SIGN_MAGNITUDE:
-            doc.writeAttribute("encoding", "signMagnitude");
+            doc.writeAttribute(ATTR_ENCODING, "signMagnitude");
             break;
         case TWOS_COMPLEMENT:
-            doc.writeAttribute("encoding", "twosComplement");
+            doc.writeAttribute(ATTR_ENCODING, "twosComplement");
             break;
         case UNSIGNED:
-            doc.writeAttribute("encoding", "unsigned");
+            doc.writeAttribute(ATTR_ENCODING, "unsigned");
             break;
         default:
             log.warn("Unexpected encoding " + encoding);
         }
 
-        doc.writeAttribute("sizeInBits", Integer.toString(encoding.getSizeInBits()));
+        doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(encoding.getSizeInBits()));
         writeNumericDataEncodingCommonProps(doc, encoding);
 
         doc.writeEndElement();// IntegerDataEncoding
@@ -925,7 +925,7 @@ public class XtceAssembler {
         for (MathOperation.Element me : mathOp.getElementList()) {
             doc.writeStartElement(me.getType().xtceName());
             if (me.getParameterInstanceRef() != null) {
-                doc.writeAttribute("parameterRef", getNameReference(me.getParameterInstanceRef()));
+                doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(me.getParameterInstanceRef()));
             }
             if (me.getType() == ElementType.OPERATOR || me.getType() == ElementType.VALUE_OPERAND) {
                 doc.writeCharacters(me.toString());
@@ -936,9 +936,9 @@ public class XtceAssembler {
 
     private void writeFloatDataEncoding(XMLStreamWriter doc, FloatDataEncoding encoding)
             throws XMLStreamException {
-        doc.writeStartElement("FloatDataEncoding");
-        doc.writeAttribute("encoding", encoding.getEncoding().name());
-        doc.writeAttribute("sizeInBits", Integer.toString(encoding.getSizeInBits()));
+        doc.writeStartElement(ELEM_FLOAT_DATA_ENCODING);
+        doc.writeAttribute(ATTR_ENCODING, encoding.getEncoding().name());
+        doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(encoding.getSizeInBits()));
 
         if (encoding.getByteOrder() != ByteOrder.BIG_ENDIAN) {
             doc.writeAttribute("byteOrder", "leastSignificantByteFirst");
@@ -952,10 +952,10 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("StringDataEncoding");
         if (!"UTF-8".equals(encoding.getEncoding())) {
-            doc.writeAttribute("encoding", encoding.getEncoding());
+            doc.writeAttribute(ATTR_ENCODING, encoding.getEncoding());
         }
 
-        doc.writeStartElement("SizeInBits");
+        doc.writeStartElement(ELEM_SIZE_IN_BITS);
         if (encoding.getSizeInBits() > 0) {
             doc.writeStartElement("Fixed");
             doc.writeStartElement("FixedValue");
@@ -981,7 +981,7 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryDataEncoding");
 
-        doc.writeStartElement("SizeInBits");
+        doc.writeStartElement(ELEM_SIZE_IN_BITS);
         doc.writeStartElement("FixedValue");
         doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
         doc.writeEndElement();
@@ -1129,7 +1129,7 @@ public class XtceAssembler {
         writeNameReferenceAttribute(doc, "argumentTypeRef", (NameDescription) argument.getArgumentType());
         writeNameDescription(doc, argument);
         if (argument.getInitialValue() != null) {
-            doc.writeAttribute("initialValue", argument.getArgumentType().toString(argument.getInitialValue()));
+            doc.writeAttribute(ATTR_INITIAL_VALUE, argument.getArgumentType().toString(argument.getInitialValue()));
         }
         doc.writeEndElement();
     }
@@ -1195,11 +1195,11 @@ public class XtceAssembler {
                 doc.writeStartElement("InputParameterInstanceRef");
                 ParameterInstanceRef pref = inp.getParameterInstance();
                 if (pref != null) {
-                    doc.writeAttribute("parameterRef", getNameReference(pref));
+                    doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(pref));
                 } else {// TODO - this should be written as part of an InputArgumentInstanceRef but only such a section
                         // is valid in XTCE
                     ArgumentInstanceRef aref = inp.getArgumentRef();
-                    doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
+                    doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
                 }
                 if (inp.getInputName() != null) {
                     doc.writeAttribute("inputName", inp.getInputName());
@@ -1212,7 +1212,7 @@ public class XtceAssembler {
             doc.writeStartElement("OutputSet");
             for (OutputParameter outp : algorithm.getOutputList()) {
                 doc.writeStartElement("OutputParameterRef");
-                doc.writeAttribute("parameterRef", getNameReference(outp.getParameter()));
+                doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(outp.getParameter()));
                 doc.writeAttribute("outputName", outp.getOutputName());
                 doc.writeEndElement();
             }
@@ -1230,7 +1230,7 @@ public class XtceAssembler {
         doc.writeStartElement("TriggerSet");
         for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
             doc.writeStartElement("OnParameterUpdateTrigger");
-            doc.writeAttribute("parameterRef", getNameReference(trigger.getParameter()));
+            doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(trigger.getParameter()));
             doc.writeEndElement();
         }
         for (OnPeriodicRateTrigger trigger : triggerSet.getOnPeriodicRateTriggers()) {
@@ -1259,10 +1259,10 @@ public class XtceAssembler {
     private void writeSequenceEntry(XMLStreamWriter doc, SequenceEntry entry) throws XMLStreamException {
         if (entry instanceof ArrayParameterEntry) {
             doc.writeStartElement("ArrayParameterRefEntry");
-            doc.writeAttribute("parameterRef", getNameReference(((ArrayParameterEntry) entry).getParameter()));
+            doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(((ArrayParameterEntry) entry).getParameter()));
         } else if (entry instanceof ParameterEntry) {
             doc.writeStartElement("ParameterRefEntry");
-            doc.writeAttribute("parameterRef", getNameReference(((ParameterEntry) entry).getParameter()));
+            doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(((ParameterEntry) entry).getParameter()));
         } else if (entry instanceof ContainerEntry) {
             doc.writeStartElement("ContainerRefEntry");
             doc.writeAttribute("containerRef", getNameReference(((ContainerEntry) entry).getContainer()));
@@ -1276,7 +1276,7 @@ public class XtceAssembler {
                 doc.writeAttribute("name", fve.getName());
             }
             doc.writeAttribute("binaryValue", StringConverter.arrayToHexString(fve.getBinaryValue()));
-            doc.writeAttribute("sizeInBits", Integer.toString(fve.getSizeInBits()));
+            doc.writeAttribute(ATTR_SIZE_IN_BITS, Integer.toString(fve.getSizeInBits()));
         } else {
             log.error("Unknown sequence entry type " + entry.getClass() + " used for " + entry);
             return;
@@ -1348,12 +1348,12 @@ public class XtceAssembler {
         ParameterOrArgumentRef ref = comparison.getRef();
         if (ref instanceof ParameterInstanceRef) {
             ParameterInstanceRef pref = (ParameterInstanceRef) ref;
-            doc.writeAttribute("parameterRef", getNameReference(pref));
+            doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(pref));
             if (pref.getInstance() != 0) {
                 doc.writeAttribute("instance", Integer.toString(pref.getInstance()));
             }
         } else {
-            doc.writeAttribute("parameterRef", XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + ref.getName());
+            doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + ref.getName());
         }
 
         boolean ucv = comparison.getRef().useCalibratedValue();
@@ -1380,9 +1380,9 @@ public class XtceAssembler {
         doc.writeStartElement("Condition");
         ParameterOrArgumentRef ref = condition.getLeftRef();
         if (ref instanceof ParameterInstanceRef) {
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ParameterInstanceRef) ref);
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
         } else {
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ArgumentInstanceRef) ref);
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
         }
 
         doc.writeStartElement("ComparisonOperator");
@@ -1391,9 +1391,9 @@ public class XtceAssembler {
 
         ref = condition.getRightRef();
         if (ref instanceof ParameterInstanceRef) {
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ParameterInstanceRef) ref);
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
         } else {
-            writeParameterInstanceRef(doc, "ParameterInstanceRef", (ArgumentInstanceRef) ref);
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
         }
         doc.writeEndElement();
     }
@@ -1467,8 +1467,8 @@ public class XtceAssembler {
             break;
         case PARAMETER_VALUE_CHANGE:
             ParameterValueChange pvc = verifier.getParameterValueChange();
-            doc.writeStartElement("ParameterValueChange");
-            writeParameterInstanceRef(doc, "ParameterRef", pvc.getParameterRef());
+            doc.writeStartElement(ELEM_PARAMETER_VALUE_CHANGE);
+            writeParameterInstanceRef(doc, ELEM_PARAMETER_REF, pvc.getParameterRef());
             doc.writeStartElement("Change");
             doc.writeAttribute("value", Double.toString(pvc.getDelta()));
             doc.writeEndElement();
@@ -1479,7 +1479,7 @@ public class XtceAssembler {
         writeCheckWindow(doc, verifier.getCheckWindow());
         if (verifier.getReturnParameter() != null) {
             doc.writeStartElement("ReturnParmRef");
-            doc.writeAttribute("parameterRef", getNameReference(verifier.getReturnParameter()));
+            doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(verifier.getReturnParameter()));
             doc.writeEndElement();
         }
         doc.writeEndElement();// verifier name (stage)
@@ -1496,7 +1496,7 @@ public class XtceAssembler {
         doc.writeAttribute("timeToStopChecking",
                 dataTypeFactory.newDuration(cw.getTimeToStopChecking()).toString());
 
-        if (cw.getTimeWindowIsRelativeTo() != TimeWindowIsRelativeToType.LastVerifier) {
+        if (cw.getTimeWindowIsRelativeTo() != TimeWindowIsRelativeToType.LAST_VERIFIER) {
             doc.writeAttribute("timeWindowIsRelativeTo", cw.getTimeWindowIsRelativeTo().toXtce());
         }
         doc.writeEndElement();// CheckWindow

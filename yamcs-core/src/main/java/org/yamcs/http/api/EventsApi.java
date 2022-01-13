@@ -60,9 +60,16 @@ import com.google.protobuf.util.Timestamps;
 
 public class EventsApi extends AbstractEventsApi<Context> {
 
+    static final String INFO = "INFO";
+    static final String WATCH = "WATCH";
+    static final String WARNING = "WARNING";
+    static final String DISTRESS = "DISTRESS";
+    static final String CRITICAL = "CRITICAL";
+    static final String SEVERE = "SEVERE";
+    static final String ERROR = "ERROR";
+
     private static final Log log = new Log(EventsApi.class);
 
-    private ProtobufRegistry protobufRegistry;
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
 
@@ -76,7 +83,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
-        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
+        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : INFO;
 
         EventPageToken nextToken = null;
         if (request.hasNext()) {
@@ -95,27 +102,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         if (request.getSourceCount() > 0) {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
@@ -130,6 +117,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);
             }
         }
+        addSeverityFilter(sqlb, severity);
 
         sqlb.descend(desc);
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
@@ -160,6 +148,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
             }
         });
     }
+
+
 
     @Override
     public void createEvent(Context ctx, CreateEventRequest request, Observer<Event> observer) {
@@ -291,28 +281,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
-        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : INFO;
+        addSeverityFilter(sqlb, severity);
 
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
@@ -353,32 +323,13 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
-        String severity = "INFO";
+        String severity = INFO;
         if (request.hasSeverity()) {
             severity = request.getSeverity().toUpperCase();
         }
 
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+        addSeverityFilter(sqlb, severity);
+
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
@@ -529,6 +480,30 @@ public class EventsApi extends AbstractEventsApi<Context> {
         @Override
         public void streamClosed(Stream stream) {
             observer.complete();
+        }
+    }
+
+    private void addSeverityFilter(SqlBuilder sqlb, String severity) {
+        switch (severity) {
+        case INFO:
+            break;
+        case WATCH:
+            sqlb.where("body.severity != 'INFO'");
+            break;
+        case WARNING:
+            sqlb.whereColIn("body.severity", Arrays.asList(WARNING, DISTRESS, CRITICAL, SEVERE, ERROR));
+            break;
+        case DISTRESS:
+            sqlb.whereColIn("body.severity", Arrays.asList(DISTRESS, CRITICAL, SEVERE, ERROR));
+            break;
+        case CRITICAL:
+            sqlb.whereColIn("body.severity", Arrays.asList(CRITICAL, SEVERE, ERROR));
+            break;
+        case SEVERE:
+            sqlb.whereColIn("body.severity", Arrays.asList(SEVERE, ERROR));
+            break;
+        default:
+            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
         }
     }
 

@@ -666,8 +666,9 @@ public class ArrayParameterCache implements ParameterCache {
             case ARRAY:
             case ENUMERATED:
                 return new Object[INITIAL_CAPACITY];
+            default:
+                throw new IllegalStateException("Unknown type " + type);
             }
-            throw new IllegalStateException("Unnown type " + type);
         }
 
         private boolean doubleCapacity() {

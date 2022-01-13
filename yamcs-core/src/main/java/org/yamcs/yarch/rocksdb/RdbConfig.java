@@ -10,7 +10,6 @@ import java.util.regex.PatternSyntaxException;
 import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyOptions;
-import org.rocksdb.CompressionOptions;
 import org.rocksdb.CompressionType;
 import org.rocksdb.DBOptions;
 import org.rocksdb.Env;
@@ -33,6 +32,7 @@ public class RdbConfig {
     public static final String KEY_OPTIONS = "options";
     public static final String KEY_TABLESPACE_NAME_PATTERN = "tablespaceNamePattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
+
     public static final int DEFAULT_MAX_OPEN_FILES = 1000;
 
     static final Map<String, CompressionType> COMP_TYPES = new HashMap<>();
@@ -206,8 +206,7 @@ public class RdbConfig {
                 cfOptions.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
             }
             if (tblspConfig.containsKey("maxBackgroundFlushes")) {
-                options.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
-                cfOptions.setMaxWriteBufferNumber(tblspConfig.getInt("maxWriteBufferNumber"));
+                options.setMaxBackgroundFlushes(tblspConfig.getInt("maxBackgroundFlushes"));
             }
             if (tblspConfig.containsKey("allowConcurrentMemtableWrite")) {
                 options.setAllowConcurrentMemtableWrite(tblspConfig.getBoolean("allowConcurrentMemtableWrite"));

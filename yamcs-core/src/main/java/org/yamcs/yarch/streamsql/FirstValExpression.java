@@ -3,11 +3,7 @@ package org.yamcs.yarch.streamsql;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledFirstVal;
 import org.yamcs.yarch.DataType;
-
-import org.yamcs.yarch.streamsql.AggregateExpression;
-import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class FirstValExpression extends AggregateExpression {
     public FirstValExpression(Expression[] args, boolean star) throws ParseException {

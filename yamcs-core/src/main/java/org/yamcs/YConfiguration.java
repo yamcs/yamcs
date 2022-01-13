@@ -52,9 +52,9 @@ public class YConfiguration {
     // this is used for the old style when the methods of YConfiguration were called in a static way
     // Nowadays, please use Yconfiguration.getConfig() to make a child config, and then use the .path() to get the
     // similar path.
-    static private IdentityHashMap<Object, String> staticConfPaths = new IdentityHashMap<>();
+    private static IdentityHashMap<Object, String> staticConfPaths = new IdentityHashMap<>();
 
-    static final private YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
+    private static final YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
     /**
      * The parent configuration
      */
@@ -347,7 +347,7 @@ public class YConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    static public Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
+    public static Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Map) {
@@ -385,7 +385,7 @@ public class YConfiguration {
      * @return
      * @throws ConfigurationException
      */
-    static public String getString(Map<String, Object> m, String key) throws ConfigurationException {
+    public static String getString(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
 
         Object o = m.get(key);
@@ -397,7 +397,7 @@ public class YConfiguration {
         }
     }
 
-    static public String getString(Map<String, Object> m, String key, String defaultValue)
+    public static String getString(Map<String, Object> m, String key, String defaultValue)
             throws ConfigurationException {
         if (m.containsKey(key)) {
             return getString(m, key);
@@ -518,7 +518,7 @@ public class YConfiguration {
      * @return the boolean config value
      * @throws ConfigurationException
      */
-    static public boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)
+    public static boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)
             throws ConfigurationException {
         Object o = m.get(key);
         if (o != null) {
@@ -533,7 +533,7 @@ public class YConfiguration {
         }
     }
 
-    static public boolean getBoolean(Map<String, Object> m, String key) throws ConfigurationException {
+    public static boolean getBoolean(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Boolean) {
@@ -586,7 +586,7 @@ public class YConfiguration {
         return getInt(m, key1, defaultValue);
     }
 
-    static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
+    public static int getInt(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Integer) {
@@ -609,7 +609,7 @@ public class YConfiguration {
      * @throws ConfigurationException
      *             if the key is present but it's not an int
      */
-    static public int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
+    public static int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return defaultValue;
         }
@@ -630,7 +630,7 @@ public class YConfiguration {
         return getLong(root, key, defaultValue);
     }
 
-    static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
+    public static long getLong(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Integer) {
@@ -656,7 +656,7 @@ public class YConfiguration {
         }
     }
 
-    static public byte[] getBinary(Map<String, Object> m, String key) throws ConfigurationException {
+    public static byte[] getBinary(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof byte[]) {
@@ -684,7 +684,7 @@ public class YConfiguration {
      * @throws ConfigurationException
      *             if the key is present but it's not an long
      */
-    static public long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
+    public static long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return v;
         }
@@ -699,7 +699,7 @@ public class YConfiguration {
         }
     }
 
-    static public double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
+    public static double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return v;
         }
@@ -870,7 +870,7 @@ public class YConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
+    public static <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof List) {

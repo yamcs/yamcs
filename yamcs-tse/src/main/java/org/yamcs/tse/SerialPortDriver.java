@@ -12,8 +12,7 @@ import com.fazecast.jSerialComm.SerialPort;
  * Not thread safe.
  */
 public class SerialPortDriver extends InstrumentDriver {
-
-    private static SerialPort link;
+    private SerialPort link;
 
     private String devicePath;
     private int baudrate = 9600;

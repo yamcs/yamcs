@@ -181,7 +181,7 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
 
     @Override
     public void handle(HandlerContext ctx) {
-        String negotiateHeader = ctx.getCredentials("Negotiate");
+        String negotiateHeader = ctx.getCredentials(NEGOTIATE);
         if (negotiateHeader != null) {
             try {
                 byte[] spnegoToken = Base64.getDecoder().decode(negotiateHeader);

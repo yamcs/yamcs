@@ -178,15 +178,15 @@ public class GbpToXtceAssembler {
     private static AlarmLevels toAlarmsLevel(AlarmLevelType level) throws BadRequestException {
         switch (level) {
         case CRITICAL:
-            return AlarmLevels.critical;
+            return AlarmLevels.CRITICAL;
         case DISTRESS:
-            return AlarmLevels.distress;
+            return AlarmLevels.DISTRESS;
         case SEVERE:
-            return AlarmLevels.severe;
+            return AlarmLevels.SEVERE;
         case WARNING:
-            return AlarmLevels.warning;
+            return AlarmLevels.WARNING;
         case WATCH:
-            return AlarmLevels.watch;
+            return AlarmLevels.WATCH;
         case NORMAL:
             throw new BadRequestException("Normal alarm range does not need to be specified");
         default:

@@ -41,7 +41,7 @@ public class StreamConfig {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public static synchronized StreamConfig getInstance(String yamcsInstance) throws ConfigurationException {
-        return instances.computeIfAbsent(yamcsInstance, k -> new StreamConfig(k));
+        return instances.computeIfAbsent(yamcsInstance, StreamConfig::new);
     }
 
     @SuppressWarnings("unchecked")
@@ -124,7 +124,7 @@ public class StreamConfig {
         } else if (type == StandardStreamType.TC) {
             if (streamConf.containsKey("tcPatterns")) {
                 List<String> patterns =  streamConf.getList("tcPatterns");
-                List<Pattern> patterns1 = patterns.stream().map(s -> Pattern.compile(s)).collect(Collectors.toList());
+                List<Pattern> patterns1 = patterns.stream().map(Pattern::compile).collect(Collectors.toList());
                 entry = new TcStreamConfigEntry(streamName, processor, patterns1);
             } else {
                 entry = new TcStreamConfigEntry(streamName, processor);
@@ -145,7 +145,8 @@ public class StreamConfig {
     }
 
     public List<String> getStreamNames(StandardStreamType type) {
-        return entries.stream().filter(sce -> sce.type == type).map(sce -> sce.getName()).collect(Collectors.toList());
+        return entries.stream().filter(sce -> sce.type == type).map(StreamConfigEntry::getName)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -230,7 +231,7 @@ public class StreamConfig {
 
     
     public List<TmStreamConfigEntry> getTmEntries() {
-        return entries.stream().filter(sce -> sce instanceof TmStreamConfigEntry).map(sce -> (TmStreamConfigEntry) sce)
+        return entries.stream().filter(TmStreamConfigEntry.class::isInstance).map(TmStreamConfigEntry.class::cast)
                 .collect(Collectors.toList());
     }
     
@@ -240,7 +241,7 @@ public class StreamConfig {
     }
 
     public List<TcStreamConfigEntry> getTcEntries() {
-        return entries.stream().filter(sce -> sce instanceof TcStreamConfigEntry).map(sce -> (TcStreamConfigEntry) sce)
+        return entries.stream().filter(TcStreamConfigEntry.class::isInstance).map(TcStreamConfigEntry.class::cast)
                 .collect(Collectors.toList());
     }
 

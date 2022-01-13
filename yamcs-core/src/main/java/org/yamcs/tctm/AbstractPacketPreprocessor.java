@@ -267,7 +267,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 tcoService.timestamp(obt, tmPacket);
             } else {
                 long t = timeDecoder.decode(packet, offset);
-                long gentime = timeEpoch == null ? t : shiftFromEpoch(t);
+                long gentime = shiftFromEpoch(t);
                 tmPacket.setGenerationTime(gentime);
                 if (tcoService != null) {
                     tcoService.verify(tmPacket);

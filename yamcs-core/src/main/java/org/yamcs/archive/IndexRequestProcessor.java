@@ -1,9 +1,9 @@
 package org.yamcs.archive;
 
+import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,6 +40,8 @@ import com.google.protobuf.util.Timestamps;
  *
  */
 public class IndexRequestProcessor implements Runnable {
+    static final SecureRandom random = new SecureRandom();
+
     final String yamcsInstance;
     final static AtomicInteger counter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
@@ -65,7 +67,7 @@ public class IndexRequestProcessor implements Runnable {
     int count = 0;
     HistoRequest[] hreq = new HistoRequest[5];
     MergingResult mergingResult;
-    static Random random = new Random();
+
 
     public IndexRequestProcessor(TmIndexService tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
         log.debug("new index request: {}", req);

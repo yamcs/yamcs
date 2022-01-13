@@ -12,11 +12,7 @@ import static org.yamcs.parameterarchive.ParameterArchive.*;
 class BackFillerTask extends AbstractArchiveFiller {
     // ParameterGroup_id -> PGSegment
     protected Map<Integer, PGSegment> pgSegments = new HashMap<>();
-
-
-
     private Processor processor;
-    boolean aborted = false;
 
     public BackFillerTask(ParameterArchive parameterArchive) {
         super(parameterArchive);

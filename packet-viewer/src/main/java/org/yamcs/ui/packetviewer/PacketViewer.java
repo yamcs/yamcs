@@ -1010,8 +1010,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connectionFailed(ClientException exception) {
-        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + exception);
+    public void connectionFailed(Throwable cause) {
+        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + cause);
     }
 
     @Override

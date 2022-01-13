@@ -40,9 +40,8 @@ public class FixedSizeTimeDecoder implements TimeDecoder {
 
     }
 
-
     private long get(byte[] buf, int offset) {
-        if (offset + size >= buf.length) {
+        if (offset + size > buf.length) {
             throw new BufferUnderflowException();
         }
         switch (size) {
@@ -50,9 +49,9 @@ public class FixedSizeTimeDecoder implements TimeDecoder {
             return ByteArrayUtils.decodeInt(buf, offset);
         case 8:
             return ByteArrayUtils.decodeLong(buf, offset);
+        default:
+            throw new IllegalStateException("unknown size " + size);
         }
-        // shouldn't reach this
-        throw new IllegalStateException();
     }
 
     @Override
