@@ -15,7 +15,7 @@ public class AbsoluteTimeArgumentType extends AbsoluteTimeDataType implements Ar
     }
 
     /**
-     * Creates a shallow copy of the argument type, giving it a new name.
+     * Copy constructor
      */
     public AbsoluteTimeArgumentType(AbsoluteTimeArgumentType t) {
         super(t);
@@ -53,7 +53,5 @@ public class AbsoluteTimeArgumentType extends AbsoluteTimeDataType implements Ar
         public AbsoluteTimeArgumentType build() {
             return new AbsoluteTimeArgumentType(this);
         }
-
-        
     }
 }

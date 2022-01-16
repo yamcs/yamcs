@@ -3378,7 +3378,7 @@ public class XtceStaxReader {
                 readEncoding(spaceSystem, typeBuilder);
             } else if (isEndElementWithName(ELEM_ABSOLUTE_TIME_ARGUMENT_TYPE)) {
                 if (typeBuilder.getReferenceTime() == null) {
-                    throw new XMLStreamException("AbsoluteTimeParameterType without a reference time not supported",
+                    throw new XMLStreamException("AbsoluteTimeArgumentType without a reference time not supported",
                             xmlEvent.getLocation());
                 }
                 return incompleteType;
