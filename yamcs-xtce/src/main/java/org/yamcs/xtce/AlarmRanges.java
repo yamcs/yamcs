@@ -83,7 +83,7 @@ public class AlarmRanges implements Serializable {
             addSevereRange(range);
             break;
         default:
-            throw new RuntimeException("Level '" + level + "' not allowed for alarm ranges");
+            throw new IllegalArgumentException("Level '" + level + "' not allowed for alarm ranges");
 
         }
     }
