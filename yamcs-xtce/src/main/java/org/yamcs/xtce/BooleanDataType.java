@@ -18,7 +18,7 @@ public class BooleanDataType extends BaseDataType {
         if (builder.zeroStringValue != null) {
             this.zeroStringValue = builder.zeroStringValue;
         }
-        if (builder.baseType != null && builder.baseType instanceof BooleanDataType) {
+        if (builder.baseType instanceof BooleanDataType) {
             BooleanDataType baseType = (BooleanDataType) builder.baseType;
             if (builder.oneStringValue == null && baseType.oneStringValue != null) {
                 this.oneStringValue = baseType.oneStringValue;

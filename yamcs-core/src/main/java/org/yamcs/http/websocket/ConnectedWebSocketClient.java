@@ -41,9 +41,7 @@ public class ConnectedWebSocketClient extends ConnectedClient {
             if (oldProcessor != null) {
                 resource.unselectProcessor();
             }
-            if (newProcessor != null) {
-                resource.selectProcessor(newProcessor);
-            }
+            resource.selectProcessor(newProcessor);
         }
     }
 

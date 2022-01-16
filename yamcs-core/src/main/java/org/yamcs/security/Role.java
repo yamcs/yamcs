@@ -66,7 +66,7 @@ public class Role {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Role)) {
+        if (!(obj instanceof Role)) {
             return false;
         }
         Role other = (Role) obj;

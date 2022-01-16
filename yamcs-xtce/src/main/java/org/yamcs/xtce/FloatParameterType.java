@@ -19,7 +19,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         this.defaultAlarm = builder.defaultAlarm;
         this.contextAlarmList = builder.contextAlarmList;
 
-        if (builder.baseType != null && builder.baseType instanceof FloatParameterType) {
+        if (builder.baseType instanceof FloatParameterType) {
             FloatParameterType baseType = (FloatParameterType) builder.baseType;
             if (builder.defaultAlarm == null && baseType.defaultAlarm != null) {
                 this.defaultAlarm = baseType.defaultAlarm;

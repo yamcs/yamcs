@@ -1079,7 +1079,7 @@ public class YamcsServer {
         }
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             Formatter formatter = handler.getFormatter();
-            if (formatter != null && formatter instanceof ConsoleFormatter) {
+            if (formatter instanceof ConsoleFormatter) {
                 ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.noColor);
             }
         }

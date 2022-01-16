@@ -125,7 +125,7 @@ public class TableDefinitionConstructor  extends Constructor {
             for(Object o:l) {
                 Map<String, Object> m=(Map)o;
                 Object o1=m.get("idx");
-                if((o1==null) || !(o1 instanceof Integer)){
+                if (!(o1 instanceof Integer)) {
                     throw new IllegalArgumentException("idx not specified or not integer");
                 }
                 int idx=(Integer)o1;

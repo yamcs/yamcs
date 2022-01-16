@@ -38,7 +38,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
 
         this.stringEncoding = builder.stringEncoding;
 
-        if (builder.baseEncoding != null && builder.baseEncoding instanceof FloatDataEncoding) {
+        if (builder.baseEncoding instanceof FloatDataEncoding) {
             FloatDataEncoding baseEncoding = (FloatDataEncoding) builder.baseEncoding;
             if (builder.defaultCalibrator == null) {
                 this.defaultCalibrator = baseEncoding.defaultCalibrator;

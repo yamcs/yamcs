@@ -292,7 +292,7 @@ public class Command implements Comparable<Command> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Command)) {
+        if (!(obj instanceof Command)) {
             return false;
         }
         Command other = (Command) obj;

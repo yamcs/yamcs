@@ -129,7 +129,7 @@ public abstract class Account {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Account)) {
+        if (!(obj instanceof Account)) {
             return false;
         }
         Account other = (Account) obj;

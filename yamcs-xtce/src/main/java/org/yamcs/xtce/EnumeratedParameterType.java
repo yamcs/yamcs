@@ -18,7 +18,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         this.contextAlarmList  = builder.contextAlarmList;
         
         
-        if (builder.baseType != null && builder.baseType instanceof EnumeratedParameterType) {
+        if (builder.baseType instanceof EnumeratedParameterType) {
             EnumeratedParameterType baseType = (EnumeratedParameterType) builder.baseType;
             if(builder.defaultAlarm == null && baseType.defaultAlarm!=null) {
                 this.defaultAlarm = baseType.defaultAlarm;
