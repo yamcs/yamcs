@@ -378,8 +378,8 @@ public class AlgorithmManager extends AbstractProcessorService
             // engineByAlgorithm
             HashSet<Parameter> stillRequired = new HashSet<>(); // parameters still required by any other algorithm
             for (Iterator<ActiveAlgorithm> it = Lists.reverse(globalCtx.executionOrder).iterator(); it.hasNext();) {
-                ActiveAlgorithm engine = it.next();
-                Algorithm algo = engine.getAlgorithm();
+                ActiveAlgorithm activeAlgo = it.next();
+                Algorithm algo = activeAlgo.getAlgorithm();
                 boolean keep = false;
 
                 // Keep if any other output parameters are still subscribed to
@@ -388,20 +388,10 @@ public class AlgorithmManager extends AbstractProcessorService
                         keep = true;
                         break;
                     }
-                }
-
-                if (!algo.canProvide(paramDef)) { // Clean-up unused engines
-                    // For any of its outputs, check if it's still used by any algorithm
-                    for (OutputParameter op : algo.getOutputSet()) {
-                        if (requestedOutParams.contains(op.getParameter())) {
+                    for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
+                        if (getParametersOfInterest(otherAlgo).contains(oParameter.getParameter())) {
                             keep = true;
                             break;
-                        }
-                        for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
-                            if (getParametersOfInterest(otherAlgo).contains(op.getParameter())) {
-                                keep = true;
-                                break;
-                            }
                         }
                     }
                 }
