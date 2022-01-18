@@ -24,7 +24,7 @@ public interface AlgorithmExecListener {
      * @param inputValues
      * @param errorMsg
      */
-    default public void algorithmError(List<RawEngValue> inputValues, String errorMsg) {
+    public default void algorithmError(List<RawEngValue> inputValues, String errorMsg) {
 
     }
 

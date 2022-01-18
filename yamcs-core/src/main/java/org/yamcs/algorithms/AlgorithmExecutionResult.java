@@ -20,9 +20,9 @@ import org.yamcs.parameter.RawEngValue;
  *
  */
 public class AlgorithmExecutionResult {
-    final List<RawEngValue> inputValues;
-    final List<ParameterValue> outputValues;
-    final Object returnValue;
+    private final List<RawEngValue> inputValues;
+    private final List<ParameterValue> outputValues;
+    private final Object returnValue;
 
     public AlgorithmExecutionResult(List<RawEngValue> inputValues, Object returnValue,
             List<ParameterValue> outputValues) {

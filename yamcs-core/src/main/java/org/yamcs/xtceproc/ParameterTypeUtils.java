@@ -222,6 +222,12 @@ public class ParameterTypeUtils {
             } else {
                 return null;
             }
+        } else if (ptype instanceof EnumeratedParameterType) {
+            if (value instanceof String) {
+                return ValueUtility.getStringValue((String) value);
+            } else {
+                return null;
+            }
         } else {
             throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
         }

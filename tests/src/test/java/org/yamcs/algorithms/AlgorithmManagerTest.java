@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.InvalidIdentification;
+import org.yamcs.LoggingUtils;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorService;
@@ -30,6 +31,7 @@ import org.yamcs.protobuf.AlgorithmTrace.Log;
 import org.yamcs.protobuf.AlgorithmTrace.Run;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -95,10 +97,21 @@ public class AlgorithmManagerTest {
                 (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
+
+        // enable temporarily the logging at trrace level to see that we can have access to detailed information for
+        // debugging (and also to improve the test coverage...)
+        LoggingUtils.ArrayLogHandler alh = LoggingUtils.startCapture(ScriptAlgorithmExecutor.class);
         tmGenerator.generate_PKT1_1();
+        LoggingUtils.stopCapture(ScriptAlgorithmExecutor.class);
+
         assertEquals(2, params.size());
         verifyEqual(params.get(0), floatPara, 0.1672918f);
         verifyEqual(params.get(1), floatAddition, 2.1672918f);
+
+        // a bit fragile these messages but it's easy enough to change the test in case the messages would change
+        assertTrue(alh.contains("Running algorithm float_add( f0: [r: 1000, v: 0.1672918], f1: [r: 2.0, v: 2.0])"));
+        assertTrue(alh.contains("algorithm float_add outputs: "
+                + "( null: OutputValueBinding [rawValue=null, value=2.1672918051481247, updated=true]) returnValue: null"));
     }
 
     @Ignore
@@ -176,53 +189,54 @@ public class AlgorithmManagerTest {
     }
 
     @Test
-    public void testEvents() throws Exception {
+    public void testFunctions() throws Exception {
         // No need to subscribe. This algorithm doesn't have any outputs
         // and is therefore auto-activated (will only trigger if an input changes)
 
         proc.start();
         tmGenerator.generate_PKT1_6(1, 0);
-        assertEquals(6, q.size());
-        Event evt = q.poll();
-        assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
-        assertEquals("low", evt.getMessage());
-        assertEquals(EventSeverity.INFO, evt.getSeverity());
+        assertEquals(17, q.size());
+        String algName = "/REFMDB/SUBSYS1/script_functions";
+        String defaultSource = "CustomAlgorithm";
 
-        evt = q.poll(); // watch event
-        assertEquals(EventSeverity.WATCH, evt.getSeverity());
+        for (EventSeverity sev : EventSeverity.values()) {
+            if (sev == EventSeverity.ERROR) {
+                continue;
+            }
 
-        evt = q.poll(); // warning event
-        assertEquals(EventSeverity.WARNING, evt.getSeverity());
+            String s = sev.name().toLowerCase();
+            verifyEvent(q.poll(), sev, defaultSource, algName, s + " message1");
+            verifyEvent(q.poll(), sev, s + "_source", s + " type", s + " message2");
+        }
 
-        evt = q.poll(); // distress event
-        assertEquals("source", evt.getSource());
-        assertEquals("type", evt.getType());
-        assertEquals("message distress", evt.getMessage());
-        assertEquals(EventSeverity.DISTRESS, evt.getSeverity());
+        // processor name
+        verifyEventMessage(q.poll(), proc.getInstance());
 
-        evt = q.poll(); // critical
-        assertEquals(EventSeverity.CRITICAL, evt.getSeverity());
+        // processor name
+        verifyEventMessage(q.poll(), proc.getName());
 
-        evt = q.poll(); // severe
-        assertEquals(EventSeverity.SEVERE, evt.getSeverity());
+        // calibrate polynomial
+        verifyEventMessage(q.poll(), "0.0001672918");
 
-        tmGenerator.generate_PKT1_6(7, 0);
-        assertEquals(6, q.size());
-        evt = q.poll();
-        assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
-        assertEquals("med", evt.getMessage());
-        assertEquals(EventSeverity.WARNING, evt.getSeverity());
-        q.clear();
+        // calibrate enumeration
+        verifyEventMessage(q.poll(), "one_why not");
 
-        tmGenerator.generate_PKT1_6(10, 0);
-        assertEquals(6, q.size());
-        evt = q.poll();
-        assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
-        assertEquals("high", evt.getMessage());
-        assertEquals(EventSeverity.SEVERE, evt.getSeverity());
+        // little endian to host
+        verifyEventMessage(q.poll(), Long.toString(0xF3F2F1F0l));
+
+
+        System.out.println(q.poll());
+    }
+
+    private void verifyEventMessage(Event evt, String message) {
+        assertEquals(message, evt.getMessage());
+    }
+
+    private void verifyEvent(Event evt, EventSeverity severity, String source, String type, String message) {
+        assertEquals(severity, evt.getSeverity());
+        assertEquals(source, evt.getSource());
+        assertEquals(type, evt.getType());
+        assertEquals(message, evt.getMessage());
     }
 
     @Test
@@ -462,6 +476,49 @@ public class AlgorithmManagerTest {
         ParameterValue pv0 = params.get(0);
         assertEquals("/REFMDB/SUBSYS1/AlgoArray1", pv0.getParameter().getQualifiedName());
         assertEquals(3.0, pv0.getEngValue().getDoubleValue(), 1e-5);
+    }
+
+    @Test
+    public void testAllInOut() throws Exception {
+        Parameter p_sint32 = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_sint32");
+        Parameter p_uint32 = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_uint32");
+        Parameter p_sint64 = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_sint64");
+        Parameter p_uint64 = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_uint64");
+        Parameter p_double = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_double");
+        Parameter p_float = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_float");
+        Parameter p_bool = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_bool");
+        Parameter p_enum = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_enum");
+        Parameter p_string = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_string");
+        Parameter p_binary = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_binary");
+
+
+
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(
+                Arrays.asList(p_sint32, p_uint32, p_sint64, p_uint64, p_double, p_float, p_bool, p_enum, p_string,
+                        p_binary),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        proc.start();
+        // LoggingUtils.enableTracing();
+        tmGenerator.generate_PKT12();
+        assertEquals(10, params.size());
+
+        // from generate_PKT12();
+        assertEquals(-1, params.get(0).getEngValue().getSint32Value());
+        assertEquals(0xF0F1F2F3, params.get(1).getEngValue().getUint32Value());
+        assertEquals(-2, params.get(2).getEngValue().getSint64Value());
+        assertEquals(0xF0F1F2F3F4F5F6F7l, params.get(3).getEngValue().getUint64Value());
+        assertEquals(3.14, params.get(4).getEngValue().getDoubleValue(), 1e-5);
+        assertEquals(2.72f, params.get(5).getEngValue().getFloatValue(), 1e-5);
+        assertEquals(true, params.get(6).getEngValue().getBooleanValue());
+        assertEquals("one_why not", params.get(7).getEngValue().getStringValue());
+
+        // generate_PK12() sends "bla" and the algorithm adds " yes"
+        assertEquals("bla yes", params.get(8).getEngValue().getStringValue());
+
+        // from generate_PK12
+        assertEquals("0102030405", StringConverter.arrayToHexString(params.get(9).getEngValue().getBinaryValue()));
     }
 
     @Test

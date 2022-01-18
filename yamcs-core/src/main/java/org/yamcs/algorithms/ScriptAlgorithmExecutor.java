@@ -96,7 +96,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         // First time for an inputParameter, it will create a ValueBinding object.
         // Further calls will just update that object
         if (valueBinding == null) {
-            valueBinding = toValueBinding(inputParameter, newValue);
+            valueBinding = toValueBinding(newValue);
             functionArgs[position] = valueBinding;
         }
         if (valueBinding == null) {
@@ -118,22 +118,28 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     @Override
     public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
         if (log.isTraceEnabled()) {
-            log.trace(getRunningTraceString());
+            logTraceInput();
         }
         try {
             Object returnValue = invocable.invokeFunction(functionName, functionArgs);
+
+            if (log.isTraceEnabled()) {
+                logTraceOutput(returnValue);
+            }
+
             List<ParameterValue> outputValues = new ArrayList<>();
             List<OutputParameter> outputList = algorithmDef.getOutputList();
             for (int k = 0; k < numOutputs; k++) {
                 OutputParameter outputParameter = outputList.get(k);
                 OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs + k];
                 if (res.updated && (res.value != null || res.rawValue != null)) {
-                    ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res, data);
+                    ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
                     pv.setGenerationTime(genTime);
                     outputValues.add(pv);
                 }
             }
+
             return new AlgorithmExecutionResult(inputValues, returnValue, outputValues);
         } catch (ScriptException e) {
             String msg = getError(e);
@@ -178,7 +184,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return null;
     }
 
-    private String getRunningTraceString() {
+    private void logTraceInput() {
         StringBuilder sb = new StringBuilder();
         sb.append("Running algorithm ").append(algorithmDef.getName())
                 .append("( ");
@@ -192,16 +198,32 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             pos++;
         }
         sb.append(")");
-        return sb.toString();
+        log.trace(sb.toString());
     }
 
+    private void logTraceOutput(Object returnValue) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("algorithm ").append(algorithmDef.getName())
+                .append(" outputs: ( ");
+        int pos = 0;
+        for (OutputParameter p : algorithmDef.getOutputList()) {
+            if (pos != 0) {
+                sb.append(", ");
+            }
+            sb.append(p.getOutputName()).append(": ")
+                    .append(String.valueOf(functionArgs[numInputs + pos]));
+            pos++;
+        }
+        sb.append(") returnValue: ").append(String.valueOf(returnValue));
+        log.trace(sb.toString());
+    }
     /**
      * converts the output of the algorithm to a value corresponding to a parameter type
      * <p>
      * Throws InvalidAlgorithmOutputException if the conversion cannot be made
      */
-    private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding,
-            ProcessingData pdata) throws InvalidAlgorithmOutputException {
+    private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding)
+            throws InvalidAlgorithmOutputException {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();
         DataEncoding de = null;
@@ -245,9 +267,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return pval;
     }
 
-    private ValueBinding toValueBinding(InputParameter inputParameter, RawEngValue pval) {
+    private ValueBinding toValueBinding(RawEngValue pval) {
         try {
-            Class<ValueBinding> clazz = getOrCreateValueBindingClass(inputParameter, pval);
+            Class<ValueBinding> clazz = getOrCreateValueBindingClass(pval);
             if (clazz == null) {
                 return null;
             }
@@ -258,8 +280,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    private Class<ValueBinding> getOrCreateValueBindingClass(InputParameter inputParameter,
-            RawEngValue pval) {
+    private Class<ValueBinding> getOrCreateValueBindingClass(RawEngValue pval) {
 
         String key;
         if (pval.getRawValue() == null) {

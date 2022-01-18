@@ -673,6 +673,47 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
+    public byte[] generate_PKT12() {
+        int pkt12Length = headerLength + 100;
+        ByteBuffer bb = ByteBuffer.allocate(pkt12Length);
+        fill_CcsdsHeader(bb, 995, 12);
+
+        // sint32
+        bb.putInt(-1);
+
+        // uint32
+        bb.putInt(0xF0F1F2F3);
+
+        // sint64
+        bb.putLong(-2);
+
+        // uint64
+        bb.putLong(0xF0F1F2F3F4F5F6F7l);
+
+        // double
+        bb.putDouble(3.14);
+
+        // float
+        bb.putFloat(2.72f);
+
+        // boolean
+        bb.put((byte) 1);
+
+        // enum
+        bb.put((byte) 1);
+
+        // string
+        bb.put("bla".getBytes());
+        bb.put((byte) 0);
+
+        // binary
+        bb.put((byte) 5);
+        bb.put(StringConverter.hexStringToArray("0102030405"));
+
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
     private void putFixedStringParam(ByteBuffer bb, String value, int bits) {
         int baSize = bits / 8;
         if (bits == -1) {

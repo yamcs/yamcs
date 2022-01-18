@@ -2032,7 +2032,7 @@ public class V7Loader extends V7LoaderBase {
             // name
             if (hasColumn(cells, CN_ALGO_PARA_INOUT) || hasColumn(cells, CN_ALGO_PARA_REF)) {
                 throw new SpreadsheetLoadException(ctx,
-                        "Algorithm paramters have to start on the next line from the algorithm name and text definition");
+                        "Algorithm parameters have to start on the next line from the algorithm name and text definition");
             }
 
             // now we search for the matching last row of that algorithm
