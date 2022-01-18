@@ -11,22 +11,26 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -75,16 +79,18 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.tctm.CcsdsPacketInputStream;
 import org.yamcs.tctm.IssPacketPreprocessor;
+import org.yamcs.tctm.PacketInputStream;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -98,6 +104,7 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
+import com.google.common.io.CountingInputStream;
 import com.google.protobuf.ByteString;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -142,7 +149,12 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     String streamName;
     private String defaultNamespace;
-    PacketPreprocessor packetPreprocessor;
+    private PacketPreprocessor realtimePacketPreprocessor;
+
+    private Map<String, FileFormat> fileFormats = new LinkedHashMap<>();
+    private FileFormat currentFileFormat; // null if listening to server
+
+    final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
 
     public PacketViewer(int maxLines) throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -153,8 +165,8 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (config.containsKey("defaultNamespace")) {
             defaultNamespace = config.getString("defaultNamespace");
         }
+        readConfig(null, config);
 
-        packetPreprocessor = new IssPacketPreprocessor(null);
         // table to the left which shows one row per packet
         packetsTable = new PacketsTable(this);
         packetsTable.setMaxLines(maxLines);
@@ -444,7 +456,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         } else if (cmd.equals("open file")) {
             if (openFileDialog == null) {
                 try {
-                    openFileDialog = new OpenFileDialog();
+                    openFileDialog = new OpenFileDialog(fileFormats);
                 } catch (ConfigurationException e) {
                     showError("Cannot load local mdb config: " + e.getMessage());
                     return;
@@ -452,7 +464,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
             int returnVal = openFileDialog.showDialog(this);
             if (returnVal == OpenFileDialog.APPROVE_OPTION) {
-                openFile(openFileDialog.getSelectedFile(), openFileDialog.getSelectedDbConfig());
+                FileFormat fileFormat = openFileDialog.getSelectedFileFormat();
+                openFile(openFileDialog.getSelectedFile(), fileFormat, openFileDialog.getSelectedDbConfig());
             }
         } else if (cmd.equals("connect-yamcs")) {
             if (connectDialog == null) {
@@ -467,13 +480,23 @@ public class PacketViewer extends JFrame implements ActionListener,
             JMenuItem mi = (JMenuItem) ae.getSource();
             for (String[] recentFile : getRecentFiles()) {
                 if (recentFile[0].equals(mi.getToolTipText())) {
-                    openFile(new File(recentFile[0]), recentFile[1]);
+                    if (recentFile.length == 3) {
+                        FileFormat fileFormat = fileFormats.get(recentFile[2]);
+                        if (fileFormat != null) {
+                            openFile(new File(recentFile[0]), fileFormat, recentFile[1]);
+                            break;
+                        }
+                    }
+
+                    FileFormat fileFormat = fileFormats.values().iterator().next();
+                    openFile(new File(recentFile[0]), fileFormat, recentFile[1]);
+                    break;
                 }
             }
         }
     }
 
-    private void openFile(File file, String xtceDb) {
+    private void openFile(File file, FileFormat fileFormat, String xtceDb) {
         if (!file.exists() || !file.isFile()) {
             JOptionPane.showMessageDialog(null, "File not found: " + file, "File not found", JOptionPane.ERROR_MESSAGE);
             return;
@@ -481,9 +504,10 @@ public class PacketViewer extends JFrame implements ActionListener,
         disconnect();
         lastFile = file;
         if (loadLocalXtcedb(xtceDb)) {
-            loadFile();
+            loadFile(fileFormat);
         }
-        updateRecentFiles(lastFile, xtceDb);
+        updateRecentFiles(lastFile, fileFormat, xtceDb);
+        currentFileFormat = fileFormat;
     }
 
     private static class ShortReadException extends Exception {
@@ -562,123 +586,50 @@ public class PacketViewer extends JFrame implements ActionListener,
         return true;
     }
 
-    void loadFile() {
+    void loadFile(FileFormat fileFormat) {
         new SwingWorker<Void, TmPacketData>() {
             ProgressMonitor progress;
+            int packetCount = 0;
 
             @Override
             protected Void doInBackground() throws Exception {
-                boolean isPacts = false;
-                long r;
-
-                try (FileInputStream reader = new FileInputStream(lastFile)) {
-                    byte[] fourb = new byte[4];
-                    TmPacketData packet;
-                    ByteBuffer buf;
-                    int res;
-                    int len, offset = 0;
+                try (CountingInputStream reader = new CountingInputStream(new FileInputStream(lastFile))) {
+                    PacketInputStream packetInputStream = fileFormat.newPacketInputStream(reader);
+                    PacketWithTime packet;
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int) (lastFile.length() >> 10) : maxLines;
                     progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()), null, 0,
                             progressMax);
 
-                    int packetCount = 0;
                     while (!progress.isCanceled()) {
-                        res = reader.read(fourb, 0, 4);
-                        if (res != 4) {
+                        byte[] p = packetInputStream.readPacket();
+                        if (p == null) {
                             break;
                         }
-                        buf = ByteBuffer.allocate(16);
-                        long gentime = TimeEncoding.INVALID_INSTANT;
-                        int seqcount = -1;
-                        if (true || (fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                            buf.put(fourb, 0, 4);
-                            if ((r = reader.read(buf.array(), 4, 12)) != 12) {
-                                throw new ShortReadException(16, r, offset);
-                            }
-                            gentime = CcsdsPacket.getInstant(buf);
-                            seqcount = CcsdsPacket.getSequenceCount(buf);
-                        } else if ((fourb[2] == 0) && (fourb[3] == 0)) { // hrdp packet - first 4 bytes are packet size
-                                                                         // in little endian
-                            if ((r = reader.skip(6)) != 6) {
-                                throw new ShortReadException(6, r, offset);
-                            }
-                            offset += 10;
-                            if ((r = reader.read(buf.array())) != 16) {
-                                throw new ShortReadException(16, r, offset);
-                            }
-                            gentime = CcsdsPacket.getInstant(buf);
-                            seqcount = CcsdsPacket.getSequenceCount(buf);
-                        } else {// pacts packet
-                            isPacts = true;
-                            // read ASCII header up to the second blank
-                            int i, j;
-                            StringBuffer hdr = new StringBuffer();
-                            j = 0;
-                            for (i = 0; i < 4; i++) {
-                                hdr.append((char) fourb[i]);
-                                if (fourb[i] == 32) {
-                                    ++j;
-                                }
-                            }
-                            offset += 4;
-                            while ((j < 2) && (i < 20)) {
-                                int c = reader.read();
-                                if (c == -1) {
-                                    throw new ShortReadException(1, 0, offset);
-                                }
-                                offset++;
-                                hdr.append((char) c);
-                                if (c == 32) {
-                                    ++j;
-                                }
-                                i++;
-                            }
-                            if ((r = reader.read(buf.array())) != 16) {
-                                // throw new ShortReadException(16, r, offset);
+                        PacketPreprocessor packetPreprocessor = fileFormat.getPacketPreprocessor();
+                        packet = packetPreprocessor.process(p);
+
+                        if (packet != null) {
+                            TmPacketData.Builder packetb = TmPacketData.newBuilder()
+                                    .setPacket(ByteString.copyFrom(packet.getPacket()))
+                                    .setGenerationTime(packet.getGenerationTime())
+                                    .setReceptionTime(packet.getReceptionTime())
+                                    .setSequenceNumber(packet.getSeqCount());
+                            publish(packetb.build());
+                            packetCount++;
+                            if (packetCount == maxLines) {
                                 break;
                             }
+                        } else {
+                            log("preprocessor returned null packet");
                         }
-                        len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
-                        if (len < 16) {
-                            log("Short packet read: length: " + len);
-                            break;
-                        }
-                        byte[] bufn = new byte[len];
-                        System.arraycopy(buf.array(), 0, bufn, 0, 16);
-                        r = reader.read(bufn, 16, len - 16);
-                        if (r != len - 16) {
-                            // throw new ShortReadException(len - 16, r, offset);
-                            break;
-                        }
-
-                        TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
-                                .setReceptionTime(TimeEncoding.getWallclockTime());
-                        if (gentime != TimeEncoding.INVALID_INSTANT) {
-                            packetb.setGenerationTime(gentime);
-                        }
-                        if (seqcount >= 0) {
-                            packetb.setSequenceNumber(seqcount);
-                        }
-                        packet = packetb.build();
-
-                        offset += len;
-                        if (isPacts) {
-                            if (reader.skip(1) != 1) {
-                                throw new ShortReadException(1, 0, offset);
-                            }
-                            offset += 1;
-                        }
-                        publish(packet);
-
-                        packetCount++;
-                        if (packetCount == maxLines) {
-                            break;
-                        }
-                        progress.setProgress((maxLines == -1) ? (int) (offset >> 10) : packetCount);
+                        progress.setProgress((maxLines == -1) ? (int) (reader.getCount() >> 10) : packetCount);
                     }
                     reader.close();
+                } catch (EOFException x) {
+                    final String msg = String.format("Encountered end of file while loading %s", lastFile.getName());
+                    log(msg);
                 } catch (Exception x) {
                     x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
@@ -783,6 +734,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         yconnector = new YamcsConnector("PacketViewer");
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
+        currentFileFormat = null;
         updateTitle();
     }
 
@@ -906,11 +858,29 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(packetPreprocessor.process(b));
+            PacketPreprocessor packetPreprocessor = getCurrentPacketPreprocessor();
+            SequenceContainer rootContainer = getCurrentRootContainer();
+            tmProcessor.processPacket(packetPreprocessor.process(b), rootContainer);
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
             showError(msg);
+        }
+    }
+
+    SequenceContainer getCurrentRootContainer() {
+        if (currentFileFormat != null && currentFileFormat.getRootContainer() != null) {
+            return xtcedb.getSequenceContainer(currentFileFormat.getRootContainer());
+        } else {
+            return xtcedb.getRootSequenceContainer();
+        }
+    }
+
+    private PacketPreprocessor getCurrentPacketPreprocessor() {
+        if (currentFileFormat != null) {
+            return currentFileFormat.getPacketPreprocessor();
+        } else {
+            return realtimePacketPreprocessor;
         }
     }
 
@@ -1015,10 +985,15 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (obj instanceof ArrayList) {
             recentFiles = (ArrayList<String[]>) obj;
         }
+        // Remove outdated entries
+        recentFiles = recentFiles.stream()
+                .filter(f -> f.length == 3)
+                .filter(f -> fileFormats.get(f[2]) != null)
+                .collect(Collectors.toList());
         return (recentFiles != null) ? recentFiles : new ArrayList<>();
     }
 
-    private void updateRecentFiles(File file, String xtceDb) {
+    private void updateRecentFiles(File file, FileFormat fileFormat, String xtceDb) {
         String filename = file.getAbsolutePath();
         List<String[]> recentFiles = getRecentFiles();
         boolean exists = false;
@@ -1026,6 +1001,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             String[] entry = recentFiles.get(i);
             if (entry[0].equals(filename)) {
                 entry[1] = xtceDb;
+                entry[2] = fileFormat.getName();
                 recentFiles.add(0, recentFiles.remove(i));
                 exists = true;
             }
@@ -1159,7 +1135,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                 theApp.connectYamcs(ycd);
             } else {
                 File file = new File(fileOrUrl);
-                theApp.openFile(file, (String) options.get("-x"));
+                FileFormat fileFormat = theApp.fileFormats.values().iterator().next();
+                theApp.openFile(file, fileFormat, (String) options.get("-x"));
             }
         }
     }
@@ -1170,5 +1147,61 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     public String getDefaultNamespace() {
         return defaultNamespace;
+    }
+
+    private PacketPreprocessor loadPacketPreprocessor(String instance, Map<String, Object> config) {
+        String packetPreprocessorClassName = YConfiguration.getString(config, CFG_PREPRO_CLASS,
+                IssPacketPreprocessor.class.getName());
+        try {
+            if (config.containsKey("packetPreprocessorArgs")) {
+                Map<String, Object> packetPreprocessorArgs = YConfiguration.getMap(config, "packetPreprocessorArgs");
+                PacketPreprocessor preprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                        packetPreprocessorArgs);
+                return preprocessor;
+            } else {
+                PacketPreprocessor preprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+                return preprocessor;
+            }
+        } catch (ConfigurationException e) {
+            log.error("Cannot instantiate the packet preprocessor", e);
+            throw e;
+        } catch (IOException e) {
+            log.error("Cannot instantiate the packet preprocessor", e);
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    protected void readConfig(String instance, YConfiguration config) {
+        realtimePacketPreprocessor = loadPacketPreprocessor(instance, config.getRoot());
+
+        if (config.containsKey("fileFormats")) {
+            List<Map<String, Object>> fileFormatsConfig = config.getList("fileFormats");
+            for (Map<String, Object> fileFormatConfig : fileFormatsConfig) {
+                String name = YConfiguration.getString(fileFormatConfig, "name");
+                String packetInputStreamClassName = YConfiguration.getString(fileFormatConfig,
+                        "packetInputStreamClassName");
+                Map<String, Object> packetInputStreamArgs = Collections.emptyMap();
+                if (fileFormatConfig.containsKey("packetInputStreamArgs")) {
+                    packetInputStreamArgs = YConfiguration.getMap(fileFormatConfig, "packetInputStreamArgs");
+                }
+
+                PacketPreprocessor filePacketPreprocessor = realtimePacketPreprocessor;
+                if (fileFormatConfig.containsKey(CFG_PREPRO_CLASS)) {
+                    filePacketPreprocessor = loadPacketPreprocessor(instance, fileFormatConfig);
+                }
+
+                FileFormat fileFormat = new FileFormat(name, packetInputStreamClassName, packetInputStreamArgs,
+                        filePacketPreprocessor);
+                fileFormat.setRootContainer(YConfiguration.getString(fileFormatConfig, "rootContainer", null));
+                fileFormats.put(name, fileFormat);
+            }
+        } else {
+            String defaultFormatName = "CCSDS Packets";
+            String defaultPacketInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            Map<String, Object> defaultPacketInputStreamArgs = Collections.emptyMap();
+            fileFormats.put(defaultFormatName, new FileFormat(
+                    defaultFormatName, defaultPacketInputStreamClassName, defaultPacketInputStreamArgs,
+                    realtimePacketPreprocessor));
+        }
     }
 }

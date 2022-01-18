@@ -3,13 +3,16 @@ package org.yamcs.ui.packetviewer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -32,6 +35,9 @@ import org.yamcs.YConfiguration;
  */
 public class OpenFileDialog extends JDialog implements ActionListener {
     private static final long serialVersionUID = 1L;
+
+    private Map<String, FileFormat> fileFormats;
+    private JComboBox<String> fileFormatCombo;
     private JComboBox<String> dbConfigCombo;
     private JFileChooser fileChooser;
     private Preferences prefs;
@@ -47,7 +53,8 @@ public class OpenFileDialog extends JDialog implements ActionListener {
      */
     public static final int APPROVE_OPTION = 0;
 
-    public OpenFileDialog() throws ConfigurationException {
+    public OpenFileDialog(Map<String, FileFormat> fileFormats) throws ConfigurationException {
+        this.fileFormats = fileFormats;
         String[] dbconfigs = new String[0];
         if (YConfiguration.isDefined("mdb")) {
             YConfiguration c = YConfiguration.getConfiguration("mdb");
@@ -56,9 +63,19 @@ public class OpenFileDialog extends JDialog implements ActionListener {
         Arrays.sort(dbconfigs);
         prefs = Preferences.userNodeForPackage(PacketViewer.class);
 
+        String[] fileFormatNames = fileFormats.values().stream()
+                .map(FileFormat::getName)
+                .collect(Collectors.toList())
+                .toArray(new String[0]);
+
+        JPanel fields = new JPanel(new GridLayout(0, 1));
+        fileFormatCombo = new JComboBox<>(fileFormatNames);
+        fileFormatCombo.setSelectedIndex(0);
+        fields.add(fileFormatCombo);
+
         dbConfigCombo = new JComboBox<>(dbconfigs);
         dbConfigCombo.setSelectedItem(prefs.get("LastUsedDbConfig", null));
-        dbConfigCombo.setEditable(true);
+        fields.add(dbConfigCombo);
 
         JPanel xtcePanel = new JPanel();
         xtcePanel.setLayout(new BoxLayout(xtcePanel, BoxLayout.Y_AXIS));
@@ -66,11 +83,20 @@ public class OpenFileDialog extends JDialog implements ActionListener {
         JPanel opts = new JPanel(new BorderLayout());
         opts.setBorder(BorderFactory.createEmptyBorder(12, 12, 11, 11));
 
+        JPanel labels = new JPanel(new GridLayout(0, 1));
+
+        JLabel fileFormatLbl = new JLabel("File Format: ");
+        fileFormatLbl.setDisplayedMnemonic(KeyEvent.VK_F);
+        fileFormatLbl.setLabelFor(fileFormatCombo);
+        labels.add(fileFormatLbl);
+
         JLabel xtceDbLbl = new JLabel("XTCE DB: ");
         xtceDbLbl.setDisplayedMnemonic(KeyEvent.VK_D);
         xtceDbLbl.setLabelFor(dbConfigCombo);
-        opts.add(xtceDbLbl, BorderLayout.WEST);
-        opts.add(dbConfigCombo, BorderLayout.CENTER);
+        labels.add(xtceDbLbl);
+
+        opts.add(labels, BorderLayout.WEST);
+        opts.add(fields, BorderLayout.CENTER);
 
         xtcePanel.add(opts);
         xtcePanel.add(new JSeparator());
@@ -128,6 +154,10 @@ public class OpenFileDialog extends JDialog implements ActionListener {
 
     public File getSelectedFile() {
         return fileChooser.getSelectedFile();
+    }
+
+    public FileFormat getSelectedFileFormat() {
+        return fileFormats.get((String) fileFormatCombo.getSelectedItem());
     }
 
     public String getSelectedDbConfig() {
