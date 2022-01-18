@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.yamcs.AbstractIntegrationTest;
+import org.yamcs.ParameterCaptor;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Page;
