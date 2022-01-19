@@ -21,6 +21,10 @@ public class EventId {
     final String type;
 
     public EventId(String source, String type) {
+        if (source == null) {
+            throw new NullPointerException("Source cannot be null");
+        }
+
         this.source = source;
         this.type = type;
     }
@@ -43,7 +47,7 @@ public class EventId {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result + source.hashCode();
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
@@ -61,11 +65,7 @@ public class EventId {
         }
         EventId other = (EventId) obj;
 
-        if (source == null) {
-            if (other.source != null) {
-                return false;
-            }
-        } else if (!source.equals(other.source)) {
+        if (!source.equals(other.source)) {
             return false;
         }
         if (type == null) {

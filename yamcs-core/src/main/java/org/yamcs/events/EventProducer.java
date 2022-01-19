@@ -1,40 +1,73 @@
 package org.yamcs.events;
 
+import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public interface EventProducer {
-
-    public abstract void sendEvent(Event event);
 
     public abstract void setSource(String source);
 
     public abstract void setSeqNo(int sn);
 
+    public abstract void sendEvent(EventSeverity severity, String type, String msg);
+
+    public abstract void sendEvent(Event event);
+
+
+    default void sendInfo(String type, String msg) {
+        sendEvent(EventSeverity.INFO, type, msg);
+    }
+
     /**
-     * @deprecated not according to XTCE levels, use {@link #sendCritical(String, String)}
+     * @deprecated It is not according to XTCE levels, please use {@link #sendCritical(String, String)} instead.
      * 
      */
     @Deprecated
-    public abstract void sendError(String type, String msg);
+    default void sendError(String type, String msg) {
+        sendEvent(EventSeverity.ERROR, type, msg);
+    }
 
     
-    void sendInfo(String type, String msg);
     
     /**
-     * Send a warning event with the given type
-     * 
-     * @param type
-     * @param msg
+     * Send a warning event with the given type and message
+     *
      */
-    void sendWarning(String type, String msg);
+    default void sendWarning(String type, String msg) {
+        sendEvent(EventSeverity.WARNING, type, msg);
+    }
 
-    void sendWatch(String type, String msg);
+    /**
+     * Send a warning event with the given type and message
+     *
+     */
+    default void sendWatch(String type, String msg) {
+        sendEvent(EventSeverity.WATCH, type, msg);
+    }
 
-    void sendDistress(String type, String msg);
+    /**
+     * Send a distress event with the given type and message
+     *
+     */
+    default void sendDistress(String type, String msg) {
+        sendEvent(EventSeverity.DISTRESS, type, msg);
+    }
 
-    void sendCritical(String type, String msg);
+    /**
+     * Send a critical event with the given type and message
+     *
+     */
+    default void sendCritical(String type, String msg) {
+        sendEvent(EventSeverity.CRITICAL, type, msg);
+    }
 
-    void sendSevere(String type, String msg);
+    /**
+     * Send a severe event with the given type and message
+     *
+     */
+    default void sendSevere(String type, String msg) {
+        sendEvent(EventSeverity.SEVERE, type, msg);
+    }
 
     /**
      * send an info event with the type automatically filled in as the caller class name

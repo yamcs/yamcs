@@ -9,9 +9,9 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.EnumMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +47,6 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.ShelveInfo;
-//import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
@@ -80,7 +79,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
     private static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
-    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
+    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new EnumMap<>(
+            org.yamcs.alarms.AlarmNotificationType.class);
 
     static {
         PARAM_ALARM_SEVERITY[MonitoringResult.WATCH_VALUE] = AlarmSeverity.WATCH;
@@ -388,7 +388,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     /**
      * Finds the appropriate alarm server for the alarm.
-     * 
+     * <p>
      * FIXME why not one namespace and a single server?
      */
     public static ActiveAlarm<?> verifyAlarm(Processor processor, String alarmName, int id)
@@ -613,6 +613,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);
         setClearInfo(alarmb, tuple);
+        setShelveInfo(alarmb, tuple);
 
         if (tuple.hasColumn(StandardTupleDefinitions.PARAMETER_COLUMN)) {
             String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);

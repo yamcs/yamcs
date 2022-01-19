@@ -17,9 +17,10 @@ import org.yamcs.utils.TimeEncoding;
  * 
  * By default the time0 is initialised with the time at the instance startup and the speed is 1.
  * <p>
- * The service mantains a simulated time which is running based on the computer clock according to speed (e.g. speed = 2
+ * The service maintains a simulated time which is running based on the computer clock according to speed (e.g. speed =
+ * 2
  * means it runs two times realtime speed). If the speed is 0, the simulated time never advances and it has to be
- * advanced from other place (see below).
+ * advanced externally (see below).
  * <p>
  * The simulation time service (as well as the speed) can be updated by various means:
  * <ul>
