@@ -8,10 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.ParameterAlarmChecker;
@@ -38,10 +40,12 @@ public class AlarmServer<S, T> extends AbstractService {
 
     private CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
     final private ScheduledThreadPoolExecutor timer;
+    final TimeService timeService;
 
     public AlarmServer(String yamcsInstance, ScheduledThreadPoolExecutor timer) {
         this.yamcsInstance = yamcsInstance;
         this.timer = timer;
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     /**
@@ -138,12 +142,11 @@ public class AlarmServer<S, T> extends AbstractService {
      * @param message
      * @return the updated alarm instance or null if the alarm was not found
      */
-    public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message)
-            throws CouldNotAcknowledgeAlarmException {
+    public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message) {
         if (!activeAlarms.containsValue(alarm)) {
             return null;
         }
-        alarm.reset();
+        alarm.reset(username, resetTime, message);
         return alarm;
     }
 
@@ -189,7 +192,7 @@ public class AlarmServer<S, T> extends AbstractService {
         }
         alarm.shelve(username, message, shelveDuration);
         alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.SHELVED, alarm));
-        timer.schedule(() -> checkShelved(), shelveDuration, TimeUnit.MILLISECONDS);
+        timer.schedule(this::checkShelved, shelveDuration, TimeUnit.MILLISECONDS);
 
         return alarm;
     }
@@ -252,7 +255,7 @@ public class AlarmServer<S, T> extends AbstractService {
                 activeAlarms.remove(alarmId);
                 return;
             }
-            boolean updated = activeAlarm.processRTN();
+            boolean updated = activeAlarm.processRTN(timeService.getMissionTime());
 
             activeAlarm.setCurrentValue(value);
             activeAlarm.incrementValueCount();

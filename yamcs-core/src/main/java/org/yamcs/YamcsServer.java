@@ -730,6 +730,9 @@ public class YamcsServer {
         return instanceTemplates.get(name);
     }
 
+    /**
+     * Returns the time service for a given instance
+     */
     public static TimeService getTimeService(String yamcsInstance) {
         if (YAMCS.instances.containsKey(yamcsInstance)) {
             return YAMCS.instances.get(yamcsInstance).getTimeService();

@@ -105,6 +105,8 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.getMostSevereValue());
         assertEquals(pv1_0, aa.getTriggerValue());
 
+        assertTrue(aa.toString().length() > 0);
+
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
         alarmServer.update(pv1_1, 1);
         assertTrue(l.cleared.isEmpty());

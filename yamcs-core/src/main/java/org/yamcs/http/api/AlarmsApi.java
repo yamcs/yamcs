@@ -388,7 +388,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     /**
      * Finds the appropriate alarm server for the alarm.
-     * 
+     * <p>
      * FIXME why not one namespace and a single server?
      */
     public static ActiveAlarm<?> verifyAlarm(Processor processor, String alarmName, int id)
