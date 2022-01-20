@@ -28,7 +28,6 @@ public class YamcsAdminCli extends Command {
         addSubCommand(new BackupCli(this));
         addSubCommand(new CheckConfig(this));
         addSubCommand(new MdbCli(this));
-        addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new UsersCli(this));
@@ -66,24 +65,10 @@ public class YamcsAdminCli extends Command {
         YamcsAdminCli cli = new YamcsAdminCli();
         cli.parse(args);
 
-        Level logLevel;
-        switch (cli.verbose) {
-        case 0:
-            logLevel = Level.OFF;
-            break;
-        case 1:
-            logLevel = Level.WARNING;
-            break;
-        case 2:
-            logLevel = Level.INFO;
-            break;
-        case 3:
-            logLevel = Level.FINE;
-            break;
-        default:
-            logLevel = Level.ALL;
-            break;
-        }
+        Level[] levels = { Level.OFF, Level.WARNING, Level.INFO, Level.FINE };
+
+        Level logLevel = cli.verbose >= levels.length ? Level.ALL : levels[cli.verbose];
+
         Log.forceStandardStreams(logLevel);
 
         YConfiguration.setResolver(new FileBasedConfigurationResolver(cli.configDirectory));
@@ -94,20 +79,15 @@ public class YamcsAdminCli extends Command {
             cli.execute();
         } catch (ExecutionException e) {
             System.err.println(e.getCause());
-            System.exit(1);
+            exit(1);
         } catch (Exception e) {
             if (cli.debug) {
                 e.printStackTrace();
             } else {
                 System.err.println(e);
             }
-            System.exit(1);
+            exit(1);
         }
-
-        System.exit(0);
-    }
-
-    public Path getConfigDirectory() {
-        return configDirectory;
+        exit(0);
     }
 }

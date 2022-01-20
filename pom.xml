@@ -450,7 +450,9 @@
 					**/org/yamcs/examples/**,
 					**/org/yamcs/xtce/xlsv6/*,
 					**/org/yamcs/simulator/**,
-					**/org/yamcs/utils/parser/*
+					**/org/yamcs/utils/parser/*,
+					**/org/yamcs/cli/PasswordHashCli*,
+					**/org/yamcs/cli/RocksDbBenchmark*
 				</sonar.exclusions>
 				<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 				<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>

@@ -52,6 +52,7 @@ public class RocksDbCli extends Command {
 
         @Override
         void execute() throws Exception {
+            System.out.println("sizeMb: " + sizeMB);
             Options opt = new Options();
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dbDir);
             List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
@@ -61,6 +62,7 @@ public class RocksDbCli extends Command {
 
             cfoptions.setCompactionStyle(CompactionStyle.UNIVERSAL);
             cfoptions.setTargetFileSizeBase(1024L * 1024 * sizeMB);
+            cfoptions.setTargetFileSizeMultiplier(1);
             for (byte[] b : cfl) {
                 cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));
             }

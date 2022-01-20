@@ -1,5 +1,5 @@
 services:
-  - class: org.yamcs.YarchChannel
+  - class: org.yamcs.archive.XtceTmRecorder
 
 mdb:
   - type: xtce

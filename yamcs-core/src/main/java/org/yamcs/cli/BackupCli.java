@@ -67,7 +67,7 @@ public class BackupCli extends Command {
             super(name, parent);
         }
 
-        @Parameter(names = "--backup-dir", description = "Directory containing backups")
+        @Parameter(names = "--backup-dir", description = "Directory containing backups", required = true)
         String backupDir;
 
     }
@@ -109,7 +109,8 @@ public class BackupCli extends Command {
                 Path tablespaceDir = dataDir.resolve(tablespace + ".rdb");
                 Path current = tablespaceDir.resolve("CURRENT");
                 if (!Files.exists(current)) {
-                    throw new IllegalArgumentException("'" + current + "' does not look like a tablespace");
+                    throw new IllegalArgumentException("'" + tablespaceDir
+                            + "' does not look like a tablespace, the CURRENT file does not exist inside");
                 }
                 BackupUtils.verifyBackupDirectory(backupDir, false);
                 try (Options opt = new Options();
@@ -215,7 +216,7 @@ public class BackupCli extends Command {
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
 
                 for (String mainParameter : mainParameters) {
-                    int backupId = Integer.valueOf(mainParameter);
+                    int backupId = Integer.parseInt(mainParameter);
                     backupEngine.deleteBackup(backupId);
                     console.println("Deleted backup " + backupId);
                 }
@@ -238,8 +239,9 @@ public class BackupCli extends Command {
             BackupUtils.verifyBackupDirectory(backupDir, true);
             try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
-
                 backupEngine.purgeOldBackups(backupsToKeep);
+                int n = backupEngine.getBackupInfo().size();
+                console.println("Purged operation successfull; " + n + " backups remaining.");
             }
         }
     }

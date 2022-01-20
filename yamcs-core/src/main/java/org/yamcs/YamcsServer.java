@@ -290,6 +290,7 @@ public class YamcsServer {
         long stopTime = System.nanoTime() - t0;
         LOG.debug("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
         YamcsLogManager.shutdown();
+        timer.shutdown();
     }
 
     public static boolean hasInstance(String instance) {

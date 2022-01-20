@@ -63,13 +63,13 @@ public class UsersCli extends Command {
 
             if (username == null) {
                 console.println("username not specified");
-                System.exit(-1);
+                exit(-1);
             }
-
+            System.out.println("username: " + username);
             User user = directory.getUser(username.get(0));
             if (user == null) {
                 console.println("invalid user '" + username + "'");
-                System.exit(-1);
+                exit(-1);
             }
 
             TableStringBuilder b = new TableStringBuilder(2);
@@ -118,25 +118,24 @@ public class UsersCli extends Command {
             User user = directory.getUser(username.get(0));
             if (user == null) {
                 console.println("invalid user '" + username.get(0) + "'");
-                System.exit(-1);
+                exit(-1);
             }
             if (user.isExternallyManaged()) {
                 console.println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
-                System.exit(-1);
+                exit(-1);
             }
 
-            Console console = System.console();
-            console.printf("Enter new password: ");
-            char[] newPassword = console.readPassword();
-            console.printf("Confirm new password: ");
-            char[] confirmedPassword = console.readPassword();
+            console.print("Enter new password: ");
+            char[] newPassword = console.readPassword(false);
+            console.print("Confirm new password: ");
+            char[] confirmedPassword = console.readPassword(false);
 
             if (!Arrays.equals(newPassword, confirmedPassword)) {
-                console.printf("Password confirmation does not match\n");
-                System.exit(-1);
+                console.println("Password confirmation does not match\n");
+                exit(-1);
             }
-
             directory.changePassword(user, newPassword);
+            console.println("Password updated successfully");
         }
     }
 }
