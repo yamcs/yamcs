@@ -95,6 +95,8 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 
 import com.google.protobuf.Timestamp;
 
@@ -675,6 +677,25 @@ public class ArchiveClient {
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
         alarmService.listAlarms(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(ListAlarmsResponse::getAlarmsList);
+    }
+
+    /**
+     * retrieve the alarms for one parameter
+     */
+    public CompletableFuture<List<AlarmData>> listParameterAlarms(String parameter, Instant start, Instant stop) {
+        ListParameterAlarmsRequest.Builder requestb = ListParameterAlarmsRequest.newBuilder()
+                .setInstance(instance);
+
+        if (start != null) {
+            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
+        }
+        if (stop != null) {
+            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        requestb.setParameter(parameter);
+        CompletableFuture<ListParameterAlarmsResponse> f = new CompletableFuture<>();
+        alarmService.listParameterAlarms(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(ListParameterAlarmsResponse::getAlarmsList);
     }
 
     public CompletableFuture<List<TableRecord>> listRecords(String table) {

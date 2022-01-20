@@ -563,6 +563,10 @@ public class YamcsClient {
         return new AlarmSubscription(methodHandler);
     }
 
+    public GlobalAlarmStatusSubscription createGlobalAlarmStatusSubscription() {
+        return new GlobalAlarmStatusSubscription(methodHandler);
+    }
+
     public PacketSubscription createPacketSubscription() {
         return new PacketSubscription(methodHandler);
     }

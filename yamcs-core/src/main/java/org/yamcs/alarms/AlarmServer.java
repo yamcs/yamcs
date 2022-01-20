@@ -181,7 +181,8 @@ public class AlarmServer<S, T> extends AbstractService {
      * @param alarm
      * @param username
      * @param message
-     * @param shelveDuration shelve duration in milliseconds
+     * @param shelveDuration
+     *            shelve duration in milliseconds
      * 
      * @return the updated alarm instance or null if the alarm was not found
      */
@@ -304,9 +305,10 @@ public class AlarmServer<S, T> extends AbstractService {
                     for (AlarmListener<T> l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);
                     }
-                }
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyValueUpdate(activeAlarm);
+                } else {
+                    for (AlarmListener<T> l : alarmListeners) {
+                        l.notifyValueUpdate(activeAlarm);
+                    }
                 }
             }
         }

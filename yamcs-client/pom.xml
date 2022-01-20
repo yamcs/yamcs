@@ -19,6 +19,7 @@
 
   <properties>
     <javaModuleName>org.yamcs.client</javaModuleName>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
   
   <dependencies>

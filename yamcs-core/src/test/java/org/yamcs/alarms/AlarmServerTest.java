@@ -69,7 +69,7 @@ public class AlarmServerTest {
         ParameterValue pv1_2 = getParameterValue(p1, MonitoringResult.CRITICAL);
         alarmServer.update(pv1_2, 1);
         assertTrue(l.triggered.isEmpty());
-        assertFalse(l.valueUpdates.isEmpty());
+        assertTrue(l.valueUpdates.isEmpty());
         aa = l.severityIncreased.remove();
         assertEquals(pv1_2, aa.getCurrentValue());
         assertEquals(pv1_2, aa.getMostSevereValue());
