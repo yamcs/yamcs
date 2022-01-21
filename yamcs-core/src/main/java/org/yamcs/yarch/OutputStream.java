@@ -36,7 +36,6 @@ public class OutputStream extends Stream implements StreamSubscriber {
             }
             dos = new java.io.DataOutputStream(socket.getOutputStream()); // TODO endinaness
         } catch (IOException e) {
-            e.printStackTrace();
             return;
         }
         /*

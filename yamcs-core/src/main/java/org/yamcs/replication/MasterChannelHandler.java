@@ -181,7 +181,6 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
         log.warn("Caught exception {}", cause.getMessage());
     }
 
