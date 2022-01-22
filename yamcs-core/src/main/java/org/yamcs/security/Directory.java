@@ -245,10 +245,12 @@ public class Directory {
 
     /**
      * Validates the provided password against the stored password hash of a user.
+     * 
+     * @return true if the password is correct, false otherwise
      */
     public boolean validateUserPassword(String username, char[] password) {
         User user = users.get(username);
-        if (user.getHash() != null) {
+        if (user != null && user.getHash() != null) {
             return hasher.validatePassword(password, user.getHash());
         } else {
             return false;

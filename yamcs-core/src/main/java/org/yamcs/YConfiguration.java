@@ -164,6 +164,7 @@ public class YConfiguration {
     public static synchronized void setupTest(String configPrefix) {
         prefix = configPrefix;
         configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
+        resolver = new DefaultConfigurationResolver();
 
         if (System.getProperty("java.util.logging.config.file") == null) {
             try {
@@ -174,6 +175,10 @@ public class YConfiguration {
         }
 
         TimeEncoding.setUp();
+    }
+
+    public static synchronized void clearConfigs() {
+        configurations.clear();
     }
 
     /**

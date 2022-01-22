@@ -129,8 +129,7 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public YConfiguration validate(YConfiguration args) throws ValidationException {
-        ValidationContext ctx = new ValidationContext();
-        ctx.path = args.getPath();
+        ValidationContext ctx = new ValidationContext(args.getPath());
         Map<String, Object> result = doValidate(ctx, args.getRoot(), "");
         YConfiguration wrapped = YConfiguration.wrap(result);
         wrapped.parent = args.parent;
@@ -149,7 +148,7 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public Map<String, Object> validate(Map<String, Object> args) throws ValidationException {
-        return doValidate(new ValidationContext(), args, "");
+        return doValidate(new ValidationContext(""), args, "");
     }
 
     private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent)
@@ -697,7 +696,11 @@ public class Spec {
      */
     public static final class ValidationContext {
 
-        private String path;
+        private final String path;
+
+        public ValidationContext(String path) {
+            this.path = path;
+        }
 
         public String getPath() {
             return path;

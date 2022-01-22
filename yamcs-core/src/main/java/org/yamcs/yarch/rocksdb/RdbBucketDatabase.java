@@ -60,7 +60,7 @@ public class RdbBucketDatabase implements BucketDatabase {
     final static int MAX_NUM_OBJECTS_PER_BUCKET = 1000; //
     private static final Logger log = LoggerFactory.getLogger(RdbBucketDatabase.class);
 
-    RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
+    public RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
         this.tablespace = tablespace;
         this.yamcsInstance = yamcsInstance;
         loadBuckets();
