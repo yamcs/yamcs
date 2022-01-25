@@ -1,7 +1,7 @@
 package org.yamcs.events;
 
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class EventProducerFactory {
     public static void setMockup(boolean queue) {
         mockup = true;
         if (queue) {
-            mockupQueue = new LinkedList<>();
+            mockupQueue = new ConcurrentLinkedQueue<>();
         }
     }
 

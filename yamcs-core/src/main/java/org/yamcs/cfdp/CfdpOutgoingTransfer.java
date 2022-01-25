@@ -21,12 +21,9 @@ import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FaultHandlerOverride;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FileStoreRequest;
 import org.yamcs.cfdp.pdu.FinishedPacket;
-import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
@@ -81,7 +78,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     private long end = 0;
 
     private boolean suspended = false;
-    private final byte checksumType = 0;
+    private final ChecksumType checksumType = ChecksumType.MODULAR;
 
     private PutRequest request;
     private ScheduledFuture<?> pduSendingSchedule;
@@ -95,6 +92,35 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     MetadataPacket metadata;
     ConditionCode reasonForCancellation;
 
+    /**
+     * Create a new CFDP outgoing (uplink) transfer.
+     * <p>
+     * The transfer has to be started with the {@link #start()} method.
+     * 
+     * @param yamcsInstance
+     *            - yamcsInstance where this transfer is running. It is used for log configuration and to get the time
+     *            service.
+     * @param id
+     *            - unique identifier. The least significant number of bits (according to the CFDP sequence length) of
+     *            this id will be used to make the CFDP transaction id.
+     * @param creationTime
+     *            - time when the transaction has been created
+     * @param executor
+     *            - the CFDP state machine is serialized in this executor. It is also used to schedule timeouts.
+     * @param request
+     *            - the request containing the file to be sent.
+     * @param cfdpOut
+     *            - the stream where the outgoing PDUs are placed.
+     * @param config
+     *            - the configuration of various settings (see yamcs manual)
+     * @param eventProducer
+     *            - used to send events when important things happen
+     * @param monitor
+     *            - will be notified when transaction status changes
+     * @param faultHandlerActions
+     *            - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the
+     *            default behaviour to cancel the transaction will be used.
+     */
     public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor, PutRequest request,
             Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
@@ -148,8 +174,11 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         return new CfdpTransactionId(sourceId, seqNum);
     }
 
+    /**
+     * Start the transfer
+     */
     public void start() {
-        pduSendingSchedule = executor.scheduleAtFixedRate(() -> sendPDU(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
+        pduSendingSchedule = executor.scheduleAtFixedRate(this::sendPDU, 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
     }
 
     private void sendPDU() {
@@ -282,14 +311,11 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         }
 
         // depending on the conditioncode, the transfer was a success or a failure
-        // failure can
         if (finishedPacket.getConditionCode() != ConditionCode.NO_ERROR) {
             complete(finishedPacket.getConditionCode());
-
         } else {
             if (eofSent) {
                 complete(ConditionCode.NO_ERROR);
-               
             } else {
                 log.warn("TXID{} received Finished PDU before sending the EOF: {}", cfdpTransactionId,
                         finishedPacket);
@@ -338,7 +364,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
         sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
-        pduSendingSchedule = executor.scheduleAtFixedRate(() -> sendPDU(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
+        pduSendingSchedule = executor.scheduleAtFixedRate(this::sendPDU, 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
         if (expectingAck()) {
             sendEof();
         }
@@ -477,19 +503,12 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 request.getFileLength(),
                 request.getObjectName(),
                 request.getTargetPath(),
-                new ArrayList<FileStoreRequest>(),
-                new ArrayList<MessageToUser>(), // no user messages
-                new ArrayList<FaultHandlerOverride>(), // no fault handler overrides
-                null, // no flow label
                 directiveHeader);
     }
 
     private FileDataPacket getNextFileDataPacket() {
-        FileDataPacket filedata = new FileDataPacket(
-                Arrays.copyOfRange(request.getFileData(), (int) offset, (int) end),
-                offset,
-                dataHeader);
-        return filedata;
+        return new FileDataPacket(Arrays.copyOfRange(request.getFileData(), (int) offset, (int) end),
+                offset, dataHeader);
     }
 
     private AckPacket getAckPacket(ConditionCode code) {

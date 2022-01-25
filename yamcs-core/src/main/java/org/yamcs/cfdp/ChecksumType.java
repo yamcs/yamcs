@@ -11,4 +11,17 @@ public enum ChecksumType {
     public byte id() {
         return id;
     }
+
+    /**
+     * 
+     * @return the checksum type corresponding to the given id or null if it does not exist (invalid id)
+     */
+    public static ChecksumType fromId(int id) {
+        for (ChecksumType ct : values()) {
+            if (ct.id == id) {
+                return ct;
+            }
+        }
+        return null;
+    }
 }

@@ -22,8 +22,8 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         }
     }
 
-    public EofPacket(ByteBuffer buffer, CfdpHeader header) {
-        super(buffer, header);
+    EofPacket(ByteBuffer buffer, CfdpHeader header) {
+        super(header);
 
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
@@ -67,10 +67,13 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.EOF;
     }
 
+    public TLV getFaultLocation() {
+        return faultLocation;
+    }
+
     @Override
     public String toString() {
         return "EofPacket [conditionCode=" + conditionCode + ", fileChecksum=" + fileChecksum + ", fileSize=" + fileSize
                 + ", faultLocation=" + faultLocation + "]";
     }
-
 }

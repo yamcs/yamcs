@@ -33,11 +33,15 @@ import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.FileTransferApiClient;
+import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.ListFileTransferServicesRequest;
+import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.ListProcessorsRequest;
@@ -169,7 +173,6 @@ public class YamcsClient {
         Credentials creds = baseClient.getCredentials();
         creds.setSpnegoInfo(spnegoInfo); // Can get reused when the access token expires
     }
-
 
     public synchronized void login(String username, char[] password) throws ClientException {
         pollServer();
@@ -480,6 +483,16 @@ public class YamcsClient {
         CompletableFuture<Empty> f = new CompletableFuture<>();
         alarmService.editAlarm(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
+    }
+
+    public CompletableFuture<List<FileTransferServiceInfo>> getFileTransferServices(String instance) {
+        ListFileTransferServicesRequest request = ListFileTransferServicesRequest.newBuilder().setInstance(instance)
+                .build();
+        CompletableFuture<ListFileTransferServicesResponse> f = new CompletableFuture<>();
+
+        FileTransferApiClient ftService = new FileTransferApiClient(methodHandler);
+        ftService.listFileTransferServices(null, request, new ResponseObserver<>(f));
+        return f.thenApply(r -> r.getServicesList());
     }
 
     public StorageClient createStorageClient() {

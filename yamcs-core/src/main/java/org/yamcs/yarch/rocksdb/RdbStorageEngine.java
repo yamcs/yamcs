@@ -282,6 +282,7 @@ public class RdbStorageEngine implements StorageEngine {
         }
         tablespaces.clear();
         bucketDbs.clear();
+        protobufDbs.clear();
     }
 
     @Override

@@ -12,7 +12,9 @@ services:
       sleepBetweenPdus: 10
       eofAckTimeout: 500
       eofAckLimit: 1
-
+      finAckTimeout: 500
+      finAckLimit: 0
+      
 mdb:
   - type: "emptyNode"
     spec: "CFDP"

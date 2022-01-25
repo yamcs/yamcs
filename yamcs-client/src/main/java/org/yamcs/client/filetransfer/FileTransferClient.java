@@ -11,12 +11,17 @@ import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.ReliableOp
 import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions.UploadOption;
 import org.yamcs.client.storage.ObjectId;
 import org.yamcs.protobuf.FileTransferApiClient;
+import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
+import org.yamcs.protobuf.PauseTransferRequest;
+import org.yamcs.protobuf.ResumeTransferRequest;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
+
+import com.google.protobuf.Empty;
 
 public class FileTransferClient {
 
@@ -34,6 +39,11 @@ public class FileTransferClient {
         return instance;
     }
 
+    /**
+     * List the on-going file transfers
+     * 
+     * @return
+     */
     public CompletableFuture<List<TransferInfo>> listTransfers() {
         ListTransfersRequest.Builder requestb = ListTransfersRequest.newBuilder()
                 .setInstance(instance)
@@ -56,6 +66,10 @@ public class FileTransferClient {
         return upload(source, source.getObjectName(), options);
     }
 
+    /**
+     * Initiate file upload
+     * 
+     */
     public CompletableFuture<TransferInfo> upload(ObjectId source, String remotePath, UploadOption... options) {
         CreateTransferRequest.Builder requestb = CreateTransferRequest.newBuilder()
                 .setInstance(instance)
@@ -82,6 +96,9 @@ public class FileTransferClient {
         return f;
     }
 
+    /**
+     * Initiate file download
+     */
     public CompletableFuture<TransferInfo> download(String remotePath, ObjectId target) {
         CreateTransferRequest.Builder requestb = CreateTransferRequest.newBuilder()
                 .setInstance(instance)
@@ -93,6 +110,47 @@ public class FileTransferClient {
         CompletableFuture<TransferInfo> f = new CompletableFuture<>();
         ftService.createTransfer(null, requestb.build(), new ResponseObserver<>(f));
         return f;
+    }
+
+    /**
+     * Pause an on-going file transfer
+     * 
+     */
+    public CompletableFuture<Void> pause(long id) {
+        PauseTransferRequest.Builder requestb = PauseTransferRequest.newBuilder()
+                .setInstance(instance)
+                .setServiceName(serviceName)
+                .setId(id);
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        ftService.pauseTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    /**
+     * Resume an on-going file transfer
+     */
+    public CompletableFuture<Void> resume(long id) {
+        ResumeTransferRequest.Builder requestb = ResumeTransferRequest.newBuilder()
+                .setInstance(instance)
+                .setServiceName(serviceName)
+                .setId(id);
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        ftService.resumeTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
+    }
+
+    /**
+     * Cancel an on-going file transfer
+     * 
+     */
+    public CompletableFuture<Void> cancel(long id) {
+        CancelTransferRequest.Builder requestb = CancelTransferRequest.newBuilder()
+                .setInstance(instance)
+                .setServiceName(serviceName)
+                .setId(id);
+        CompletableFuture<Empty> f = new CompletableFuture<>();
+        ftService.cancelTransfer(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> null);
     }
 
     public static final class UploadOptions {
@@ -136,4 +194,5 @@ public class FileTransferClient {
             }
         }
     }
+
 }

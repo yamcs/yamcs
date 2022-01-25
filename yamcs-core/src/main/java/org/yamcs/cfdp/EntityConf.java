@@ -16,13 +16,13 @@ public class EntityConf {
     public String toString() {
         return name + " [id=" + id + "]";
     }
-	
-	public long getId() {
-		return id;
-	}
-	
-	public String getName() {
-		return name;
-	}
+
+    public long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
 
 }

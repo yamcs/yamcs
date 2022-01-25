@@ -16,5 +16,4 @@ public class PduDecodingException extends RuntimeException {
     public byte[] getData() {
         return pdu;
     }
-
 }
