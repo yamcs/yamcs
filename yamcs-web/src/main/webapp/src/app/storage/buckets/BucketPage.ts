@@ -29,6 +29,8 @@ export class BucketPage implements OnDestroy {
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
+  showPreview$ = new BehaviorSubject<boolean>(false);
+  previewWidth$ = new BehaviorSubject<number>(600);
 
   displayedColumns = ['select', 'name', 'size', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
@@ -183,6 +185,10 @@ export class BucketPage implements OnDestroy {
     return path || '/';
   }
 
+  togglePreview() {
+    this.showPreview$.next(!this.showPreview$.value);
+  }
+
   deleteSelectedObjects() {
     const deletableObjects: string[] = [];
     const findObjectPromises = [];
@@ -305,6 +311,15 @@ export class BucketPage implements OnDestroy {
     return path || '/';
   }
 
+  isImage(item: BrowseItem) {
+    if (item.folder) {
+      return false;
+    }
+    const lc = item.name.toLocaleLowerCase();
+    return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg')
+      || lc.endsWith('jpeg') || lc.endsWith('bmp') || lc.endsWith('svg') || lc.endsWith('ico');
+  }
+
   private async showUploadProgress() {
     if (this.progressDialogOpen) {
       return;
@@ -336,6 +351,26 @@ export class BucketPage implements OnDestroy {
         reject(err);
       });
     });
+  }
+
+  resizeMouseDown(event: MouseEvent) {
+    let resizeGrabX: number | null = event.clientX;
+    const originalWidth = this.previewWidth$.value;
+
+    const mousemoveListener = (moveEvent: MouseEvent) => {
+      if (resizeGrabX !== null) {
+        const newWidth = originalWidth - (moveEvent.clientX - resizeGrabX);
+        this.previewWidth$.next(Math.max(400, newWidth));
+      }
+    };
+    const mouseupListener = (upEvent: MouseEvent) => {
+      resizeGrabX = null;
+      document.removeEventListener('mousemove', mousemoveListener);
+      document.removeEventListener('mouseup', mouseupListener);
+    };
+
+    document.addEventListener('mousemove', mousemoveListener);
+    document.addEventListener('mouseup', mouseupListener);
   }
 
   ngOnDestroy() {
