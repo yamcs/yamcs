@@ -123,6 +123,7 @@ public class HttpServer extends AbstractYamcsService {
 
     private String contextPath;
     private boolean zeroCopyEnabled;
+    private boolean reverseLookup;
     private List<String> staticRoots = new ArrayList<>(2);
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
@@ -187,6 +188,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("bindings", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(bindingSpec);
+        spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
+        spec.addOption("reverseLookup", OptionType.BOOLEAN).withDefault(false);
 
         // When using multiple bindings, best to avoid confusion and disable the top-level properties
         spec.mutuallyExclusive("address", "bindings");
@@ -195,7 +198,6 @@ public class HttpServer extends AbstractYamcsService {
         spec.mutuallyExclusive("tlsKey", "bindings");
 
         spec.requireTogether("tlsCert", "tlsKey");
-        spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
         return spec;
     }
 
@@ -234,6 +236,7 @@ public class HttpServer extends AbstractYamcsService {
         }
 
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
+        reverseLookup = config.getBoolean("reverseLookup");
 
         if (config.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
@@ -449,6 +452,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public JsonFormat.Printer getJsonPrinter() {
         return jsonPrinter;
+    }
+
+    public boolean getReverseLookup() {
+        return reverseLookup;
     }
 
     public CorsConfig getCorsConfig() {
