@@ -177,6 +177,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             readConfig(null, config);
         } else {
             packetPreprocessor = new IssPacketPreprocessor(null);
+            packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            packetInputStreamArgs = YConfiguration.emptyConfig();
         }
 
         packetPreprocessor.checkForSequenceDiscontinuity(false);
