@@ -35,8 +35,7 @@ import org.yamcs.utils.YObjectLoader;
  * <li>{@code delayBetweenPackets} - if configured, it is the number of milliseconds to wait in between sending two
  * packets. By default it is -1 meaning the packets are sent as fast as possible.</li>
  * <li>{@code headerSize} - if configured, the input files have a header which will be skipped before reading the first
- * packet.
- * </li>
+ * packet.</li>
  * </ul>
  *
  */
@@ -71,7 +70,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             if (config.containsKey("packetInputStreamArgs")) {
                 packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
             }
-        } else {//compatibility with the previous releases, should eventually be removed
+        } else {// compatibility with the previous releases, should eventually be removed
             this.packetInputStreamClassName = UsocPacketInputStream.class.getName();
             this.packetPreprocessor = new IssPacketPreprocessor(yamcsInstance);
         }
@@ -95,7 +94,6 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     }
 
     private void play(File fdir) throws InterruptedException {
-
         File[] files = fdir.listFiles();
         Arrays.sort(files);
         for (File f : files) {
@@ -113,7 +111,6 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                     TmPacket tmpkt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
 
                     processPacket(tmpkt);
-                    updateStats(tmpkt.getPacket().length);
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
                     }
@@ -129,7 +126,6 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 }
             }
         }
-
     }
 
     private PacketInputStream getPacketInputStream(String fileName) throws IOException {
@@ -161,7 +157,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             inputStream.close();
             throw e;
         }
-        packetInputStream.init(inputStream, config);
+        packetInputStream.init(inputStream, packetInputStreamArgs);
         return packetInputStream;
     }
 
