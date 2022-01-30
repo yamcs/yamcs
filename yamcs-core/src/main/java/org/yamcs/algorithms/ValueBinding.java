@@ -1,7 +1,6 @@
 package org.yamcs.algorithms;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
@@ -15,31 +14,30 @@ import org.yamcs.utils.TimeEncoding;
  * of Rhino that maps boxed primitives to JavaScript Objects instead of Numbers
  */
 public abstract class ValueBinding {
-    protected Date acquisitionTime;
-    protected long acquisitionTimeMs;
-    protected Date generationTime;
-    protected long generationTimeMs;
-    protected AcquisitionStatus acquisitionStatus;
-    protected MonitoringResult monitoringResult;
-    protected RangeCondition rangeCondition;
+    public long acquisitionTimeMillis;
+    public long generationTimeMillis;
+    public AcquisitionStatus acquisitionStatus;
+    public MonitoringResult monitoringResult;
+    public RangeCondition rangeCondition;
 
     public void updateValue(RawEngValue newValue) {
-        if(newValue instanceof ParameterValue) {
+        if (newValue instanceof ParameterValue) {
             ParameterValue pv = (ParameterValue) newValue;
             acquisitionStatus = pv.getAcquisitionStatus();
             monitoringResult = pv.getMonitoringResult();
             rangeCondition = pv.getRangeCondition();
 
-            if (pv.hasAcquisitionTime()) {
-                Calendar cal = TimeEncoding.toCalendar(pv.getAcquisitionTime());
-                acquisitionTime = cal.getTime();
-            }
-            acquisitionTimeMs = pv.getAcquisitionTime();
+            acquisitionTimeMillis = pv.getAcquisitionTime();
         }
-        if (newValue.hasGenerationTime()) {
-            Calendar cal = TimeEncoding.toCalendar(newValue.getGenerationTime());
-            generationTime = cal.getTime();
-        }
-        generationTimeMs = newValue.getGenerationTime();
+        generationTimeMillis = newValue.getGenerationTime();
     }
+
+    public Instant generationTime() {
+        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(generationTimeMillis));
+    }
+
+    public Instant acquisitionTime() {
+        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(acquisitionTimeMillis));
+    }
+
 }

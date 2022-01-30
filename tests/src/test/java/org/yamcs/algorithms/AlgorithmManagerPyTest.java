@@ -1,7 +1,6 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,11 +20,13 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import static org.yamcs.algorithms.AlgorithmManagerTest.getPwc;
+
 /**
  * Just a small sanity check to verify python/jython still works. Uses algorithms in the spreadsheet that are
  * interpreted the same in javascript and python
@@ -64,7 +65,7 @@ public class AlgorithmManagerPyTest {
         processor = ProcessorFactory.create("refmdb", "AlgorithmManagerPyTest",
                 getPwc(tmGenerator, YConfiguration.emptyConfig()),
                 getPwc(am, YConfiguration.wrap(config)));
-        
+
         prm = processor.getParameterRequestManager();
     }
 
@@ -83,6 +84,28 @@ public class AlgorithmManagerPyTest {
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(2.1672918, params.get(0).getEngValue().getFloatValue(), 0.001);
+    }
+
+    @Test
+    public void testTime() throws InvalidIdentification {
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoTestTimePy");
+        prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        long t = TimeEncoding.parse("2022-01-30T12:06:00Z");
+        processor.start();
+        long pt0 = processor.getCurrentTime();
+
+        tmGenerator.setGenerationTime(t);
+        tmGenerator.generate_PKT1_1();
+        long pt1 = processor.getCurrentTime();
+
+        assertEquals(1, params.size());
+        long parav = params.get(0).getEngValue().getUint64Value();
+
+        assertTrue(t + pt0 <= parav);
+
+        assertTrue(parav <= t + pt1);
     }
 
     @Test

@@ -1,10 +1,13 @@
 package org.yamcs.algorithms;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -67,6 +70,15 @@ public class AlgorithmFunctions {
 
     public String instance() {
         return yamcsInstance;
+    }
+
+
+    public long processorTimeMillis() {
+        return processor.getCurrentTime();
+    }
+
+    public Instant processorTime() {
+        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(processor.getCurrentTime()));
     }
 
     public void info(String msg) {

@@ -551,7 +551,7 @@ public class Processor extends AbstractService {
     /**
      * Returns the processor time
      * 
-     * for realtime processors it is the mission time or simulation time for replay processors it is the replay time
+     * for realtime processors it is the mission time (could be simulated) for replay processors it is the replay time
      * 
      * @return
      */
