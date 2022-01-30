@@ -56,6 +56,10 @@ dataLinks:
     spacecraftId: 0xAB
     maxFrameLength: 1024
     cltuEncoding: BCH
+    #the following option can be commented out to randomize the CLTUs. Note that the simulator does not understand randmized data though.
+    #randomizeCltu: false 
+    #the following option can be used to skip randomization for certain virtual channels
+    #skipRandomizationForVcs: [1, 0]
     virtualChannels:
          - vcId: 0
            service: "PACKET" 

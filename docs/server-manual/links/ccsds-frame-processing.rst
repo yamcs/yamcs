@@ -207,6 +207,9 @@ cltuTailSequence (string)
 randomizeCltu (boolean)
     Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on.
     Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard).
+
+skipRandomizationForVcs (list of integers)
+    If randomizeCltu is true, this option can define a list of virtual channels for which randomization is not performed. 
  
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
@@ -252,8 +255,9 @@ cop1TxLimit (integer)
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
+tcQueueSize (integer)
+    This is used if COP-1 is not enabled, to determine the size of the command queue. Note that this is number of commands (not frames!). If the queue is full, the new commands will be rejected. Commands are taken from the queue by the multiplexer, according to the priority scheme defined below. Default: ``10``.
 
-    
            
 Priority Schemes
 ****************

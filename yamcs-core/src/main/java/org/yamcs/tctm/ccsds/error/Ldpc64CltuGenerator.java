@@ -19,7 +19,10 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
     }
 
     @Override
-    public byte[] makeCltu(byte[] frameData) {
+    public byte[] makeCltu(byte[] frameData, boolean randomize) {
+        if (!randomize) {
+            throw new IllegalArgumentException("Randomization is mandatory for the LDPC codec");
+        }
         int numBlocks = (frameData.length - 1) / 8 + 1;
         int length = startSeq.length + 16 * numBlocks + tailSeq.length;
 

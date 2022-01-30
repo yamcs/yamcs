@@ -26,15 +26,15 @@ public class BchCltuGeneratorTest {
 
     @Test
     public void testCltu1() {
-        BchCltuGenerator g = new BchCltuGenerator(false);
-        byte[] cltu = g.makeCltu(TC_FRAME_01);
+        BchCltuGenerator g = new BchCltuGenerator();
+        byte[] cltu = g.makeCltu(TC_FRAME_01, false);
         assertArrayEquals(CLTU_01, cltu);
     }
 
     @Test
     public void testCltu2() {
-        BchCltuGenerator g = new BchCltuGenerator(false);
-        byte[] cltu = g.makeCltu(TC_FRAME_02);
+        BchCltuGenerator g = new BchCltuGenerator();
+        byte[] cltu = g.makeCltu(TC_FRAME_02, false);
         assertArrayEquals(CLTU_02, cltu);
     }
 
