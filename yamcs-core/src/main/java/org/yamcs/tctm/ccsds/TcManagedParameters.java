@@ -8,7 +8,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
 /**
- * Parameters used for generation of TC frames as per CCSDS 232.0-B-3
+ * Configuration (managed parameters) used for generation of TC frames as per CCSDS 232.0-B-3
  * 
  * @author nm
  *
@@ -19,6 +19,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
     public enum PriorityScheme {
         FIFO, ABSOLUTE, POLLING_VECTOR
     };
+
     PriorityScheme priorityScheme;
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
@@ -33,7 +34,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         if (errorDetection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for TC frames");
         }
-        
+
         priorityScheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
@@ -86,7 +87,33 @@ public class TcManagedParameters extends UplinkManagedParameters {
         return l;
     }
 
-    public class TcVcManagedParameters extends VcUplinkManagedParameters {
+    TcVcManagedParameters getVcParams(int vcId) {
+        return vcParams.get(vcId);
+    }
+
+    /**
+     * Get the frame error detection in use
+     */
+    public FrameErrorDetection getErrorDetection() {
+        return errorDetection;
+    }
+
+    /**
+     * Configuration for one Virtual Channel
+     *
+     */
+    static public class TcVcManagedParameters extends VcUplinkManagedParameters {
+        final TcManagedParameters tcParams;
+        /**
+         * Allows to enable/disable frame error detection at Virtual Channel level.
+         * <p>
+         * This is not according to CCSDS standard which specifies that this shall be done at the level of physical
+         * channel.
+         * <p>
+         * This can be null, unlike the field from {@link UplinkManagedParameters#errorDetection} which is none if no
+         * error detection is used. Null means that the error detection at link level is being used.
+         */
+        FrameErrorDetection errorDetection;
 
         ServiceType service;
         boolean useCop1;
@@ -96,39 +123,41 @@ public class TcManagedParameters extends UplinkManagedParameters {
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
 
-        public TcVcManagedParameters(YConfiguration config, TcManagedParameters mcParams) {
+        public TcVcManagedParameters(YConfiguration config, TcManagedParameters tcParams) {
             super(config);
+            this.tcParams = tcParams;
+            this.errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class,
+                    null);
 
             if (vcId < 0 || vcId > 63) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");
             }
             service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
 
-            maxFrameLength = config.getInt("maxFrameLength", mcParams.maxFrameLength);
+            maxFrameLength = config.getInt("maxFrameLength", tcParams.maxFrameLength);
             if (maxFrameLength < 8) {
                 throw new ConfigurationException("Invalid frame length " + maxFrameLength);
             }
-            if (maxFrameLength > mcParams.maxFrameLength) {
-                throw new ConfigurationException("Invalid frame length " + maxFrameLength+" has to be at most equal to the master channel max length "+mcParams.maxFrameLength);
+            if (maxFrameLength > tcParams.maxFrameLength) {
+                throw new ConfigurationException("Invalid frame length " + maxFrameLength
+                        + " has to be at most equal to the master channel max length " + tcParams.maxFrameLength);
             }
-            
+
             this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
             this.useCop1 = config.getBoolean("useCop1", false);
             this.linkName = config.getString("linkName", null);
             this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
         }
 
-        public TcVcManagedParameters(int vcId, ServiceType service) {
-            super(vcId);
-            this.service = service;
-        }
-
         public TcFrameFactory getFrameFactory() {
-            return new TcFrameFactory(TcManagedParameters.this);
+            return new TcFrameFactory(this);
         }
-    }
 
-    TcVcManagedParameters getVcParams(int vcId) {
-        return vcParams.get(vcId);
+        /**
+         * Returns the error detection used for this virtual channel.
+         */
+        public FrameErrorDetection getErrorDetection() {
+            return errorDetection == null ? tcParams.getErrorDetection() : errorDetection;
+        }
     }
 }

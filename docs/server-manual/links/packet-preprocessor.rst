@@ -78,7 +78,7 @@ There are a few common options for all time decoders:
 
 Two time decoder types are currently implemented: CUC and FIXED.
 
-**CUC time decoder**
+*CUC time decoder*
 
 ``CUC`` which is an abbreviation for CCSDS Unsegmented time Code. *Unsegmented* means that the entire time field can be seen as a continuous integer counter of the fractional time unit. A segmented time code for example  one which provides days and millisecond of the day and in which a 32 bit field is used to represent the millisecond of the day is not continuous because there are less than 2^32 milliseconds in a day.
        
@@ -111,7 +111,7 @@ CUC decoder configuration options:
         This can be used to configure the next octet of the ``pfield`` in case the first bit of the first octet (specified above) is 1.
     
 
-**FIXED time decoder**
+*FIXED time decoder*
 
 The FIXED decoder decodes the time as a signed integer on 4 or 8 bytes and has an optional multiplier to convert the integer to milliseconds. The multiplier is not used when decoding the time as raw time (i.e. when the epoch is NONE).
 
