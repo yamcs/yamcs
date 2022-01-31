@@ -1,6 +1,12 @@
+Version 5.5.7 released 31-Jan-2022
+- restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 was decoding the times using the CUC decoder instead of FIXED decoder)
+- added an option for TM frame derandomization
+- allow enabling errorDetection for uplink at virtual channel level
+
 Version 5.5.6 released 30-Jan-2022
 - added some functions to algorithms
 - allow disabling randomization for specific virtual channels
+- changed the time decoding handling in TM pre-processors to be more consistent
 - various tweaks and fixes
 
 Version 5.5.5 released 20-Oct-2021
