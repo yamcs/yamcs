@@ -156,7 +156,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     }
 
     private TimeDecoder getDecoder(YConfiguration c) {
-        TimeDecoderType type = c.getEnum("type", TimeDecoderType.class, TimeDecoderType.CUC);
+        TimeDecoderType type = c.getEnum("type", TimeDecoderType.class, getDefaultDecoderType());
 
         TimeDecoder timeDecoder;
 
@@ -311,5 +311,12 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             throw new ConfigurationException(
                     "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
         }
+    }
+
+    /**
+     * return the default decoder type. The subclasses may override this for compatibility with old Yamcs releases
+     */
+    protected TimeDecoderType getDefaultDecoderType() {
+        return TimeDecoderType.CUC;
     }
 }

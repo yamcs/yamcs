@@ -114,4 +114,8 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
         tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
+
+    protected TimeDecoderType getDefaultDecoderType() {
+        return TimeDecoderType.FIXED;
+    }
 }
