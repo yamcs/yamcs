@@ -12,8 +12,6 @@ import java.util.Arrays;
  * Reed-Solomon encoder/decoder.
  * Works with up to 7 bits per symbol (due to the byte in Java being signed)
  * 
- * @author nm
- *
  */
 public class ReedSolomon {
     int nroots;
