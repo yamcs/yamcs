@@ -7,7 +7,6 @@ import java.net.SocketException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.TcTmException;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -80,22 +79,19 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                             + frameHandler.getMaxFrameSize());
                     continue;
                 }
-                frameCount.getAndIncrement();
+                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(), length);
 
-                frameHandler.handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
-                        length);
             } catch (IOException e) {
                 if (!isRunningAndEnabled()) {
                     break;
                 }
                 log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
-            } catch (TcTmException e) {
-                eventProducer.sendWarning("Error processing frame: " + e.toString());
             } catch (Exception e) {
                 log.error("Error processing frame", e);
             }
         }
     }
+
 
     /**
      * returns statistics with the number of datagram received and the number of invalid datagrams

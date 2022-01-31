@@ -81,6 +81,9 @@ The following general options are supported:
 frameType (string)
     **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message). 
 
+derandomize (boolean)
+    If true, derandomize the frames with the derandomizer as per CCSDS 131.0-B-3. Default: false
+    
 spacecraftId (integer)
     **Required.** The expected spacecraft identifier. The spacecraftId is encoded in the frame header. If a frame with a different identifier is received, it is discarded (with a warning log message).
     
@@ -112,10 +115,10 @@ goodFrameStream (string)
     If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
     
 badFrameStream (string)
-    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid. 
+    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
 
 virtualChannels (map)
-    **Required.** Used to specify the Virtual Channel specific configuration. 
+    **Required.** Used to specify the Virtual Channel specific configuration.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -124,6 +127,7 @@ vcId (integer)
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
+
    
 
 service:
