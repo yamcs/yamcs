@@ -47,10 +47,19 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
  * <p>
  * A partition covers one year/month/day and each partition has its own RocksDB database.
  * <p>
- * An interval covers 2^23 millisec =~ 139 minutes
+ * An interval covers 2^23 millisec (=~ 139 minutes) - so for any timestamp (Yamcs time) we know exactly in which
+ * interval it falls.
  * <p>
- * An segment covers at most maxSegmentSize samples for one parameter
+ * A segment covers at most maxSegmentSize samples for one parameter. The segments do not cover a fixed period of time;
+ * we use them to avoid intervals getting very large; usually (1Hz or less frequency data) there is only one segment in
+ * an interval.
+ *
+ * <p>
+ * Segments cannot span across intervals.
  * 
+ * <p>
+ * When new data has been received in the past, the whole interval has to be re-created (by doing a replay); that likely
+ * means a new split of the respective interval into segments.
  * 
  * 
  * @author nm
