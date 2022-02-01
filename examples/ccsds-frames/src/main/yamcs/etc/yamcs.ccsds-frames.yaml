@@ -80,11 +80,16 @@ dataLinks:
     enabledAtStartup: true
     class: org.yamcs.tctm.ccsds.UdpTmFrameLink
     port: 10017 #UDP port to listen to
-    #derandomize: false
-    #one of AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
+    #### Raw frame decoder example. It is commented out because the simulator does not support generating encoded frames
+    #rawFrameDecoder:
+    #   codec: NONE
+    #   interleavingDepth: 5 # 1, 2, 3, 4, 5 or 8
+    #   errorCorrectionCapability: 16 #8 or 16
+    #   derandomize: true
+    ### Frame type has to be AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
     frameType: "AOS"
     spacecraftId: 0xAB
-    frameLength: 1115
+    frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
     insertZoneLength: 0
     errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)

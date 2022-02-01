@@ -68,18 +68,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     log.trace("Received datagram of length {}: {}", datagram.getLength(), StringConverter
                             .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
                 }
-                int length = datagram.getLength();
-                if (length < frameHandler.getMinFrameSize()) {
-                    eventProducer.sendWarning("Error processing frame: size " + length
-                            + " shorter than minimum allowed " + frameHandler.getMinFrameSize());
-                    continue;
-                }
-                if (length > frameHandler.getMaxFrameSize()) {
-                    eventProducer.sendWarning("Error processing frame: size " + length + " longer than maximum allowed "
-                            + frameHandler.getMaxFrameSize());
-                    continue;
-                }
-                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(), length);
+
+                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
+                        datagram.getLength());
 
             } catch (IOException e) {
                 if (!isRunningAndEnabled()) {

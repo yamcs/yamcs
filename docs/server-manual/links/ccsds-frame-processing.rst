@@ -3,11 +3,12 @@ CCSDS Frame Processing
 
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
-* TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
-* AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/732x0b3e1.pdf>`_
+* TM Space Data Link Protocol `CCSDS 132.0-B-3 <https://public.ccsds.org/Pubs/132x0b3.pdf>`_
+* AOS Space Data Link Protocol `CCSDS 732.0-B-4 <https://public.ccsds.org/Pubs/732x0b4.pdf>`_
 * TC Space Data Link Protocol `CCSDS 232.0-B-4 <https://public.ccsds.org/Pubs/232x0b4.pdf>`_
-* Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
-* TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/231x0b4.pdf>`_
+* Unified Space Data Link Protocol `CCSDS 732.1-B-2  <https://public.ccsds.org/Pubs/732x1b2.pdf>`_
+* TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/231x0b4e0.pdf>`_
+* TM Synchronization and Channel Coding `CCSDS 131.0-B-3 <https://public.ccsds.org/Pubs/131x0b3e1.pdf>`_
 * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
 * Space Packet Protocol `CCSDS 133.0-B-2 <https://public.ccsds.org/Pubs/133x0b2e1.pdf>`_
 * Encapsulation Service `CCSDS 133.1-B-3 <https://public.ccsds.org/Pubs/133x1b3e1.pdf>`_
@@ -42,6 +43,11 @@ An example of a UDP TM frame link specification is below:
       class: org.yamcs.tctm.ccsds.UdpTmFrameLink
       args:
         port: 10017
+        rawFrameDecoder:
+            codec: RS
+            interleavingDepth: 5
+            errorCorrectionCapability: 16
+            derandomize: false
         frameType: "AOS"
         spacecraftId: 0xAB
         frameLength: 512
@@ -77,6 +83,10 @@ An example of a UDP TM frame link specification is below:
             stream: "tm_dump"
 
 The following general options are supported:
+
+
+rawFrameDecoder (map) supported since Yamcs 5.5.7
+   Decodes raw frame data using an error correction scheme and/or randomization. For the moment only the Reed-Solomon codec is supported. If this is not set, the frames are considered already decoded. See below for the options to the Reed-Solomon codec.
 
 frameType (string)
     **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message). 
@@ -128,8 +138,6 @@ vcId (integer)
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
 
-   
-
 service:
     **Required.** This specifies the type of data that is part of the Virtual Channel. One of ``PACKET``, ``IDLE`` or ``VCA``
     
@@ -149,7 +157,23 @@ packetPreprocessorClassName and packetPreprocessorArgs
 
 vcaHandlerClassName:
     **Required if the service = VCA** Specifies the name of the class which handles data for this virtual channel. The class has to implement :javadoc:`~org.yamcs.tctm.ccsds.VcDownlinkHandler` interface. Optionally it can implement :javadoc:`~org.yamcs.tctm.Link` interface to appear as a data link (e.g. in yamcs-web). An example implementation of such class can be found in the ccsds-frames example project.
-    
+
+*Raw Frame Decoder*
+
+The options which can be selected under the ``rawFrameDecoder`` key are the following:
+
+codec (string)
+   **Required.** Specifies the error correction codec to use. Valid values are ``NONE`` and ``RS``. None means the data will not be error corrected (can be still useful if only de-randomization is required).
+   RS means the Reed-Solomon codec is used and the errorCorrectionCapability and interleavingDepth below can be used to configure the codec.
+
+interleavingDepth (int)
+   The interleving depth specifies the number of RS decoders running in "parallel" for one frame. Each interleavingDepth'th byte in the frame will be passed to a different decoder. Note howerver that as of Yamcs 5.5.7, the data is process sequentially not in parallel. Default: 5
+
+errorCorrectionCapability (int)
+   This is either 8 or 16 determining the RS(255, 239) respectively RS(255,223) codec to be used. Default: 16
+
+derandomize (boolean)
+    If true, the data will be passed through a derandomizer after being decoded. Default: false
 
 
 Telecommand Frame Processing
