@@ -1,7 +1,8 @@
 Version 5.5.7 released 
-- restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 was decoding the times using the CUC decoder instead of FIXED decoder)
+- restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 it was using the CUC decoder by default instead of using the FIXED decoder)
 - allow raw frame decoding using Reed-Solomon and de-randomization.
-- allow enabling errorDetection for uplink at virtual channel level
+- allow enabling errorDetection for uplink at virtual channel level.
+- fixed bug in FilePollingTmDataLink which was double counting the packets
 
 Version 5.5.6 released 30-Jan-2022
 - added some functions to algorithms
