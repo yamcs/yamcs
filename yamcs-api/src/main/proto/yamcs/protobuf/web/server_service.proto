@@ -100,6 +100,7 @@ message RouteInfo {
   optional bool deprecated = 8;
   optional int64 requestCount = 9;
   optional int64 errorCount = 10;
+  optional string logFormat = 11;
 }
 
 message TopicInfo {

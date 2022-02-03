@@ -54,6 +54,9 @@ message HttpRoute {
   optional string field_mask_root = 10;
 
   repeated HttpRoute additional_bindings = 11;
+
+  // Human-friendly log message format.
+  optional string log = 12;
 }
 
 message WebSocketTopic {

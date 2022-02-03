@@ -157,6 +157,9 @@ public class ServerApi extends AbstractServerApi<Context> {
                 if (route.isDeprecated()) {
                     routeb.setDeprecated(true);
                 }
+                if (route.getLogFormat() != null) {
+                    routeb.setLogFormat(route.getLogFormat());
+                }
             }
             result.add(routeb.build());
         }

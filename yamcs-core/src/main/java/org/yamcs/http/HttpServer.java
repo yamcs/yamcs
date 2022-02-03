@@ -29,6 +29,7 @@ import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
 import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.AuditApi;
 import org.yamcs.http.api.BucketsApi;
 import org.yamcs.http.api.ClearanceApi;
 import org.yamcs.http.api.CommandsApi;
@@ -124,6 +125,7 @@ public class HttpServer extends AbstractYamcsService {
     private String contextPath;
     private boolean zeroCopyEnabled;
     private boolean reverseLookup;
+    private int nThreads;
     private List<String> staticRoots = new ArrayList<>(2);
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
@@ -138,8 +140,6 @@ public class HttpServer extends AbstractYamcsService {
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
     private Map<String, Supplier<Handler>> extraHandlers = new HashMap<>();
-
-    private int nThreads;
 
     @Override
     public Spec getSpec() {
@@ -275,6 +275,7 @@ public class HttpServer extends AbstractYamcsService {
         nThreads = config.getInt("nThreads");
 
         addApi(new AlarmsApi());
+        addApi(new AuditApi());
         addApi(new BucketsApi());
         addApi(new FileTransferApi());
         addApi(new ClearanceApi());

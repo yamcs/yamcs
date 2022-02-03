@@ -1,6 +1,6 @@
 <app-admin-page>
   <app-admin-toolbar>
-    Admin Home
+    System
   </app-admin-toolbar>
 
   <div class="panel-content" *ngIf="info$ | async as info">
@@ -50,6 +50,24 @@
       <dt>Thread count</dt>
       <dd>{{ info.jvmThreadCount }}</dd>
     </dl>
+    <ng-container *ngIf="plugins$ | async as plugins">
+      <h4>Plugins</h4>
+      <table yaDataTable>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Version</th>
+          <th>Maintainer</th>
+        </tr>
+        <tr *ngFor="let plugin of plugins">
+          <td>{{ plugin.name }}</td>
+          <td>{{ plugin.description || '-' }}</td>
+          <td>{{ plugin.version || '-' }}</td>
+          <td>{{ plugin.vendor || '-' }}</td>
+        </tr>
+      </table>
+      <br>
+    </ng-container>
     <h4>Root directories</h4>
     <table yaDataTable>
       <tr>

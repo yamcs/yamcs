@@ -79,7 +79,6 @@ public class RouteContext extends Context {
             }
         }
 
-        // Track status for metric purposes
         requestFuture.whenComplete((channelFuture, e) -> {
             if (e != null) {
                 log.debug("API call finished with error: {}, transferred bytes: {}", e.getMessage(), txSize);
@@ -152,6 +151,10 @@ public class RouteContext extends Context {
 
     public boolean isOffloaded() {
         return route.isOffloaded();
+    }
+
+    public String getLogFormat() {
+        return route.getLogFormat();
     }
 
     /**

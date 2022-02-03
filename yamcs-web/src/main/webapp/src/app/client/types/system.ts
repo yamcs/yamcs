@@ -93,6 +93,7 @@ export interface Route {
   url: string;
   httpMethod: string;
   requestCount: number;
+  logFormat: string;
 }
 
 export interface Topic {
@@ -187,6 +188,25 @@ export interface ClientConnectionInfo {
   readThroughput: number;
   writeThroughput: number;
   httpRequest: HttpRequestInfo;
+}
+
+export interface AuditRecordsPage {
+  records: AuditRecord[];
+}
+
+export interface GetAuditRecordsOptions {
+  start?: string;
+  stop?: string;
+  q?: string;
+}
+
+export interface AuditRecord {
+  time: string;
+  service: string;
+  method: string;
+  user: string;
+  summary: string;
+  request: any;
 }
 
 export interface SessionInfo {

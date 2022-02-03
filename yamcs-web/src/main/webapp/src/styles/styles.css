@@ -345,6 +345,7 @@ a.ya-link.ya-header-link {
 
 .dl-horizontal dd {
   margin-left: 180px;
+  min-height: 16px;
 }
 
 .dl-horizontal dd:after {
@@ -465,6 +466,7 @@ button.ya-button.primary {
     -webkit-transform: rotate(0deg) scaleX(-1);
     transform: rotate(0deg) scaleX(-1);
   }
+
   100% {
     -webkit-transform: rotate(359deg) scaleX(-1);
     transform: rotate(359deg) scaleX(-1);
@@ -475,21 +477,27 @@ button.ya-button.primary {
   .mat-drawer, .mat-toolbar, button.expandable, .filter-bar {
     display: none !important;
   }
+
   .page-content, .mat-sidenav-container {
     position: static !important;
   }
+
   .mat-drawer-content {
     margin: 0 !important;
   }
+
   .panel-content {
     padding: 0;
   }
+
   .ya-data-table {
     width: auto !important;
   }
+
   * {
     overflow: visible !important;
   }
+
   .ya-data-table td.mat-cell, .ya-data-table th.mat-header-cell, .ya-data-table td.mat-footer-cell {
     padding: 0 7px 0 0;
     width: auto !important;

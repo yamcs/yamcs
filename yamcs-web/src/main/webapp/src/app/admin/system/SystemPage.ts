@@ -1,17 +1,18 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SystemInfo } from '../../client';
+import { PluginInfo, SystemInfo } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  templateUrl: './AdminHomePage.html',
+  templateUrl: './SystemPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminHomePage implements OnDestroy {
+export class SystemPage implements OnDestroy {
 
   info$ = new BehaviorSubject<SystemInfo | null>(null);
+  plugins$ = new BehaviorSubject<PluginInfo[]>([]);
 
   private syncSubscription: Subscription;
 
@@ -20,13 +21,14 @@ export class AdminHomePage implements OnDestroy {
     title: Title,
     synchronizer: Synchronizer,
   ) {
-    title.setTitle('Admin Area');
+    title.setTitle('System');
 
     this.refresh();
     this.syncSubscription = synchronizer.syncSlow(() => this.refresh());
   }
 
   private refresh() {
+    this.yamcs.yamcsClient.getGeneralInfo().then(info => this.plugins$.next(info.plugins || []));
     this.yamcs.yamcsClient.getSystemInfo().then(info => this.info$.next(info));
   }
 
