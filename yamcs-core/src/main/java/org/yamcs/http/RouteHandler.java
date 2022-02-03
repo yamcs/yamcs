@@ -143,7 +143,7 @@ public class RouteHandler extends Handler {
     }
 
     private void createAuditRecord(RouteContext ctx, Message message) {
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
 
         String format = ctx.getLogFormat();
         Matcher matcher = LOG_PARAM_PATTERN.matcher(format);

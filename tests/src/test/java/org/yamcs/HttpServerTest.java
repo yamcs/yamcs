@@ -27,7 +27,7 @@ public class HttpServerTest extends AbstractIntegrationTest {
 
     @Test
     public void testStaticFile() throws Exception {
-        YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0).addStaticRoot(Paths.get("/tmp/yamcs-web"));
+        YamcsServer.getServer().getGlobalService(HttpServer.class).addStaticRoot(Paths.get("/tmp/yamcs-web"));
 
         HttpClient httpClient = new HttpClient();
         File dir = new File("/tmp/yamcs-web/");

@@ -369,8 +369,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
-        ParameterArchive parameterArchive = YamcsServer.getServer().getServices(yamcsInstance, ParameterArchive.class)
-                .get(0);
+        ParameterArchive parameterArchive = YamcsServer.getServer().getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start), TimeEncoding.parse(stop));
         f.get();
     }

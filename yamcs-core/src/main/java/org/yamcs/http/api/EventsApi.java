@@ -26,7 +26,6 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.HttpServer;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;
@@ -72,6 +71,11 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
+    private ProtobufRegistry protobufRegistry;
+
+    public EventsApi(ProtobufRegistry protobufRegistry) {
+        this.protobufRegistry = protobufRegistry;
+    }
 
     @Override
     public void listEvents(Context ctx, ListEventsRequest request, Observer<ListEventsResponse> observer) {
@@ -148,8 +152,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
             }
         });
     }
-
-
 
     @Override
     public void createEvent(Context ctx, CreateEventRequest request, Observer<Event> observer) {
@@ -352,7 +354,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 throw new BadRequestException("Unexpected column delimiter");
             }
         }
-        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer, delimiter));
+
+        CsvEventStreamer streamer = new CsvEventStreamer(protobufRegistry, observer, delimiter);
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
     }
 
     /**
@@ -398,17 +402,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     private static class CsvEventStreamer implements StreamSubscriber {
 
-        Observer<HttpBody> observer;
         ProtobufRegistry protobufRegistry;
+        Observer<HttpBody> observer;
         char columnDelimiter;
 
-        CsvEventStreamer(Observer<HttpBody> observer, char columnDelimiter) {
+        CsvEventStreamer(ProtobufRegistry protobufRegistry, Observer<HttpBody> observer, char columnDelimiter) {
+            this.protobufRegistry = protobufRegistry;
             this.observer = observer;
             this.columnDelimiter = columnDelimiter;
-
-            YamcsServer yamcs = YamcsServer.getServer();
-            List<HttpServer> services = yamcs.getGlobalServices(HttpServer.class);
-            protobufRegistry = services.get(0).getProtobufRegistry();
 
             List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
             String[] rec = new String[5 + extensionFields.size()];

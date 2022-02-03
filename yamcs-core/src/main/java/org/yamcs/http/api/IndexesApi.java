@@ -331,12 +331,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     private TmIndexService getIndexService(String instance) throws HttpException {
         ManagementApi.verifyInstance(instance);
         YamcsServer yamcs = YamcsServer.getServer();
-        List<TmIndexService> services = yamcs.getServices(instance, TmIndexService.class);
-        if (services.isEmpty()) {
-            return null;
-        } else {
-            return services.get(0);
-        }
+        return yamcs.getService(instance, TmIndexService.class);
     }
 
     /**
