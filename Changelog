@@ -1,4 +1,4 @@
-Version 5.5.7 released 
+Version 5.5.7 released 3-Feb-2022
 - restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 it was using the CUC decoder by default instead of using the FIXED decoder)
 - allow raw frame decoding using Reed-Solomon and de-randomization.
 - allow enabling errorDetection for uplink at virtual channel level.
