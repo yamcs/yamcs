@@ -20,7 +20,7 @@ service LinksApi {
   // Get a link
   rpc GetLink(GetLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
-      get: "/api/links/{instance}/{name}"
+      get: "/api/links/{instance}/{link}"
     };
   }
 
@@ -29,9 +29,31 @@ service LinksApi {
     option (yamcs.api.route) = {
       patch: "/api/links/{instance}/{name}"
       body: "*"
+      deprecated: true
     };
   }
-  
+
+  // Enable a link
+  rpc EnableLink(EnableLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:enable"
+    };
+  }
+
+  // Disable a link
+  rpc DisableLink(DisableLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:disable"
+    };
+  }
+
+  // Reset link counters
+  rpc ResetLinkCounters(ResetLinkCountersRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:resetCounters"
+    };
+  }
+
   // Receive link updates
   rpc SubscribeLinks(SubscribeLinksRequest) returns (stream LinkEvent) {
     option (yamcs.api.websocket) = {
@@ -54,7 +76,31 @@ message GetLinkRequest {
   optional string instance = 1;
 
   // Link name. 
-  optional string name = 2;
+  optional string link = 2;
+}
+
+message EnableLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+}
+
+message DisableLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+}
+
+message ResetLinkCountersRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
 }
 
 message EditLinkRequest {

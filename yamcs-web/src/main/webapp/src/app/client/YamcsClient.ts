@@ -8,7 +8,7 @@ import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateC
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
-import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
+import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
@@ -734,19 +734,21 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Link;
   }
 
-  async enableLink(instance: string, name: string) {
-    return this.editLink(instance, name, { state: 'enabled' });
+  async enableLink(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:enable`, {
+      method: 'POST',
+    });
   }
 
-  async disableLink(instance: string, name: string) {
-    return this.editLink(instance, name, { state: 'disabled' });
+  async disableLink(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:disable`, {
+      method: 'POST',
+    });
   }
 
-  async editLink(instance: string, name: string, options: EditLinkOptions) {
-    const body = JSON.stringify(options);
-    return this.doFetch(`${this.apiUrl}/links/${instance}/${name}`, {
-      body,
-      method: 'PATCH',
+  async resetLinkCounters(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:resetCounters`, {
+      method: 'POST',
     });
   }
 

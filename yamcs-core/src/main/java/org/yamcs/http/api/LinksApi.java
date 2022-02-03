@@ -9,12 +9,15 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.links.AbstractLinksApi;
+import org.yamcs.protobuf.links.DisableLinkRequest;
 import org.yamcs.protobuf.links.EditLinkRequest;
+import org.yamcs.protobuf.links.EnableLinkRequest;
 import org.yamcs.protobuf.links.GetLinkRequest;
 import org.yamcs.protobuf.links.LinkEvent;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.protobuf.links.ListLinksRequest;
 import org.yamcs.protobuf.links.ListLinksResponse;
+import org.yamcs.protobuf.links.ResetLinkCountersRequest;
 import org.yamcs.protobuf.links.SubscribeLinksRequest;
 import org.yamcs.security.SystemPrivilege;
 
@@ -94,7 +97,52 @@ public class LinksApi extends AbstractLinksApi<Context> {
     public void getLink(Context ctx, GetLinkRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
 
-        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getLink());
+        observer.complete(linkInfo);
+    }
+
+    @Override
+    public void enableLink(Context ctx, EnableLinkRequest request, Observer<LinkInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getLink());
+        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        try {
+            lmgr.enableLink(linkInfo.getName());
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException(e);
+        }
+
+        linkInfo = lmgr.getLinkInfo(request.getLink());
+        observer.complete(linkInfo);
+    }
+
+    @Override
+    public void disableLink(Context ctx, DisableLinkRequest request, Observer<LinkInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getLink());
+        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        try {
+            lmgr.disableLink(linkInfo.getName());
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException(e);
+        }
+
+        linkInfo = lmgr.getLinkInfo(request.getLink());
+        observer.complete(linkInfo);
+    }
+
+    @Override
+    public void resetLinkCounters(Context ctx, ResetLinkCountersRequest request, Observer<LinkInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getLink());
+        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        try {
+            lmgr.resetCounters(linkInfo.getName());
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException(e);
+        }
+
+        linkInfo = lmgr.getLinkInfo(request.getLink());
         observer.complete(linkInfo);
     }
 
