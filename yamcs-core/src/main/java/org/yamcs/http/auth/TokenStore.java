@@ -7,10 +7,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.AbstractHttpService;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
-import org.yamcs.logging.Log;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;
 
@@ -24,9 +26,7 @@ import com.google.common.cache.CacheBuilder;
  * This class maintains a cache from a JWT bearer token to the original authentication info. This allows skipping the
  * login process as long as the bearer is valid.
  */
-public class TokenStore {
-
-    private static final Log log = new Log(TokenStore.class);
+public class TokenStore extends AbstractHttpService {
 
     private final ConcurrentHashMap<String, AuthenticationInfo> accessTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
@@ -36,6 +36,24 @@ public class TokenStore {
     private Cache<Hmac, RefreshResult> refreshCache = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.SECONDS)
             .build();
+
+    @Override
+    public void init(HttpServer httpServer) throws InitException {
+    }
+
+    @Override
+    protected void doStart() {
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        accessTokens.clear();
+        refreshTokens.clear();
+        refreshCache.invalidateAll();
+        cleaningCounter = 0;
+        notifyStopped();
+    }
 
     public void registerAccessToken(String accessToken, AuthenticationInfo authenticationInfo) {
         accessTokens.put(accessToken, authenticationInfo);

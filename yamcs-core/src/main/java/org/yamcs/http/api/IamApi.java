@@ -13,9 +13,9 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
-import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.AbstractIamApi;
 import org.yamcs.protobuf.CreateGroupRequest;
 import org.yamcs.protobuf.CreateServiceAccountRequest;
@@ -59,6 +59,12 @@ import org.yamcs.utils.TimeEncoding;
 import com.google.protobuf.Empty;
 
 public class IamApi extends AbstractIamApi<Context> {
+
+    private TokenStore tokenStore;
+
+    public IamApi(TokenStore tokenStore) {
+        this.tokenStore = tokenStore;
+    }
 
     @Override
     public void listRoles(Context ctx, Empty request, Observer<ListRolesResponse> observer) {
@@ -325,9 +331,8 @@ public class IamApi extends AbstractIamApi<Context> {
         if (user == null) {
             throw new NotFoundException();
         }
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
         try {
-            httpServer.getTokenStore().forgetUser(user.getName());
+            tokenStore.forgetUser(user.getName());
             directory.deleteUser(user);
             observer.complete(Empty.getDefaultInstance());
         } catch (IOException e) {

@@ -78,9 +78,7 @@ public class AuthHandler extends Handler {
 
     private TokenStore tokenStore;
 
-    public AuthHandler(TokenStore tokenStore) {
-        this.tokenStore = tokenStore;
-
+    public AuthHandler(HttpServer httpServer) {
         try {
             YamcsServer yamcs = YamcsServer.getServer();
             Path staticRoot = yamcs.getCacheDirectory().resolve("auth");
@@ -92,8 +90,8 @@ public class AuthHandler extends Handler {
                     Files.copy(resource, staticRoot.resolve(staticFile));
                 }
             }
-            HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
             httpServer.addStaticRoot(staticRoot);
+            tokenStore = httpServer.getTokenStore();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

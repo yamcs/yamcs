@@ -8,8 +8,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +56,7 @@ import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.api.TimeCorrelationApi;
 import org.yamcs.http.api.TimelineApi;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.CancelOptions;
@@ -68,6 +69,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ServiceManager;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
@@ -135,7 +137,12 @@ public class HttpServer extends AbstractYamcsService {
     private JsonFormat.Parser jsonParser;
     private JsonFormat.Printer jsonPrinter;
 
-    private TokenStore tokenStore = new TokenStore();
+    // Services (may participate in start-stop events)
+    private TokenStore tokenStore;
+    private AuditLog auditLog;
+
+    // Guava manager for sub-services
+    private ServiceManager serviceManager;
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -204,6 +211,12 @@ public class HttpServer extends AbstractYamcsService {
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
+
+        tokenStore = new TokenStore();
+        auditLog = new AuditLog();
+
+        tokenStore.init(this);
+        auditLog.init(this);
 
         clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -275,7 +288,7 @@ public class HttpServer extends AbstractYamcsService {
         nThreads = config.getInt("nThreads");
 
         addApi(new AlarmsApi());
-        addApi(new AuditApi());
+        addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
         addApi(new FileTransferApi());
         addApi(new ClearanceApi());
@@ -283,7 +296,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new Cop1Api());
         addApi(new DatabaseApi());
         addApi(new EventsApi());
-        addApi(new IamApi());
+        addApi(new IamApi(tokenStore));
         addApi(new IndexesApi());
         addApi(new LinksApi());
         addApi(new ManagementApi());
@@ -306,7 +319,7 @@ public class HttpServer extends AbstractYamcsService {
         WellKnownHandler wellKnownHandler = new WellKnownHandler();
         addHandler(".well-known", () -> wellKnownHandler);
 
-        AuthHandler authHandler = new AuthHandler(tokenStore);
+        AuthHandler authHandler = new AuthHandler(this);
         addHandler("auth", () -> authHandler);
 
         FaviconHandler faviconHandler = new FaviconHandler();
@@ -371,7 +384,11 @@ public class HttpServer extends AbstractYamcsService {
         }
     }
 
-    public void startServer() throws InterruptedException, SSLException, CertificateException, IOException {
+    public void startServer() throws Exception {
+        serviceManager = new ServiceManager(Arrays.asList(
+                tokenStore, auditLog));
+        serviceManager.startAsync().awaitHealthy(10, TimeUnit.SECONDS);
+
         StaticFileHandler.init(staticRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
@@ -421,6 +438,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public TokenStore getTokenStore() {
         return tokenStore;
+    }
+
+    public AuditLog getAuditLog() {
+        return auditLog;
     }
 
     public List<Binding> getBindings() {
@@ -489,8 +510,13 @@ public class HttpServer extends AbstractYamcsService {
         ListenableFuture<?> future2 = closers.submit(() -> {
             return bossGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
         });
+        ListenableFuture<?> future3 = closers.submit(() -> {
+            serviceManager.stopAsync();
+            serviceManager.awaitStopped(5, TimeUnit.SECONDS);
+            return true; // Force use of Callable interface, instead of Runnable
+        });
         closers.shutdown();
-        Futures.addCallback(Futures.allAsList(future1, future2), new FutureCallback<Object>() {
+        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 notifyStopped();

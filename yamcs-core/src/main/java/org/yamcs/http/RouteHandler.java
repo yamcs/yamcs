@@ -1,6 +1,5 @@
 package org.yamcs.http;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
@@ -144,10 +143,7 @@ public class RouteHandler extends Handler {
     }
 
     private void createAuditRecord(RouteContext ctx, Message message) {
-        List<AuditLog> auditLogs = YamcsServer.getServer().getGlobalServices(AuditLog.class);
-        if (auditLogs.isEmpty()) {
-            return;
-        }
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
 
         String format = ctx.getLogFormat();
         Matcher matcher = LOG_PARAM_PATTERN.matcher(format);
@@ -172,7 +168,7 @@ public class RouteHandler extends Handler {
         }
         matcher.appendTail(buf);
 
-        AuditLog auditLog = auditLogs.get(0);
+        AuditLog auditLog = httpServer.getAuditLog();
         auditLog.addRecord(ctx.getMethod(), message, ctx.user, buf.toString());
     }
 }

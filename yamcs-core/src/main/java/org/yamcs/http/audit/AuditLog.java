@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.AbstractHttpService;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
@@ -35,7 +35,7 @@ import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 
-public class AuditLog extends AbstractYamcsService {
+public class AuditLog extends AbstractHttpService {
 
     private static final Random RG = new Random();
     private static final String TABLE_NAME = "audit_log";
@@ -68,12 +68,7 @@ public class AuditLog extends AbstractYamcsService {
     private AtomicInteger seqNumSequence = new AtomicInteger();
 
     @Override
-    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, serviceName, getConfig());
-        if (yamcsInstance != null) {
-            throw new InitException(getClass().getName() + " must be used as a global service only");
-        }
-
+    public void init(HttpServer httpServer) throws InitException {
         ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         try {
             String streamName = TABLE_NAME + "_in";

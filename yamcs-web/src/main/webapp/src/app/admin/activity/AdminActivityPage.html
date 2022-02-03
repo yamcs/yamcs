@@ -86,5 +86,8 @@
             (click)="row.expanded = !row.expanded"></tr>
       </table>
     </ng-container>
+    <app-empty-message *ngIf="!(rowGroups$ | async).length">
+      No activity for the current filter criteria.
+    </app-empty-message>
   </div>
 </app-admin-page>
