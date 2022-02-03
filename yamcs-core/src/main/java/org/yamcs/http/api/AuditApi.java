@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
@@ -46,7 +47,7 @@ public class AuditApi extends AbstractAuditApi<Context> {
         }
 
         List<AuditRecord> records = new ArrayList<>();
-        auditLog.listRecords(limit, next, filter, new AuditRecordListener() {
+        auditLog.listRecords(YamcsServer.GLOBAL_INSTANCE, limit, next, filter, new AuditRecordListener() {
             @Override
             public void next(org.yamcs.http.audit.AuditRecord record) {
                 records.add(record.toProtobuf());

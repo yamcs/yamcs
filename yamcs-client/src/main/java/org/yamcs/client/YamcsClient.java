@@ -67,7 +67,8 @@ import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
-import org.yamcs.protobuf.links.EditLinkRequest;
+import org.yamcs.protobuf.links.DisableLinkRequest;
+import org.yamcs.protobuf.links.EnableLinkRequest;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.protobuf.links.LinksApiClient;
 
@@ -414,24 +415,22 @@ public class YamcsClient {
     }
 
     public CompletableFuture<LinkInfo> enableLink(String instance, String link) {
-        EditLinkRequest request = EditLinkRequest.newBuilder()
+        EnableLinkRequest request = EnableLinkRequest.newBuilder()
                 .setInstance(instance)
-                .setName(link)
-                .setState("enabled")
+                .setLink(link)
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        linkService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.enableLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<LinkInfo> disableLink(String instance, String link) {
-        EditLinkRequest request = EditLinkRequest.newBuilder()
+        DisableLinkRequest request = DisableLinkRequest.newBuilder()
                 .setInstance(instance)
-                .setName(link)
-                .setState("disabled")
+                .setLink(link)
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        linkService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.disableLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 

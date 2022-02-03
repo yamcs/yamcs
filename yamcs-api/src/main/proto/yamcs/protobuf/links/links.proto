@@ -27,9 +27,10 @@ service LinksApi {
   // Update a link
   rpc UpdateLink(EditLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
-      patch: "/api/links/{instance}/{name}"
+      patch: "/api/links/{instance}/{link}"
       body: "*"
       deprecated: true
+      log: "Link {link} updated"
     };
   }
 
@@ -37,6 +38,7 @@ service LinksApi {
   rpc EnableLink(EnableLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
       post: "/api/links/{instance}/{link}:enable"
+      log: "Link {link} enabled"
     };
   }
 
@@ -44,6 +46,7 @@ service LinksApi {
   rpc DisableLink(DisableLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
       post: "/api/links/{instance}/{link}:disable"
+      log: "Link {link} disabled"
     };
   }
 
@@ -108,7 +111,7 @@ message EditLinkRequest {
   optional string instance = 3;
 
   // Link name.
-  optional string name = 4;
+  optional string link = 4;
   
   // The state of the link. Either ``enabled`` or ``disabled``.
   optional string state = 1;

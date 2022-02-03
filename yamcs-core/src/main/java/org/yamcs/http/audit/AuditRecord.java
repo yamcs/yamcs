@@ -16,13 +16,13 @@ public class AuditRecord {
     public final Struct request;
 
     public AuditRecord(Tuple tuple) {
-        time = tuple.getTimestampColumn(AuditLog.CNAME_RECTIME);
-        seqNum = tuple.getColumn(AuditLog.CNAME_SEQNUM);
-        service = tuple.getColumn(AuditLog.CNAME_SERVICE);
-        method = tuple.getColumn(AuditLog.CNAME_METHOD);
-        user = tuple.getColumn(AuditLog.CNAME_USER);
-        summary = tuple.getColumn(AuditLog.CNAME_SUMMARY);
-        request = tuple.getColumn(AuditLog.CNAME_REQUEST);
+        time = tuple.getTimestampColumn(AuditLogDb.CNAME_RECTIME);
+        seqNum = tuple.getColumn(AuditLogDb.CNAME_SEQNUM);
+        service = tuple.getColumn(AuditLogDb.CNAME_SERVICE);
+        method = tuple.getColumn(AuditLogDb.CNAME_METHOD);
+        user = tuple.getColumn(AuditLogDb.CNAME_USER);
+        summary = tuple.getColumn(AuditLogDb.CNAME_SUMMARY);
+        request = tuple.getColumn(AuditLogDb.CNAME_REQUEST);
     }
 
     public org.yamcs.protobuf.audit.AuditRecord toProtobuf() {

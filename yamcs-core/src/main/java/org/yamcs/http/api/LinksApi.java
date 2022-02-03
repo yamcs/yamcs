@@ -150,7 +150,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
     public void updateLink(Context ctx, EditLinkRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
 
-        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getLink());
 
         String state = null;
         if (request.hasState()) {
@@ -187,7 +187,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
             }
         }
 
-        linkInfo = lmgr.getLinkInfo(request.getName());
+        linkInfo = lmgr.getLinkInfo(request.getLink());
         observer.complete(linkInfo);
     }
 
