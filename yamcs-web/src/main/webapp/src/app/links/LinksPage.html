@@ -39,6 +39,26 @@
     </ng-template>
   </app-detail-pane>
 
+  <nav mat-tab-nav-bar>
+    <a mat-tab-link
+       routerLink="/links"
+       routerLinkActive
+       [routerLinkActiveOptions]="{exact: true}"
+       #rla="routerLinkActive"
+       [active]="rla.isActive"
+       [queryParams]="{c: yamcs.context}">
+      STATUS
+    </a>
+    <a mat-tab-link
+       routerLink="/links/log"
+       routerLinkActive
+       #rlb="routerLinkActive"
+       [active]="rlb.isActive"
+       [queryParams]="{c: yamcs.context}">
+      ACTION LOG
+    </a>
+  </nav>
+
   <div class="table-wrapper">
     <div class="panel-content">
       <div class="filter-bar">
@@ -96,7 +116,7 @@
           <th mat-header-cell *matHeaderCellDef style="width: 300px">Class</th>
           <td mat-cell *matCellDef="let row">
             <app-highlight [text]="row.link.type"
-                            [term]="filterControl.value">
+                           [term]="filterControl.value">
             </app-highlight>
           </td>
         </ng-container>

@@ -198,6 +198,7 @@ export interface GetAuditRecordsOptions {
   start?: string;
   stop?: string;
   q?: string;
+  service?: string;
 }
 
 export interface AuditRecord {

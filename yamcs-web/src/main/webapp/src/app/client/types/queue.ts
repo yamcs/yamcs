@@ -23,7 +23,6 @@ export interface CommandQueueEntry {
   binary: string;
   username: string;
   generationTime: string;
-  uuid: string;
   pendingTransmissionConstraints: boolean;
 }
 

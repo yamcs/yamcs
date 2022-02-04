@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
+import { ActionLogTab } from './ActionLogTab';
 import { LinkPage } from './LinkPage';
 import { LinksPage } from './LinksPage';
 
@@ -19,6 +20,9 @@ const routes: Routes = [
         pathMatch: 'full',
         component: LinksPage,
       }, {
+        path: 'log',
+        component: ActionLogTab,
+      }, {
         path: ':link',
         component: LinkPage,
       }
@@ -33,6 +37,7 @@ const routes: Routes = [
 export class LinksRoutingModule { }
 
 export const routingComponents = [
+  ActionLogTab,
   LinksPage,
   LinkPage,
 ];

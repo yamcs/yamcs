@@ -10,6 +10,8 @@ import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage } from './command-sender/SendCommandPage';
+import { ActionLogTab } from './queues/ActionLogTab';
+import { QueuedCommandsTab } from './queues/QueuedCommandsTab';
 import { QueuesPage } from './queues/QueuesPage';
 import { StackFilePage } from './stacks/StackFilePage';
 import { StackFilePageDirtyGuard } from './stacks/StackFilePageDirtyGuard';
@@ -47,6 +49,19 @@ const routes: Routes = [
         path: 'queues',
         component: QueuesPage,
         canActivate: [MayControlCommandQueueGuard],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'pending',
+          }, {
+            path: 'pending',
+            component: QueuedCommandsTab,
+          }, {
+            path: 'log',
+            component: ActionLogTab,
+          }
+        ]
       }, {
         path: 'stacks',
         pathMatch: 'full',
@@ -85,10 +100,12 @@ const routes: Routes = [
 export class CommandingRoutingModule { }
 
 export const routingComponents = [
+  ActionLogTab,
   ClearancesPage,
   CommandHistoryPage,
   CommandReportPage,
   ConfigureCommandPage,
+  QueuedCommandsTab,
   QueuesPage,
   SendCommandPage,
   StacksPage,

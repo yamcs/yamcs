@@ -1,24 +1,20 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AuditRecord, GetAuditRecordsOptions } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
 import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
-import { RequestOption, Row, RowGroup } from './model';
 
-const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  templateUrl: './AdminActivityPage.html',
-  styleUrls: ['./AdminActivityPage.css'],
+  templateUrl: './ActionLogTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminActivityPage {
+export class ActionLogTab {
 
   @ViewChild('intervalSelect')
   intervalSelect: Select;
@@ -33,7 +29,7 @@ export class AdminActivityPage {
 
   filterForm = new FormGroup({
     filter: new FormControl(),
-    interval: new FormControl(defaultInterval),
+    interval: new FormControl('NO_LIMIT'),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
   });
@@ -42,7 +38,6 @@ export class AdminActivityPage {
     'time',
     'user',
     'summary',
-    'actions',
   ];
 
   intervalOptions: Option[] = [
@@ -57,25 +52,16 @@ export class AdminActivityPage {
   // only is updated after the callback...
   private filter: string;
 
-  rowGroups$ = new BehaviorSubject<RowGroup[]>([]);
+  dataSource = new MatTableDataSource<AuditRecord>();
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
+    private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
-    title: Title,
   ) {
-    title.setTitle('Admin Area');
-
     this.initializeOptions();
     this.loadData();
-
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
-      this.filter = filter;
-      this.loadData();
-    });
 
     this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
@@ -122,26 +108,14 @@ export class AdminActivityPage {
         this.validStart = subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
-      this.appliedInterval = defaultInterval;
+      this.appliedInterval = 'NO_LIMIT';
       this.validStop = null;
       this.validStart = null;
     }
   }
 
   jumpToNow() {
-    const interval = this.filterForm.value['interval'];
-    if (interval === 'NO_LIMIT') {
-      // NO_LIMIT may include future data under erratic conditions. Reverting
-      // to the default interval is more in line with the wording 'jump to now'.
-      this.filterForm.get('interval')!.setValue(defaultInterval);
-    } else if (interval === 'CUSTOM') {
-      // For simplicity reasons, just reset to default 1h interval.
-      this.filterForm.get('interval')!.setValue(defaultInterval);
-    } else {
-      this.validStop = new Date();
-      this.validStart = subtractDuration(this.validStop, interval);
-      this.loadData();
-    }
+    this.filterForm.get('interval')!.setValue('NO_LIMIT');
   }
 
   applyCustomDates() {
@@ -157,6 +131,7 @@ export class AdminActivityPage {
   loadData() {
     this.updateURL();
     const options: GetAuditRecordsOptions = {
+      service: 'QueueApi',
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
@@ -168,41 +143,9 @@ export class AdminActivityPage {
       options.q = this.filter;
     }
 
-    const today = new Date().toISOString().substr(0, 10);
-    const yesterday = utils.subtractDuration(new Date(), 'P1D').toISOString().substr(0, 10);
-    this.yamcs.yamcsClient.getAuditRecords('_global', options).then(page => {
-      const rowGroups = this.groupByDay(page.records || []).map(group => {
-        const dataSource = new MatTableDataSource<Row>();
-        dataSource.data = group.map(item => {
-          const requestOptions: any[] = [{ key: 'Request', value: '' }];
-          if (item.request) {
-            this.flatten(item.request, requestOptions, '    ');
-          }
-          return { item, expanded: false, requestOptions };
-        });
-        let grouper = group[0].time.substr(0, 10);
-        if (grouper === today) {
-          grouper = 'Today';
-        } else if (grouper === yesterday) {
-          grouper = 'Yesterday';
-        }
-        return { grouper, dataSource };
-      });
-      this.rowGroups$.next(rowGroups);
-    });
-  }
-
-  loadMoreData() {
-    /*const options: GetAuditRecordsOptions = {
-    };
-    if (this.validStart) {
-      options.start = this.validStart.toISOString();
-    }
-    if (this.filter) {
-      options.q = this.filter;
-    }
-
-    this.dataSource.loadMoreData(options);*/
+    this.yamcs.yamcsClient.getAuditRecords(this.yamcs.instance!, options)
+      .then(page => this.dataSource.data = page.records || [])
+      .catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -217,43 +160,5 @@ export class AdminActivityPage {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  private groupByDay(records: AuditRecord[]) {
-    const byDay: Array<AuditRecord[]> = [];
-    let currentDay: string | undefined;
-    let dayRecords: AuditRecord[] = [];
-    for (const record of records) {
-      const day = record.time.substr(0, 10);
-      if (day !== currentDay) {
-        currentDay = day;
-        if (dayRecords.length) {
-          byDay.push(dayRecords);
-          dayRecords = [];
-        }
-      }
-      dayRecords.push(record);
-    }
-    if (dayRecords.length) {
-      byDay.push(dayRecords);
-    }
-    return byDay;
-  }
-
-  private flatten(node: { [key: string]: any; }, result: RequestOption[], indent = '') {
-    for (const key in node) {
-      const value = node[key];
-      if (Array.isArray(value)) {
-        result.push({ key: indent + key, value: '' });
-        for (let i = 0; i < value.length; i++) {
-          result.push({ key: indent + '    ' + key + ' ' + (i + 1), value: value[i] });
-        }
-      } else if (typeof value === 'object') {
-        result.push({ key: indent + key, value: '' });
-        this.flatten(value, result, indent + '    ');
-      } else {
-        result.push({ key: indent + key, value: '' + value });
-      }
-    }
   }
 }

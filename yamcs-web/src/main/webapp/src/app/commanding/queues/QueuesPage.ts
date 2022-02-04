@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { CommandQueue, ConnectionInfo, QueueEventsSubscription, QueueStatisticsSubscription } from '../../client';
+import { CommandQueue, ConnectionInfo, QueueStatisticsSubscription } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -16,12 +16,11 @@ export class QueuesPage implements OnDestroy {
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
 
   private queueSubscription: QueueStatisticsSubscription;
-  private queueEventSubscription: QueueEventsSubscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue; } = {};
 
-  constructor(yamcs: YamcsService, title: Title, messageService: MessageService) {
+  constructor(readonly yamcs: YamcsService, title: Title, messageService: MessageService) {
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
@@ -44,53 +43,6 @@ export class QueuesPage implements OnDestroy {
         this.emitChange();
       }
     });
-
-    this.queueEventSubscription = yamcs.yamcsClient.createQueueEventsSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
-    }, queueEvent => {
-      const queue = this.cqueueByName[queueEvent.data.queueName];
-      if (queue) {
-        if (queueEvent.type === 'COMMAND_ADDED') {
-          queue.entry = queue.entry || [];
-          queue.entry.push(queueEvent.data);
-        } else if (queueEvent.type === 'COMMAND_UPDATED') {
-          const idx = (queue.entry || []).findIndex(entry => {
-            return entry.uuid === queueEvent.data.uuid;
-          });
-          if (idx !== -1) {
-            queue.entry[idx] = queueEvent.data;
-          }
-        } else if (queueEvent.type === 'COMMAND_REJECTED') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
-            return entry.uuid !== queueEvent.data.uuid;
-          });
-        } else if (queueEvent.type === 'COMMAND_SENT') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
-            return entry.uuid !== queueEvent.data.uuid;
-          });
-        } else {
-          throw new Error(`Unexpected queue event ${queueEvent.type}`);
-        }
-        this.emitChange();
-      } else {
-        console.warn('Received an event for an unknown queue', queueEvent);
-      }
-    });
-  }
-
-  /**
-   * Returns true if at least one of the queues has an entry
-   */
-  hasEntries() {
-    for (const cqueue of this.cqueues$.getValue()) {
-      if (cqueue.entry && cqueue.entry.length) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private emitChange() {
@@ -100,9 +52,6 @@ export class QueuesPage implements OnDestroy {
   ngOnDestroy() {
     if (this.queueSubscription) {
       this.queueSubscription.cancel();
-    }
-    if (this.queueEventSubscription) {
-      this.queueEventSubscription.cancel();
     }
   }
 }

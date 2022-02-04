@@ -113,10 +113,13 @@ public class AuditLogDb {
 
             TimeInterval interval = filter.getTimeInterval();
             if (interval.hasEnd()) {
-                sqlBuilder.where("start < ?", interval.getEnd());
+                sqlBuilder.where("rectime < ?", interval.getEnd());
             }
             if (interval.hasStart()) {
-                sqlBuilder.where("start+duration > ?", interval.getStart());
+                sqlBuilder.where("rectime > ?", interval.getStart());
+            }
+            if (!filter.getServices().isEmpty()) {
+                sqlBuilder.whereColIn("service", filter.getServices());
             }
             if (filter.getSearch() != null) {
                 sqlBuilder.where("summary like ?", "%" + filter.getSearch() + "%");

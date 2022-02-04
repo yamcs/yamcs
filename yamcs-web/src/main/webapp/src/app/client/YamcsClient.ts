@@ -356,8 +356,8 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async getAuditRecords(options: GetAuditRecordsOptions) {
-    const url = `${this.apiUrl}/audit/records`;
+  async getAuditRecords(instance: string, options: GetAuditRecordsOptions) {
+    const url = `${this.apiUrl}/audit/records/${instance}`;
     const response = await this.doFetch(url + this.queryString(options));
     return await response.json() as AuditRecordsPage;
   }
