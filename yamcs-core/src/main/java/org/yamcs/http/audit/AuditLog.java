@@ -6,12 +6,11 @@ import java.util.concurrent.ConcurrentMap;
 import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.AbstractHttpService;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpServer;
-import org.yamcs.security.User;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 
 public class AuditLog extends AbstractHttpService {
@@ -24,14 +23,14 @@ public class AuditLog extends AbstractHttpService {
         dbs.put(YamcsServer.GLOBAL_INSTANCE, new AuditLogDb(YamcsServer.GLOBAL_INSTANCE));
     }
 
-    public void addRecord(MethodDescriptor method, Message message, User user, String summary) {
+    public void addRecord(Context ctx, Message request, String summary) {
         String yamcsInstance = YamcsServer.GLOBAL_INSTANCE;
-        for (FieldDescriptor descriptor : message.getDescriptorForType().getFields()) {
+        for (FieldDescriptor descriptor : request.getDescriptorForType().getFields()) {
             if ("instance".equals(descriptor.getName())) {
-                yamcsInstance = (String) message.getField(descriptor);
+                yamcsInstance = (String) request.getField(descriptor);
             }
         }
-        getAuditLogDb(yamcsInstance).addRecord(method, message, user, summary);
+        getAuditLogDb(yamcsInstance).addRecord(ctx.getMethod(), request, ctx.user, summary);
     }
 
     public void listRecords(String yamcsInstance, int limit, String token, AuditRecordFilter filter,

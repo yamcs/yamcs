@@ -12,7 +12,7 @@ import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubs
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
-import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
+import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
@@ -796,48 +796,49 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as CommandHistoryPage;
   }
 
-  async getCommandQueues(instance: string, processorName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues`;
+  async getCommandQueues(instance: string, processor: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as CommandQueuesWrapper;
     return wrapper.queues || [];
   }
 
-  async getCommandQueue(instance: string, processorName: string, queueName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}`;
+  async getCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}`;
     const response = await this.doFetch(url);
     return await response.json() as CommandQueue;
   }
 
-  async enableCommandQueue(instance: string, processorName: string, queueName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}:enable`;
+  async enableCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:enable`;
     const response = await this.doFetch(url, { method: 'POST' });
     return await response.json() as CommandQueue;
   }
 
-  async disableCommandQueue(instance: string, processorName: string, queueName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}:disable`;
+  async disableCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:disable`;
     const response = await this.doFetch(url, { method: 'POST' });
     return await response.json() as CommandQueue;
   }
 
-  async blockCommandQueue(instance: string, processorName: string, queueName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}:block`;
+  async blockCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:block`;
     const response = await this.doFetch(url, { method: 'POST' });
     return await response.json() as CommandQueue;
   }
 
-  async editCommandQueueEntry(instance: string, processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}/entries/${uuid}`;
-    const body = JSON.stringify(options);
-    const response = await this.doFetch(url, {
-      body,
-      method: 'PATCH',
-    });
+  async acceptCommand(instance: string, processor: string, queue: string, command: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}/commands/${command}:accept`;
+    await this.doFetch(url, { method: 'POST' });
   }
 
-  async getActiveAlarms(instance: string, processorName: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/alarms`;
+  async rejectCommand(instance: string, processor: string, queue: string, command: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}/commands/${command}:reject`;
+    await this.doFetch(url, { method: 'POST' });
+  }
+
+  async getActiveAlarms(instance: string, processor: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarms || [];

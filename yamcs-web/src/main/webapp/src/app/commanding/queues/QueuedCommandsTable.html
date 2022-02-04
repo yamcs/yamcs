@@ -78,7 +78,7 @@
       </span>
       <ng-container *ngIf="!entry.pendingTransmissionConstraints">
         <app-text-action icon="check"
-                         (click)="releaseEntry(entry)"
+                         (click)="acceptEntry(entry)"
                          [disabled]="entry.pendingTransmissionConstraints">ACCEPT</app-text-action>
         <app-text-action icon="close"
                          (click)="rejectEntry(entry)"

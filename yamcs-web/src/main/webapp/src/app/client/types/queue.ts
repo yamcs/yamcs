@@ -47,9 +47,5 @@ export interface CommandQueueEvent {
   data: CommandQueueEntry;
 }
 
-export interface EditCommandQueueEntryOptions {
-  state: 'released' | 'rejected';
-}
-
 export type QueueStatisticsSubscription = WebSocketCall<SubscribeQueueStatisticsRequest, CommandQueue>;
 export type QueueEventsSubscription = WebSocketCall<SubscribeQueueEventsRequest, CommandQueueEvent>;

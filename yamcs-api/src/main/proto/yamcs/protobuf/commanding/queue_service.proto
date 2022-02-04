@@ -74,10 +74,13 @@ service QueueApi {
     };
   }
   
-  // List command queue entries
-  rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse) {
+  // List queued commands
+  rpc ListQueuedCommands(ListQueuedCommandsRequest) returns (ListQueuedCommandsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
+      get: "/api/processors/{instance}/{processor}/queues/{queue}/commands"
+      additional_bindings: {
+      	get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
+      }
     };
   }
   
@@ -86,6 +89,21 @@ service QueueApi {
     option (yamcs.api.route) = {
       patch: "/api/processors/{instance}/{processor}/queues/{queue}/entries/{uuid}"
       body: "*"
+      deprecated: true
+    };
+  }
+
+  // Accept a queued command
+  rpc AcceptCommand(AcceptCommandRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}/commands/{command}:accept"
+    };
+  }
+
+  // Reject a queued command
+  rpc RejectCommand(RejectCommandRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}/commands/{command}:reject"
     };
   }
 }
@@ -176,7 +194,7 @@ message BlockQueueRequest {
   optional string queue = 3;
 }
 
-message ListQueueEntriesRequest {
+message ListQueuedCommandsRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
@@ -187,8 +205,8 @@ message ListQueueEntriesRequest {
   optional string queue = 3;
 }
 
-message ListQueueEntriesResponse {
-  repeated CommandQueueEntry entries = 1;
+message ListQueuedCommandsResponse {
+  repeated CommandQueueEntry commands = 1;
 }
 
 message EditQueueEntryRequest {
@@ -205,4 +223,32 @@ message EditQueueEntryRequest {
   
   // The state of the entry. Either ``released`` or ``rejected``.
   optional string state = 5;
+}
+
+message AcceptCommandRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+  
+  // Command identifier.
+  optional string command = 4;
+}
+
+message RejectCommandRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+  
+  // Command identifier.
+  optional string command = 4;
 }

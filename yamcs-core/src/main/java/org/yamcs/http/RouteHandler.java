@@ -169,6 +169,6 @@ public class RouteHandler extends Handler {
         matcher.appendTail(buf);
 
         AuditLog auditLog = httpServer.getAuditLog();
-        auditLog.addRecord(ctx.getMethod(), message, ctx.user, buf.toString());
+        auditLog.addRecord(ctx, message, buf.toString());
     }
 }

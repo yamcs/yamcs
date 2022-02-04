@@ -14,8 +14,10 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractQueueApi;
+import org.yamcs.protobuf.AcceptCommandRequest;
 import org.yamcs.protobuf.BlockQueueRequest;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
@@ -27,10 +29,11 @@ import org.yamcs.protobuf.EditQueueEntryRequest;
 import org.yamcs.protobuf.EditQueueRequest;
 import org.yamcs.protobuf.EnableQueueRequest;
 import org.yamcs.protobuf.GetQueueRequest;
-import org.yamcs.protobuf.ListQueueEntriesRequest;
-import org.yamcs.protobuf.ListQueueEntriesResponse;
+import org.yamcs.protobuf.ListQueuedCommandsRequest;
+import org.yamcs.protobuf.ListQueuedCommandsResponse;
 import org.yamcs.protobuf.ListQueuesRequest;
 import org.yamcs.protobuf.ListQueuesResponse;
+import org.yamcs.protobuf.RejectCommandRequest;
 import org.yamcs.protobuf.SubscribeQueueEventsRequest;
 import org.yamcs.protobuf.SubscribeQueueStatisticsRequest;
 import org.yamcs.security.SystemPrivilege;
@@ -41,6 +44,12 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 public class QueueApi extends AbstractQueueApi<Context> {
+
+    private AuditLog auditLog;
+
+    public QueueApi(AuditLog auditLog) {
+        this.auditLog = auditLog;
+    }
 
     @Override
     public void listQueues(Context ctx, ListQueuesRequest request, Observer<ListQueuesResponse> observer) {
@@ -239,18 +248,18 @@ public class QueueApi extends AbstractQueueApi<Context> {
     }
 
     @Override
-    public void listQueueEntries(Context ctx, ListQueueEntriesRequest request,
-            Observer<ListQueueEntriesResponse> observer) {
+    public void listQueuedCommands(Context ctx, ListQueuedCommandsRequest request,
+            Observer<ListQueuedCommandsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
 
-        ListQueueEntriesResponse.Builder responseb = ListQueueEntriesResponse.newBuilder();
+        ListQueuedCommandsResponse.Builder responseb = ListQueuedCommandsResponse.newBuilder();
         for (ActiveCommand pc : queue.getCommands()) {
             CommandQueueEntry qEntry = toCommandQueueEntry(queue, pc);
-            responseb.addEntries(qEntry);
+            responseb.addCommands(qEntry);
         }
         observer.complete(responseb.build());
     }
@@ -264,8 +273,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
         UUID entryId = UUID.fromString(request.getUuid());
 
         if (request.hasState()) {
-            // TODO queue manager currently iterates over all queues, which doesn't really match
-            // what we want. It would be better to assure only the queue from the URI is considered.
             switch (request.getState().toLowerCase()) {
             case "released":
                 mgr.sendCommand(entryId);
@@ -278,6 +285,37 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 throw new BadRequestException("Unsupported state '" + request.getState() + "'");
             }
         }
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void acceptCommand(Context ctx, AcceptCommandRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+        String commandId = request.getCommand();
+        PreparedCommand pc = mgr.sendCommand(commandId);
+
+        auditLog.addRecord(ctx, request, String.format(
+                "Command %s accepted for processor %s (id: %s)",
+                pc.getCommandName(), processor.getName(), pc.getId()));
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void rejectCommand(Context ctx, RejectCommandRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+        String commandId = request.getCommand();
+        String username = ctx.user.getName();
+        PreparedCommand pc = mgr.rejectCommand(commandId, username);
+
+        auditLog.addRecord(ctx, request, String.format(
+                "Command %s rejected for processor %s (id: %s)",
+                pc.getCommandName(), processor.getName(), pc.getId()));
 
         observer.complete(Empty.getDefaultInstance());
     }

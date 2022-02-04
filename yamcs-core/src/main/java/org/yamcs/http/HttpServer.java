@@ -305,7 +305,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
         addApi(new ProcessingApi());
-        addApi(new QueueApi());
+        addApi(new QueueApi(auditLog));
         addApi(new ReplicationApi());
         addApi(new ServerApi(this));
         addApi(new StreamArchiveApi());

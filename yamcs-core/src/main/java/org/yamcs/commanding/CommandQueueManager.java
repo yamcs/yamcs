@@ -28,21 +28,21 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtceproc.ProcessingData;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator;
 import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
+import org.yamcs.xtceproc.ProcessingData;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -483,6 +483,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     }
 
     // Used by REST API as a simpler identifier
+    @Deprecated
     public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
         for (CommandQueue q : queues.values()) {
             ActiveCommand activeCommand = q.getcommand(uuid);
@@ -491,6 +492,17 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         log.warn("no active command found for uuid {}", uuid);
+        return null;
+    }
+
+    public synchronized PreparedCommand rejectCommand(String commandId, String username) {
+        for (CommandQueue q : queues.values()) {
+            ActiveCommand activeCommand = q.getcommand(commandId);
+            if (activeCommand != null) {
+                return rejectCommand(activeCommand.getCommandId(), username);
+            }
+        }
+        log.warn("no active command found for id {}", commandId);
         return null;
     }
 
@@ -521,6 +533,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     }
 
     // Used by REST API as a simpler identifier
+    @Deprecated
     public synchronized PreparedCommand sendCommand(UUID uuid) {
         for (CommandQueue q : queues.values()) {
             ActiveCommand activeCommand = q.getcommand(uuid);
@@ -529,6 +542,17 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         log.warn("no prepared command found for uuid {}", uuid);
+        return null;
+    }
+
+    public synchronized PreparedCommand sendCommand(String commandId) {
+        for (CommandQueue q : queues.values()) {
+            ActiveCommand activeCommand = q.getcommand(commandId);
+            if (activeCommand != null) {
+                return sendCommand(activeCommand.getCommandId());
+            }
+        }
+        log.warn("no prepared command found for id {}", commandId);
         return null;
     }
 
