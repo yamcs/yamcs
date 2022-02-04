@@ -41,9 +41,45 @@ service AlarmsApi {
     option (yamcs.api.route) = {
       patch: "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}"
       body: "*"
+      deprecated: true
     };
   }
-  
+
+  // Acknowledge an alarm
+  rpc AcknowledgeAlarm(AcknowledgeAlarmRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:acknowledge"
+      body: "*"
+      log: "Alarm {alarm} (seq {seqnum}) was acknowledged"
+    };
+  }
+
+  // Shelve an alarm
+  rpc ShelveAlarm(ShelveAlarmRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:shelve"
+      body: "*"
+      log: "Alarm {alarm} (seq {seqnum}) was shelved"
+    };
+  }
+
+  // Unshelve an alarm
+  rpc UnshelveAlarm(UnshelveAlarmRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:unshelve"
+      log: "Alarm {alarm} (seq {seqnum}) was unshelved"
+    };
+  }
+
+  // Clear an alarm
+  rpc ClearAlarm(ClearAlarmRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:clear"
+      body: "*"
+      log: "Alarm {alarm} (seq {seqnum}) was cleared"
+    };
+  }
+
   // Receive alarm status updates
   rpc SubscribeGlobalStatus(SubscribeGlobalStatusRequest) returns (stream GlobalAlarmStatus) {
     option (yamcs.api.websocket) = {
@@ -141,6 +177,71 @@ message EditAlarmRequest {
   //shelve time in milliseconds (if the state = shelved)
   //can be left out which means it is shelved indefinitely
   optional uint64 shelveDuration = 7;
+}
+
+message AcknowledgeAlarmRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Alarm name.
+  optional string alarm = 3;
+  
+  optional uint32 seqnum = 4;
+  
+  // Message documenting the alarm change.
+  optional string comment = 5;
+}
+
+message ShelveAlarmRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Alarm name.
+  optional string alarm = 3;
+  
+  optional uint32 seqnum = 4;
+  
+  // Message documenting the alarm change.
+  optional string comment = 5;
+
+  //shelve time in milliseconds (if the state = shelved)
+  //can be left out which means it is shelved indefinitely
+  optional uint64 shelveDuration = 6;
+}
+
+message UnshelveAlarmRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Alarm name.
+  optional string alarm = 3;
+  
+  optional uint32 seqnum = 4;
+}
+
+message ClearAlarmRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Alarm name.
+  optional string alarm = 3;
+  
+  optional uint32 seqnum = 4;
+  
+  // Message documenting the alarm change.
+  optional string comment = 5;
 }
 
 message SubscribeGlobalStatusRequest {

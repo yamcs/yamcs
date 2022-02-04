@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Alarm, EditAlarmOptions } from '../client';
+import { Alarm, ShelveAlarmOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
 
@@ -35,9 +35,7 @@ export class ShelveAlarmDialog {
     }
 
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'shelved',
-      };
+      const options: ShelveAlarmOptions = {};
       if (comment) {
         options.comment = comment;
       }
@@ -45,7 +43,7 @@ export class ShelveAlarmDialog {
         options.shelveDuration = duration;
       }
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.shelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

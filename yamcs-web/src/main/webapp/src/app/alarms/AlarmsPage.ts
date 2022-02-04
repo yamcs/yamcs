@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Alarm, EditAlarmOptions } from '../client';
+import { Alarm } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
@@ -147,21 +147,15 @@ export class AlarmsPage implements OnDestroy {
 
   unshelveAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'unshelved',
-      };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.unshelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum);
     }
   }
 
   clearAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'cleared',
-      };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.clearAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, {});
     }
   }
 

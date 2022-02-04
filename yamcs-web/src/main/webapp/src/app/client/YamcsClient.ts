@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
-import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
+import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
@@ -858,12 +858,37 @@ export default class YamcsClient implements HttpHandler {
     return await wrapper.alarms || [];
   }
 
-  async editAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: EditAlarmOptions) {
+  async acknowledgeAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: AcknowledgeAlarmOptions) {
     const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}`;
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:acknowledge`;
     return await this.doFetch(url, {
       body,
-      method: 'PATCH',
+      method: 'POST',
+    });
+  }
+
+  async shelveAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: ShelveAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:shelve`;
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+  }
+
+  async unshelveAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:unshelve`;
+    return await this.doFetch(url, {
+      method: 'POST',
+    });
+  }
+
+  async clearAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: ClearAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:clear`;
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
     });
   }
 

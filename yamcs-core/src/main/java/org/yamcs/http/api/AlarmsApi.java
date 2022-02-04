@@ -50,6 +50,8 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.ShelveInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
+import org.yamcs.protobuf.alarms.AcknowledgeAlarmRequest;
+import org.yamcs.protobuf.alarms.ClearAlarmRequest;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
 import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
@@ -58,8 +60,10 @@ import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.alarms.ShelveAlarmRequest;
 import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
 import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
+import org.yamcs.protobuf.alarms.UnshelveAlarmRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -275,6 +279,134 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
             observer.complete(Empty.getDefaultInstance());
 
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void acknowledgeAlarm(Context ctx, AcknowledgeAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.acknowledge(activeAlarm, username, processor.getCurrentTime(), comment);
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void shelveAlarm(Context ctx, ShelveAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            long shelveDuration = request.hasShelveDuration() ? request.getShelveDuration() : -1;
+            alarmServer.shelve(activeAlarm, username, comment, shelveDuration);
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void unshelveAlarm(Context ctx, UnshelveAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.unshelve(activeAlarm, username);
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void clearAlarm(Context ctx, ClearAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.clear(activeAlarm, username, processor.getCurrentTime(), comment);
+            observer.complete(Empty.getDefaultInstance());
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
         }
