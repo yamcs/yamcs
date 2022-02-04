@@ -47,6 +47,7 @@ export class CommandHistoryPage {
 
   filterForm = new FormGroup({
     filter: new FormControl(),
+    queue: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
@@ -60,6 +61,7 @@ export class CommandHistoryPage {
     { id: 'comment', label: 'Comment', visible: true },
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
+    { id: 'queue', label: 'Queue' },
     { id: 'queued', label: 'Queued', visible: true },
     { id: 'released', label: 'Released', visible: true },
     { id: 'sent', label: 'Sent', visible: true },
@@ -76,9 +78,12 @@ export class CommandHistoryPage {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
+  queueOptions: Option[];
+
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private filter: string;
+  private queue: string;
 
   user: User;
   config: WebsiteConfig;
@@ -100,6 +105,13 @@ export class CommandHistoryPage {
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 
+    this.queueOptions = [
+      { id: 'ANY', label: 'Any queue' },
+    ];
+    for (const queueName of this.config.queueNames) {
+      this.queueOptions.push({ id: queueName, label: queueName });
+    }
+
     this.initializeOptions();
     this.loadData();
 
@@ -107,6 +119,11 @@ export class CommandHistoryPage {
       debounceTime(400),
     ).forEach(filter => {
       this.filter = filter;
+      this.loadData();
+    });
+
+    this.filterForm.get('queue')!.valueChanges.forEach(queue => {
+      this.queue = (queue !== 'ANY') ? queue : null;
       this.loadData();
     });
 
@@ -135,6 +152,10 @@ export class CommandHistoryPage {
     if (queryParams.has('filter')) {
       this.filter = queryParams.get('filter') || '';
       this.filterForm.get('filter')!.setValue(this.filter);
+    }
+    if (queryParams.has('queue')) {
+      this.queue = queryParams.get('queue')!;
+      this.filterForm.get('queue')!.setValue(this.queue);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
@@ -198,6 +219,9 @@ export class CommandHistoryPage {
     if (this.filter) {
       options.q = this.filter;
     }
+    if (this.queue) {
+      options.queue = this.queue;
+    }
     this.dataSource.loadEntries(options);
   }
 
@@ -208,6 +232,9 @@ export class CommandHistoryPage {
     }
     if (this.filter) {
       options.q = this.filter;
+    }
+    if (this.queue) {
+      options.queue = this.queue;
     }
 
     this.dataSource.loadMoreData(options);
@@ -227,6 +254,7 @@ export class CommandHistoryPage {
       relativeTo: this.route,
       queryParams: {
         filter: this.filter || null,
+        queue: this.queue || null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

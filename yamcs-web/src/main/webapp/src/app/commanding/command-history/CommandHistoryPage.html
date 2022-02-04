@@ -64,6 +64,7 @@
                               preferenceKey="cmdhist"></app-column-chooser>
         </div>
         <div class="filter-bar">
+          <app-select [options]="queueOptions" formControlName="queue"></app-select>
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
@@ -145,6 +146,13 @@
           <th mat-header-cell *matHeaderCellDef style="width: 150px">Issuer</th>
           <td mat-cell *matCellDef="let item">
             {{ item.username }}<span *ngIf="item.origin">@{{ item.origin }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="queue">
+          <th mat-header-cell *matHeaderCellDef style="width: 150px">Queue</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.queue || '-' }}
           </td>
         </ng-container>
 

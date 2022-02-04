@@ -310,7 +310,9 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         if (request.hasStop()) {
             sqlb.whereColBefore("gentime", request.getStop());
         }
-
+        if (request.hasQueue()) {
+            sqlb.where("queue = ?", request.getQueue());
+        }
         if (request.hasQ()) {
             sqlb.where("cmdName like ?", "%" + request.getQ() + "%");
         }

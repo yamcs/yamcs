@@ -353,7 +353,7 @@ public class ProcessorClient {
         EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
+                .setQueue(queue)
                 .setState("enabled");
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
         queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
@@ -364,7 +364,7 @@ public class ProcessorClient {
         EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
+                .setQueue(queue)
                 .setState("disabled");
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
         queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
@@ -375,7 +375,7 @@ public class ProcessorClient {
         EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
+                .setQueue(queue)
                 .setState("blocked");
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
         queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
@@ -386,7 +386,7 @@ public class ProcessorClient {
         EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
+                .setQueue(queue)
                 .setUuid(uuid)
                 .setState("rejected");
         CompletableFuture<Empty> f = new CompletableFuture<>();
@@ -398,7 +398,7 @@ public class ProcessorClient {
         EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
+                .setQueue(queue)
                 .setUuid(uuid)
                 .setState("released");
         CompletableFuture<Empty> f = new CompletableFuture<>();

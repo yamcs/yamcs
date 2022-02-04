@@ -65,6 +65,11 @@
                 [matMenuTriggerFor]="actions">
           Change action
         </button>
+        <a mat-menu-item
+           routerLink="/commanding/history"
+           [queryParams]="{c: yamcs.context, queue: queue.name}">
+          View command history
+        </a>
       </mat-menu>
 
       <mat-menu #actions="matMenu" class="ya-menu">

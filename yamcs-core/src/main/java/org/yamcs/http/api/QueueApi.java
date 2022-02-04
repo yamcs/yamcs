@@ -61,7 +61,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
-        CommandQueue queue = verifyCommandQueue(mgr, request.getName());
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
 
         int order = mgr.getQueues().indexOf(queue) + 1;
         CommandQueueInfo info = toCommandQueueInfo(queue, order, true);
@@ -149,7 +149,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
-        CommandQueue queue = verifyCommandQueue(mgr, request.getName());
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
 
         CommandQueue updatedQueue = queue;
         if (request.hasState()) {
@@ -200,7 +200,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
-        CommandQueue queue = verifyCommandQueue(mgr, request.getName());
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
 
         ListQueueEntriesResponse.Builder responseb = ListQueueEntriesResponse.newBuilder();
         for (ActiveCommand pc : queue.getCommands()) {

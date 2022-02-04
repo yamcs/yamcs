@@ -23,14 +23,14 @@ service QueueApi {
   // Get a command queue
   rpc GetQueue(GetQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/queues/{name}"
+      get: "/api/processors/{instance}/{processor}/queues/{queue}"
     };
   }
   
   // Update a command queue
   rpc UpdateQueue(EditQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
-      patch: "/api/processors/{instance}/{processor}/queues/{name}"
+      patch: "/api/processors/{instance}/{processor}/queues/{queue}"
       body: "*"
     };
   }
@@ -52,14 +52,14 @@ service QueueApi {
   // List command queue entries
   rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse) {
     option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/queues/{name}/entries"
+      get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
     };
   }
   
   // Update a command queue entry
   rpc UpdateQueueEntry(EditQueueEntryRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      patch: "/api/processors/{instance}/{processor}/queues/{name}/entries/{uuid}"
+      patch: "/api/processors/{instance}/{processor}/queues/{queue}/entries/{uuid}"
       body: "*"
     };
   }
@@ -101,7 +101,7 @@ message GetQueueRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 }
 
 message EditQueueRequest {
@@ -112,7 +112,7 @@ message EditQueueRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 
   // The state of the queue. Either ``enabled``, ``disabled`` or ``blocked``.
   optional string state = 4;
@@ -126,7 +126,7 @@ message ListQueueEntriesRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 }
 
 message ListQueueEntriesResponse {
@@ -141,7 +141,7 @@ message EditQueueEntryRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
   
   optional string uuid = 4;
   

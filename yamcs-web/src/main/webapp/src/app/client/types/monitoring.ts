@@ -79,7 +79,7 @@ export interface Range {
 }
 
 export interface IssueCommandOptions {
-  args?: { [key: string]: any };
+  args?: { [key: string]: any; };
   origin?: string;
   sequenceNumber?: number;
   dryRun?: boolean;
@@ -130,6 +130,7 @@ export interface GetCommandHistoryOptions {
   limit?: number;
   next?: string;
   q?: string;
+  queue?: string;
   order?: 'asc' | 'desc';
 }
 
