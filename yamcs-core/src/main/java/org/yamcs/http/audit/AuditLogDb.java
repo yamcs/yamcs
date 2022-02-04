@@ -1,5 +1,7 @@
 package org.yamcs.http.audit;
 
+import static org.yamcs.api.AnnotationsProto.fieldBehavior;
+
 import java.util.Base64;
 import java.util.List;
 import java.util.Map.Entry;
@@ -9,6 +11,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
+import org.yamcs.api.FieldBehavior;
 import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.logging.Log;
 import org.yamcs.security.User;
@@ -25,6 +28,7 @@ import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
+import com.google.protobuf.DescriptorProtos.FieldOptions;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.ListValue;
@@ -166,7 +170,12 @@ public class AuditLogDb {
         Struct.Builder structb = Struct.newBuilder();
         for (Entry<FieldDescriptor, Object> entry : message.getAllFields().entrySet()) {
             FieldDescriptor field = entry.getKey();
-            structb.putFields(field.getName(), toValue(entry.getValue()));
+            FieldOptions fieldOptions = field.getOptions();
+            if (fieldOptions.getExtension(fieldBehavior).contains(FieldBehavior.SECRET)) {
+                structb.putFields(field.getName(), toValue("***"));
+            } else {
+                structb.putFields(field.getName(), toValue(entry.getValue()));
+            }
         }
         return structb.build();
     }

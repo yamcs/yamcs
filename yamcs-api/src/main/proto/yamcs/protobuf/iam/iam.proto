@@ -238,7 +238,7 @@ message CreateUserRequest {
   optional string name = 1;
   optional string displayName = 2;
   optional string email = 3;
-  optional string password = 4;
+  optional string password = 4 [(yamcs.api.field_behavior) = SECRET];
 }
 
 message UpdateUserRequest {
@@ -247,7 +247,7 @@ message UpdateUserRequest {
   optional string email = 3;
   optional bool active = 4;
   optional bool superuser = 5;
-  optional string password = 6;
+  optional string password = 6 [(yamcs.api.field_behavior) = SECRET];
   optional RoleAssignment roleAssignment = 7;
 }
 

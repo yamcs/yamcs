@@ -150,20 +150,12 @@ public class RouteHandler extends Handler {
         StringBuffer buf = new StringBuffer();
         while (matcher.find()) {
             String param = matcher.group(1);
-            if ("user".equals(param)) {
-                if (ctx.user.getDisplayName() != null) {
-                    matcher.appendReplacement(buf, ctx.user.getDisplayName());
-                } else {
-                    matcher.appendReplacement(buf, ctx.user.getName());
-                }
+            FieldDescriptor field = message.getDescriptorForType().findFieldByName(param);
+            if (field != null && message.hasField(field)) {
+                String replacement = message.getField(field).toString();
+                matcher.appendReplacement(buf, replacement);
             } else {
-                FieldDescriptor field = message.getDescriptorForType().findFieldByName(param);
-                if (field != null && message.hasField(field)) {
-                    String replacement = message.getField(field).toString();
-                    matcher.appendReplacement(buf, replacement);
-                } else {
-                    log.warn("Cannot resolve parameter {} in audit message format '{}'", param, format);
-                }
+                log.warn("Cannot resolve parameter {} in audit message format '{}'", param, format);
             }
         }
         matcher.appendTail(buf);
