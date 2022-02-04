@@ -47,10 +47,6 @@ export interface CommandQueueEvent {
   data: CommandQueueEntry;
 }
 
-export interface EditCommandQueueOptions {
-  state: 'enabled' | 'disabled' | 'blocked';
-}
-
 export interface EditCommandQueueEntryOptions {
   state: 'released' | 'rejected';
 }

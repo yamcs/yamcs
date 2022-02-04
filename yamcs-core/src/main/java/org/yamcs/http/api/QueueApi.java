@@ -16,13 +16,16 @@ import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractQueueApi;
+import org.yamcs.protobuf.BlockQueueRequest;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.DisableQueueRequest;
 import org.yamcs.protobuf.EditQueueEntryRequest;
 import org.yamcs.protobuf.EditQueueRequest;
+import org.yamcs.protobuf.EnableQueueRequest;
 import org.yamcs.protobuf.GetQueueRequest;
 import org.yamcs.protobuf.ListQueueEntriesRequest;
 import org.yamcs.protobuf.ListQueueEntriesResponse;
@@ -167,6 +170,48 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 throw new BadRequestException("Unsupported queue state '" + request.getState() + "'");
             }
         }
+        int order = mgr.getQueues().indexOf(queue) + 1;
+        CommandQueueInfo info = toCommandQueueInfo(updatedQueue, order, true);
+        observer.complete(info);
+    }
+
+    @Override
+    public void enableQueue(Context ctx, EnableQueueRequest request, Observer<CommandQueueInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
+
+        CommandQueue updatedQueue = mgr.setQueueState(queue.getName(), QueueState.ENABLED);
+        int order = mgr.getQueues().indexOf(queue) + 1;
+        CommandQueueInfo info = toCommandQueueInfo(updatedQueue, order, true);
+        observer.complete(info);
+    }
+
+    @Override
+    public void disableQueue(Context ctx, DisableQueueRequest request, Observer<CommandQueueInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
+
+        CommandQueue updatedQueue = mgr.setQueueState(queue.getName(), QueueState.DISABLED);
+        int order = mgr.getQueues().indexOf(queue) + 1;
+        CommandQueueInfo info = toCommandQueueInfo(updatedQueue, order, true);
+        observer.complete(info);
+    }
+
+    @Override
+    public void blockQueue(Context ctx, BlockQueueRequest request, Observer<CommandQueueInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
+
+        CommandQueue updatedQueue = mgr.setQueueState(queue.getName(), QueueState.BLOCKED);
         int order = mgr.getQueues().indexOf(queue) + 1;
         CommandQueueInfo info = toCommandQueueInfo(updatedQueue, order, true);
         observer.complete(info);

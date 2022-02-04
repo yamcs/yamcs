@@ -32,9 +32,34 @@ service QueueApi {
     option (yamcs.api.route) = {
       patch: "/api/processors/{instance}/{processor}/queues/{queue}"
       body: "*"
+      deprecated: true
     };
   }
-  
+
+  // Enable a command queue
+  rpc EnableQueue(EnableQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:enable"
+      log: "Queue {queue} enabled for processor {processor}"
+    };
+  }
+
+  // Disable a command queue
+  rpc DisableQueue(DisableQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:disable"
+      log: "Queue {queue} disabled for processor {processor}"
+    };
+  }
+
+  // Block a command queue
+  rpc BlockQueue(BlockQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:block"
+      log: "Queue {queue} blocked for processor {processor}"
+    };
+  }
+
   // Receive updates on queue stats
   rpc SubscribeQueueStatistics(SubscribeQueueStatisticsRequest) returns (stream CommandQueueInfo) {
     option (yamcs.api.websocket) = {
@@ -116,6 +141,39 @@ message EditQueueRequest {
 
   // The state of the queue. Either ``enabled``, ``disabled`` or ``blocked``.
   optional string state = 4;
+}
+
+message EnableQueueRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+}
+
+message DisableQueueRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+}
+
+message BlockQueueRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
 }
 
 message ListQueueEntriesRequest {
