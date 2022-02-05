@@ -98,6 +98,8 @@ public class AuditApi extends AbstractAuditApi<Context> {
                 ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
             } else if (service.equals(QueueApi.class.getSimpleName())) {
                 ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+            } else if (service.equals(AlarmsApi.class.getSimpleName())) {
+                ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
             } else {
                 throw new ForbiddenException("The specified service cannot be queried");
             }

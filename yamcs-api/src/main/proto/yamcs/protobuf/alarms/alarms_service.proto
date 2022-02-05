@@ -50,7 +50,6 @@ service AlarmsApi {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:acknowledge"
       body: "*"
-      log: "Alarm {alarm} (seq {seqnum}) was acknowledged"
     };
   }
 
@@ -59,7 +58,6 @@ service AlarmsApi {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:shelve"
       body: "*"
-      log: "Alarm {alarm} (seq {seqnum}) was shelved"
     };
   }
 
@@ -67,7 +65,6 @@ service AlarmsApi {
   rpc UnshelveAlarm(UnshelveAlarmRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:unshelve"
-      log: "Alarm {alarm} (seq {seqnum}) was unshelved"
     };
   }
 
@@ -76,7 +73,6 @@ service AlarmsApi {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/alarms/{alarm*}/{seqnum}:clear"
       body: "*"
-      log: "Alarm {alarm} (seq {seqnum}) was cleared"
     };
   }
 

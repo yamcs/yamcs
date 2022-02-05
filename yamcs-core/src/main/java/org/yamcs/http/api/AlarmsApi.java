@@ -35,6 +35,7 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AcknowledgeInfo;
 import org.yamcs.protobuf.AlarmData;
@@ -75,6 +76,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 
 public class AlarmsApi extends AbstractAlarmsApi<Context> {
@@ -108,6 +110,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
+    }
+
+    private AuditLog auditLog;
+
+    public AlarmsApi(AuditLog auditLog) {
+        this.auditLog = auditLog;
     }
 
     @Override
@@ -310,6 +318,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
 
             alarmServer.acknowledge(activeAlarm, username, processor.getCurrentTime(), comment);
+            logAlarmAction(ctx, request, processor, activeAlarm, "acknowledged");
             observer.complete(Empty.getDefaultInstance());
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
@@ -343,6 +352,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
             long shelveDuration = request.hasShelveDuration() ? request.getShelveDuration() : -1;
             alarmServer.shelve(activeAlarm, username, comment, shelveDuration);
+            logAlarmAction(ctx, request, processor, activeAlarm, "shelved");
             observer.complete(Empty.getDefaultInstance());
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
@@ -374,9 +384,31 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
 
             alarmServer.unshelve(activeAlarm, username);
+            logAlarmAction(ctx, request, processor, activeAlarm, "unshelved");
             observer.complete(Empty.getDefaultInstance());
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    private void logAlarmAction(Context ctx, Message request, Processor processor, ActiveAlarm<?> alarm,
+            String action) {
+        if (alarm.getTriggerValue() instanceof ParameterValue) {
+            String parameter = ((ParameterValue) alarm.getTriggerValue()).getParameterQualifiedName();
+            auditLog.addRecord(ctx, request, String.format(
+                    "Alarm for parameter %s %s for processor %s",
+                    parameter, action, processor.getName()));
+        } else if (alarm.getTriggerValue() instanceof Db.Event) {
+            Db.Event event = (Db.Event) alarm.getTriggerValue();
+            String alarmName = event.getSource();
+            if (event.hasType()) {
+                alarmName += "/" + event.getType();
+            }
+            auditLog.addRecord(ctx, request, String.format(
+                    "Alarm for event %s/%s %s for processor %s",
+                    alarmName, action, processor.getName()));
+        } else {
+            throw new IllegalStateException("Unexpected alarm type");
         }
     }
 
@@ -406,6 +438,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
 
             alarmServer.clear(activeAlarm, username, processor.getCurrentTime(), comment);
+            logAlarmAction(ctx, request, processor, activeAlarm, "cleared");
             observer.complete(Empty.getDefaultInstance());
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());

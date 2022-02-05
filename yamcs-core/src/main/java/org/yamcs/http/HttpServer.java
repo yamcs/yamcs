@@ -287,7 +287,7 @@ public class HttpServer extends AbstractYamcsService {
         }
         nThreads = config.getInt("nThreads");
 
-        addApi(new AlarmsApi());
+        addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
         addApi(new FileTransferApi());
