@@ -1,7 +1,6 @@
 <app-instance-page>
   <app-instance-toolbar>
     Displays
-
     &nbsp;&nbsp;&nbsp;
     <button mat-button
             *ngIf="mayManageDisplays()"
@@ -13,9 +12,21 @@
     <button mat-button
             *ngIf="mayManageDisplays()"
             color="primary"
-            (click)="uploadFiles()">
-      <mat-icon>cloud_upload</mat-icon>
+            (click)="uploader.click()">
+      <mat-icon>file_upload</mat-icon>
       UPLOAD FILES
+      <input #uploader
+             type="file"
+             hidden
+             multiple
+             (change)="uploadFiles()">
+    </button>
+    <button mat-button
+            *ngIf="mayManageDisplays()"
+            color="primary"
+            (click)="createFolder()">
+      <mat-icon>create_new_folder</mat-icon>
+      CREATE FOLDER
     </button>
     <button mat-button
             *ngIf="mayManageDisplays()"

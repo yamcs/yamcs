@@ -12,9 +12,22 @@
     <button mat-button
             *ngIf="mayManageStacks()"
             color="primary"
-            (click)="importStack()">
-      <mat-icon>cloud_upload</mat-icon>
-      IMPORT STACK
+            (click)="uploader.click()">
+      <mat-icon>file_upload</mat-icon>
+      UPLOAD STACK
+      <input #uploader
+             type="file"
+             hidden
+             accept=".xml"
+             multiple
+             (change)="importStack()">
+    </button>
+    <button mat-button
+            *ngIf="mayManageStacks()"
+            color="primary"
+            (click)="createFolder()">
+      <mat-icon>create_new_folder</mat-icon>
+      CREATE FOLDER
     </button>
     <button mat-button
             *ngIf="mayManageStacks()"
@@ -83,6 +96,7 @@
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
                  (click)="$event.stopPropagation()">

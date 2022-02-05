@@ -7,9 +7,20 @@
     &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
-            (click)="uploadObjects()">
-      <mat-icon>cloud_upload</mat-icon>
+            (click)="uploader.click()">
+      <mat-icon>file_upload</mat-icon>
       UPLOAD FILES
+      <input #uploader
+             type="file"
+             hidden
+             multiple
+             (change)="uploadObjects()">
+    </button>
+    <button mat-button
+            color="primary"
+            (click)="createFolder()">
+      <mat-icon>create_new_folder</mat-icon>
+      CREATE FOLDER
     </button>
     <button mat-button
             color="primary"

@@ -9,9 +9,9 @@ import { filter } from 'rxjs/operators';
 import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
+import { CreateFolderDialog } from './CreateFolderDialog';
 import { RenameObjectDialog } from './RenameObjectDialog';
 import { Upload } from './Upload';
-import { UploadObjectsDialog } from './UploadObjectsDialog';
 import { UploadProgressDialog } from './UploadProgressDialog';
 
 @Component({
@@ -23,6 +23,9 @@ export class BucketPage implements OnDestroy {
 
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
+
+  @ViewChild('uploader')
+  private uploaderEl: ElementRef<HTMLInputElement>;
 
   bucketInstance: string;
   name: string;
@@ -90,6 +93,10 @@ export class BucketPage implements OnDestroy {
       });
     }
     for (const object of dir.objects || []) {
+      // Ignore fake objects that represent an empty directory
+      if (object.name.endsWith('/')) {
+        continue;
+      }
       items.push({
         folder: false,
         name: object.name,
@@ -120,27 +127,51 @@ export class BucketPage implements OnDestroy {
     this.selection.toggle(row);
   }
 
-  uploadObjects() {
-    const dialogRef = this.dialog.open(UploadObjectsDialog, {
+  createFolder() {
+    this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
         bucketInstance: this.bucketInstance,
         bucket: this.name,
         path: this.getCurrentPath(),
       }
+    }).afterClosed().subscribe({
+      next: () => this.loadCurrentFolder(),
     });
-    dialogRef.afterClosed().subscribe((uploads: Upload[]) => {
-      if (uploads.length) {
-        this.showUploadProgress().then(() => {
-          for (const upload of uploads) {
-            this.trackUpload(upload);
-          }
-          this.settlePromises(uploads.map(u => u.promise)).then(() => {
-            this.loadCurrentFolder();
-          });
-        });
+  }
+
+  uploadObjects() {
+    let path = this.getCurrentPath();
+    // Full path should not have a leading slash
+    if (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+
+    const files = this.uploaderEl.nativeElement.files;
+
+    const uploads: any[] = [];
+    for (const key in files) {
+      if (!isNaN(parseInt(key, 10))) {
+        const file = files[key as any];
+        const fullPath = path ? path + '/' + file.name : file.name;
+
+        const bucketInstance = this.bucketInstance;
+        const bucket = this.name;
+        const promise = this.storageClient.uploadObject(bucketInstance, bucket, fullPath, file);
+        uploads.push({ 'filename': file.name, promise });
       }
-    });
+    }
+
+    if (uploads.length) {
+      this.showUploadProgress().then(() => {
+        for (const upload of uploads) {
+          this.trackUpload(upload);
+        }
+        this.settlePromises(uploads.map(u => u.promise)).then(() => {
+          this.loadCurrentFolder();
+        });
+      });
+    }
   }
 
   /**
