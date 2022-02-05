@@ -39,29 +39,10 @@
     </ng-template>
   </app-detail-pane>
 
-  <nav mat-tab-nav-bar>
-    <a mat-tab-link
-       routerLink="/links"
-       routerLinkActive
-       [routerLinkActiveOptions]="{exact: true}"
-       #rla="routerLinkActive"
-       [active]="rla.isActive"
-       [queryParams]="{c: yamcs.context}">
-      STATUS
-    </a>
-    <a mat-tab-link
-       routerLink="/links/log"
-       routerLinkActive
-       #rlb="routerLinkActive"
-       [active]="rlb.isActive"
-       [queryParams]="{c: yamcs.context}">
-      ACTION LOG
-    </a>
-  </nav>
-
   <div class="table-wrapper">
     <div class="panel-content">
-      <div class="filter-bar">
+      <app-links-page-tabs></app-links-page-tabs>
+      <div class="filter-bar" style="margin-top: 16px">
         <app-search-filter [formControl]="filterControl"
                            placeholder="Filter links"
                            (onArrowDown)="selectNext()"
@@ -75,7 +56,7 @@
       <table mat-table
              [dataSource]="dataSource"
              [trackBy]="tableTrackerFn"
-             class="ya-data-table">
+             class="ya-data-table expand">
 
         <ng-container cdkColumnDef="select">
           <th mat-header-cell *cdkHeaderCellDef class="checkbox">
@@ -90,7 +71,7 @@
         </ng-container>
 
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">Name</th>
+          <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let row" style="white-space: nowrap">
             <div style="display: inline-block; margin-right: 10px;"
                  *ngIf="row.link.parentName">
@@ -113,7 +94,7 @@
         </ng-container>
 
         <ng-container matColumnDef="className">
-          <th mat-header-cell *matHeaderCellDef style="width: 300px">Class</th>
+          <th mat-header-cell *matHeaderCellDef>Class</th>
           <td mat-cell *matCellDef="let row">
             <app-highlight [text]="row.link.type"
                            [term]="filterControl.value">
@@ -143,9 +124,9 @@
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let row" style="text-align: right">
-            <mat-menu #linkMenu="matMenu" overlapTrigger="false" class="ya-menu">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row">
+            <app-more *ngIf="mayControlLinks()">
               <button mat-menu-item
                       (click)="enableLink(row.link.name)"
                       [disabled]="row.link.status !== 'DISABLED'">
@@ -161,14 +142,7 @@
                       (click)="resetCounters(row.link.name)">
                 Reset counters
               </button>
-            </mat-menu>
-            <button mat-button
-                    class="icon"
-                    (click)="$event.stopPropagation()"
-                    [matMenuTriggerFor]="linkMenu"
-                    *ngIf="mayControlLinks()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
+            </app-more>
           </td>
         </ng-container>
 

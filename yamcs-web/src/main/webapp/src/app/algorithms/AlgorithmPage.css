@@ -1,7 +1,7 @@
 .tab-content-wrapper {
   position: absolute;
-  top: 49px;
   /* tab height + border */
+  top: 37px;
   left: 0;
   right: 0;
   bottom: 0;

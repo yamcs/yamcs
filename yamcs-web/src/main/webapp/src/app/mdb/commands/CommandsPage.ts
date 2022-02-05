@@ -37,6 +37,7 @@ export class CommandsPage implements AfterViewInit {
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'abstract', label: 'Abstract', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   // Added dynamically based on actual commands.

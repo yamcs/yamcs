@@ -18,11 +18,11 @@
     <app-table-container>
       <table mat-table
              *ngIf="dataSource"
-             class="ya-data-table"
+             class="ya-data-table expand"
              [dataSource]="dataSource">
 
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
+          <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let container">
             <a [routerLink]="['/mdb/containers', container.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
@@ -34,17 +34,17 @@
         </ng-container>
 
         <ng-container matColumnDef="maxInterval">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Max Interval</th>
+          <th mat-header-cell *matHeaderCellDef>Max Interval</th>
           <td mat-cell *matCellDef="let container">{{ container.maxInterval || '-' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="sizeInBits">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Size in Bits</th>
+          <th mat-header-cell *matHeaderCellDef>Size in Bits</th>
           <td mat-cell *matCellDef="let container">{{ container.sizeInBits || '-' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="baseContainer">
-          <th mat-header-cell *matHeaderCellDef style="width: 300px">Base Container</th>
+          <th mat-header-cell *matHeaderCellDef>Base Container</th>
           <td mat-cell *matCellDef="let container">
             <a *ngIf="container.baseContainer"
                [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
@@ -57,7 +57,7 @@
         </ng-container>
 
         <ng-container matColumnDef="restrictionCriteria">
-          <th mat-header-cell *matHeaderCellDef style="width: 300px">Restriction Criteria</th>
+          <th mat-header-cell *matHeaderCellDef>Restriction Criteria</th>
           <td mat-cell *matCellDef="let container">
             <ng-container *ngFor="let criteria of container.restrictionCriteria">
               <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
@@ -74,8 +74,13 @@
         </ng-container>
 
         <ng-container matColumnDef="shortDescription">
-          <th mat-header-cell *matHeaderCellDef style="width: 400px">Description</th>
-          <td mat-cell *matCellDef="let container">{{ container.shortDescription || '-' }}</td>
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let container" class="wrap200">{{ container.shortDescription || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row"></td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>

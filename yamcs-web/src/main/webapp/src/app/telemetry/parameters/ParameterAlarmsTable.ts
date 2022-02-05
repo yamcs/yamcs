@@ -18,6 +18,7 @@ export class ParameterAlarmsTable {
     'triggerTime',
     'triggerValue',
     'duration',
+    'actions',
   ];
 
   printDuration(alarm: Alarm) {

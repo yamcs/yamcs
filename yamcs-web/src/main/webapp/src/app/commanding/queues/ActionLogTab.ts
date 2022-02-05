@@ -38,6 +38,7 @@ export class ActionLogTab {
     'time',
     'user',
     'summary',
+    'actions',
   ];
 
   intervalOptions: Option[] = [

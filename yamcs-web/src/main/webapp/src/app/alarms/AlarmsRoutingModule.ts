@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
+import { ActionLogTab } from './ActionLogTab';
 import { AlarmsPage } from './AlarmsPage';
 
 const routes: Routes = [
@@ -17,7 +18,10 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: AlarmsPage,
-      },
+      }, {
+        path: 'log',
+        component: ActionLogTab,
+      }
     ]
   }
 ];
@@ -30,4 +34,5 @@ export class AlarmsRoutingModule { }
 
 export const routingComponents = [
   AlarmsPage,
+  ActionLogTab,
 ];

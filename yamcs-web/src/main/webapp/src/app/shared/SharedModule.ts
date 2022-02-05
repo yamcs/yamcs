@@ -63,6 +63,7 @@ import { TimezoneSelect } from './forms/TimezoneSelect';
 import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
 import { Markdown } from './markdown/Markdown';
+import { More } from './more/More';
 import { AgoPipe } from './pipes/AgoPipe';
 import { AliasPipe } from './pipes/AliasPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
@@ -209,6 +210,7 @@ const sharedComponents = [
   LiveExpression,
   Markdown,
   MessageBar,
+  More,
   ObjectSelector,
   ParameterLegend,
   ParameterPlot,

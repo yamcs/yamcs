@@ -20,8 +20,7 @@
   <div class="panel-content">
     <table mat-table
            *ngIf="dataSource"
-           class="ya-data-table"
-           style="width: 100%"
+           class="ya-data-table expand"
            [dataSource]="dataSource"
            [trackBy]="tableTrackerFn"
            matSort
@@ -42,7 +41,7 @@
       </ng-container>
 
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Label</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Label</th>
         <td mat-cell *matCellDef="let item">
           <ng-container *ngIf="item.name">{{ item.name }}</ng-container>
           <i *ngIf="!item.name">(none)</i>
@@ -50,7 +49,7 @@
       </ng-container>
 
       <ng-container cdkColumnDef="tags">
-        <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Tags</th>
+        <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Tags</th>
         <td mat-cell *cdkCellDef="let row">
           <app-label *ngFor="let tag of (row.tags || [])"
                      backgroundColor="#cdeefd">{{ tag }}</app-label>
@@ -59,28 +58,28 @@
       </ng-container>
 
       <ng-container matColumnDef="start">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 170px">Start</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Start</th>
         <td mat-cell *matCellDef="let item">
           {{ (item.start | datetime) || '-' }}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="duration">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Duration</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Duration</th>
         <td mat-cell *matCellDef="let item">
           {{ item.duration }}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Type</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
         <td mat-cell *matCellDef="let item">
           {{ item.type }}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
+        <th mat-header-cell *matHeaderCellDef class="expand"></th>
         <td mat-cell *matCellDef="let item"></td>
       </ng-container>
 

@@ -49,6 +49,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     { id: 'dataSource', label: 'Data Source', visible: true },
     { id: 'engValue', label: 'Value', visible: true },
     { id: 'shortDescription', label: 'Description', visible: true },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   // Added dynamically based on actual commands.

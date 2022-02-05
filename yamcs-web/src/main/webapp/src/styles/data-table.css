@@ -1,0 +1,140 @@
+.ya-data-table tr.mat-header-row, .ya-data-table tr.mat-footer-row {
+  height: auto;
+}
+
+.ya-data-table tr.mat-row {
+  height: auto;
+}
+
+.ya-data-table tr.mat-row:hover {
+  background: #fafafa;
+}
+
+.ya-data-table td.mat-cell, .ya-data-table th.mat-header-cell, .ya-data-table-placeholder {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, .654);
+  padding: 4px 8px 4px 0;
+}
+
+.ya-data-table td.mat-footer-cell {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .654);
+  padding: 10px 10px 8px 0;
+}
+
+.ya-data-table td.vdiv, .ya-data-table th.vdiv {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ya-data-table td.mono, .ya-data-table th.mono, .mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/*.ya-data-table-placeholder {
+  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+}*/
+
+.ya-data-table th.mat-header-cell, .ya-data-table td.mat-footer-cell {
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+.ya-data-table th.mat-header-cell {
+  background-color: #f5f5f5;
+  color: #707070;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ya-data-table td.mat-cell {
+  min-width: 0;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.ya-data-table.expand, .ya-data-table .expand {
+  width: 100%;
+}
+
+.ya-data-table td.mat-cell.wrap200 {
+  min-width: 200px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.ya-data-table mat-icon {
+  font-size: 16px !important;
+  height: 16px !important;
+  width: 16px !important;
+}
+
+.ya-data-table .selected {
+  background-color: #f0f4fd !important;
+}
+
+.ya-data-table .mat-button, .ya-data-table .mat-stroked-button, .ya-data-table .mat-raised-button {
+  line-height: 16px;
+  min-width: 0;
+}
+
+.ya-data-table .mat-button.icon {
+  padding: 0;
+  width: 30px;
+}
+
+.ya-data-table a, .ya-link a, a.ya-link {
+  color: #5787b1;
+  text-decoration: none;
+}
+
+.ya-data-table .mat-row:hover a:not(.secundary) {
+  text-decoration: underline;
+}
+
+.ya-data-table a:hover, .ya-link a:hover, a.ya-link:hover {
+  /*color: #1b61b9;*/
+  text-decoration: underline;
+}
+
+.ya-data-table td.checkbox, .ya-data-table th.checkbox {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status, .ya-data-table th.status, .ya-data-table td.iconcol, .ya-data-table th.iconcol {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status .material-icons, .ya-data-table th.status .material-icons {
+  vertical-align: middle;
+}
+
+.ya-data-table td:first-child, .ya-data-table th:first-child {
+  padding-left: 8px !important;
+}
+
+.ya-data-table td:last-child, .ya-data-table th:last-child {
+  padding-right: 8px !important;
+}
+
+.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th, .ya-data-table td.status+td, .ya-data-table th.status+th {
+  padding-left: 4px;
+}
+
+.ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
+  padding-left: 24px;
+}
+
+@media print {
+  .ya-data-table {
+    width: auto !important;
+  }
+
+  .ya-data-table td.mat-cell, .ya-data-table th.mat-header-cell, .ya-data-table td.mat-footer-cell {
+    padding: 0 7px 0 0;
+    width: auto !important;
+  }
+}

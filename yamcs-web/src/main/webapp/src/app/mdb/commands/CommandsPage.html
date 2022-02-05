@@ -18,11 +18,11 @@
     <app-table-container>
       <table mat-table
              *ngIf="dataSource"
-             class="ya-data-table"
+             class="ya-data-table expand"
              [dataSource]="dataSource">
 
         <ng-container matColumnDef="significance">
-          <th mat-header-cell *matHeaderCellDef style="width: 1px">Significance</th>
+          <th mat-header-cell *matHeaderCellDef>Significance</th>
           <td mat-cell *matCellDef="let command">
             <ng-container *ngIf="command.significance; else dash">
               <app-significance-level [level]="command.significance.consequenceLevel"></app-significance-level>
@@ -31,7 +31,7 @@
         </ng-container>
 
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
+          <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let command">
             <a [routerLink]="['/mdb/commands', command.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
@@ -52,12 +52,12 @@
 
         <ng-container matColumnDef="shortDescription">
           <th mat-header-cell *matHeaderCellDef>Description</th>
-          <td mat-cell *matCellDef="let command">{{ command.shortDescription || '-' }}</td>
+          <td mat-cell *matCellDef="let command" class="wrap200">{{ command.shortDescription || '-' }}</td>
         </ng-container>
 
         <ng-container *ngFor="let aliasColumn of aliasColumns$ | async"
                       [matColumnDef]="aliasColumn.id">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">
+          <th mat-header-cell *matHeaderCellDef>
             {{ aliasColumn.label }}
           </th>
           <td mat-cell *matCellDef="let command">
@@ -66,6 +66,11 @@
               </app-highlight>
             </ng-container>
           </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row"></td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>

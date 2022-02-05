@@ -41,6 +41,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   // Added dynamically based on actual commands.

@@ -41,6 +41,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
     'language',
     'scope',
     'shortDescription',
+    'actions',
   ];
 
   scopeOptions: Option[] = [

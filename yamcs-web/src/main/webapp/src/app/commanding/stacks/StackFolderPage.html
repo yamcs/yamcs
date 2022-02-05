@@ -53,8 +53,7 @@
       <table mat-table
              *ngIf="dataSource && dataSource.data.length; else empty"
              [dataSource]="dataSource"
-             class="ya-data-table"
-             style="width: 100%">
+             class="ya-data-table expand">
 
         <ng-container cdkColumnDef="select">
           <th mat-header-cell *cdkHeaderCellDef class="checkbox">
@@ -73,7 +72,7 @@
         </ng-container>
 
         <ng-container cdkColumnDef="name">
-          <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+          <th mat-header-cell *cdkHeaderCellDef>Name</th>
           <td mat-cell *cdkCellDef="let item">
             <ng-container *ngIf="item.folder">
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
@@ -94,47 +93,38 @@
         </ng-container>
 
         <ng-container cdkColumnDef="visibility">
-          <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Visibility</th>
+          <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
           <td mat-cell *cdkCellDef="let item">
             Private
           </td>
         </ng-container>
 
         <ng-container cdkColumnDef="modified">
-          <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+          <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
           <td mat-cell *cdkCellDef="let item">
             {{ (item.modified | datetime) || '-' }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
           <td mat-cell *matCellDef="let item">
-            <ng-container *ngIf="!item.folder">
-              <mat-menu #fileMenu="matMenu" overlapTrigger="false" class="ya-menu">
-                <button mat-menu-item
-                        (click)="renameFile(item)">
-                  Rename
-                </button>
-                <a mat-menu-item
-                   [href]="item.objectUrl"
-                   download>
-                  Download
-                </a>
-                <mat-divider></mat-divider>
-                <button mat-menu-item
-                        (click)="deleteFile(item)">
-                  Delete
-                </button>
-              </mat-menu>
-              <button mat-button
-                      *ngIf="mayManageStacks()"
-                      [matMenuTriggerFor]="fileMenu"
-                      (click)="$event.stopPropagation()"
-                      class="icon">
-                <mat-icon>more_vert</mat-icon>
+            <app-more *ngIf="!item.folder && mayManageStacks()">
+              <button mat-menu-item
+                      (click)="renameFile(item)">
+                Rename
               </button>
-            </ng-container>
+              <a mat-menu-item
+                 [href]="item.objectUrl"
+                 download>
+                Download
+              </a>
+              <mat-divider></mat-divider>
+              <button mat-menu-item
+                      (click)="deleteFile(item)">
+                Delete
+              </button>
+            </app-more>
           </td>
         </ng-container>
 

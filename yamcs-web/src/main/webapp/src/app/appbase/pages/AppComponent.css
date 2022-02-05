@@ -31,3 +31,7 @@ mat-toolbar-row {
   padding: 0;
   overflow: hidden;
 }
+
+.mat-toolbar .material-icons, .mat-toolbar .mat-button {
+  color: #fff;
+}

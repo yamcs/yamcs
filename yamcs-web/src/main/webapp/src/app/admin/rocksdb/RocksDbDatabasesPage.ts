@@ -14,6 +14,7 @@ export class RocksDbDatabasesPage {
     'dataDir',
     'tablespace',
     'dbPath',
+    'actions',
   ];
 
   dataSource = new MatTableDataSource<RocksDbDatabase>();

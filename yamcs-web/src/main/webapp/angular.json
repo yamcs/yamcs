@@ -37,6 +37,9 @@
               "src/styles/material-theme.scss",
               "src/styles/material-icons.css",
               "src/styles/styles.css",
+              "src/styles/data-table.css",
+              "src/styles/dl-horizontal.css",
+              "src/styles/form.css",
               "node_modules/@yamcs/opi/dist/fonts/stylesheet.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
             ],

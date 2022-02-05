@@ -89,7 +89,8 @@
 
   <div class="table-wrapper">
     <div class="panel-content" *ngIf="dataSource">
-      <dl class="dl-horizontal" style="margin-top: 0">
+      <app-alarms-page-tabs></app-alarms-page-tabs>
+      <dl class="dl-horizontal">
         <dt>Unacknowledged alarms:</dt>
         <dd>
           <a routerLink="/alarms"

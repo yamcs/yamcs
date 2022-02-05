@@ -42,6 +42,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'units', label: 'Units', visible: true },
     { id: 'dataSource', label: 'Data Source', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   // Added dynamically based on actual commands.

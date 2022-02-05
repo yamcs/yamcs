@@ -85,41 +85,6 @@ body {
   padding: 0;
 }
 
-.ya-data-table tr.mat-header-row, .ya-data-table tr.mat-footer-row {
-  height: auto;
-}
-
-.ya-data-table tr.mat-row {
-  height: auto;
-}
-
-.ya-data-table tr.mat-row:hover {
-  background: #fafafa;
-}
-
-.ya-data-table td.mat-cell, .ya-data-table th.mat-cell, .ya-data-table-placeholder {
-  font-size: 12px;
-  line-height: 16px;
-  color: rgba(0, 0, 0, .654);
-  padding: 7px 8px 8px 0;
-}
-
-.ya-data-table td.mat-footer-cell {
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, .654);
-  padding: 10px 10px 8px 0;
-}
-
-.ya-data-table td.vdiv, .ya-data-table th.vdiv {
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.ya-data-table td.mono, .ya-data-table th.mono, .mono {
-  font-family: 'Roboto Mono', monospace;
-}
-
 dd, dt {
   font-size: 12px;
   color: rgba(0, 0, 0, .654);
@@ -127,78 +92,6 @@ dd, dt {
 
 dt {
   font-weight: bold;
-}
-
-/*.ya-data-table-placeholder {
-  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
-}*/
-
-.ya-data-table th.mat-header-cell, .ya-data-table td.mat-footer-cell {
-  padding-right: 8px;
-}
-
-.ya-data-table mat-icon {
-  font-size: 16px !important;
-  height: 16px !important;
-  width: 16px !important;
-}
-
-.ya-data-table .selected {
-  background-color: #f0f4fd !important;
-}
-
-.ya-data-table .mat-button, .ya-data-table .mat-stroked-button, .ya-data-table .mat-raised-button {
-  line-height: 16px;
-  min-width: 0;
-}
-
-.ya-data-table .mat-button.icon {
-  padding: 0;
-  width: 30px;
-}
-
-.ya-data-table a, .ya-link a, a.ya-link {
-  color: #5787b1;
-  text-decoration: none;
-}
-
-.ya-data-table .mat-row:hover a:not(.secundary) {
-  text-decoration: underline;
-}
-
-.ya-data-table a:hover, .ya-link a:hover, a.ya-link:hover {
-  /*color: #1b61b9;*/
-  text-decoration: underline;
-}
-
-.ya-data-table td.checkbox, .ya-data-table th.checkbox {
-  width: 1px;
-  text-align: left;
-}
-
-.ya-data-table td.status, .ya-data-table th.status, .ya-data-table td.iconcol, .ya-data-table th.iconcol {
-  width: 1px;
-  text-align: left;
-}
-
-.ya-data-table td.status .material-icons, .ya-data-table th.status .material-icons {
-  vertical-align: middle;
-}
-
-.ya-data-table td:first-child, .ya-data-table th:first-child {
-  padding-left: 8px !important;
-}
-
-.ya-data-table td:last-child, .ya-data-table th:last-child {
-  padding-right: 8px !important;
-}
-
-.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th, .ya-data-table td.status+td, .ya-data-table th.status+th {
-  padding-left: 4px;
-}
-
-.ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
-  padding-left: 24px;
 }
 
 .ya-link a .material-icons, a.ya-link .material-icons {
@@ -228,76 +121,8 @@ a.ya-link.ya-header-link {
   min-height: 24px;
 }
 
-.ya-form label {
-  margin: -3px 0 20px 0;
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: .02em;
-  line-height: 12px;
-  color: black;
-  text-transform: inherit;
-  cursor: default;
-  position: relative;
-}
-
-.ya-form label.invalid {
-  color: crimson;
-}
-
-.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input, .ya-form label .duration-input {
-  margin: 5px 0 0;
-  display: block;
-  width: 100%;
-}
-
-.ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="password"], .ya-input {
-  background: white;
-  border: 1px solid #d3d3d3;
-  border-radius: 1px;
-  font-size: 12px;
-  font-weight: 400;
-  height: 24px;
-  padding: 0 7px 1px;
-  box-sizing: border-box;
-  outline: none;
-}
-
-.ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus, .ya-form textarea:focus {
-  border-color: #5787b1;
-}
-
 .ng-invalid:not(.ng-pristine)>.date-time-input>input, .ng-invalid:not(.ng-pristine)>.binary-input>input, input.ng-invalid:not(.ng-pristine), .ng-invalid:not(.ng-pristine)>.duration-input>input {
   border-color: crimson !important;
-}
-
-.ya-form input[type="radio"] {
-  margin-right: 10px;
-  /*vertical-align: baseline;*/
-}
-
-.ya-form textarea {
-  border: 1px solid #d3d3d3;
-  border-radius: 1px;
-  font-size: 12px;
-  font-weight: 400;
-  padding: 0 7px 1px;
-  box-sizing: border-box;
-  outline: none;
-}
-
-.ya-form .error-message {
-  color: crimson;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: normal;
-}
-
-.ya-form .hint {
-  color: grey;
-  line-height: 16px;
-  font-weight: 400;
-  letter-spacing: normal;
 }
 
 .ya-autocomplete .mat-option {
@@ -317,39 +142,6 @@ a.ya-link.ya-header-link {
 .block {
   font-weight: normal;
   font-size: 12px;
-}
-
-.dl-horizontal {
-  margin-top: 1em;
-  margin-bottom: 1em;
-  padding: 0;
-}
-
-.dl-horizontal.no-lead {
-  margin-top: 0;
-}
-
-.dl-horizontal.no-trail {
-  margin-bottom: 0;
-}
-
-.dl-horizontal dt {
-  float: left;
-  width: 160px;
-  clear: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: rgba(0, 0, 0, .654);
-}
-
-.dl-horizontal dd {
-  margin-left: 180px;
-  min-height: 16px;
-}
-
-.dl-horizontal dd:after {
-  clear: both;
 }
 
 .down {
@@ -443,6 +235,13 @@ button.ya-button.primary {
   border-color: #5787b1;
 }
 
+.mat-tab-nav-bar.secondary .mat-tab-link, .mat-tab-group.secondary .mat-tab-label {
+  height: 36px;
+  min-width: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
 .filter-bar {
   height: 24px;
   margin-bottom: 12px;
@@ -490,16 +289,7 @@ button.ya-button.primary {
     padding: 0;
   }
 
-  .ya-data-table {
-    width: auto !important;
-  }
-
   * {
     overflow: visible !important;
-  }
-
-  .ya-data-table td.mat-cell, .ya-data-table th.mat-header-cell, .ya-data-table td.mat-footer-cell {
-    padding: 0 7px 0 0;
-    width: auto !important;
   }
 }
