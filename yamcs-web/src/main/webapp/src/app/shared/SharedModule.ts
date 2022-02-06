@@ -123,7 +123,6 @@ import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
 import { AlarmLabel } from './widgets/AlarmLabel';
-import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
 import { Label } from './widgets/Label';
 import { Labels } from './widgets/Labels';
@@ -185,7 +184,6 @@ const sharedComponents = [
   BreadcrumbTrail,
   ColumnChooser,
   CommandSelector,
-  ConnectedLabel,
   DateTimeInput,
   DetailPane,
   DetailToolbar,

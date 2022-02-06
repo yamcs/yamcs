@@ -66,12 +66,16 @@
         Events
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item *ngIf="showAlarmsItem()"
-                            routerLink="/alarms"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">notification_important</mat-icon>
-        Alarms
-      </app-sidebar-nav-item>
+      <ng-container *ngIf="showAlarmsItem()">
+        <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms">
+        </app-alarm-label>
+        <app-sidebar-nav-item *ngIf="!(connectionInfo$ | async)?.processor?.hasAlarms"
+                              routerLink="/alarms"
+                              [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">notifications_none</mat-icon>
+          Alarms
+        </app-sidebar-nav-item>
+      </ng-container>
 
       <app-sidebar-nav-group *ngIf="commandingItems.length"
                              label="Commanding" icon="rss_feed"
@@ -89,7 +93,7 @@
 
       <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
         <app-sidebar-nav-group *ngIf=" timelineItems.length"
-                               label="Timeline" icon="pending_actions"
+                               label="Timeline" icon="view_timeline"
                                [active]="timelineActive"
                                [expanded]="timelineExpanded"
                                (toggle)="toggleTimelineGroup()">

@@ -9,10 +9,18 @@
     ACTIVE
   </a>
   <a mat-tab-link
-     routerLink="/alarms/log"
+     routerLink="/alarms/closed"
      routerLinkActive
      #rlb="routerLinkActive"
      [active]="rlb.isActive"
+     [queryParams]="{c: yamcs.context}">
+    CLOSED
+  </a>
+  <a mat-tab-link
+     routerLink="/alarms/log"
+     routerLinkActive
+     #rlc="routerLinkActive"
+     [active]="rlc.isActive"
      [queryParams]="{c: yamcs.context}">
     ACTION LOG
   </a>

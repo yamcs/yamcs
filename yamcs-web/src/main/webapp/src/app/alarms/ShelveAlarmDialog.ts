@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Alarm, ShelveAlarmOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
+import { Option } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
 
 @Component({
@@ -12,6 +13,15 @@ import * as utils from '../shared/utils';
 export class ShelveAlarmDialog {
 
   formGroup: FormGroup;
+
+  durationOptions: Option[] = [
+    { id: 'PT15M', label: '15 minutes' },
+    { id: 'PT30M', label: '30 minutes' },
+    { id: 'PT1H', label: '1 hour' },
+    { id: 'PT2H', label: '2 hours' },
+    { id: 'P1D', label: '1 day' },
+    { id: 'UNLIMITED', label: 'unlimited' },
+  ];
 
   constructor(
     private dialogRef: MatDialogRef<ShelveAlarmDialog>,

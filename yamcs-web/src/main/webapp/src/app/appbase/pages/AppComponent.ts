@@ -94,18 +94,6 @@ export class AppComponent implements OnDestroy {
     }
   }
 
-  leaveReplay() {
-    // Switch to the 'default' processor of the currently connected instance
-    this.yamcs.switchContext(this.yamcs.instance!);
-  }
-
-  mayReadAlarms() {
-    const user = this.authService.getUser();
-    if (user) {
-      return user.hasSystemPrivilege('ReadAlarms');
-    }
-  }
-
   logout() {
     this.authService.logout(true);
   }

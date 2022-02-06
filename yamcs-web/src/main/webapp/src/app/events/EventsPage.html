@@ -10,27 +10,28 @@
       CREATE EVENT
     </button>
 
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-button
+            color="primary"
+            (click)="startStreaming()">
+      <mat-icon>play_arrow</mat-icon>
+      START STREAMING
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
+      STOP STREAMING
+    </button>
+
     <button mat-icon-button
             matTooltip="Jump to now"
             color="primary"
             (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
-    </button>
-
-    <button *ngIf="!(dataSource.streaming$ | async)"
-            mat-icon-button
-            matTooltip="Start streaming events"
-            color="primary"
-            (click)="startStreaming()">
-      <mat-icon>play_arrow</mat-icon>
-    </button>
-
-    <button *ngIf="dataSource.streaming$ | async"
-            mat-icon-button
-            matTooltip="Pause streaming events"
-            color="primary"
-            (click)="stopStreaming()">
-      <mat-icon>pause</mat-icon>
     </button>
   </app-instance-toolbar>
 

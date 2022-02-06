@@ -17,11 +17,11 @@ const routes: Routes = [
     component: StoragePage,
     children: [
       {
-        path: 'buckets',
+        path: '',
         pathMatch: 'full',
         component: BucketsPage,
       }, {
-        path: 'buckets/:instance/:name',
+        path: ':instance/:name',
         component: BucketPlaceholderPage,
         children: [
           {

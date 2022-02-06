@@ -1,4 +1,4 @@
-mat-sidenav-container {
+.storage-page-content {
   position: absolute;
   top: 48px;
   bottom: 0;
@@ -7,15 +7,9 @@ mat-sidenav-container {
   background-color: #fff;
 }
 
-mat-sidenav-container.message-bar-visible {
+.storage-page-content.message-bar-visible {
   top: 112px;
   /* 48 + 64*/
-}
-
-mat-sidenav {
-  width: 250px;
-  background-color: #fcfcfc;
-  border-right: 1px solid #d3d3d3;
 }
 
 mat-toolbar {

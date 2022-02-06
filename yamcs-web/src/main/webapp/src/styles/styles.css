@@ -193,6 +193,10 @@ button.expandable {
   font-weight: 400;
 }
 
+.mat-tab-link:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
 button.ya-button {
   height: 24px;
   border: 1px solid #d3d3d3;
@@ -254,6 +258,16 @@ button.ya-button.primary {
 
 .action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button, .filter-bar .search-input {
   margin-right: 7px;
+}
+
+.blink {
+  animation: yblink 1s linear infinite;
+}
+
+@keyframes yblink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .spin {

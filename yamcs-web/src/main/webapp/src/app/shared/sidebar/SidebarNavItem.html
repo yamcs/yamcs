@@ -3,7 +3,8 @@
    [routerLinkActiveOptions]="{exact: exact}"
    [routerLink]="routerLink"
    [queryParams]="queryParams"
-   [class.subitem]="subitem">
+   [class.subitem]="subitem"
+   [style.color]="color ? color + ' !important' : undefined">
   <div *ngIf="subitem" style="display: inline-block; width: 60px"></div>
   <ng-content></ng-content>
   <div class="hl"></div>

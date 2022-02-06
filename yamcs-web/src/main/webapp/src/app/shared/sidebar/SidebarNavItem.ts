@@ -19,4 +19,7 @@ export class SidebarNavItem {
 
   @Input()
   subitem = false;
+
+  @Input()
+  color: string;
 }

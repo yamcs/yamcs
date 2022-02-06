@@ -1,8 +1,8 @@
 <app-storage-page>
   <app-storage-toolbar>
-    <a mat-icon-button routerLink="/storage/buckets" color="primary">
+    <a mat-icon-button routerLink="/storage" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Buckets / {{ name }}
+    </a> {{ name }}
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -32,8 +32,8 @@
     <button mat-button
             color="primary"
             (click)="togglePreview()">
-      <mat-icon *ngIf="showPreview$ | async">check_box</mat-icon>
-      <mat-icon *ngIf="!(showPreview$ | async)">check_box_outline_blank</mat-icon>
+      <mat-icon *ngIf="showPreview$ | async">image_not_supported</mat-icon>
+      <mat-icon *ngIf="!(showPreview$ | async)">image</mat-icon>
       PREVIEW PANEL
     </button>
   </app-storage-toolbar>
@@ -72,10 +72,10 @@
         <div class="panel-content">
           <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
             <app-breadcrumb-trail>
-              <app-breadcrumb [link]="['/storage', 'buckets']"
+              <app-breadcrumb [link]="['/storage']"
                               icon="account_tree"
                               [queryParams]="{instance: bucketInstance}"></app-breadcrumb>
-              <app-breadcrumb [link]="['/storage', 'buckets', bucketInstance, name]"
+              <app-breadcrumb [link]="['/storage', bucketInstance, name]"
                               icon="shopping_basket"
                               [label]="name"></app-breadcrumb>
               <app-breadcrumb *ngFor="let item of breadcrumb"
@@ -108,7 +108,7 @@
               <td mat-cell *cdkCellDef="let item">
                 <ng-container *ngIf="item.folder">
                   <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
-                  <a [routerLink]="'/storage/buckets/' + bucketInstance + '/' + name + '/' + item.name"
+                  <a [routerLink]="'/storage/' + bucketInstance + '/' + name + '/' + item.name"
                      (click)="$event.stopPropagation()">
                     {{ item.name | filename }}
                   </a>

@@ -1,11 +1,11 @@
 <table mat-table
        *ngIf="dataSource.data.length"
        [dataSource]="dataSource"
-       class="ya-data-table"
+       class="ya-data-table expand"
        [class.paused]="paused">
 
   <ng-container cdkColumnDef="select">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+    <th mat-header-cell *cdkHeaderCellDef style="text-align: left">
       <input type="checkbox" (change)="$event ? masterToggle() : null"
              [checked]="selection.hasValue() && isAllSelected()">
     </th>
@@ -28,7 +28,7 @@
   </ng-container>
 
   <ng-container cdkColumnDef="severity">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 80px">Severity</th>
+    <th mat-header-cell *cdkHeaderCellDef>Severity</th>
     <td mat-cell *cdkCellDef="let row">
       <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult"></app-alarm-level>
       <span *ngIf="!row.pval?.monitoringResult">-</span>
@@ -36,13 +36,13 @@
   </ng-container>
 
   <ng-container cdkColumnDef="rawValue">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Raw</th>
-    <td mat-cell *cdkCellDef="let row">{{ (row.pval?.rawValue | value) || '-' }}</td>
+    <th mat-header-cell *cdkHeaderCellDef>Raw</th>
+    <td mat-cell *cdkCellDef="let row" class="wrap200">{{ (row.pval?.rawValue | value) || '-' }}</td>
   </ng-container>
 
   <ng-container cdkColumnDef="engValue">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Eng</th>
-    <td mat-cell *cdkCellDef="let row">
+    <th mat-header-cell *cdkHeaderCellDef>Eng</th>
+    <td mat-cell *cdkCellDef="let row" class="wrap200">
       <app-expirable *ngIf="row.pval" [pval]="row.pval">
         {{ (row.pval?.engValue | value) || '-' }}
         <span *ngIf="row.pval?.rangeCondition === 'LOW'">&#8595;</span>
@@ -53,24 +53,24 @@
   </ng-container>
 
   <ng-container cdkColumnDef="receptionTime">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
+    <th mat-header-cell *cdkHeaderCellDef>Reception time</th>
+    <td mat-cell *cdkCellDef="let row">
       {{ (row.pval?.acquisitionTime | datetime) || '-' }}</td>
   </ng-container>
 
   <ng-container cdkColumnDef="generationTime">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTime | datetime) || '-' }}
+    <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
+    <td mat-cell *cdkCellDef="let row">{{ (row.pval?.generationTime | datetime) || '-' }}
     </td>
   </ng-container>
 
   <ng-container cdkColumnDef="acquisitionStatus">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Acquisition status</th>
+    <th mat-header-cell *cdkHeaderCellDef>Acquisition status</th>
     <td mat-cell *cdkCellDef="let row">{{ row.pval?.acquisitionStatus || '-' }}</td>
   </ng-container>
 
   <ng-container cdkColumnDef="actions">
-    <th mat-header-cell *cdkHeaderCellDef></th>
+    <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
     <td mat-cell *cdkCellDef="let row; let i = index">
       <button mat-button (click)="moveDown.emit(i); $event.stopPropagation()">
         <mat-icon>keyboard_arrow_down</mat-icon>
