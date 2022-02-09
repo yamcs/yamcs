@@ -320,7 +320,7 @@ public class AlarmServer<S, T> extends AbstractService {
             return (S) ((ParameterValue) value).getParameter();
         } else if (value instanceof Event) {
             Event ev = (Event) value;
-            return (S) new EventId(ev.getSource(), ev.getType());
+            return (S) new EventId(ev.getSource(), ev.hasType() ? ev.getType() : null);
         } else {
             throw new IllegalArgumentException("Unknown object type " + value.getClass());
         }

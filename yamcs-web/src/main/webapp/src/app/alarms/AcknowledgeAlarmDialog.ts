@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AcknowledgeAlarmOptions, Alarm } from '../client';
@@ -7,6 +7,7 @@ import { YamcsService } from '../core/services/YamcsService';
 @Component({
   selector: 'app-acknowledge-alarm-dialog',
   templateUrl: './AcknowledgeAlarmDialog.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AcknowledgeAlarmDialog {
 
@@ -32,8 +33,8 @@ export class AcknowledgeAlarmDialog {
       if (comment) {
         options.comment = comment;
       }
-      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.acknowledgeAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.acknowledgeAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

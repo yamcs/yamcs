@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Alarm, ShelveAlarmOptions } from '../client';
@@ -9,6 +9,7 @@ import * as utils from '../shared/utils';
 @Component({
   selector: 'app-shelve-alarm-dialog',
   templateUrl: './ShelveAlarmDialog.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShelveAlarmDialog {
 
@@ -52,8 +53,8 @@ export class ShelveAlarmDialog {
       if (duration) {
         options.shelveDuration = duration;
       }
-      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.shelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.shelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

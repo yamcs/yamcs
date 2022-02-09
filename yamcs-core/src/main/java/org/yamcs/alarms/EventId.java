@@ -30,15 +30,25 @@ public class EventId {
     }
 
     public EventId(String qualifiedName) {
-        if (qualifiedName.startsWith(CA_NAME)) {//FIXME: hack for events generated from custom algorithms
+        if (qualifiedName.startsWith(CA_NAME)) {// FIXME: hack for events generated from custom algorithms
             this.source = "CustomAlgorithm";
             this.type = qualifiedName.substring(CA_NAME.length());
+        } else if (qualifiedName.startsWith(DEFAULT_NAMESPACE)) {
+            String withoutPrefix = qualifiedName.substring(DEFAULT_NAMESPACE.length());
+            Matcher matcher = QNAME_PATTERN.matcher(withoutPrefix);
+            if (matcher.matches()) {
+                source = matcher.group(1);
+                type = matcher.group(2);
+            } else {
+                source = withoutPrefix;
+                type = null;
+            }
         } else {
             Matcher matcher = QNAME_PATTERN.matcher(qualifiedName);
             if (!matcher.matches()) {
                 throw new IllegalArgumentException("Invalid qualified name '" + qualifiedName + "'");
             }
-            source = matcher.group(1).replace(DEFAULT_NAMESPACE, "");
+            source = matcher.group(1);
             type = matcher.group(2);
         }
     }
@@ -81,9 +91,9 @@ public class EventId {
     @Override
     public String toString() {
         if (source.startsWith("/")) {
-            return source + "/" + type;
+            return source + (type != null ? "/" + type : "");
         } else {
-            return DEFAULT_NAMESPACE + source + "/" + type;
+            return DEFAULT_NAMESPACE + source + (type != null ? "/" + type : "");
         }
     }
 }
