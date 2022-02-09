@@ -40,7 +40,7 @@ service QueueApi {
   rpc EnableQueue(EnableQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/queues/{queue}:enable"
-      log: "Queue {queue} enabled for processor {processor}"
+      log: "Queue '{queue}' enabled for processor '{processor}'"
     };
   }
 
@@ -48,7 +48,7 @@ service QueueApi {
   rpc DisableQueue(DisableQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/queues/{queue}:disable"
-      log: "Queue {queue} disabled for processor {processor}"
+      log: "Queue '{queue}' disabled for processor '{processor}'"
     };
   }
 
@@ -56,7 +56,7 @@ service QueueApi {
   rpc BlockQueue(BlockQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/queues/{queue}:block"
-      log: "Queue {queue} blocked for processor {processor}"
+      log: "Queue '{queue}' blocked for processor '{processor}'"
     };
   }
 

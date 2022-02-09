@@ -64,6 +64,7 @@ import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
 import { Markdown } from './markdown/Markdown';
 import { More } from './more/More';
+import { ActionLogFormatPipe } from './pipes/ActionLogFormat';
 import { AgoPipe } from './pipes/AgoPipe';
 import { AliasPipe } from './pipes/AliasPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
@@ -235,6 +236,7 @@ const sharedComponents = [
 ];
 
 const pipes = [
+  ActionLogFormatPipe,
   AliasPipe,
   AgoPipe,
   ArrayContainsPipe,

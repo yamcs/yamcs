@@ -23,6 +23,7 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.AlarmStreamer;
 import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.EventId;
@@ -159,7 +160,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = tupleToAlarmData(tuple, true);
+                AlarmData alarm = tupleToAlarmData(tuple);
                 responseb.addAlarms(alarm);
             }
 
@@ -355,7 +356,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         if (alarm.getTriggerValue() instanceof ParameterValue) {
             String parameter = ((ParameterValue) alarm.getTriggerValue()).getParameterQualifiedName();
             auditLog.addRecord(ctx, request, String.format(
-                    "Alarm for parameter %s %s for processor %s",
+                    "Alarm for parameter '%s' %s for processor '%s'",
                     parameter, action, processor.getName()));
         } else if (alarm.getTriggerValue() instanceof Db.Event) {
             Db.Event event = (Db.Event) alarm.getTriggerValue();
@@ -364,7 +365,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                 alarmName += "/" + event.getType();
             }
             auditLog.addRecord(ctx, request, String.format(
-                    "Alarm for event %s/%s %s for processor %s",
+                    "Alarm for event '%s' %s for processor '%s'",
                     alarmName, action, processor.getName()));
         } else {
             throw new IllegalStateException("Unexpected alarm type");
@@ -732,12 +733,39 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         return alarmb.build();
     }
 
-    private static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+    private static EventAlarmData tupleToEventAlarmData(Tuple tuple) {
+        EventAlarmData.Builder eventb = EventAlarmData.newBuilder();
+
+        Db.Event event = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
+        eventb.setTriggerEvent(EventsApi.fromDbEvent(event));
+
+        if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+            event = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            eventb.setMostSevereEvent(EventsApi.fromDbEvent(event));
+        }
+
+        return eventb.build();
+    }
+
+    private static AlarmData tupleToAlarmData(Tuple tuple) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);
         setClearInfo(alarmb, tuple);
         setShelveInfo(alarmb, tuple);
+
+        if (tuple.hasColumn(AlarmStreamer.CNAME_UPDATE_TIME)) {
+            long updateTime = tuple.getTimestampColumn(AlarmStreamer.CNAME_UPDATE_TIME);
+            alarmb.setUpdateTime(TimeEncoding.toProtobufTimestamp(updateTime));
+        }
+        if (tuple.hasColumn(AlarmStreamer.CNAME_VALUE_COUNT)) {
+            int valueCount = tuple.getIntColumn(AlarmStreamer.CNAME_VALUE_COUNT);
+            alarmb.setCount(valueCount);
+        }
+        if (tuple.hasColumn(AlarmStreamer.CNAME_VIOLATION_COUNT)) {
+            int violationCount = tuple.getIntColumn(AlarmStreamer.CNAME_VIOLATION_COUNT);
+            alarmb.setViolations(violationCount);
+        }
 
         if (tuple.hasColumn(StandardTupleDefinitions.PARAMETER_COLUMN)) {
             String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
@@ -752,10 +780,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
             alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
 
-            if (detail) {
-                ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
-                alarmb.setParameterDetail(parameterAlarmData);
-            }
+            ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
+            alarmb.setParameterDetail(parameterAlarmData);
         } else {
             alarmb.setType(AlarmType.EVENT);
             Db.Event ev = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
@@ -767,6 +793,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
             alarmb.setSeverity(AlarmsApi.getEventAlarmSeverity(ev.getSeverity()));
 
+            EventAlarmData eventAlarmData = tupleToEventAlarmData(tuple);
+            alarmb.setEventDetail(eventAlarmData);
         }
 
         return alarmb.build();

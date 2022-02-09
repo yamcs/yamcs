@@ -4,8 +4,8 @@ import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { ActionLogTab } from './ActionLogTab';
+import { AlarmHistoryPage } from './AlarmHistoryPage';
 import { AlarmsPage } from './AlarmsPage';
-import { ClosedAlarmsPage } from './ClosedAlarmsPage';
 
 const routes: Routes = [
   {
@@ -20,8 +20,8 @@ const routes: Routes = [
         pathMatch: 'full',
         component: AlarmsPage,
       }, {
-        path: 'closed',
-        component: ClosedAlarmsPage,
+        path: 'history',
+        component: AlarmHistoryPage,
       }, {
         path: 'log',
         component: ActionLogTab,
@@ -37,7 +37,7 @@ const routes: Routes = [
 export class AlarmsRoutingModule { }
 
 export const routingComponents = [
+  AlarmHistoryPage,
   AlarmsPage,
   ActionLogTab,
-  ClosedAlarmsPage,
 ];

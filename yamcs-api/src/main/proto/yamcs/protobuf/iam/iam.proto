@@ -39,7 +39,7 @@ service IamApi {
   rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}/roles/{role}"
-      log: "Role {role} deleted from user {name}"
+      log: "Role '{role}' deleted from user {name}"
     };
   }
 
@@ -62,7 +62,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/users"
       body: "*"
-      log: "User {name} created"
+      log: "User '{name}' created"
     };
   }
   
@@ -71,7 +71,7 @@ service IamApi {
     option (yamcs.api.route) = {
       patch: "/api/users/{name}"
       body: "*"
-      log: "User {name} was changed"
+      log: "User '{name}' was changed"
     };
   }
   
@@ -86,7 +86,7 @@ service IamApi {
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}"
-      log: "User {name} deleted"
+      log: "User '{name}' deleted"
     };
   }
 
@@ -94,7 +94,7 @@ service IamApi {
   rpc DeleteIdentity(DeleteIdentityRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}/identities/{provider}"
-      log: "Identity {provider} deleted from user {name}"
+      log: "Identity '{provider}' deleted from user '{name}'"
     };
   }
   
@@ -117,7 +117,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/groups"
       body: "*"
-      log: "Group {name} created"
+      log: "Group '{name}' created"
     };
   }
   
@@ -126,7 +126,7 @@ service IamApi {
     option (yamcs.api.route) = {
       patch: "/api/groups/{name}"
       body: "*"
-      log: "Group {name} was changed"
+      log: "Group '{name}' was changed"
     };
   }
   
@@ -134,7 +134,7 @@ service IamApi {
   rpc DeleteGroup(DeleteGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
       delete: "/api/groups/{name}"
-      log: "Group {name} deleted"
+      log: "Group '{name}' deleted"
     };
   }
 
@@ -156,7 +156,7 @@ service IamApi {
   rpc DeleteServiceAccount(DeleteServiceAccountRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/service-accounts/{name}"
-      log: "Service account {name} deleted"
+      log: "Service account '{name}' deleted"
     };
   }
   
@@ -165,7 +165,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/service-accounts"
       body: "*"
-      log: "Service account {name} created"
+      log: "Service account '{name}' created"
     };
   }
 }

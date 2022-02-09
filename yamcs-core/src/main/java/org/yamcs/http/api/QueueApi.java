@@ -298,7 +298,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         PreparedCommand pc = mgr.sendCommand(commandId);
 
         auditLog.addRecord(ctx, request, String.format(
-                "Command %s accepted for processor %s (id: %s)",
+                "Command '%s' accepted for processor '%s' (id: %s)",
                 pc.getCommandName(), processor.getName(), pc.getId()));
 
         observer.complete(Empty.getDefaultInstance());
@@ -314,7 +314,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         PreparedCommand pc = mgr.rejectCommand(commandId, username);
 
         auditLog.addRecord(ctx, request, String.format(
-                "Command %s rejected for processor %s (id: %s)",
+                "Command '%s' rejected for processor '%s' (id: %s)",
                 pc.getCommandName(), processor.getName(), pc.getId()));
 
         observer.complete(Empty.getDefaultInstance());

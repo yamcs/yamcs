@@ -4,18 +4,18 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-import { MessageService } from '../../lib';
 import { Alarm, GetAlarmsOptions } from '../client';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option, Select } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
 import { subtractDuration } from '../shared/utils';
 
 @Component({
-  templateUrl: './ClosedAlarmsPage.html',
+  templateUrl: './AlarmHistoryPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClosedAlarmsPage {
+export class AlarmHistoryPage {
 
   @ViewChild('intervalSelect')
   intervalSelect: Select;
@@ -36,11 +36,13 @@ export class ClosedAlarmsPage {
 
   displayedColumns = [
     'severity',
-    'triggerTime',
+    'start',
+    'stop',
+    'duration',
     'alarm',
     'type',
     'triggerValue',
-    'duration',
+    'violations',
     'actions',
   ];
 
@@ -150,62 +152,59 @@ export class ClosedAlarmsPage {
     });
   }
 
-  printDuration(alarm: Alarm) {
-    if (alarm.clearInfo) {
-      const t1 = utils.toDate(alarm.triggerTime).getTime();
-      const t2 = utils.toDate(alarm.clearInfo.clearTime).getTime();
-      const totalSeconds = Math.floor((t2 - t1) / 1000);
-      let interval = Math.floor(totalSeconds / 31536000);
-
-      if (interval > 1) {
-        return interval + ' years';
-      }
-      interval = Math.floor(totalSeconds / 2592000);
-      if (interval > 1) {
-        return interval + ' months';
-      }
-      interval = Math.floor(totalSeconds / 86400);
-      if (interval > 1) {
-        return interval + ' days';
-      }
-      interval = Math.floor(totalSeconds / 3600);
-      if (interval > 1) {
-        return interval + ' hours';
-      }
-      interval = Math.floor(totalSeconds / 60);
-      if (interval > 1) {
-        return interval + ' minutes';
-      }
-
-      interval = Math.floor(totalSeconds);
-      if (interval > 60) {
-        return 'about a minute';
-      } else {
-        return 'less than a minute';
-      }
-    } else {
-      return null;
+  durationFor(alarm: Alarm) {
+    if (!alarm.updateTime) {
+      return undefined;
     }
+    return utils.toDate(alarm.updateTime).getTime() - utils.toDate(alarm.triggerTime).getTime();
   }
 
   showChart(alarm: Alarm) {
-    const triggerIso = alarm.triggerTime;
-    const clearIso = alarm.clearInfo?.clearTime;
+    const startIso = alarm.triggerTime;
+    const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
 
     let start: Dayjs;
     let stop: Dayjs;
-    if (clearIso) {
-      start = dayjs.utc(triggerIso);
-      stop = dayjs.utc(clearIso);
+    if (stopIso) {
+      start = dayjs.utc(startIso);
+      stop = dayjs.utc(stopIso);
     } else {
-      start = dayjs.utc(triggerIso);
-      stop = dayjs.utc(triggerIso).add(1, 'hour');
+      start = dayjs.utc(startIso);
+      stop = dayjs.utc(stopIso).add(1, 'hour');
     }
 
     this.router.navigate([
       '/telemetry/parameters',
       alarm.parameterDetail?.triggerValue.id.name,
       'chart'
+    ], {
+      queryParams: {
+        c: this.yamcs.context,
+        interval: 'CUSTOM',
+        customStart: start.toISOString(),
+        customStop: stop.toISOString(),
+      },
+    });
+  }
+
+  showData(alarm: Alarm) {
+    const startIso = alarm.triggerTime;
+    const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
+
+    let start: Dayjs;
+    let stop: Dayjs;
+    if (stopIso) {
+      start = dayjs.utc(startIso);
+      stop = dayjs.utc(stopIso);
+    } else {
+      start = dayjs.utc(startIso);
+      stop = dayjs.utc(stopIso).add(1, 'hour');
+    }
+
+    this.router.navigate([
+      '/telemetry/parameters',
+      alarm.parameterDetail?.triggerValue.id.name,
+      'data'
     ], {
       queryParams: {
         c: this.yamcs.context,

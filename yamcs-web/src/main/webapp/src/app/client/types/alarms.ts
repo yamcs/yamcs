@@ -49,6 +49,7 @@ export interface Alarm {
   type: 'EVENT' | 'PARAMETER';
   notificationType: AlarmNotificationType;
   id: NamedObjectId;
+  updateTime: string;
   triggerTime: string;
   violations: number;
   count: number;

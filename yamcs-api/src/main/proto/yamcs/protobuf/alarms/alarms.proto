@@ -92,7 +92,10 @@ message AlarmData {
   optional AcknowledgeInfo acknowledgeInfo = 8;
   optional AlarmNotificationType notificationType = 9;
 
+  // Additional detail in case the alarm is of type PARAMETER
   optional ParameterAlarmData parameterDetail = 10;
+  
+  // Additional detail in case the alarm is of type EVENT
   optional EventAlarmData eventDetail = 11;
 
   // Whether the alarm will stay triggered even when the process is OK
@@ -109,6 +112,9 @@ message AlarmData {
   optional ShelveInfo shelveInfo = 16;
 
   optional ClearInfo clearInfo = 17;
+
+  // Time when the alarm was last updated
+  optional google.protobuf.Timestamp updateTime = 18;
 }
 
 message ParameterAlarmData {

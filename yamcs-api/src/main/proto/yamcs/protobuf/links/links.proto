@@ -30,7 +30,7 @@ service LinksApi {
       patch: "/api/links/{instance}/{link}"
       body: "*"
       deprecated: true
-      log: "Link {link} updated"
+      log: "Link '{link}' updated"
     };
   }
 
@@ -38,7 +38,7 @@ service LinksApi {
   rpc EnableLink(EnableLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
       post: "/api/links/{instance}/{link}:enable"
-      log: "Link {link} enabled"
+      log: "Link '{link}' enabled"
     };
   }
 
@@ -46,7 +46,7 @@ service LinksApi {
   rpc DisableLink(DisableLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
       post: "/api/links/{instance}/{link}:disable"
-      log: "Link {link} disabled"
+      log: "Link '{link}' disabled"
     };
   }
 
