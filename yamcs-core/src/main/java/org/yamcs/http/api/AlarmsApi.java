@@ -139,18 +139,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             sqlbEvent.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
 
-        /*
-         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-         * }
-         */
         sqlbParam.descend(!ascending);
         sqlbEvent.descend(!ascending);
-        sqlbParam.limit(pos, limit);
-        sqlbEvent.limit(pos, limit);
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
-                + " ORDER DESC";
+                + " ORDER DESC LIMIT " + pos + "," + limit;
         StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
 
             @Override

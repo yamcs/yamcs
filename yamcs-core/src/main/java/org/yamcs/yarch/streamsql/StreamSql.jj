@@ -638,7 +638,9 @@ MergeExpression MergeExpression() throws StreamSqlException: {
     MergeExpression mergeExpr=new MergeExpression();
     TupleSourceExpression tsrc;
     String name;
-    boolean ascending=true;
+    boolean ascending = true;
+    BigDecimal offset = null;
+    BigDecimal limit = null;
 } {
     "MERGE" 
        tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
@@ -646,7 +648,12 @@ MergeExpression MergeExpression() throws StreamSqlException: {
         tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
        )*
     "USING" name=ObjectName() {mergeExpr.setMergeColumn(name);}
-    [ ascending=OrderClause() {mergeExpr.setAscending(ascending);} ] 
+    [ ascending=OrderClause() {mergeExpr.setAscending(ascending);} ]
+    [ 
+        <K_LIMIT>
+        [LOOKAHEAD(2) offset=NumericConstant() "," ]
+        limit=NumericConstant() { mergeExpr.setLimit(offset, limit); }
+    ]
     {
 	return mergeExpr;
     }

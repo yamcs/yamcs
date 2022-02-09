@@ -46,10 +46,10 @@
       </ng-container>
     </ng-container>
 
-    <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
+    <mat-menu #processorMenu="matMenu" overlapTrigger="false" xPosition="before" yPosition="below">
       <ng-container *ngIf="processor$ | async as processor">
         <button mat-menu-item (click)="startReplay()" *ngIf="!processor.replay">
-          <mat-icon class="icon14">replay</mat-icon>
+          <mat-icon>replay</mat-icon>
           Replay from date
         </button>
         <ng-container *ngIf="processor.replay">

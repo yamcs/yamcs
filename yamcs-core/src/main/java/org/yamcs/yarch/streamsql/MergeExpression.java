@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ class MergeExpression implements StreamExpression {
     ArrayList<TupleSourceExpression> sources = new ArrayList<>();
     String mergeColumn;
     boolean ascending = true;
+    BigDecimal offset;
+    BigDecimal limit;
     static Logger log = LoggerFactory.getLogger(MergeExpression.class.getName());
 
     public void setMergeColumn(String name) {
@@ -21,6 +24,11 @@ class MergeExpression implements StreamExpression {
 
     public void setAscending(boolean ascending) {
         this.ascending = ascending;
+    }
+
+    public void setLimit(BigDecimal offset, BigDecimal limit) {
+        this.offset = offset;
+        this.limit = limit;
     }
 
     @Override
@@ -37,11 +45,18 @@ class MergeExpression implements StreamExpression {
         for (int i = 0; i < streams.length; i++) {
             streams[i] = sources.get(i).execute(c);
         }
+
+        Stream stream;
         if (streams.length == 1) {
-            return streams[0];
+            stream = streams[0];
         } else {
-            Stream ms = new MergeStream(ydb, streams, mergeColumn, ascending);
-            return ms;
+            stream = new MergeStream(ydb, streams, mergeColumn, ascending);
+        }
+
+        if (limit != null || offset != null) {
+            return new LimitedStream(ydb, stream, offset, limit, stream.getDefinition());
+        } else {
+            return stream;
         }
     }
 
@@ -53,5 +68,4 @@ class MergeExpression implements StreamExpression {
     public TupleDefinition getOutputDefinition() {
         return null;
     }
-
 }
