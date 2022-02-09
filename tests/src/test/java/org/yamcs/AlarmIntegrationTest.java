@@ -213,7 +213,7 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         // System.out.println(l);
         assertEquals(2, l1.size());
 
-        List<AlarmData> l2 = archiveClient.listParameterAlarms("/REFMDB/SUBSYS1/FloatPara1_10_3", t0, t1).get();
+        List<AlarmData> l2 = archiveClient.listAlarms("/REFMDB/SUBSYS1/FloatPara1_10_3", t0, t1).get();
         assertEquals(1, l2.size());
     }
 

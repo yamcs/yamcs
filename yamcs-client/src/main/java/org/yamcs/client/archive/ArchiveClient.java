@@ -83,8 +83,6 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 
 import com.google.protobuf.Timestamp;
 
@@ -563,10 +561,20 @@ public class ArchiveClient {
 
     public CompletableFuture<List<AlarmData>> listAlarms() {
         // TODO add pagination on server
-        return listAlarms(null, null);
+        return listAlarms(null, null, null);
+    }
+
+    public CompletableFuture<List<AlarmData>> listAlarms(String parameter) {
+        // TODO add pagination on server
+        return listAlarms(parameter, null, null);
     }
 
     public CompletableFuture<List<AlarmData>> listAlarms(Instant start, Instant stop) {
+        // TODO add pagination on server
+        return listAlarms(null, null, null);
+    }
+
+    public CompletableFuture<List<AlarmData>> listAlarms(String alarmName, Instant start, Instant stop) {
         // TODO add pagination on server
         ListAlarmsRequest.Builder requestb = ListAlarmsRequest.newBuilder()
                 .setInstance(instance);
@@ -576,28 +584,12 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+        if (alarmName != null) {
+            requestb.setName(alarmName);
+        }
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
         alarmService.listAlarms(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(ListAlarmsResponse::getAlarmsList);
-    }
-
-    /**
-     * retrieve the alarms for one parameter
-     */
-    public CompletableFuture<List<AlarmData>> listParameterAlarms(String parameter, Instant start, Instant stop) {
-        ListParameterAlarmsRequest.Builder requestb = ListParameterAlarmsRequest.newBuilder()
-                .setInstance(instance);
-
-        if (start != null) {
-            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
-        }
-        if (stop != null) {
-            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
-        }
-        requestb.setParameter(parameter);
-        CompletableFuture<ListParameterAlarmsResponse> f = new CompletableFuture<>();
-        alarmService.listParameterAlarms(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(ListParameterAlarmsResponse::getAlarmsList);
     }
 
     public CompletableFuture<List<TableRecord>> listRecords(String table) {

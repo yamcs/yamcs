@@ -2,11 +2,17 @@ import { APP_BASE_HREF } from '@angular/common';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import * as dayjs from 'dayjs';
+import 'dayjs/locale/en';
+import * as utc from 'dayjs/plugin/utc';
 import { AppBaseModule } from './appbase/AppBaseModule';
 import { AppComponent } from './appbase/pages/AppComponent';
 import { AppRoutingModule } from './AppRoutingModule';
 import { ConfigService } from './core/services/ConfigService';
 import { SharedModule } from './shared/SharedModule';
+
+dayjs.extend(utc);
+dayjs.locale('en');
 
 @NgModule({
   imports: [

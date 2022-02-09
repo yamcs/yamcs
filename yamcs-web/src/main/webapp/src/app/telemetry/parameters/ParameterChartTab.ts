@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Parameter } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
@@ -17,7 +17,7 @@ import { SelectRangeDialog } from './SelectRangeDialog';
   styleUrls: ['./ParameterChartTab.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterChartTab implements OnDestroy {
+export class ParameterChartTab implements AfterViewInit, OnDestroy {
 
   @ViewChild(ParameterPlot)
   plot: ParameterPlot;
@@ -32,29 +32,58 @@ export class ParameterChartTab implements OnDestroy {
   customStop$ = new BehaviorSubject<Date | null>(null);
 
   constructor(
-    route: ActivatedRoute,
+    private router: Router,
+    private route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
-    synchronizer: Synchronizer,
+    private synchronizer: Synchronizer,
   ) {
     this.missionTime = yamcs.getMissionTime();
-    const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new DyDataSource(yamcs, synchronizer);
-    this.parameter$ = yamcs.yamcsClient.getParameter(yamcs.instance!, qualifiedName);
+    this.initializeOptions();
+
+    const qualifiedName = this.route.parent!.snapshot.paramMap.get('qualifiedName')!;
+    this.dataSource = new DyDataSource(this.yamcs, this.synchronizer);
+    this.parameter$ = this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName);
     this.parameter$.then(parameter => {
       // Override qualified name for possible array or aggregate offsets
       parameter.qualifiedName = qualifiedName;
       this.dataSource.addParameter(parameter);
-    });
 
-    // Autoscroll (don't care about data, that is triggered by plot buffer)
-    this.timeSubscription = yamcs.time$.subscribe(() => {
-      if (this.range$.value !== 'CUSTOM') {
+      const interval = this.range$.value;
+      if (interval === 'CUSTOM') {
+        const start = this.customStart$.value!;
+        const stop = this.customStop$.value!;
+        this.dataSource.updateWindow(start, stop, [null, null]);
+      } else {
         const stop = this.yamcs.getMissionTime();
         const start = subtractDuration(stop, this.range$.value);
-        this.plot?.updateWindowOnly(start, stop);
+        this.dataSource.updateWindow(start, stop, [null, null]);
       }
+
+      // Autoscroll (don't care about data, that is triggered by plot buffer)
+      this.timeSubscription = this.yamcs.time$.subscribe(() => {
+        if (this.range$.value !== 'CUSTOM') {
+          const stop = this.yamcs.getMissionTime();
+          const start = subtractDuration(stop, this.range$.value);
+          this.plot?.updateWindowOnly(start, stop);
+        }
+      });
     });
+  }
+
+  ngAfterViewInit() {
+  }
+
+  private initializeOptions() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('interval')) {
+      this.range$.next(queryParams.get('interval')!);
+      if (queryParams.get('interval') === 'CUSTOM') {
+        this.customStart$.next(new Date(queryParams.get('customStart')!));
+        this.customStop$.next(new Date(queryParams.get('customStop')!));
+      }
+    }
+    this.updateURL();
   }
 
   onVisibleRange(xRange: [Date, Date]) {
@@ -70,6 +99,7 @@ export class ParameterChartTab implements OnDestroy {
     this.range$.next(range);
     const stop = this.yamcs.getMissionTime();
     const start = subtractDuration(stop, range);
+    this.updateURL();
     this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
@@ -89,6 +119,7 @@ export class ParameterChartTab implements OnDestroy {
           this.range$.next('CUSTOM');
           this.customStart$.next(result.start);
           this.customStop$.next(result.stop);
+          this.updateURL();
           this.dataSource.updateWindow(result.start, result.stop, [null, null]);
         }
       });
@@ -114,6 +145,19 @@ export class ParameterChartTab implements OnDestroy {
           this.plot.addParameter(parameter, parameterConfig);
         });
       }
+    });
+  }
+
+  private updateURL() {
+    this.router.navigate([], {
+      replaceUrl: true,
+      relativeTo: this.route,
+      queryParams: {
+        interval: this.range$.value,
+        customStart: this.range$.value === 'CUSTOM' ? this.customStart$.value : null,
+        customStop: this.range$.value === 'CUSTOM' ? this.customStop$.value : null,
+      },
+      queryParamsHandling: 'merge',
     });
   }
 

@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { GetParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import * as utils from '../../shared/utils';
+import { subtractDuration } from '../../shared/utils';
 import { ExportParameterDataDialog } from './ExportParameterDataDialog';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
@@ -37,7 +38,7 @@ export class ParameterDataTab {
   // range is actually applied.
   appliedInterval: string;
 
-  filter = new FormGroup({
+  filterForm = new FormGroup({
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
@@ -46,21 +47,28 @@ export class ParameterDataTab {
   dataSource: ParameterDataDataSource;
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private dialog: MatDialog) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    readonly yamcs: YamcsService,
+    private dialog: MatDialog,
+  ) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
     this.validStop = yamcs.getMissionTime();
     this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
+
+    this.initializeOptions();
     this.loadData();
 
-    this.filter.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filter.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filter.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
+        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -75,12 +83,38 @@ export class ParameterDataTab {
     });
   }
 
+  private initializeOptions() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('interval')) {
+      this.appliedInterval = queryParams.get('interval')!;
+      this.filterForm.get('interval')!.setValue(this.appliedInterval);
+      if (this.appliedInterval === 'CUSTOM') {
+        const customStart = queryParams.get('customStart')!;
+        this.filterForm.get('customStart')!.setValue(customStart);
+        this.validStart = new Date(customStart);
+        const customStop = queryParams.get('customStop')!;
+        this.filterForm.get('customStop')!.setValue(customStop);
+        this.validStop = new Date(customStop);
+      } else if (this.appliedInterval === 'NO_LIMIT') {
+        this.validStart = null;
+        this.validStop = null;
+      } else {
+        this.validStop = this.yamcs.getMissionTime();
+        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+      }
+    } else {
+      this.appliedInterval = defaultInterval;
+      this.validStop = this.yamcs.getMissionTime();
+      this.validStart = subtractDuration(this.validStop, defaultInterval);
+    }
+  }
+
   jumpToNow() {
-    const interval = this.filter.value['interval'];
+    const interval = this.filterForm.value['interval'];
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.filter.get('interval')!.setValue(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = utils.subtractDuration(this.validStop, interval);
@@ -89,8 +123,8 @@ export class ParameterDataTab {
   }
 
   applyCustomDates() {
-    this.validStart = utils.toDate(this.filter.value['customStart']);
-    this.validStop = utils.toDate(this.filter.value['customStop']);
+    this.validStart = utils.toDate(this.filterForm.value['customStart']);
+    this.validStop = utils.toDate(this.filterForm.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -99,6 +133,7 @@ export class ParameterDataTab {
    * Loads the first page of data within validStart and validStop
    */
   loadData() {
+    this.updateURL();
     const options: GetParameterValuesOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
@@ -122,6 +157,19 @@ export class ParameterDataTab {
       options.start = this.validStart.toISOString();
     }
     this.dataSource.loadMoreData(options);
+  }
+
+  private updateURL() {
+    this.router.navigate([], {
+      replaceUrl: true,
+      relativeTo: this.route,
+      queryParams: {
+        interval: this.appliedInterval,
+        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   exportParameterData() {

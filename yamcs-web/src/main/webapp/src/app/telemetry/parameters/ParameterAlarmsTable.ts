@@ -1,4 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import * as dayjs from 'dayjs';
+import { Dayjs } from 'dayjs';
+import { YamcsService } from '../../../lib';
 import { Alarm } from '../../client';
 import * as utils from '../../shared/utils';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
@@ -20,6 +24,11 @@ export class ParameterAlarmsTable {
     'duration',
     'actions',
   ];
+
+  constructor(
+    private router: Router,
+    readonly yamcs: YamcsService,
+  ) { }
 
   printDuration(alarm: Alarm) {
     if (alarm.clearInfo) {
@@ -57,5 +66,33 @@ export class ParameterAlarmsTable {
     } else {
       return null;
     }
+  }
+
+  showChart(alarm: Alarm) {
+    const triggerIso = alarm.triggerTime;
+    const clearIso = alarm.clearInfo?.clearTime;
+
+    let start: Dayjs;
+    let stop: Dayjs;
+    if (clearIso) {
+      start = dayjs.utc(triggerIso);
+      stop = dayjs.utc(clearIso);
+    } else {
+      start = dayjs.utc(triggerIso);
+      stop = dayjs.utc(triggerIso).add(1, 'hour');
+    }
+
+    this.router.navigate([
+      '/telemetry/parameters',
+      alarm.parameterDetail?.triggerValue.id.name,
+      'chart'
+    ], {
+      queryParams: {
+        c: this.yamcs.context,
+        interval: 'CUSTOM',
+        customStart: start.toISOString(),
+        customStop: stop.toISOString(),
+      },
+    });
   }
 }

@@ -41,5 +41,8 @@
   },
   "browserslist": [
     "last 2 Chrome versions"
-  ]
+  ],
+  "dependencies": {
+    "dayjs": "^1.10.7"
+  }
 }

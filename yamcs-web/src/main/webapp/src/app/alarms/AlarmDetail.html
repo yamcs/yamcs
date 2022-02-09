@@ -12,7 +12,12 @@
 <ng-container *ngIf="alarm.type === 'EVENT'">
   <div class="block-title">Event</div>
   <div class="block">
-    {{ alarm.id.namespace }}/{{ alarm.id.name }}
+    <ng-container *ngIf="alarm.id.name">
+      {{ alarm.id.namespace }}/{{ alarm.id.name }}
+    </ng-container>
+    <ng-container *ngIf="!alarm.id.name">
+      {{ alarm.id.namespace }}
+    </ng-container>
   </div>
 </ng-container>
 

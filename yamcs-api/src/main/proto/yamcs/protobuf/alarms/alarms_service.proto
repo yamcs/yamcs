@@ -18,14 +18,7 @@ service AlarmsApi {
   // List alarms
   rpc ListAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/alarms"
-    };
-  }
-  
-  // List alarms for a specific parameter
-  rpc ListParameterAlarms(ListParameterAlarmsRequest) returns (ListParameterAlarmsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/alarms/{parameter*}"
+      get: "/api/archive/{instance}/alarms/{name**}"
     };
   }
   
@@ -116,24 +109,13 @@ message ListAlarmsRequest {
   // ``desc``. The sorting is always by trigger time (i.e. the
   // generation time of the trigger value). Default: ``desc``
   optional string order = 6;
+  
+  // Filter alarm instances on a specific alarm name (for example:
+  // parameter name)
+  optional string name = 7;
 }
 
 message ListAlarmsResponse {
-  repeated AlarmData alarms = 1;
-}
-
-message ListParameterAlarmsRequest {
-  optional string instance = 1;
-  optional string parameter = 2;
-  optional int64 pos = 3;
-  optional int32 limit = 4;
-  optional google.protobuf.Timestamp start = 5;
-  optional google.protobuf.Timestamp stop = 6;
-  optional string order = 7;
-  optional bool detail = 8;
-}
-
-message ListParameterAlarmsResponse {
   repeated AlarmData alarms = 1;
 }
 

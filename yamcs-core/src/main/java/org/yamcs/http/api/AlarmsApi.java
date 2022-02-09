@@ -57,8 +57,6 @@ import org.yamcs.protobuf.alarms.EditAlarmRequest;
 import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
 import org.yamcs.protobuf.alarms.ShelveAlarmRequest;
@@ -139,62 +137,29 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             sqlbEvent.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
 
+        if (request.hasName()) {
+            String alarmName = request.getName();
+            if (!alarmName.startsWith("/")) {
+                alarmName = "/" + alarmName;
+            }
+            sqlbParam.where("parameter = ?", alarmName);
+            sqlbEvent.where("eventSource = ?", alarmName);
+        }
+
         sqlbParam.descend(!ascending);
         sqlbEvent.descend(!ascending);
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
                 + " ORDER DESC LIMIT " + pos + "," + limit;
-        StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
+
+        List<Object> sqlArgs = new ArrayList<>(sqlbParam.getQueryArguments());
+        sqlArgs.addAll(sqlbEvent.getQueryArguments());
+        StreamFactory.stream(instance, q, sqlArgs, new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = tupleToAlarmData(tuple, true);
-                responseb.addAlarms(alarm);
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-                observer.complete(responseb.build());
-            }
-        });
-    }
-
-    @Override
-    public void listParameterAlarms(Context ctx, ListParameterAlarmsRequest request,
-            Observer<ListParameterAlarmsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-
-        long pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        boolean ascending = request.getOrder().equals("asc");
-
-        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
-
-        if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual(CNAME_TRIGGER_TIME, request.getStart());
-        }
-        if (request.hasStop()) {
-            sqlb.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
-        }
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getParameter());
-        sqlb.where("parameter = ?", p.getQualifiedName());
-
-        /*
-         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-         * }
-         */
-        sqlb.descend(!ascending);
-        sqlb.limit(pos, limit);
-        ListParameterAlarmsResponse.Builder responseb = ListParameterAlarmsResponse.newBuilder();
-        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
-
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = tupleToAlarmData(tuple, request.getDetail());
                 responseb.addAlarms(alarm);
             }
 
