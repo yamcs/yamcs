@@ -3,10 +3,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
+
 
 @Component({
   selector: 'app-instance-toolbar',
@@ -38,6 +40,7 @@ export class InstanceToolbar implements OnDestroy {
     readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
     private preferenceStore: PreferenceStore,
+    private messageService: MessageService,
   ) {
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
@@ -63,10 +66,9 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   startReplay() {
-    const dialogRef = this.dialog.open(StartReplayDialog, {
+    this.dialog.open(StartReplayDialog, {
       width: '400px',
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    }).afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
           horizontalPosition: 'end',
@@ -88,20 +90,29 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   pauseReplay() {
-    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'paused' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'paused' })
+      .catch(err => this.messageService.showError(err));
   }
 
   resumeReplay() {
-    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'running' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'running' })
+      .catch(err => this.messageService.showError(err));
   }
 
   changeSpeed(speed: string) {
-    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { speed });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { speed })
+      .catch(err => this.messageService.showError(err));
   }
 
-  leaveReplay() {
-    // Switch to the 'default' processor of the currently connected instance
-    this.yamcs.switchContext(this.yamcs.instance!);
+  async leaveAndCloseReplay() {
+    const instance = this.yamcs.instance!;
+    const processor = this.yamcs.processor!;
+    try {
+      await this.yamcs.switchContext(instance);
+      await this.yamcs.yamcsClient.deleteReplayProcessor(instance, processor);
+    } catch (err: any) {
+      this.messageService.showError(err);
+    }
   }
 
   showDetailPane(enabled: boolean) {
@@ -116,15 +127,12 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   switchProcessor(processor: Processor) {
-    this.yamcs.switchContext(this.yamcs.instance!, processor.name);
+    this.yamcs.switchContext(this.yamcs.instance!, processor.name)
+      .catch(err => this.messageService.showError(err));
   }
 
   ngOnDestroy() {
-    if (this.processorSubscription) {
-      this.processorSubscription.cancel();
-    }
-    if (this.connectedSubscription) {
-      this.connectedSubscription.unsubscribe();
-    }
+    this.processorSubscription?.cancel();
+    this.connectedSubscription?.unsubscribe();
   }
 }
