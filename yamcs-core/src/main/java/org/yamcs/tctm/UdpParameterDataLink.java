@@ -1,6 +1,9 @@
 package org.yamcs.tctm;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -22,6 +25,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.TimeService;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.protobuf.util.JsonFormat;
 
 /**
  * Receives PP data via UDP.
@@ -43,6 +47,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     private DatagramSocket udpSocket;
     private int port = 31002;
     private String defaultRecordingGroup;
+    private Format format;
 
     ParameterSink parameterSink;
 
@@ -64,6 +69,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
         timeService = YamcsServer.getTimeService(instance);
         port = config.getInt("port");
         defaultRecordingGroup = config.getString("recordingGroup", "DEFAULT");
+        format = config.getBoolean("json", false) ? Format.JSON : Format.PROTOBUF;
     }
 
     @Override
@@ -147,9 +153,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             try {
                 udpSocket.receive(datagram);
                 validDatagramCount++;
-                return ParameterData.newBuilder()
-                        .mergeFrom(datagram.getData(), datagram.getOffset(), datagram.getLength())
-                        .build();
+                return decodeDatagram(datagram.getData(), datagram.getOffset(), datagram.getLength());
             } catch (IOException e) {
                 // Shutdown or disable will close the socket. That generates an exception
                 // which we ignore here.
@@ -161,6 +165,36 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             }
         }
         return null;
+    }
+
+    /**
+     * Decode {@link ParameterData} from the content of a single received UDP Datagram.
+     * <p>
+     * {@link UdpParameterDataLink} has configurable support for either Protobuf or JSON-encoded data. Extending links
+     * may provide a custom decoder by overriding this method.
+     * 
+     * @param data
+     *            data buffer. The data received starts from {@code offset} and runs for {@code length} long.
+     * @param offset
+     *            offset of the data received
+     * @param length
+     *            length of the data received
+     */
+    public ParameterData decodeDatagram(byte[] data, int offset, int length) throws IOException {
+        switch (format) {
+        case JSON:
+            try (Reader reader = new InputStreamReader(new ByteArrayInputStream(data, offset, length))) {
+                ParameterData.Builder builder = ParameterData.newBuilder();
+                JsonFormat.parser().merge(reader, builder);
+                return builder.build();
+            }
+        case PROTOBUF:
+            return ParameterData.newBuilder()
+                    .mergeFrom(data, offset, length)
+                    .build();
+        default:
+            throw new IllegalStateException("Unexpected format " + format);
+        }
     }
 
     @Override
@@ -230,5 +264,13 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     @Override
     public String getName() {
         return name;
+    }
+
+    /**
+     * Default supported data formats
+     */
+    private static enum Format {
+        JSON,
+        PROTOBUF;
     }
 }
