@@ -21,6 +21,7 @@ export class CommandFormArgument implements OnInit {
   parent: string;
 
   controlName$ = new BehaviorSubject<string | null>(null);
+  hexToggle$ = new BehaviorSubject<boolean>(false);
 
   ngOnInit() {
     if (this.parent) {
