@@ -82,7 +82,7 @@ export class AppComponent implements OnDestroy {
   openInstanceDialog() {
     this.dialog.open(SelectInstanceDialog, {
       width: '650px',
-      panelClass: ['select-instance-dialog'],
+      panelClass: ['no-padding-dialog'],
     });
   }
 

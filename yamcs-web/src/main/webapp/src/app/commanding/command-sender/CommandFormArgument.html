@@ -8,11 +8,15 @@
     </div>
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
-    <select [formControlName]="controlName">
-      <option hidden disabled selected value> -- select an option -- </option>
-      <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-        {{ enumValue.label }}</option>
-    </select>
+    <br>
+    <div style="display: flex; align-items: center;">
+      <app-select [formControlName]="controlName" [options]="selectOptions" style="margin: 5px 0 0">
+      </app-select>&nbsp;
+      <button class="ya-button" style="margin: 5px 0 0" matTooltip="Lookup enumeration state"
+              (click)="openSelectEnumerationDialog()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </div>
   </label>
 
   <label *ngSwitchCase="'boolean'">

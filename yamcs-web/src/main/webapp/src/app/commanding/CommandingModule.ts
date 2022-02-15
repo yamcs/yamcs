@@ -9,6 +9,7 @@ import { TransmissionConstraintsIcon } from './command-history/TransmissionConst
 import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
 import { CommandForm } from './command-sender/CommandForm';
 import { CommandFormArgument } from './command-sender/CommandFormArgument';
+import { SelectEnumerationDialog } from './command-sender/SelectEnumerationDialog';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { CommandDownloadLinkPipe } from './pipes/CommandDownloadLinkPipe';
@@ -46,6 +47,7 @@ const pipes = [
     QueuedCommandsTable,
     QueuesTable,
     RenameStackDialog,
+    SelectEnumerationDialog,
     SendCommandWizardStep,
     StackedCommandDetail,
     StackFilePageDirtyDialog,

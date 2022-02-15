@@ -10,7 +10,6 @@ import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  selector: 'app-select-instance-dialog',
   templateUrl: './SelectInstanceDialog.html',
   styleUrls: ['./SelectInstanceDialog.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
