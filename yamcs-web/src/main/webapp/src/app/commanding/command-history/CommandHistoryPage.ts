@@ -9,6 +9,7 @@ import { rowAnimation } from '../../animations';
 import { GetCommandHistoryOptions } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+import { MessageService } from '../../core/services/MessageService';
 import { PrintService } from '../../core/services/PrintService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -92,6 +93,7 @@ export class CommandHistoryPage {
     readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
+    private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
     private printService: PrintService,
@@ -222,7 +224,8 @@ export class CommandHistoryPage {
     if (this.queue) {
       options.queue = this.queue;
     }
-    this.dataSource.loadEntries(options);
+    this.dataSource.loadEntries(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   loadMoreData() {
@@ -237,7 +240,8 @@ export class CommandHistoryPage {
       options.queue = this.queue;
     }
 
-    this.dataSource.loadMoreData(options);
+    this.dataSource.loadMoreData(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   showResend() {

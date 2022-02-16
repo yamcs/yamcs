@@ -8,21 +8,20 @@ import { Option } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
 
 @Component({
-  selector: 'app-request-playback-dialog',
-  templateUrl: './RequestPlaybackDialog.html',
+  templateUrl: './RequestMultipleRangesPlaybackDialog.html',
 })
-export class RequestPlaybackDialog {
+export class RequestMultipleRangesPlaybackDialog {
 
   gaps: Gap[];
   linkOptions$ = new BehaviorSubject<Option[]>([]);
 
   form = new FormGroup({
     mergeTolerance: new FormControl(30),
-    link: new FormControl('', Validators.required)
+    link: new FormControl('', Validators.required),
   });
 
   constructor(
-    private dialogRef: MatDialogRef<RequestPlaybackDialog>,
+    private dialogRef: MatDialogRef<RequestMultipleRangesPlaybackDialog>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

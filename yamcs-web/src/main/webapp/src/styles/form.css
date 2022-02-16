@@ -14,10 +14,20 @@
   color: crimson;
 }
 
+.ya-form .control-group {
+  display: flex;
+  align-items: center;
+}
+
 .ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input, .ya-form label .duration-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;
+}
+
+.ya-form label .ya-button {
+  margin: 5px 0 0;
+  display: block;
 }
 
 .ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="password"], .ya-input {

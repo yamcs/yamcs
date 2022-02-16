@@ -28,7 +28,9 @@ public class IndexRequest {
     private boolean sendAllPp;
     private List<NamedObjectId> ppGroups = new ArrayList<>();
 
+    // if true, all completeness groups are sent, otherwise those in the completenessGroups list (which can be empty)
     private boolean sendCompletenessIndex;
+    private List<NamedObjectId> completenessGroups = new ArrayList<>();
 
     // if true, all command names are sent, otherwise those in the cmdName list (which can be empty)
     private boolean sendAllCmd;
@@ -106,6 +108,10 @@ public class IndexRequest {
 
     public void setSendCompletenessIndex(boolean sendCompletenessIndex) {
         this.sendCompletenessIndex = sendCompletenessIndex;
+    }
+
+    public List<NamedObjectId> getCompletenessGroups() {
+        return completenessGroups;
     }
 
     public boolean isSendAllCmd() {

@@ -8,11 +8,10 @@
     </div>
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
-    <br>
-    <div style="display: flex; align-items: center;">
-      <app-select [formControlName]="controlName" [options]="selectOptions" style="margin: 5px 0 0">
+    <div class="control-group">
+      <app-select [formControlName]="controlName" [options]="selectOptions">
       </app-select>&nbsp;
-      <button class="ya-button" style="margin: 5px 0 0" matTooltip="Lookup enumeration state"
+      <button class="ya-button" matTooltip="Lookup enumeration state"
               (click)="openSelectEnumerationDialog()">
         <mat-icon>search</mat-icon>
       </button>

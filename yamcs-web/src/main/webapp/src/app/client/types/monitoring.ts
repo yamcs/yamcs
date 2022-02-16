@@ -78,6 +78,12 @@ export interface Range {
   count: number;
 }
 
+export interface GetGapsOptions {
+  start?: string;
+  stop?: string;
+  apid?: number;
+}
+
 export interface IssueCommandOptions {
   args?: { [key: string]: any; };
   origin?: string;
@@ -274,6 +280,10 @@ export interface Gap {
   startSequenceCount: number;
   stopSequenceCount: number;
   missingPacketCount: number;
+}
+
+export interface ListApidsResponse {
+  apids: number[];
 }
 
 export interface ListGapsResponse {

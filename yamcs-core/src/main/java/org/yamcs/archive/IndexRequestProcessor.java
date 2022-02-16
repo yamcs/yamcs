@@ -1,8 +1,10 @@
 package org.yamcs.archive;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +58,7 @@ public class IndexRequestProcessor implements Runnable {
     Map<String, NamedObjectId> eventSources;
     Map<String, NamedObjectId> commands;
     Map<String, NamedObjectId> ppGroups;
+    Map<String, NamedObjectId> completenessGroups;
 
     boolean sendTms;
     int batchSize = 500;
@@ -66,7 +69,6 @@ public class IndexRequestProcessor implements Runnable {
     int count = 0;
     HistoRequest[] hreq = new HistoRequest[5];
     MergingResult mergingResult;
-
 
     public IndexRequestProcessor(TmIndexService tmIndexer, IndexRequest req, int limit, String recToken,
             IndexRequestListener l) {
@@ -145,12 +147,16 @@ public class IndexRequestProcessor implements Runnable {
                     StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
         }
 
-        if (req.isSendCompletenessIndex()) {
+        if (req.isSendCompletenessIndex() || req.getCompletenessGroups().size() > 0) {
             if (tmIndexer == null) {
                 throw new IllegalArgumentException("TmIndexer cannot be null if completeness is requested");
             }
+            completenessGroups = new HashMap<>();
+            for (NamedObjectId id : req.getCompletenessGroups()) {
+                completenessGroups.put(id.getName(), id);
+            }
             int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : -1);
-            hreq[4] = new HistoRequest(null, null, mergeTime, null);
+            hreq[4] = new HistoRequest(null, null, mergeTime, completenessGroups);
         }
 
         if (tokenData != null) {
@@ -310,7 +316,13 @@ public class IndexRequestProcessor implements Runnable {
         if (hreq.seekId != null) {
             start = hreq.seekTime;
         }
-        IndexIterator it = tmIndexer.getIterator(null, start, stop);
+        IndexIterator it;
+        if (hreq.name2id == null || hreq.name2id.isEmpty()) {
+            it = tmIndexer.getIterator(null, start, stop);
+        } else {
+            List<NamedObjectId> names = new ArrayList<>(hreq.name2id.values());
+            it = tmIndexer.getIterator(names, start, stop);
+        }
 
         ArchiveRecord ar;
         while ((ar = it.getNextRecord()) != null) {

@@ -1,20 +1,19 @@
-<h2 mat-dialog-title>Request playback</h2>
+<h2 mat-dialog-title>Request playback of {{ gaps.length }} selected gaps</h2>
 
 <mat-dialog-content class="mat-typography">
   <form [formGroup]="form" class="ya-form">
-    <ng-container *ngIf="gaps.length > 1">
-      <label>
-        Merge tolerance (minutes)
-        <input type="number" formControlName="mergeTolerance">
-        <span class="hint">Gaps that are at least this close to each other, are merged.</span>
-      </label>
-      <br>
-    </ng-container>
+    <label>
+      Merge tolerance (minutes)
+      <input type="number" formControlName="mergeTolerance">
+      <span class="hint">Gaps that are at least this close to each other, are merged into a single request.</span>
+    </label>
+    <br>
 
     <label>
-      Link<br>
+      DaSS link
       <app-select formControlName="link" [options]="linkOptions$ | async">
       </app-select>
+      <span class="hint">This link will send out the request, and handle data reception.</span>
     </label>
   </form>
 </mat-dialog-content>
