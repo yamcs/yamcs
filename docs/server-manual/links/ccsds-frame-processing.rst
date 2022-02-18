@@ -3,11 +3,12 @@ CCSDS Frame Processing
 
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
-* TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
-* AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/732x0b3e1.pdf>`_
-* TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
-* Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
-* TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/231x0b4.pdf>`_
+* TM Space Data Link Protocol `CCSDS 132.0-B-3 <https://public.ccsds.org/Pubs/132x0b3.pdf>`_
+* AOS Space Data Link Protocol `CCSDS 732.0-B-4 <https://public.ccsds.org/Pubs/732x0b4.pdf>`_
+* TC Space Data Link Protocol `CCSDS 232.0-B-4 <https://public.ccsds.org/Pubs/232x0b4.pdf>`_
+* Unified Space Data Link Protocol `CCSDS 732.1-B-2  <https://public.ccsds.org/Pubs/732x1b2.pdf>`_
+* TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/231x0b4e0.pdf>`_
+* TM Synchronization and Channel Coding `CCSDS 131.0-B-3 <https://public.ccsds.org/Pubs/131x0b3e1.pdf>`_
 * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
 * Space Packet Protocol `CCSDS 133.0-B-2 <https://public.ccsds.org/Pubs/133x0b2e1.pdf>`_
 * Encapsulation Service `CCSDS 133.1-B-3 <https://public.ccsds.org/Pubs/133x1b3e1.pdf>`_
@@ -42,6 +43,11 @@ An example of a UDP TM frame link specification is below:
       class: org.yamcs.tctm.ccsds.UdpTmFrameLink
       args:
         port: 10017
+        rawFrameDecoder:
+            codec: RS
+            interleavingDepth: 5
+            errorCorrectionCapability: 16
+            derandomize: false
         frameType: "AOS"
         spacecraftId: 0xAB
         frameLength: 512
@@ -78,9 +84,16 @@ An example of a UDP TM frame link specification is below:
 
 The following general options are supported:
 
+
+rawFrameDecoder (map) supported since Yamcs 5.5.7
+   Decodes raw frame data using an error correction scheme and/or randomization. For the moment only the Reed-Solomon codec is supported. If this is not set, the frames are considered already decoded. See below for the options to the Reed-Solomon codec.
+
 frameType (string)
     **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message). 
 
+derandomize (boolean)
+    If true, derandomize the frames with the derandomizer as per CCSDS 131.0-B-3. Default: false
+    
 spacecraftId (integer)
     **Required.** The expected spacecraft identifier. The spacecraftId is encoded in the frame header. If a frame with a different identifier is received, it is discarded (with a warning log message).
     
@@ -108,8 +121,14 @@ clcwStream (string)
     Can be used to specify the name of the stream where the Command Link Control Words (CLCW) will be sent. The CLCW is the mechanism used by COP-1 to acknolwedge uplinked frames. For TM and USLP frames, there is an OCF flag part of the frame header indicating the presence or not of the CLCW. For AOS frames it has to be configured with the ``ocfPresent`` flag below.
     If present, the CLCW is also extracted from idle frames (i.e. frames that are inserted when no data needs to be transmitted in order to keep the constant bitrate required for downlink).
     
+goodFrameStream (string)
+    If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
+    
+badFrameStream (string)
+    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
+
 virtualChannels (map)
-    **Required.** Used to specify the Virtual Channel specific configuration. 
+    **Required.** Used to specify the Virtual Channel specific configuration.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -118,7 +137,6 @@ vcId (integer)
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
-   
 
 service:
     **Required.** This specifies the type of data that is part of the Virtual Channel. One of ``PACKET``, ``IDLE`` or ``VCA``
@@ -139,6 +157,23 @@ packetPreprocessorClassName and packetPreprocessorArgs
 
 vcaHandlerClassName:
     **Required if the service = VCA** Specifies the name of the class which handles data for this virtual channel. The class has to implement :javadoc:`~org.yamcs.tctm.ccsds.VcDownlinkHandler` interface. Optionally it can implement :javadoc:`~org.yamcs.tctm.Link` interface to appear as a data link (e.g. in yamcs-web). An example implementation of such class can be found in the ccsds-frames example project.
+
+*Raw Frame Decoder*
+
+The options which can be selected under the ``rawFrameDecoder`` key are the following:
+
+codec (string)
+   **Required.** Specifies the error correction codec to use. Valid values are ``NONE`` and ``RS``. None means the data will not be error corrected (can be still useful if only de-randomization is required).
+   RS means the Reed-Solomon codec is used and the errorCorrectionCapability and interleavingDepth below can be used to configure the codec.
+
+interleavingDepth (int)
+   The interleving depth specifies the number of RS decoders running in "parallel" for one frame. Each interleavingDepth'th byte in the frame will be passed to a different decoder. Note howerver that as of Yamcs 5.5.7, the data is process sequentially not in parallel. Default: 5
+
+errorCorrectionCapability (int)
+   This is either 8 or 16 determining the RS(255, 239) respectively RS(255,223) codec to be used. Default: 16
+
+derandomize (boolean)
+    If true, the data will be passed through a derandomizer after being decoded. Default: false
 
 
 Telecommand Frame Processing
@@ -200,13 +235,21 @@ cltuTailSequence (string)
 randomizeCltu (boolean)
     Used if cltuEncoding is BCH to enable/disable the randomization. For LDPC encoding, randomization is always on.
     Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard).
+
+skipRandomizationForVcs (list of integers) added in Yamcs 5.5.6
+    If randomizeCltu is true, this option can define a list of virtual channels for which randomization is not performed. This is not as per CCSDS standard which specifies that the randomization is enabled/disabled at the physical channel level.
  
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
 
 errorDetection (string)
-    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field.
+    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field. 
+    Default: ``CRC16``
+    
+frameMaxRate (double)
+    maximum number of command frames to send per second. This option is specific to the UDP TC link.
 
+    
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
 vcId (integer)
@@ -242,12 +285,14 @@ cop1TxLimit (integer)
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
-goodFrameStream (string)
-    If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
-    
-badFrameStream (string)
-    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid. 
-    
+tcQueueSize (integer)
+    This is used if COP-1 is not enabled, to determine the size of the command queue. Note that this is number of commands (not frames!). If the queue is full, the new commands will be rejected. Commands are taken from the queue by the multiplexer, according to the priority scheme defined below. Default: ``10``.
+
+errorDetection (string)
+    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used for the virtual channel, overriding the setting at link level. This is not according to the CCSDS standard which specifies the frame error detection shall be configured at physical channel leve.
+    If not specified (default), the setting at the link level will be used.
+   
+
            
 Priority Schemes
 ****************

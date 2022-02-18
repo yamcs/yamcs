@@ -66,8 +66,11 @@ public class CfdpUtils {
         return getUnsignedLongFromByteArray(temp);
     }
 
-    public static byte boolToByte(boolean bool) {
-        return (byte) (bool ? 1 : 0);
+    /**
+     * if bool is true, write bit 1 on bitnr position
+     */
+    public static byte boolToByte(boolean bool, int bitnr) {
+        return (byte) (bool ? (1 << (7 - bitnr)) : 0);
     }
 
     public static long getUnsignedLongFromByteArray(byte[] input) {

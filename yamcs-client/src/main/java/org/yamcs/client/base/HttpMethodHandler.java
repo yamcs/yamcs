@@ -223,12 +223,12 @@ public class HttpMethodHandler implements MethodHandler {
     private static String encodeURIComponent(String component) {
         try {
             return URLEncoder.encode(component, "UTF-8")
-                    .replaceAll("\\+", "%20")
-                    .replaceAll("\\%21", "!")
-                    .replaceAll("\\%27", "'")
-                    .replaceAll("\\%28", "(")
-                    .replaceAll("\\%29", ")")
-                    .replaceAll("\\%7E", "~");
+                    .replace("\\+", "%20")
+                    .replace("\\%21", "!")
+                    .replace("\\%27", "'")
+                    .replace("\\%28", "(")
+                    .replace("\\%29", ")")
+                    .replace("\\%7E", "~");
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }

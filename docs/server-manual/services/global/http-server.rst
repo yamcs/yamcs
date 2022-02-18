@@ -73,6 +73,9 @@ webSocket (map)
 cors (map)
     Configure cross-origin resource sharing for the HTTP API. Detailed below. If unset, CORS is not supported.
 
+nThreads (int)
+    Configure the number of threads that will serve HTTP requests. 0 (default) means two times the number of CPU cores.
+
 
 WebSocket sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

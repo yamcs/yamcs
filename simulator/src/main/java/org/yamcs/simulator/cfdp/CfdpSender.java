@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -216,10 +215,8 @@ public class CfdpSender {
     }
 
     private void sendMetadata() {
-        MetadataPacket metadata = new MetadataPacket(false, ChecksumType.MODULAR.id(), fileSize,
-                file.getPath(), file.getPath(),
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                null, directiveHeader);
+        MetadataPacket metadata = new MetadataPacket(false, ChecksumType.MODULAR, fileSize,
+                file.getPath(), file.getPath(), directiveHeader);
         transmitCfdp(metadata);
     }
 

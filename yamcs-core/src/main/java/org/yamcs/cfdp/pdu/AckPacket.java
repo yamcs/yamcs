@@ -76,8 +76,8 @@ public class AckPacket extends CfdpPacket implements FileDirective {
         this.transactionStatus = status;
     }
 
-    public AckPacket(ByteBuffer buffer, CfdpHeader header) {
-        super(buffer, header);
+    AckPacket(ByteBuffer buffer, CfdpHeader header) {
+        super(header);
         byte temp = buffer.get();
         this.directiveCode = FileDirectiveCode.readFileDirectiveCodeFromHalfAByte(temp);
         this.directiveSubtypeCode = FileDirectiveSubtypeCode.readSubtypeCode(temp);

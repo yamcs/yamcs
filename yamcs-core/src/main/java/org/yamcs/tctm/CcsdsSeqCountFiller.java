@@ -44,7 +44,7 @@ public class CcsdsSeqCountFiller {
         
         int seqCount = getSeqCount(apid);
 
-        ByteArrayUtils.encodeShort((short) ((seqFlags << 14) | seqCount), packet, 2);
+        ByteArrayUtils.encodeUnsignedShort((short) ((seqFlags << 14) | seqCount), packet, 2);
 
         return seqCount;
     }

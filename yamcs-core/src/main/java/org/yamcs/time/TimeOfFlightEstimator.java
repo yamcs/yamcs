@@ -25,7 +25,6 @@ import org.yamcs.yarch.streamsql.StreamSqlResult;
  * <p>
  * It returns time of flight between a spacecraft and a ground antenna by interpolating using user defined spline
  * polynomials.
- * <p>
  * 
  * @author nm
  *

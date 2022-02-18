@@ -172,7 +172,7 @@ public class DataTypeProcessor {
         case STRING:
             return ValueUtility.getTimestampValue(TimeEncoding.parse(v.getStringValue()));
         default:
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
         }
     }
 
@@ -198,7 +198,7 @@ public class DataTypeProcessor {
                 throw new IllegalArgumentException("Cannot convert '" + v + " to boolean");
             }
         default:
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
         }
     }
 
@@ -220,7 +220,7 @@ public class DataTypeProcessor {
             }
             return ValueUtility.getEnumeratedValue(ve.getValue(), ve.getLabel());
         default:
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
         }
     }
 
@@ -232,7 +232,7 @@ public class DataTypeProcessor {
             byte[] b = StringConverter.hexStringToArray(v.getStringValue());
             return ValueUtility.getBinaryValue(b);
         } else {
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
         }
     }
 
@@ -259,7 +259,7 @@ public class DataTypeProcessor {
         case UINT64:
             return ValueUtility.getFloatValue(type.getSizeInBits(), UnsignedLong.toDouble(v.getUint64Value()));
         default:
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
         }
     }
 
@@ -269,8 +269,7 @@ public class DataTypeProcessor {
             int sintValue = v.getSint32Value();
             if (type.isSigned()) {
                 if (type.getSizeInBits() < signedSizeInBits(sintValue)) {
-                    throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                            + " bits required for data type " + type.getName());
+                    throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
                 }
             } else {
                 if (sintValue < 0) {
@@ -278,8 +277,7 @@ public class DataTypeProcessor {
                             "Cannot convert negative value " + sintValue + " to unsigned type " + type.getName());
                 }
                 if (type.getSizeInBits() < unsignedSizeInBits(sintValue)) {
-                    throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                            + " bits required for data type " + type.getName());
+                    throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
                 }
             }
 
@@ -288,8 +286,7 @@ public class DataTypeProcessor {
             long slongValue = v.getSint64Value();
             if (type.isSigned()) {
                 if (type.getSizeInBits() < signedSizeInBits(slongValue)) {
-                    throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                            + " bits required for data type " + type.getName());
+                    throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
                 }
             } else {
                 if (slongValue < 0) {
@@ -297,29 +294,26 @@ public class DataTypeProcessor {
                             "Cannot convert negative value " + slongValue + " to unsigned type " + type.getName());
                 }
                 if (type.getSizeInBits() < unsignedSizeInBits(slongValue)) {
-                    throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                            + " bits required for data type " + type.getName());
+                    throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
                 }
             }
             return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), slongValue);
         case UINT32:
             int uintValue = v.getUint32Value();
             if (type.getSizeInBits() < unsignedSizeInBits(uintValue) - 1) {
-                throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                        + " bits required for data type " + type.getName());
+                throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
             }
             return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), uintValue);
         case UINT64:
             long ulongValue = v.getUint64Value();
             if (type.getSizeInBits() < unsignedSizeInBits(ulongValue) - 1) {
-                throw new IllegalArgumentException("Cannot fit " + v + " in " + type.getSizeInBits()
-                        + " bits required for data type " + type.getName());
+                throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
             }
             return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), ulongValue);
 
         case STRING:
         default:
-            throw new IllegalArgumentException("Cannot convert " + v.getType() + " to " + type.getName());
+            throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
 
         }
     }
@@ -361,4 +355,12 @@ public class DataTypeProcessor {
         return 63 - Long.numberOfLeadingZeros(v & Long.MAX_VALUE);
     }
 
+    static final String MSG_CANT_CONVERT(Type type1, DataType type2) {
+        return "Cannot convert " + type1 + " to " + type2.getName();
+    }
+
+    static final String MSG_CANT_FIT(Value v, IntegerDataType type) {
+        return "Cannot fit " + v + " in " + type.getSizeInBits()
+                + " bits required for data type " + type.getName();
+    }
 }

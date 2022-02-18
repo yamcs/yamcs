@@ -26,23 +26,19 @@ public class PartitioningSpec {
     }
     
     public static PartitioningSpec noneSpec() {
-    	PartitioningSpec pspec = new PartitioningSpec(_type.NONE, null, null);    	
-    	return pspec;
+        return new PartitioningSpec(_type.NONE, null, null);
     }
     
     public static PartitioningSpec valueSpec(String valueColumn) {
-    	PartitioningSpec pspec = new PartitioningSpec(_type.VALUE, null, valueColumn);    	
-    	return pspec;
+        return new PartitioningSpec(_type.VALUE, null, valueColumn);
     }
     
     public static PartitioningSpec timeSpec(String timeColumn) {
-    	PartitioningSpec pspec = new PartitioningSpec(_type.TIME, timeColumn, null);
-    	return pspec;
+        return new PartitioningSpec(_type.TIME, timeColumn, null);
     }
     
     public static PartitioningSpec timeAndValueSpec(String timeColumn, String valueColumn) {
-    	PartitioningSpec pspec = new PartitioningSpec(_type.TIME_AND_VALUE, timeColumn, valueColumn);    	
-    	return pspec;
+        return new PartitioningSpec(_type.TIME_AND_VALUE, timeColumn, valueColumn);
     }
     
     public void setTimePartitioningSchema(TimePartitionSchema sch) {
@@ -52,8 +48,6 @@ public class PartitioningSpec {
     public void setTimePartitioningSchema(String schema) {
         this.timePartitioningSchema = TimePartitionSchema.getInstance(schema);
     }
-    
-   
 
     public DataType getValueColumnType() {
         return valueColumnType;

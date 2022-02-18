@@ -6,10 +6,25 @@ package org.yamcs.xtce;
  *
  */
 public enum AlarmLevels {
-    normal,
-    watch,
-    warning,
-    distress,
-    critical,
-    severe;
+    NORMAL("normal"),
+    WATCH("watch"),
+    WARNING("warning"),
+    DISTRESS("distress"),
+    CRITICAL("critical"),
+    SEVERE("severe");
+
+    public final String xtceName;
+
+    private AlarmLevels(String xtceName) {
+        this.xtceName = xtceName;
+    }
+
+    public static AlarmLevels fromXtce(String name) {
+        for (AlarmLevels l : AlarmLevels.values()) {
+            if (l.xtceName.equals(name)) {
+                return l;
+            }
+        }
+        throw new IllegalArgumentException("Illegal xtce name " + name);
+    }
 }

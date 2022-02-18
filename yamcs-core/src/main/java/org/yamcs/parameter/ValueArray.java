@@ -177,8 +177,10 @@ public class ValueArray {
             return new Object[size];
         case BINARY:
             return new Object[size];
+        default:
+            throw new IllegalStateException("Unknown type " + type);
         }
-        throw new IllegalStateException("Unknown type " + type);
+
     }
 
     public Type getType() {

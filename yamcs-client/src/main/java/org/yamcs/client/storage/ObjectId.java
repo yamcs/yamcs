@@ -31,7 +31,7 @@ public class ObjectId {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ObjectId)) {
+        if (!(obj instanceof ObjectId)) {
             return false;
         }
         ObjectId other = (ObjectId) obj;

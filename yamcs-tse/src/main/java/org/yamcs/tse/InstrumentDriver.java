@@ -169,7 +169,7 @@ public abstract class InstrumentDriver {
      * Returns the driver-specific default pattern for terminating requests. This is the termination that gets used if
      * the user does not explicitly configure anything.
      * <p>
-     * Return <tt>null</tt> to do no request termination.
+     * Return {@code null} to do no request termination.
      */
     public abstract String getDefaultRequestTermination();
 }

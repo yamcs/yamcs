@@ -11,7 +11,6 @@ import org.yamcs.protobuf.YamcsInstance.InstanceState;
 
 import com.google.common.util.concurrent.Monitor;
 import com.google.common.util.concurrent.Monitor.Guard;
-import com.google.common.util.concurrent.Service;
 
 /**
  * Inspired from Guava services, this class offers the following states:

@@ -17,7 +17,7 @@ yamcsadmin
 
     .. option:: --log LEVEL
 
-       Level of verbosity. From 0 (off) to 5 (all). Default: 2.
+        Level of verbosity. From 0 (off) to 5 (all). Default: 2.
 
     .. option:: --etc-dir DIR
 

@@ -20,7 +20,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
         this.contextAlarmList = builder.contextAlarmList;
         this.defaultAlarm = builder.defaultAlarm;
 
-        if (builder.baseType != null && builder.baseType instanceof IntegerParameterType) {
+        if (builder.baseType instanceof IntegerParameterType) {
             IntegerParameterType baseType = (IntegerParameterType) builder.baseType;
             if (builder.defaultAlarm == null && baseType.defaultAlarm != null) {
                 this.defaultAlarm = baseType.defaultAlarm;
@@ -135,7 +135,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing range for the specified context and level
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addAlarmRange(MatchCriteria contextMatch, DoubleRange range, AlarmLevels level) {
             getAlarmRanges(contextMatch).addRange(range, level);
@@ -145,7 +145,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing watch range for the specified context
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addWatchAlarmRange(MatchCriteria contextMatch, DoubleRange watchRange) {
             getAlarmRanges(contextMatch).addWatchRange(watchRange);
@@ -155,7 +155,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing warning range for the specified context
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addWarningAlarmRange(MatchCriteria contextMatch, DoubleRange warningRange) {
             getAlarmRanges(contextMatch).addWarningRange(warningRange);
@@ -165,7 +165,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing distress range for the specified context
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addDistressAlarmRange(MatchCriteria contextMatch, DoubleRange distressRange) {
             getAlarmRanges(contextMatch).addDistressRange(distressRange);
@@ -175,7 +175,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing critical range for the specified context
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addCriticalAlarmRange(MatchCriteria contextMatch, DoubleRange criticalRange) {
             getAlarmRanges(contextMatch).addCriticalRange(criticalRange);
@@ -185,7 +185,7 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
          * Adds a new, or unions with an existing severe range for the specified context
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addSevereAlarmRange(MatchCriteria contextMatch, DoubleRange severeRange) {
             getAlarmRanges(contextMatch).addSevereRange(severeRange);

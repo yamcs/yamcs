@@ -107,7 +107,7 @@ public abstract class Expression {
                 c.fillCode_Declarations(code);
             }
         }
-        if (constantValue != null && constantValue instanceof byte[]) {
+        if (constantValue instanceof byte[]) {
             byte[] v = (byte[]) constantValue;
             code.append("\tbyte[] const_").append(getColumnName()).append(" = ")
                     .append("org.yamcs.utils.StringConverter.hexStringToArray(\"")

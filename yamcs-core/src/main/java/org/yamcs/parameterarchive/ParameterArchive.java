@@ -25,6 +25,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.PartitionedTimeInterval;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -46,10 +47,19 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
  * <p>
  * A partition covers one year/month/day and each partition has its own RocksDB database.
  * <p>
- * An interval covers 2^23 millisec =~ 139 minutes
+ * An interval covers 2^23 millisec (=~ 139 minutes) - so for any timestamp (Yamcs time) we know exactly in which
+ * interval it falls.
  * <p>
- * An segment covers at most maxSegmentSize samples for one parameter
+ * A segment covers at most maxSegmentSize samples for one parameter. The segments do not cover a fixed period of time;
+ * we use them to avoid intervals getting very large; usually (1Hz or less frequency data) there is only one segment in
+ * an interval.
+ *
+ * <p>
+ * Segments cannot span across intervals.
  * 
+ * <p>
+ * When new data has been received in the past, the whole interval has to be re-created (by doing a replay); that likely
+ * means a new split of the respective interval into segments.
  * 
  * 
  * @author nm
@@ -207,7 +217,7 @@ public class ParameterArchive extends AbstractYamcsService {
         pgs.consolidate();
         Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
-            writeToBatch(writeBatch, p, pgs);
+            writeToBatch(writeBatch, pgs);
             tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
         }
     }
@@ -219,13 +229,15 @@ public class ParameterArchive extends AbstractYamcsService {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
                 assert (segStart == pgs.getSegmentStart());
-                writeToBatch(writeBatch, p, pgs);
+                writeToBatch(writeBatch, pgs);
             }
             tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
         }
     }
 
-    private void writeToBatch(WriteBatch writeBatch, Partition p, PGSegment pgs) throws RocksDBException {
+    private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+        removeOldOverlappingSegments(writeBatch, pgs);
+
         // write the time segment
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
@@ -287,6 +299,25 @@ public class ParameterArchive extends AbstractYamcsService {
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
             byte[] pssValue = vsEncoder.encode(pss);
             writeBatch.put(pssKey, pssValue);
+        }
+    }
+
+    private void removeOldOverlappingSegments(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+        long segStart = pgs.getSegmentStart();
+        long segEnd = pgs.getSegmentEnd();
+        int pgid = pgs.getParameterGroupId();
+
+        byte[] timeKeyStart = new SegmentKey(parameterIdDb.timeParameterId, pgid, segStart, (byte) 0).encode();
+        byte[] timeKeyEnd = new SegmentKey(parameterIdDb.timeParameterId, pgid, segEnd, Byte.MAX_VALUE).encode();
+        writeBatch.deleteRange(timeKeyStart, timeKeyEnd);
+        IntArray parameterIds = pgs.parameterIds;
+
+        for (int i = 0; i < parameterIds.size(); i++) {
+            int pid = parameterIds.get(i);
+
+            byte[] paraKeyStart = new SegmentKey(pid, pgid, segStart, (byte) 0).encode();
+            byte[] paraKeyEnd = new SegmentKey(pid, pgid, segEnd, Byte.MAX_VALUE).encode();
+            writeBatch.deleteRange(paraKeyStart, paraKeyEnd);
         }
     }
 

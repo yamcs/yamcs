@@ -5,11 +5,11 @@ public interface Plugin {
     /**
      * Returns the valid configuration options for this plugin.
      * <p>
-     * If <tt>null</tt> is returned, Yamcs will attempt to autodiscover plugin options in a resource file named after
-     * the reverse qualified name of this plugin with yaml extension. For example: for a plugin
-     * <tt>com.example.MyPlugin</tt>, Yamcs will search for a classpath resource <tt>/com/example/MyPlugin.yaml</tt>.
+     * If {@code null} is returned, Yamcs will attempt to autodiscover plugin options in a resource file named after the
+     * reverse qualified name of this plugin with yaml extension. For example: for a plugin
+     * {@code com.example.MyPlugin}, Yamcs will search for a classpath resource {@code /com/example/MyPlugin.yaml}.
      * 
-     * @return the argument specification. Or <tt>null</tt> if there are no options or Yamcs should autodiscover them.
+     * @return the argument specification. Or {@code null} if there are no options or Yamcs should autodiscover them.
      */
     public default Spec getSpec() {
         return null;

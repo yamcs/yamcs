@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -148,7 +146,7 @@ public class ColSimulator extends AbstractSimulator {
         byte[] p1 = new byte[p.length + 4];
         System.arraycopy(p, 0, p1, 4, p.length);
         p1[0] = (byte) 0xFE;
-        ByteArrayUtils.encodeShort(p1.length, p1, 2);
+        ByteArrayUtils.encodeUnsignedShort(p1.length, p1, 2);
         return p1;
     }
 

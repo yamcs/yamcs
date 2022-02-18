@@ -106,16 +106,16 @@ public class DataType {
             return UUID;
         case "PARAMETER_VALUE":
             return PARAMETER_VALUE;
-        }
+        default:
+            if (name.toUpperCase().startsWith("PROTOBUF(")) {
+                return protobuf(name.substring(9, name.length() - 1));
+            }
+            if (name.toUpperCase().startsWith("ARRAY(")) {
+                return array(byName(name.substring(6, name.length() - 1)));
+            }
 
-        if (name.toUpperCase().startsWith("PROTOBUF(")) {
-            return protobuf(name.substring(9, name.length() - 1));
+            throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
         }
-        if (name.toUpperCase().startsWith("ARRAY(")) {
-            return array(byName(name.substring(6, name.length() - 1)));
-        }
-
-        throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
     }
 
     /**
@@ -285,7 +285,7 @@ public class DataType {
     }
 
     /**
-     * Performs casting of v from type1 to type2
+     * Performs casting of v from sourceType to targetType
      * 
      * @param sourceType
      * @param targetType
@@ -317,6 +317,8 @@ public class DataType {
             case STRING:
             case ENUM:
                 return n.toString();
+            default:
+                // throws exception below
             }
         } else if (v instanceof String) {
             String s = (String) v;
@@ -340,9 +342,10 @@ public class DataType {
             case STRING:
             case ENUM:
                 return s;
+            default:
+                // throws exception below
             }
-        }
-        if (v instanceof Instant) {
+        } else if (v instanceof Instant) {
             long n = ((Instant) v).getMillis();
             switch (targetType.val) {
             case BYTE:
@@ -359,6 +362,8 @@ public class DataType {
             case STRING:
             case ENUM:
                 return Long.toString(n);
+            default:
+                // throws exception below
             }
         }
 

@@ -38,7 +38,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
     static final String COL_SEQUENCE_NUMBER = "sequenceNumber";
     static final String COL_TRANSFER_STATE = "transferState";
     static final String COL_FAILURE_REASON = "failureReason";
-    static final String serverId = YamcsServer.getServer().getServerId();
+    static final String SERVER_ID = YamcsServer.getServer().getServerId();
 
     static {
         TDEF.addColumn(COL_ID, DataType.LONG);
@@ -149,7 +149,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
     static Tuple toInitialTuple(CfdpFileTransfer transfer) {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
-        t.addColumn(COL_SERVER_ID, serverId);
+        t.addColumn(COL_SERVER_ID, SERVER_ID);
         t.addTimestampColumn(COL_CREATION_TIME, transfer.getCreationTime());
         t.addColumn(COL_BUCKET, transfer.getBucketName());
 
@@ -176,7 +176,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
     static Tuple toUpdateTuple(FileTransfer transfer) {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
-        t.addColumn(COL_SERVER_ID, serverId);
+        t.addColumn(COL_SERVER_ID, SERVER_ID);
         t.addTimestampColumn(COL_START_TIME, transfer.getStartTime());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());

@@ -39,7 +39,7 @@ public class GenericCommandPostprocessor implements CommandPostprocessor {
             int crcSizeInBits = errorDetectionCalculator.sizeInBits();
             if (crcSizeInBits == 16) {
                 binary = Arrays.copyOf(binary, length + 2);
-                ByteArrayUtils.encodeShort(crc, binary, length);
+                ByteArrayUtils.encodeUnsignedShort(crc, binary, length);
             } else if (crcSizeInBits == 32) {
                 binary = Arrays.copyOf(binary, length + 4);
                 ByteArrayUtils.encodeInt(crc, binary, length);

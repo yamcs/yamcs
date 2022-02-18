@@ -20,19 +20,18 @@ public class PasswordHashCli extends Command {
 
     @Override
     void execute() throws Exception {
-        Console console = System.console();
-        console.printf("Enter password: ");
-        char[] newPassword = console.readPassword();
-        console.printf("Confirm password: ");
-        char[] confirmedPassword = console.readPassword();
+        console.println("Enter password: ");
+        char[] newPassword = console.readPassword(false);
+        console.println("Confirm password: ");
+        char[] confirmedPassword = console.readPassword(false);
 
         if (!Arrays.equals(newPassword, confirmedPassword)) {
-            console.printf("Password confirmation does not match\n");
-            System.exit(-1);
+            console.println("Password confirmation does not match\n");
+            exit(-1);
         }
 
         PasswordHasher hasher = new PBKDF2PasswordHasher();
-        console.printf(hasher.createHash(confirmedPassword));
-        console.printf("\n");
+        console.println(hasher.createHash(confirmedPassword));
+        console.println("\n");
     }
 }

@@ -1,5 +1,6 @@
 package org.yamcs.cfdp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
@@ -25,8 +25,8 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected final CfdpTransactionId cfdpTransactionId;
     private Stream cfdpOut;
     protected TransferState state;
-    final protected ScheduledThreadPoolExecutor executor;
-    final protected EventProducer eventProducer;
+    protected final ScheduledThreadPoolExecutor executor;
+    protected final EventProducer eventProducer;
     protected boolean acknowledged = false;
     protected final Log log;
     protected final long startTime;
@@ -36,11 +36,10 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     final TransferMonitor monitor;
     final long destinationId;
 
-    // transaction unique identifier (coming from a databse)
+    // transaction unique identifier (coming from a database)
     final long id;
 
     protected ScheduledFuture<?> inactivityFuture;
-    protected String failureReason;
 
     final long inactivityTimeout;
 
@@ -48,6 +47,8 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     long lastAckSentTime;
     boolean logAckDrop = true;
 
+    // accumulate the errors
+    List<String> errors = new ArrayList<>();
     enum FaultHandlingAction {
         SUSPEND, CANCEL, ABANDON;
 
@@ -95,21 +96,9 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     public abstract void processPacket(CfdpPacket packet);
 
-    protected void sendAck(AckPacket ackPacket) {
-        long now = System.nanoTime();
-
-        if (lastAckSentTime + maxAckSendFreqNanos < now) {
-            if (logAckDrop) {
-                log.warn("ACK sending frequency exceeded, not sending acks");
-                logAckDrop = false;
-            }
-        } else {
-            sendPacket(ackPacket);
-            lastAckSentTime = now;
-            logAckDrop = true;
-        }
+    protected void pushError(String err) {
+        errors.add(err);
     }
-
     protected void sendPacket(CfdpPacket packet) {
         if (log.isDebugEnabled()) {
             log.debug("TXID{} sending PDU: {}", cfdpTransactionId, packet);
@@ -146,26 +135,29 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     protected void rescheduleInactivityTimer() {
         cancelInactivityTimer();
-        inactivityFuture = executor.schedule(() -> onInactivityTimerExpiration(), inactivityTimeout,
+        inactivityFuture = executor.schedule(this::onInactivityTimerExpiration, inactivityTimeout,
                 TimeUnit.MILLISECONDS);
     }
 
     public OngoingCfdpTransfer pauseTransfer() {
-        executor.submit(() -> suspend());
+        executor.submit(this::suspend);
         return this;
     }
 
     protected abstract void suspend();
 
     public OngoingCfdpTransfer resumeTransfer() {
-        executor.submit(() -> resume());
+        executor.submit(this::resume);
         return this;
     }
 
     protected abstract void resume();
 
     public OngoingCfdpTransfer cancelTransfer() {
-        executor.submit(() -> cancel(ConditionCode.CANCEL_REQUEST_RECEIVED));
+        executor.submit(() -> {
+            pushError("Cancel request received");
+            cancel(ConditionCode.CANCEL_REQUEST_RECEIVED);
+        });
         return this;
     }
 
@@ -192,7 +184,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     }
 
     protected void failTransfer(String failureReason) {
-        this.failureReason = failureReason;
+        pushError(failureReason);
         changeState(TransferState.FAILED);
     }
 
@@ -206,7 +198,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     @Override
     public String getFailuredReason() {
-        return failureReason;
+        return errors.stream().collect(Collectors.joining("; "));
     }
 
     @Override

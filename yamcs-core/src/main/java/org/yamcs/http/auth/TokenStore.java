@@ -144,7 +144,7 @@ public class TokenStore {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof Hmac)) {
+            if (!(obj instanceof Hmac)) {
                 return false;
             }
             return Arrays.equals(hmac, ((Hmac) obj).hmac);

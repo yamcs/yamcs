@@ -41,6 +41,7 @@ import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.MemberInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
+import org.yamcs.protobuf.Mdb.ParameterDimensionInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
@@ -105,6 +106,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
@@ -547,17 +549,17 @@ public class XtceToGpbAssembler {
 
     public static SignificanceLevelType toSignificanceLevelType(Levels level) {
         switch (level) {
-        case none:
+        case NONE:
             return SignificanceLevelType.NONE;
-        case watch:
+        case WATCH:
             return SignificanceLevelType.WATCH;
-        case warning:
+        case WARNING:
             return SignificanceLevelType.WARNING;
-        case distress:
+        case DISTRESS:
             return SignificanceLevelType.DISTRESS;
-        case critical:
+        case CRITICAL:
             return SignificanceLevelType.CRITICAL;
-        case severe:
+        case SEVERE:
             return SignificanceLevelType.SEVERE;
         default:
             throw new IllegalStateException("Unexpected level " + level);
@@ -656,8 +658,7 @@ public class XtceToGpbAssembler {
             for (UnitType ut : bdt.getUnitSet()) {
                 infob.addUnitSet(toUnitInfo(ut));
             }
-        }
-        if (parameterType instanceof AggregateParameterType) {
+        } else if (parameterType instanceof AggregateParameterType) {
             AggregateParameterType apt = (AggregateParameterType) parameterType;
             for (Member member : apt.getMemberList()) {
                 MemberInfo.Builder memberb = MemberInfo.newBuilder();
@@ -681,18 +682,41 @@ public class XtceToGpbAssembler {
                 }
                 infob.addMember(memberb);
             }
-        }
-        if (parameterType instanceof ArrayParameterType) {
+        } else if (parameterType instanceof ArrayParameterType) {
             ArrayParameterType apt = (ArrayParameterType) parameterType;
             ArrayInfo.Builder arrayInfob = ArrayInfo.newBuilder();
-            arrayInfob.setDimensions(apt.getNumberOfDimensions());
+            List<IntegerValue> dims = apt.getSize();
+            for (int i = 0; i < apt.getNumberOfDimensions(); i++) {
+                if (dims != null) { // XTCE 1.2+
+                    IntegerValue dim = dims.get(i);
+                    if (dim instanceof FixedIntegerValue) {
+                        arrayInfob.addDimensions(ParameterDimensionInfo.newBuilder()
+                                .setFixedValue(((FixedIntegerValue) dim).getValue()));
+                    } else if (dim instanceof DynamicIntegerValue) {
+                        ParameterDimensionInfo.Builder dimb = ParameterDimensionInfo.newBuilder();
+                        DynamicIntegerValue dynamicValue = (DynamicIntegerValue) dim;
+                        ParameterInstanceRef ref = dynamicValue.getParameterInstanceRef();
+                        if (ref != null) {
+                            dimb.setParameter(toParameterInfo(ref.getParameter(), DetailLevel.SUMMARY));
+                            dimb.setSlope(dynamicValue.getSlope());
+                            dimb.setIntercept(dynamicValue.getIntercept());
+                        }
+                        arrayInfob.addDimensions(dimb);
+                    }
+                } else { // XTCE 1.1
+                    arrayInfob.addDimensions(ParameterDimensionInfo.getDefaultInstance());
+                }
+            }
 
             if (apt.getElementType() instanceof ParameterType) {
                 ParameterType elementType = (ParameterType) apt.getElementType();
                 arrayInfob.setType(toParameterTypeInfo(elementType, detail));
             }
             infob.setArrayInfo(arrayInfob);
+        } else {
+            throw new IllegalStateException("unknown parameter type " + parameterType);
         }
+
         if (detail == DetailLevel.FULL) {
             if (parameterType instanceof BaseDataType) {
                 BaseDataType bdt = (BaseDataType) parameterType;
@@ -1083,22 +1107,22 @@ public class XtceToGpbAssembler {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
         resultb.setLabel(xtceAlarmItem.getEnumerationLabel());
         switch (xtceAlarmItem.getAlarmLevel()) {
-        case normal:
+        case NORMAL:
             resultb.setLevel(AlarmLevelType.NORMAL);
             break;
-        case watch:
+        case WATCH:
             resultb.setLevel(AlarmLevelType.WATCH);
             break;
-        case warning:
+        case WARNING:
             resultb.setLevel(AlarmLevelType.WARNING);
             break;
-        case distress:
+        case DISTRESS:
             resultb.setLevel(AlarmLevelType.DISTRESS);
             break;
-        case critical:
+        case CRITICAL:
             resultb.setLevel(AlarmLevelType.CRITICAL);
             break;
-        case severe:
+        case SEVERE:
             resultb.setLevel(AlarmLevelType.SEVERE);
             break;
         default:

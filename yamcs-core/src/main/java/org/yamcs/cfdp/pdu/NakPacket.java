@@ -20,8 +20,8 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         this.segmentRequests = requests;
     }
 
-    public NakPacket(ByteBuffer buffer, CfdpHeader header) {
-        super(buffer, header);
+    NakPacket(ByteBuffer buffer, CfdpHeader header) {
+        super(header);
 
         this.scopeStart = CfdpUtils.getUnsignedInt(buffer);
         this.scopeEnd = CfdpUtils.getUnsignedInt(buffer);

@@ -5,7 +5,9 @@ import java.util.List;
 import org.yamcs.xtce.CustomAlgorithm;
 
 /**
- * Responsible for creating executors
+ * Responsible for creating algorithm executors.
+ * <p>
+ * One such factory exists for every supported language.
  * 
  * @author nm
  *

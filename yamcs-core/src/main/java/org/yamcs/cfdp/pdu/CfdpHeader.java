@@ -42,14 +42,10 @@ public class CfdpHeader {
         this.sequenceNr = sequenceNumber;
     }
 
-    public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
-            int datalength,
-            int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
-        this(fileDirective, towardsSender, acknowledged, withCrc, entityIdLength, sequenceNumberLength, sourceId,
-                destinationId, sequenceNumber);
-    }
-
-    public CfdpHeader(ByteBuffer buffer) {
+    /**
+     * decodes the header from the ByteBuffer at the current position and sets the position just after the header
+     */
+    CfdpHeader(ByteBuffer buffer) {
         readPduHeader(buffer);
     }
 
@@ -89,7 +85,6 @@ public class CfdpHeader {
         return this.acknowledged;
     }
 
-
     public boolean isLargeFile() {
         return largeFile;
     }
@@ -108,7 +103,7 @@ public class CfdpHeader {
         towardsSender = CfdpUtils.isBitOfByteSet(tempByte, 4);
         acknowledged = !CfdpUtils.isBitOfByteSet(tempByte, 5);
         withCrc = CfdpUtils.isBitOfByteSet(tempByte, 6);
-        setLargeFile(CfdpUtils.isBitOfByteSet(tempByte, 7));
+        largeFile = CfdpUtils.isBitOfByteSet(tempByte, 7);
         CfdpUtils.getUnsignedShort(buffer); // datalength
         tempByte = buffer.get();
         entityIdLength = ((tempByte >> 4) & 0x07) + 1;
@@ -123,14 +118,15 @@ public class CfdpHeader {
     }
 
     protected void writeToBuffer(ByteBuffer buffer, int dataLength) {
-        byte b = (byte) ((CfdpUtils.boolToByte(!fileDirective) << 4) |
-                (CfdpUtils.boolToByte(towardsSender) << 3) |
-                (CfdpUtils.boolToByte(!acknowledged) << 2) |
-                (CfdpUtils.boolToByte(withCrc) << 1));
+        byte b = (byte) (CfdpUtils.boolToByte(largeFile, 7) |
+                CfdpUtils.boolToByte(!fileDirective, 3) |
+                CfdpUtils.boolToByte(towardsSender, 4) |
+                CfdpUtils.boolToByte(!acknowledged, 5) |
+                CfdpUtils.boolToByte(withCrc, 6));
+
         buffer.put(b);
         buffer.putShort((short) dataLength);
-        b = (byte) ((entityIdLength - 1 << 4) |
-                (sequenceNumberLength - 1));
+        b = (byte) ((entityIdLength - 1 << 4) | (sequenceNumberLength - 1));
         buffer.put(b);
         buffer.put(CfdpUtils.longToBytes(sourceId, entityIdLength));
         buffer.put(CfdpUtils.longToBytes(sequenceNr, sequenceNumberLength));
@@ -150,17 +146,17 @@ public class CfdpHeader {
         return "CfdpHeader [fileDirective=" + fileDirective + ", towardsSender=" + towardsSender + ", acknowledged="
                 + acknowledged + ", withCrc=" + withCrc + ", entityIdLength="
                 + entityIdLength + ", sequenceNumberLength=" + sequenceNumberLength + ", sourceId=" + sourceId
-                + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + "]";
+                + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + ", largeFile=" + largeFile + "]";
     }
-    
+
     public String toJson() {
         return " {\n"
                 + "        fileDirective: " + fileDirective + ",\n"
                 + "        towardsSender=" + towardsSender + ",\n"
                 + "        acknowledged=" + acknowledged + ",\n"
                 + "        withCrc=" + withCrc + ",\n"
-                + "        entityIdLength=" + entityIdLength  + ",\n"
-                + "        sequenceNumberLength=" + sequenceNumberLength  + ",\n"
+                + "        entityIdLength=" + entityIdLength + ",\n"
+                + "        sequenceNumberLength=" + sequenceNumberLength + ",\n"
                 + "        sourceId=" + sourceId + ",\n"
                 + "        destinationId=" + destinationId + ",\n"
                 + "        sequenceNr=" + sequenceNr + ",\n"

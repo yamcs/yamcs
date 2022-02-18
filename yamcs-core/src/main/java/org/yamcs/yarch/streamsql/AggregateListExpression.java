@@ -4,10 +4,7 @@ import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledAggregateList;
 import org.yamcs.yarch.DataType;
 
-import org.yamcs.yarch.streamsql.AggregateExpression;
-import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class AggregateListExpression extends AggregateExpression {
     public AggregateListExpression(Expression[] args, boolean star) throws ParseException {

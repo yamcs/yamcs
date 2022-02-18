@@ -19,7 +19,7 @@ public class EnumerationAlarm extends AlarmType implements Serializable {
     /**
      * If none from the list above applies, then this one is used
      */
-    AlarmLevels defaultAlarmLevel = AlarmLevels.normal;
+    AlarmLevels defaultAlarmLevel = AlarmLevels.NORMAL;
 
     public void addAlarm(String label, AlarmLevels level) {
         alarmList.add(new EnumerationAlarmItem(label, level));

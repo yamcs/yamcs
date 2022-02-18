@@ -104,7 +104,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         static String printExpressionValue(Object value) {
-            if (value != null && value instanceof String) {
+            if (value instanceof String) {
                 // Need to allow for quotes and slashes within the string itself
                 // Turn '\' into '\\' and next, '"' into '\"'
                 String escaped = ((String) value).replace("\\", "\\\\").replace("\"", "\\\"");

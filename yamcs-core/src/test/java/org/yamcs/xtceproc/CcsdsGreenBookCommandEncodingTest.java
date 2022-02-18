@@ -41,7 +41,7 @@ public class CcsdsGreenBookCommandEncodingTest {
         args.put("TimerStartStop", "TIMER_START");
 
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
-        assertEquals(Levels.critical, mc.getDefaultSignificance().getConsequenceLevel());
+        assertEquals(Levels.CRITICAL, mc.getDefaultSignificance().getConsequenceLevel());
 
         assertEquals("FF0000001E000001", StringConverter.arrayToHexString(b));
 
@@ -53,6 +53,6 @@ public class CcsdsGreenBookCommandEncodingTest {
         CheckWindow cw = cv.getCheckWindow();
         assertEquals(-1, cw.getTimeToStartChecking());
         assertEquals(600000, cw.getTimeToStopChecking());
-        assertEquals(TimeWindowIsRelativeToType.LastVerifier, cw.getTimeWindowIsRelativeTo());
+        assertEquals(TimeWindowIsRelativeToType.LAST_VERIFIER, cw.getTimeWindowIsRelativeTo());
     }
 }

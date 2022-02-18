@@ -41,9 +41,7 @@ public class ConnectedWebSocketClient extends ConnectedClient {
             if (oldProcessor != null) {
                 resource.unselectProcessor();
             }
-            if (newProcessor != null) {
-                resource.selectProcessor(newProcessor);
-            }
+            resource.selectProcessor(newProcessor);
         }
     }
 
@@ -58,10 +56,6 @@ public class ConnectedWebSocketClient extends ConnectedClient {
 
     public <T extends Message> void sendData(ProtoDataType dataType, T data) {
         wsHandler.sendData(dataType, data);
-    }
-
-    @Override
-    public void processorQuit() {
     }
 
     public void socketClosed() {

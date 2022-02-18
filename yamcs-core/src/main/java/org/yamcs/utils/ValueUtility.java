@@ -199,10 +199,13 @@ public class ValueUtility {
     }
 
     public static boolean equals(Value a, Value b) {
+        if (a == b) {
+            return true;
+        }
+
         if (a == null ^ b == null)
             return false;
-        if (a == null && b == null)
-            return true;
+
         if (a.getType() != b.getType())
             return false;
 

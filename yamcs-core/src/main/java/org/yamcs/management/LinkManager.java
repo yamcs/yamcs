@@ -510,16 +510,21 @@ public class LinkManager {
             XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             boolean sent = false;
+            String reason = "no link available";
             for (TcDataLink tcLink : tcLinks) {
                 if (!tcLink.isEffectivelyDisabled()) {
-                    tcLink.sendTc(pc);
-                    sent = true;
+                    try {
+                        tcLink.sendTc(pc);
+                        sent = true;
+                    } catch (Exception e) {
+                        log.error("Error sending command via link {}", tcLink, e);
+                        reason = "Error sending command via " + tcLink.getName() + ": " + e.getMessage();
+                    }
                 }
             }
 
             if (!sent && failIfNoLinkAvailable) {
                 CommandId commandId = pc.getCommandId();
-                String reason = "no link available";
                 log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
                 long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
                 cmdHistPublisher.publishAck(commandId, AcknowledgeSent,

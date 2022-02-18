@@ -14,19 +14,17 @@ public class BchCltuGenerator extends CltuGenerator {
     public static final byte[] CCSDS_TAIL_SEQ = { (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, (byte) 0xC5,
             (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, 0x79 };
 
-    public final boolean randomize;
     
-    public BchCltuGenerator(boolean randomize) {
-        this(randomize, CCSDS_START_SEQ, CCSDS_TAIL_SEQ);
+    public BchCltuGenerator() {
+        this(CCSDS_START_SEQ, CCSDS_TAIL_SEQ);
     }
 
-    public BchCltuGenerator(boolean randomize, byte[] startSeq, byte[] tailSeq) {
+    public BchCltuGenerator(byte[] startSeq, byte[] tailSeq) {
         super(startSeq, tailSeq);
-        this.randomize = randomize;
     }
 
     @Override
-    public byte[] makeCltu(byte[] data) {
+    public byte[] makeCltu(byte[] data, boolean randomize) {
         if (randomize) {
             Randomizer.randomizeTc(data);
         }

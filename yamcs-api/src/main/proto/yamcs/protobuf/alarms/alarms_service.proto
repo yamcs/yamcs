@@ -149,10 +149,21 @@ message SubscribeGlobalStatusRequest {
 }
 
 message GlobalAlarmStatus {  
+  //the number of active unacknoleged alarms
   optional int32 unacknowledgedCount = 1;
+  
+  //true if there is at least one unacknowledged alarm not OK (i.e. latest value of parameter still out of limits)
   optional bool unacknowledgedActive = 2;
+  
+  
+  //the number of active ackonwledged alarms 
   optional int32 acknowledgedCount = 3;
+  
+  //true if there is at least one acknowledged alarm not OK (i.e. latest value of parameter still out of limits)
   optional bool acknowledgedActive = 4;
+  
+  //the number of shelved alarms
   optional int32 shelvedCount = 5;
+ //true if there is at least one shelved alarm not OK (i.e. latest value of parameter still out of limits)
   optional bool shelvedActive = 6;
 }

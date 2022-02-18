@@ -49,10 +49,6 @@ public class ActiveAlarm<T> {
      */
     boolean acknowledged = true;
 
-    private long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
-
-    private long clearTime = TimeEncoding.INVALID_INSTANT;
-
     // the value that triggered the alarm
     private T triggerValue;
 
@@ -62,24 +58,17 @@ public class ActiveAlarm<T> {
     // current value of the parameter
     private T currentValue;
 
-    // message provided at acknowledge time
-    private String acknowledgeMessage;
-
-    // message provided at clear time
-    private String clearMessage;
+    private long shelveTime;
 
     private int violations = 1;
     private int valueCount = 1;
 
-    private String usernameThatAcknowledged;
-
-    private String usernameThatCleared;
+    ChangeEvent ackEvent;
+    ChangeEvent clearEvent;
+    ChangeEvent resetEvent;
+    ChangeEvent shelveEvent;
 
     boolean shelved;
-    private String usernameThatShelved;
-
-    private long shelveTime;
-    private String shelveMessage;
     private long shelveDuration;
 
     public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
@@ -90,10 +79,6 @@ public class ActiveAlarm<T> {
         id = counter.getAndIncrement();
     }
 
-    public ActiveAlarm(T pv) {
-        this(pv, false, false);
-    }
-
     public boolean isAutoAcknowledge() {
         return autoAcknowledge;
     }
@@ -102,20 +87,12 @@ public class ActiveAlarm<T> {
         return acknowledged;
     }
 
-    public void setAcknowledged(boolean acknowledged) {
-        this.acknowledged = acknowledged;
-    }
-
     public int getId() {
         return id;
     }
 
     public String getAckMessage() {
-        return acknowledgeMessage;
-    }
-
-    public void setAckMessage(String ackMessage) {
-        this.acknowledgeMessage = ackMessage;
+        return ackEvent == null ? null : ackEvent.message;
     }
 
     public boolean triggered() {
@@ -123,12 +100,10 @@ public class ActiveAlarm<T> {
     }
 
     public synchronized void clear(String username, long time, String message) {
-        this.usernameThatCleared = username;
-        this.clearTime = time;
-        this.clearMessage = message;
         this.processOK = true;
         this.triggered = false;
         this.acknowledged = true;
+        this.clearEvent = new ChangeEvent(username, time, message);
     }
 
     /**
@@ -151,19 +126,17 @@ public class ActiveAlarm<T> {
      * @param message
      */
     public synchronized void acknowledge(String username, long ackTime, String message) {
-        if(acknowledged) {
+        if (acknowledged) {
             return;
         }
         this.acknowledged = true;
 
-        this.acknowledgeMessage = message;
-        this.usernameThatAcknowledged = username;
-        this.acknowledgeTime = ackTime;
-        
-        if(isNormal()) {
-            clearTime = TimeEncoding.getWallclockTime();
+        this.ackEvent = new ChangeEvent(username, ackTime, message);
+
+        if (isNormal()) {
+            this.clearEvent = new ChangeEvent("yamcs", ackTime, "cleared due to ack");
         }
-        
+
     }
 
     /**
@@ -171,40 +144,38 @@ public class ActiveAlarm<T> {
      * 
      * @return true if the alarm has been updated
      */
-    public synchronized boolean processRTN() {
+    public synchronized boolean processRTN(long time) {
         if (processOK) {
             return false;
         }
 
         processOK = true;
-        long time = TimeEncoding.getWallclockTime();
         if (!latching) {
             triggered = false;
         }
         if (autoAcknowledge) {
-            acknowledgeTime = time;
-            acknowledgeMessage = "auto-acknowledged";
+            this.ackEvent = new ChangeEvent("yamcs", time, "auto-acknowledged");
             acknowledged = true;
         }
-        if(!triggered && acknowledged) {
-            clearTime = time;
+        if (!triggered && acknowledged) {
+            new ChangeEvent("yamcs", time, "cleared due to ack");
         }
-        
+
         return true;
     }
 
     /**
      * Called when the operator resets a latching alarm
      */
-    public synchronized void reset() {
+    public synchronized void reset(String username, long time, String message) {
         triggered = processOK;
+        this.resetEvent = new ChangeEvent(username, time, message);
     }
 
     public synchronized void shelve(String username, String message, long shelveDuration) {
         this.shelved = true;
-        this.usernameThatShelved = username;
+        this.shelveEvent = new ChangeEvent(username, TimeEncoding.getWallclockTime(), message);
         this.shelveTime = TimeEncoding.getWallclockTime();
-        this.shelveMessage = message;
         this.shelveDuration = shelveDuration;
     }
 
@@ -224,24 +195,12 @@ public class ActiveAlarm<T> {
         return shelveTime;
     }
 
-    public void setShelveTime(long shelveTime) {
-        this.shelveTime = shelveTime;
-    }
-
     public String getShelveMessage() {
-        return shelveMessage;
-    }
-
-    public void setShelveMessage(String shelveMessage) {
-        this.shelveMessage = shelveMessage;
+        return shelveEvent == null ? null : shelveEvent.message;
     }
 
     public long getShelveDuration() {
         return shelveDuration;
-    }
-
-    public void setShelveDuration(long shelveDuration) {
-        this.shelveDuration = shelveDuration;
     }
 
     public boolean isNormal() {
@@ -265,28 +224,28 @@ public class ActiveAlarm<T> {
     }
 
     public long getClearTime() {
-        return clearTime;
-    }
-
-    public String getClearMessage() {
-        return clearMessage;
+        return clearEvent == null ? TimeEncoding.INVALID_INSTANT : clearEvent.time;
     }
 
     public String getUsernameThatShelved() {
-        return usernameThatShelved;
+        return shelveEvent == null ? null : shelveEvent.username;
     }
 
-    public void setUsernameThatShelved(String usernameThatShelved) {
-        this.usernameThatShelved = usernameThatShelved;
+    public String getClearMessage() {
+        return clearEvent == null ? null : clearEvent.message;
     }
 
     public String getUsernameThatCleared() {
-        return usernameThatCleared;
+        return clearEvent == null ? null : clearEvent.username;
     }
+
     public String getUsernameThatAcknowledged() {
-        return usernameThatAcknowledged;
+        return ackEvent == null ? null : ackEvent.username;
     }
-    
+
+    public long getAcknowledgeTime() {
+        return ackEvent == null ? TimeEncoding.INVALID_INSTANT : ackEvent.time;
+    }
 
     public T getTriggerValue() {
         return triggerValue;
@@ -295,6 +254,7 @@ public class ActiveAlarm<T> {
     public T getCurrentValue() {
         return currentValue;
     }
+
     public void setCurrentValue(T value) {
         this.currentValue = value;
     }
@@ -303,9 +263,7 @@ public class ActiveAlarm<T> {
         return mostSevereValue;
     }
 
-    public long getAcknowledgeTime() {
-        return acknowledgeTime;
-    }
+
 
     public void incrementValueCount() {
         valueCount++;
@@ -314,10 +272,11 @@ public class ActiveAlarm<T> {
     public int getValueCount() {
         return valueCount;
     }
-    
+
     public void incrementViolations() {
         violations++;
     }
+
     public int getViolations() {
         return violations;
     }
@@ -325,14 +284,12 @@ public class ActiveAlarm<T> {
     @Override
     public String toString() {
         return "ActiveAlarm [autoAcknowledge=" + autoAcknowledge + ", latching=" + latching + ", id=" + id
-                + ", processOK=" + processOK + ", triggered=" + triggered + ", acknowledged=" + acknowledged
-                + ", acknowledgeTime=" + acknowledgeTime + ", clearTime=" + clearTime + ", triggerValue=" + triggerValue
-                + ", mostSevereValue=" + getMostSevereValue() + ", currentValue=" + currentValue + ", acknowledgeMessage="
-                + acknowledgeMessage + ", clearMessage=" + clearMessage + ", violations=" + violations + ", valueCount="
-                + valueCount + ", usernameThatAcknowledged=" + usernameThatAcknowledged + ", usernameThatCleared="
-                + usernameThatCleared + ", shelved=" + shelved + ", usernameThatShelved=" + usernameThatShelved
-                + ", shelveTime=" + shelveTime + ", shelveMessage=" + shelveMessage + ", shelveDuration="
-                + shelveDuration + "]";
+                + ", processOK=" + processOK + ", triggered=" + triggered + ", ackEvent=" + ackEvent
+                + ", clearEvent=" + clearEvent + ", triggerValue=" + triggerValue
+                + ", mostSevereValue=" + getMostSevereValue() + ", currentValue=" + currentValue
+                + ", violations=" + violations + ", valueCount=" + valueCount + ", usernameThatAcknowledged="
+                + ", shelved=" + shelved + ", shelveEvent=" + shelveEvent + ", shelveTime=" + shelveTime
+                + ", shelveDuration=" + shelveDuration + "]";
     }
 
     public T setMostSevereValue(T mostSevereValue) {
@@ -340,7 +297,19 @@ public class ActiveAlarm<T> {
         return mostSevereValue;
     }
 
-   
+    static class ChangeEvent {
+        final String username;
+        final long time;
+        final String message;
 
+        public ChangeEvent(String username, long time, String message) {
+            this.username = username;
+            this.time = time;
+            this.message = message;
+        }
 
+        public String toString() {
+            return "[username: " + username + " time: " + TimeEncoding.toString(time) + " message: " + message + "]";
+        }
+    }
 }

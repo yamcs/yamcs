@@ -144,8 +144,9 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("Tuple not implemented");
+        default:
+            throw new IllegalArgumentException("' " + type + " is not a basic type");
         }
-        throw new IllegalArgumentException("' " + type + " is not a basic type");
     }
 
     /**
@@ -182,8 +183,9 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("List and Tuple not implemented");
+        default:
+            throw new IllegalArgumentException("' " + type + " is not a basic type");
         }
-        throw new IllegalArgumentException("' " + type + " is not a basic type");
     }
 
     @SuppressWarnings("unchecked")

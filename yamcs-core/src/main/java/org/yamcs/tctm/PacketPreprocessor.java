@@ -38,7 +38,7 @@ public interface PacketPreprocessor {
      */
     @Deprecated
     default TmPacket process(byte[] packet) {
-        throw new RuntimeException("Please implement or use the process(PacketWithTime) method instead");
+        throw new RuntimeException("Please implement or use the process(TmPacket) method instead");
     }
 
     /**

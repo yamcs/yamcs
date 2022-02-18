@@ -153,21 +153,22 @@ public class CommandingManager extends AbstractService {
             CommandVerificationHandler cvh = new CommandVerificationHandler(this, activeCommand);
             cvh.start();
         } else {
-            cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+            commandFinished(activeCommand);
         }
 
         commandReleaser.releaseCommand(activeCommand.getPreparedCommand());
     }
 
     public void failedCommand(ActiveCommand activeCommand) {
-        cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
-    }
-
-    public void unhandledCommand(ActiveCommand activeCommand) {
-        cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+        commandFinished(activeCommand);
     }
 
     public void verificatonFinished(ActiveCommand activeCommand) {
+        commandFinished(activeCommand);
+    }
+
+    private void commandFinished(ActiveCommand activeCommand) {
         cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+        cmdHistoryManager.commandFinished(activeCommand.getCommandId());
     }
 }

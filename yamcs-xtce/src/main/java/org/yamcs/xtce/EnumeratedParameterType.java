@@ -18,7 +18,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         this.contextAlarmList  = builder.contextAlarmList;
         
         
-        if (builder.baseType != null && builder.baseType instanceof EnumeratedParameterType) {
+        if (builder.baseType instanceof EnumeratedParameterType) {
             EnumeratedParameterType baseType = (EnumeratedParameterType) builder.baseType;
             if(builder.defaultAlarm == null && baseType.defaultAlarm!=null) {
                 this.defaultAlarm = baseType.defaultAlarm;
@@ -140,7 +140,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
          * Adds a new contextual alarm for the specified value
          * 
          * @param contextMatch
-         *            use <tt>null</tt> for the default context
+         *            use {@code null} for the default context
          */
         public void addAlarm(MatchCriteria contextMatch, String enumLabel, AlarmLevels level) {
             createOrGetAlarm(contextMatch).addAlarm(enumLabel, level);

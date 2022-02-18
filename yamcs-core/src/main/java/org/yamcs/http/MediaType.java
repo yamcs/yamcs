@@ -31,7 +31,7 @@ public final class MediaType {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MediaType)) {
+        if (!(obj instanceof MediaType)) {
             return false;
         }
         return typeString.equals(((MediaType) obj).typeString);

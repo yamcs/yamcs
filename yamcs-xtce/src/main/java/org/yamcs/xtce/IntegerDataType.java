@@ -37,7 +37,7 @@ public abstract class IntegerDataType extends NumericDataType {
             validRange = builder.validRange;
         }
 
-        if (builder.baseType != null && builder.baseType instanceof IntegerDataType) {
+        if (builder.baseType instanceof IntegerDataType) {
             IntegerDataType baseType = (IntegerDataType) builder.baseType;
             if (builder.sizeInBits == null) {
                 this.sizeInBits = baseType.sizeInBits;

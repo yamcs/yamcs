@@ -88,9 +88,6 @@ public class HttpTranscoder {
             throw new HttpTranscodeException("Uploads of type multipart/related are not yet supported");
         } else {
             HttpBody.Builder bodyb = HttpBody.newBuilder();
-            if (contentType != null) {
-                bodyb.setContentType(contentType);
-            }
             if (ctx.hasBody()) {
                 try (InputStream bufOut = ctx.getBodyAsInputStream()) {
                     ByteString data = ByteString.readFrom(bufOut);

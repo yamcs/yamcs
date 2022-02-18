@@ -33,15 +33,13 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
 
     ParameterValueChange pvc;
     final ParameterRequestManager prm;
-    Log log;
     int subscriptionId = -1;
 
 
-    ValueChangeVerifier(CommandVerificationHandler cvh, CommandVerifier cv, Log log) {
+    ValueChangeVerifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         super(cvh, cv);
         this.pvc = cv.getParameterValueChange();
         this.prm = cvh.getProcessor().getParameterRequestManager();
-        this.log = log;
     }
 
 

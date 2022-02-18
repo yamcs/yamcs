@@ -58,7 +58,6 @@ public class HistogramReaderStream extends Stream implements Runnable {
             return;
         } catch (Exception e) {
             log.error("got exception ", e);
-            e.printStackTrace();
         } finally {
             close();
         }

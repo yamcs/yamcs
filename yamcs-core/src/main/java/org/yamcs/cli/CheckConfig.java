@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Spec;
+import org.yamcs.Spec.ValidationContext;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -64,17 +65,22 @@ public class CheckConfig extends Command {
     private void validateServiceConfig(YConfiguration serviceConfig) throws ValidationException, IOException {
         String serviceClass = serviceConfig.getString("class");
         log.debug(serviceClass);
+        try {
+            YamcsService service = YObjectLoader.loadObject(serviceClass);
+            Spec spec = service.getSpec();
+            if (spec == null) {
+                return;
+            }
 
-        YamcsService service = YObjectLoader.loadObject(serviceClass);
-        Spec spec = service.getSpec();
-        if (spec == null) {
-            return;
+            YConfiguration args = YConfiguration.emptyConfig();
+            if (serviceConfig.containsKey("args")) {
+                args = serviceConfig.getConfig("args");
+            }
+            spec.validate(args);
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ValidationException(new ValidationContext(serviceConfig.getPath()), e.getMessage());
         }
-
-        YConfiguration args = YConfiguration.emptyConfig();
-        if (serviceConfig.containsKey("args")) {
-            args = serviceConfig.getConfig("args");
-        }
-        spec.validate(args);
     }
 }

@@ -117,6 +117,8 @@ public class TableWalkerBuilder implements FilterableTarget {
         case NOT_EQUAL:
             // TODO support multiple ranges
             break;
+        case OVERLAP:
+            throw new IllegalStateException();
         }
     }
 
@@ -139,6 +141,8 @@ public class TableWalkerBuilder implements FilterableTarget {
         case NOT_EQUAL:
             // TODO - two ranges have to be created
             break;
+        case OVERLAP:
+            throw new IllegalStateException();
         }
     }
 

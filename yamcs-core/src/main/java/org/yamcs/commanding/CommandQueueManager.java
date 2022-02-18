@@ -124,7 +124,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                     q.stateExpirationTimeS = queueConfig.getInt("stateExpirationTimeS");
                 }
                 if (queueConfig.containsKey("minLevel")) {
-                    Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel"));
+                    Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel").toUpperCase());
                     q.setMinLevel(minLevel);
                 }
                 queues.put(queueName, q);

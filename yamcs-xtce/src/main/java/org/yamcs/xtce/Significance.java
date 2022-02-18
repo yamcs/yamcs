@@ -26,31 +26,31 @@ public class Significance implements Serializable {
         /**
          * All commands which are not in a category below
          */
-        none("normal"),
+        NONE("normal"),
         /**
          * Mission specific
          */
-        watch("user1"),
+        WATCH("user1"),
         /**
          * Mission specific
          */
-        warning("user2"),
+        WARNING("user2"),
         /**
          * ISO 14490: telecommand that is not a critical telecommand but is essential to the success of the mission and,
          * if sent at the wrong time, could cause momentary loss of the mission
          */
-        distress("vital"),
+        DISTRESS("vital"),
         /**
          * ISO 14490: telecommand that, if executed at the wrong time or in the wrong configuration, could cause
          * irreversible loss or damage for the mission (i.e. endanger the achievement of the primary mission objectives)
          */
-        critical("critical"),
+        CRITICAL("critical"),
         /**
          * ISO 14490: telecommand that is not expected to be used for nominal or foreseeable contingency operations,
          * that is included for unforeseen contingency operations, and that could cause irreversible damage if executed
          * at the wrong time or in the wrong configuration
          */
-        severe("forbidden");
+        SEVERE("forbidden");
 
         private String xtceAlias;
 

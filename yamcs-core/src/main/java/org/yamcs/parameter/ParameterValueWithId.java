@@ -1,6 +1,5 @@
 package org.yamcs.parameter;
 
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 

@@ -1,10 +1,13 @@
 package org.yamcs.algorithms;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -16,25 +19,26 @@ import org.yamcs.xtceproc.ProcessorData;
 /**
  * Library of functions available from within Algorithm scripts using this naming scheme:
  * <p>
- * The java method <tt>AlgorithmFunctions.[method]</tt> is available in scripts as <tt>Yamcs.[method]</tt>
+ * The java method {@code AlgorithmFunctions.[method]} is available in scripts as {@code Yamcs.[method]}
  */
 public class AlgorithmFunctions {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmFunctions.class);
+    public static final String DEFAULT_SOURCE = "CustomAlgorithm";
+
     private XtceDb xtcedb;
     private EventProducer eventProducer;
     private final String yamcsInstance;
     private final ProcessorData processorData;
-    private final String defaultSource = "CustomAlgorithm";
+
     private final AlgorithmExecutionContext context;
 
-    // can be null if the algorithms are not running inside a processor
     private final Processor processor;
 
     public AlgorithmFunctions(Processor processor, AlgorithmExecutionContext context) {
         this.yamcsInstance = processor.getInstance();
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
         this.xtcedb = processor.getXtceDb();
         this.processorData = processor.getProcessorData();
         this.processor = processor;
@@ -68,6 +72,15 @@ public class AlgorithmFunctions {
         return yamcsInstance;
     }
 
+
+    public long processorTimeMillis() {
+        return processor.getCurrentTime();
+    }
+
+    public Instant processorTime() {
+        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(processor.getCurrentTime()));
+    }
+
     public void info(String msg) {
         info(getAlgoName(), msg);
     }
@@ -84,6 +97,12 @@ public class AlgorithmFunctions {
         eventProducer.sendInfo(type, msg);
     }
 
+    public void info(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendInfo(type, msg);
+        eventProducer.setSource(DEFAULT_SOURCE);
+    }
+
     public void watch(String msg) {
         watch(getAlgoName(), msg);
     }
@@ -95,7 +114,7 @@ public class AlgorithmFunctions {
     public void watch(String source, String type, String msg) {
         eventProducer.setSource(source);
         eventProducer.sendWatch(type, msg);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
     }
 
     public void warning(String msg) {
@@ -109,7 +128,7 @@ public class AlgorithmFunctions {
     public void warning(String source, String type, String msg) {
         eventProducer.setSource(source);
         eventProducer.sendWarning(type, msg);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
     }
 
     public void distress(String msg) {
@@ -123,7 +142,7 @@ public class AlgorithmFunctions {
     public void distress(String source, String type, String msg) {
         eventProducer.setSource(source);
         eventProducer.sendDistress(type, msg);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
     }
 
     public void critical(String msg) {
@@ -137,7 +156,7 @@ public class AlgorithmFunctions {
     public void critical(String source, String type, String msg) {
         eventProducer.setSource(source);
         eventProducer.sendCritical(type, msg);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
     }
 
     public void severe(String msg) {
@@ -151,7 +170,7 @@ public class AlgorithmFunctions {
     public void severe(String source, String type, String msg) {
         eventProducer.setSource(source);
         eventProducer.sendSevere(type, msg);
-        eventProducer.setSource(defaultSource);
+        eventProducer.setSource(DEFAULT_SOURCE);
     }
 
     /**
@@ -164,7 +183,7 @@ public class AlgorithmFunctions {
     }
 
     /**
-     * Little endian to host long
+     * Little endian to host
      */
     public long letohl(int value) {
         long x = value & 0xFFFFFFFFl;

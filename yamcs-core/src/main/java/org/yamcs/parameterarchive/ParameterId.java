@@ -5,9 +5,11 @@ import org.yamcs.utils.IntArray;
 
 /**
  * 
- * The parameter archive gives each (parameterFqn, rawType, engType) a numeric 32bits pid.
- * 
- * This class stores the association between pid, rawType and engType
+ * The parameter archive gives each (fqn, rawType, engType) a numeric 32 bits pid.
+ * <p>
+ * fqn is the parameter fully qualified name
+ * <p>
+ * This interface is implemented by classes storing the association between fqn, pid, rawType and engType
  * 
  */
 public interface ParameterId {
@@ -32,7 +34,7 @@ public interface ParameterId {
     public boolean hasRawValue();
 
     /**
-     * Rreturns the ids of the components for aggregates or arrays. if isSimple() returns true, this method returns
+     * Returns the ids of the components for aggregates or arrays. if isSimple() returns true, this method returns
      * null.
      */
     public IntArray getComponents();

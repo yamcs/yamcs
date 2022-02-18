@@ -52,8 +52,9 @@ public class StringConverter {
             return "{" + IntStream.range(0, agg.getNameCount())
                     .mapToObj(i -> agg.getName(i) + ": " + toString(agg.getValue(i)))
                     .collect(Collectors.joining(", ")) + "}";
+        default:
+            throw new IllegalStateException("unknown type " + rv.getType());
         }
-        return null;
     }
 
     /**

@@ -12,7 +12,9 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.time.TimeCorrelationService;
+import org.yamcs.time.TimeDecoder;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -71,6 +73,10 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         TAI, J2000, UNIX, GPS, CUSTOM, NONE
     };
 
+    public static enum TimeDecoderType {
+        CUC, FIXED
+    }
+
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected static final String CONFIG_KEY_TIME_ENCODING = "timeEncoding";
     protected static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
@@ -127,22 +133,14 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         }
     }
 
-    void configureTimeDecoder(YConfiguration config) {
+    private void configureTimeDecoder(YConfiguration config) {
         if (config != null) {
             useLocalGenerationTime = config.getBoolean("useLocalGenerationTime", false);
         }
 
         if (!useLocalGenerationTime && config != null && config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             YConfiguration c = config.getConfig(CONFIG_KEY_TIME_ENCODING);
-            String type = c.getString("type", "CUC");
-            if ("CUC".equals(type)) {
-                int implicitPField = c.getInt("implicitPField", -1);
-                int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
-                timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
-            } else {
-                throw new ConfigurationException("Time encoding of type '" + type
-                        + " not supported. Supported: CUC=CCSDS unsegmented time");
-            }
+            timeDecoder = getDecoder(c);
             timeEpoch = c.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
             if (timeEpoch == TimeEpochs.CUSTOM) {
                 customEpochIncludeLeapSecond = c.getBoolean("timeIncludesLeapSeconds", true);
@@ -152,11 +150,36 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                     customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
                 }
             }
-        } else {
-            timeEpoch = TimeEpochs.GPS;
-            timeDecoder = new CucTimeDecoder(-1);
+            log.debug("Using time decoder {}", timeDecoder);
         }
-        log.debug("Using time decoder {}", timeDecoder);
+
+    }
+
+    private TimeDecoder getDecoder(YConfiguration c) {
+        TimeDecoderType type = c.getEnum("type", TimeDecoderType.class, getDefaultDecoderType());
+
+        TimeDecoder timeDecoder;
+
+        switch (type) {
+        case CUC:
+            int implicitPField = c.getInt("implicitPField", -1);
+            int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
+            timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
+            break;
+        case FIXED:
+            int size = c.getInt("size", 8);
+            if (size != 4 && size != 8) {
+                throw new ConfigurationException(
+                        "Unsupported size " + size + " for fixed decoder. Only 4 and 8 bytes supported");
+            }
+            double multiplier = c.getDouble("multiplier", 1);
+            timeDecoder = new FixedSizeTimeDecoder(size, multiplier);
+            break;
+        default:
+            throw new UnsupportedOperationException("unknown time decoder type " + type);
+        }
+
+        return timeDecoder;
     }
 
     public void verifyCrc(TmPacket tmPacket) {
@@ -244,7 +267,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 tcoService.timestamp(obt, tmPacket);
             } else {
                 long t = timeDecoder.decode(packet, offset);
-                long gentime = timeEpoch == null ? t : shiftFromEpoch(t);
+                long gentime = shiftFromEpoch(t);
                 tmPacket.setGenerationTime(gentime);
                 if (tcoService != null) {
                     tcoService.verify(tmPacket);
@@ -288,5 +311,12 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             throw new ConfigurationException(
                     "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
         }
+    }
+
+    /**
+     * return the default decoder type. The subclasses may override this for compatibility with old Yamcs releases
+     */
+    protected TimeDecoderType getDefaultDecoderType() {
+        return TimeDecoderType.CUC;
     }
 }

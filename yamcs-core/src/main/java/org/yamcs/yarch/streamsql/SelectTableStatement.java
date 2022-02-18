@@ -131,7 +131,7 @@ public class SelectTableStatement implements StreamSqlStatement {
         }
 
         @Override
-        public void finalize() {
+        protected void finalize() {
             if (!stream.isClosed()) {
                 log.error("Stream {} left dangling (StreamSqlResult has been discarded before closing)",
                         stream.getName());

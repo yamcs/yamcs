@@ -47,6 +47,9 @@ public class Randomizer {
         xor(buf, 0, buf.length, tmseq);
     }
     
+    public static void randomizeTm(byte[] buf, int offset, int length) {
+        xor(buf, offset, length, tmseq);
+    }
     /**
      * Randomize the buffer according to CCSDS 231.0-B-3 pseudo-randomizer
      * 

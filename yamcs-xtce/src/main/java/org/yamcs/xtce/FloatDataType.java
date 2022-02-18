@@ -23,7 +23,7 @@ public abstract class FloatDataType extends NumericDataType {
             this.sizeInBits = builder.sizeInBits;
         }
 
-        if (builder.baseType != null && builder.baseType instanceof FloatDataType) {
+        if (builder.baseType instanceof FloatDataType) {
             FloatDataType baseType = (FloatDataType) builder.baseType;
             if (builder.sizeInBits == null) {
                 this.sizeInBits = baseType.sizeInBits;

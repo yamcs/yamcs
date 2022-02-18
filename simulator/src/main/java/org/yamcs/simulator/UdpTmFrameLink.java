@@ -51,7 +51,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     InetAddress addr;
     IntSupplier clcwSupplier;
 
-    public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec, IntSupplier clcwSupplier) {
+    public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec,
+            IntSupplier clcwSupplier) {
         this.frameType = frameType;
         this.host = host;
         this.port = port;
@@ -74,7 +75,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 builders[i] = new UslpVcSender(i, frameLength);
             }
             idleFrameBuilder = new UslpVcSender(63, frameLength);
-        } 
+        }
 
     }
 
@@ -172,7 +173,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public VcBuilder(int vcId) {
             this.vcId = vcId;
             this.dataOffset = hdrSize();
-           
+
         }
 
         public void setCLCW(int clcw) {
@@ -236,7 +237,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void copyPendingToBuffer() {
             int length = Math.min(pendingPacket.length - pendingPacketOffset, dataEnd - dataOffset);
             log.trace("VC{} writing {} bytes from packet of length {} at offset {}",
-                    vcId, length, pendingPacket.length,  dataOffset);
+                    vcId, length, pendingPacket.length, dataOffset);
             ;
             System.arraycopy(pendingPacket, pendingPacketOffset, data, dataOffset, length);
             dataOffset += length;
@@ -259,7 +260,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             } else {
                 data[dataOffset] = (byte) 0xE2;
                 data[dataOffset + 1] = 0;
-                ByteArrayUtils.encodeShort(n, data, dataOffset + 2);
+                ByteArrayUtils.encodeUnsignedShort(n, data, dataOffset + 2);
             }
             dataOffset += n;
         }
@@ -286,7 +287,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
-            ByteArrayUtils.encodeShort((1 << 14) + (SPACECRAFT_ID << 6) + vcId, frameData, 0);
+            ByteArrayUtils.encodeUnsignedShort((1 << 14) + (SPACECRAFT_ID << 6) + vcId, frameData, 0);
         }
 
         @Override
@@ -306,12 +307,12 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
 
-            ByteArrayUtils.encode3Bytes((int) vcSeqCount, data, 2);
+            ByteArrayUtils.encodeUnsigned3Bytes((int) vcSeqCount, data, 2);
             data[5] = (byte) (0x60 + ((vcSeqCount >>> 24) & 0xF));
 
-            ByteArrayUtils.encodeInt(clcw, data, data.length-6);
-            
-            ByteArrayUtils.encodeShort(firstHeaderPointer, data, 8);
+            ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
+
+            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 8);
             fillChecksums(data);
 
         }
@@ -320,11 +321,11 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             // first Reed-Solomon the header
             int gvcid = ByteArrayUtils.decodeUnsignedShort(data, 0);
             int x = AosFrameHeaderErrorCorr.encode(gvcid, data[5]);
-            ByteArrayUtils.encodeShort(x, data, 6);
+            ByteArrayUtils.encodeUnsignedShort(x, data, 6);
 
             // then overall CRC
             x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeShort(x, data, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
         @Override
@@ -338,11 +339,11 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     static class TmVcSender extends VcBuilder {
         byte[] idleFrameData;
         int ocfFlag = 1;
-        
+
         public TmVcSender(int vcId, int frameSize) {
             super(vcId);
             this.data = new byte[frameSize];
-            dataEnd = frameSize - 4 - 2*ocfFlag; // last 6 bytes are the OCF and CRC
+            dataEnd = frameSize - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
             writeGvcId(data, vcId);
         }
 
@@ -350,29 +351,31 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         int hdrSize() {
             return 6;
         }
+
         void writeGvcId(byte[] frameData, int vcId) {
-            ByteArrayUtils.encodeShort((SPACECRAFT_ID << 4) + (vcId<<1) +ocfFlag, frameData, 0);
+            ByteArrayUtils.encodeUnsignedShort((SPACECRAFT_ID << 4) + (vcId << 1) + ocfFlag, frameData, 0);
         }
+
         @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
             data[3] = (byte) (vcSeqCount);
 
             // write the first header pointer
-            ByteArrayUtils.encodeShort(firstHeaderPointer, data, 4);
-            
-            ByteArrayUtils.encodeInt(clcw, data, data.length-6);
-            
-            //compute crc
+            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 4);
+
+            ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
+
+            // compute crc
             int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeShort(x, data, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
         @Override
         public byte[] getIdleFrame() {
-            ByteArrayUtils.encodeShort(0x7FE, data, 4);
+            ByteArrayUtils.encodeUnsignedShort(0x7FE, data, 4);
             int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeShort(x, data, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
 
             vcSeqCount++;
 
@@ -380,8 +383,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         }
     }
-    
-    
+
     /**
      * This builds USLP frames with complete primary header, OCF , no insert data, and 32 bits frame count
      *
@@ -389,42 +391,42 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     static class UslpVcSender extends VcBuilder {
         byte[] idleFrameData;
         int ocfFlag = 1;
-        
+
         public UslpVcSender(int vcId, int frameLength) {
             super(vcId);
             this.data = new byte[frameLength];
-            dataEnd = frameLength - 4 - 2*ocfFlag; // last 6 bytes are the OCF and CRC
-            
-            ByteArrayUtils.encodeInt((12<<28) + (SPACECRAFT_ID << 12) + (vcId<<5), data, 0);
+            dataEnd = frameLength - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
 
-            //frame length
-            ByteArrayUtils.encodeShort(frameLength-1, data, 4);
-            
-            data[6]=0x0C; //ocfFlag = 1, vc frame count = 100(in binary) 
-            
+            ByteArrayUtils.encodeInt((12 << 28) + (SPACECRAFT_ID << 12) + (vcId << 5), data, 0);
+
+            // frame length
+            ByteArrayUtils.encodeUnsignedShort(frameLength - 1, data, 4);
+
+            data[6] = 0x0C; // ocfFlag = 1, vc frame count = 100(in binary)
+
         }
 
         @Override
         int hdrSize() {
-            //11 for the primary header (with a 32 bit frame length)
-            //3 bytes for the data field header
+            // 11 for the primary header (with a 32 bit frame length)
+            // 3 bytes for the data field header
             return 14;
         }
 
         @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
-            ByteArrayUtils.encodeInt((int)vcSeqCount, data, 7);
+            ByteArrayUtils.encodeInt((int) vcSeqCount, data, 7);
 
             // write the first header pointer
-            ByteArrayUtils.encodeShort(firstHeaderPointer, data, 12);
-            
-            if(ocfFlag==1) {
-                ByteArrayUtils.encodeInt(clcw, data, data.length-6);
+            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 12);
+
+            if (ocfFlag == 1) {
+                ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
             }
-            //compute crc
+            // compute crc
             int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeShort(x, data, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
         @Override

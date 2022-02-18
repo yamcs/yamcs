@@ -1,5 +1,6 @@
 package org.yamcs.cli;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +56,17 @@ public class MdbCli extends Command {
         void execute() throws Exception {
             YConfiguration.setupTool();
             XtceDb xtcedb = getMdb(args.get(0));
-            xtcedb.print(System.out);
+            xtcedb.print(new PrintStream(System.err) {
+                @Override
+                public void print(String x) {
+                    console.print(x);
+                }
+
+                @Override
+                public void println(Object x) {
+                    console.println(String.valueOf(x));
+                }
+            });
         }
     }
 

@@ -210,7 +210,7 @@ public class XmlLoaderTest {
         MetaCommand mc = db.getMetaCommand("/RefXtce/vital_command");
         Significance significance = mc.getDefaultSignificance();
         assertEquals("no particular reason", significance.getReasonForWarning());
-        assertEquals(Levels.distress, significance.getConsequenceLevel());
+        assertEquals(Levels.DISTRESS, significance.getConsequenceLevel());
     }
 
     @Test

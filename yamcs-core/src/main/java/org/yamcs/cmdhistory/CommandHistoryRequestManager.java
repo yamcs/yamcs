@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ConfigurationException;
@@ -38,11 +39,13 @@ public class CommandHistoryRequestManager extends AbstractService {
     private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<>();
     private ConcurrentHashMap<CommandHistoryFilter, CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<>();
 
+    // once the command becomes inactive, remove it from the activeCommands map after this number of seconds
+    static final int REMOVAL_TIME = 30;
+
     Stream realtimeCmdHistoryStream;
 
     static AtomicInteger subscriptionIdGenerator = new AtomicInteger();
     final Log log;
-    // maps strings are requested in the getCommandHistory to strings as they appear in the commnad history
     AtomicInteger extendedId = new AtomicInteger();
     final String instance;
     final Processor processor;
@@ -187,6 +190,19 @@ public class CommandHistoryRequestManager extends AbstractService {
             }
         }
     }
+
+    /**
+     * Called when there can be no more events for this command.
+     * <p>
+     * We remove it from the active commands only after a few seconds because some tools may subscribe to it after
+     * being sent and if there was no verifier, the command would immediately disappear so the subscription would fail.
+     */
+    public void commandFinished(CommandId cmdId) {
+        processor.getTimer().schedule(() -> {
+            activeCommands.remove(cmdId);
+            cmdSubcriptions.remove(cmdId);
+        }, REMOVAL_TIME, TimeUnit.SECONDS);
+ }
 
     @Override
     protected void doStart() {

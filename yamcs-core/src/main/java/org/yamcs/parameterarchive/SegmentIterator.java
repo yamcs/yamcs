@@ -89,7 +89,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
             topIt = partitions.iterator();
 
-            if (rtfiller != null && req.isAscending()) {
+            if (rtfiller != null && !ascending) {
                 rtIterator = rtfiller.getSegments(pid, parameterGroupId, ascending).iterator();
             }
             next();
@@ -105,7 +105,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     }
 
     public void next() {
-        if (ascending && rtIterator != null) {
+        if (!ascending && rtIterator != null) {
             if (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
                 return;
@@ -123,7 +123,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             curValue = null;
         }
 
-        if (!ascending && rtfiller != null) {
+        if (ascending && rtfiller != null) {
             if (rtIterator == null) {
                 rtIterator = rtfiller.getSegments(parameterId.getPid(), parameterGroupId, ascending).iterator();
             }

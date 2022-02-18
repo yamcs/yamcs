@@ -24,7 +24,7 @@ import org.yamcs.utils.YObjectLoader;
 public class ProcessorFactory {
 
     /**
-     * Returns the processor types as defined in <tt>processor.yaml</tt>
+     * Returns the processor types as defined in {@code processor.yaml}
      */
     public static Map<String, ProcessorConfig> getProcessorTypes() {
         if (!YConfiguration.isDefined("processor")) {

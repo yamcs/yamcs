@@ -8,7 +8,7 @@ Output parameters are very much identical to regular parameters. They can be cal
 Algorithms can be written in JavaScript, Python or Java. By default Yamcs ships with support for JavaScript algorithms since the standard Oracle Java distribution contains the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
 
 
-Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes are made available:
+Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes and methods are made available:
 
 value
     the engineering value
@@ -18,7 +18,16 @@ monitoringResult
     the result of the monitoring: *null*, ``DISABLED``, ``WATCH``, ``WARNING``, ``DISTRESS``, ``CRITICAL`` or ``SEVERE``.
 rangeCondition
     If set, one of ``LOW`` or ``HIGH``.
-
+generationTimeMillis
+    The paramer generation time - milliseconds since Yamcs epoch.
+aquisitionTimeMillis
+    The paramer acquisition time - milliseconds since Yamcs epoch.
+generationTime()
+    The paramer generation time converted to Java Instant (by removing the leap seconds).
+aquisitionTime()
+    The paramer acquisition time converted to Java Instant (by removing the leap seconds).
+    
+    
 If there was no update for a certain parameter, yet the algorithm is still being executed, the previous value of that parameter will be retained.
 
 

@@ -149,8 +149,7 @@ public class AlgorithmManager extends AbstractProcessorService
         xtcedb = processor.getXtceDb();
         timer = processor.getTimer();
 
-        globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData(),
-                maxErrCount);
+        globalCtx = new AlgorithmExecutionContext("global", processor.getProcessorData(), maxErrCount);
         contexts.add(globalCtx);
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {
@@ -216,8 +215,7 @@ public class AlgorithmManager extends AbstractProcessorService
      * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
-        AlgorithmExecutionContext ctx = new AlgorithmExecutionContext(name, globalCtx,
-                processor.getProcessorData(), maxErrCount);
+        AlgorithmExecutionContext ctx = new AlgorithmExecutionContext(name, processor.getProcessorData(), maxErrCount);
         contexts.add(ctx);
         return ctx;
     }
@@ -330,23 +328,8 @@ public class AlgorithmManager extends AbstractProcessorService
 
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
-            String algLang = calg.getLanguage();
-            if (algLang == null) {
-                throw new AlgorithmException("no language specified for algorithm "
-                        + "'" + algorithm.getQualifiedName() + "'");
-            }
-            AlgorithmExecutorFactory factory = factories.get(algLang);
-            if (factory == null) {
-                AlgorithmEngine eng = algorithmEngines.get(algLang);
-                if (eng == null) {
-                    throw new AlgorithmException("no algorithm engine found for language '" + algLang + "'");
-                }
-                factory = eng.makeExecutorFactory(this, execCtx, algLang, config);
-                factories.put(algLang, factory);
-                for (String s : factory.getLanguages()) {
-                    factories.put(s, factory);
-                }
-            }
+            AlgorithmExecutorFactory factory = getFactory(calg, execCtx);
+
             try {
                 executor = factory.makeExecutor(calg, execCtx);
             } catch (AlgorithmException e) {
@@ -361,6 +344,27 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         return executor;
+    }
+
+    private AlgorithmExecutorFactory getFactory(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
+        String algLang = calg.getLanguage();
+        if (algLang == null) {
+            throw new AlgorithmException("no language specified for algorithm "
+                    + "'" + calg.getQualifiedName() + "'");
+        }
+        AlgorithmExecutorFactory factory = factories.get(algLang);
+        if (factory == null) {
+            AlgorithmEngine eng = algorithmEngines.get(algLang);
+            if (eng == null) {
+                throw new AlgorithmException("no algorithm engine found for language '" + algLang + "'");
+            }
+            factory = eng.makeExecutorFactory(this, execCtx, algLang, config);
+            factories.put(algLang, factory);
+            for (String s : factory.getLanguages()) {
+                factories.put(s, factory);
+            }
+        }
+        return factory;
     }
 
     @Override
@@ -378,8 +382,8 @@ public class AlgorithmManager extends AbstractProcessorService
             // engineByAlgorithm
             HashSet<Parameter> stillRequired = new HashSet<>(); // parameters still required by any other algorithm
             for (Iterator<ActiveAlgorithm> it = Lists.reverse(globalCtx.executionOrder).iterator(); it.hasNext();) {
-                ActiveAlgorithm engine = it.next();
-                Algorithm algo = engine.getAlgorithm();
+                ActiveAlgorithm activeAlgo = it.next();
+                Algorithm algo = activeAlgo.getAlgorithm();
                 boolean keep = false;
 
                 // Keep if any other output parameters are still subscribed to
@@ -388,27 +392,17 @@ public class AlgorithmManager extends AbstractProcessorService
                         keep = true;
                         break;
                     }
-                }
-
-                if (!algo.canProvide(paramDef)) { // Clean-up unused engines
-                    // For any of its outputs, check if it's still used by any algorithm
-                    for (OutputParameter op : algo.getOutputSet()) {
-                        if (requestedOutParams.contains(op.getParameter())) {
+                    for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
+                        if (getParametersOfInterest(otherAlgo).contains(oParameter.getParameter())) {
                             keep = true;
                             break;
-                        }
-                        for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
-                            if (getParametersOfInterest(otherAlgo).contains(op.getParameter())) {
-                                keep = true;
-                                break;
-                            }
                         }
                     }
                 }
 
                 if (!keep) {
                     it.remove();
-                    globalCtx.remove(algo.getQualifiedName());
+                    globalCtx.removeAlgorithm(algo);
                 } else {
                     stillRequired.addAll(getParametersOfInterest(algo));
                 }
@@ -485,7 +479,7 @@ public class AlgorithmManager extends AbstractProcessorService
         if (algOverr == null) {
             return;
         }
-        globalCtx.remove(algOverr.getQualifiedName());
+        globalCtx.removeAlgorithm(algOverr.getQualifiedName());
         activateAndInit(calg, globalCtx);
     }
 
@@ -497,13 +491,10 @@ public class AlgorithmManager extends AbstractProcessorService
      */
     public void overrideAlgorithm(CustomAlgorithm calg, String text) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
-        globalCtx.remove(calg.getQualifiedName());
+        globalCtx.removeAlgorithm(calg.getQualifiedName());
 
-        AlgorithmExecutorFactory factory = factories.get(calg.getLanguage());
-        if (factory == null) {
-            throw new AlgorithmException(
-                    "No factory available for algorithms with language '" + calg.getLanguage() + "'");
-        }
+        AlgorithmExecutorFactory factory = getFactory(calg, globalCtx);
+
         algOverr = calg.copy();
         algOverr.setAlgorithmText(text);
         algorithmsInError.remove(calg.getQualifiedName());

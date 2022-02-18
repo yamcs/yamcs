@@ -49,11 +49,11 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
-    static public final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
-    static public final String TABLE_NAME = "tm";
-    static public final String PNAME_COLUMN = "pname";
+    public static final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
+    public static final String TABLE_NAME = "tm";
+    public static final String PNAME_COLUMN = "pname";
 
-    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
+    public static final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
     static {
         RECORDED_TM_TUPLE_DEFINITION = StandardTupleDefinitions.TM.copy();
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)

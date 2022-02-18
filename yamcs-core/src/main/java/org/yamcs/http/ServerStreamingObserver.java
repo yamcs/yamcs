@@ -110,7 +110,7 @@ public class ServerStreamingObserver implements Observer<Message> {
 
         String filename = null;
 
-        if (firstMessage != null && firstMessage instanceof HttpBody) {
+        if (firstMessage instanceof HttpBody) {
             HttpBody body = (HttpBody) firstMessage;
             mediaType = MediaType.from(body.getContentType());
             if (body.hasFilename()) {

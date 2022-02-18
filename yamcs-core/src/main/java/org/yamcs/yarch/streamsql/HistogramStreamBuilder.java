@@ -56,8 +56,9 @@ public class HistogramStreamBuilder {
                 interval.setStart(time);
                 interval.setEnd(time);
                 return true;
-            case NOT_EQUAL:
-                // TODO - two ranges have to be created
+            default:
+                // TODO
+                throw new UnsupportedOperationException(relOp + " not implemented for histogram streams");
             }
         }
         return false;

@@ -8,10 +8,6 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
     public AggregateArgumentType(Builder builder) {
         super(builder);
     }
-    
-    public AggregateArgumentType(String name) {
-        super(name);
-    }
 
     public AggregateArgumentType(AggregateArgumentType t) {
         super(t);

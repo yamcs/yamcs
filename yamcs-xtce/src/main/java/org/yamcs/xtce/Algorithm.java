@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract algorithm - just defines the inputs, outputs and triggers
+ * Abstract algorithm - defines the inputs, outputs and triggers
  * 
- * Note: the XTCE names the inputs and outputs "Sets". However we use them as lists not  
  * @author nm
  *
  */
@@ -97,16 +96,6 @@ public abstract class Algorithm extends NameDescription {
     
     public void setInputList(List<InputParameter> inputList) {
         this.inputList = inputList;
-    }
-    
-    
-    public boolean canProvide(Parameter parameter) {
-        for(OutputParameter p:outputList) {
-            if(p.getParameter()==parameter) {
-                return true;
-            }
-        }
-        return false;
     }
     
     public Scope getScope() {

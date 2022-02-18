@@ -15,9 +15,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 public abstract class CfdpPacket {
-
-    protected ByteBuffer buffer;
-    protected CfdpHeader header;
+    protected final CfdpHeader header;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
     public static final TupleDefinition CFDP = new TupleDefinition();
@@ -34,13 +32,9 @@ public abstract class CfdpPacket {
     }
 
     protected CfdpPacket(CfdpHeader header) {
-        this(null, header);
+        this.header = header;
     }
 
-    protected CfdpPacket(ByteBuffer buffer, CfdpHeader header) {
-        this.header = header;
-        this.buffer = buffer;
-    }
 
     public CfdpHeader getHeader() {
         return this.header;
@@ -49,28 +43,32 @@ public abstract class CfdpPacket {
     public abstract int getDataFieldLength();
 
     /**
-     * Reads a CFDP PDU from the ByteBuffer which has to have the position set to 0.
+     * Reads a CFDP PDU from the ByteBuffer at the current position.
      * <p>
      * The buffer can contain more data than one PDU, at the end of the call the position will be set to the end of the
      * PDU.
      * <p>
      * In case of error (e.g. cannot decode header) a PduDecodingException is thrown and the position is undetermined.
+     * <p>
+     * The return may be null if the PDU is not supported
+     * 
      */
     public static CfdpPacket getCFDPPacket(ByteBuffer bb) throws PduDecodingException {
-        assert (bb.position() == 0);
-
+        int position = bb.position();
+        int limit = bb.limit();
         CfdpHeader header;
 
         try {
             header = new CfdpHeader(bb);
         } catch (BufferUnderflowException e) {
-            throw new PduDecodingException("short PDU, size: " + bb.limit(), getData(bb), e);
+            throw new PduDecodingException("short PDU, size: " + bb.limit(), getData(bb, position, bb.limit()), e);
         }
 
         int dataLength = CfdpHeader.getDataLength(bb);
 
         if (dataLength < 2) {
-            throw new PduDecodingException("data length is " + dataLength + " (expected at least 2)", getData(bb));
+            throw new PduDecodingException("data length is " + dataLength + " (expected at least 2)",
+                    getData(bb, position, bb.limit()));
         }
 
         int pduSize = header.getLength() + dataLength;
@@ -78,12 +76,19 @@ public abstract class CfdpPacket {
             throw new PduDecodingException(
                     "buffer too short, from header expected PDU of size" + pduSize + " bytes, but only "
                             + bb.limit() + " bytes available",
-                    getData(bb));
+                    getData(bb, position, bb.limit()));
         }
-        bb.limit(pduSize);
+
+        bb.limit(position + pduSize);
+
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
-            FileDirectiveCode fdc = FileDirectiveCode.readFileDirectiveCode(bb);
+            byte fdcCode = bb.get();
+            FileDirectiveCode fdc = FileDirectiveCode.fromCode(fdcCode);
+            if (fdc == null) {
+                throw new PduDecodingException("Unknown file directive code: " + fdcCode,
+                        getData(bb, position, pduSize));
+            }
             try {
                 switch (fdc) {
                 case EOF:
@@ -101,23 +106,19 @@ public abstract class CfdpPacket {
                 case NAK:
                     toReturn = new NakPacket(bb, header);
                     break;
-                case PROMPT:
-                    toReturn = new PromptPacket(bb, header);
-                    break;
-                case KEEP_ALIVE:
-                    toReturn = new KeepAlivePacket(bb, header);
-                    break;
                 default:
-                    break;
+                    log.warn("Ignoring unknown/not supported " + fdc + " file directive PDU ");
                 }
             } catch (BufferUnderflowException e) {
-                throw new PduDecodingException("short " + fdc + " PDU; size: " + pduSize, getData(bb), e);
+                throw new PduDecodingException("Short " + fdc + " PDU; size: " + pduSize,
+                        getData(bb, position, pduSize), e);
             }
         } else {
             try {
                 toReturn = new FileDataPacket(bb, header);
             } catch (BufferUnderflowException e) {
-                throw new PduDecodingException("short file data PDU; size: " + pduSize, getData(bb), e);
+                throw new PduDecodingException("Short file data PDU; size: " + pduSize, getData(bb, position, pduSize),
+                        e);
             }
         }
         if (toReturn != null && header.withCrc()) {
@@ -125,12 +126,14 @@ public abstract class CfdpPacket {
                 log.error("invalid crc");
             }
         }
+        bb.limit(limit);
+        bb.position(position + pduSize);
         return toReturn;
     }
 
-    private static byte[] getData(ByteBuffer bb) {
-        byte[] data = new byte[bb.limit()];
-        bb.position(0);
+    private static byte[] getData(ByteBuffer bb, int position, int length) {
+        byte[] data = new byte[length];
+        bb.position(position);
         bb.get(data);
         return data;
     }
@@ -160,8 +163,12 @@ public abstract class CfdpPacket {
         return toTuple(trans.getTransactionId(), trans.getStartTime());
     }
 
+    public Tuple toTuple(long startTime) {
+        return toTuple(header.getTransactionId(), startTime);
+    }
+
     public Tuple toTuple(CfdpTransactionId id, long startTime) {
-        TupleDefinition td = CFDP.copy();
+        TupleDefinition td = CFDP;
         ArrayList<Object> al = new ArrayList<>();
         al.add(startTime);
         al.add(id.getInitiatorEntity());

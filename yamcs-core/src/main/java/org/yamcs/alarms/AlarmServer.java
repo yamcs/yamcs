@@ -8,10 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.ParameterAlarmChecker;
@@ -38,10 +40,12 @@ public class AlarmServer<S, T> extends AbstractService {
 
     private CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
     final private ScheduledThreadPoolExecutor timer;
+    final TimeService timeService;
 
     public AlarmServer(String yamcsInstance, ScheduledThreadPoolExecutor timer) {
         this.yamcsInstance = yamcsInstance;
         this.timer = timer;
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     /**
@@ -66,13 +70,13 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     /**
-     * Returns the active alarm for the specified <tt>subject</tt> if it also matches the specified <tt>id</tt>.
+     * Returns the active alarm for the specified {@code subject} if it also matches the specified {@code id}.
      * 
      * @param subject
      *            the subject to look for.
      * @param id
      *            the expected id of the active alarm.
-     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     * @return the active alarm, or {@code null} if no alarm was found
      * @throws AlarmSequenceException
      *             when the specified id does not match the id of the active alarm
      */
@@ -88,11 +92,11 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     /**
-     * Returns the active alarm for the specified <tt>subject</tt>.
+     * Returns the active alarm for the specified {@code subject}.
      * 
      * @param subject
      *            the subject to look for.
-     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     * @return the active alarm, or {@code null} if no alarm was found
      */
     public ActiveAlarm<T> getActiveAlarm(S subject) {
         return activeAlarms.get(subject);
@@ -138,12 +142,11 @@ public class AlarmServer<S, T> extends AbstractService {
      * @param message
      * @return the updated alarm instance or null if the alarm was not found
      */
-    public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message)
-            throws CouldNotAcknowledgeAlarmException {
+    public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message) {
         if (!activeAlarms.containsValue(alarm)) {
             return null;
         }
-        alarm.reset();
+        alarm.reset(username, resetTime, message);
         return alarm;
     }
 
@@ -178,7 +181,8 @@ public class AlarmServer<S, T> extends AbstractService {
      * @param alarm
      * @param username
      * @param message
-     * @param shelveDuration shelve duration in milliseconds
+     * @param shelveDuration
+     *            shelve duration in milliseconds
      * 
      * @return the updated alarm instance or null if the alarm was not found
      */
@@ -189,7 +193,7 @@ public class AlarmServer<S, T> extends AbstractService {
         }
         alarm.shelve(username, message, shelveDuration);
         alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.SHELVED, alarm));
-        timer.schedule(() -> checkShelved(), shelveDuration, TimeUnit.MILLISECONDS);
+        timer.schedule(this::checkShelved, shelveDuration, TimeUnit.MILLISECONDS);
 
         return alarm;
     }
@@ -252,7 +256,7 @@ public class AlarmServer<S, T> extends AbstractService {
                 activeAlarms.remove(alarmId);
                 return;
             }
-            boolean updated = activeAlarm.processRTN();
+            boolean updated = activeAlarm.processRTN(timeService.getMissionTime());
 
             activeAlarm.setCurrentValue(value);
             activeAlarm.incrementValueCount();
@@ -301,9 +305,10 @@ public class AlarmServer<S, T> extends AbstractService {
                     for (AlarmListener<T> l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);
                     }
-                }
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyValueUpdate(activeAlarm);
+                } else {
+                    for (AlarmListener<T> l : alarmListeners) {
+                        l.notifyValueUpdate(activeAlarm);
+                    }
                 }
             }
         }

@@ -309,22 +309,22 @@ public class ParameterAlarmChecker {
             }
 
             switch (level) {
-            case normal:
+            case NORMAL:
                 pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
                 break;
-            case watch:
+            case WATCH:
                 pv.setMonitoringResult(MonitoringResult.WATCH);
                 break;
-            case warning:
+            case WARNING:
                 pv.setMonitoringResult(MonitoringResult.WARNING);
                 break;
-            case distress:
+            case DISTRESS:
                 pv.setMonitoringResult(MonitoringResult.DISTRESS);
                 break;
-            case critical:
+            case CRITICAL:
                 pv.setMonitoringResult(MonitoringResult.CRITICAL);
                 break;
-            case severe:
+            case SEVERE:
                 pv.setMonitoringResult(MonitoringResult.SEVERE);
                 break;
             }

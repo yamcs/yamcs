@@ -1427,7 +1427,7 @@ public class V6Loader extends V6LoaderBase {
                     String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
                     Significance.Levels slevel;
                     try {
-                        slevel = Significance.Levels.valueOf(significance);
+                        slevel = Significance.Levels.valueOf(significance.toUpperCase());
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid significance '" + significance + "' specified. Available values are: "
@@ -1500,17 +1500,16 @@ public class V6Loader extends V6LoaderBase {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid checkwindow specified. Stop cannot be smaller than start");
                     }
-                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LastVerifier;
+                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LAST_VERIFIER;
 
                     if (hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
                         String s = cells[IDX_CMDVERIF_CHECKWINDOW_RELATIVETO].getContents();
                         try {
-                            cwr = TimeWindowIsRelativeToType.valueOf(s);
+                            cwr = TimeWindowIsRelativeToType.fromXls(s);
                         } catch (IllegalArgumentException e) {
                             throw new SpreadsheetLoadException(ctx,
                                     "Invalid value '" + s
-                                            + "' specified for CheckWindow relative to parameter. Use one of "
-                                            + Arrays.toString(TimeWindowIsRelativeToType.values()));
+                                            + "' specified for CheckWindow relative to parameter. Use one of Use one of [CommandRelease, LastVerifier]");
                         }
                     }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
@@ -2144,15 +2143,15 @@ public class V6Loader extends V6LoaderBase {
                     }
                 }
 
-                checkAndAddAlarm(cells, AlarmLevels.watch, paraRef, context, IDX_ALARM_WATCH_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.WATCH, paraRef, context, IDX_ALARM_WATCH_TRIGGER,
                         IDX_ALARM_WATCH_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.warning, paraRef, context, IDX_ALARM_WARNING_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.WARNING, paraRef, context, IDX_ALARM_WARNING_TRIGGER,
                         IDX_ALARM_WARNING_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.distress, paraRef, context, IDX_ALARM_DISTRESS_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.DISTRESS, paraRef, context, IDX_ALARM_DISTRESS_TRIGGER,
                         IDX_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.critical, paraRef, context, IDX_ALARM_CRITICAL_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.CRITICAL, paraRef, context, IDX_ALARM_CRITICAL_TRIGGER,
                         IDX_ALARM_CRITICAL_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.severe, paraRef, context, IDX_ALARM_SEVERE_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.SEVERE, paraRef, context, IDX_ALARM_SEVERE_TRIGGER,
                         IDX_ALARM_SEVERE_VALUE);
 
                 addAlarmDetails(paraRef, context, reportType, minViolations);

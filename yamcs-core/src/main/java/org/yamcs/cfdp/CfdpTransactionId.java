@@ -30,8 +30,7 @@ public class CfdpTransactionId {
             return false;
         }
         CfdpTransactionId other = (CfdpTransactionId) o;
-        return Objects.equals(sequenceNumber, other.sequenceNumber)
-                && Objects.equals(initiatorEntity, other.initiatorEntity);
+        return sequenceNumber == other.sequenceNumber && initiatorEntity == other.initiatorEntity;
     }
 
     @Override

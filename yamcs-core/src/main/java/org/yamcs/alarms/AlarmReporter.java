@@ -16,6 +16,7 @@ import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
+import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
@@ -28,7 +29,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class AlarmReporter extends AbstractProcessorService implements ProcessorService {
 
-    private String source;
 
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms = new HashMap<>();
@@ -39,7 +39,7 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
     public void init(Processor processor, YConfiguration config, Object spec) {
         super.init(processor, config, spec);
         eventProducer = EventProducerFactory.getEventProducer(processor.getInstance());
-        source = config.getString("source", "AlarmChecker");
+        String source = config.getString("source", "AlarmChecker");
         eventProducer.setSource(source);
     }
 
@@ -76,7 +76,7 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
     }
 
     /**
-     * Sends an event if an alarm condition for the active context has been triggered <tt>minViolations</tt> times. This
+     * Sends an event if an alarm condition for the active context has been triggered {@code minViolations} times. This
      * configuration does not affect events for parameters that go back to normal, or that change severity levels while
      * the alarm is already active.
      */
@@ -192,56 +192,33 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
                 throw new IllegalStateException("Unexpected range condition: " + pv.getRangeCondition());
             }
 
-            switch (pv.getMonitoringResult()) {
-            case WATCH:
-                eventProducer.sendWatch(null, message);
-                break;
-            case WARNING:
-                eventProducer.sendWarning(null, message);
-                break;
-            case DISTRESS:
-                eventProducer.sendDistress(null, message);
-                break;
-            case CRITICAL:
-                eventProducer.sendCritical(null, message);
-                break;
-            case SEVERE:
-                eventProducer.sendSevere(null, message);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected monitoring result: " + pv.getMonitoringResult());
-            }
+            EventSeverity severity = getEventSeverity(pv.getMonitoringResult());
+            eventProducer.sendEvent(severity, null, message);
         }
     }
 
     private void sendStateChangeEvent(ParameterValue pv) {
-        switch (pv.getMonitoringResult()) {
+        EventSeverity severity = getEventSeverity(pv.getMonitoringResult());
+        eventProducer.sendEvent(severity, null, "Parameter " + pv.getParameter().getQualifiedName()
+                + " transitioned to state " + pv.getEngValue().getStringValue());
+    }
+
+    EventSeverity getEventSeverity(MonitoringResult mr) {
+        switch (mr) {
         case WATCH:
-            eventProducer.sendWatch(null, "Parameter " + pv.getParameter().getQualifiedName()
-                    + " transitioned to state " + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.WATCH;
         case WARNING:
-            eventProducer.sendWarning(null, "Parameter " + pv.getParameter().getQualifiedName()
-                    + " transitioned to state " + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.WARNING;
         case DISTRESS:
-            eventProducer.sendDistress(null, "Parameter " + pv.getParameter().getQualifiedName()
-                    + " transitioned to state " + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.DISTRESS;
         case CRITICAL:
-            eventProducer.sendCritical(null, "Parameter " + pv.getParameter().getQualifiedName()
-                    + " transitioned to state " + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.CRITICAL;
         case SEVERE:
-            eventProducer.sendSevere(null, "Parameter " + pv.getParameter().getQualifiedName()
-                    + " transitioned to state " + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.SEVERE;
         case IN_LIMITS:
-            eventProducer.sendInfo(null, "Parameter " + pv.getParameter().getQualifiedName() + " transitioned to state "
-                    + pv.getEngValue().getStringValue());
-            break;
+            return EventSeverity.INFO;
         default:
-            throw new IllegalStateException("Unexpected monitoring result: " + pv.getMonitoringResult());
+            throw new IllegalStateException("Unexpected monitoring result: " + mr);
         }
     }
 

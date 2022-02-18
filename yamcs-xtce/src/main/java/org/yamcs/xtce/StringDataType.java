@@ -17,7 +17,7 @@ public class StringDataType extends BaseDataType {
         super(builder);
         this.sizeRangeInCharacters = builder.sizeRangeInCharacters;
 
-        if (builder.baseType != null && builder.baseType instanceof StringDataType) {
+        if (builder.baseType instanceof StringDataType) {
             StringDataType baseType = (StringDataType) builder.baseType;
             if (builder.sizeRangeInCharacters == null && baseType.sizeRangeInCharacters != null) {
                 this.sizeRangeInCharacters = baseType.sizeRangeInCharacters;

@@ -27,7 +27,7 @@ public interface ProtobufDatabase {
      * @param messageClass
      *            the expected message class
      * 
-     * @return the found message, or <tt>null</tt>
+     * @return the found message, or {@code null}
      */
     <T extends Message> T get(String id, Class<T> messageClass) throws IOException;
 

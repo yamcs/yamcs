@@ -1,33 +1,50 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
-import org.junit.Before;
 import org.junit.Test;
+import org.yamcs.YamcsVersion;
 
-public class YamcsCliTest {
-    ByteArrayOutputStream outStream;
+public class YamcsCliTest extends AbstractCliTest {
+    @Test
+    public void testGetUsage() throws Exception {
+        YamcsAdminCli yamcsCli = new YamcsAdminCli();
+        String usage = yamcsCli.getUsage();
+        assertTrue(usage.contains("backup           Perform and restore backups"));
+        assertTrue(usage.contains("users            User operations"));
 
-    @Before
-    public void changeSysOut() {
-        outStream = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(outStream);
-        System.setOut(ps);
+        mconsole.reset();
+        assertEquals(1, runMain());
+        assertEquals(usage + "\n", mconsole.output());
+
+        mconsole.reset();
+        assertEquals(0, runMain("-h"));
+
+        assertEquals(usage + "\n", mconsole.output());
+
+    }
+
+
+    @Test
+    public void testVersion() throws Exception {
+        int exitStatus = runMain("--version");
+        assertEquals(0, exitStatus);
+        String out = mconsole.output();
+        assertTrue(out.contains("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION));
     }
 
     @Test
-    public void testXtceDbCli() throws Exception {
-        YamcsAdminCli yamcsCli = new YamcsAdminCli();
-        yamcsCli.parse(new String[] { "mdb", "print", "refmdb" });
-        yamcsCli.validate();
-        yamcsCli.execute();
-        String out = outStream.toString();
-        assertTrue(out.contains("SpaceSystem /REFMDB"));
-        assertTrue(out.contains("SequenceContainer name: PKT3"));
-        assertTrue(out.contains("Algorithm name: ctx_param_test"));
-        assertTrue(out.contains("MetaCommand name: CALIB_TC"));
+    public void testInvalidCommand() throws Exception {
+        int exitStatus = runMain("bogus");
+        assertEquals(1, exitStatus);
+        String out = mconsole.output();
+        assertTrue(out.contains("'bogus' is not a valid command "));
     }
+
+    @Test
+    public void testInvalidOption() throws Exception {
+        assertEquals(1, runMain("--bogus"));
+        assertTrue(mconsole.output().contains("Unknown option '--bogus'"));
+    }
+    
 }

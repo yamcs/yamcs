@@ -106,8 +106,7 @@ public class ArgumentReference extends NameReference {
         }
         if (arg == null || arg.getArgumentType() == null
                 || (path != null && !ReferenceFinder.verifyPath(arg.getArgumentType(), path))) {
-            ArgumentReference ref = new ArgumentReference(metaCmd, argName, path);
-            return ref;
+            return new ArgumentReference(metaCmd, argName, path);
         } else {
             return new ArgumentReference(metaCmd, arg, path);
         }

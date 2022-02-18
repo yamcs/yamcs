@@ -134,7 +134,7 @@ public class TimelineClient {
         ListSourcesRequest.Builder requestb = ListSourcesRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListSourcesResponse> f = new CompletableFuture<>();
         timelineService.listSources(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getSourcesMap());
+        return f.thenApply(ListSourcesResponse::getSourcesMap);
     }
 
     private class TimelineItemPage extends AbstractPage<ListItemsRequest, ListItemsResponse, TimelineItem>
@@ -154,7 +154,7 @@ public class TimelineClient {
         ListTimelineTagsRequest.Builder requestb = ListTimelineTagsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListTimelineTagsResponse> f = new CompletableFuture<>();
         timelineService.listTags(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getTagsList());
+        return f.thenApply(ListTimelineTagsResponse::getTagsList);
     }
 
     public CompletableFuture<TimelineItem> updateItem(TimelineItem item) {
@@ -193,7 +193,7 @@ public class TimelineClient {
         ListBandsRequest.Builder request = ListBandsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListBandsResponse> f = new CompletableFuture<>();
         timelineService.listBands(null, request.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getBandsList());
+        return f.thenApply(ListBandsResponse::getBandsList);
     }
 
     public CompletableFuture<TimelineBand> deleteBand(String id) {

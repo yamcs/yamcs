@@ -9,12 +9,7 @@ import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FilterableTarget;
 
-import org.yamcs.yarch.streamsql.ColumnExpression;
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.IncompatibilityException;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.ValueExpression;
 
 public class InExpression extends Expression {
     static AtomicInteger at = new AtomicInteger();

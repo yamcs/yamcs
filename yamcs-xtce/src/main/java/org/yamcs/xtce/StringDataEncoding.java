@@ -73,7 +73,7 @@ public class StringDataEncoding extends DataEncoding {
         this.maxSizeInBytes = builder.maxSizeInBytes;
         this.dynamicBufferSize = builder.dynamicBufferSize;
 
-        if (builder.baseEncoding != null && builder.baseEncoding instanceof StringDataEncoding) {
+        if (builder.baseEncoding instanceof StringDataEncoding) {
             StringDataEncoding baseEncoding = (StringDataEncoding) builder.baseEncoding;
 
             if (builder.sizeType == null) {

@@ -20,10 +20,10 @@ public interface ConnectionListener extends EventListener {
     /**
      * Called when the initial connection to Yamcs has failed, e.g. the maximum number of retry attempts has exceeded.
      * 
-     * @param exception
+     * @param cause
      *            Optional cause of the connection failure, may be null.
      */
-    public void connectionFailed(ClientException exception);
+    public void connectionFailed(Throwable cause);
 
     /**
      * Called when the connection to Yamcs is closed.

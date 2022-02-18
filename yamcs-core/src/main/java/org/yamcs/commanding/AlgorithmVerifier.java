@@ -1,10 +1,7 @@
 package org.yamcs.commanding;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.Processor;
@@ -22,8 +19,6 @@ import org.yamcs.xtceproc.ProcessingData;
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
     final Algorithm alg;
     final AlgorithmExecutionContext algCtx;
-    final ActiveCommand activeCommand;
-    Logger log;
     final XtceDb xtcedb;
 
     final Processor processor;
@@ -32,10 +27,8 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         super(cvh, cv);
         alg = cv.getAlgorithm();
         algCtx = cvh.getAlgorithmExecutionContext();
-        activeCommand = cvh.getActiveCommand();
         processor = cvh.getProcessor();
         xtcedb = processor.getXtceDb();
-        log = LoggerFactory.getLogger(AlgorithmVerifier.class);
     }
 
     @Override

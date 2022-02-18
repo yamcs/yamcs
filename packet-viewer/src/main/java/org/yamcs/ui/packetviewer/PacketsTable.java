@@ -214,7 +214,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
     }
 
     /**
-     * Goes forward to the packet that was selected before the <tt>goBack()</tt> was used.
+     * Goes forward to the packet that was selected before the {@code goBack()} was used.
      */
     public void goForward() {
         if (historyPosition < history.size() - 1) {

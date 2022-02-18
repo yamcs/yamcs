@@ -133,7 +133,7 @@ public interface Link {
     /**
      * Returns the valid configuration of the input args of this link.
      * 
-     * @return the argument specification, or <tt>null</tt> if the args should not be validated.
+     * @return the argument specification, or {@code null} if the args should not be validated.
      */
     public default Spec getSpec() {
         return null;

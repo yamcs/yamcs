@@ -153,7 +153,6 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             addPacket(apid, time, seq);
         } catch (RocksDBException e) {
             log.error("got exception while saving the packet into index", e);
-            e.printStackTrace();
         }
     }
 

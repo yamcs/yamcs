@@ -203,7 +203,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
                         selector.close();
                         socketChannel = null;
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+                        // ignore any close exception
                     }
                 }
             } else {

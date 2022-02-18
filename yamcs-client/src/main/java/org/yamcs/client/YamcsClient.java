@@ -33,11 +33,15 @@ import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.FileTransferApiClient;
+import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.ListFileTransferServicesRequest;
+import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.ListProcessorsRequest;
@@ -151,9 +155,9 @@ public class YamcsClient {
             authorizationCode = baseClient.authorizeKerberos(spnegoInfo);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw new UnauthorizedException();
         }
 
@@ -161,9 +165,9 @@ public class YamcsClient {
             baseClient.loginWithAuthorizationCode(authorizationCode);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw e;
         }
         Credentials creds = baseClient.getCredentials();
@@ -176,9 +180,9 @@ public class YamcsClient {
             baseClient.login(username, password);
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw e;
         }
     }
@@ -197,22 +201,21 @@ public class YamcsClient {
                     Throwable cause = e.getCause();
                     if (cause instanceof UnauthorizedException) {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
                             cl.connectionFailed((UnauthorizedException) cause);
                         }
-                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+                        logConnectionFailed(cause);
                         throw (UnauthorizedException) cause; // Jump out
                     } else {
                         for (ConnectionListener cl : connectionListeners) {
-                            cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
+                            cl.connectionFailed(cause);
                         }
-                        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+                        logConnectionFailed(cause);
                     }
                 } catch (TimeoutException e) {
                     for (ConnectionListener cl : connectionListeners) {
-                        cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                        cl.connectionFailed(e);
                     }
-                    log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+                    logConnectionFailed(e);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     for (ConnectionListener cl : connectionListeners) {
@@ -279,16 +282,16 @@ public class YamcsClient {
             return;
         } catch (SSLException | GeneralSecurityException | TimeoutException e) {
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + e.getMessage());
+                cl.connectionFailed(e);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", e);
+            logConnectionFailed(e);
             throw new ClientException("Cannot connect WebSocket client", e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + serverURL + " failed: " + cause.getMessage());
+                cl.connectionFailed(cause);
             }
-            log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+            logConnectionFailed(cause);
             if (cause instanceof WebSocketHandshakeException && cause.getMessage().contains("401")) {
                 throw new UnauthorizedException();
             } else if (cause instanceof ClientException) {
@@ -482,6 +485,16 @@ public class YamcsClient {
         return f.thenApply(response -> null);
     }
 
+    public CompletableFuture<List<FileTransferServiceInfo>> getFileTransferServices(String instance) {
+        ListFileTransferServicesRequest request = ListFileTransferServicesRequest.newBuilder().setInstance(instance)
+                .build();
+        CompletableFuture<ListFileTransferServicesResponse> f = new CompletableFuture<>();
+
+        FileTransferApiClient ftService = new FileTransferApiClient(methodHandler);
+        ftService.listFileTransferServices(null, request, new ResponseObserver<>(f));
+        return f.thenApply(r -> r.getServicesList());
+    }
+
     public StorageClient createStorageClient() {
         return new StorageClient(methodHandler);
     }
@@ -561,6 +574,10 @@ public class YamcsClient {
 
     public AlarmSubscription createAlarmSubscription() {
         return new AlarmSubscription(methodHandler);
+    }
+
+    public GlobalAlarmStatusSubscription createGlobalAlarmStatusSubscription() {
+        return new GlobalAlarmStatusSubscription(methodHandler);
     }
 
     public PacketSubscription createPacketSubscription() {
@@ -676,4 +693,9 @@ public class YamcsClient {
             return client;
         }
     }
+
+    private void logConnectionFailed(Throwable cause) {
+        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+    }
+
 }
