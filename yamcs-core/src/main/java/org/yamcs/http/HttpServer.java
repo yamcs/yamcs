@@ -298,7 +298,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new EventsApi(protobufRegistry));
         addApi(new IamApi(tokenStore));
         addApi(new IndexesApi());
-        addApi(new LinksApi());
+        addApi(new LinksApi(auditLog));
         addApi(new ManagementApi());
         addApi(new MdbApi());
         addApi(new MdbOverrideApi());

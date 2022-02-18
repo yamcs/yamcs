@@ -10,6 +10,6 @@ export class ActionLogFormatPipe implements PipeTransform {
     if (!summary) {
       return null;
     }
-    return summary.replace(/\'([^\']+)\'/g, '<strong>"\$1"</strong>');
+    return summary.replace(/(\'[^\']+\')/g, '<strong>\$1</strong>');
   }
 }

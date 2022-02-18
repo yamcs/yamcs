@@ -115,6 +115,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     public AlarmsApi(AuditLog auditLog) {
         this.auditLog = auditLog;
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ReadAlarms);
+        });
     }
 
     @Override

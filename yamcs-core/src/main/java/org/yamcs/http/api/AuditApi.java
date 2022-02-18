@@ -14,7 +14,6 @@ import org.yamcs.protobuf.audit.AbstractAuditApi;
 import org.yamcs.protobuf.audit.AuditRecord;
 import org.yamcs.protobuf.audit.ListAuditRecordsRequest;
 import org.yamcs.protobuf.audit.ListAuditRecordsResponse;
-import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 
@@ -87,21 +86,13 @@ public class AuditApi extends AbstractAuditApi<Context> {
     private void listInstanceActivity(Context ctx, String instance, int limit, String next, AuditRecordFilter filter,
             Observer<ListAuditRecordsResponse> observer) {
 
-        // Currently, because there is not yet a way for managing permissions related to
-        // instance-level logging, we have to be a bit strict and manual about it, and
-        // thereby limit only to a few use cases.
         if (filter.getServices().isEmpty()) {
             throw new ForbiddenException("Can only query specific instance activity");
         }
+
         for (String service : filter.getServices()) {
-            if (service.equals(LinksApi.class.getSimpleName())) {
-                ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
-            } else if (service.equals(QueueApi.class.getSimpleName())) {
-                ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
-            } else if (service.equals(AlarmsApi.class.getSimpleName())) {
-                ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
-            } else {
-                throw new ForbiddenException("The specified service cannot be queried");
+            if (!auditLog.validateAccess(service, ctx.user)) {
+                throw new ForbiddenException("Insufficient privileges");
             }
         }
 

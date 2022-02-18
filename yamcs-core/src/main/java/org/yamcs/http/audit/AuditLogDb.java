@@ -72,7 +72,7 @@ public class AuditLogDb {
     private ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     public AuditLogDb(String yamcsInstance) throws InitException {
-        log = new Log(getClass(), yamcsInstance);
+        log = new Log(AuditLog.class, yamcsInstance);
         ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             String streamName = TABLE_NAME + "_in";

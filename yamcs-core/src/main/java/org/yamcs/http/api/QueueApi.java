@@ -49,6 +49,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
     public QueueApi(AuditLog auditLog) {
         this.auditLog = auditLog;
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+        });
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.links.AbstractLinksApi;
@@ -22,6 +23,12 @@ import org.yamcs.protobuf.links.SubscribeLinksRequest;
 import org.yamcs.security.SystemPrivilege;
 
 public class LinksApi extends AbstractLinksApi<Context> {
+
+    public LinksApi(AuditLog auditLog) {
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ReadLinks);
+        });
+    }
 
     @Override
     public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
