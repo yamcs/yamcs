@@ -1,8 +1,7 @@
 mat-toolbar {
-  border-bottom: 1px solid #d3d3d3;
-  background-color: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #f5f5f5;
   box-sizing: content-box;
-  /*color: rgba(0, 0, 0, .654);*/
 }
 
 mat-toolbar-row {

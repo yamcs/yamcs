@@ -42,45 +42,37 @@
   <p>&nbsp;</p>
 
   <h3>Options</h3>
-  <table yaDataTable>
-    <tr>
-      <th class="lcolumn" width="200">Format version</th>
-      <td>{{ table.formatVersion }}</td>
-    </tr>
-    <tr>
-      <th class="lcolumn">Storage engine</th>
-      <td>{{ table.storageEngine }}</td>
-    </tr>
-    <tr>
-      <th class="lcolumn">Tablespace</th>
-      <td>{{ table.tablespace || '-' }}</td>
-    </tr>
-    <tr>
-      <th class="lcolumn">Compressed</th>
-      <td>{{ table.compressed ? 'yes' : 'no' }}</td>
-    </tr>
-    <tr>
-      <th class="lcolumn">Histogram</th>
-      <td>
-        <ng-container *ngIf="table.histogramColumn">
-          <ng-container *ngFor="let col of table.histogramColumn; let last = last">
-            {{ col }}<span *ngIf="!last">, </span>
-          </ng-container>
+  <dl class="dl-horizontal">
+    <dt>Format version</dt>
+    <dd>{{ table.formatVersion }}</dd>
+    <dt>Storage engine</dt>
+    <dd>{{ table.storageEngine }}</dd>
+    <dt>Tablespace</dt>
+    <dd>{{ table.tablespace || '-' }}</dd>
+    <dt>Compressed</dt>
+    <dd>{{ table.compressed ? 'yes' : 'no' }}</dd>
+    <dt>Histogram</dt>
+    <dd>
+      <ng-container *ngIf="table.histogramColumn">
+        <ng-container *ngFor="let col of table.histogramColumn; let last = last">
+          {{ col }}<span *ngIf="!last">, </span>
         </ng-container>
-        <ng-container *ngIf="!table.histogramColumn">-</ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th class="lcolumn">Partition by</th>
-      <td>{{ (table.partitioningInfo?.type | lowercase) || '-' }}</td>
-    </tr>
-    <tr *ngIf="table.partitioningInfo?.timeColumn">
-      <th class="lcolumn">Time partition column</th>
-      <td>{{ table.partitioningInfo?.timeColumn }}('{{ table.partitioningInfo?.timePartitionSchema }}')</td>
-    </tr>
-    <tr *ngIf="table.partitioningInfo?.valueColumn">
-      <th class="lcolumn">Value partition column</th>
-      <td>{{ table.partitioningInfo?.valueColumn }}</td>
-    </tr>
-  </table>
+      </ng-container>
+      <ng-container *ngIf="!table.histogramColumn">-</ng-container>
+    </dd>
+    <dt>Partition by</dt>
+    <dd>{{ (table.partitioningInfo?.type | lowercase) || '-' }}</dd>
+    <ng-container *ngIf="table.partitioningInfo?.timeColumn">
+      <dt>Time partition column</dt>
+      <dd>
+        {{ table.partitioningInfo?.timeColumn }}('{{ table.partitioningInfo?.timePartitionSchema }}')
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="table.partitioningInfo?.valueColumn">
+      <dt>Value partition column</dt>
+      <dd>
+        {{ table.partitioningInfo?.valueColumn }}
+      </dd>
+    </ng-container>
+  </dl>
 </div>

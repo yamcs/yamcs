@@ -20,6 +20,7 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: BucketsPage,
+        data: { 'hasSidebar': false }
       }, {
         path: ':instance/:name',
         component: BucketPlaceholderPage,
@@ -27,6 +28,7 @@ const routes: Routes = [
           {
             path: '**',
             component: BucketPage,
+            data: { 'hasSidebar': false }
           }
         ],
       }

@@ -43,7 +43,7 @@
 }
 
 .ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus, .ya-form textarea:focus {
-  border-color: #5787b1;
+  border-color: #009e87;
 }
 
 .ya-form input[type="radio"] {

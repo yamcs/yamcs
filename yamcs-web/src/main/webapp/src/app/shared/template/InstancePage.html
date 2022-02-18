@@ -136,7 +136,7 @@
       </app-sidebar-nav-item>
 
       <ng-container *ngIf="extraItems.length">
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+        <mat-divider class="extra"></mat-divider>
         <app-sidebar-nav-item *ngFor="let item of extraItems"
                               [routerLink]="'/' + item.path"
                               [queryParams]="{c: yamcs.context}"

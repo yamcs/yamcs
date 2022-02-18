@@ -1,19 +1,15 @@
 <ng-container *ngIf="context$ | async as context">
-  <ng-container *ngIf="status$ | async as status">
-    <app-sidebar-nav-item *ngIf="status.unacknowledgedCount"
-                          color="#a94442"
-                          routerLink="/alarms"
-                          [queryParams]="{c: yamcs.context}">
-      <mat-icon class="item-icon">{{ status.unacknowledgedActive ? 'notifications' : 'notifications_none' }}</mat-icon>
-      Alarms
-      ({{ status.unacknowledgedCount }} unacked)
-    </app-sidebar-nav-item>
-    <app-sidebar-nav-item *ngIf="!status.unacknowledgedCount && status.acknowledgedCount"
-                          routerLink="/alarms"
-                          [queryParams]="{c: yamcs.context}">
-      <mat-icon class="item-icon">{{ status.acknowledgedActive ? 'notifications' : 'notifications_none' }}</mat-icon>
-      Alarms
-      ({{ status.acknowledgedCount }} acked)
-    </app-sidebar-nav-item>
-  </ng-container>
+  <app-sidebar-nav-item routerLink="/alarms"
+                        [queryParams]="{c: yamcs.context}">
+    <mat-icon class="item-icon">notifications_none</mat-icon>
+    Alarms
+    <ng-container *ngIf="status$ | async as status">
+      <div class="count unacked" *ngIf="status.unacknowledgedCount">
+        {{ status.unacknowledgedCount }} unacked
+      </div>
+      <div class="count acked" *ngIf="!status.unacknowledgedCount && status.acknowledgedCount">
+        {{ status.acknowledgedCount }} acked
+      </div>
+    </ng-container>
+  </app-sidebar-nav-item>
 </ng-container>

@@ -7,6 +7,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 @Component({
   selector: 'app-alarm-label',
   templateUrl: './AlarmLabel.html',
+  styleUrls: ['./AlarmLabel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlarmLabel implements OnDestroy {

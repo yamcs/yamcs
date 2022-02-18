@@ -5,10 +5,10 @@
     <span style="flex: 1 1 auto"></span>
 
     <ng-container *ngIf="hasDetailPane">
-      <button mat-button *ngIf="!(showDetailPane$ | async)" (click)="showDetailPane(true)">
+      <button mat-button *ngIf="!(showDetailPane$ | async)" (click)="showDetailPane(true)" color="primary">
         SHOW INFO PANEL
       </button>
-      <button mat-button *ngIf="showDetailPane$ | async" (click)="showDetailPane(false)">
+      <button mat-button *ngIf="showDetailPane$ | async" (click)="showDetailPane(false)" color="primary">
         HIDE INFO PANEL
       </button>
     </ng-container>

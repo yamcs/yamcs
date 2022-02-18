@@ -6,7 +6,7 @@
     <button mat-icon-button
             *ngIf="showMenuToggle$ | async"
             (click)="toggleSidebar()">
-      <mat-icon>menu</mat-icon>
+      <mat-icon>{{ (sidebar$ | async) ? 'menu_open' : 'menu' }}</mat-icon>
     </button>
     <div class="logo-wrapper" [class.nosidebar]="!(showMenuToggle$ | async)">
       <a routerLink="/">

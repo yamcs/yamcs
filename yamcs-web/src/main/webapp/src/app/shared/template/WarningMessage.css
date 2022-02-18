@@ -1,15 +1,16 @@
 .panel {
-    background-color: #fcc;
-    color: crimson;
-    display: flex;
-    align-items: center;
-    margin-top: 1em;
+  background-color: #fcc;
+  color: crimson;
+  display: flex;
+  align-items: center;
+  margin-top: 1em;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .panel .icon {
-    padding: 10px;
+  padding: 10px;
 }
 
 .panel .icon .material-icons {
-    vertical-align: middle;
+  vertical-align: middle;
 }

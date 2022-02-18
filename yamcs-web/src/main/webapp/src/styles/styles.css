@@ -10,7 +10,7 @@ html, body {
 }
 
 body {
-  background-color: #fff;
+  background-color: #f5f5f5;
   /* Without this FF font are too crispy */
   -moz-osx-font-smoothing: grayscale;
 }
@@ -63,6 +63,10 @@ body {
   width: 48px !important;
 }
 
+.mat-slide-toggle-bar {
+  display: block;
+}
+
 .no-select {
   user-select: none;
   -moz-user-select: none;
@@ -80,7 +84,7 @@ body {
 }
 
 .form-content mat-toolbar {
-  background-color: #fff;
+  background-color: #f5f5f5;
   font-size: 12px;
   padding: 0;
 }
@@ -234,9 +238,9 @@ button.ya-button .material-icons {
 }
 
 button.ya-button.primary {
-  background-color: #222d4b;
+  background-color: #009e87;
   color: white;
-  border-color: #5787b1;
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .mat-tab-nav-bar.secondary .mat-tab-link, .mat-tab-group.secondary .mat-tab-label {
@@ -258,6 +262,10 @@ button.ya-button.primary {
 
 .action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button, .filter-bar .search-input {
   margin-right: 7px;
+}
+
+.mat-paginator {
+  background-color: inherit;
 }
 
 .blink {

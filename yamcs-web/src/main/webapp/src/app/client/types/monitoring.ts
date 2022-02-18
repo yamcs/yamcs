@@ -300,3 +300,17 @@ export interface PlaybackRange {
 export interface RequestPlaybackRequest {
   ranges: PlaybackRange[];
 }
+
+export interface PlaybackInfo {
+  interval: number;
+  period: number;
+  requests: PlaybackRequest[];
+}
+
+export interface PlaybackRequest {
+  apid: number;
+  packetType: number;
+  privateHeaderSource: number;
+  start: string;
+  stop: string;
+}

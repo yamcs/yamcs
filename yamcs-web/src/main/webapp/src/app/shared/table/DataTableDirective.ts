@@ -10,32 +10,30 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
     table.ya-data-table {
       border-spacing: 0;
       border-collapse: collapse;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     .ya-data-table th, .ya-data-table td {
       font-size: 12px;
       line-height: 16px;
-      padding-top: 0;
-      padding-bottom: 0;
-      padding-left: 8px;
-      padding-right: 0;
+      padding: 4px 8px 4px 0;
     }
 
     .ya-data-table th {
       text-align: left;
       font-weight: 500;
       color: rgba(0, 0, 0, 0.654902);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.156863);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     .ya-data-table th.lcolumn {
-      border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     .ya-data-table td {
       color: rgba(0, 0, 0, .654);
-      padding: 7px 0 8px 8px;
-      border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      background-color: #fff;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,

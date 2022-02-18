@@ -152,6 +152,21 @@
             [class.selected]="selection.isSelected(row)"
             [class.disabled]="row.link.status === 'DISABLED'"></tr>
       </table>
+
+      <div class="legend">
+        <div class="legend-item">
+          <app-led color="rgba(0, 100, 0)" [fade]="false"></app-led> OK
+        </div>
+        <div class="legend-item">
+          <app-led color="rgba(0, 255, 0)" [fade]="false"></app-led> OK, activity
+        </div>
+        <div class="legend-item">
+          <app-led color="red" [fade]="false"></app-led> Error
+        </div>
+        <div class="legend-item">
+          <app-led color="#aaa" [fade]="false"></app-led> Disabled
+        </div>
+      </div>
     </div>
   </div>
 </app-instance-page>
