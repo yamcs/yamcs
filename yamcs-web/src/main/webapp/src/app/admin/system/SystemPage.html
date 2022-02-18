@@ -52,30 +52,33 @@
     </dl>
     <ng-container *ngIf="plugins$ | async as plugins">
       <h4>Plugins</h4>
-      <table yaDataTable>
+      <table yaDataTable class="expand">
         <tr>
           <th>Name</th>
           <th>Description</th>
           <th>Version</th>
           <th>Maintainer</th>
+          <th class="expand"></th>
         </tr>
         <tr *ngFor="let plugin of plugins">
           <td>{{ plugin.name }}</td>
-          <td>{{ plugin.description || '-' }}</td>
+          <td class="wrap200">{{ plugin.description || '-' }}</td>
           <td>{{ plugin.version || '-' }}</td>
           <td>{{ plugin.vendor || '-' }}</td>
+          <td></td>
         </tr>
       </table>
       <br>
     </ng-container>
     <h4>Root directories</h4>
-    <table yaDataTable>
+    <table yaDataTable class="expand">
       <tr>
         <th>Directory</th>
         <th>Type</th>
         <th>Total space</th>
         <th>Unallocated space</th>
         <th>Usable space</th>
+        <th class="expand"></th>
       </tr>
       <tr *ngFor="let root of info.rootDirectories">
         <td>{{ root.directory }}</td>
@@ -83,6 +86,7 @@
         <td>{{ root.totalSpace | formatBytes }}</td>
         <td>{{ root.unallocatedSpace | formatBytes }}</td>
         <td>{{ root.usableSpace | formatBytes }}</td>
+        <td></td>
       </tr>
     </table>
   </div>

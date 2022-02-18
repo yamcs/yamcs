@@ -5,7 +5,6 @@ import { BehaviorSubject } from 'rxjs';
 import { Gap, PlaybackRange } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
 
 @Component({
   templateUrl: './RequestSingleRangePlaybackDialog.html',
@@ -55,32 +54,15 @@ export class RequestSingleRangePlaybackDialog {
   }
 
   sendRequest() {
-    const ranges = [];
-    const rangeCache = new Map<number, PlaybackRange>();
-    const tolerance = this.form.value['mergeTolerance'] * 60 * 1000;
-
-    for (const gap of this.gaps) {
-      const prev = rangeCache.get(gap.apid);
-      if (prev && (this.toMillis(gap.start) - this.toMillis(prev.stop)) < tolerance) {
-        prev.stop = gap.stop;
-      } else {
-        const range = {
-          apid: gap.apid,
-          start: gap.start,
-          stop: gap.stop,
-        };
-        ranges.push(range);
-        rangeCache.set(gap.apid, range);
-      }
-    }
+    const range: PlaybackRange = {
+      apid: Number(this.form.value['apid']),
+      start: this.form.value['start'],
+      stop: this.form.value['stop'],
+    };
 
     this.dialogRef.close({
       link: this.form.value['link'],
-      ranges,
+      ranges: [range],
     });
-  }
-
-  private toMillis(dateString: string) {
-    return utils.toDate(dateString).getTime();
   }
 }

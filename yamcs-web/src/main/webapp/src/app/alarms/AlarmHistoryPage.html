@@ -162,9 +162,11 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
 
-      <div class="table-footer">
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
         <button class="ya-button" [disabled]="true">Load More</button>
-      </div>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
     </div>
   </div>
 </app-instance-page>

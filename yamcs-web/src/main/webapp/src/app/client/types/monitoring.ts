@@ -302,15 +302,18 @@ export interface RequestPlaybackRequest {
 }
 
 export interface PlaybackInfo {
-  interval: number;
-  period: number;
+  interval: string;
+  period: string;
   requests: PlaybackRequest[];
 }
 
 export interface PlaybackRequest {
+  requestTime: string;
   apid: number;
   packetType: number;
   privateHeaderSource: number;
   start: string;
   stop: string;
+  status: string;
+  tmCount: number;
 }

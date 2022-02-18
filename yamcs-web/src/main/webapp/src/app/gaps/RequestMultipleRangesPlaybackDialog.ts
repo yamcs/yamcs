@@ -49,6 +49,7 @@ export class RequestMultipleRangesPlaybackDialog {
     const rangeCache = new Map<number, PlaybackRange>();
     const tolerance = this.form.value['mergeTolerance'] * 60 * 1000;
 
+    this.gaps.sort((a, b) => a.start.localeCompare(b.start));
     for (const gap of this.gaps) {
       const prev = rangeCache.get(gap.apid);
       if (prev && (this.toMillis(gap.start) - this.toMillis(prev.stop)) < tolerance) {

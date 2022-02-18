@@ -256,6 +256,10 @@ button.ya-button.primary {
   display: flex;
 }
 
+input[type="checkbox"], input[type="radio"] {
+  accent-color: #009e87;
+}
+
 .action-bar {
   padding-top: 16px;
 }

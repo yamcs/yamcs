@@ -12,7 +12,7 @@
   </ng-container>
 
   <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef>Name</th>
+    <th mat-header-cell *matHeaderCellDef>Queue</th>
     <td mat-cell *matCellDef="let queue">
       {{ queue.name }}
     </td>
@@ -23,7 +23,7 @@
     <td mat-cell *matCellDef="let queue">
       <app-label *ngFor="let group of queue.groups" icon="people">{{ group }}</app-label>
       <app-label *ngFor="let user of queue.users" icon="person">{{ user }}</app-label>
-      <ng-container *ngIf="!queue.groups && !queue.users">-</ng-container>
+      <ng-container *ngIf="!queue.groups && !queue.users">any</ng-container>
     </td>
   </ng-container>
 

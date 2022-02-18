@@ -35,6 +35,12 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
       border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       background-color: #fff;
     }
+
+    .ya-data-table td.wrap200 {
+      min-width: 200px;
+      white-space: normal;
+      word-break: break-word;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

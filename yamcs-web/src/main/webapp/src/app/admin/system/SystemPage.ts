@@ -7,6 +7,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './SystemPage.html',
+  styleUrls: ['./SystemPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SystemPage implements OnDestroy {

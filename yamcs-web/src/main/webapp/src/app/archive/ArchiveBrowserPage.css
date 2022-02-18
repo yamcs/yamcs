@@ -5,12 +5,12 @@
 }
 
 .ya-button.active {
-  color: #2196f3;
+  color: #009e87;
 }
 
 .timeline-container {
   line-height: 0;
-  border-top: 1px solid #d1d5da;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
   position: absolute;
   top: 36px;
   bottom: 0;
@@ -51,4 +51,5 @@ label.legend {
   font-size: small;
   padding: 3px 5px;
   margin-right: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }

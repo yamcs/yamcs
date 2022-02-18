@@ -125,7 +125,8 @@ export class Hex implements AfterViewInit, OnChanges {
   private drawHex(line: Line, y: number) {
     let x = this.charWidth * (line.charCountHex + ': ').length;
 
-    for (const component of line.hexComponents) {
+    for (let i = 0; i < line.hexComponents.length; i++) {
+      const component = line.hexComponents[i];
       if (component.type === 'word') {
 
         // Highlight entire word when any of its four nibbles is hovered
@@ -157,9 +158,9 @@ export class Hex implements AfterViewInit, OnChanges {
           let bgColor;
           let fgColor = '#000000';
           if (this.highlight && this.highlight.overlaps(nibble.range)) {
-            bgColor = '#aec5d9';
+            bgColor = '#def0ed';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
-            bgColor = '#5787b1';
+            bgColor = '#009e87';
             fgColor = '#ffffff';
           }
           if (bgColor) {
@@ -198,11 +199,11 @@ export class Hex implements AfterViewInit, OnChanges {
 
         let bgColor;
         if (this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
-          bgColor = '#aec5d9';
+          bgColor = '#def0ed';
         } else if (this.selection && this.selection.containsBitExclusive(component.bitpos)) {
-          bgColor = '#5787b1';
+          bgColor = '#009e87';
         }
-        if (bgColor) {
+        if (bgColor && i !== line.hexComponents.length - 1) {
           this.g.fillRect({
             x: Math.floor(x),
             y: Math.floor(y),
@@ -251,9 +252,9 @@ export class Hex implements AfterViewInit, OnChanges {
           let bgColor;
           let fgColor = '#777';
           if (this.highlight && this.highlight.overlaps(c.range)) {
-            bgColor = '#aec5d9';
+            bgColor = '#def0ed';
           } else if (this.selection && this.selection.overlaps(c.range)) {
-            bgColor = '#5787b1';
+            bgColor = '#009e87';
             fgColor = '#ffffff';
           }
           if (bgColor) {

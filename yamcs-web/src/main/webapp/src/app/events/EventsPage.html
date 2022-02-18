@@ -99,7 +99,7 @@
 
     <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container cdkColumnDef="severity">
-        <th mat-header-cell *cdkHeaderCellDef></th>
+        <th mat-header-cell *cdkHeaderCellDef>Severity</th>
         <td mat-cell *cdkCellDef="let row">
           <app-event-severity [severity]="row.severity"></app-event-severity>
         </td>

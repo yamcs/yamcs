@@ -178,7 +178,7 @@ export class GapsPage {
     }
 
     this.yamcs.yamcsClient.getGaps(this.yamcs.instance!, options)
-      .then(page => this.dataSource.data = page.gaps || [])
+      .then(page => this.dataSource.data = (page.gaps || []).reverse())
       .catch(err => this.messageService.showError(err));
   }
 

@@ -18,8 +18,9 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
+    <app-gaps-page-tabs></app-gaps-page-tabs>
     <form [formGroup]="filterForm">
-      <div class="filter-bar">
+      <div class="filter-bar" style="margin-top: 16px">
         <app-select [options]="apidOptions$ | async"
                     formControlName="apid"></app-select>
         <app-select #intervalSelect
