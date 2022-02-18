@@ -67,7 +67,9 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
 
     @Override
     public byte[] process(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
+        byte[] binary = new byte[pc.getBinary().length];
+        System.arraycopy(pc.getBinary(), 0, binary, 0, pc.getBinary().length);
+        
         if(binary.length < MIN_CMD_LENGTH) {
             String msg = ("Short command received, length:"+binary.length+", expected minimum length: "+MIN_CMD_LENGTH);
             log.warn(msg);
