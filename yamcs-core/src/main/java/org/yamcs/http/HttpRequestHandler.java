@@ -183,10 +183,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Note: pathString starts with / so path[0] is always empty
         String[] path = pathString.split("/", 3);
+        String pathComponent = path.length >= 2 ? path[1] : "";
 
         User user;
 
-        switch (path[1]) {
+        switch (pathComponent) {
         case STATIC_PATH:
             if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
                 sendPlainTextError(ctx, req, FORBIDDEN);
@@ -203,7 +204,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         default: // continue below
         }
 
-        Handler handler = httpServer.createHandler(path[1]);
+        Handler handler = httpServer.createHandler(pathComponent);
         if (handler == null) {
             handler = httpServer.createHandler(ANY_PATH);
         }
