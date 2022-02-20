@@ -36,6 +36,7 @@ public class SessionsApi extends AbstractSessionsApi<Context> {
     }
 
     private SessionInfo toSession(UserSession session, SessionManager sessionManager, Instant now) {
+        long lifespan = sessionManager.getSessionIdleTime();
         SessionInfo.Builder proto = SessionInfo.newBuilder()
                 .setId(session.getId())
                 .setUsername(session.getLogin())
@@ -43,7 +44,7 @@ public class SessionsApi extends AbstractSessionsApi<Context> {
                 .setHostname(session.getHostname())
                 .setStartTime(toTimestamp(session.getStartTime()))
                 .setLastAccessTime(toTimestamp(session.getLastAccessTime()))
-                .setExpirationTime(toTimestamp(session.getExpirationTime(sessionManager.getSessionIdleTime(), now)));
+                .setExpirationTime(toTimestamp(session.getExpirationTime(lifespan)));
         return proto.build();
     }
 

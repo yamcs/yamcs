@@ -17,45 +17,46 @@
 
 <body>
   <div class="wrapper">
-    <div class="console">
-      <img src="{{ contextPath }}/static/console.svg">
-    </div>
-    <div class="login-panel">
+    <div class="grid">
       <div class="logo">
         <a href="{{ contextPath }}/">
-          <img src="{{ contextPath }}/static/yamcs300.png">
+          <img src="{{ contextPath }}/static/yamcs300.png" style="width: 200px">
         </a>
       </div>
-      <div class="login-form">
-        <h3>Sign in to your account</h3>
-        <form method="post" action="{{ contextPath }}/auth/actions/login">
-          <label>
-            Username
-            <input type="text" name="username" autofocus autocomplete="off">
-          </label>
-          <br>
-          <label>
-            Password
-            <input type="password" name="password" autocomplete="off">
-          </label>
+      <div class="login-panel">
+        <div class="login-form">
+          <h3>Sign in to your account</h3>
+          <form method="post" onsubmit="login.disabled = true; return true;" action="{{ contextPath }}/auth/actions/login">
+            <label>
+              Username
+              <input type="text" name="username" autofocus autocomplete="off">
+            </label>
+            <br>
+            <label>
+              Password
+              <input type="password" name="password" autocomplete="off">
+            </label>
 
-          <br>
+            <br>
 
-          {% if errorMessage %}
-          <p class="error-message">
-            {{ errorMessage }}
-          </p>
-          {% endif %}
+            {% if errorMessage %}
+            <p class="error-message">
+              {{ errorMessage }}
+            </p>
+            {% endif %}
 
-          <input type="hidden" name="client_id" value="{{ request.client_id }}">
-          <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
+            <input type="hidden" name="client_id" value="{{ request.client_id }}">
+            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
           
-          {% if request.state %}
-          <input type="hidden" name="state" value="{{ request.state }}">
-          {% endif %}
+            {% if request.state %}
+            <input type="hidden" name="state" value="{{ request.state }}">
+            {% endif %}
           
-          <input type="submit" value="Sign in">
-        </form>
+            <div style="text-align: right">
+              <input name="login" type="submit" value="Sign in">
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>

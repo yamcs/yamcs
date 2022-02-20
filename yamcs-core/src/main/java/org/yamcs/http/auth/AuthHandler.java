@@ -84,7 +84,7 @@ public class AuthHandler extends Handler {
             Path staticRoot = yamcs.getCacheDirectory().resolve("auth");
             FileUtils.deleteRecursivelyIfExists(staticRoot);
             Files.createDirectory(staticRoot);
-            String[] staticFiles = new String[] { "console.svg", "auth.css", "yamcs300.png" };
+            String[] staticFiles = new String[] { "auth.css", "yamcs300.png" };
             for (String staticFile : staticFiles) {
                 try (InputStream resource = getClass().getResourceAsStream("/auth/static/" + staticFile)) {
                     Files.copy(resource, staticRoot.resolve(staticFile));
@@ -150,10 +150,10 @@ public class AuthHandler extends Handler {
             if (err != null) {
                 if (err instanceof AuthenticationException || err instanceof AuthorizationException) {
                     log.info("Denying access to '" + request.getUsername() + "': " + err.getMessage());
-                    showLoginError(ctx, HttpResponseStatus.FORBIDDEN, "Access Denied");
+                    showLoginError(ctx, request, "Invalid username or password");
                 } else {
                     log.error("Unexpected error while attempting user login", err);
-                    showLoginError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Server Error");
+                    showLoginError(ctx, request, "Server Error");
                 }
             } else {
                 redirectWithCode(ctx, info, request);
@@ -190,13 +190,14 @@ public class AuthHandler extends Handler {
         ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
     }
 
-    private void showLoginError(HandlerContext ctx, HttpResponseStatus status, String errorMessage) {
+    private void showLoginError(HandlerContext ctx, LoginRequest request, String errorMessage) {
         Map<String, Object> vars = new HashMap<>();
         vars.put("contextPath", ctx.getContextPath());
+        vars.put("request", request.getMap());
         if (errorMessage != null) {
             vars.put("errorMessage", errorMessage);
         }
-        ctx.render(status, "/auth/templates/authorize.html", vars);
+        ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
     }
 
     private void redirectWithCode(HandlerContext ctx, AuthenticationInfo info, LoginRequest request) {

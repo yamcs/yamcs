@@ -53,11 +53,7 @@ public class UserSession {
     }
 
     public Instant getExpirationTime(long lifespan) {
-        return getExpirationTime(lifespan, Instant.now());
-    }
-
-    public Instant getExpirationTime(long lifespan, Instant relto) {
-        return relto.plus(lifespan, ChronoUnit.MILLIS);
+        return lastAccessTime.plus(lifespan, ChronoUnit.MILLIS);
     }
 
     void touch() {
