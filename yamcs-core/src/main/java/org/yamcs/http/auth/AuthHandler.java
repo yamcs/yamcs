@@ -50,6 +50,7 @@ import com.google.common.cache.CacheBuilder;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringEncoder;
@@ -254,7 +255,8 @@ public class AuthHandler extends Handler {
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+            UserSession session = createSession(ctx, authenticationInfo.getUsername());
+            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
             sendNewAccessToken(ctx, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -278,7 +280,8 @@ public class AuthHandler extends Handler {
         // Maybe it's a code coming from one of the AuthModules
         if (authenticationInfo == null) {
             try {
-                authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode)).get();
+                authenticationInfo = getSecurityStore()
+                        .login(new ThirdPartyAuthorizationCode(authcode)).get();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
@@ -294,13 +297,19 @@ public class AuthHandler extends Handler {
             }
         }
 
+        UserSession session = createSession(ctx, authenticationInfo.getUsername());
+
         // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
         // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
         // using the /auth/spnego route (= alternative refresh).
         String refreshToken = null;
-        if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
-            createSession(ctx, authenticationInfo.getUsername());
-            refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+        if (authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule) {
+            // We don't know the underlying expiration time. To be reconsidered when
+            // OP and RP are split (then spnego occurs only on the OP).
+            long lifespan = getSecurityStore().getAccessTokenLifespan();
+            session.setLifespan(lifespan);
+        } else {
+            refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
         }
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
     }
@@ -312,7 +321,14 @@ public class AuthHandler extends Handler {
         String hostname = address.getHostName();
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();
-        return sessionManager.createSession(username, ipAddress, hostname);
+        UserSession session = sessionManager.createSession(username, ipAddress, hostname);
+
+        String userAgent = ctx.getHeader(HttpHeaderNames.USER_AGENT);
+        if (userAgent != null) {
+            session.getClients().add(userAgent);
+        }
+
+        return session;
     }
 
     /**

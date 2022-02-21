@@ -41,7 +41,7 @@ public class SecurityStore {
     private Directory directory;
 
     /**
-     * Tracks user sessions (associated with refresh tokens).
+     * Tracks user sessions.
      */
     private SessionManager sessionManager;
 

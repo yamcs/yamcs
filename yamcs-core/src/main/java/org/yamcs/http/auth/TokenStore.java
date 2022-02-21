@@ -15,6 +15,9 @@ import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;
+import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SessionManager;
+import org.yamcs.security.UserSession;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -31,7 +34,7 @@ public class TokenStore extends AbstractHttpService {
     private final ConcurrentHashMap<String, AuthenticationInfo> accessTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
 
-    private Map<Hmac, AuthenticationInfo> refreshTokens = new HashMap<>();
+    private Map<Hmac, RefreshState> refreshTokens = new HashMap<>();
 
     private Cache<Hmac, RefreshResult> refreshCache = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.SECONDS)
@@ -100,17 +103,17 @@ public class TokenStore extends AbstractHttpService {
 
     public synchronized void forgetUser(String username) {
         refreshTokens.entrySet().removeIf(entry -> {
-            return username.equals(entry.getValue().getUsername());
+            return username.equals(entry.getValue().authenticationInfo.getUsername());
         });
         accessTokens.entrySet().removeIf(entry -> {
             return username.equals(entry.getValue().getUsername());
         });
     }
 
-    public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo) {
+    public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo, UserSession session) {
         String refreshToken = UUID.randomUUID().toString();
         Hmac hmac = new Hmac(refreshToken);
-        refreshTokens.put(hmac, authenticationInfo);
+        refreshTokens.put(hmac, new RefreshState(authenticationInfo, session));
         return refreshToken;
     }
 
@@ -125,10 +128,11 @@ public class TokenStore extends AbstractHttpService {
      */
     public synchronized RefreshResult verifyRefreshToken(String refreshToken) {
         Hmac hmac = new Hmac(refreshToken);
-        AuthenticationInfo authenticationInfo = refreshTokens.get(hmac);
-        if (authenticationInfo != null) { // Token valid, generate new token (once only)
-            String nextToken = generateRefreshToken(authenticationInfo);
-            RefreshResult result = new RefreshResult(authenticationInfo, nextToken);
+        RefreshState state = refreshTokens.get(hmac);
+        if (state != null) { // Token valid, generate new token (once only)
+            String nextToken = generateRefreshToken(state.authenticationInfo, state.userSession);
+            renewSession(state.userSession);
+            RefreshResult result = new RefreshResult(state.authenticationInfo, nextToken);
             refreshCache.put(hmac, result);
             refreshTokens.remove(hmac);
             return result;
@@ -143,10 +147,26 @@ public class TokenStore extends AbstractHttpService {
         }
     }
 
+    private void renewSession(UserSession userSession) {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        SessionManager sessionManager = securityStore.getSessionManager();
+        sessionManager.renewSession(userSession.getId());
+    }
+
     public synchronized void revokeRefreshToken(String refreshToken) {
         Hmac hmac = new Hmac(refreshToken);
         refreshTokens.remove(hmac);
         refreshCache.invalidate(hmac);
+    }
+
+    private static final class RefreshState {
+        final AuthenticationInfo authenticationInfo;
+        final UserSession userSession;
+
+        RefreshState(AuthenticationInfo authenticationInfo, UserSession userSession) {
+            this.authenticationInfo = authenticationInfo;
+            this.userSession = userSession;
+        }
     }
 
     /**

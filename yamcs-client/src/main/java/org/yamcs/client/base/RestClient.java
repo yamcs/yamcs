@@ -287,6 +287,10 @@ public class RestClient {
         httpClient.setMaxResponseLength(size);
     }
 
+    public void setUserAgent(String userAgent) {
+        httpClient.setUserAgent(userAgent);
+    }
+
     public void close() {
         httpClient.close();
     }

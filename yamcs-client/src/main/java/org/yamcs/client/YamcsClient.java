@@ -690,6 +690,7 @@ public class YamcsClient {
                 }
             }
             if (userAgent != null) {
+                client.baseClient.setUserAgent(userAgent);
                 client.websocketClient.setUserAgent(userAgent);
             }
             return client;

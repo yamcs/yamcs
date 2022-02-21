@@ -28,15 +28,13 @@ public class SessionsApi extends AbstractSessionsApi<Context> {
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();
 
-        Instant now = Instant.now(); // Use same relto for all expiration times
         ListSessionsResponse.Builder responseb = ListSessionsResponse.newBuilder();
         sessionManager.getSessions().stream()
-                .forEach(session -> responseb.addSessions(toSession(session, sessionManager, now)));
+                .forEach(session -> responseb.addSessions(toSession(session)));
         observer.complete(responseb.build());
     }
 
-    private SessionInfo toSession(UserSession session, SessionManager sessionManager, Instant now) {
-        long lifespan = sessionManager.getSessionIdleTime();
+    private static SessionInfo toSession(UserSession session) {
         SessionInfo.Builder proto = SessionInfo.newBuilder()
                 .setId(session.getId())
                 .setUsername(session.getLogin())
@@ -44,7 +42,8 @@ public class SessionsApi extends AbstractSessionsApi<Context> {
                 .setHostname(session.getHostname())
                 .setStartTime(toTimestamp(session.getStartTime()))
                 .setLastAccessTime(toTimestamp(session.getLastAccessTime()))
-                .setExpirationTime(toTimestamp(session.getExpirationTime(lifespan)));
+                .setExpirationTime(toTimestamp(session.getExpirationTime()))
+                .addAllClients(session.getClients());
         return proto.build();
     }
 

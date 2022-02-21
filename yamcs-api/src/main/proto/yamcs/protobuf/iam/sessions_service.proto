@@ -27,6 +27,7 @@ message ListSessionsResponse {
 }
 
 message SessionInfo {
+  // Session identifier
   optional string id = 1;
   optional string username = 2;
   optional string ipAddress = 3;
@@ -34,4 +35,5 @@ message SessionInfo {
   optional google.protobuf.Timestamp startTime = 5;
   optional google.protobuf.Timestamp lastAccessTime = 6;
   optional google.protobuf.Timestamp expirationTime = 7;
+  repeated string clients = 8;
 }

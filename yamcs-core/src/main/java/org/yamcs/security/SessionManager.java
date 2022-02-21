@@ -21,7 +21,7 @@ import org.yamcs.logging.Log;
  */
 public class SessionManager {
 
-    private static final Log log = new Log(SessionManager.class);
+    protected static final Log log = new Log(SessionManager.class);
     private static final SecureRandom RG = new SecureRandom();
 
     /**
@@ -38,13 +38,9 @@ public class SessionManager {
         yamcs.getThreadPoolExecutor().scheduleWithFixedDelay(this::purgeExpiredSessions, 10, 10, SECONDS);
     }
 
-    public long getSessionIdleTime() {
-        return SESSION_IDLE;
-    }
-
     public UserSession createSession(String login, String ipAddress, String hostname) {
         String sessionId = generateSessionId();
-        UserSession session = new UserSession(sessionId, login, ipAddress, hostname);
+        UserSession session = new UserSession(sessionId, login, ipAddress, hostname, SESSION_IDLE);
         sessions.put(sessionId, session);
         return session;
     }
@@ -73,11 +69,9 @@ public class SessionManager {
     }
 
     private void purgeExpiredSessions() {
-        Set<UserSession> toExpire = sessions.values().stream().filter(session -> {
-            boolean expired = session.isExpired(SESSION_IDLE);
-            System.out.println("Expired? " + expired);
-            return expired;
-        }).collect(Collectors.toSet());
+        Set<UserSession> toExpire = sessions.values().stream()
+                .filter(session -> session.isExpired())
+                .collect(Collectors.toSet());
         for (UserSession expiredSession : toExpire) {
             log.info("Session expired: {}", expiredSession);
             sessions.remove(expiredSession.getId());
