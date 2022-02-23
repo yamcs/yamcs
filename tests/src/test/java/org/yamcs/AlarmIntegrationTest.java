@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.yamcs.client.AlarmSubscription;
@@ -15,6 +16,7 @@ import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
+import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.EventAlarmData;
@@ -209,8 +211,9 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         Instant t0 = Instant.parse("2022-01-19T21:21:00Z");
         Instant t1 = t0.plusSeconds(2);
         ArchiveClient archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
-        List<AlarmData> l1 = archiveClient.listAlarms(t0, t1).get();
-        // System.out.println(l);
+        List<AlarmData> l1 = archiveClient.listAlarms(t0, t1).get().stream()
+                .filter(alarm -> alarm.getType() == AlarmType.PARAMETER)
+                .collect(Collectors.toList());
         assertEquals(2, l1.size());
 
         List<AlarmData> l2 = archiveClient.listAlarms("/REFMDB/SUBSYS1/FloatPara1_10_3", t0, t1).get();
