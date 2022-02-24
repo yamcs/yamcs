@@ -215,7 +215,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     // MARK: - TcDataLink
 
     @Override
-    public void sendTc(PreparedCommand pc) {
+    public boolean sendCommand(PreparedCommand pc) {
         String reason;
 
         byte[] binary = cmdPostProcessor.process(pc);
@@ -225,7 +225,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
                 sendBuffer(binary);
                 dataOutCount.getAndIncrement();
                 ackCommand(pc.getCommandId());
-                return;
+                return true;
             } catch (IOException e) {
                 reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
                 log.warn(reason);
@@ -236,6 +236,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         }
 
         failedCommand(pc.getCommandId(), reason);
+        return true;
     }
 
     @Override
@@ -336,5 +337,4 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     protected Status connectionStatus() {
         return !isSocketOpen() ? Status.UNAVAIL : Status.OK;
     }
-
 }

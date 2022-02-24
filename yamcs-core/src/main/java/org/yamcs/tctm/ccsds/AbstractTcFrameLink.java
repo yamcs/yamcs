@@ -137,9 +137,9 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     }
 
     @Override
-    public void sendTc(PreparedCommand preparedCommand) {
-        throw new ConfigurationException(
-                "This class cannot send command directly, please remove the stream associated to the main link");
+    public boolean sendCommand(PreparedCommand preparedCommand) {
+      throw new ConfigurationException(
+          "This class cannot send command directly, please remove the stream associated to the main link");
     }
 
     /**

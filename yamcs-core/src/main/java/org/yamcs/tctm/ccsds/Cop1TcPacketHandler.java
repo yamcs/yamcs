@@ -191,7 +191,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void sendTc(PreparedCommand pc) {
+    public boolean sendCommand(PreparedCommand pc) {
         boolean tcBypassFlag = isBypass(pc);
         log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getLoggingId(),
                 tcBypassFlag,
@@ -204,8 +204,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
                             + vmp.maxFrameLength + "; frame overhead: " + framingLength);
-            return;
+            return true;
         }
+
         if (!cop1Active) {
             sendSingleTc(pc, bypassAll || tcBypassFlag);
         } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
@@ -215,6 +216,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 queueTC(pc);
             });
         }
+        return true;
     }
 
     private String strState() {
@@ -1276,5 +1278,4 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     protected Status connectionStatus() {
         return Status.OK;
     }
-
 }
