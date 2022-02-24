@@ -97,6 +97,14 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     }
 
     @Override
+    public boolean sendCommand(PreparedCommand preparedCommand) {
+        sendTc(preparedCommand);
+      //TODO:Return value should not be hard-coded(?)
+        return true;
+
+    }
+
+    @Override
     public void run() {
         if (initialDelay > 0) {
             try {

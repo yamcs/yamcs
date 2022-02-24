@@ -368,6 +368,13 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
+        public boolean sendCommand(PreparedCommand preparedCommand) {
+            sendTc(preparedCommand);
+            // TODO:Return value should not be hard-coded(?)
+            return true;
+        }
+
+        @Override
         protected Status connectionStatus() {
             return Status.OK;
         }

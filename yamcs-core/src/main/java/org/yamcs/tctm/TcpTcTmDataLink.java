@@ -337,4 +337,11 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         return !isSocketOpen() ? Status.UNAVAIL : Status.OK;
     }
 
+    @Override
+    public boolean sendCommand(PreparedCommand preparedCommand) {
+        sendTc(preparedCommand);
+        // TODO:Return value should not be hard-coded(?)
+        return true;
+    }
+
 }

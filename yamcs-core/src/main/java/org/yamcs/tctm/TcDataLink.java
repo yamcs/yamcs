@@ -10,8 +10,14 @@ import org.yamcs.commanding.PreparedCommand;
  *
  */
 public interface TcDataLink extends Link {
-
+  
+  /**
+   * Implement {@link #sendCommand(PreparedCommand)}  instead
+   */
+    @Deprecated
     void sendTc(PreparedCommand preparedCommand);
+    
+    boolean sendCommand(PreparedCommand preparedCommand);
 
     void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher);
 }
