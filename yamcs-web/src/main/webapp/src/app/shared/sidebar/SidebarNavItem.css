@@ -7,10 +7,6 @@ a.subitem.mat-list-item {
   height: 32px;
 }
 
-.link-active {
-  background-color: #009e87 !important;
-}
-
 :host:focus {
   outline: none;
 }
@@ -32,5 +28,9 @@ a {
 }
 
 .mat-list-item:hover, .mat-list-item:focus {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mat-list-item.link-active, .mat-list-item.link-active:hover, .mat-list-item.link-active:focus {
+  background-color: #009e87 !important;
 }

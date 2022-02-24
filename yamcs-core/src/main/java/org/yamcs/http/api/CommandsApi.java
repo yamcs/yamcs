@@ -203,7 +203,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             if (ctx.user.getClearance() == null) {
                 throw new ForbiddenException("Not cleared for commanding");
             }
-            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
+            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toUpperCase());
             Levels level = null;
             if (preparedCommand.getMetaCommand().getEffectiveDefaultSignificance() != null) {
                 level = preparedCommand.getMetaCommand().getEffectiveDefaultSignificance().getConsequenceLevel();

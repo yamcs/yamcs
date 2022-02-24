@@ -143,11 +143,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
             try {
                 handleRequest(ctx, req);
+            } catch (InternalServerErrorException e) {
+                log.error(req.uri(), e);
+                sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (HttpException e) {
                 log.warn("{}: {}", req.uri(), e.getMessage());
                 sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (Throwable t) {
-                log.error("{}", req.uri(), t);
+                log.error(req.uri(), t);
                 sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
 

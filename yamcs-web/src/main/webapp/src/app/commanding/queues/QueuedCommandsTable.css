@@ -9,6 +9,13 @@
 }
 
 .args .value {
-  color: #0055aa;
+  color: grey;
   padding-left: 10px;
+}
+
+.args td, .args th {
+  border: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: 'Roboto Mono', monospace;
 }

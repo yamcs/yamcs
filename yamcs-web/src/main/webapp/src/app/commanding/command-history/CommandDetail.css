@@ -24,6 +24,6 @@
 }
 
 .command-text .args .value {
-  color: #0055aa;
+  color: grey;
   padding-left: 10px;
 }

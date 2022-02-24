@@ -71,7 +71,7 @@
   width: 16px !important;
 }
 
-.ya-data-table .selected {
+.ya-data-table .selected td {
   background-color: rgba(0, 158, 135, 0.15) !important;
 }
 

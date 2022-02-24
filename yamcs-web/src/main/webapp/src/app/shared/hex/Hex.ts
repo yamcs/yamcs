@@ -158,7 +158,7 @@ export class Hex implements AfterViewInit, OnChanges {
           let bgColor;
           let fgColor = '#000000';
           if (this.highlight && this.highlight.overlaps(nibble.range)) {
-            bgColor = '#def0ed';
+            bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
             bgColor = '#009e87';
             fgColor = '#ffffff';
@@ -199,7 +199,7 @@ export class Hex implements AfterViewInit, OnChanges {
 
         let bgColor;
         if (this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
-          bgColor = '#def0ed';
+          bgColor = 'lightgrey';
         } else if (this.selection && this.selection.containsBitExclusive(component.bitpos)) {
           bgColor = '#009e87';
         }
@@ -252,7 +252,7 @@ export class Hex implements AfterViewInit, OnChanges {
           let bgColor;
           let fgColor = '#777';
           if (this.highlight && this.highlight.overlaps(c.range)) {
-            bgColor = '#def0ed';
+            bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(c.range)) {
             bgColor = '#009e87';
             fgColor = '#ffffff';

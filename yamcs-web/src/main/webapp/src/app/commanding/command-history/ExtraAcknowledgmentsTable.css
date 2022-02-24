@@ -14,7 +14,3 @@ table.inline td {
 table.inline td:not(:first-child), table.inline th:not(:first-child) {
     padding-left: 10px;
 }
-
-table tr:last-child td {
-    border-bottom: none;
-}

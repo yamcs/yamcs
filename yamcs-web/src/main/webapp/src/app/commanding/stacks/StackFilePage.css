@@ -25,7 +25,7 @@ table.args td.key {
 }
 
 table.args td.value {
-  color: #0055aa;
+  color: grey;
   padding-left: 10px;
 }
 
@@ -47,7 +47,7 @@ div.entry div.out {
 }
 
 div.entry.selected div.in, div.entry.selected div.out {
-  border-color: #2196f3;
+  border-color: #009e87;
 }
 
 div.entry .seq {
@@ -68,7 +68,7 @@ div.entry div.in .seq {
 }
 
 div.entry.selected .seq {
-  color: #2196f3;
+  color: #009e87;
 }
 
 div.entry .body {
