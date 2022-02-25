@@ -136,7 +136,11 @@ export class ParameterDataTab {
     this.updateURL();
     const options: GetParameterValuesOptions = {};
     if (this.validStart) {
-      options.start = this.validStart.toISOString();
+      // When descending, Yamcs does not include start bound, so make sure
+      // the user's indicated start is included.
+      const start = new Date(this.validStart.getTime());
+      start.setUTCMilliseconds(this.validStart.getUTCMilliseconds() - 1);
+      options.start = start.toISOString();
     }
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
@@ -154,7 +158,11 @@ export class ParameterDataTab {
   loadMoreData() {
     const options: GetParameterValuesOptions = {};
     if (this.validStart) {
-      options.start = this.validStart.toISOString();
+      // When descending, Yamcs does not include start bound, so make sure
+      // the user's indicated start is included.
+      const start = new Date(this.validStart.getTime());
+      start.setUTCMilliseconds(this.validStart.getUTCMilliseconds() - 1);
+      options.start = start.toISOString();
     }
     this.dataSource.loadMoreData(options);
   }
