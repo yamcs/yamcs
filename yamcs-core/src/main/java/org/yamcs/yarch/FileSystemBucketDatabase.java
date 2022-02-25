@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -146,8 +147,21 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         b.setCreated(attrs.creationTime().toMillis());
         b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
         b.setMaxSize(MAX_BUCKET_SIZE);
-        // Commented out because it slows listings down
-        // b.setSize(calculateSize(location));
+
+        AtomicLong size = new AtomicLong(0);
+        AtomicInteger objectCount = new AtomicInteger(0);
+        Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+        Files.walkFileTree(location, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                size.addAndGet(attrs.size());
+                objectCount.incrementAndGet();
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        b.setSize(size.get());
+        b.setNumObjects(objectCount.get());
         return b.build();
     }
 
@@ -168,18 +182,5 @@ public class FileSystemBucketDatabase implements BucketDatabase {
 
     public Path getRootPath() {
         return root;
-    }
-
-    private static long calculateSize(Path dir) throws IOException {
-        AtomicLong size = new AtomicLong(0);
-        Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
-        Files.walkFileTree(dir, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                size.addAndGet(attrs.size());
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        return size.get();
     }
 }

@@ -70,7 +70,7 @@ public class FileSystemBucket implements Bucket {
 
                 if (includeHidden || !Files.isHidden(dir)) {
                     // By convention, empty folders are represented as objects with a terminating slash
-                    if (prefix == null || rel.startsWith(prefix)) {
+                    if (!Files.isSameFile(root, dir) && (prefix == null || rel.startsWith(prefix))) {
                         try (DirectoryStream<Path> directory = Files.newDirectoryStream(dir)) {
                             if (!directory.iterator().hasNext()) {
                                 ObjectProperties props = toObjectProperties(rel, dir, attrs);
