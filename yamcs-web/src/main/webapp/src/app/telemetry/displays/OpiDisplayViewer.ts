@@ -167,7 +167,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       this.yamcs, this.messageService));
 
     this.display.addEventListener('opendisplay', evt => {
-      this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
+      if (evt.path.startsWith('/')) {
+        this.router.navigateByUrl(`/telemetry/displays/files${evt.path}?c=${this.yamcs.context}`);
+      } else {
+        this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
+      }
     });
 
     this.display.addEventListener('closedisplay', evt => {
