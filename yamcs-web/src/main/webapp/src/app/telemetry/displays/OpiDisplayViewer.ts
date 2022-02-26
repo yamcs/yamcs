@@ -8,6 +8,7 @@ import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
+import { OpiDisplayImageResolver } from './OpiDisplayImageResolver';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 
@@ -33,6 +34,9 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   private storageClient: StorageClient;
 
+  // Parent element, used to calculate 100% bounds (excluding scroll size)
+  private viewerContainerEl: HTMLDivElement;
+
   @ViewChild('displayContainer', { static: true })
   private displayContainer: ElementRef;
 
@@ -53,6 +57,10 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     @Inject(APP_BASE_HREF) private baseHref: string,
   ) {
     this.storageClient = yamcs.createStorageClient();
+  }
+
+  setViewerContainerEl(viewerContainerEl: HTMLDivElement) {
+    this.viewerContainerEl = viewerContainerEl;
   }
 
   private updateSubscription() {
@@ -157,6 +165,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
     this.display.imagesPrefix = `${this.baseHref}static/`;
+    this.display.setImageResolver(new OpiDisplayImageResolver(this.storageClient, this.display));
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {
@@ -246,12 +255,27 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     this.display.scale -= 0.1;
   }
 
+  public resetZoom() {
+    this.display.scale = 1;
+  }
+
+  public fitZoom() {
+    const displayInstance = this.display.instance;
+    if (displayInstance && this.viewerContainerEl) {
+      const frameWidth = this.viewerContainerEl.clientWidth;
+      const frameHeight = this.viewerContainerEl.clientHeight;
+
+      const { width, height } = displayInstance.unscaledBounds;
+      console.log('fit', width, height, 'within', frameWidth, frameHeight);
+      const xScale = frameWidth / width;
+      const yScale = frameHeight / height;
+      console.log('scales', xScale, yScale);
+      this.display.scale = Math.min(xScale, yScale);
+    }
+  }
+
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
-    if (this.parameterSubscription) {
-      this.parameterSubscription.cancel();
-    }
+    this.syncSubscription?.unsubscribe();
+    this.parameterSubscription?.cancel();
   }
 }

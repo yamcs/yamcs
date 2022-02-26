@@ -17,11 +17,19 @@ export class OpiDisplayViewerControls {
     this.initialized$.next(true);
   }
 
+  fitZoom() {
+    this.viewer.fitZoom();
+  }
+
   zoomIn() {
     this.viewer.zoomIn();
   }
 
   zoomOut() {
     this.viewer.zoomOut();
+  }
+
+  resetZoom() {
+    this.viewer.resetZoom();
   }
 }

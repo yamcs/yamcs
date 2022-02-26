@@ -121,6 +121,7 @@ import { SignificanceLevel } from './template/SignificanceLevel';
 import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { TextAction } from './template/TextAction';
+import { IconAction } from './template/IconAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
@@ -201,6 +202,7 @@ const sharedComponents = [
   Hex,
   HexIntegerInput,
   Highlight,
+  IconAction,
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,

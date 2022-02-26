@@ -120,6 +120,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     if (this.filename.toLowerCase().endsWith('.opi')) {
       const opiDisplayViewer = this.createViewer(OpiDisplayViewer);
+      opiDisplayViewer.setViewerContainerEl(this.viewerContainer.nativeElement);
       const controls = this.createViewerControls(OpiDisplayViewerControls);
       controls.init(opiDisplayViewer as OpiDisplayViewer);
       this.viewer = opiDisplayViewer;

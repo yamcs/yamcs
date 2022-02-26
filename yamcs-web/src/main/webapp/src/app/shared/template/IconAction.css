@@ -1,0 +1,61 @@
+.icon-action {
+  text-decoration: none;
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  color: #000;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  font-size: 12px;
+}
+
+.icon-action:hover {
+  color: #009e87;
+}
+
+:host.active .icon-action {
+  color: #009e87;
+}
+
+:host.active .action-content {
+  color: #009e87;
+  margin-bottom: -2px;
+  border-bottom: 2px solid #009e87;
+}
+
+:host.disabled .icon-action {
+  cursor: not-allowed;
+}
+
+:host.disabled .icon-action {
+  color: #aaa;
+}
+
+:host.disabled .action-content {
+  color: #aaa;
+}
+
+:host.padding .icon-action {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+:host {
+  display: inline-block;
+  height: 20px;
+}
+
+.material-icons {
+  vertical-align: middle;
+  font-size: 20px !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.material-icons:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+}

@@ -158,7 +158,7 @@ export function convertValue(value: Value) {
     case 'BOOLEAN':
       return value.booleanValue;
     case 'TIMESTAMP':
-      return value.timestampValue;
+      return toDate(value.stringValue!);
     case 'BINARY':
       return window.atob(value.binaryValue!);
     case 'ENUMERATED':

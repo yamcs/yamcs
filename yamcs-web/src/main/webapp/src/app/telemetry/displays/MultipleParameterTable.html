@@ -72,12 +72,12 @@
   <ng-container cdkColumnDef="actions">
     <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
     <td mat-cell *cdkCellDef="let row; let i = index">
-      <button mat-button (click)="moveDown.emit(i); $event.stopPropagation()">
-        <mat-icon>keyboard_arrow_down</mat-icon>
-      </button>
-      <button mat-button (click)="moveUp.emit(i); $event.stopPropagation()">
-        <mat-icon>keyboard_arrow_up</mat-icon>
-      </button>
+      <app-icon-action (click)="moveDown.emit(i); $event.stopPropagation()"
+                       icon="keyboard_arrow_down">
+      </app-icon-action>
+      <app-icon-action (click)="moveUp.emit(i); $event.stopPropagation()"
+                       icon="keyboard_arrow_up">
+      </app-icon-action>
     </td>
   </ng-container>
 
