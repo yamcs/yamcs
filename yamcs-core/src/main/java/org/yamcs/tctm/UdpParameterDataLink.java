@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -58,8 +57,6 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     YConfiguration config;
     String name;
 
-    private ScheduledThreadPoolExecutor timer;
-
     @Override
     public void init(String instance, String name, YConfiguration config) {
         this.config = config;
@@ -75,7 +72,6 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     @Override
     protected void doStart() {
         if (!isDisabled()) {
-            timer = new ScheduledThreadPoolExecutor(1);
             try {
                 udpSocket = new DatagramSocket(port);
                 new Thread(this).start();
@@ -88,8 +84,9 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
 
     @Override
     protected void doStop() {
-        udpSocket.close();
-        timer.shutdown();
+        if (udpSocket != null) {
+            udpSocket.close();
+        }
         notifyStopped();
     }
 
@@ -221,6 +218,10 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     @Override
     public void disable() {
         disabled = true;
+        if (udpSocket != null) {
+            udpSocket.close();
+            udpSocket = null;
+        }
     }
 
     /**
@@ -229,6 +230,13 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     @Override
     public void enable() {
         disabled = false;
+        try {
+            udpSocket = new DatagramSocket(port);
+            new Thread(this).start();
+        } catch (SocketException e) {
+            disabled = false;
+            log.warn("Failed to enable link", e);
+        }
     }
 
     @Override
@@ -249,6 +257,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     @Override
     public void resetCounters() {
         validDatagramCount = 0;
+        invalidDatagramCount = 0;
     }
 
     @Override
