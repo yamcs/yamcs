@@ -100,7 +100,6 @@ import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { YaDataTableComponent } from './table/DataTableDirective';
 import { YaSimpleTableComponent } from './table/SimpleTableDirective';
-import { TableContainer } from './table/TableContainer';
 import { YaTableComponent } from './table/TableDirective';
 import { ActionLink } from './template/ActionLink';
 import { Ago } from './template/Ago';
@@ -111,6 +110,7 @@ import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
 import { EmptyMessage } from './template/EmptyMessage';
 import { Expirable } from './template/Expirable';
+import { IconAction } from './template/IconAction';
 import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
@@ -121,7 +121,6 @@ import { SignificanceLevel } from './template/SignificanceLevel';
 import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { TextAction } from './template/TextAction';
-import { IconAction } from './template/IconAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
@@ -230,7 +229,6 @@ const sharedComponents = [
   SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,
-  TableContainer,
   TextAction,
   TimestampTracker,
   TimezoneSelect,

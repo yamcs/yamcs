@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { ChangeLevelDialog } from './clearances/ChangeLevelDialog';
+import { ClearancesPageTabs } from './clearances/ClearancesPageTabs';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
 import { CommandDetail } from './command-history/CommandDetail';
 import { CommandHistoryPrintable } from './command-history/CommandHistoryPrintable';
@@ -37,6 +38,7 @@ const pipes = [
     AcknowledgmentIcon,
     EditStackEntryDialog,
     ChangeLevelDialog,
+    ClearancesPageTabs,
     CommandDetail,
     CommandForm,
     CommandFormArgument,

@@ -29,11 +29,6 @@ public class AuditApi extends AbstractAuditApi<Context> {
     public void listAuditRecords(Context ctx, ListAuditRecordsRequest request,
             Observer<ListAuditRecordsResponse> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance(), true);
-        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
-            if (!ctx.user.isSuperuser()) {
-                throw new ForbiddenException("Insufficient privileges");
-            }
-        }
 
         String next = request.hasNext() ? request.getNext() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -61,6 +56,19 @@ public class AuditApi extends AbstractAuditApi<Context> {
 
     private void listGlobalActivity(Context ctx, int limit, String next, AuditRecordFilter filter,
             Observer<ListAuditRecordsResponse> observer) {
+
+        if (filter.getServices().isEmpty()) {
+            if (!ctx.user.isSuperuser()) {
+                throw new ForbiddenException("Insufficient privileges");
+            }
+        } else {
+            for (String service : filter.getServices()) {
+                if (!ctx.user.isSuperuser() && !auditLog.validateAccess(service, ctx.user)) {
+                    throw new ForbiddenException("Insufficient privileges");
+                }
+            }
+        }
+
         List<AuditRecord> records = new ArrayList<>();
         auditLog.listRecords(YamcsServer.GLOBAL_INSTANCE, limit, next, filter, new AuditRecordListener() {
             @Override

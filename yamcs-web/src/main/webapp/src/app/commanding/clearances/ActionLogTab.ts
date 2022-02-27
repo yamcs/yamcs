@@ -3,12 +3,12 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions } from '../client';
-import { MessageService } from '../core/services/MessageService';
-import { YamcsService } from '../core/services/YamcsService';
-import { Option, Select } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
+import { AuditRecord, GetAuditRecordsOptions } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
+import { YamcsService } from '../../core/services/YamcsService';
+import { Option, Select } from '../../shared/forms/Select';
+import * as utils from '../../shared/utils';
+import { subtractDuration } from '../../shared/utils';
 
 
 @Component({
@@ -63,7 +63,7 @@ export class ActionLogTab {
     private route: ActivatedRoute,
     title: Title,
   ) {
-    title.setTitle('Links');
+    title.setTitle('Clearances');
     this.initializeOptions();
     this.loadData();
 
@@ -135,7 +135,7 @@ export class ActionLogTab {
   loadData() {
     this.updateURL();
     const options: GetAuditRecordsOptions = {
-      service: 'LinksApi',
+      service: 'ClearanceApi',
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
@@ -147,7 +147,7 @@ export class ActionLogTab {
       options.q = this.filter;
     }
 
-    this.yamcs.yamcsClient.getAuditRecords(this.yamcs.instance!, options)
+    this.yamcs.yamcsClient.getAuditRecords('_global', options)
       .then(page => this.dataSource.data = page.records || [])
       .catch(err => this.messageService.showError(err));
   }
