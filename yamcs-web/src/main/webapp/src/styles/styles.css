@@ -286,6 +286,14 @@ input[type="checkbox"], input[type="radio"] {
   animation: yspin 2s infinite linear;
 }
 
+/*
+ * This style will be ignored in PrintZone.
+ * (because it does not apply the general CSS)
+ */
+.print-only {
+  display: none;
+}
+
 @keyframes yspin {
   0% {
     -webkit-transform: rotate(0deg) scaleX(-1);
