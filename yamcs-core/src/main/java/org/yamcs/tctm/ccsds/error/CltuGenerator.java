@@ -12,7 +12,7 @@ public abstract class CltuGenerator {
     protected final byte[] tailSeq;
     
     public enum Encoding {
-        BCH, LDCP64, LDPC256
+        BCH, LDCP64, LDPC256, CUSTOM
     };
 
     public CltuGenerator(byte[] startSeq, byte[] tailSeq) {
