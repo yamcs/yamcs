@@ -494,6 +494,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setSequenceNumber(pc.getSequenceNumber())
                             .setCommandId(pc.getCommandId())
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
+                            .addAllAssignments(pc.getAssignments())
                             .addAllAttr(pc.getAttributes())
                             .build();
                     observer.next(entry);
