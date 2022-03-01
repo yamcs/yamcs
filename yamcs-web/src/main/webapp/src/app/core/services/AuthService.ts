@@ -59,7 +59,7 @@ export class AuthService implements OnDestroy {
           this.clearCookie('access_token');
           await this.loginAutomatically();
         }
-      } catch (err) {
+      } catch (err: any) {
         if (err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
           this.router.navigate(['/down'], { queryParams: { next: '/' } });
         } else {

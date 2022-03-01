@@ -769,6 +769,26 @@ public class YamcsServer {
         return null;
     }
 
+    /**
+     * Returns the service matching the specified class.
+     * <p>
+     * This method requires that there be only one matching service, else it will throw an exception.
+     * 
+     * @return The matching singleton service, else {@code null}.
+     * @throws IllegalStateException
+     *             There is more than one matching service.
+     */
+    public <T extends YamcsService> T getService(String yamcsInstance, Class<T> serviceClass) {
+        List<T> services = getServices(yamcsInstance, serviceClass);
+        if (services.size() == 1) {
+            return services.get(0);
+        } else if (services.size() > 2) {
+            throw new IllegalStateException(serviceClass.getName() + " is not a singleton service");
+        } else {
+            return null;
+        }
+    }
+
     public <T extends YamcsService> List<T> getServices(String yamcsInstance, Class<T> serviceClass) {
         YamcsServerInstance ys = getInstance(yamcsInstance);
         if (ys == null) {
@@ -784,6 +804,26 @@ public class YamcsServer {
     public YamcsService getGlobalService(String serviceName) {
         ServiceWithConfig serviceWithConfig = getGlobalServiceWithConfig(serviceName);
         return serviceWithConfig != null ? serviceWithConfig.getService() : null;
+    }
+
+    /**
+     * Returns the global service matching the specified class.
+     * <p>
+     * This method requires that there be only one matching service, else it will throw an exception.
+     * 
+     * @return The matching singleton service, else {@code null}.
+     * @throws IllegalStateException
+     *             There is more than one matching service.
+     */
+    public <T extends YamcsService> T getGlobalService(Class<T> serviceClass) {
+        List<T> services = getGlobalServices(serviceClass);
+        if (services.size() == 1) {
+            return services.get(0);
+        } else if (services.size() > 2) {
+            throw new IllegalStateException(serviceClass.getName() + " is not a singleton service");
+        } else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1202,18 +1242,10 @@ public class YamcsServer {
                         Template template = new Template(name, source);
 
                         Path metaFile = p.resolve("meta.yaml");
-                        Path varFile = p.resolve("variables.yaml");
                         Map<String, Object> metaDef = new HashMap<>();
                         if (Files.exists(metaFile)) {
                             try (InputStream in = Files.newInputStream(metaFile)) {
                                 metaDef = new Yaml().load(in);
-                            }
-                        } else if (Files.exists(varFile)) {
-                            LOG.warn("DEPRECATED: Templates should use meta.yaml instead of variables.yaml"
-                                    + " (move variables.yaml content under a 'variables' key in meta.yaml)");
-                            try (InputStream in = Files.newInputStream(varFile)) {
-                                List<Map<String, Object>> varDefs = new Yaml().load(in);
-                                metaDef.put("variables", varDefs);
                             }
                         }
 

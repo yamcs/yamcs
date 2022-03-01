@@ -23,18 +23,43 @@ service QueueApi {
   // Get a command queue
   rpc GetQueue(GetQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/queues/{name}"
+      get: "/api/processors/{instance}/{processor}/queues/{queue}"
     };
   }
   
   // Update a command queue
   rpc UpdateQueue(EditQueueRequest) returns (CommandQueueInfo) {
     option (yamcs.api.route) = {
-      patch: "/api/processors/{instance}/{processor}/queues/{name}"
+      patch: "/api/processors/{instance}/{processor}/queues/{queue}"
       body: "*"
+      deprecated: true
     };
   }
-  
+
+  // Enable a command queue
+  rpc EnableQueue(EnableQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:enable"
+      log: "Queue '{queue}' enabled for processor '{processor}'"
+    };
+  }
+
+  // Disable a command queue
+  rpc DisableQueue(DisableQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:disable"
+      log: "Queue '{queue}' disabled for processor '{processor}'"
+    };
+  }
+
+  // Block a command queue
+  rpc BlockQueue(BlockQueueRequest) returns (CommandQueueInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}:block"
+      log: "Queue '{queue}' blocked for processor '{processor}'"
+    };
+  }
+
   // Receive updates on queue stats
   rpc SubscribeQueueStatistics(SubscribeQueueStatisticsRequest) returns (stream CommandQueueInfo) {
     option (yamcs.api.websocket) = {
@@ -49,18 +74,36 @@ service QueueApi {
     };
   }
   
-  // List command queue entries
-  rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse) {
+  // List queued commands
+  rpc ListQueuedCommands(ListQueuedCommandsRequest) returns (ListQueuedCommandsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/queues/{name}/entries"
+      get: "/api/processors/{instance}/{processor}/queues/{queue}/commands"
+      additional_bindings: {
+      	get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
+      }
     };
   }
   
   // Update a command queue entry
   rpc UpdateQueueEntry(EditQueueEntryRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      patch: "/api/processors/{instance}/{processor}/queues/{name}/entries/{uuid}"
+      patch: "/api/processors/{instance}/{processor}/queues/{queue}/entries/{uuid}"
       body: "*"
+      deprecated: true
+    };
+  }
+
+  // Accept a queued command
+  rpc AcceptCommand(AcceptCommandRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}/commands/{command}:accept"
+    };
+  }
+
+  // Reject a queued command
+  rpc RejectCommand(RejectCommandRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/queues/{queue}/commands/{command}:reject"
     };
   }
 }
@@ -101,7 +144,7 @@ message GetQueueRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 }
 
 message EditQueueRequest {
@@ -112,13 +155,13 @@ message EditQueueRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 
   // The state of the queue. Either ``enabled``, ``disabled`` or ``blocked``.
   optional string state = 4;
 }
 
-message ListQueueEntriesRequest {
+message EnableQueueRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
@@ -126,11 +169,44 @@ message ListQueueEntriesRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
 }
 
-message ListQueueEntriesResponse {
-  repeated CommandQueueEntry entries = 1;
+message DisableQueueRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+}
+
+message BlockQueueRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+}
+
+message ListQueuedCommandsRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+}
+
+message ListQueuedCommandsResponse {
+  repeated CommandQueueEntry commands = 1;
 }
 
 message EditQueueEntryRequest {
@@ -141,10 +217,38 @@ message EditQueueEntryRequest {
   optional string processor = 2;
   
   // Queue name.
-  optional string name = 3;
+  optional string queue = 3;
   
   optional string uuid = 4;
   
   // The state of the entry. Either ``released`` or ``rejected``.
   optional string state = 5;
+}
+
+message AcceptCommandRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+  
+  // Command identifier.
+  optional string command = 4;
+}
+
+message RejectCommandRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 2;
+  
+  // Queue name.
+  optional string queue = 3;
+  
+  // Command identifier.
+  optional string command = 4;
 }

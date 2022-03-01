@@ -219,6 +219,16 @@ public class CommandQueue {
         return null;
     }
 
+    public ActiveCommand getcommand(String id) {
+        for (ActiveCommand c : commands) {
+            if (c.preparedCommand.getId().equals(id)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
     public ActiveCommand getcommand(UUID uuid) {
         for (ActiveCommand c : commands) {
             if (c.preparedCommand.getUUID().equals(uuid)) {

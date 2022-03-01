@@ -67,7 +67,7 @@ public class Significance implements Serializable {
 
         public static Levels fromString(String value) {
             try {
-                return Levels.valueOf(value.toLowerCase());
+                return Levels.valueOf(value.toUpperCase());
             } catch (IllegalArgumentException e) {
                 // The value does not match any enumeration constant. See if it
                 // matches an XTCE alias of one of the constants.

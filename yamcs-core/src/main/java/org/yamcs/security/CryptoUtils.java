@@ -2,8 +2,10 @@ package org.yamcs.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
@@ -75,5 +77,34 @@ public class CryptoUtils {
             // Should not happen. Key is specified in this method
             throw new UnsupportedOperationException(e);
         }
+    }
+
+    /**
+     * Generates an OAuth 2.0 Proof Key for Code Exchange (PKCE) code challenge and verifier (RFC6736)
+     * 
+     * <pre>
+     * code_challenge = BASE64URLENCODE(SHA256(ASCII(code_verifier)))
+     * </pre>
+     */
+    public static PKCE generatePKCE() {
+        byte[] codeVerifierBytes = new byte[32];
+        RNG.nextBytes(codeVerifierBytes);
+        PKCE pkce = new PKCE();
+        pkce.codeVerifier = Base64.getUrlEncoder().withoutPadding().encodeToString(codeVerifierBytes);
+        try {
+            byte[] bytes = pkce.codeVerifier.getBytes(StandardCharsets.US_ASCII);
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            messageDigest.update(bytes, 0, bytes.length);
+            byte[] codeChallengeBytes = messageDigest.digest();
+            pkce.codeChallenge = Base64.getUrlEncoder().withoutPadding().encodeToString(codeChallengeBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new UnsupportedOperationException(e);
+        }
+        return pkce;
+    }
+
+    public static final class PKCE {
+        public String codeChallenge;
+        public String codeVerifier;
     }
 }

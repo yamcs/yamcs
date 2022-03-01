@@ -58,7 +58,7 @@ public class WebPlugin implements Plugin {
             throw new PluginException("Could not create stacks bucket", e);
         }
 
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
 
         // Deploy the website, for practical reasons we have three different
         // mechanisms. In order:

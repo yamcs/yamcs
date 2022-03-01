@@ -38,11 +38,5 @@ public interface YamcsService extends Service {
      *             When something goes wrong during the execution of this method.
      */
     public default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
-        init(yamcsInstance, config);
     }
-
-    @Deprecated()
-    public default void init(String yamcsInstance, YConfiguration config) throws InitException {
-    }
-
 }

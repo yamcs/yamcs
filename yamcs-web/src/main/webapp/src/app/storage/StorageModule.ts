@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
+import { CreateFolderDialog } from './buckets/CreateFolderDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
-import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { StoragePage } from './StoragePage';
 import { StoragePageTemplate } from './StoragePageTemplate';
@@ -17,8 +17,8 @@ import { StorageToolbar } from './StorageToolbar';
   declarations: [
     routingComponents,
     CreateBucketDialog,
+    CreateFolderDialog,
     RenameObjectDialog,
-    UploadObjectsDialog,
     UploadProgressDialog,
     StoragePage,
     StoragePageTemplate,

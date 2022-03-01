@@ -16,9 +16,9 @@ public abstract class AbstractYamcsService extends AbstractService implements Ya
         this.serviceName = serviceName;
         this.config = config;
         log = new Log(getClass(), yamcsInstance);
-        init(yamcsInstance, config);
     }
 
+    @Override
     public String getYamcsInstance() {
         return yamcsInstance;
     }

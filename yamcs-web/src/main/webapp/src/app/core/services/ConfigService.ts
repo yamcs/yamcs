@@ -13,6 +13,7 @@ export interface WebsiteConfig {
   twoStageCommanding: boolean;
   collapseInitializedArguments: boolean;
   commandOptions: CommandOption[];
+  queueNames: string[];
   hasTemplates: boolean;
   logoutRedirectUrl: string;
   dass: boolean;

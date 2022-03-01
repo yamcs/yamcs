@@ -31,7 +31,7 @@ import org.yamcs.client.timeline.TimelineClient;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.CreateProcessorRequest;
-import org.yamcs.protobuf.EditLinkRequest;
+import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.FileTransferApiClient;
 import org.yamcs.protobuf.FileTransferServiceInfo;
@@ -39,7 +39,6 @@ import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
-import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
@@ -61,7 +60,6 @@ import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
 import org.yamcs.protobuf.TimeApiClient;
 import org.yamcs.protobuf.UserInfo;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
@@ -69,6 +67,10 @@ import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.links.DisableLinkRequest;
+import org.yamcs.protobuf.links.EnableLinkRequest;
+import org.yamcs.protobuf.links.LinkInfo;
+import org.yamcs.protobuf.links.LinksApiClient;
 
 import com.google.protobuf.Empty;
 
@@ -97,6 +99,7 @@ public class YamcsClient {
     private AlarmsApiClient alarmService;
     private TimeApiClient timeService;
     private ManagementApiClient managementService;
+    private LinksApiClient linkService;
     private EventsApiClient eventService;
     private ProcessingApiClient processingService;
     private IamApiClient iamService;
@@ -128,6 +131,7 @@ public class YamcsClient {
 
         alarmService = new AlarmsApiClient(methodHandler);
         eventService = new EventsApiClient(methodHandler);
+        linkService = new LinksApiClient(methodHandler);
         iamService = new IamApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
         managementService = new ManagementApiClient(methodHandler);
@@ -411,24 +415,22 @@ public class YamcsClient {
     }
 
     public CompletableFuture<LinkInfo> enableLink(String instance, String link) {
-        EditLinkRequest request = EditLinkRequest.newBuilder()
+        EnableLinkRequest request = EnableLinkRequest.newBuilder()
                 .setInstance(instance)
-                .setName(link)
-                .setState("enabled")
+                .setLink(link)
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.enableLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<LinkInfo> disableLink(String instance, String link) {
-        EditLinkRequest request = EditLinkRequest.newBuilder()
+        DisableLinkRequest request = DisableLinkRequest.newBuilder()
                 .setInstance(instance)
-                .setName(link)
-                .setState("disabled")
+                .setLink(link)
                 .build();
         CompletableFuture<LinkInfo> f = new CompletableFuture<>();
-        managementService.updateLink(null, request, new ResponseObserver<>(f));
+        linkService.disableLink(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -688,6 +690,7 @@ public class YamcsClient {
                 }
             }
             if (userAgent != null) {
+                client.baseClient.setUserAgent(userAgent);
                 client.websocketClient.setUserAgent(userAgent);
             }
             return client;

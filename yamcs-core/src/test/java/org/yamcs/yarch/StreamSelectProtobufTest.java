@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;

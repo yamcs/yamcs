@@ -9,6 +9,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.protobuf.AbstractClearanceApi;
 import org.yamcs.protobuf.ClearanceInfo;
 import org.yamcs.protobuf.DeleteClearanceRequest;
@@ -27,6 +28,12 @@ import org.yamcs.utils.TimeEncoding;
 import com.google.protobuf.Empty;
 
 public class ClearanceApi extends AbstractClearanceApi<Context> {
+
+    public ClearanceApi(AuditLog auditLog) {
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlCommandClearances);
+        });
+    }
 
     @Override
     public void listClearances(Context ctx, Empty request, Observer<ListClearancesResponse> observer) {

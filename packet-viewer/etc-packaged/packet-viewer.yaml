@@ -1,0 +1,26 @@
+# A preprocessor is used to derive the time of the packet and to do checksum
+# computation. 
+packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+packetPreprocessorArgs:
+     timestampOffset: -1
+     seqCountOffset: -1
+
+# File formats define how local files are interpreted. A packetInputStream splits
+# the files in packets. When opening a file, the user selects one of the available
+# formats.
+#
+# Required keys: name, packetInputStreamClassName
+# Optional keys: packetInputStreamArgs, packetPreprocessorClassName,
+#                packetPreprocessorArgs, rootContainer
+#
+# If a packetPreprocessorClassName is not specified, the format uses the same one
+# as used for realtime packets.
+fileFormats:
+    - name: CCSDS Packets
+      packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+      packetInputStreamArgs:
+          lengthFieldOffset: 4
+          maxPacketLength: 1500
+          lengthFieldLength: 2
+          lengthAdjustment: 7
+          initialBytesToStrip: 0

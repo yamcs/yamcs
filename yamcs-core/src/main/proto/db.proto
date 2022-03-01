@@ -3,6 +3,7 @@ syntax = "proto2";
 option java_package = "org.yamcs.yarch.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/events/events.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 
@@ -39,11 +40,24 @@ message Event {
     optional int32 seqNumber = 4;
     optional string type = 5;
     required string message = 6;
-    optional yamcs.protobuf.Event.EventSeverity severity = 7[default=INFO];
-
-    optional string generationTimeUTC = 8;
-    optional string receptionTimeUTC = 9;
+    optional yamcs.protobuf.events.Event.EventSeverity severity = 7[default=INFO];
   
     // Set by API when event was posted by a user
     optional string createdBy = 10;
+}
+
+enum ProtoDataType {
+  //error in replay
+  DT_ERROR = 1;
+
+  //the replay status has changed (e.g. stopped or closed) the body contains a ReplayStatus
+  STATE_CHANGE = 2;
+
+  TM_PACKET = 3;
+  PP = 4;
+  EVENT = 5;
+  ARCHIVE_INDEX = 6;
+  ARCHIVE_TAG = 7;
+  PARAMETER = 8;
+  CMD_HISTORY = 9;
 }

@@ -14,7 +14,7 @@ export class DatabaseTablesTab implements AfterViewInit {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = ['name'];
+  displayedColumns = ['name', 'actions'];
 
   dataSource = new MatTableDataSource<Table>();
 

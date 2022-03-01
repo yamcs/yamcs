@@ -13,6 +13,10 @@ extend google.protobuf.MethodOptions {
   optional WebSocketTopic websocket = 6443;
 }
 
+extend google.protobuf.FieldOptions {
+  repeated FieldBehavior field_behavior = 6533;
+}
+
 message HttpRoute {
 
   oneof pattern {
@@ -54,6 +58,9 @@ message HttpRoute {
   optional string field_mask_root = 10;
 
   repeated HttpRoute additional_bindings = 11;
+
+  // Human-friendly log message format.
+  optional string log = 12;
 }
 
 message WebSocketTopic {
@@ -62,4 +69,13 @@ message WebSocketTopic {
   optional bool deprecated = 2;
   
   repeated WebSocketTopic additional_bindings = 3;
+}
+
+enum FieldBehavior {
+  // Default. Do not use.
+  FIELD_BEHAVIOR_UNSPECIFIED = 0;
+
+  // Marks a field as secret. Services, such as audit logging, may use
+  // this as a hint for masking or hiding this field.
+  SECRET = 1;
 }

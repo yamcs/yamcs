@@ -19,7 +19,7 @@ export class StreamDataTab implements AfterViewInit, OnDestroy {
   dataSource: StreamDataDataSource;
 
   availableColumns$: Observable<string[]>;
-  displayedColumns: string[] = [];
+  displayedColumns = ['actions'];
 
   @ViewChildren(CdkColumnDef)
   private columnDefinitions: QueryList<CdkColumnDef>;
@@ -42,7 +42,7 @@ export class StreamDataTab implements AfterViewInit, OnDestroy {
     this.columnDefinitionsSubscription = this.columnDefinitions.changes.subscribe(() => {
       this.columnDefinitions.forEach(def => {
         if (this.displayedColumns.indexOf(def.name) === -1) {
-          this.displayedColumns.push(def.name);
+          this.displayedColumns.splice(this.displayedColumns.length - 1, 0, def.name);
         }
       });
     });

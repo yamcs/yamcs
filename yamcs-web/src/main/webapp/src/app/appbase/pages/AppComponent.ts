@@ -82,7 +82,7 @@ export class AppComponent implements OnDestroy {
   openInstanceDialog() {
     this.dialog.open(SelectInstanceDialog, {
       width: '650px',
-      panelClass: ['select-instance-dialog'],
+      panelClass: ['no-padding-dialog'],
     });
   }
 
@@ -91,18 +91,6 @@ export class AppComponent implements OnDestroy {
       this.preferenceStore.setShowSidebar(false);
     } else {
       this.preferenceStore.setShowSidebar(true);
-    }
-  }
-
-  leaveReplay() {
-    // Switch to the 'default' processor of the currently connected instance
-    this.yamcs.switchContext(this.yamcs.instance!);
-  }
-
-  mayReadAlarms() {
-    const user = this.authService.getUser();
-    if (user) {
-      return user.hasSystemPrivilege('ReadAlarms');
     }
   }
 

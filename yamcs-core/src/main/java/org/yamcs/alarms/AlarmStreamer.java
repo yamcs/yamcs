@@ -25,6 +25,10 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     public static final String CNAME_SHELVED_TIME = "shelvedTime";
     public static final String CNAME_SHELVE_DURATION = "shelvedDuration";
 
+    public static final String CNAME_UPDATE_TIME = "updateTime";
+    public static final String CNAME_VALUE_COUNT = "valueCount";
+    public static final String CNAME_VIOLATION_COUNT = "violationCount";
+
     public AlarmStreamer(Stream s, DataType dataType, TupleDefinition tdefTemplate) {
         this.stream = s;
         this.dataType = dataType;
@@ -34,10 +38,14 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     @Override
     public void notifySeverityIncrease(ActiveAlarm<T> activeAlarm) {
         TupleDefinition tdef = tdefTemplate.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.SEVERITY_INCREASED);
+        ArrayList<Object> al = getTupleKey(activeAlarm);
+        addCommonColumns(activeAlarm, tdef, al);
+
+        tdef.addColumn(getColNameLastEvent(), DataType.STRING);
+        al.add(AlarmNotificationType.SEVERITY_INCREASED.name());
 
         tdef.addColumn(getColNameSeverityIncreased(), dataType);
-        al.add(getYarchValue(activeAlarm.getMostSevereValue()));
+        al.add(activeAlarm.getMostSevereValue());
 
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
@@ -45,20 +53,32 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
 
     @Override
     public void notifyValueUpdate(ActiveAlarm<T> activeAlarm) {
-        // do not send parameter updates
+        TupleDefinition tdef = tdefTemplate.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm);
+        addCommonColumns(activeAlarm, tdef, al);
+
+        Tuple t = new Tuple(tdef, al);
+        stream.emitTuple(t);
     }
 
     @Override
     public void notifyUpdate(AlarmNotificationType notificationType, ActiveAlarm<T> activeAlarm) {
         TupleDefinition tdef = tdefTemplate.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, notificationType);
+        ArrayList<Object> al = getTupleKey(activeAlarm);
+        addCommonColumns(activeAlarm, tdef, al);
 
         switch (notificationType) {
         case TRIGGERED:
+            tdef.addColumn(getColNameLastEvent(), DataType.STRING);
+            al.add(notificationType.name());
+
             tdef.addColumn(getColNameTrigger(), dataType);
-            al.add(getYarchValue(activeAlarm.getTriggerValue()));
+            al.add(activeAlarm.getTriggerValue());
             break;
         case ACKNOWLEDGED:
+            tdef.addColumn(getColNameLastEvent(), DataType.STRING);
+            al.add(notificationType.name());
+
             tdef.addColumn(CNAME_ACK_BY, DataType.STRING);
             String username = activeAlarm.getUsernameThatAcknowledged();
             if (activeAlarm.isAutoAcknowledge()) {
@@ -76,8 +96,11 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
 
             break;
         case CLEARED:
+            tdef.addColumn(getColNameLastEvent(), DataType.STRING);
+            al.add(notificationType.name());
+
             tdef.addColumn(getColNameClear(), dataType);
-            al.add(getYarchValue(activeAlarm.getCurrentValue()));
+            al.add(activeAlarm.getCurrentValue());
 
             if (activeAlarm.getUsernameThatCleared() != null) {
                 tdef.addColumn(CNAME_CLEARED_BY, DataType.STRING);
@@ -92,6 +115,9 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
             al.add(activeAlarm.getClearTime());
             break;
         case SHELVED:
+            tdef.addColumn(getColNameLastEvent(), DataType.STRING);
+            al.add(notificationType.name());
+
             tdef.addColumn(CNAME_SHELVED_BY, DataType.STRING);
             username = activeAlarm.getUsernameThatShelved();
             al.add(username);
@@ -114,17 +140,28 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
         }
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
-
     }
+
+    private void addCommonColumns(ActiveAlarm<T> activeAlarm, TupleDefinition tdef, ArrayList<Object> al) {
+        tdef.addColumn(CNAME_UPDATE_TIME, DataType.TIMESTAMP);
+        al.add(getUpdateTime(activeAlarm.getCurrentValue()));
+
+        tdef.addColumn(CNAME_VALUE_COUNT, DataType.INT);
+        al.add(activeAlarm.getValueCount());
+
+        tdef.addColumn(CNAME_VIOLATION_COUNT, DataType.INT);
+        al.add(activeAlarm.getViolations());
+    }
+
+    protected abstract String getColNameLastEvent();
 
     protected abstract String getColNameClear();
 
     protected abstract String getColNameTrigger();
 
-    protected abstract Object getYarchValue(T currentValue);
-
-    protected abstract ArrayList<Object> getTupleKey(ActiveAlarm<T> activeAlarm,
-            AlarmNotificationType notificationType);
+    protected abstract ArrayList<Object> getTupleKey(ActiveAlarm<T> activeAlarm);
 
     protected abstract String getColNameSeverityIncreased();
+
+    protected abstract long getUpdateTime(T alarmDetail);
 }

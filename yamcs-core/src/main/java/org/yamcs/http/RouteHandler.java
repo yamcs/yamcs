@@ -7,7 +7,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.yamcs.YamcsServer;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.logging.Log;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -22,6 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
 public class RouteHandler extends Handler {
 
     private static final Log log = new Log(RouteHandler.class);
+    private static final Pattern LOG_PARAM_PATTERN = Pattern.compile("\\{(\\w+)\\}");
 
     private boolean logSlowRequests = true;
     private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
@@ -68,8 +73,8 @@ public class RouteHandler extends Handler {
 
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
+        Message requestMessage = null;
         try {
-            Message requestMessage;
             try {
                 requestMessage = HttpTranscoder.transcode(ctx);
             } catch (HttpTranscodeException e) {
@@ -90,6 +95,16 @@ public class RouteHandler extends Handler {
             if (blockWarning != null) {
                 blockWarning.cancel(true);
             }
+        }
+
+        // Log an audit record, if this call is auditable
+        if (!ctx.isServerStreaming() && ctx.getLogFormat() != null) {
+            Message finalRequestMessage = requestMessage;
+            ctx.requestFuture.whenComplete((channelFuture, e) -> {
+                if (e == null) {
+                    createAuditRecord(ctx, finalRequestMessage);
+                }
+            });
         }
 
         if (logSlowRequests) {
@@ -125,5 +140,27 @@ public class RouteHandler extends Handler {
             log.warn("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage());
         }
         CallObserver.sendError(ctx, e);
+    }
+
+    private void createAuditRecord(RouteContext ctx, Message message) {
+        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
+
+        String format = ctx.getLogFormat();
+        Matcher matcher = LOG_PARAM_PATTERN.matcher(format);
+        StringBuffer buf = new StringBuffer();
+        while (matcher.find()) {
+            String param = matcher.group(1);
+            FieldDescriptor field = message.getDescriptorForType().findFieldByName(param);
+            if (field != null && message.hasField(field)) {
+                String replacement = message.getField(field).toString();
+                matcher.appendReplacement(buf, replacement);
+            } else {
+                log.warn("Cannot resolve parameter {} in audit message format '{}'", param, format);
+            }
+        }
+        matcher.appendTail(buf);
+
+        AuditLog auditLog = httpServer.getAuditLog();
+        auditLog.addRecord(ctx, message, buf.toString());
     }
 }

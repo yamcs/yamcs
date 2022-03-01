@@ -33,6 +33,7 @@ export class AlgorithmsPage implements AfterViewInit {
     { id: 'language', label: 'Language', visible: true },
     { id: 'scope', label: 'Scope', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   private selection = new SelectionModel<Algorithm>(false);

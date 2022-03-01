@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.yamcs.client.EventSubscription;
 import org.yamcs.protobuf.CreateEventRequest;
+import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.SubscribeEventsRequest;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
 public class EventTests extends AbstractIntegrationTest {

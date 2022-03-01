@@ -10,13 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.yarch.protobuf.Db.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.ParameterAlarmChecker;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -320,7 +320,7 @@ public class AlarmServer<S, T> extends AbstractService {
             return (S) ((ParameterValue) value).getParameter();
         } else if (value instanceof Event) {
             Event ev = (Event) value;
-            return (S) new EventId(ev.getSource(), ev.getType());
+            return (S) new EventId(ev.getSource(), ev.hasType() ? ev.getType() : null);
         } else {
             throw new IllegalArgumentException("Unknown object type " + value.getClass());
         }

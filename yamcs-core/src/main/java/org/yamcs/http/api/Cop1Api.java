@@ -157,7 +157,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
 
     private Cop1TcPacketHandler verifyCop1Link(String instance, String linkName) {
-        ManagementApi.verifyLink(instance, linkName);
+        LinksApi.verifyLink(instance, linkName);
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
         LinkManager lmgr = ysi.getLinkManager();
         Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(linkName);
@@ -188,12 +188,12 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
         @Override
         public void suspended(int suspendState) {
-            //the stateChanged will be called with the new state
+            // the stateChanged will be called with the new state
         }
 
         @Override
         public void alert(AlertType alert) {
-            //TODO add a subscription for alerts
+            // TODO add a subscription for alerts
         }
 
         @Override

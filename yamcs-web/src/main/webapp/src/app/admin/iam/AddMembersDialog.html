@@ -40,9 +40,9 @@
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
   </table>
-  <div class="ya-data-table-placeholder" *ngIf="!dataSource.data.length">
+  <app-empty-message *ngIf="!dataSource.data.length">
     No rows to display
-  </div>
+  </app-empty-message>
 
   <mat-paginator [pageSize]="10"
                  [hidePageSize]="true"

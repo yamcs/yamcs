@@ -26,3 +26,9 @@
   padding-top: 5px;
   padding-left: 10px;
 }
+
+.meta .item.menu:hover {
+  background-color: #5787b1;
+  color: white;
+  cursor: pointer;
+}

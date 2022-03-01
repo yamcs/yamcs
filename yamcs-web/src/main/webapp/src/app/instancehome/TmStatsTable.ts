@@ -41,6 +41,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
     'lastReceived',
     'packetRate',
     'dataRate',
+    'actions',
   ];
 
   constructor(readonly yamcs: YamcsService, configService: ConfigService) {

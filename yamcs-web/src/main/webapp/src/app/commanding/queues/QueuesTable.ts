@@ -64,9 +64,7 @@ export class QueuesTable implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
-      state: 'enabled',
-    });
+    this.yamcs.yamcsClient.enableCommandQueue(queue.instance, queue.processorName, queue.name);
   }
 
   disableQueue(queue: CommandQueue) {
@@ -81,15 +79,11 @@ export class QueuesTable implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
-      state: 'disabled',
-    });
+    this.yamcs.yamcsClient.disableCommandQueue(queue.instance, queue.processorName, queue.name);
   }
 
   blockQueue(queue: CommandQueue) {
-    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
-      state: 'blocked',
-    });
+    this.yamcs.yamcsClient.blockCommandQueue(queue.instance, queue.processorName, queue.name);
   }
 
   ngOnDestroy() {

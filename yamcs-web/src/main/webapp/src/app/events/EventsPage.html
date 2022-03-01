@@ -6,8 +6,25 @@
             *ngIf="mayWriteEvents()"
             color="primary"
             (click)="createEvent()">
-      <mat-icon>add</mat-icon>
+      <mat-icon>add_circle_outline</mat-icon>
       CREATE EVENT
+    </button>
+
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-button
+            color="primary"
+            (click)="startStreaming()">
+      <mat-icon>play_arrow</mat-icon>
+      START STREAMING
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
+      STOP STREAMING
     </button>
 
     <button mat-icon-button
@@ -15,22 +32,6 @@
             color="primary"
             (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
-    </button>
-
-    <button *ngIf="!(dataSource.streaming$ | async)"
-            mat-icon-button
-            matTooltip="Start streaming events"
-            color="primary"
-            (click)="startStreaming()">
-      <mat-icon>play_arrow</mat-icon>
-    </button>
-
-    <button *ngIf="dataSource.streaming$ | async"
-            mat-icon-button
-            matTooltip="Pause streaming events"
-            color="primary"
-            (click)="stopStreaming()">
-      <mat-icon>pause</mat-icon>
     </button>
   </app-instance-toolbar>
 
@@ -96,9 +97,9 @@
       </span>
     </div>
 
-    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
+    <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container cdkColumnDef="severity">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 50px"></th>
+        <th mat-header-cell *cdkHeaderCellDef>Severity</th>
         <td mat-cell *cdkCellDef="let row">
           <app-event-severity [severity]="row.severity"></app-event-severity>
         </td>
@@ -106,41 +107,41 @@
 
       <ng-container cdkColumnDef="message">
         <th mat-header-cell *cdkHeaderCellDef>Message</th>
-        <td mat-cell *cdkCellDef="let row" style="white-space: pre">
+        <td mat-cell *cdkCellDef="let row" class="mono" style="white-space: pre; width: 100%">
           <app-highlight [text]="row.message || '-'" [term]="filterForm.value.filter"></app-highlight>
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="type">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Type</th>
+        <th mat-header-cell *cdkHeaderCellDef>Type</th>
         <td mat-cell *cdkCellDef="let row">
           {{ row.type || '-' }}
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="source">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Source</th>
+        <th mat-header-cell *cdkHeaderCellDef>Source</th>
         <td mat-cell *cdkCellDef="let row">
           {{ row.source || '-' }}
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="gentime">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation Time</th>
+        <th mat-header-cell *cdkHeaderCellDef>Generation Time</th>
         <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
           {{ (row.generationTime | datetime) || '-' }}
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="rectime">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception Time</th>
+        <th mat-header-cell *cdkHeaderCellDef>Reception Time</th>
         <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
           {{ (row.receptionTime | datetime) || '-' }}
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="seqNumber">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 100px">Sequence Number</th>
+        <th mat-header-cell *cdkHeaderCellDef>Sequence Number</th>
         <td mat-cell *cdkCellDef="let row">
           {{ row.seqNumber || '-' }}
         </td>

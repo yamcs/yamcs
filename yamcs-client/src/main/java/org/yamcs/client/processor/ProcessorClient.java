@@ -15,16 +15,18 @@ import org.yamcs.client.processor.ProcessorClient.GetOptions.FromCacheOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.GetOption;
 import org.yamcs.client.processor.ProcessorClient.GetOptions.TimeoutOption;
 import org.yamcs.client.utils.WellKnownTypes;
+import org.yamcs.protobuf.AcceptCommandRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.BlockQueueRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.CommandsApiClient;
+import org.yamcs.protobuf.DisableQueueRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
-import org.yamcs.protobuf.EditQueueEntryRequest;
-import org.yamcs.protobuf.EditQueueRequest;
+import org.yamcs.protobuf.EnableQueueRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.GetProcessorRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
@@ -40,6 +42,7 @@ import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.QueueApiClient;
+import org.yamcs.protobuf.RejectCommandRequest;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.UpdateAlgorithmRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
@@ -350,59 +353,54 @@ public class ProcessorClient {
     }
 
     public CompletableFuture<CommandQueueInfo> enableQueue(String queue) {
-        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+        EnableQueueRequest.Builder request = EnableQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
-                .setState("enabled");
+                .setQueue(queue);
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
-        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        queueService.enableQueue(null, request.build(), new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<CommandQueueInfo> disableQueue(String queue) {
-        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+        DisableQueueRequest.Builder request = DisableQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
-                .setState("disabled");
+                .setQueue(queue);
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
-        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        queueService.disableQueue(null, request.build(), new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<CommandQueueInfo> blockQueue(String queue) {
-        EditQueueRequest.Builder request = EditQueueRequest.newBuilder()
+        BlockQueueRequest.Builder request = BlockQueueRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
-                .setState("blocked");
+                .setQueue(queue);
         CompletableFuture<CommandQueueInfo> f = new CompletableFuture<>();
-        queueService.updateQueue(null, request.build(), new ResponseObserver<>(f));
+        queueService.blockQueue(null, request.build(), new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<Void> rejectQueueEntry(String queue, String uuid) {
-        EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
+    public CompletableFuture<Void> rejectCommand(String queue, String commandId) {
+        RejectCommandRequest.Builder request = RejectCommandRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
-                .setUuid(uuid)
-                .setState("rejected");
+                .setQueue(queue)
+                .setCommand(commandId);
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        queueService.updateQueueEntry(null, request.build(), new ResponseObserver<>(f));
+        queueService.rejectCommand(null, request.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
-    public CompletableFuture<Void> releaseQueueEntry(String queue, String uuid) {
-        EditQueueEntryRequest.Builder request = EditQueueEntryRequest.newBuilder()
+    public CompletableFuture<Void> acceptCommand(String queue, String commandId) {
+        AcceptCommandRequest.Builder request = AcceptCommandRequest.newBuilder()
                 .setInstance(instance)
                 .setProcessor(processor)
-                .setName(queue)
-                .setUuid(uuid)
-                .setState("released");
+                .setQueue(queue)
+                .setCommand(commandId);
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        queueService.updateQueueEntry(null, request.build(), new ResponseObserver<>(f));
+        queueService.acceptCommand(null, request.build(), new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 

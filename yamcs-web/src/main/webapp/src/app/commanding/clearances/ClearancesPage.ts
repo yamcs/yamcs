@@ -27,6 +27,7 @@ export class ClearancesPage implements AfterViewInit {
     'hasCommandPrivileges',
     'level',
     'issued',
+    'actions',
   ];
 
   dataSource = new MatTableDataSource<Clearance>();

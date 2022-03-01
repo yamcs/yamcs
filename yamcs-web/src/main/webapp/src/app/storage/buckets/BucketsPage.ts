@@ -28,6 +28,7 @@ export class BucketsPage implements AfterViewInit {
     'name',
     'size',
     'numObjects',
+    'actions',
   ];
 
   filterForm = new FormGroup({

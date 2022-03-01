@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.TagDb;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
@@ -432,6 +431,7 @@ public class YarchDatabaseInstance {
             throw new YarchException(e);
         }
     }
+
     public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {
         ExecutionContext context = new ExecutionContext(this);
         return stmt.execute(context);
@@ -495,10 +495,6 @@ public class YarchDatabaseInstance {
         for (Stream s : l) {
             s.close();
         }
-    }
-
-    public TagDb getTagDb() throws YarchException {
-        return YarchDatabase.getDefaultStorageEngine().getTagDb(this);
     }
 
     public ProtobufDatabase getProtobufDatabase() throws YarchException {

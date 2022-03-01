@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ public class FileSystemBucket implements Bucket {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 String objectName = root.relativize(file).toString();
-                if ((prefix == null || objectName.startsWith(prefix))) {
+                if (prefix == null || objectName.startsWith(prefix)) {
                     if (includeHidden || !Files.isHidden(file)) {
                         ObjectProperties props = toObjectProperties(objectName, file, attrs);
                         if (p.test(props)) {
@@ -62,7 +63,24 @@ public class FileSystemBucket implements Bucket {
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                String rel = root.relativize(dir).toString();
+                if (!rel.isEmpty()) {
+                    rel += "/";
+                }
+
                 if (includeHidden || !Files.isHidden(dir)) {
+                    // By convention, empty folders are represented as objects with a terminating slash
+                    if (!Files.isSameFile(root, dir) && (prefix == null || rel.startsWith(prefix))) {
+                        try (DirectoryStream<Path> directory = Files.newDirectoryStream(dir)) {
+                            if (!directory.iterator().hasNext()) {
+                                ObjectProperties props = toObjectProperties(rel, dir, attrs);
+                                if (p.test(props)) {
+                                    objects.add(props);
+                                }
+                            }
+                        }
+                    }
+
                     return FileVisitResult.CONTINUE;
                 }
                 return FileVisitResult.SKIP_SUBTREE;
@@ -76,50 +94,58 @@ public class FileSystemBucket implements Bucket {
     @Override
     public void putObject(String objectName, String contentType, Map<String, String> metadata, byte[] objectData)
             throws IOException {
-
-        // Current implementation ignores specified contentType, instead deriving
-        // MIME type from the filename extension.
-
-        Path path = root.resolve(objectName);
-        boolean fileExists = Files.isRegularFile(path);
-
-        // Verify limits
-        AtomicLong size = new AtomicLong(fileExists ? -Files.size(path) : 0);
-        AtomicInteger count = new AtomicInteger(fileExists ? -1 : 0);
-        Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
-        Files.walkFileTree(root, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                size.addAndGet(attrs.size());
-                count.incrementAndGet();
-                return FileVisitResult.CONTINUE;
+        if (objectName.endsWith("/")) {
+            Path path = root.resolve(objectName);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            } else if (!Files.isDirectory(path)) {
+                throw new IOException("Object path is already in use");
             }
-        });
+        } else {
+            // Current implementation ignores specified contentType, instead deriving
+            // MIME type from the filename extension.
 
-        long newSize = size.get() + objectData.length;
-        if (newSize > FileSystemBucketDatabase.MAX_BUCKET_SIZE) {
-            throw new IOException("Maximum bucket size " + FileSystemBucketDatabase.MAX_BUCKET_SIZE + " exceeded");
-        }
+            Path path = root.resolve(objectName);
+            boolean fileExists = Files.isRegularFile(path);
 
-        int newCount = count.get() + 1;
-        if (newCount > FileSystemBucketDatabase.MAX_NUM_OBJECTS_PER_BUCKET) {
-            throw new IOException(
-                    "Maximum number of objects in the bucket " + newCount + " exceeded");
-        }
+            // Verify limits
+            AtomicLong size = new AtomicLong(fileExists ? -Files.size(path) : 0);
+            AtomicInteger count = new AtomicInteger(fileExists ? -1 : 0);
+            Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+            Files.walkFileTree(root, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    size.addAndGet(attrs.size());
+                    count.incrementAndGet();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
 
-        if (!Files.exists(path.getParent())) { // Check to avoid error when the parent is a symlink
-            Files.createDirectories(path.getParent());
+            long newSize = size.get() + objectData.length;
+            if (newSize > FileSystemBucketDatabase.MAX_BUCKET_SIZE) {
+                throw new IOException("Maximum bucket size " + FileSystemBucketDatabase.MAX_BUCKET_SIZE + " exceeded");
+            }
+
+            int newCount = count.get() + 1;
+            if (newCount > FileSystemBucketDatabase.MAX_NUM_OBJECTS_PER_BUCKET) {
+                throw new IOException(
+                        "Maximum number of objects in the bucket " + newCount + " exceeded");
+            }
+
+            if (!Files.exists(path.getParent())) { // Check to avoid error when the parent is a symlink
+                Files.createDirectories(path.getParent());
+            }
+            Files.write(path, objectData);
         }
-        Files.write(path, objectData);
     }
 
     @Override
     public byte[] getObject(String objectName) throws IOException {
         Path path = root.resolve(objectName);
-        if(Files.exists(path)) {
-        	return Files.readAllBytes(path);
+        if (Files.exists(path)) {
+            return Files.readAllBytes(path);
         } else {
-        	return null;
+            return null;
         }
     }
 

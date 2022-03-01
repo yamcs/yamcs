@@ -20,17 +20,6 @@ public interface Plugin {
      * <p>
      * This is executed after Yamcs has created all configured services, but before actually starting them.
      */
-    @Deprecated
-    public default void onLoad() throws PluginException {
-    }
-
-    /**
-     * Callback executed when the plugin is loaded.
-     * <p>
-     * This is executed after Yamcs has created all configured services, but before actually starting them.
-     */
     public default void onLoad(YConfiguration config) throws PluginException {
-        // Keep around for a few releases, until plugins are using the new onLoad method
-        onLoad();
     }
 }

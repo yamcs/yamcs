@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 /**
  * Provides replay of the telemetry recorded by XtceTmRecorder
@@ -78,8 +78,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
             for (String pn : partitions) {
                 if (first) {
                     first = false;
-                } else
+                } else {
                     sb.append(", ");
+                }
                 sb.append("'").append(pn).append("'");
             }
             sb.append(")");
@@ -152,6 +153,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
         public byte[] getPacket() {
             return packet;
         }
+
         /**
          * 
          * @return the name used when recording the packet

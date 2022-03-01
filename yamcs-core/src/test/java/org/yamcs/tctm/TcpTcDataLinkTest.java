@@ -129,7 +129,7 @@ public class TcpTcDataLinkTest {
         dataLink.awaitRunning();
 
         for (int i = 1; i <= ncommands; i++) {
-            dataLink.sendTc(getCommand(i));
+            dataLink.sendCommand(getCommand(i));
         }
 
         assertTrue(semaphore.tryAcquire(ncommands, 10, TimeUnit.SECONDS));
@@ -160,7 +160,7 @@ public class TcpTcDataLinkTest {
         dataLink.awaitRunning();
 
         for (int i = 1; i <= 1000; i++) {
-            dataLink.sendTc(getCommand(i));
+            dataLink.sendCommand(getCommand(i));
         }
         assertTrue(semaphore.tryAcquire(1000, 300, TimeUnit.SECONDS));
         assertEquals(1000, mypub.successful.size());

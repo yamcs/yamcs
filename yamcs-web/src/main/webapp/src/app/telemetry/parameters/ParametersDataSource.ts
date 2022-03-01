@@ -47,7 +47,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       this.dataSubscription = undefined;
     }
 
-    this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, options).then(page => {
+    return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
@@ -107,6 +107,20 @@ export class ParametersDataSource extends DataSource<ListItem> {
         this.latestValues.set(id.name, pval);
       }
     }
+  }
+
+  getAliasNamespaces() {
+    const namespaces: string[] = [];
+    for (const item of this.items$.value) {
+      if (item.parameter?.alias) {
+        for (const alias of item.parameter.alias) {
+          if (alias.namespace && namespaces.indexOf(alias.namespace) === -1) {
+            namespaces.push(alias.namespace);
+          }
+        }
+      }
+    }
+    return namespaces.sort();
   }
 
   disconnect() {

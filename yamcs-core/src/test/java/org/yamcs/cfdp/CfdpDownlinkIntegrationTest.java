@@ -1,6 +1,8 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,8 +32,8 @@ import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FinishedPacket;
-import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
+import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.filetransfer.FileTransferClient;
 import org.yamcs.events.EventProducer;
@@ -98,7 +100,7 @@ public class CfdpDownlinkIntegrationTest {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         cfdpIn = ydb.getStream("cfdp_in");
         cfdpOut = ydb.getStream("cfdp_out");
-        CfdpService cfdpService = YamcsServer.getServer().getServices(yamcsInstance, CfdpService.class).get(0);
+        CfdpService cfdpService = YamcsServer.getServer().getService(yamcsInstance, CfdpService.class);
         cfdpService.abortAll();
 
         ydb.execute("delete from cfdp");
@@ -133,12 +135,11 @@ public class CfdpDownlinkIntegrationTest {
                 TransferState.COMPLETED, TransferState.COMPLETED);
     }
 
-
     @Test
     public void testFileTooLarge1() throws Exception {
         List<Tuple> tlist = new ArrayList<>();
         cfdpOut.addSubscriber((stream, tuple) -> tlist.add(tuple));
-        CfdpService cfdpService = YamcsServer.getServer().getServices(yamcsInstance, CfdpService.class).get(0);
+        CfdpService cfdpService = YamcsServer.getServer().getService(yamcsInstance, CfdpService.class);
         // allow more time for the finished ack timeout to avoid spurious test errors
         cfdpService.getConfig().getRoot().put("finAckTimeout", Long.valueOf(5000));
 
@@ -355,6 +356,7 @@ public class CfdpDownlinkIntegrationTest {
         }
         assertTrue(found);
     }
+
     // allows the CFDP service to process all its incoming queue
     private void synchWithExecutors(int count) throws Exception {
         for (int i = 0; i < count; i++) {

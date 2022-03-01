@@ -24,7 +24,7 @@
       <div class="panel-content">
         <ng-container *ngIf="(section$ | async) === 'runs'">
           <ng-container *ngIf="trace$ | async as trace; else empty">
-            <table yaDataTable *ngIf="trace.runs?.length; else empty">
+            <table yaDataTable class="expand" *ngIf="trace.runs?.length; else empty">
               <tr>
                 <th class="status"></th>
                 <th>Started</th>
@@ -32,6 +32,7 @@
                 <th>Outputs</th>
                 <th>Return value</th>
                 <th>Error</th>
+                <th></th>
               </tr>
               <tr *ngFor="let run of trace.runs; index as index">
                 <td class="status">
@@ -43,8 +44,8 @@
                 <td style="width: 400px">
                   <ng-container *ngFor="let input of (run.inputs || []); last as last">
                     <a [routerLink]="['/telemetry/parameters/', input.id.name]"
-                        [queryParams]="{c: yamcs.context}"
-                        class="secundary">
+                       [queryParams]="{c: yamcs.context}"
+                       class="secundary">
                       {{ input.id.name }}</a>:
                     {{ (input.engValue | value) || '-' }}
                     <br *ngIf="!last">
@@ -55,8 +56,8 @@
                 <td style="width: 400px">
                   <ng-container *ngFor="let output of (run.outputs || []); last as last">
                     <a [routerLink]="['/telemetry/parameters/', output.id.name]"
-                        [queryParams]="{c: yamcs.context}"
-                        class="secundary">
+                       [queryParams]="{c: yamcs.context}"
+                       class="secundary">
                       {{ output.id.name }}</a>:
                     {{ (output.engValue | value) || '-' }}
                     <br *ngIf="!last">
@@ -66,6 +67,7 @@
 
                 <td style="width: 200px">{{ run.returnValue | nvl:'-' }}</td>
                 <td style="width: 200px">{{ run.error || '-' }}</td>
+                <td></td>
               </tr>
             </table>
           </ng-container>

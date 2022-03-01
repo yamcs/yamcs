@@ -21,6 +21,7 @@ export class RolesPage implements AfterViewInit {
   displayedColumns = [
     'name',
     'default',
+    'actions',
   ];
   dataSource = new MatTableDataSource<RoleInfo>();
 

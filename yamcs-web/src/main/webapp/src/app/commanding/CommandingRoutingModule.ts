@@ -4,12 +4,15 @@ import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
+import { ActionLogTab as ClearanceActionLogTab } from './clearances/ActionLogTab';
 import { ClearancesEnabledGuard } from './clearances/ClearancesEnabledGuard';
 import { ClearancesPage } from './clearances/ClearancesPage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage } from './command-sender/SendCommandPage';
+import { ActionLogTab as QueueActionLogTab } from './queues/ActionLogTab';
+import { QueuedCommandsTab } from './queues/QueuedCommandsTab';
 import { QueuesPage } from './queues/QueuesPage';
 import { StackFilePage } from './stacks/StackFilePage';
 import { StackFilePageDirtyGuard } from './stacks/StackFilePageDirtyGuard';
@@ -27,9 +30,17 @@ const routes: Routes = [
     children: [
       {
         path: 'clearances',
-        pathMatch: 'full',
-        component: ClearancesPage,
         canActivate: [ClearancesEnabledGuard],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            component: ClearancesPage,
+          }, {
+            path: 'log',
+            component: ClearanceActionLogTab,
+          }
+        ]
       }, {
         path: 'send',
         pathMatch: 'full',
@@ -47,6 +58,19 @@ const routes: Routes = [
         path: 'queues',
         component: QueuesPage,
         canActivate: [MayControlCommandQueueGuard],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'pending',
+          }, {
+            path: 'pending',
+            component: QueuedCommandsTab,
+          }, {
+            path: 'log',
+            component: QueueActionLogTab,
+          }
+        ]
       }, {
         path: 'stacks',
         pathMatch: 'full',
@@ -86,13 +110,16 @@ export class CommandingRoutingModule { }
 
 export const routingComponents = [
   ClearancesPage,
+  ClearanceActionLogTab,
   CommandHistoryPage,
   CommandReportPage,
   ConfigureCommandPage,
+  QueuedCommandsTab,
   QueuesPage,
   SendCommandPage,
   StacksPage,
   StackFilePage,
   StackPage,
   StackFolderPage,
+  QueueActionLogTab,
 ];

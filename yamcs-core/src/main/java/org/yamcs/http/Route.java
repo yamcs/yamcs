@@ -24,6 +24,7 @@ public class Route implements Comparable<Route> {
     private final boolean deprecated;
     private final String body;
     private final String fieldMaskRoot;
+    private final String logFormat;
     private final RpcDescriptor descriptor;
 
     // May be unspecified
@@ -43,6 +44,7 @@ public class Route implements Comparable<Route> {
 
         offloaded = httpOptions.getOffloaded();
         deprecated = httpOptions.getDeprecated();
+        logFormat = httpOptions.hasLog() ? httpOptions.getLog() : null;
 
         switch (httpOptions.getPatternCase()) {
         case GET:
@@ -127,6 +129,10 @@ public class Route implements Comparable<Route> {
 
     public int getMaxBodySize() {
         return maxBodySize;
+    }
+
+    public String getLogFormat() {
+        return logFormat;
     }
 
     public boolean isDeprecated() {

@@ -1,12 +1,12 @@
 <table mat-table
        *ngIf="dataSource.data.length"
        [dataSource]="dataSource"
-       class="ya-data-table"
+       class="ya-data-table expand"
        [class.paused]="paused">
 
   <ng-container cdkColumnDef="generationTime">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.generationTime | datetime) || '-' }}</td>
+    <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
+    <td mat-cell *cdkCellDef="let row">{{ (row.generationTime | datetime) || '-' }}</td>
   </ng-container>
 
   <ng-container *ngFor="let parameter of model.parameters; let i = index" [cdkColumnDef]="parameter">
@@ -15,18 +15,12 @@
          [queryParams]="{c: yamcs.context}">
         {{ parameter }}
       </a>
-      <mat-menu #colMenu="matMenu" overlapTrigger="false" class="ya-menu">
+      <app-more *ngIf="showActions">
         <button mat-menu-item (click)="moveLeft.emit(i)">Move left</button>
         <button mat-menu-item (click)="moveRight.emit(i)">Move right</button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="removeColumn.emit(parameter)">Remove column</button>
-      </mat-menu>
-      <button *ngIf="showActions"
-              mat-button
-              [matMenuTriggerFor]="colMenu"
-              (click)="$event.stopPropagation()">
-        <mat-icon>more_vert</mat-icon>
-      </button>
+      </app-more>
     </th>
     <td mat-cell *cdkCellDef="let row">
       <ng-container *ngIf="row.pvals[parameter] as pval">
@@ -38,6 +32,11 @@
       </ng-container>
       <span *ngIf="!row.pvals[parameter]">-</span>
     </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="actions">
+    <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+    <td mat-cell *cdkCellDef="let row"></td>
   </ng-container>
 
   <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>

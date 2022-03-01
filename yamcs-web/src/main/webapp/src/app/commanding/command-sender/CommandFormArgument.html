@@ -8,11 +8,14 @@
     </div>
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
-    <select [formControlName]="controlName">
-      <option hidden disabled selected value> -- select an option -- </option>
-      <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-        {{ enumValue.label }}</option>
-    </select>
+    <div class="control-group">
+      <app-select [formControlName]="controlName" [options]="selectOptions">
+      </app-select>&nbsp;
+      <button class="ya-button" matTooltip="Lookup enumeration state"
+              (click)="openSelectEnumerationDialog()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </div>
   </label>
 
   <label *ngSwitchCase="'boolean'">
@@ -76,9 +79,25 @@
         {{ argument.type?.unitSet | units }}
       </div>
       <div class="item">{{ argument.type.engType }}</div>
+
+      <mat-menu #argMenu="matMenu" class="ya-menu">
+        <button mat-menu-item (click)="hexToggle$.next(true)">
+          <mat-icon [style.visibility]="(hexToggle$ | async) ? 'visible' : 'hidden'">check</mat-icon>
+          Hex input
+        </button>
+        <button mat-menu-item (click)="hexToggle$.next(false)">
+          <mat-icon [style.visibility]="(hexToggle$ | async) ? 'hidden' : 'visible'">check</mat-icon>
+          Decimal input
+        </button>
+      </mat-menu>
+      <div class="item menu" matTooltip="Input options"
+           [matMenuTriggerFor]="argMenu"
+           (click)="$event.stopPropagation()"
+           *ngIf="argument.type.dataEncoding.encoding === 'UNSIGNED'">&#x2630;</div>
     </div>
     {{ argument.name }}
     <app-errors #err [controlName]="controlName"></app-errors>
-    <input type="text" [formControlName]="controlName">
+    <input *ngIf="!(hexToggle$ | async)" type="text" [formControlName]="controlName">
+    <app-hex-integer-input *ngIf="hexToggle$ | async" [formControlName]="controlName"></app-hex-integer-input>
   </label>
 </ng-container>

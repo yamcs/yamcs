@@ -141,9 +141,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
-      resetCounters: true,
-    });
+    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, name);
   }
 
   mayControlLinks() {

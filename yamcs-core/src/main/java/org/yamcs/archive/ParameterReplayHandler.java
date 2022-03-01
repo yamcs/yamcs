@@ -11,10 +11,10 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 /**
  * Replays parameters from tables recorded by the {@link org.yamcs.archive.ParameterRecorder}

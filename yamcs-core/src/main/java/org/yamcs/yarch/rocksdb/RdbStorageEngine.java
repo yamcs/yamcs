@@ -10,7 +10,6 @@ import java.util.Map;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.TagDb;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
@@ -37,7 +36,6 @@ import org.yamcs.yarch.YarchException;
  */
 public class RdbStorageEngine implements StorageEngine {
     Map<String, Tablespace> tablespaces = new HashMap<>();
-    Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
 
@@ -49,7 +47,6 @@ public class RdbStorageEngine implements StorageEngine {
         RocksDB.loadLibrary();
     }
     static Log log = new Log(RdbStorageEngine.class);
-    RdbTagDb rdbTagDb = null;
     boolean ignoreVersionIncompatibility = false;
     static RdbStorageEngine instance = new RdbStorageEngine();
 
@@ -127,20 +124,6 @@ public class RdbStorageEngine implements StorageEngine {
     public RdbPartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         Tablespace tblsp = getTablespace(ydb, tblDef);
         return tblsp.getTable(tblDef).getPartitionManager();
-    }
-
-    @Override
-    public synchronized TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException {
-        RdbTagDb rdbTagDb = tagDbs.get(ydb.getName());
-        if (rdbTagDb == null) {
-            try {
-                rdbTagDb = new RdbTagDb(ydb.getName(), getTablespace(ydb));
-                tagDbs.put(ydb.getName(), rdbTagDb);
-            } catch (RocksDBException e) {
-                throw new YarchException("Cannot create tag db", e);
-            }
-        }
-        return rdbTagDb;
     }
 
     /**
@@ -270,10 +253,6 @@ public class RdbStorageEngine implements StorageEngine {
             throw new IllegalArgumentException("No tablespace named '" + tablespaceName + "'");
         }
         tablespace.close();
-    }
-
-    public void closeTagDb(String instanceName) {
-        tagDbs.remove(instanceName);
     }
 
     public synchronized void shutdown() {

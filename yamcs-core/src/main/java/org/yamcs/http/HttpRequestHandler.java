@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
-import org.yamcs.http.websocket.LegacyWebSocketFrameHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
@@ -87,12 +86,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String ANY_PATH = "*";
     private static final String API_PATH = "api";
     private static final String STATIC_PATH = "static";
-    private static final String WEBSOCKET_PATH = "_websocket";
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
 
     public static final AttributeKey<String> CTX_CONTEXT_PATH = AttributeKey.valueOf("contextPath");
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("httpRequest");
+    public static final AttributeKey<String> CTX_USERNAME = AttributeKey.valueOf("username");
     public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
@@ -144,11 +143,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
             try {
                 handleRequest(ctx, req);
+            } catch (InternalServerErrorException e) {
+                log.error(req.uri(), e);
+                sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (HttpException e) {
                 log.warn("{}: {}", req.uri(), e.getMessage());
                 sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (Throwable t) {
-                log.error("{}", req.uri(), t);
+                log.error(req.uri(), t);
                 sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
 
@@ -184,10 +186,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Note: pathString starts with / so path[0] is always empty
         String[] path = pathString.split("/", 3);
+        String pathComponent = path.length >= 2 ? path[1] : "";
 
         User user;
 
-        switch (path[1]) {
+        switch (pathComponent) {
         case STATIC_PATH:
             if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
                 sendPlainTextError(ctx, req, FORBIDDEN);
@@ -197,35 +200,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         case API_PATH:
             user = authorizeUser(ctx, req);
+            ctx.channel().attr(CTX_USERNAME).set(user.getName());
             handleApiRequest(ctx, req, user, pathString);
             contentExpected = true;
-            return;
-        case WEBSOCKET_PATH:
-            log.warn("DEPRECATION NOTICE: A '/_websocket' request was received. This is a deprecated"
-                    + " endpoint and server support will be removed in a future release. If you are"
-                    + " using an official client, download a later copy. Thirdparty clients should"
-                    + " follow the online specification of the new '/api/websocket' endpoint:"
-                    + " https://docs.yamcs.org/yamcs-http-api/websocket/");
-            user = authorizeUser(ctx, req);
-            if (path.length == 2) { // No instance specified
-                prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);
-            } else {
-                path = path[2].split("/", 2);
-                if (YamcsServer.hasInstance(path[0])) {
-                    if (path.length == 1) {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null, user);
-                    } else {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1], user);
-                    }
-                } else {
-                    sendPlainTextError(ctx, req, NOT_FOUND);
-                }
-            }
             return;
         default: // continue below
         }
 
-        Handler handler = httpServer.createHandler(path[1]);
+        Handler handler = httpServer.createHandler(pathComponent);
         if (handler == null) {
             handler = httpServer.createHandler(ANY_PATH);
         }
@@ -393,37 +375,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Effectively trigger websocket-handler (will attempt handshake)
         nettyContext.fireChannelRead(req);
-    }
-
-    /**
-     * Adapts Netty's pipeline for allowing WebSocket upgrade
-     *
-     * @param ctx
-     *            context for this channel handler
-     */
-    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
-            String processor, User user) {
-        contentExpected = true;
-        ctx.pipeline().addLast(new HttpObjectAggregator(65536));
-
-        int maxFrameLength = wsConfig.getInt("maxFrameLength");
-        int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
-        int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
-        WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
-
-        // Add websocket-specific handlers to channel pipeline
-        String webSocketPath = req.uri();
-        String subprotocols = "json, protobuf";
-        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, true, maxFrameLength));
-
-        HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
-        originalRequestInfo.setYamcsInstance(yamcsInstance);
-        originalRequestInfo.setProcessor(processor);
-        originalRequestInfo.setUser(user);
-        ctx.pipeline().addLast(new LegacyWebSocketFrameHandler(originalRequestInfo, waterMark));
-
-        // Effectively trigger websocket-handler (will attempt handshake)
-        ctx.fireChannelRead(req);
     }
 
     @Override

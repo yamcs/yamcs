@@ -19,7 +19,7 @@ export class DatabaseStreamsTab implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = ['name', 'dataCount'];
+  displayedColumns = ['name', 'dataCount', 'actions'];
 
   dataSource = new MatTableDataSource<StreamItem>();
 

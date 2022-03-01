@@ -52,6 +52,7 @@ import org.yamcs.protobuf.Table.TableInfo;
 import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
+import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.ObjectPrivilegeType;
@@ -67,6 +68,7 @@ import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.ProtobufDataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableColumnDefinition;
@@ -85,6 +87,7 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
+import com.google.protobuf.Struct;
 
 public class TableApi extends AbstractTableApi<Context> {
     private static final long MAX_NUM_ROWS = 2000;
@@ -750,9 +753,17 @@ public class TableApi extends AbstractTableApi<Context> {
                 v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
                 break;
             case PROTOBUF:
-                v.setType(Type.BINARY);
-                MessageLite message = (MessageLite) column;
-                v.setBinaryValue(message.toByteString());
+                String protobufClass = ((ProtobufDataType) type).getClassName();
+                if (protobufClass.equals(Struct.class.getName())) {
+                    v.setType(Type.AGGREGATE);
+                    Struct message = (Struct) column;
+                    AggregateValue aggregateValue = toAggregateValue(message);
+                    v.setAggregateValue(aggregateValue);
+                } else {
+                    v.setType(Type.BINARY);
+                    MessageLite message = (MessageLite) column;
+                    v.setBinaryValue(message.toByteString());
+                }
                 break;
             case UUID:
                 v.setType(Type.STRING);
@@ -771,6 +782,47 @@ public class TableApi extends AbstractTableApi<Context> {
             }
         }
         return v.build();
+    }
+
+    private static AggregateValue toAggregateValue(Struct structValue) {
+        AggregateValue.Builder aggregate = AggregateValue.newBuilder();
+        for (Entry<String, com.google.protobuf.Value> entry : structValue.getFieldsMap().entrySet()) {
+            aggregate.addName(entry.getKey());
+            aggregate.addValue(toValue(entry.getValue()));
+        }
+        return aggregate.build();
+    }
+
+    private static List<Value> toArrayValue(com.google.protobuf.ListValue listValue) {
+        List<Value> arrayValue = new ArrayList<>();
+        for (com.google.protobuf.Value value : listValue.getValuesList()) {
+            arrayValue.add(toValue(value));
+        }
+        return arrayValue;
+    }
+
+    private static Value toValue(com.google.protobuf.Value value) {
+        switch (value.getKindCase()) {
+        case BOOL_VALUE:
+            boolean booleanValue = value.getBoolValue();
+            return Value.newBuilder().setType(Type.BOOLEAN).setBooleanValue(booleanValue).build();
+        case NUMBER_VALUE:
+            double doubleValue = value.getNumberValue();
+            return Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(doubleValue).build();
+        case STRING_VALUE:
+            String stringValue = value.getStringValue();
+            return Value.newBuilder().setType(Type.STRING).setStringValue(stringValue).build();
+        case NULL_VALUE:
+            return Value.newBuilder().setType(Type.NONE).build();
+        case STRUCT_VALUE:
+            AggregateValue aggregateValue = toAggregateValue(value.getStructValue());
+            return Value.newBuilder().setType(Type.AGGREGATE).setAggregateValue(aggregateValue).build();
+        case LIST_VALUE:
+            List<Value> arrayValue = toArrayValue(value.getListValue());
+            return Value.newBuilder().setType(Type.ARRAY).addAllArrayValue(arrayValue).build();
+        default:
+            throw new IllegalStateException("Unexpected value type " + value.getKindCase());
+        }
     }
 
     public final static List<ColumnData> toColumnDataList(Tuple tuple) {

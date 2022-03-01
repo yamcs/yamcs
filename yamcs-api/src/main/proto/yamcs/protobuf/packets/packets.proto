@@ -1,0 +1,20 @@
+syntax="proto2";
+
+package yamcs.protobuf.packets;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "PacketsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/protobuf/yamcs.proto";
+
+
+message TmPacketData {
+  required bytes packet = 2;
+  optional int32 sequenceNumber = 4;
+  optional NamedObjectId id = 5;
+  optional google.protobuf.Timestamp receptionTime = 8;
+  optional google.protobuf.Timestamp generationTime = 9;
+}

@@ -3,8 +3,7 @@ import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
-import { Observable, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, Observable, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({

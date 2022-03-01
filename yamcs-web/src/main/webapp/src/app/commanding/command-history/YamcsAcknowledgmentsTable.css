@@ -1,20 +1,21 @@
 table {
-    width: 100%;
+  width: auto;
 }
 
-table.inline {
-    width: auto;
+table td {
+  border: none;
+  padding: 0;
 }
 
-table.inline td {
-    border: none;
-    padding: 0;
+table td:not(:first-child) {
+  padding-left: 10px;
 }
 
-table.inline td:not(:first-child), table.inline th:not(:first-child) {
-    padding-left: 10px;
+table td {
+  font-size: 12px;
+  line-height: 16px;
 }
 
-table tr:last-child td {
-    border-bottom: none;
+table td {
+  color: rgba(0, 0, 0, .654);
 }

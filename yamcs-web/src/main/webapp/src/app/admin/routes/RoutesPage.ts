@@ -26,6 +26,7 @@ export class RoutesPage implements AfterViewInit {
     'requestCount',
     'errorCount',
     'http',
+    'actions',
   ];
 
   dataSource = new MatTableDataSource<Route>();

@@ -10,6 +10,7 @@ import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
+import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ListItem, ParametersDataSource } from './ParametersDataSource';
 
 @Component({
@@ -37,15 +38,22 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
+  @ViewChild(ColumnChooser)
+  columnChooser: ColumnChooser;
+
   dataSource: ParametersDataSource;
 
-  displayedColumns = [
-    'name',
-    'type',
-    'dataSource',
-    'engValue',
-    'shortDescription',
+  columns: ColumnInfo[] = [
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'dataSource', label: 'Data Source', visible: true },
+    { id: 'engValue', label: 'Value', visible: true },
+    { id: 'shortDescription', label: 'Description', visible: true },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
+
+  // Added dynamically based on actual commands.
+  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
   typeOptions: Option[] = [
     { id: 'ANY', label: 'Any type' },
@@ -158,6 +166,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     this.updateURL();
     const options: GetParametersOptions = {
       system: this.system || '/',
+      details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };
@@ -174,6 +183,22 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     this.dataSource.loadParameters(options).then(() => {
       this.selection.clear();
       this.updateBrowsePath();
+
+      // Reset alias columns
+      for (const aliasColumn of this.aliasColumns$.value) {
+        const idx = this.columns.indexOf(aliasColumn);
+        if (idx !== -1) {
+          this.columns.splice(idx, 1);
+        }
+      }
+      const aliasColumns = [];
+      for (const namespace of this.dataSource.getAliasNamespaces()) {
+        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        aliasColumns.push(aliasColumn);
+      }
+      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+      this.aliasColumns$.next(aliasColumns);
+      this.columnChooser.recalculate(this.columns);
     });
   }
 
