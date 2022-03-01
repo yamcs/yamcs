@@ -9,15 +9,17 @@ import org.yamcs.yarch.Stream;
 
 public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
 
+    static public final String CNAME_LAST_EVENT = "alarmEvent";
     static public final String CNAME_TRIGGER = "triggerPV";
     static public final String CNAME_CLEAR = "clearPV";
     static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedPV";
-    
+
     public ParameterAlarmStreamer(Stream s) {
         super(s, DataType.PARAMETER_VALUE, StandardTupleDefinitions.PARAMETER_ALARM);
     }
 
-    protected ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm, AlarmNotificationType e) {
+    @Override
+    protected ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm) {
         ArrayList<Object> al = new ArrayList<>(7);
 
         // triggerTime
@@ -26,17 +28,15 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
         al.add(activeAlarm.getTriggerValue().getParameter().getQualifiedName());
         // seqNum
         al.add(activeAlarm.getId());
-        // event
-        al.add(e.name());
 
         return al;
     }
 
     @Override
-    protected Object getYarchValue(ParameterValue pv) {
-        return pv;
+    protected String getColNameLastEvent() {
+        return CNAME_LAST_EVENT;
     }
-    
+
     @Override
     protected String getColNameClear() {
         return CNAME_CLEAR;
@@ -52,4 +52,8 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
         return CNAME_SEVERITY_INCREASED;
     }
 
+    @Override
+    protected long getUpdateTime(ParameterValue alarmDetail) {
+        return alarmDetail.getGenerationTime();
+    }
 }

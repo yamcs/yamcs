@@ -16,8 +16,11 @@
 
 <ng-container *ngIf="command.binary">
   <div class="block-title">Binary</div>
-  <div class="block">
+  <div class="block no-print">
     <app-hex [base64String]="command.binary"></app-hex>
+  </div>
+  <div class="block print-only">
+    {{ (command.binary | hex) || '-' }}
   </div>
 </ng-container>
 

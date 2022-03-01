@@ -1,6 +1,6 @@
 package org.yamcs.events;
 
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public interface EventProducer {
@@ -12,7 +12,6 @@ public interface EventProducer {
     public abstract void sendEvent(EventSeverity severity, String type, String msg);
 
     public abstract void sendEvent(Event event);
-
 
     default void sendInfo(String type, String msg) {
         sendEvent(EventSeverity.INFO, type, msg);
@@ -27,8 +26,6 @@ public interface EventProducer {
         sendEvent(EventSeverity.ERROR, type, msg);
     }
 
-    
-    
     /**
      * Send a warning event with the given type and message
      *
@@ -119,15 +116,13 @@ public interface EventProducer {
 
     /**
      * Enable/disable repeated event reduction. If enabled, the events that are equal are not sent until the timeout
-     * expires,
-     * case in which an event containing the number of events skipped will be sent.
+     * expires, case in which an event containing the number of events skipped will be sent.
      * 
      * Two events are considered equal if their source, type, severity and message are equal. The sequence count and
      * timestamp do not need to be equal.
      * 
      * The event sent in case the timeout is expired is a copy of the last event except that the message is replaced
-     * with
-     * "Repeated x times: original message"
+     * with "Repeated x times: original message"
      * 
      * @param repeatedEventReduction
      *            if true - enable the reduction of events.
@@ -137,8 +132,7 @@ public interface EventProducer {
     public abstract void setRepeatedEventReduction(boolean repeatedEventReduction, long repeatedEventTimeoutMillisec);
 
     /**
-     * Creates a default Event Builder with these fields pre-filled: source,
-     * seqNo, receptionTime, generationTime
+     * Creates a default Event Builder with these fields pre-filled: source, seqNo, receptionTime, generationTime
      */
     public abstract Event.Builder newEvent();
 

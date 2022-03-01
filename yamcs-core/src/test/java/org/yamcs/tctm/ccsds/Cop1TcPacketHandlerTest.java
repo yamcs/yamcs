@@ -543,7 +543,7 @@ public class Cop1TcPacketHandlerTest {
 
     @Test
     public void testBDFrame() throws Exception {
-        fop1ph.sendTc(makeTc(true, 0, 100, 200));
+        fop1ph.sendCommand(makeTc(true, 0, 100, 200));
 
         TcTransferFrame tf = fop1ph.getFrame();
         assertNotNull(tf);
@@ -674,7 +674,7 @@ public class Cop1TcPacketHandlerTest {
 
     private TcTransferFrame sendTcInOneFrame(int seqNum) throws Exception {
         PreparedCommand pc = makeTc(false, 100, seqNum, 800);
-        fop1ph.sendTc(pc);
+        fop1ph.sendCommand(pc);
         synchWithExecutor();
         TcTransferFrame tf = fop1ph.getFrame();
         assertNotNull(tf);

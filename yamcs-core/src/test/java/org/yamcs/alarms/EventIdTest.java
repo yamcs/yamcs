@@ -1,6 +1,10 @@
 package org.yamcs.alarms;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -21,7 +25,6 @@ public class EventIdTest {
         assertEquals("balabum", id.type);
     }
 
-    
     @Test
     public void testStringParse2() {
         EventId id = new EventId("/yamcs/event/CustomAlgorithm//YSS/SIMULATOR/Random_event_generator");
@@ -46,7 +49,6 @@ public class EventIdTest {
 
     @Test
     public void testEquals() {
-
         EventId id1 = new EventId("/bla/bloe/blub");
         EventId id2 = new EventId("/bla/bloe", "blub");
         EventId id3 = new EventId("/bla/bloe", "bambarum");
@@ -70,5 +72,13 @@ public class EventIdTest {
 
         EventId id2 = new EventId("bla", "bloe");
         assertEquals("/yamcs/event/bla/bloe", id2.toString());
+    }
+
+    @Test
+    public void testNullType() {
+        EventId id = new EventId("/yamcs/event/User");
+        assertEquals("User", id.source);
+        assertNull(id.type);
+        assertEquals("/yamcs/event/User", id.toString());
     }
 }

@@ -1,16 +1,16 @@
 <div class="panel-content">
-  <form [formGroup]="filter">
+  <form [formGroup]="filterForm">
     <div class="filter-bar">
       <app-select icon="access_time" formControlName="interval" [options]="intervalOptions">
       </app-select>
 
-      <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+      <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
         <app-date-time-input formControlName="customStart"></app-date-time-input>
         <app-date-time-input formControlName="customStop"></app-date-time-input>
-        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
       </ng-container>
 
-      <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
+      <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
         <button class="ya-button" (click)="jumpToNow()">
           Jump to now
         </button>
@@ -44,9 +44,13 @@
 
   <app-parameter-values-table [dataSource]="dataSource"></app-parameter-values-table>
 
-  <div class="table-footer"
-       *ngIf="!(dataSource.loading$ | async)">
-    <small *ngIf="dataSource.isEmpty()">No records found matching current filter in the selected time range.</small>
+  <app-empty-message *ngIf="dataSource.isEmpty()">
+    No records found matching current filter in the selected time range.
+  </app-empty-message>
+
+  <mat-toolbar *ngIf="!(dataSource.loading$ | async) && !dataSource.isEmpty()">
+    <span style="flex: 1 1 auto"></span>
     <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
-  </div>
+    <span style="flex: 1 1 auto"></span>
+  </mat-toolbar>
 </div>

@@ -1,15 +1,29 @@
 <ng-container *ngIf="initialized$ | async">
   <button mat-button
           color="primary"
+          (click)="fitZoom()">
+    <mat-icon>fit_screen</mat-icon>
+    ZOOM FIT
+  </button>
+
+  <button mat-button
+          color="primary"
           (click)="zoomIn()">
-    <mat-icon>add</mat-icon>
+    <mat-icon>add_circle_outline</mat-icon>
     ZOOM IN
   </button>
 
   <button mat-button
           color="primary"
           (click)="zoomOut()">
-    <mat-icon>remove</mat-icon>
+    <mat-icon>remove_circle_outline</mat-icon>
     ZOOM OUT
+  </button>
+
+  <button mat-button
+          color="primary"
+          (click)="resetZoom()">
+    <mat-icon>aspect_ratio</mat-icon>
+    ACTUAL SIZE
   </button>
 </ng-container>

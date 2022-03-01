@@ -21,12 +21,12 @@
        [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
        [queryParams]="{c: yamcs.context}"
        *ngIf="mayReadMissionDatabase()">
-      <mat-icon>style</mat-icon>
+      <mat-icon>auto_stories</mat-icon>
       VIEW IN MDB
     </a>
   </app-instance-toolbar>
 
-  <nav #tabs mat-tab-nav-bar>
+  <nav #tabs mat-tab-nav-bar class="secondary">
     <a mat-tab-link
        routerLink="summary"
        routerLinkActive #rla="routerLinkActive"

@@ -56,6 +56,7 @@ public abstract class Context {
 
     protected long txSize = 0;
     protected int statusCode;
+    protected boolean reverseLookup;
 
     /**
      * A future that covers the full API call.
@@ -69,6 +70,7 @@ public abstract class Context {
         this.nettyContext = nettyContext;
         this.user = user;
         this.api = api;
+        this.reverseLookup = httpServer.getReverseLookup();
 
         log = new Log(Context.class);
         log.setContext("c" + id);
@@ -147,7 +149,7 @@ public abstract class Context {
 
     public String getClientAddress() {
         InetSocketAddress address = (InetSocketAddress) nettyContext.channel().remoteAddress();
-        return address.getAddress().getHostAddress();
+        return reverseLookup ? address.getHostName() : address.getAddress().getHostAddress();
     }
 
     public void checkSystemPrivilege(SystemPrivilege privilege) throws ForbiddenException {

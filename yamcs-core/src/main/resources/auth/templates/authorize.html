@@ -5,51 +5,58 @@
   <meta charset="utf-8">
   <title>Yamcs Mission Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Yamcs Mission Control">
   <meta name="application-name" content="Yamcs">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ contextPath }}/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ contextPath }}/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ contextPath }}/favicon-16x16.png">
+  <link rel="mask-icon" href="{{ contextPath }}/safari-pinned-tab.svg" color="#0000001">
+  <link rel="shortcut icon" href="{{ contextPath }}/favicon.ico">
   <link rel="stylesheet" href="{{ contextPath }}/static/auth.css">
 </head>
 
 <body>
   <div class="wrapper">
-    <div class="console">
-      <img src="{{ contextPath }}/static/console.svg">
-    </div>
-    <div class="login-panel">
+    <div class="grid">
       <div class="logo">
         <a href="{{ contextPath }}/">
-          <img src="{{ contextPath }}/static/yamcs300.png">
+          <img src="{{ contextPath }}/static/yamcs300.png" style="width: 200px">
         </a>
       </div>
-      <div class="login-form">
-        <h3>Sign in to your account</h3>
-        <form method="post" action="{{ contextPath }}/auth/actions/login">
-          <label>
-            Username
-            <input type="text" name="username" autofocus autocomplete="off">
-          </label>
-          <br>
-          <label>
-            Password
-            <input type="password" name="password" autocomplete="off">
-          </label>
+      <div class="login-panel">
+        <div class="login-form">
+          <h3>Sign in to your account</h3>
+          <form method="post" onsubmit="login.disabled = true; return true;" action="{{ contextPath }}/auth/actions/login">
+            <label>
+              Username
+              <input type="text" name="username" autofocus autocomplete="off">
+            </label>
+            <br>
+            <label>
+              Password
+              <input type="password" name="password" autocomplete="off">
+            </label>
 
-          <br>
+            <br>
 
-          {% if errorMessage %}
-          <p class="error-message">
-            {{ errorMessage }}
-          </p>
-          {% endif %}
+            {% if errorMessage %}
+            <p class="error-message">
+              {{ errorMessage }}
+            </p>
+            {% endif %}
 
-          <input type="hidden" name="client_id" value="{{ request.client_id }}">
-          <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
+            <input type="hidden" name="client_id" value="{{ request.client_id }}">
+            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
           
-          {% if request.state %}
-          <input type="hidden" name="state" value="{{ request.state }}">
-          {% endif %}
+            {% if request.state %}
+            <input type="hidden" name="state" value="{{ request.state }}">
+            {% endif %}
           
-          <input type="submit" value="Sign in">
-        </form>
+            <div style="text-align: right">
+              <input name="login" type="submit" value="Sign in">
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>

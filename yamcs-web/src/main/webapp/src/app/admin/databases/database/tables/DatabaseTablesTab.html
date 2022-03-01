@@ -1,7 +1,7 @@
 <div class="panel-content">
   <table mat-table
          [dataSource]="dataSource"
-         class="ya-data-table"
+         class="ya-data-table expand"
          matSort
          matSortActive="name"
          matSortDirection="asc"
@@ -14,6 +14,11 @@
           {{ table.name }}
         </a>
       </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="expand"></th>
+      <td mat-cell *matCellDef="let row"></td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

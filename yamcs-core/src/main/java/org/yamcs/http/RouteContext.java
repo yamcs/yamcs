@@ -2,6 +2,8 @@ package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -79,7 +81,6 @@ public class RouteContext extends Context {
             }
         }
 
-        // Track status for metric purposes
         requestFuture.whenComplete((channelFuture, e) -> {
             if (e != null) {
                 log.debug("API call finished with error: {}, transferred bytes: {}", e.getMessage(), txSize);
@@ -143,7 +144,15 @@ public class RouteContext extends Context {
     }
 
     public String getRouteParam(String name) {
-        return regexMatch.group(name);
+        String routeParam = regexMatch.group(name);
+        if (routeParam == null) {
+            return null;
+        }
+        try {
+            return URLDecoder.decode(routeParam, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public boolean hasBody() {
@@ -152,6 +161,10 @@ public class RouteContext extends Context {
 
     public boolean isOffloaded() {
         return route.isOffloaded();
+    }
+
+    public String getLogFormat() {
+        return route.getLogFormat();
     }
 
     /**

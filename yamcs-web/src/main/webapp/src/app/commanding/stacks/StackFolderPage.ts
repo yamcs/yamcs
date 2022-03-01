@@ -9,11 +9,13 @@ import { filter } from 'rxjs/operators';
 import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
+import { CreateFolderDialog } from './CreateFolderDialog';
 import { CreateStackDialog } from './CreateStackDialog';
-import { ImportStackDialog } from './ImportStackDialog';
 import { RenameStackDialog } from './RenameStackDialog';
+
 
 @Component({
   templateUrl: './StackFolderPage.html',
@@ -24,6 +26,9 @@ export class StackFolderPage implements OnDestroy {
 
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
+
+  @ViewChild('uploader')
+  private uploaderEl: ElementRef<HTMLInputElement>;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
@@ -44,6 +49,7 @@ export class StackFolderPage implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private messageService: MessageService,
     configService: ConfigService,
   ) {
     title.setTitle('Stacks');
@@ -101,6 +107,10 @@ export class StackFolderPage implements OnDestroy {
       });
     }
     for (const object of dir.objects || []) {
+      // Ignore fake objects that represent an empty directory
+      if (object.name.endsWith('/')) {
+        continue;
+      }
       items.push({
         folder: false,
         name: object.name,
@@ -146,19 +156,43 @@ export class StackFolderPage implements OnDestroy {
     });
   }
 
-  importStack() {
-    const dialogRef = this.dialog.open(ImportStackDialog, {
+  createFolder() {
+    this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
+        bucketInstance: '_global',
+        bucket: 'stacks',
         path: this.getCurrentPath(),
-        prefix: this.folderPerInstance ? (this.yamcs.instance! + '/') : '',
       }
+    }).afterClosed().subscribe({
+      next: () => this.loadCurrentFolder(),
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadCurrentFolder();
+  }
+
+  importStack() {
+    let path = this.getCurrentPath();
+    // Full path should not have a leading slash
+    if (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+
+    const files = this.uploaderEl.nativeElement.files;
+
+    const uploadPromises = [];
+    for (const key in files) {
+      if (!isNaN(parseInt(key, 10))) {
+        const file = files[key as any];
+        const fullPath = path ? path + '/' + file.name : file.name;
+        const prefix = this.folderPerInstance ? (this.yamcs.instance! + '/') : '';
+        const objectName = prefix + fullPath;
+        const promise = this.storageClient.uploadObject('_global', 'stacks', objectName, file);
+        uploadPromises.push(promise);
       }
-    });
+    }
+
+    Promise.all(uploadPromises)
+      .then(() => this.loadCurrentFolder())
+      .catch(err => this.messageService.showError(err));
   }
 
   private getCurrentPath() {

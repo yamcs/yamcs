@@ -1,6 +1,9 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,17 +29,17 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.AlgorithmTrace.Log;
 import org.yamcs.protobuf.AlgorithmTrace.Run;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlgorithmManagerTest {
     @BeforeClass
@@ -223,7 +226,6 @@ public class AlgorithmManagerTest {
 
         // little endian to host
         verifyEventMessage(q.poll(), Long.toString(0xF3F2F1F0l));
-
 
         System.out.println(q.poll());
     }
@@ -490,8 +492,6 @@ public class AlgorithmManagerTest {
         Parameter p_enum = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_enum");
         Parameter p_string = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_string");
         Parameter p_binary = db.getParameter("/REFMDB/SUBSYS1/AlgoOut_binary");
-
-
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(

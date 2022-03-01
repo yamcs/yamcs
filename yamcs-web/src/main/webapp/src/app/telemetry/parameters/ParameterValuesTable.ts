@@ -20,5 +20,6 @@ export class ParameterValuesTable {
     'engValue',
     'rangeCondition',
     'acquisitionStatus',
+    'actions',
   ];
 }

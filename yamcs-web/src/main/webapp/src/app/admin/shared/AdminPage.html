@@ -11,13 +11,9 @@
     </mat-toolbar>
 
     <mat-nav-list dense>
-      <app-sidebar-nav-item routerLink="/admin" exact="true">
-        <mat-icon class="item-icon">home</mat-icon>
-        Home
-      </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/plugins">
-        <mat-icon class="item-icon">pages</mat-icon>
-        Plugins
+      <app-sidebar-nav-item routerLink="/admin" [exact]="true">
+        <mat-icon class="item-icon">recent_actors</mat-icon>
+        Activity
       </app-sidebar-nav-item>
       <app-sidebar-nav-group label="Access control" icon="supervised_user_circle"
                              [active]="userManagementActive"
@@ -36,12 +32,12 @@
           Roles
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
-      <app-sidebar-nav-item routerLink="/admin/connections">
+      <app-sidebar-nav-item routerLink="/admin/sessions">
         <mat-icon class="item-icon">devices</mat-icon>
-        Client connections
+        Sessions
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/services">
-        <mat-icon class="item-icon">traffic</mat-icon>
+        <mat-icon class="item-icon">attractions</mat-icon>
         Services
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/processor-types">
@@ -64,8 +60,12 @@
           Open databases
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
+      <app-sidebar-nav-item routerLink="/admin/http-traffic">
+        <mat-icon class="item-icon">traffic</mat-icon>
+        HTTP traffic
+      </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/routes">
-        <mat-icon class="item-icon">http</mat-icon>
+        <mat-icon class="item-icon">api</mat-icon>
         API routes
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/leap-seconds">
@@ -75,6 +75,10 @@
       <app-sidebar-nav-item routerLink="/admin/threads">
         <mat-icon class="item-icon">receipt</mat-icon>
         Threads
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/system">
+        <mat-icon class="item-icon">memory</mat-icon>
+        System
       </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>

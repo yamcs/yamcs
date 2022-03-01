@@ -2,18 +2,18 @@ import { BehaviorSubject } from 'rxjs';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
-import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
+import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
-import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
-import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
+import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
+import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
-import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
-import { AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
+import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
+import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
@@ -356,6 +356,12 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async getAuditRecords(instance: string, options: GetAuditRecordsOptions) {
+    const url = `${this.apiUrl}/audit/records/${instance}`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as AuditRecordsPage;
+  }
+
   async getTimelineTags(instance: string) {
     const url = `${this.apiUrl}/timeline/${instance}/tags`;
     const response = await this.doFetch(url);
@@ -527,11 +533,17 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as RoleInfo;
   }
 
-  async getClientConnections() {
-    const url = `${this.apiUrl}/connections`;
+  async getSessions() {
+    const url = `${this.apiUrl}/sessions`;
     const response = await this.doFetch(url);
-    const wrapper = await response.json() as ClientConnectionsWrapper;
-    return wrapper.connections || [];
+    const wrapper = await response.json() as SessionsWrapper;
+    return wrapper.sessions || [];
+  }
+
+  async getHttpTraffic() {
+    const url = `${this.apiUrl}/http-traffic`;
+    const response = await this.doFetch(url);
+    return await response.json() as HttpTraffic;
   }
 
   async closeClientConnection(id: string) {
@@ -722,19 +734,21 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Link;
   }
 
-  async enableLink(instance: string, name: string) {
-    return this.editLink(instance, name, { state: 'enabled' });
+  async enableLink(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:enable`, {
+      method: 'POST',
+    });
   }
 
-  async disableLink(instance: string, name: string) {
-    return this.editLink(instance, name, { state: 'disabled' });
+  async disableLink(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:disable`, {
+      method: 'POST',
+    });
   }
 
-  async editLink(instance: string, name: string, options: EditLinkOptions) {
-    const body = JSON.stringify(options);
-    return this.doFetch(`${this.apiUrl}/links/${instance}/${name}`, {
-      body,
-      method: 'PATCH',
+  async resetLinkCounters(instance: string, link: string) {
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${link}:resetCounters`, {
+      method: 'POST',
     });
   }
 
@@ -782,40 +796,49 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as CommandHistoryPage;
   }
 
-  async getCommandQueues(instance: string, processorName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues`;
+  async getCommandQueues(instance: string, processor: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as CommandQueuesWrapper;
     return wrapper.queues || [];
   }
 
-  async getCommandQueue(instance: string, processorName: string, queueName: string) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}`;
+  async getCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}`;
     const response = await this.doFetch(url);
     return await response.json() as CommandQueue;
   }
 
-  async editCommandQueue(instance: string, processorName: string, queueName: string, options: EditCommandQueueOptions) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}`;
-    const body = JSON.stringify(options);
-    const response = await this.doFetch(url, {
-      body,
-      method: 'PATCH',
-    });
+  async enableCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:enable`;
+    const response = await this.doFetch(url, { method: 'POST' });
     return await response.json() as CommandQueue;
   }
 
-  async editCommandQueueEntry(instance: string, processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}/entries/${uuid}`;
-    const body = JSON.stringify(options);
-    const response = await this.doFetch(url, {
-      body,
-      method: 'PATCH',
-    });
+  async disableCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:disable`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return await response.json() as CommandQueue;
   }
 
-  async getActiveAlarms(instance: string, processorName: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/alarms`;
+  async blockCommandQueue(instance: string, processor: string, queue: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}:block`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return await response.json() as CommandQueue;
+  }
+
+  async acceptCommand(instance: string, processor: string, queue: string, command: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}/commands/${command}:accept`;
+    await this.doFetch(url, { method: 'POST' });
+  }
+
+  async rejectCommand(instance: string, processor: string, queue: string, command: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/queues/${queue}/commands/${command}:reject`;
+    await this.doFetch(url, { method: 'POST' });
+  }
+
+  async getActiveAlarms(instance: string, processor: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarms || [];
@@ -835,12 +858,37 @@ export default class YamcsClient implements HttpHandler {
     return await wrapper.alarms || [];
   }
 
-  async editAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: EditAlarmOptions) {
+  async acknowledgeAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: AcknowledgeAlarmOptions) {
     const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}`;
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:acknowledge`;
     return await this.doFetch(url, {
       body,
-      method: 'PATCH',
+      method: 'POST',
+    });
+  }
+
+  async shelveAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: ShelveAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:shelve`;
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+  }
+
+  async unshelveAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:unshelve`;
+    return await this.doFetch(url, {
+      method: 'POST',
+    });
+  }
+
+  async clearAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: ClearAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}:clear`;
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
     });
   }
 
@@ -1093,12 +1141,6 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Container;
   }
 
-  async getTags(instance: string, options: GetTagsOptions = {}) {
-    const url = `${this.apiUrl}/archive/${instance}/tags`;
-    const response = await this.doFetch(url + this.queryString(options));
-    return await response.json() as TagsPage;
-  }
-
   async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {
     const url = `${this.apiUrl}/mdb/${instance}/algorithms`;
     const response = await this.doFetch(url + this.queryString(options));
@@ -1148,10 +1190,23 @@ export default class YamcsClient implements HttpHandler {
     return this.doFetch(url, { method: 'POST' });
   }
 
-  async getGaps(instance: string) {
-    const url = `${this.apiUrl}/dass/gaps/${instance}`;
+  async getApids(instance: string) {
+    const url = `${this.apiUrl}/dass/apids/${instance}`;
     const response = await this.doFetch(url);
+    const wrapper = await response.json() as ListApidsResponse;
+    return wrapper.apids || [];
+  }
+
+  async getGaps(instance: string, options: GetGapsOptions) {
+    const url = `${this.apiUrl}/dass/gaps/${instance}`;
+    const response = await this.doFetch(url + this.queryString(options));
     return await response.json() as ListGapsResponse;
+  }
+
+  async getPlaybackInfo(instance: string, link: string) {
+    const url = `${this.apiUrl}/dass/links/${instance}/${link}/playback`;
+    const response = await this.doFetch(url);
+    return await response.json() as PlaybackInfo;
   }
 
   async requestPlayback(instance: string, link: string, options: RequestPlaybackRequest) {

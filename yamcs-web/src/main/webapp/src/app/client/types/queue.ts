@@ -23,7 +23,6 @@ export interface CommandQueueEntry {
   binary: string;
   username: string;
   generationTime: string;
-  uuid: string;
   pendingTransmissionConstraints: boolean;
 }
 
@@ -45,14 +44,6 @@ export interface CommandQueue {
 export interface CommandQueueEvent {
   type: 'COMMAND_ADDED' | 'COMMAND_UPDATED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
   data: CommandQueueEntry;
-}
-
-export interface EditCommandQueueOptions {
-  state: 'enabled' | 'disabled' | 'blocked';
-}
-
-export interface EditCommandQueueEntryOptions {
-  state: 'released' | 'rejected';
 }
 
 export type QueueStatisticsSubscription = WebSocketCall<SubscribeQueueStatisticsRequest, CommandQueue>;

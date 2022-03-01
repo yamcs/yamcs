@@ -1,0 +1,39 @@
+syntax="proto2";
+
+package yamcs.protobuf.iam;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "SessionsServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+
+
+service SessionsApi {
+
+  // List sessions
+  rpc ListSessions(google.protobuf.Empty) returns (ListSessionsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/sessions"
+    };
+  }
+}
+
+message ListSessionsResponse {
+  repeated SessionInfo sessions = 1;
+}
+
+message SessionInfo {
+  // Session identifier
+  optional string id = 1;
+  optional string username = 2;
+  optional string ipAddress = 3;
+  optional string hostname = 4;
+  optional google.protobuf.Timestamp startTime = 5;
+  optional google.protobuf.Timestamp lastAccessTime = 6;
+  optional google.protobuf.Timestamp expirationTime = 7;
+  repeated string clients = 8;
+}

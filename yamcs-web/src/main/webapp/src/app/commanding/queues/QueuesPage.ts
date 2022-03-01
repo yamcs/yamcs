@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { CommandQueue, ConnectionInfo, QueueEventsSubscription, QueueStatisticsSubscription } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -21,7 +21,7 @@ export class QueuesPage implements OnDestroy {
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue; } = {};
 
-  constructor(yamcs: YamcsService, title: Title, messageService: MessageService) {
+  constructor(readonly yamcs: YamcsService, title: Title, messageService: MessageService) {
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
@@ -56,7 +56,7 @@ export class QueuesPage implements OnDestroy {
           queue.entry.push(queueEvent.data);
         } else if (queueEvent.type === 'COMMAND_UPDATED') {
           const idx = (queue.entry || []).findIndex(entry => {
-            return entry.uuid === queueEvent.data.uuid;
+            return entry.id === queueEvent.data.id;
           });
           if (idx !== -1) {
             queue.entry[idx] = queueEvent.data;
@@ -64,12 +64,12 @@ export class QueuesPage implements OnDestroy {
         } else if (queueEvent.type === 'COMMAND_REJECTED') {
           queue.entry = queue.entry || [];
           queue.entry = queue.entry.filter(entry => {
-            return entry.uuid !== queueEvent.data.uuid;
+            return entry.id !== queueEvent.data.id;
           });
         } else if (queueEvent.type === 'COMMAND_SENT') {
           queue.entry = queue.entry || [];
           queue.entry = queue.entry.filter(entry => {
-            return entry.uuid !== queueEvent.data.uuid;
+            return entry.id !== queueEvent.data.id;
           });
         } else {
           throw new Error(`Unexpected queue event ${queueEvent.type}`);
@@ -81,28 +81,12 @@ export class QueuesPage implements OnDestroy {
     });
   }
 
-  /**
-   * Returns true if at least one of the queues has an entry
-   */
-  hasEntries() {
-    for (const cqueue of this.cqueues$.getValue()) {
-      if (cqueue.entry && cqueue.entry.length) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private emitChange() {
     this.cqueues$.next(Object.values(this.cqueueByName));
   }
 
   ngOnDestroy() {
-    if (this.queueSubscription) {
-      this.queueSubscription.cancel();
-    }
-    if (this.queueEventSubscription) {
-      this.queueEventSubscription.cancel();
-    }
+    this.queueSubscription?.cancel();
+    this.queueEventSubscription?.cancel();
   }
 }

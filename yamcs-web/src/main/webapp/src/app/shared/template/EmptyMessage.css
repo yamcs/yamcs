@@ -1,9 +1,9 @@
 .frame {
   display: inline-block;
   width: 412px;
-  border: 1px solid #e7e7e7;
-  border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  box-shadow: 0px 10px 16px -8px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
 }
 
 .frame .header {

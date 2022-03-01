@@ -35,6 +35,7 @@ export class ContainersPage implements AfterViewInit {
     { id: 'baseContainer', label: 'Base Container', visible: true },
     { id: 'restrictionCriteria', label: 'Restriction Criteria', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   private selection = new SelectionModel<Container>(false);

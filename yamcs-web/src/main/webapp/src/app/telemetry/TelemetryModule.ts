@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
+import { CreateFolderDialog } from './displays/CreateFolderDialog';
 import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
 import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
 import { ImageViewer } from './displays/ImageViewer';
@@ -13,7 +14,6 @@ import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
 import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
-import { UploadFilesDialog } from './displays/UploadFilesDialog';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
 import { ColorPalette } from './parameters/ColorPalette';
@@ -65,6 +65,7 @@ const viewers = [
     ColorPalette,
     CompareParameterDialog,
     CreateDisplayDialog,
+    CreateFolderDialog,
     DisplayFilePageDirtyDialog,
     ExportArchiveDataDialog,
     ExportParameterDataDialog,
@@ -80,7 +81,6 @@ const viewers = [
     SetParameterDialog,
     SeverityMeter,
     Thickness,
-    UploadFilesDialog,
   ],
 })
 export class TelemetryModule {

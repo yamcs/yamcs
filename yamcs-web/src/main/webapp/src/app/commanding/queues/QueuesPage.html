@@ -41,14 +41,28 @@
       <app-queues-table [cqueues$]="cqueues$"></app-queues-table>
 
       <p>&nbsp;</p>
-      <h2>Pending commands</h2>
-      <app-queued-commands-table *ngIf="hasEntries(); else empty"
-                                 [cqueues$]="cqueues$">
-      </app-queued-commands-table>
-      <ng-template #empty>
-        All queues are empty.
-      </ng-template>
+      <nav mat-tab-nav-bar class="secondary">
+        <a mat-tab-link
+           routerLink="/commanding/queues/pending"
+           routerLinkActive #rla="routerLinkActive"
+           [active]="rla.isActive"
+           [queryParams]="{c: yamcs.context}">
+          PENDING
+        </a>
+        <a mat-tab-link
+           routerLink="/commanding/queues/log"
+           routerLinkActive #rlb="routerLinkActive"
+           [active]="rlb.isActive"
+           [queryParams]="{c: yamcs.context}">
+          ACTION LOG
+        </a>
+      </nav>
+
+      <div style="margin-top: 16px">
+        <router-outlet></router-outlet>
+      </div>
     </ng-container>
+
     <ng-template #noCommanding>
       <app-empty-message headerTitle="Queues" *ngIf="connectionInfo$ | async as connectionInfo">
         <p>

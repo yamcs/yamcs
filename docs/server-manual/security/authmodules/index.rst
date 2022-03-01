@@ -4,7 +4,6 @@ AuthModules
 .. toctree::
     :maxdepth: 1
 
-    directory
     ldap
     yaml
     kerberos
@@ -17,8 +16,6 @@ The security subsystem is modular by design and allows combining different AuthM
 
 The default set of AuthModules include:
 
-:doc:`directory`
-    Authenticates users against the internal Yamcs database.
 :doc:`ldap`
     Attempts to bind to LDAP with the provided credentials. Also capable of reading privileges for the user.
 :doc:`yaml`

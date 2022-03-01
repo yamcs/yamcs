@@ -2,9 +2,11 @@
   0% {
     opacity: .2;
   }
+
   20% {
     opacity: 1;
   }
+
   100% {
     opacity: .2;
   }
@@ -15,11 +17,13 @@
   animation-duration: 1.4s;
   animation-iteration-count: infinite;
   animation-fill-mode: both;
-  color: blue;
+  color: #009e87;
 }
+
 .dot2 {
   animation-delay: 500ms;
 }
+
 .dot3 {
   animation-delay: 1000ms;
 }

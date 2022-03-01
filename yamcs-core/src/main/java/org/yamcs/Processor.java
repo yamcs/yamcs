@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -99,8 +98,6 @@ public class Processor extends AbstractService {
     TimeService timeService;
 
     ProcessorData processorData;
-    @GuardedBy("this")
-    HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ProcessorServiceWithConfig> serviceList;
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
@@ -372,43 +369,6 @@ public class Processor extends AbstractService {
         this.creator = creator;
     }
 
-    public int getConnectedClients() {
-        return connectedClients.size();
-    }
-
-    /**
-     * Increase with one the number of connected clients
-     */
-    public synchronized void connect(ConnectedClient s) throws ProcessorException {
-        log.debug("Processor {} has one more user: {}", name, s);
-        if (quitting) {
-            throw new ProcessorException("This processor has been closed");
-        }
-        connectedClients.add(s);
-    }
-
-    /**
-     * Disconnects a client from this processor. If the processor has no more clients, quit.
-     *
-     */
-    public void disconnect(ConnectedClient s) {
-        if (quitting) {
-            return;
-        }
-        boolean hasToQuit = false;
-        synchronized (this) {
-            if (connectedClients.remove(s)) {
-                log.info("Processor {} has one less user: connectedUsers: {}", name, connectedClients.size());
-                if ((connectedClients.isEmpty()) && (!persistent)) {
-                    hasToQuit = true;
-                }
-            }
-        }
-        if (hasToQuit) {
-            stopAsync();
-        }
-    }
-
     /**
      * Closes the processor by stoping the tm/pp and tc It can be that there are still clients connected, but they will
      * not get any data and new clients can not connect to these processors anymore. Once it is closed, you can create a
@@ -451,11 +411,6 @@ public class Processor extends AbstractService {
         }
         // and now a CLOSED event
         listeners.forEach(l -> l.processorClosed(this));
-        synchronized (this) {
-            for (ConnectedClient s : connectedClients) {
-                s.processorQuit();
-            }
-        }
     }
 
     public static void addProcessorListener(ProcessorListener processorListener) {
@@ -633,7 +588,6 @@ public class Processor extends AbstractService {
 
     @Override
     public String toString() {
-        return "name: " + name + " type: " + type + " connectedClients:" + connectedClients.size();
+        return "name: " + name + " type: " + type;
     }
-
 }

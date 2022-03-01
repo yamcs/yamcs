@@ -166,7 +166,6 @@ public class PacketsTable extends JTable implements ListSelectionListener {
                 }
             };
             for (Parameter parameter : packetFilter.getParameters()) {
-                System.out.println("Provide .. " + parameter.getQualifiedName());
                 tmExtractor.startProviding(parameter);
             }
         }
@@ -529,7 +528,9 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         final ListPacket packet = new ListPacket(buf, len);
         long gentime = data.getGenerationTime();
         packet.setGenerationTime(gentime);
-        ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime());
+        SequenceContainer rootContainer = packetViewer.getCurrentRootContainer();
+        ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime(),
+                rootContainer);
         ParameterValueList pvlist = cpr.getParameterResult();
         packet.setColumnParameters(pvlist);
 

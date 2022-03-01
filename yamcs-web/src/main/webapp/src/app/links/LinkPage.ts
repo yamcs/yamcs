@@ -103,16 +103,20 @@ export class LinkPage implements OnDestroy {
   }
 
   enableLink(link: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link);
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link).catch(err => {
+      this.messageService.showError(err);
+    });
   }
 
   disableLink(link: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link);
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link).catch(err => {
+      this.messageService.showError(err);
+    });
   }
 
   resetCounters(link: string) {
-    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, link, {
-      resetCounters: true,
+    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link).catch(err => {
+      this.messageService.showError(err);
     });
   }
 

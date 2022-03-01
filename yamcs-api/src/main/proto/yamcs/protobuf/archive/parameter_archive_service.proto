@@ -296,10 +296,15 @@ message GetArchivedParameterGroupRequest {
   // Group identifier
   optional uint32 gid = 2;
 }
+
 message ArchivedParameterGroupResponse {
   // Group identifier
   optional uint32 gid = 1;
   
   // Parameters belonging to the group
   repeated ArchivedParameterInfo parameters = 2;
+}
+
+message StringMessage {
+  required string message = 1;
 }

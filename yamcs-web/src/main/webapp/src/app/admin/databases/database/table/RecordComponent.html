@@ -11,10 +11,14 @@
 <ng-container *ngFor="let column of table.valueColumn">
   <div class="block-title">{{ column.name }}</div>
   <div class="block">
-    <ng-container *ngIf="column.type !== 'BINARY' && !column.type.startsWith('PROTOBUF')">
+    <ng-container
+                  *ngIf="column.type !== 'BINARY' &&
+                        (column.type === 'PROTOBUF(com.google.protobuf.Struct)' || !column.type.startsWith('PROTOBUF'))">
       {{ (record.column | columnValue:column.name | value) || '-' }}
     </ng-container>
-    <ng-container *ngIf="column.type === 'BINARY' || column.type.startsWith('PROTOBUF')">
+    <ng-container
+                  *ngIf="column.type === 'BINARY' ||
+                         (column.type !== 'PROTOBUF(com.google.protobuf.Struct)' && column.type.startsWith('PROTOBUF'))">
       <ng-container *ngIf="(record.column | columnValue:column.name) as value; else dash">
         <app-hex [base64String]="value.binaryValue"></app-hex>
       </ng-container>

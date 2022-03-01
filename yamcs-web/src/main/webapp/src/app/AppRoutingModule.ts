@@ -54,6 +54,7 @@ const routes: Routes = [
         path: 'storage',
         loadChildren: () => import('src/app/storage/StorageModule').then(m => m.StorageModule),
         canActivate: [AuthGuard],
+        data: { 'hasSidebar': false }
       }, {
         path: 'alarms',
         loadChildren: () => import('src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),

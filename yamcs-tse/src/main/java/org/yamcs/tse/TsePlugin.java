@@ -14,8 +14,7 @@ public class TsePlugin implements Plugin {
         YamcsServer yamcs = YamcsServer.getServer();
 
         // Activate TSE Commander (only if user did not manually add this service)
-        if (yamcs.getGlobalServices(TseCommander.class).isEmpty()
-                && YConfiguration.isDefined("tse")) {
+        if (yamcs.getGlobalService(TseCommander.class) == null && YConfiguration.isDefined("tse")) {
             addTseCommander(yamcs);
         }
     }

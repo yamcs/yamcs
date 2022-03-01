@@ -26,8 +26,8 @@ import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterProcessor;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterProcessorManager;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -38,7 +38,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -54,6 +53,7 @@ import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 import com.google.protobuf.util.JsonFormat;
 
@@ -91,7 +91,7 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration args, Object spec) {
         super.init(proc, args, spec);
-        if(spec == null) {
+        if (spec == null) {
             throw new IllegalArgumentException("Please provide the spec");
         }
         xtceDb = XtceDbFactory.getInstance(getYamcsInstance());
@@ -233,7 +233,6 @@ public class ReplayService extends AbstractProcessorService
             }
         }
 
-
         if (ppRecFilter.isEmpty() && excludeParameterGroups == null) {
             log.debug("No additional pp group added or removed to/from the subscription");
         } else {
@@ -297,12 +296,11 @@ public class ReplayService extends AbstractProcessorService
     }
 
     private void createReplay() throws ProcessorException {
-        List<ReplayServer> services = YamcsServer.getServer().getServices(getYamcsInstance(), ReplayServer.class);
-        if (services.isEmpty()) {
+        ReplayServer replayServer = YamcsServer.getServer().getService(getYamcsInstance(), ReplayServer.class);
+        if (replayServer == null) {
             throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
-            ReplayServer replayServer = services.get(0);
             yarchReplay = replayServer.createReplay(rawDataRequest, this);
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);

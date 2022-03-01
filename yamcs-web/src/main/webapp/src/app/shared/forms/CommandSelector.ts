@@ -1,3 +1,4 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -5,6 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Command, GetCommandsOptions } from '../../client';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
 import { YamcsService } from '../../core/services/YamcsService';
+import { ColumnChooser, ColumnInfo } from '../template/ColumnChooser';
 import { SearchFilter } from './SearchFilter';
 
 @Component({
@@ -36,6 +38,9 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
+  @ViewChild(ColumnChooser)
+  columnChooser: ColumnChooser;
+
   @ViewChild('searchFilter')
   searchFilter: SearchFilter;
 
@@ -43,8 +48,16 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
 
   dataSource: CommandsDataSource;
 
-  displayedColumns = ['name', 'description', 'significance'];
+  columns: ColumnInfo[] = [
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'significance', label: 'Significance', visible: true },
+    { id: 'shortDescription', label: 'Description' },
+  ];
 
+  // Added dynamically based on actual commands.
+  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+
+  private selection = new SelectionModel<ListItem>(false);
   selectedCommand$ = new BehaviorSubject<ListItem | null>(null);
 
   private onChange = (_: Command | null) => { };
@@ -94,7 +107,24 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
       options.q = filterValue.toLowerCase();
     }
     this.dataSource.loadCommands(options).then(() => {
+      this.selection.clear();
       this.updateBrowsePath();
+
+      // Reset alias columns
+      for (const aliasColumn of this.aliasColumns$.value) {
+        const idx = this.columns.indexOf(aliasColumn);
+        if (idx !== -1) {
+          this.columns.splice(idx, 1);
+        }
+      }
+      const aliasColumns = [];
+      for (const namespace of this.dataSource.getAliasNamespaces()) {
+        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        aliasColumns.push(aliasColumn);
+      }
+      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+      this.aliasColumns$.next(aliasColumns);
+      this.columnChooser.recalculate(this.columns);
     });
   }
 
@@ -121,6 +151,40 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
       }
     }
     this.breadcrumb$.next(breadcrumb);
+  }
+
+  selectNext() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.items$.value;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue()) {
+      const item = this.selection.selected[0];
+      const items = this.dataSource.items$.value;
+      if (item.command && items.indexOf(item) !== -1) {
+        this.selectRow(item);
+      }
+    }
   }
 
   writeValue(value: any) {

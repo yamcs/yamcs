@@ -38,11 +38,21 @@ enum RangeCondition {
 }
 
 message ParameterValue {
+    // Parameter identifier
     optional NamedObjectId id = 1;
+
+    // Raw value (uncalibrated)
     optional Value rawValue = 2;
+
+    // Engineering value (calibrated)
     optional Value engValue = 3;
+
+    // Time of Yamcs reception
     optional google.protobuf.Timestamp acquisitionTime = 4;
+
+    // Time of generation (~ packet time)
     optional google.protobuf.Timestamp generationTime = 5;
+
     optional AcquisitionStatus acquisitionStatus = 6;
     
     // Deprecated: this field was originally introduced for compatibility
@@ -51,11 +61,6 @@ message ParameterValue {
     optional bool processingStatus = 7 [deprecated = true];
     optional MonitoringResult monitoringResult = 8;
     optional RangeCondition rangeCondition = 9;
-
-    // Deprecated. Use ``acquisitionTime`` instead.
-    optional string acquisitionTimeUTC = 11 [deprecated = true];
-    // Deprecated. Use ``generationTime`` instead.
-    optional string generationTimeUTC = 12 [deprecated = true];
 
     // Context-dependent ranges
     repeated mdb.AlarmRange alarmRange = 25;
@@ -68,7 +73,7 @@ message ParameterValue {
     // When transferring parameters over WebSocket, this value might be used
     // instead of the id above in order to reduce the bandwidth.
     // Note that the id <-> numericId assignment is only valid in the context
-    // of a single WebSocket connection.
+    // of a single WebSocket call.
     optional uint32 numericId = 27;
 }
 

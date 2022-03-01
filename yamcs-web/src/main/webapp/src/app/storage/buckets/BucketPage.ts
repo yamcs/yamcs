@@ -9,9 +9,9 @@ import { filter } from 'rxjs/operators';
 import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
+import { CreateFolderDialog } from './CreateFolderDialog';
 import { RenameObjectDialog } from './RenameObjectDialog';
 import { Upload } from './Upload';
-import { UploadObjectsDialog } from './UploadObjectsDialog';
 import { UploadProgressDialog } from './UploadProgressDialog';
 
 @Component({
@@ -24,11 +24,16 @@ export class BucketPage implements OnDestroy {
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
+  @ViewChild('uploader')
+  private uploaderEl: ElementRef<HTMLInputElement>;
+
   bucketInstance: string;
   name: string;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
+  showPreview$ = new BehaviorSubject<boolean>(false);
+  previewWidth$ = new BehaviorSubject<number>(600);
 
   displayedColumns = ['select', 'name', 'size', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
@@ -88,6 +93,10 @@ export class BucketPage implements OnDestroy {
       });
     }
     for (const object of dir.objects || []) {
+      // Ignore fake objects that represent an empty directory
+      if (object.name.endsWith('/')) {
+        continue;
+      }
       items.push({
         folder: false,
         name: object.name,
@@ -118,27 +127,51 @@ export class BucketPage implements OnDestroy {
     this.selection.toggle(row);
   }
 
-  uploadObjects() {
-    const dialogRef = this.dialog.open(UploadObjectsDialog, {
+  createFolder() {
+    this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
         bucketInstance: this.bucketInstance,
         bucket: this.name,
         path: this.getCurrentPath(),
       }
+    }).afterClosed().subscribe({
+      next: () => this.loadCurrentFolder(),
     });
-    dialogRef.afterClosed().subscribe((uploads: Upload[]) => {
-      if (uploads.length) {
-        this.showUploadProgress().then(() => {
-          for (const upload of uploads) {
-            this.trackUpload(upload);
-          }
-          this.settlePromises(uploads.map(u => u.promise)).then(() => {
-            this.loadCurrentFolder();
-          });
-        });
+  }
+
+  uploadObjects() {
+    let path = this.getCurrentPath();
+    // Full path should not have a leading slash
+    if (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+
+    const files = this.uploaderEl.nativeElement.files;
+
+    const uploads: any[] = [];
+    for (const key in files) {
+      if (!isNaN(parseInt(key, 10))) {
+        const file = files[key as any];
+        const fullPath = path ? path + '/' + file.name : file.name;
+
+        const bucketInstance = this.bucketInstance;
+        const bucket = this.name;
+        const promise = this.storageClient.uploadObject(bucketInstance, bucket, fullPath, file);
+        uploads.push({ 'filename': file.name, promise });
       }
-    });
+    }
+
+    if (uploads.length) {
+      this.showUploadProgress().then(() => {
+        for (const upload of uploads) {
+          this.trackUpload(upload);
+        }
+        this.settlePromises(uploads.map(u => u.promise)).then(() => {
+          this.loadCurrentFolder();
+        });
+      });
+    }
   }
 
   /**
@@ -181,6 +214,10 @@ export class BucketPage implements OnDestroy {
       path += '/' + segment.path;
     }
     return path || '/';
+  }
+
+  togglePreview() {
+    this.showPreview$.next(!this.showPreview$.value);
   }
 
   deleteSelectedObjects() {
@@ -298,11 +335,20 @@ export class BucketPage implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: `/storage/buckets/${this.bucketInstance}/${this.name}` + path,
+        route: `/storage/${this.bucketInstance}/${this.name}` + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);
     return path || '/';
+  }
+
+  isImage(item: BrowseItem) {
+    if (item.folder) {
+      return false;
+    }
+    const lc = item.name.toLocaleLowerCase();
+    return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg')
+      || lc.endsWith('jpeg') || lc.endsWith('bmp') || lc.endsWith('svg') || lc.endsWith('ico');
   }
 
   private async showUploadProgress() {
@@ -336,6 +382,26 @@ export class BucketPage implements OnDestroy {
         reject(err);
       });
     });
+  }
+
+  resizeMouseDown(event: MouseEvent) {
+    let resizeGrabX: number | null = event.clientX;
+    const originalWidth = this.previewWidth$.value;
+
+    const mousemoveListener = (moveEvent: MouseEvent) => {
+      if (resizeGrabX !== null) {
+        const newWidth = originalWidth - (moveEvent.clientX - resizeGrabX);
+        this.previewWidth$.next(Math.max(400, newWidth));
+      }
+    };
+    const mouseupListener = (upEvent: MouseEvent) => {
+      resizeGrabX = null;
+      document.removeEventListener('mousemove', mousemoveListener);
+      document.removeEventListener('mouseup', mouseupListener);
+    };
+
+    document.addEventListener('mousemove', mousemoveListener);
+    document.addEventListener('mouseup', mouseupListener);
   }
 
   ngOnDestroy() {

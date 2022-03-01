@@ -158,9 +158,11 @@ export class ParameterPlot implements AfterViewInit {
     /*
      * Trigger initial load
      */
-    const stop = this.stop;
-    const start = subtractDuration(stop, this.duration);
-    this.dataSource.updateWindow(start, stop, [null, null]);
+    if (this.duration) {
+      const stop = this.stop;
+      const start = subtractDuration(stop, this.duration);
+      this.dataSource.updateWindow(start, stop, [null, null]);
+    }
     this.applyTheme();
   }
 

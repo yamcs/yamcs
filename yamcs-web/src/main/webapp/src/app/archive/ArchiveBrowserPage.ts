@@ -438,7 +438,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         line.marginBottom = i === completenessGroups.length - 1 ? 30 : 0;
         line.eventColor = this.completenessBg;
         line.eventTextColor = this.completenessFg;
-        line.eventBorderWidth = 0;
+        line.eventBorderColor = 'rgba(0, 0, 0, 0.1)';
+        line.eventBorderWidth = 1;
         line.eventCornerRadius = 0;
         line.eventTextOverflow = 'hide';
         line.backgroundColor = this.timeline.backgroundOddColor;
@@ -485,7 +486,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           line.marginBottom = i === this.packetNames.length - 1 ? 30 : 0;
           line.eventColor = this.packetsBg;
           line.eventTextColor = this.packetsFg;
-          line.eventBorderWidth = 0;
+          line.eventBorderColor = 'rgba(0, 0, 0, 0.1)';
+          line.eventBorderWidth = 1;
           line.eventCornerRadius = 0;
           line.eventTextOverflow = 'hide';
           line.backgroundColor = this.timeline.backgroundOddColor;
@@ -527,7 +529,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         line.marginBottom = i === parameterGroups.length - 1 ? 30 : 0;
         line.eventColor = this.parametersBg;
         line.eventTextColor = this.parametersFg;
-        line.eventBorderWidth = 0;
+        line.eventBorderColor = 'rgba(0, 0, 0, 0.1)';
+        line.eventBorderWidth = 1;
         line.eventCornerRadius = 0;
         line.eventTextOverflow = 'hide';
         line.backgroundColor = this.timeline.backgroundOddColor;
@@ -568,7 +571,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         line.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
         line.eventColor = this.commandsBg;
         line.eventTextColor = this.commandsFg;
-        line.eventBorderWidth = 0;
+        line.eventBorderColor = 'rgba(0, 0, 0, 0.1)';
+        line.eventBorderWidth = 1;
         line.eventCornerRadius = 0;
         line.eventTextOverflow = 'hide';
         line.backgroundColor = this.timeline.backgroundOddColor;
@@ -609,7 +613,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
         line.marginBottom = i === eventGroups.length - 1 ? 30 : 0;
         line.eventColor = this.eventsBg;
         line.eventTextColor = this.eventsFg;
-        line.eventBorderWidth = 0;
+        line.eventBorderColor = 'rgba(0, 0, 0, 0.1)';
+        line.eventBorderWidth = 1;
         line.eventCornerRadius = 0;
         line.eventTextOverflow = 'hide';
         line.backgroundColor = this.timeline.backgroundOddColor;

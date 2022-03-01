@@ -15,6 +15,7 @@ export class LeapSecondsPage {
     'leap-seconds',
     'tai-utc',
     'utc-tai',
+    'actions',
   ];
 
   dataSource = new MatTableDataSource<ValidityRange>();

@@ -9,16 +9,30 @@ mat-toolbar-row {
 }
 
 .app-bar {
-  background-color: #24292e;
-}
-
-.app-bar.replay {
-  background-color: darkviolet;
+  background-color: #212121;
 }
 
 .logo-wrapper {
   padding-left: 16px;
   padding-right: 16px;
+}
+
+.logo-wrapper.nosidebar {
+  padding-left: 6px;
+}
+
+.logo-wrapper:hover img {
+  opacity: 0.8;
+}
+
+.tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  pointer-events: none;
 }
 
 .selected-instance.mat-button {
@@ -27,7 +41,19 @@ mat-toolbar-row {
   line-height: 24px;
 }
 
-::ng-deep .select-instance-dialog .mat-dialog-container {
+::ng-deep .no-padding-dialog .mat-dialog-container {
   padding: 0;
   overflow: hidden;
+}
+
+.mat-button:hover,
+::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link:hover,
+::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link {
+  color: #fff;
+  opacity: 1;
+  min-width: 0;
 }

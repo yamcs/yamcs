@@ -53,6 +53,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
   displayedColumns = [
     'generationTime',
+    'actions',
   ];
 
   constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
@@ -109,6 +110,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
     this.displayedColumns = [
       'generationTime',
       ...this.model.parameters,
+      'actions',
     ];
   }
 

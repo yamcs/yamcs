@@ -17,16 +17,18 @@ const routes: Routes = [
     component: StoragePage,
     children: [
       {
-        path: 'buckets',
+        path: '',
         pathMatch: 'full',
         component: BucketsPage,
+        data: { 'hasSidebar': false }
       }, {
-        path: 'buckets/:instance/:name',
+        path: ':instance/:name',
         component: BucketPlaceholderPage,
         children: [
           {
             path: '**',
             component: BucketPage,
+            data: { 'hasSidebar': false }
           }
         ],
       }

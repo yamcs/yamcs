@@ -10,13 +10,13 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
 public class ParameterValue extends BasicParameterValue {
- // the definition of the parameter may be null if we do not have a reference to an XtceDB object
+    // the definition of the parameter may be null if we do not have a reference to an XtceDB object
     // this could happen if the ParameterValue is extracted from the ParameterArchive
     private Parameter def;
     private final String paramFqn;
-    
+
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
-    
+
     /**
      * Creates a parameter value for a parameter
      * 
@@ -40,14 +40,14 @@ public class ParameterValue extends BasicParameterValue {
         this.paramFqn = pv.paramFqn;
         this.acquisitionTime = pv.acquisitionTime;
     }
-    
+
     public void setAcquisitionTime(long instant) {
         acquisitionTime = instant;
     }
+
     public void setParameter(Parameter p) {
         this.def = p;
     }
-
 
     /**
      * Retrieve the parameter definition for this parameter value
@@ -74,19 +74,19 @@ public class ParameterValue extends BasicParameterValue {
     public long getAcquisitionTime() {
         return acquisitionTime;
     }
-    
+
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb() {
         NamedObjectId id = NamedObjectId.newBuilder().setName(getParameterQualifiedName()).build();
-        return toProtobufParameterValue(Optional.of(id), OptionalInt.empty(), true);
+        return toProtobufParameterValue(Optional.of(id), OptionalInt.empty());
     }
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         Optional<NamedObjectId> optionalId = Optional.ofNullable(id);
-        return toProtobufParameterValue(optionalId, OptionalInt.empty(), true);
+        return toProtobufParameterValue(optionalId, OptionalInt.empty());
     }
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(int numericId) {
-        return toProtobufParameterValue(Optional.empty(), OptionalInt.of(numericId), true);
+        return toProtobufParameterValue(Optional.empty(), OptionalInt.of(numericId));
     }
 
     /**
@@ -94,12 +94,10 @@ public class ParameterValue extends BasicParameterValue {
      * 
      * @param id
      *            - the parameter identifier
-     * @param withUtc
-     *            - if true - set the UTC string times
      * @return the created ProtobufPV
      */
     public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id,
-            OptionalInt numericId, boolean withUtc) {
+            OptionalInt numericId) {
 
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())
@@ -107,15 +105,12 @@ public class ParameterValue extends BasicParameterValue {
         if (id.isPresent()) {
             gpvb.setId(id.get());
         }
-        if(numericId.isPresent()) {
+        if (numericId.isPresent()) {
             gpvb.setNumericId(numericId.getAsInt());
         }
-        
+
         if (acquisitionTime != TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(TimeEncoding.toProtobufTimestamp(acquisitionTime));
-            if (withUtc) {
-                gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
-            }
         }
         if (engValue != null) {
             gpvb.setEngValue(ValueUtility.toGbp(engValue));
@@ -125,9 +120,6 @@ public class ParameterValue extends BasicParameterValue {
         }
         if (getRangeCondition() != null) {
             gpvb.setRangeCondition(getRangeCondition());
-        }
-        if (withUtc) {
-            gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
         }
 
         long expireMillis = status.getExpireMills();
@@ -156,10 +148,11 @@ public class ParameterValue extends BasicParameterValue {
         }
         return gpvb.build();
     }
-    
+
     public boolean hasAcquisitionTime() {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
     }
+
     /**
      * Verifies if the parameter value is expired at a given timestamp. Returns false if the expireMillis is not set.
      * 

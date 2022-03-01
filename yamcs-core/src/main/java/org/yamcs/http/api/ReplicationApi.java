@@ -182,13 +182,6 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
 
     private static ReplicationServer getReplicationServer() {
         YamcsServer yamcs = YamcsServer.getServer();
-        List<ReplicationServer> replicationServers = yamcs.getGlobalServices(ReplicationServer.class);
-        if (replicationServers.isEmpty()) {
-            return null;
-        } else if (replicationServers.size() == 1) {
-            return replicationServers.get(0);
-        } else {
-            throw new IllegalStateException("Was only expecting 1 replication server");
-        }
+        return yamcs.getGlobalService(ReplicationServer.class);
     }
 }

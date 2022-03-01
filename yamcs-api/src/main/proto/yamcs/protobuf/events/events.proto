@@ -1,0 +1,39 @@
+syntax="proto2";
+
+package yamcs.protobuf.events;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "EventsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+
+message Event {
+  enum EventSeverity {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+
+    //the levels below are compatible with XTCE
+    // we left the 4 out since it could be used 
+    // for warning if we ever decide to get rid of the old ones
+
+    WATCH = 3;
+    DISTRESS = 5;
+    CRITICAL = 6;
+    SEVERE = 7;
+  }
+  required string source = 1;
+  required google.protobuf.Timestamp generationTime = 2;
+  optional google.protobuf.Timestamp receptionTime = 3;
+  optional int32 seqNumber = 4;
+  optional string type = 5;
+  required string message = 6;
+  optional EventSeverity severity = 7[default=INFO];
+  
+  // Set by API when event was posted by a user
+  optional string createdBy = 10;
+
+  extensions 100 to 10000;
+}

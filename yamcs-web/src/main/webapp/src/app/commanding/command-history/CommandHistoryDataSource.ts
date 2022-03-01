@@ -46,10 +46,11 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
       ...options,
       limit: this.pageSize,
     }).then(entries => {
-      this.loading$.next(false);
       this.buffer.reset();
       this.blockHasMore = false;
       this.buffer.addArchiveData(entries.map(entry => new CommandHistoryRecord(entry)));
+    }).finally(() => {
+      this.loading$.next(false);
     });
   }
 
@@ -57,18 +58,18 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
     return !!this.continuationToken && !this.blockHasMore;
   }
 
-  private loadPage(options: GetCommandHistoryOptions) {
+  private async loadPage(options: GetCommandHistoryOptions) {
     return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.instance!, options).then(page => {
       this.continuationToken = page.continuationToken;
       return page.entry || [];
     });
   }
 
-  loadMoreData(options: GetCommandHistoryOptions) {
+  async loadMoreData(options: GetCommandHistoryOptions) {
     if (!this.continuationToken) {
       return;
     }
-    this.loadPage({
+    return this.loadPage({
       ...options,
       next: this.continuationToken,
       limit: this.pageSize,

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Create folder</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <label>
+      Folder name
+      <input type="text" formControlName="name" pattern="\w[\w\s\.\-\(\)\[\]]*">
+    </label>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()" [disabled]="!form.valid">CREATE</button>
+</mat-dialog-actions>

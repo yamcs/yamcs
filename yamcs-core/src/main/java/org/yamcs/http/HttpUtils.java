@@ -7,7 +7,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class HttpUtils {
 
@@ -27,13 +26,12 @@ public class HttpUtils {
      * leading context path is removed.
      */
     public static String getPathWithoutContext(HttpRequest req, String contextPath) {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+        String path = removeQueryString(req.uri());
         if (contextPath.isEmpty()) {
-            return qsDecoder.path();
+            return path;
         } else {
-            String uriWithContextPath = qsDecoder.path();
-            if (uriWithContextPath.startsWith(contextPath)) {
-                return uriWithContextPath.substring(contextPath.length());
+            if (path.startsWith(contextPath)) {
+                return path.substring(contextPath.length());
             } else {
                 throw new IllegalArgumentException("URI does not start with context path");
             }
@@ -55,5 +53,10 @@ public class HttpUtils {
                 throw new IllegalArgumentException("URI does not start with context path");
             }
         }
+    }
+
+    private static String removeQueryString(String uri) {
+        int idx = uri.indexOf('?');
+        return (idx == -1) ? uri : uri.substring(0, idx);
     }
 }

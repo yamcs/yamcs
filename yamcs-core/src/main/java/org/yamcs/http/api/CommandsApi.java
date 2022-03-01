@@ -203,7 +203,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             if (ctx.user.getClearance() == null) {
                 throw new ForbiddenException("Not cleared for commanding");
             }
-            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
+            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toUpperCase());
             Levels level = null;
             if (preparedCommand.getMetaCommand().getEffectiveDefaultSignificance() != null) {
                 level = preparedCommand.getMetaCommand().getEffectiveDefaultSignificance().getConsequenceLevel();
@@ -310,7 +310,9 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         if (request.hasStop()) {
             sqlb.whereColBefore("gentime", request.getStop());
         }
-
+        if (request.hasQueue()) {
+            sqlb.where("queue = ?", request.getQueue());
+        }
         if (request.hasQ()) {
             sqlb.where("cmdName like ?", "%" + request.getQ() + "%");
         }
@@ -492,6 +494,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setSequenceNumber(pc.getSequenceNumber())
                             .setCommandId(pc.getCommandId())
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
+                            .addAllAssignments(pc.getAssignments())
                             .addAllAttr(pc.getAttributes())
                             .build();
                     observer.next(entry);

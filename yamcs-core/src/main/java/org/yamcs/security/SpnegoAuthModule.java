@@ -208,10 +208,12 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
                     if (stripRealm) {
                         username = userPrincipal.substring(0, userPrincipal.length() - realm.length() - 1);
                     }
+
                     SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, username);
                     authInfo.addExternalIdentity(getClass().getName(), userPrincipal);
                     String authorizationCode = CryptoUtils.generateRandomPassword(10);
                     code2info.put(authorizationCode, authInfo);
+
                     ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
                     HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
                     HttpUtil.setContentLength(res, buf.readableBytes());

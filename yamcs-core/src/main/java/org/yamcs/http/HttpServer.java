@@ -8,8 +8,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +29,9 @@ import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
 import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.AuditApi;
 import org.yamcs.http.api.BucketsApi;
 import org.yamcs.http.api.ClearanceApi;
-import org.yamcs.http.api.ClientsApi;
 import org.yamcs.http.api.CommandsApi;
 import org.yamcs.http.api.Cop1Api;
 import org.yamcs.http.api.DatabaseApi;
@@ -39,6 +39,7 @@ import org.yamcs.http.api.EventsApi;
 import org.yamcs.http.api.FileTransferApi;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.api.IndexesApi;
+import org.yamcs.http.api.LinksApi;
 import org.yamcs.http.api.ManagementApi;
 import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.MdbOverrideApi;
@@ -49,12 +50,13 @@ import org.yamcs.http.api.QueueApi;
 import org.yamcs.http.api.ReplicationApi;
 import org.yamcs.http.api.RocksDbApi;
 import org.yamcs.http.api.ServerApi;
+import org.yamcs.http.api.SessionsApi;
 import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
-import org.yamcs.http.api.TagApi;
 import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.api.TimeCorrelationApi;
 import org.yamcs.http.api.TimelineApi;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.CancelOptions;
@@ -67,6 +69,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ServiceManager;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
@@ -87,6 +90,7 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
@@ -110,6 +114,7 @@ public class HttpServer extends AbstractYamcsService {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ChannelGroup clientChannels;
+    private GlobalTrafficShapingHandler globalTrafficHandler;
 
     private List<Api<Context>> apis = new ArrayList<>();
     private List<Route> routes = new ArrayList<>();
@@ -121,6 +126,8 @@ public class HttpServer extends AbstractYamcsService {
 
     private String contextPath;
     private boolean zeroCopyEnabled;
+    private boolean reverseLookup;
+    private int nThreads;
     private List<String> staticRoots = new ArrayList<>(2);
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
@@ -130,13 +137,16 @@ public class HttpServer extends AbstractYamcsService {
     private JsonFormat.Parser jsonParser;
     private JsonFormat.Printer jsonPrinter;
 
-    private TokenStore tokenStore = new TokenStore();
+    // Services (may participate in start-stop events)
+    private TokenStore tokenStore;
+    private AuditLog auditLog;
+
+    // Guava manager for sub-services
+    private ServiceManager serviceManager;
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
     private Map<String, Supplier<Handler>> extraHandlers = new HashMap<>();
-
-    private int nThreads;
 
     @Override
     public Spec getSpec() {
@@ -185,6 +195,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("bindings", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(bindingSpec);
+        spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
+        spec.addOption("reverseLookup", OptionType.BOOLEAN).withDefault(false);
 
         // When using multiple bindings, best to avoid confusion and disable the top-level properties
         spec.mutuallyExclusive("address", "bindings");
@@ -193,13 +205,18 @@ public class HttpServer extends AbstractYamcsService {
         spec.mutuallyExclusive("tlsKey", "bindings");
 
         spec.requireTogether("tlsCert", "tlsKey");
-        spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
         return spec;
     }
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
+
+        tokenStore = new TokenStore();
+        auditLog = new AuditLog();
+
+        tokenStore.init(this);
+        auditLog.init(this);
 
         clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -232,6 +249,7 @@ public class HttpServer extends AbstractYamcsService {
         }
 
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
+        reverseLookup = config.getBoolean("reverseLookup");
 
         if (config.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
@@ -269,36 +287,45 @@ public class HttpServer extends AbstractYamcsService {
         }
         nThreads = config.getInt("nThreads");
 
-        addApi(new AlarmsApi());
+        addApi(new AlarmsApi(auditLog));
+        addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
         addApi(new FileTransferApi());
-        addApi(new ClearanceApi());
-        addApi(new ClientsApi());
+        addApi(new ClearanceApi(auditLog));
         addApi(new CommandsApi());
         addApi(new Cop1Api());
         addApi(new DatabaseApi());
-        addApi(new EventsApi());
-        addApi(new IamApi());
+        addApi(new EventsApi(protobufRegistry));
+        addApi(new IamApi(tokenStore));
         addApi(new IndexesApi());
+        addApi(new LinksApi(auditLog));
         addApi(new ManagementApi());
         addApi(new MdbApi());
         addApi(new MdbOverrideApi());
         addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
         addApi(new ProcessingApi());
-        addApi(new QueueApi());
+        addApi(new QueueApi(auditLog));
         addApi(new ReplicationApi());
         addApi(new ServerApi(this));
         addApi(new StreamArchiveApi());
         addApi(new RocksDbApi());
+        addApi(new SessionsApi());
         addApi(new TableApi());
-        addApi(new TagApi());
         addApi(new TimeApi());
         addApi(new TimeCorrelationApi());
         addApi(new TimelineApi());
 
-        AuthHandler authHandler = new AuthHandler(tokenStore);
+        WellKnownHandler wellKnownHandler = new WellKnownHandler();
+        addHandler(".well-known", () -> wellKnownHandler);
+
+        AuthHandler authHandler = new AuthHandler(this);
         addHandler("auth", () -> authHandler);
+
+        FaviconHandler faviconHandler = new FaviconHandler();
+        for (String path : FaviconHandler.HANDLED_PATHS) {
+            addHandler(path, () -> faviconHandler);
+        }
     }
 
     public void addStaticRoot(Path staticRoot) {
@@ -357,7 +384,11 @@ public class HttpServer extends AbstractYamcsService {
         }
     }
 
-    public void startServer() throws InterruptedException, SSLException, CertificateException, IOException {
+    public void startServer() throws Exception {
+        serviceManager = new ServiceManager(Arrays.asList(
+                tokenStore, auditLog));
+        serviceManager.startAsync().awaitHealthy(10, TimeUnit.SECONDS);
+
         StaticFileHandler.init(staticRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
@@ -366,13 +397,17 @@ public class HttpServer extends AbstractYamcsService {
         workerGroup = new NioEventLoopGroup(nThreads,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
+        // Measure global traffic, we also add a channel-specific measurer in channel-init.
+        globalTrafficHandler = new GlobalTrafficShapingHandler(workerGroup, 5000);
+
         for (Binding binding : bindings) {
-            createAndBindBootstrap(workerGroup, binding);
+            createAndBindBootstrap(workerGroup, binding, globalTrafficHandler);
             log.debug("Serving from {}{}", binding, contextPath);
         }
     }
 
-    private void createAndBindBootstrap(EventLoopGroup workerGroup, Binding binding)
+    private void createAndBindBootstrap(EventLoopGroup workerGroup, Binding binding,
+            GlobalTrafficShapingHandler globalTrafficHandler)
             throws InterruptedException, SSLException, IOException {
         SslContext sslContext = null;
         if (binding.isTLS()) {
@@ -384,7 +419,7 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(this, sslContext));
+                .childHandler(new HttpServerChannelInitializer(this, sslContext, globalTrafficHandler));
 
         // Bind and start to accept incoming connections.
         InetAddress address = binding.getAddress();
@@ -403,6 +438,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public TokenStore getTokenStore() {
         return tokenStore;
+    }
+
+    public AuditLog getAuditLog() {
+        return auditLog;
     }
 
     public List<Binding> getBindings() {
@@ -425,12 +464,20 @@ public class HttpServer extends AbstractYamcsService {
         return protobufRegistry;
     }
 
+    public GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+        return globalTrafficHandler;
+    }
+
     public JsonFormat.Parser getJsonParser() {
         return jsonParser;
     }
 
     public JsonFormat.Printer getJsonPrinter() {
         return jsonPrinter;
+    }
+
+    public boolean getReverseLookup() {
+        return reverseLookup;
     }
 
     public CorsConfig getCorsConfig() {
@@ -455,6 +502,7 @@ public class HttpServer extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        globalTrafficHandler.release();
         ListeningExecutorService closers = listeningDecorator(Executors.newCachedThreadPool());
         ListenableFuture<?> future1 = closers.submit(() -> {
             return workerGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
@@ -462,8 +510,13 @@ public class HttpServer extends AbstractYamcsService {
         ListenableFuture<?> future2 = closers.submit(() -> {
             return bossGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
         });
+        ListenableFuture<?> future3 = closers.submit(() -> {
+            serviceManager.stopAsync();
+            serviceManager.awaitStopped(5, TimeUnit.SECONDS);
+            return true; // Force use of Callable interface, instead of Runnable
+        });
         closers.shutdown();
-        Futures.addCallback(Futures.allAsList(future1, future2), new FutureCallback<Object>() {
+        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
                 notifyStopped();

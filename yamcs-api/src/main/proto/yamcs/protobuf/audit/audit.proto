@@ -1,0 +1,67 @@
+syntax = "proto2";
+
+package yamcs.protobuf.audit;
+
+option java_package = "org.yamcs.protobuf.audit";
+option java_outer_classname = "AuditServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+
+service AuditApi {
+
+  // List audit records
+  rpc ListAuditRecords(ListAuditRecordsRequest) returns (ListAuditRecordsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/audit/records/{instance}"
+    };
+  }
+}
+
+message ListAuditRecordsRequest {
+  // Yamcs instance.
+  optional string instance = 1;
+
+  // The maximum number of returned records per page. Choose this value too high
+  //  and you risk hitting the maximum response size limit enforced by the server.
+  // Default: ``100``
+  optional int32 limit = 2;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 3;
+
+  // Filter the lower bound of the record's time. Specify a date string in
+  // ISO 8601 format. This bound is inclusive.
+  optional google.protobuf.Timestamp start = 4;
+
+  // Filter the upper bound of the record's generation time. Specify a date string in
+  // ISO 8601 format. This bound is exclusive.
+  optional google.protobuf.Timestamp stop = 5;
+
+  // Text to search for in the summary.
+  optional string q = 6;
+  
+  // Include only records matching the specified service.
+  optional string service = 7;
+}
+
+message ListAuditRecordsResponse {
+  repeated AuditRecord records = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
+  optional string continuationToken = 2;
+}
+
+message AuditRecord {
+  optional google.protobuf.Timestamp time = 1;
+  optional string service = 2;
+  optional string method = 3;
+  optional string user = 4;
+  optional string summary = 5;
+  optional google.protobuf.Struct request = 6;
+}

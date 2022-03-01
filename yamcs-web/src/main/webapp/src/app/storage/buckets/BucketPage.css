@@ -16,6 +16,10 @@ mat-toolbar-row {
   width: 100%;
   height: 100%;
   overflow: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
 }
 
 .droparea-overlay {
@@ -28,6 +32,10 @@ mat-toolbar-row {
   background: rgba(27, 97, 185, 0.1);
   border: 1px solid rgba(27, 97, 185, 1);
   z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
 }
 
 ::ng-deep .progress-dialog .mat-dialog-container {
@@ -38,4 +46,38 @@ mat-toolbar-row {
 
 ::ng-deep .progress-dialog .mat-dialog-content {
   overflow: hidden;
+}
+
+.mat-sidenav-container {
+  height: 100%;
+  width: 100%;
+  background-color: inherit;
+}
+
+.mat-sidenav-container .mat-sidenav {
+  background-color: #000;
+}
+
+.mat-sidenav .mat-drawer-inner-container {
+  overflow: hidden !important;
+}
+
+.resize-handle {
+  position: absolute;
+  background-color: #000;
+  top: 0;
+  left: 0;
+  width: 20px;
+  bottom: 0;
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+}
+
+.mat-sidenav-container img {
+  margin: 2em;
+  max-width: calc(100% - 5em);
+  max-height: calc(100% - 5em);
 }

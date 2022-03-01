@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ComponentFactory, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Type, ViewChild } from '@angular/core';
 import { PrintService } from '../../core/services/PrintService';
 import { Printable } from './Printable';
 import { PrintableDirective } from './PrintableDirective';
@@ -11,6 +11,19 @@ import { PrintableDirective } from './PrintableDirective';
 })
 export class PrintZone {
 
+  /*
+   * Implementation note:
+   *
+   * Test in Chrome, FF and Safari before committing
+   * changes. Very tricky.
+   *
+   * Probably printing from a new tab instead of an iframe
+   * would be easier.
+   *
+   * Currently still one bug in Safari when doing:
+   * print -> cancel print -> print.
+   */
+
   @ViewChild('wrapper', { static: true })
   private printableContent: ElementRef;
 
@@ -19,37 +32,53 @@ export class PrintZone {
 
   constructor(private printService: PrintService) {
     this.printService.printOrders$.subscribe(order => {
-      this.createAndPrint(order.factory, order.title, order.data);
+      this.createAndPrint(order.componentType, order.title, order.data);
     });
   }
 
-  private createAndPrint(factory: ComponentFactory<Printable>, pageTitle: string, data: any) {
+  private createAndPrint(componentType: Type<Printable>, pageTitle: string, data: any) {
     const viewContainerRef = this.printableHost.viewContainerRef;
     viewContainerRef.clear();
-    const componentRef = viewContainerRef.createComponent(factory);
+    const componentRef = viewContainerRef.createComponent(componentType);
     (<Printable>componentRef.instance).pageTitle = pageTitle;
     (<Printable>componentRef.instance).data = data;
 
     // Realise content
     componentRef.changeDetectorRef.detectChanges();
 
+    const prevFrames = document.getElementsByClassName('printable');
+    for (let i = 0; i < prevFrames.length; i++) {
+      document.body.removeChild(prevFrames[i]);
+    }
+
     const iframeEl = document.createElement('iframe') as HTMLIFrameElement;
+    iframeEl.className = 'printable';
     iframeEl.style.display = 'none';
     document.body.appendChild(iframeEl);
     const iframeDoc = iframeEl.contentDocument!;
     iframeDoc.title = pageTitle;
 
-    // Import styles from parent frame
-    const styleEls = document.getElementsByTagName('style');
-    const iframeHeadEl = iframeDoc.getElementsByTagName('head')[0];
-    for (let i = 0; i < styleEls.length; i++) {
-      iframeHeadEl.appendChild(styleEls[i].cloneNode(true));
-    }
+    iframeDoc.open();
+    iframeDoc.write('<!doctype html>\n');
+    iframeDoc.write('<head>\n');
+    iframeDoc.write(`
+      <style>
+      .block-title {
+        margin-top: 1em;
+        font-weight: bold;
+      }
+      .no-print, .no-print * {
+        display: none !important;
+      }
+      </style>
+    `);
+    iframeDoc.write('</head>\n');
 
+    iframeDoc.write('<body onload="window.print()">\n');
     const printableEl = this.printableContent.nativeElement as HTMLDivElement;
-    iframeDoc.body.appendChild(printableEl.cloneNode(true));
-    iframeEl.focus();
-    iframeEl.contentWindow!.print();
-    document.body.removeChild(iframeEl);
+    iframeDoc.write(printableEl.innerHTML);
+    iframeDoc.write('</body>\n');
+    iframeDoc.write('</html>\n');
+    iframeDoc.close();
   }
 }

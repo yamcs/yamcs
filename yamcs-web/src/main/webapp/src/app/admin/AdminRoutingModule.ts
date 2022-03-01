@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { ConnectionsPage } from './connections/ConnectionsPage';
+import { AdminActivityPage } from './activity/AdminActivityPage';
 import { DatabasePage } from './databases/database/DatabasePage';
 import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
 import { StreamColumnsTab } from './databases/database/stream/StreamColumnsTab';
@@ -17,7 +17,7 @@ import { TablePage } from './databases/database/table/TablePage';
 import { TableScriptTab } from './databases/database/table/TableScriptTab';
 import { DatabaseTablesTab } from './databases/database/tables/DatabaseTablesTab';
 import { DatabasesPage } from './databases/databases/DatabasesPage';
-import { AdminHomePage } from './home/AdminHomePage';
+import { HttpTrafficPage } from './http-traffic/HttpTrafficPage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
 import { CreateUserPage } from './iam/CreateUserPage';
@@ -31,14 +31,15 @@ import { ServiceAccountsPage } from './iam/ServiceAccountsPage';
 import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
 import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
-import { PluginsPage } from './plugins/PluginsPage';
 import { ProcessorTypesPage } from './processor-types/ProcessorTypesPage';
 import { ReplicationPage } from './replication/ReplicationPage';
 import { RocksDbDatabasePage } from './rocksdb/RocksDbDatabasePage';
 import { RocksDbDatabasesPage } from './rocksdb/RocksDbDatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
+import { SessionsPage } from './sessions/SessionsPage';
 import { AdminPage } from './shared/AdminPage';
+import { SystemPage } from './system/SystemPage';
 import { ThreadPage } from './threads/ThreadPage';
 import { ThreadsPage } from './threads/ThreadsPage';
 
@@ -53,11 +54,15 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        component: AdminHomePage,
+        component: AdminActivityPage,
       },
       {
-        path: 'connections',
-        component: ConnectionsPage,
+        path: 'http-traffic',
+        component: HttpTrafficPage,
+      },
+      {
+        path: 'sessions',
+        component: SessionsPage,
       },
       {
         path: 'routes',
@@ -66,10 +71,6 @@ const routes: Routes = [
       {
         path: 'leap-seconds',
         component: LeapSecondsPage,
-      },
-      {
-        path: 'plugins',
-        component: PluginsPage,
       },
       {
         path: 'processor-types',
@@ -244,6 +245,10 @@ const routes: Routes = [
       }, {
         path: 'threads/:id',
         component: ThreadPage,
+      }, {
+        path: 'system',
+        pathMatch: 'full',
+        component: SystemPage,
       }
     ]
   }
@@ -256,8 +261,7 @@ const routes: Routes = [
 export class AdminRoutingModule { }
 
 export const routingComponents = [
-  AdminHomePage,
-  ConnectionsPage,
+  AdminActivityPage,
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
@@ -270,8 +274,8 @@ export const routingComponents = [
   EditUserPage,
   GroupsPage,
   GroupPage,
+  HttpTrafficPage,
   LeapSecondsPage,
-  PluginsPage,
   ProcessorTypesPage,
   ReplicationPage,
   RocksDbDatabasesPage,
@@ -281,10 +285,12 @@ export const routingComponents = [
   RoutesPage,
   ServiceAccountsPage,
   ServicesPage,
+  SessionsPage,
   StreamPage,
   StreamColumnsTab,
   StreamDataTab,
   StreamScriptTab,
+  SystemPage,
   TablePage,
   TableInfoTab,
   TableDataTab,

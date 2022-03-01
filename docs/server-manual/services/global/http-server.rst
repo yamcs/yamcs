@@ -53,7 +53,6 @@ tlsCert (string or list of strings)
 tlsKey (string)
     **Required** if ``tlsCert`` is specified. The key to the certificate.
 
-
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
     
@@ -67,14 +66,17 @@ maxContentLength (integer)
 
     Some routes may specify a custom ``maxBodySize`` option, in which case the maximum of the two values gets applied.
 
+nThreads (integer)
+    Configure the number of threads that handle HTTP requests. The value ``0`` resolves to two times the number of CPU cores. Default: ``0``
+
+reverseLookup (boolean)
+    If enabled, hostnames instead of IP addresses are used to identify clients. Use of this option may trigger name service reverse lookups. Default: ``false``
+
 webSocket (map)
     Configure WebSocket properties. Detailed below. If unset, Yamcs uses sensible defaults.
 
 cors (map)
     Configure cross-origin resource sharing for the HTTP API. Detailed below. If unset, CORS is not supported.
-
-nThreads (int)
-    Configure the number of threads that will serve HTTP requests. 0 (default) means two times the number of CPU cores.
 
 
 WebSocket sub-configuration

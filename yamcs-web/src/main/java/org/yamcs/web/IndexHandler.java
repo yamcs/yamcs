@@ -11,11 +11,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.yamcs.CommandOption;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HandlerContext;
 import org.yamcs.http.HttpServer;
@@ -23,6 +27,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.templating.TemplateProcessor;
 
@@ -122,6 +127,16 @@ public class IndexHandler extends Handler {
         boolean commandClearanceEnabled = ProcessorFactory.getProcessorTypes().entrySet().stream()
                 .anyMatch(entry -> entry.getValue().checkCommandClearance());
         webConfig.put("commandClearanceEnabled", commandClearanceEnabled);
+
+        // Make queue names directly available without API request. It is used
+        // for populating a command history combo box.
+        SortedSet<String> queueNames = new TreeSet<>();
+        for (CommandQueueManager qmanager : ManagementService.getInstance().getCommandQueueManagers()) {
+            for (CommandQueue queue : qmanager.getQueues()) {
+                queueNames.add(queue.getName());
+            }
+        }
+        webConfig.put("queueNames", queueNames);
 
         Map<String, Object> args = new HashMap<>(4);
         args.put("contextPath", httpServer.getContextPath());
