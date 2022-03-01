@@ -360,11 +360,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void sendTc(PreparedCommand preparedCommand) {
+        public boolean sendCommand(PreparedCommand preparedCommand) {
             if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
                 commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
             }
             commands.add(preparedCommand);
+            return true;
         }
 
         @Override

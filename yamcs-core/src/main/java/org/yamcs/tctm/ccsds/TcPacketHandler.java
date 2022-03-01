@@ -37,7 +37,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public void sendTc(PreparedCommand preparedCommand) {
+    public boolean sendCommand(PreparedCommand preparedCommand) {
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int pcLength = cmdPostProcessor.getBinaryLength(preparedCommand);
         if (framingLength + pcLength > vmp.maxFrameLength) {
@@ -46,7 +46,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             failedCommand(preparedCommand.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
                             + vmp.maxFrameLength + "; frame overhead: " + framingLength);
-            return;
+            return true;
         }
 
         if (blockSenderOnQueueFull) {
@@ -64,6 +64,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
                 failedCommand(preparedCommand.getCommandId(), "queue full");
             }
         }
+        return true;
     }
 
     @Override

@@ -514,9 +514,10 @@ public class LinkManager {
             for (TcDataLink tcLink : tcLinks) {
                 if (!tcLink.isEffectivelyDisabled()) {
                     try {
-                        tcLink.sendTc(pc);
-                        sent = true;
-                        break;
+                        if (tcLink.sendCommand(pc)) {
+                            sent = true;
+                            break;
+                        }
                     } catch (Exception e) {
                         log.error("Error sending command via link {}", tcLink, e);
                         reason = "Error sending command via " + tcLink.getName() + ": " + e.getMessage();
