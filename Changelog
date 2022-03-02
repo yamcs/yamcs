@@ -1,3 +1,17 @@
+Version 5.6.0 released 2-Mar-2022
+- Keep a log of admin, link, queue and alarm activity
+- Add support for folder creation within buckets
+- Upgrade of protobuf dependency
+- Allow customizing message decoding of UdpParameterDataLink through extension
+- Add toggle to switch between hex/decimal input for unsigned integer arguments
+- API updates:
+    - Link actions are now separate (one method per action)
+    - Queue actions are now separate (one method per action)
+    - Alarm actions are now separate (one method per action)
+    - Old-style websocket is now fully removed (use new-style)
+    - Tags are gone (use timeline)
+- Various tweaks and fixes
+
 Version 5.5.7 released 3-Feb-2022
 - restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 it was using the CUC decoder by default instead of using the FIXED decoder)
 - allow raw frame decoding using Reed-Solomon and de-randomization.
