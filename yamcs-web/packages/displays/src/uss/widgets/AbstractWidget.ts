@@ -180,10 +180,10 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  onDelivery(pvals: ParameterValue[]) {
+  protected onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
   }
 
-  protected onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
+  afterDelivery() {
   }
 
   protected getFontMetrics(text: string, fontFamily: string, fontStyle: string, fontWeight: string, fontSize: string) {

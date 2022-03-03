@@ -1,12 +1,12 @@
-import { ParameterValue } from '@yamcs/client';
 import Dygraph from 'dygraphs';
 import { Circle, G, Rect, Text } from '../../tags';
 import { CircularBuffer } from '../CircularBuffer';
 import { Color } from '../Color';
+import { ComputationBinding } from '../ComputationBinding';
 import { DataSourceBinding } from '../DataSourceBinding';
+import { DataSourceSample } from '../DataSourceSample';
 import { ExpirationBuffer } from '../ExpirationBuffer';
 import { ParameterBinding } from '../ParameterBinding';
-import { ParameterSample } from '../ParameterSample';
 import { Sample, SampleBuffer } from '../SampleBuffer';
 import { DEFAULT_STYLE } from '../StyleSet';
 import * as utils from '../utils';
@@ -64,7 +64,13 @@ export class LineGraph extends AbstractWidget {
   private xAxisColor: Color;
   private yAxisColor: Color;
 
-  private valueBindings: ParameterBinding[];
+  // Generation time of a set of pending delivered values (or computations).
+  //
+  // Interpreted at the end of the delivery, so that the values in the
+  // plotbuffer can be set all at once.
+  private pendingDelivery: Date | undefined;
+
+  private valueBindings: (ParameterBinding | ComputationBinding)[];
   private buffer: SampleBuffer;
 
   private legendDataSet: LegendData[] = [];
@@ -240,6 +246,7 @@ export class LineGraph extends AbstractWidget {
           fill: PLOT_COLORS[i],
         }));
 
+        const text = (valueBinding as any).opsName || (valueBinding as any).expression;
         g.addChild(new Text({
           x: this.x + this.width - boxWidth - 20,
           y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
@@ -248,7 +255,7 @@ export class LineGraph extends AbstractWidget {
           'font-size': fontSize,
           'text-anchor': 'end',
           fill: Color.BLACK.toString(),
-        }, valueBinding.opsName));
+        }, text));
 
         const elId = this.generateChildId();
         g.addChild(new Text({
@@ -329,7 +336,8 @@ export class LineGraph extends AbstractWidget {
     const extraLabels: string[] = [];
     for (let i = 1; i < this.valueBindings.length; i++) {
       // Exact name doesn't matter, as long as it's unique
-      const label = this.valueBindings[i].opsName!;
+      const valueBinding: any = this.valueBindings[i];
+      const label = valueBinding.opsName || valueBinding.expression;
       extraLabels.push(label);
       series[label] = {
         color: PLOT_COLORS[i],
@@ -449,35 +457,21 @@ export class LineGraph extends AbstractWidget {
     }
   }
 
+  onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
+    this.pendingDelivery = sample.generationTime;
+  }
+
   // Don't use onBindingUpdate because that gets triggered for every parameter
   // separately whereas our plot buffer needs combined data.
-  onDelivery(pvals: ParameterValue[]) {
-    let generationTime;
-    const values: Array<number | null> = [];
-    for (const binding of this.valueBindings) {
-      let inDelivery = false;
-      for (const pval of pvals) {
-        if (binding.opsName === pval.id.name) {
-          const sample = new ParameterSample(pval);
-          generationTime = sample.generationTime;
-          if (sample.acquisitionStatus === 'EXPIRED') {
-            values.push(null);
-          } else {
-            values.push(binding.usingRaw ? sample.rawValue : sample.engValue);
-          }
-          inDelivery = true;
-          break;
-        }
+  afterDelivery() {
+    if (this.pendingDelivery) {
+      const values: Array<number | null> = [];
+      for (const binding of this.valueBindings) {
+        values.push(isNaN(binding.value) ? null : binding.value);
       }
+      this.buffer.push([this.pendingDelivery, ...values] as Sample);
 
-      if (!inDelivery) {
-        values.push(binding.value);
-      }
-    }
-
-    if (generationTime) {
-      this.buffer.push([generationTime, ...values] as Sample);
-      // console.log('values', values);
+      this.pendingDelivery = undefined;
     }
   }
 
@@ -496,8 +490,12 @@ export class LineGraph extends AbstractWidget {
           const sample = valueBinding.sample;
           const cdmcsMonitoringResult = convertMonitoringResult(sample);
           let v = valueBinding.value;
-          v = v.toFixed(this.legendDecimals);
-          legendEl!.textContent = v;
+          if (isNaN(v) || v === null || v === undefined) {
+            legendEl!.textContent = '';
+          } else {
+            v = v.toFixed(this.legendDecimals);
+            legendEl!.textContent = v;
+          }
           let style = DEFAULT_STYLE;
           switch (sample.acquisitionStatus) {
             case 'ACQUIRED':

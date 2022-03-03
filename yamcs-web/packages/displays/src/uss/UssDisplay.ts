@@ -291,9 +291,6 @@ export class UssDisplay implements Display {
   }
 
   processParameterValues(pvals: ParameterValue[]) {
-    for (const widget of this.widgets) {
-      widget.onDelivery(pvals);
-    }
     for (const pval of pvals) {
       const sample = new ParameterSample(pval);
       const widgets = this.widgetsByTrigger.get(sample.opsName);
@@ -303,6 +300,9 @@ export class UssDisplay implements Display {
           widget.dirty = true;
         }
       }
+    }
+    for (const widget of this.widgets) {
+      widget.afterDelivery();
     }
   }
 
