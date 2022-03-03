@@ -177,8 +177,11 @@ export class CompiledFormula {
     }
   }
 
-  private callParameterValue(pathName: string) {
-    const opsName = this.pathname2opsname.get(pathName);
+  private callParameterValue(name: string) {
+    let opsName: string | undefined = name;
+    if (name.startsWith('\\')) {
+      opsName = this.pathname2opsname.get(name);
+    }
     if (opsName) {
       return this.assignments.get(opsName);
     }
