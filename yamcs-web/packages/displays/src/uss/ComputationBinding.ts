@@ -1,6 +1,6 @@
-import { FormulaCompiler } from './expressions/FormulaCompiler';
-import { CompiledFormula, DataSourceStatus } from './expressions/CompiledFormula';
 import { DataSourceBinding } from './DataSourceBinding';
+import { CompiledFormula, DataSourceStatus } from './expressions/CompiledFormula';
+import { FormulaCompiler } from './expressions/FormulaCompiler';
 
 export interface ComputationArgument {
   opsName?: string;

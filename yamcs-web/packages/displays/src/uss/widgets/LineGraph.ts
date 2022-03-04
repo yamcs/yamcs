@@ -246,7 +246,7 @@ export class LineGraph extends AbstractWidget {
           fill: PLOT_COLORS[i],
         }));
 
-        const text = (valueBinding as any).opsName || (valueBinding as any).expression;
+        const text = valueBinding.label || (valueBinding as any).opsName || (valueBinding as any).expression;
         g.addChild(new Text({
           x: this.x + this.width - boxWidth - 20,
           y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),

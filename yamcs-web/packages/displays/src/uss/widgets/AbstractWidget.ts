@@ -89,6 +89,14 @@ export abstract class AbstractWidget {
       binding = new ComputationBinding();
       binding.expression = utils.parseStringChild(ds, 'Expression');
 
+      const namesNode = utils.findChild(ds, 'Names');
+      for (const entryNode of utils.findChildren(namesNode, 'entry')) {
+        const stringNodes = utils.findChildren(entryNode, 'string');
+        if (stringNodes.length === 2 && stringNodes[0].textContent === 'DEFAULT') {
+          binding.label = stringNodes[1].textContent;
+        }
+      }
+
       const argumentsNode = utils.findChild(ds, 'Arguments');
       for (const externalDataSourceNode of utils.findChildren(argumentsNode, 'ExternalDataSource')) {
         const arg = this.parseNames(utils.findChild(externalDataSourceNode, 'Names'));

@@ -3,6 +3,7 @@ import { DataSourceSample } from './DataSourceSample';
 export abstract class DataSourceBinding {
 
   dynamicProperty: string;
+  label: string | null;
   usingRaw: boolean;
   sample?: DataSourceSample;
 
