@@ -1,5 +1,13 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCEPT;
+import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.COOKIE;
+import static io.netty.handler.codec.http.HttpHeaderValues.CLOSE;
+import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -45,7 +53,6 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentCompressor;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpMethod;
@@ -127,7 +134,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             DecoderResult dr = ((HttpMessage) msg).decoderResult();
             if (!dr.isSuccess()) {
                 log.warn("{} Exception while decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
-                ctx.writeAndFlush(HttpUtils.EMPTY_BAD_REQUEST_RESPONSE);
+                sendPlainTextError(ctx, null, HttpResponseStatus.BAD_REQUEST);
                 return;
             }
         }
@@ -225,8 +232,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
         // Handle common case first: presence of an "Authorization" header
-        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
-            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        if (req.headers().contains(AUTHORIZATION)) {
+            String authorizationHeader = req.headers().get(AUTHORIZATION);
             if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
                 return handleBasicAuth(ctx, req);
             } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
@@ -408,8 +415,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
         }
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType.toString());
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CONTENT_TYPE, contentType.toString());
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
 
         return sendResponse(ctx, req, response);
     }
@@ -423,30 +430,33 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             HttpResponseStatus status, String msg) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
+        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
+        response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
         return sendResponse(ctx, req, response);
     }
 
     public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
-        if (response.status() == HttpResponseStatus.OK) {
-            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
-                    response.status().code());
-            ChannelFuture writeFuture = ctx.writeAndFlush(response);
-            if (!HttpUtil.isKeepAlive(req)) {
-                writeFuture.addListener(ChannelFutureListener.CLOSE);
-            }
-            return writeFuture;
-        } else {
+        int status = response.status().code();
+        boolean keepAlive = HttpUtil.isKeepAlive(req);
+
+        if (100 <= status && status < 400) { // Information, Success, or Redirection
+            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), status);
+        } else { // Client error or server error
+            keepAlive = false;
             if (req != null) {
-                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
-                        response.status().code());
+                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), status);
             } else {
-                log.warn("{} malformed or illegal request. Sending back {}", ctx.channel().id().asShortText(),
-                        response.status().code());
+                log.warn("{} malformed or illegal request. Sending back {}", ctx.channel().id().asShortText(), status);
             }
+        }
+
+        if (keepAlive) {
+            response.headers().set(CONNECTION, KEEP_ALIVE);
+            return ctx.writeAndFlush(response);
+        } else {
+            response.headers().set(CONNECTION, CLOSE);
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
-            writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
-            return writeFuture;
+            return writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -461,7 +471,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * headers is present or the Accept is present and set to ANY.
      */
     private static MediaType getAcceptType(HttpRequest req) {
-        String acceptType = req.headers().get(HttpHeaderNames.ACCEPT);
+        String acceptType = req.headers().get(ACCEPT);
         if (acceptType != null) {
             MediaType r = MediaType.from(acceptType);
             if (r == MediaType.ANY) {
@@ -478,7 +488,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * @return The Content-Type header if present or else defaults to JSON.
      */
     public static MediaType getContentType(HttpRequest req) {
-        String declaredContentType = req.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        String declaredContentType = req.headers().get(CONTENT_TYPE);
         if (declaredContentType != null) {
             return MediaType.from(declaredContentType);
         }
@@ -487,8 +497,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private String getAccessTokenFromCookie(HttpRequest req) {
         HttpHeaders headers = req.headers();
-        if (headers.contains(HttpHeaderNames.COOKIE)) {
-            Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
+        if (headers.contains(COOKIE)) {
+            Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(COOKIE));
             for (Cookie c : cookies) {
                 if ("access_token".equalsIgnoreCase(c.name())) {
                     return c.value();
@@ -499,7 +509,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private User handleBasicAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String header = req.headers().get(AUTHORIZATION);
         String userpassEncoded = header.substring(AUTH_TYPE_BASIC.length());
         String userpassDecoded;
         try {
@@ -550,7 +560,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private User handleBearerAuth(ChannelHandlerContext ctx, HttpRequest req) throws UnauthorizedException {
-        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String header = req.headers().get(AUTHORIZATION);
         String accessToken = header.substring(AUTH_TYPE_BEARER.length());
         return handleAccessToken(ctx, req, accessToken);
     }
