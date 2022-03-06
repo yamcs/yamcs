@@ -183,6 +183,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         cleanPipeline(ctx.pipeline());
         ctx.channel().attr(CTX_CONTEXT_PATH).set(contextPath);
         ctx.channel().attr(CTX_HTTP_REQUEST).set(req);
+        ctx.channel().attr(CTX_CONTEXT).set(null); // Cleanup in case of keep-alive
+        ctx.channel().attr(CTX_USERNAME).set(null); // Cleanup in case of keep-alive
 
         if (!req.uri().startsWith(contextPath)) {
             sendPlainTextError(ctx, req, NOT_FOUND);
@@ -386,10 +388,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        String channelId = ctx.channel().id().asShortText();
         if (cause instanceof NotSslRecordException) {
-            log.info("Expected a TLS/SSL packet. Closing channel");
+            log.info("{} Closing channel: expected a TLS/SSL packet", channelId);
+        } else if (cause instanceof IOException && cause.getMessage().contains("reset by peer")) {
+            // Unclean client close. Don't care about stack trace
+            log.info("{} Closing channel: {}", channelId, cause.getMessage());
         } else {
-            log.error("Closing channel: {}", cause.getMessage(), cause);
+            log.error("{} Closing channel: {}", channelId, cause.getMessage(), cause);
         }
         ctx.close();
     }

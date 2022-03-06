@@ -160,7 +160,7 @@ public class ArrayDataType extends NameDescription implements DataType {
 
     private Object[] parse(String stringValue, boolean raw) {
         try {
-            JsonElement el = new JsonParser().parse(stringValue);
+            JsonElement el = JsonParser.parseString(stringValue);
             return toArray(el, numberOfDimensions - 1, raw);
         } catch (JsonParseException e) {
             throw new IllegalArgumentException("Cannot parse string as json: " + e.getMessage());

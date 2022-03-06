@@ -2,7 +2,6 @@ package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private boolean protobuf;
     private User user;
 
-    private SocketAddress remoteAddress;
     private WriteBufferWaterMark writeBufferWaterMark;
 
     private List<TopicContext> contexts = new ArrayList<>();
@@ -65,9 +63,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void handlerAdded(ChannelHandlerContext nettyContext) throws Exception {
         nettyContext.channel().config().setWriteBufferWaterMark(writeBufferWaterMark);
-
-        // Store this information, because it will be null when the channel is disconnected
-        remoteAddress = nettyContext.channel().remoteAddress();
     }
 
     @Override
@@ -76,12 +71,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             HandshakeComplete handshakeEvt = (HandshakeComplete) evt;
             String subprotocol = handshakeEvt.selectedSubprotocol();
             protobuf = "protobuf".equals(subprotocol);
+            String channelId = nettyContext.channel().id().asShortText();
 
             if (protobuf) {
-                log.info("{} {} {} [subprotocol: protobuf]", nettyRequest.method(), nettyRequest.uri(),
+                log.info("{} {} {} {} [subprotocol: protobuf]", channelId, nettyRequest.method(), nettyRequest.uri(),
                         HttpResponseStatus.SWITCHING_PROTOCOLS.code());
             } else {
-                log.info("{} {} {} [subprotocol: json]", nettyRequest.method(), nettyRequest.uri(),
+                log.info("{} {} {} {} [subprotocol: json]", channelId, nettyRequest.method(), nettyRequest.uri(),
                         HttpResponseStatus.SWITCHING_PROTOCOLS.code());
             }
 
@@ -101,7 +97,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             }
         } else {
             String json = frame.content().toString(StandardCharsets.UTF_8);
-            JsonObject obj = new JsonParser().parse(json).getAsJsonObject();
+            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
 
             String messageType = obj.get("type").getAsString();
             switch (messageType) {
@@ -267,13 +263,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext nettyContext, Throwable cause) throws Exception {
-        log.warn("Closing channel due to error", cause);
+        log.warn("{} Closing channel due to error", nettyContext.channel().id().asShortText(), cause);
         nettyContext.close();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext nettyContext) throws Exception {
-        log.info("Channel {} closed", remoteAddress);
+        log.info("{} Channel closed", nettyContext.channel().id().asShortText());
         contexts.forEach(TopicContext::close);
         contexts.clear();
     }
