@@ -54,12 +54,12 @@ export class EventsPage {
 
   columns: ColumnInfo[] = [
     { id: 'severity', label: 'Severity', visible: true },
-    { id: 'gentime', label: 'Generation Time', alwaysVisible: true },
+    { id: 'gentime', label: 'Generation time', alwaysVisible: true },
     { id: 'message', label: 'Message', alwaysVisible: true },
     { id: 'source', label: 'Source', visible: true },
     { id: 'type', label: 'Type', visible: true },
-    { id: 'rectime', label: 'Reception Time' },
-    { id: 'seqNumber', label: 'Sequence Number' },
+    { id: 'rectime', label: 'Reception time' },
+    { id: 'seqNumber', label: 'Sequence number' },
   ];
 
   /**

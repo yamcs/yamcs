@@ -96,6 +96,7 @@ import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { PrintableDirective } from './print/PrintableDirective';
 import { PrintZone } from './print/PrintZone';
+import { Progress } from './progress/Progress';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { YaDataTableComponent } from './table/DataTableDirective';
@@ -218,6 +219,7 @@ const sharedComponents = [
   ParameterPlot,
   ParameterSeries,
   PrintZone,
+  Progress,
   SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,

@@ -20,6 +20,7 @@ import org.yamcs.protobuf.BucketInfo;
 import org.yamcs.protobuf.CreateBucketRequest;
 import org.yamcs.protobuf.DeleteBucketRequest;
 import org.yamcs.protobuf.DeleteObjectRequest;
+import org.yamcs.protobuf.GetBucketRequest;
 import org.yamcs.protobuf.GetObjectRequest;
 import org.yamcs.protobuf.ListBucketsRequest;
 import org.yamcs.protobuf.ListBucketsResponse;
@@ -32,6 +33,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.FileSystemBucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
@@ -44,9 +46,6 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     private static final Log log = new Log(BucketsApi.class);
 
-    // max body size used for upload object (this includes both data and metadata).
-    static final int MAX_BODY_SIZE = 5 * 1024 * 1024;
-
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
@@ -56,23 +55,49 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
         YarchDatabaseInstance yarch = getYarch(request.getInstance());
         try {
-            List<BucketProperties> l = yarch.listBuckets();
+            List<Bucket> buckets = yarch.listBuckets();
             ListBucketsResponse.Builder responseb = ListBucketsResponse.newBuilder();
-            for (BucketProperties bp : l) {
-                BucketInfo.Builder bucketb = BucketInfo.newBuilder()
-                        .setName(bp.getName());
-                if (bp.hasNumObjects()) {
-                    bucketb.setNumObjects(bp.getNumObjects());
-                }
-                if (bp.hasSize()) {
-                    bucketb.setSize(bp.getSize());
-                }
-                responseb.addBuckets(bucketb);
+            for (Bucket bucket : buckets) {
+                responseb.addBuckets(toBucketInfo(bucket));
             }
             observer.complete(responseb.build());
         } catch (IOException e) {
             observer.completeExceptionally(e);
         }
+    }
+
+    @Override
+    public void getBucket(Context ctx, GetBucketRequest request, Observer<BucketInfo> observer) {
+        String instance = request.getInstance();
+        String bucketName = request.getBucketName();
+
+        checkReadBucketPrivilege(bucketName, ctx.user);
+        Bucket b = verifyAndGetBucket(instance, bucketName, ctx.user);
+        try {
+            observer.complete(toBucketInfo(b));
+        } catch (IOException e) {
+            observer.completeExceptionally(e);
+        }
+    }
+
+    private static BucketInfo toBucketInfo(Bucket bucket) throws IOException {
+        BucketProperties props = bucket.getProperties();
+        BucketInfo.Builder bucketb = BucketInfo.newBuilder()
+                .setName(bucket.getName())
+                .setMaxSize(props.getMaxSize())
+                .setMaxObjects(props.getMaxNumObjects())
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()));
+        if (props.hasNumObjects()) {
+            bucketb.setNumObjects(props.getNumObjects());
+        }
+        if (props.hasSize()) {
+            bucketb.setSize(props.getSize());
+        }
+        if (bucket instanceof FileSystemBucket) {
+            FileSystemBucket fsBucket = (FileSystemBucket) bucket;
+            bucketb.setDirectory(fsBucket.getBucketRoot().toAbsolutePath().normalize().toString());
+        }
+        return bucketb.build();
     }
 
     @Override

@@ -1,12 +1,18 @@
-<app-select [options]="areaOptions" [formControl]="areaControl">
-</app-select>
+<div style="display: inline-block">
+  <app-select [options]="areaOptions" [formControl]="areaControl">
+  </app-select>
+</div>
 <ng-container *ngIf="(locationOptions$ | async).length">
   &nbsp;
-  <app-select [options]="locationOptions$ | async" [formControl]="locationControl">
-  </app-select>
+  <div style="display: inline-block">
+    <app-select [options]="locationOptions$ | async" [formControl]="locationControl">
+    </app-select>
+  </div>
 </ng-container>
 <ng-container *ngIf="(sublocationOptions$ | async).length">
   &nbsp;
-  <app-select [options]="sublocationOptions$ | async" [formControl]="sublocationControl">
-  </app-select>
+  <div style="display: inline-block">
+    <app-select [options]="sublocationOptions$ | async" [formControl]="sublocationControl">
+    </app-select>
+  </div>
 </ng-container>

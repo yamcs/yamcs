@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, StorageClient } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import { CreateBucketDialog } from './CreateBucketDialog';
@@ -18,6 +19,8 @@ import { CreateBucketDialog } from './CreateBucketDialog';
 })
 export class BucketsPage implements AfterViewInit {
 
+  filterControl = new FormControl();
+
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
@@ -26,8 +29,13 @@ export class BucketsPage implements AfterViewInit {
   displayedColumns = [
     'select',
     'name',
+    'created',
     'size',
+    'avail',
+    'capacity',
     'numObjects',
+    'availObjects',
+    'pctObjects',
     'actions',
   ];
 
@@ -49,6 +57,7 @@ export class BucketsPage implements AfterViewInit {
     private dialog: MatDialog,
     private router: Router,
     private route: ActivatedRoute,
+    private messageService: MessageService,
     title: Title,
   ) {
     title.setTitle('Buckets');
@@ -66,27 +75,43 @@ export class BucketsPage implements AfterViewInit {
           }
         ]);
       }
-    });
+    }).catch(err => this.messageService.showError(err));
 
     this.initializeOptions();
-    this.refreshDataSources();
+    this.refreshView();
 
     this.filterForm.get('instance')!.valueChanges.forEach(instance => {
       this.instance = instance;
-      this.refreshDataSources();
+      this.refreshView();
     });
-  }
-
-  private initializeOptions() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('instance')) {
-      this.instance = queryParams.get('instance')!;
-      this.filterForm.get('instance')!.setValue(this.instance);
-    }
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+  }
+
+  initializeOptions() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filterControl.setValue(queryParams.get('filter'));
+      this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
+    }
+    if (queryParams.has('instance')) {
+      this.instance = queryParams.get('instance')!;
+      this.filterForm.get('instance')!.setValue(this.instance);
+    }
+
+    this.filterControl.valueChanges.subscribe(() => {
+      this.updateURL();
+      const value = this.filterControl.value || '';
+      this.dataSource.filter = value.toLowerCase();
+
+      for (const item of this.selection.selected) {
+        if (this.dataSource.filteredData.indexOf(item) === -1) {
+          this.selection.deselect(item);
+        }
+      }
+    });
   }
 
   isAllSelected() {
@@ -117,7 +142,7 @@ export class BucketsPage implements AfterViewInit {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.refreshDataSources();
+        this.refreshView();
       }
     });
   }
@@ -132,24 +157,59 @@ export class BucketsPage implements AfterViewInit {
 
       Promise.all(deletePromises).then(() => {
         this.selection.clear();
-        this.refreshDataSources();
+        this.refreshView();
       });
     }
   }
 
-  private refreshDataSources() {
+  selectNext() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  selectPrevious() {
+    const items = this.dataSource.filteredData;
+    let idx = 0;
+    if (this.selection.hasValue()) {
+      const currentItem = this.selection.selected[0];
+      if (items.indexOf(currentItem) !== -1) {
+        idx = Math.max(items.indexOf(currentItem) - 1, 0);
+      }
+    }
+    this.selection.clear();
+    this.selection.select(items[idx]);
+  }
+
+  applySelection() {
+    if (this.selection.hasValue() && this.selection.selected.length === 1) {
+      const item = this.selection.selected[0];
+      this.router.navigate(['/buckets', this.instance, item.name]);
+    }
+  }
+
+  private refreshView() {
     this.updateURL();
     this.storageClient.getBuckets(this.instance).then(buckets => {
       this.dataSource.data = buckets;
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         instance: this.instance || null,
+        filter: filterValue || null,
       },
       queryParamsHandling: 'merge',
     });

@@ -22,7 +22,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -534,11 +533,11 @@ public class YarchDatabaseInstance {
         return fileSystemBucketDatabase.registerBucket(bucketName, location);
     }
 
-    public List<BucketProperties> listBuckets() throws IOException {
-        List<BucketProperties> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
+    public List<Bucket> listBuckets() throws IOException {
+        List<Bucket> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
         List<String> names = buckets.stream().map(b -> b.getName()).collect(Collectors.toList());
 
-        for (BucketProperties bucket : bucketDatabase.listBuckets()) {
+        for (Bucket bucket : bucketDatabase.listBuckets()) {
             if (!names.contains(bucket.getName())) {
                 buckets.add(bucket);
             }

@@ -5,17 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 
 public interface Bucket {
 
     /**
-     * get the bucket name
-     * 
-     * @return
+     * This bucket's name
      */
     String getName();
+
+    BucketProperties getProperties() throws IOException;
 
     default List<ObjectProperties> listObjects() throws IOException {
         return listObjects(null, x -> true);
@@ -43,9 +44,9 @@ public interface Bucket {
 
     void putObject(String objectName, String contentType, Map<String, String> metadata, byte[] objectData)
             throws IOException;
-    
+
     /**
-     * Retrieve object from the bucket. Returns null if object does not exist. 
+     * Retrieve object from the bucket. Returns null if object does not exist.
      * 
      * @param objectName
      * @return

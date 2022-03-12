@@ -19,7 +19,7 @@
   align-items: center;
 }
 
-.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input, .ya-form label .duration-input {
+.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;

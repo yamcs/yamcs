@@ -1,5 +1,7 @@
 .duration-input {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  margin: 5px 0 0;
 }
 
 input {
@@ -7,7 +9,10 @@ input {
 }
 
 .duration-input input {
-  display: inline-block;
   width: 100px;
   margin-right: 5px !important;
+}
+
+::ng-deep .duration-input .ya-button {
+  margin: 0 !important;
 }

@@ -45,6 +45,11 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public BucketProperties getProperties() {
+        return bucketProps;
+    }
+
+    @Override
     public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectPropertiesOrBuilder> p)
             throws IOException {
 

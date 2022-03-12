@@ -46,7 +46,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'type', label: 'Type', visible: true },
-    { id: 'dataSource', label: 'Data Source', visible: true },
+    { id: 'dataSource', label: 'Data source', visible: true },
     { id: 'engValue', label: 'Value', visible: true },
     { id: 'shortDescription', label: 'Description', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
