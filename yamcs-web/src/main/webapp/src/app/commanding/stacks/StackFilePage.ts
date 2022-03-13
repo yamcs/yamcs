@@ -51,6 +51,7 @@ export class StackFilePage implements OnDestroy {
 
   private executionCounter = 0;
 
+  private bucket: string;
   private folderPerInstance: boolean;
 
   constructor(
@@ -60,7 +61,9 @@ export class StackFilePage implements OnDestroy {
     private title: Title,
     configService: ConfigService,
   ) {
-    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
+    const config = configService.getConfig();
+    this.bucket = config.stackBucket;
+    this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
@@ -138,7 +141,7 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const response = await this.storageClient.getObject('_global', 'stacks', objectName);
+    const response = await this.storageClient.getObject('_global', this.bucket, objectName);
     if (response.ok) {
       const text = await response.text();
       const xmlParser = new DOMParser();
@@ -462,7 +465,7 @@ export class StackFilePage implements OnDestroy {
   saveStack() {
     const xml = new StackFormatter(this.entries$.value).toXML();
     const b = new Blob([xml]);
-    this.storageClient.uploadObject('_global', 'stacks', this.objectName, b).then(() => {
+    this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
       this.dirty$.next(false);
     });
   }

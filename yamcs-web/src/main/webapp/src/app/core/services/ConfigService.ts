@@ -19,7 +19,9 @@ export interface WebsiteConfig {
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
+  displayBucket: string;
   displayFolderPerInstance: boolean;
+  stackBucket: string;
   stackFolderPerInstance: boolean;
 }
 

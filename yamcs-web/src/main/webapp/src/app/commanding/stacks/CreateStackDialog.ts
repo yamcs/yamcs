@@ -2,6 +2,7 @@ import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -16,13 +17,16 @@ export class CreateStackDialog {
   filenameInput: ElementRef;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   constructor(
     private dialogRef: MatDialogRef<CreateStackDialog>,
     formBuilder: FormBuilder,
     yamcs: YamcsService,
+    configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
+    this.bucket = configService.getConfig().stackBucket;
     this.storageClient = yamcs.createStorageClient();
     this.filenameForm = formBuilder.group({
       name: ['', [Validators.required]],
@@ -42,7 +46,7 @@ export class CreateStackDialog {
     const b = new Blob([], {
       type: 'application/xml'
     });
-    this.storageClient.uploadObject('_global', 'stacks', objectName, b).then(() => {
+    this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

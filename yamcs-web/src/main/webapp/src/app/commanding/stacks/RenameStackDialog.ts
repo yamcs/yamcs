@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { BasenamePipe } from '../../shared/pipes/BasenamePipe';
 
@@ -14,15 +15,18 @@ export class RenameStackDialog {
   filenameForm: FormGroup;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   constructor(
     private dialogRef: MatDialogRef<RenameStackDialog>,
     formBuilder: FormBuilder,
     yamcs: YamcsService,
     basenamePipe: BasenamePipe,
+    configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().stackBucket;
 
     const basename = basenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({
@@ -37,12 +41,12 @@ export class RenameStackDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject('_global', 'stacks', this.data.name);
+    const response = await this.storageClient.getObject('_global', this.bucket, this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value + '.xml';
-    await this.storageClient.uploadObject('_global', 'stacks', newObjectName, blob);
-    await this.storageClient.deleteObject('_global', 'stacks', this.data.name);
+    await this.storageClient.uploadObject('_global', this.bucket, newObjectName, blob);
+    await this.storageClient.deleteObject('_global', this.bucket, this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

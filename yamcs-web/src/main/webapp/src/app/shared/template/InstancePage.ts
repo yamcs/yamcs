@@ -62,7 +62,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
     }
-    if (this.user.hasObjectPrivilege('ReadBucket', 'displays')) {
+    if (this.user.hasObjectPrivilege('ReadBucket', this.config.displayBucket)) {
       this.telemetryItems.push({ path: 'displays', label: 'Displays' });
     }
     for (const item of configService.getExtraNavItems('telemetry')) {
@@ -74,7 +74,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
-    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', 'stacks')) {
+    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', this.config.stackBucket)) {
       this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {

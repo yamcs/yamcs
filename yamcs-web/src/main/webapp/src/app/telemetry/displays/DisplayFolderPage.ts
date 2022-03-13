@@ -39,6 +39,7 @@ export class DisplayFolderPage implements OnDestroy {
   private routerSubscription: Subscription;
   private storageClient: StorageClient;
 
+  private bucket: string;
   private folderPerInstance: boolean;
 
   constructor(
@@ -53,7 +54,10 @@ export class DisplayFolderPage implements OnDestroy {
   ) {
     title.setTitle('Displays');
     this.storageClient = yamcs.createStorageClient();
-    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
+
+    const config = configService.getConfig();
+    this.bucket = config.displayBucket;
+    this.folderPerInstance = config.displayFolderPerInstance;
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -80,7 +84,7 @@ export class DisplayFolderPage implements OnDestroy {
       options.prefix = prefix;
     }
 
-    this.storageClient.listObjects('_global', 'displays', options).then(dir => {
+    this.storageClient.listObjects('_global', this.bucket, options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -115,7 +119,7 @@ export class DisplayFolderPage implements OnDestroy {
         name: object.name,
         nameWithoutInstance: this.getNameWithoutInstance(object.name),
         modified: object.created,
-        objectUrl: this.storageClient.getObjectURL('_global', 'displays', object.name),
+        objectUrl: this.storageClient.getObjectURL('_global', this.bucket, object.name),
       });
     }
     this.dataSource.data = items;
@@ -160,7 +164,7 @@ export class DisplayFolderPage implements OnDestroy {
       width: '400px',
       data: {
         bucketInstance: '_global',
-        bucket: 'displays',
+        bucket: this.bucket,
         path: this.getCurrentPath(),
       }
     }).afterClosed().subscribe({
@@ -184,7 +188,7 @@ export class DisplayFolderPage implements OnDestroy {
         const fullPath = path ? path + '/' + file.name : file.name;
         const prefix = this.folderPerInstance ? (this.yamcs.instance! + '/') : '';
         const objectName = prefix + fullPath;
-        const promise = this.storageClient.uploadObject('_global', 'displays', objectName, file);
+        const promise = this.storageClient.uploadObject('_global', this.bucket, objectName, file);
         uploadPromises.push(promise);
       }
     }
@@ -207,7 +211,7 @@ export class DisplayFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects('_global', 'displays', {
+        findObjectPromises.push(this.storageClient.listObjects('_global', this.bucket, {
           prefix: item.name,
         }).then(response => {
           const objects = response.objects || [];
@@ -222,7 +226,7 @@ export class DisplayFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject('_global', 'displays', object));
+          deletePromises.push(this.storageClient.deleteObject('_global', this.bucket, object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -248,7 +252,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.nameWithoutInstance}?`)) {
-      this.storageClient.deleteObject('_global', 'displays', item.name).then(() => {
+      this.storageClient.deleteObject('_global', this.bucket, item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
@@ -289,7 +293,7 @@ export class DisplayFolderPage implements OnDestroy {
           if (this.folderPerInstance) {
             objectPath = this.yamcs.instance! + '/' + objectPath;
           }
-          const promise = this.storageClient.uploadObject('_global', 'displays', objectPath, droppedFile);
+          const promise = this.storageClient.uploadObject('_global', this.bucket, objectPath, droppedFile);
           uploadPromises.push(promise);
         }
         Promise.all(uploadPromises).finally(() => {
@@ -305,7 +309,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'displays')
+    return user.hasObjectPrivilege('ManageBucket', this.bucket)
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 

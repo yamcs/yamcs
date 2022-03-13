@@ -23,6 +23,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   selection = new SelectionModel<string>(true, []);
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   public model$ = new BehaviorSubject<ParameterTable | null>(null);
   buffer = new ParameterTableBuffer();
@@ -41,11 +42,12 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     private configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
   }
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject('_global', 'displays', objectName).then(response => {
+    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
         this.model$.next(model);
@@ -203,7 +205,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   save() {
     const model = this.model$.value!;
     const b = new Blob([JSON.stringify(model, undefined, 2)]);
-    return this.storageClient.uploadObject('_global', 'displays', this.objectName, b).then(() => {
+    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
   }
@@ -224,8 +226,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.dataSubscription) {
-      this.dataSubscription.cancel();
-    }
+    this.dataSubscription?.cancel();
   }
 }

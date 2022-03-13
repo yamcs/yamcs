@@ -13,41 +13,35 @@ options:
       - Additional HTML to be included at the end of the <head></head> section.
     type: STRING
 
-  displayPath:
-    title: Display Path
+  displayBucket:
+    title: Display Bucket
     description:
-      - Filesystem path where to find display resources. If this is not specified, Yamcs
-        stores displays in a regular bucket (in binary form). Using the filesystem allows
-        to manage displays outside of Yamcs; for example with a versioning system.
+      - Bucket where to find display resources.
     type: STRING
-    deprecationMessage: >
-      If you want to map the global "displays" bucket to a file system folder, define a mapping
-      in yamcs.yaml as explained here:
-      https://docs.yamcs.org/yamcs-server-manual/data-management/buckets/
+    default: displays
 
   displayFolderPerInstance:
     title: Display Folder Per Instance
     description:
       - Controls whether displays are specific to an instance.
+      - Avoid using this option, there are plans to deprecate it once instances can choose a
+        specific bucket in their configuration.
     type: BOOLEAN
     default: false
 
-  stackPath:
-    title: Stack Path
+  stackBucket:
+    title: Stack Bucket
     description:
-      - Filesystem path where to find command stacks. If this is not specified, Yamcs
-        stores stacks in a regular bucket (in binary form). Using the filesystem allows
-        to manage stacks outside of Yamcs; for example with a versioning system.
+      - Bucket where to find stacks.
     type: STRING
-    deprecationMessage: >
-      If you want to map the global "stacks" bucket to a file system folder, define a mapping
-      in yamcs.yaml as explained here:
-      https://docs.yamcs.org/yamcs-server-manual/data-management/buckets/
+    default: stacks
 
   stackFolderPerInstance:
     title: Stack Folder Per Instance
     description:
       - Controls whether stacks are specific to an instance.
+      - Avoid using this option, there are plans to deprecate it once instances can choose a
+        specific bucket in their configuration.
     type: BOOLEAN
     default: false
 

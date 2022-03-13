@@ -14,7 +14,7 @@ export class LeapSecondsPage {
     'period',
     'leap-seconds',
     'tai-utc',
-    'utc-tai',
+    //'utc-tai',
     'actions',
   ];
 
