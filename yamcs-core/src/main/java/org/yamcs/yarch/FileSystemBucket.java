@@ -25,13 +25,15 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 
 public class FileSystemBucket implements Bucket {
 
-    private static final long MAX_BUCKET_SIZE = 100L * 1024 * 1024; // 100MB
-    private static final int MAX_NUM_OBJECTS_PER_BUCKET = 1000;
+    private static final long DEFAULT_MAX_SIZE = 100L * 1024 * 1024; // 100MB
+    private static final int DEFAULT_MAX_OBJECTS = 1000;
 
     private String bucketName;
     private Path root;
     private Mimetypes mimetypes;
     private boolean includeHidden = false;
+    private long maxSize = DEFAULT_MAX_SIZE;
+    private int maxObjects = DEFAULT_MAX_OBJECTS;
 
     public FileSystemBucket(String bucketName, Path root) throws IOException {
         this.bucketName = bucketName;
@@ -45,14 +47,28 @@ public class FileSystemBucket implements Bucket {
     }
 
     @Override
+    public void setMaxSize(long maxSize) throws IOException {
+        // Not stored anywhere, we expect it to be set upon startup. For
+        // example, coming from configuration.
+        this.maxSize = maxSize;
+    }
+
+    @Override
+    public void setMaxObjects(int maxObjects) throws IOException {
+        // Not stored anywhere, we expect it to be set upon startup. For
+        // example, coming from configuration.
+        this.maxObjects = maxObjects;
+    }
+
+    @Override
     public BucketProperties getProperties() throws IOException {
         BasicFileAttributes attrs = Files.readAttributes(root, BasicFileAttributes.class);
 
-        BucketProperties.Builder b = BucketProperties.newBuilder();
-        b.setName(bucketName);
-        b.setCreated(attrs.creationTime().toMillis());
-        b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
-        b.setMaxSize(MAX_BUCKET_SIZE);
+        BucketProperties.Builder b = BucketProperties.newBuilder()
+                .setName(bucketName)
+                .setCreated(attrs.creationTime().toMillis())
+                .setMaxNumObjects(maxObjects)
+                .setMaxSize(maxSize);
 
         AtomicLong size = new AtomicLong(0);
         AtomicInteger objectCount = new AtomicInteger(0);
@@ -153,12 +169,12 @@ public class FileSystemBucket implements Bucket {
             });
 
             long newSize = size.get() + objectData.length;
-            if (newSize > MAX_BUCKET_SIZE) {
-                throw new IOException("Maximum bucket size " + MAX_BUCKET_SIZE + " exceeded");
+            if (newSize > maxSize) {
+                throw new IOException("Maximum bucket size " + maxSize + " exceeded");
             }
 
             int newCount = count.get() + 1;
-            if (newCount > MAX_NUM_OBJECTS_PER_BUCKET) {
+            if (newCount > maxObjects) {
                 throw new IOException(
                         "Maximum number of objects in the bucket " + newCount + " exceeded");
             }

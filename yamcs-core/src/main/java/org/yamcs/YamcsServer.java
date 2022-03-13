@@ -1180,6 +1180,8 @@ public class YamcsServer {
         Spec bucketSpec = new Spec();
         bucketSpec.addOption("name", OptionType.STRING).withRequired(true);
         bucketSpec.addOption("path", OptionType.STRING);
+        bucketSpec.addOption("maxSize", OptionType.INTEGER);
+        bucketSpec.addOption("maxObjects", OptionType.INTEGER);
 
         spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)

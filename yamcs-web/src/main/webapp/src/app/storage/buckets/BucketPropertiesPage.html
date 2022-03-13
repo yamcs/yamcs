@@ -26,7 +26,7 @@
         <dt>Used</dt>
         <dd>{{ bucket.size | formatBytes | nvl: '-' }}</dd>
         <dt>Available</dt>
-        <dd>{{ (bucket.maxSize - bucket.size) | formatBytes | nvl:'-' }}</dd>
+        <dd>{{ zeroOrMore(bucket.maxSize - bucket.size) | formatBytes }}</dd>
       </dl>
 
       <h3>Object count</h3>
@@ -36,7 +36,7 @@
         <dt>Used</dt>
         <dd>{{ bucket.numObjects | nvl: '-' }}</dd>
         <dt>Available</dt>
-        <dd>{{ (bucket.maxObjects - bucket.numObjects) | nvl:'-' }}</dd>
+        <dd>{{ zeroOrMore(bucket.maxObjects - bucket.numObjects) }}</dd>
       </dl>
     </div>
   </div>

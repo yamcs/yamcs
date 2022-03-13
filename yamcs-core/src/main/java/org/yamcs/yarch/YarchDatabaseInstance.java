@@ -129,15 +129,24 @@ public class YarchDatabaseInstance {
         try {
             for (YConfiguration config : configs) {
                 String name = config.getString("name");
+                Bucket bucket;
                 if (config.containsKey("path")) {
                     Path path = Paths.get(config.getString("path"));
-                    addFileSystemBucket(name, path);
+                    bucket = addFileSystemBucket(name, path);
                 } else {
-                    Bucket bucket = getBucket(name);
+                    bucket = getBucket(name);
                     if (bucket == null) {
                         log.info("Creating bucket {}", name);
                         createBucket(name);
                     }
+                }
+                if (config.containsKey("maxSize")) {
+                    long maxSize = config.getLong("maxSize");
+                    bucket.setMaxSize(maxSize);
+                }
+                if (config.containsKey("maxObjects")) {
+                    int maxObjects = config.getInt("maxObjects");
+                    bucket.setMaxObjects(maxObjects);
                 }
             }
         } catch (IOException e) {

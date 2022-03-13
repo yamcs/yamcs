@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, StorageClient } from '../../client';
+import { AuthService } from '../../core/services/AuthService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
@@ -58,6 +59,7 @@ export class BucketsPage implements AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private messageService: MessageService,
+    private authService: AuthService,
     title: Title,
   ) {
     title.setTitle('Buckets');
@@ -147,6 +149,14 @@ export class BucketsPage implements AfterViewInit {
     });
   }
 
+  zeroOrMore(value: number) {
+    return Math.max(0, value);
+  }
+
+  mayManageBuckets() {
+    return this.authService.getUser()!.hasSystemPrivilege('ManageAnyBucket');
+  }
+
   deleteSelectedBuckets() {
     if (confirm('Are you sure you want to delete the selected buckets?')) {
       const deletePromises = [];
@@ -159,6 +169,15 @@ export class BucketsPage implements AfterViewInit {
         this.selection.clear();
         this.refreshView();
       });
+    }
+  }
+
+  deleteBucket(bucket: Bucket) {
+    if (confirm(`Are you sure you want to delete the bucket ${bucket.name}?`)) {
+      this.storageClient.deleteBucket(this.instance, bucket.name).then(() => {
+        this.selection.clear();
+        this.refreshView();
+      }).catch(err => this.messageService.showError(err));
     }
   }
 

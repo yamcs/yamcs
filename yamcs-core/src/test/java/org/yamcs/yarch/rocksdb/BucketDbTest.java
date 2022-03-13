@@ -144,7 +144,7 @@ public class BucketDbTest {
         RdbBucketDatabase bucketDb = createDb(3);
         Bucket b = bucketDb.createBucket("bucket1");
         Exception e = null;
-        int n = RdbBucketDatabase.MAX_NUM_OBJECTS_PER_BUCKET;
+        int n = RdbBucketDatabase.DEFAULT_MAX_OBJECTS_PER_BUCKET;
         try {
             for (int i = 0; i < n + 1; i++) {
                 b.putObject("obj" + i, null, null, new byte[10]);
@@ -163,7 +163,7 @@ public class BucketDbTest {
         Bucket b = bucketDb.createBucket("bucket1");
         Exception e = null;
         try {
-            for (int i = 0; i < RdbBucketDatabase.MAX_BUCKET_SIZE / (1024 * 1024) + 1; i++) {
+            for (int i = 0; i < RdbBucketDatabase.DEFAULT_MAX_BUCKET_SIZE / (1024 * 1024) + 1; i++) {
                 b.putObject("obj" + i, null, null, new byte[1024 * 1024]);
             }
         } catch (Exception e1) {

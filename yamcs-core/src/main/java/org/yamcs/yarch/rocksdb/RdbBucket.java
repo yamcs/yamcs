@@ -50,6 +50,34 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public void setMaxSize(long maxSize) throws IOException {
+        if (maxSize != bucketProps.getMaxSize()) {
+            BucketProperties updatedProps = BucketProperties.newBuilder().mergeFrom(bucketProps)
+                    .setMaxSize(maxSize)
+                    .build();
+            try {
+                saveUpdatedBucketProperties(updatedProps);
+            } catch (RocksDBException e) {
+                throw new IOException("Error writing bucket properties: " + e.toString(), e);
+            }
+        }
+    }
+
+    @Override
+    public void setMaxObjects(int maxObjects) throws IOException {
+        if (maxObjects != bucketProps.getMaxNumObjects()) {
+            BucketProperties updatedProps = BucketProperties.newBuilder().mergeFrom(bucketProps)
+                    .setMaxNumObjects(maxObjects)
+                    .build();
+            try {
+                saveUpdatedBucketProperties(updatedProps);
+            } catch (RocksDBException e) {
+                throw new IOException("Error writing bucket properties: " + e.toString(), e);
+            }
+        }
+    }
+
+    @Override
     public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectPropertiesOrBuilder> p)
             throws IOException {
 
@@ -114,9 +142,13 @@ public class RdbBucket implements Bucket {
                         "Maximum number of objects in the bucket " + bucketProps.getNumObjects() + " exceeded");
             }
             BucketProperties bucketProps1 = BucketProperties.newBuilder().mergeFrom(bucketProps)
-                    .setNumObjects(numobj).setSize(bsize).build();
-            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
-                    .setBucketProperties(bucketProps1).setTbsIndex(tbsIndex);
+                    .setNumObjects(numobj)
+                    .setSize(bsize)
+                    .build();
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
+                    .setType(Type.BUCKET)
+                    .setBucketProperties(bucketProps1)
+                    .setTbsIndex(tbsIndex);
             tablespace.writeToBatch(yamcsInstance, writeBatch, trb);
 
             tablespace.getRdb().getDb().write(writeOpts, writeBatch);
@@ -200,5 +232,20 @@ public class RdbBucket implements Bucket {
         System.arraycopy(a, 0, k, TBS_INDEX_SIZE + 1, a.length);
 
         return k;
+    }
+
+    private void saveUpdatedBucketProperties(BucketProperties updatedBucketProperties)
+            throws RocksDBException, IOException {
+        try (WriteBatch writeBatch = new WriteBatch();
+                WriteOptions writeOpts = new WriteOptions()) {
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
+                    .setType(Type.BUCKET)
+                    .setBucketProperties(updatedBucketProperties)
+                    .setTbsIndex(tbsIndex);
+            tablespace.writeToBatch(yamcsInstance, writeBatch, trb);
+
+            tablespace.getRdb().getDb().write(writeOpts, writeBatch);
+            this.bucketProps = updatedBucketProperties;
+        }
     }
 }

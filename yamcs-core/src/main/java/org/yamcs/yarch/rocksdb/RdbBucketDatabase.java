@@ -57,8 +57,8 @@ public class RdbBucketDatabase implements BucketDatabase {
     final static byte TYPE_OBJ_METADATA = 1;
     final static byte TYPE_OBJ_DATA = 2;
 
-    final static long MAX_BUCKET_SIZE = 100l * 1024 * 1024; // 100MB
-    final static int MAX_NUM_OBJECTS_PER_BUCKET = 1000;
+    final static long DEFAULT_MAX_BUCKET_SIZE = 100L * 1024 * 1024; // 100MB
+    final static int DEFAULT_MAX_OBJECTS_PER_BUCKET = 1000;
     private static final Logger log = LoggerFactory.getLogger(RdbBucketDatabase.class);
 
     public RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
@@ -86,8 +86,8 @@ public class RdbBucketDatabase implements BucketDatabase {
                 BucketProperties bucketProps = BucketProperties.newBuilder()
                         .setName(bucketName)
                         .setCreated(TimeEncoding.getWallclockTime())
-                        .setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET)
-                        .setMaxSize(MAX_BUCKET_SIZE)
+                        .setMaxNumObjects(DEFAULT_MAX_OBJECTS_PER_BUCKET)
+                        .setMaxSize(DEFAULT_MAX_BUCKET_SIZE)
                         .build();
                 TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
                         .setType(Type.BUCKET)

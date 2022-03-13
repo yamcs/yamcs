@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
@@ -51,11 +52,11 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void listBuckets(Context ctx, ListBucketsRequest request, Observer<ListBucketsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
-
         YarchDatabaseInstance yarch = getYarch(request.getInstance());
         try {
-            List<Bucket> buckets = yarch.listBuckets();
+            List<Bucket> buckets = yarch.listBuckets().stream()
+                    .filter(bucket -> mayReadBucket(bucket.getName(), ctx.user))
+                    .collect(Collectors.toList());
             ListBucketsResponse.Builder responseb = ListBucketsResponse.newBuilder();
             for (Bucket bucket : buckets) {
                 responseb.addBuckets(toBucketInfo(bucket));
@@ -86,13 +87,9 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
                 .setName(bucket.getName())
                 .setMaxSize(props.getMaxSize())
                 .setMaxObjects(props.getMaxNumObjects())
-                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()));
-        if (props.hasNumObjects()) {
-            bucketb.setNumObjects(props.getNumObjects());
-        }
-        if (props.hasSize()) {
-            bucketb.setSize(props.getSize());
-        }
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
+                .setNumObjects(props.getNumObjects())
+                .setSize(props.getSize());
         if (bucket instanceof FileSystemBucket) {
             FileSystemBucket fsBucket = (FileSystemBucket) bucket;
             bucketb.setDirectory(fsBucket.getBucketRoot().toAbsolutePath().normalize().toString());
@@ -264,20 +261,24 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         }
     }
 
-    static void checkReadBucketPrivilege(String bucketName, User user) throws HttpException {
-        if (bucketName.equals(getUserBucketName(user))) {
-            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
-                    // anyway)
-        }
-
-        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
-                && !user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                && !user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+    public static void checkReadBucketPrivilege(String bucketName, User user) throws HttpException {
+        if (!mayReadBucket(bucketName, user)) {
             throw new ForbiddenException("Insufficient privileges to read bucket '" + bucketName + "'");
         }
     }
 
-    static void checkManageBucketPrivilege(String bucketName, User user) throws HttpException {
+    private static boolean mayReadBucket(String bucketName, User user) {
+        if (bucketName.equals(getUserBucketName(user))) {
+            return true; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
+            // anyway)
+        }
+
+        return user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                || user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket);
+    }
+
+    public static void checkManageBucketPrivilege(String bucketName, User user) throws HttpException {
         if (bucketName.equals(getUserBucketName(user))) {
             return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
                     // anyway)

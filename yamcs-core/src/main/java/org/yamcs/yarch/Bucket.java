@@ -18,6 +18,20 @@ public interface Bucket {
 
     BucketProperties getProperties() throws IOException;
 
+    /**
+     * Update the size limit for this bucket.
+     * <p>
+     * If the specified size is smaller than the current size, the bucket will no longer accept new files.
+     */
+    void setMaxSize(long maxSize) throws IOException;
+
+    /**
+     * Update the object count limit for this bucket.
+     * <p>
+     * If the specified count is smaller than the current count, the bucket will no longer accept new files.
+     */
+    void setMaxObjects(int maxObjects) throws IOException;
+
     default List<ObjectProperties> listObjects() throws IOException {
         return listObjects(null, x -> true);
     }

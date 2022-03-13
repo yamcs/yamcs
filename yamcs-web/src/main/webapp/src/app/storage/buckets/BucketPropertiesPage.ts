@@ -41,4 +41,8 @@ export class BucketPropertiesPage {
     var pct = 100 * bucket.numObjects / bucket.maxObjects;
     return ceil ? Math.min(100, pct) : pct;
   }
+
+  zeroOrMore(value: number) {
+    return Math.max(0, value);
+  }
 }
