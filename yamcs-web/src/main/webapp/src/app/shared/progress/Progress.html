@@ -1,0 +1,7 @@
+<div class="progress">
+  <div class="fill" [style.width]="(100 * (boundedRatio$ | async)) + '%'"></div>
+  <div class="label" *ngIf="(ratio$ | async) !== null">
+    {{ (ratio$ | async) | percent:format }}
+  </div>
+  &nbsp;
+</div>

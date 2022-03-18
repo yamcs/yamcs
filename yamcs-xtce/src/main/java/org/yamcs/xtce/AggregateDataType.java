@@ -137,7 +137,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         if (value instanceof String) {
             // Parse as JSON
             try {
-                JsonElement je = new JsonParser().parse((String) value);
+                JsonElement je = JsonParser.parseString((String) value);
                 if (je instanceof JsonObject) {
                     return fromJson((JsonObject) je);
                 } else {
@@ -214,7 +214,7 @@ public class AggregateDataType extends NameDescription implements DataType {
     public Map<String, Object> parseStringForRawValue(String stringValue) {
         // parse it as json
         try {
-            JsonElement je = new JsonParser().parse(stringValue);
+            JsonElement je = JsonParser.parseString(stringValue);
             if (je instanceof JsonObject) {
                 return fromJsonRaw((JsonObject) je);
             } else {

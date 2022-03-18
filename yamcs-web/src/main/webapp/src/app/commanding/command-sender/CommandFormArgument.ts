@@ -26,7 +26,7 @@ export class CommandFormArgument implements OnInit, AfterViewInit {
   controlName$ = new BehaviorSubject<string | null>(null);
   hexToggle$ = new BehaviorSubject<boolean>(false);
 
-  selectOptions: Option[];
+  selectOptions$ = new BehaviorSubject<Option[]>([]);
 
   constructor(private dialog: MatDialog) {
   }
@@ -41,13 +41,14 @@ export class CommandFormArgument implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.argument?.type?.engType === 'enumeration') {
-      this.selectOptions = [];
+      const selectOptions = [];
       for (const enumValue of this.argument.type.enumValue || []) {
-        this.selectOptions.push({
+        selectOptions.push({
           id: enumValue.label,
           label: enumValue.label,
         });
       }
+      this.selectOptions$.next(selectOptions);
     }
   }
 

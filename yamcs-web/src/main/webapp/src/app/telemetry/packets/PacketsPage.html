@@ -85,21 +85,21 @@
              class="ya-data-table expand">
 
         <ng-container matColumnDef="packetName">
-          <th mat-header-cell *matHeaderCellDef>Packet Name</th>
+          <th mat-header-cell *matHeaderCellDef>Packet name</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.id.name }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="generationTime">
-          <th mat-header-cell *matHeaderCellDef>Generation Time</th>
+          <th mat-header-cell *matHeaderCellDef>Generation time</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.generationTime | datetime }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="receptionTime">
-          <th mat-header-cell *matHeaderCellDef>Reception Time</th>
+          <th mat-header-cell *matHeaderCellDef>Reception time</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.receptionTime | datetime }}
           </td>

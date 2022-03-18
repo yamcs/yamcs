@@ -45,6 +45,13 @@ service BucketsApi {
     };
   }
   
+  // Get a bucket
+  rpc GetBucket(GetBucketRequest) returns (BucketInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}/{bucketName}"
+    };
+  }
+  
   // Create a bucket
   rpc CreateBucket(CreateBucketRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
@@ -219,6 +226,20 @@ message BucketInfo {
   
   // Number of objects in the bucket
   optional uint32 numObjects = 3;
+  
+  // Maximum allowed total size of all objects
+  optional uint64 maxSize = 4;
+  
+  // Maximum allowed number of objects
+  optional uint32 maxObjects = 5;
+  
+  // Creation time of this bucket
+  optional google.protobuf.Timestamp created = 6;
+
+  // Bucket root directory. This field is only set when the
+  // bucket is mapped to the file system. Therefore it is not
+  // set for buckets that store objects in RocksDB.
+  optional string directory = 7;
 }
 
 message ObjectInfo {
@@ -237,6 +258,14 @@ message ObjectInfo {
 message ListBucketsRequest {
   // Yamcs instance name. Or _global.
   optional string instance = 1;
+}
+
+message GetBucketRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1;
+
+  // Bucket name.
+  optional string bucketName = 2;
 }
 
 message ListBucketsResponse {

@@ -43,216 +43,177 @@ import { SystemPage } from './system/SystemPage';
 import { ThreadPage } from './threads/ThreadPage';
 import { ThreadsPage } from './threads/ThreadsPage';
 
-const routes: Routes = [
-  {
+const routes: Routes = [{
+  path: '',
+  canActivate: [AuthGuard, ClearContextGuard, SuperuserGuard],
+  canActivateChild: [AuthGuard],
+  runGuardsAndResolvers: 'always',
+  component: AdminPage,
+  children: [{
     path: '',
-    canActivate: [AuthGuard, ClearContextGuard, SuperuserGuard],
-    canActivateChild: [AuthGuard],
-    runGuardsAndResolvers: 'always',
-    component: AdminPage,
-    children: [
-      {
+    pathMatch: 'full',
+    component: AdminActivityPage,
+  }, {
+    path: 'http-traffic',
+    component: HttpTrafficPage,
+  }, {
+    path: 'sessions',
+    component: SessionsPage,
+  }, {
+    path: 'routes',
+    component: RoutesPage,
+  }, {
+    path: 'leap-seconds',
+    component: LeapSecondsPage,
+  }, {
+    path: 'processor-types',
+    component: ProcessorTypesPage,
+  }, {
+    path: 'replication',
+    component: ReplicationPage,
+  }, {
+    path: 'services',
+    component: ServicesPage,
+  }, {
+    path: 'databases',
+    children: [{
+      path: '',
+      pathMatch: 'full',
+      component: DatabasesPage,
+    }, {
+      path: ':database',
+      component: DatabasePage,
+      children: [{
         path: '',
         pathMatch: 'full',
-        component: AdminActivityPage,
-      },
-      {
-        path: 'http-traffic',
-        component: HttpTrafficPage,
-      },
-      {
-        path: 'sessions',
-        component: SessionsPage,
-      },
-      {
-        path: 'routes',
-        component: RoutesPage,
-      },
-      {
-        path: 'leap-seconds',
-        component: LeapSecondsPage,
-      },
-      {
-        path: 'processor-types',
-        component: ProcessorTypesPage,
-      },
-      {
-        path: 'replication',
-        component: ReplicationPage,
-      },
-      {
-        path: 'services',
-        component: ServicesPage,
-      },
-      {
-        path: 'databases',
-        children: [
-          {
-            path: '',
-            pathMatch: 'full',
-            component: DatabasesPage,
-          }, {
-            path: ':database',
-            component: DatabasePage,
-            children: [
-              {
-                path: '',
-                pathMatch: 'full',
-                redirectTo: 'tables',
-              }, {
-                path: 'tables',
-                pathMatch: 'full',
-                component: DatabaseTablesTab,
-              }, {
-                path: 'tables/:table',
-                component: TablePage,
-                children: [
-                  {
-                    path: '',
-                    pathMatch: 'full',
-                    redirectTo: 'info',
-                  }, {
-                    path: 'info',
-                    component: TableInfoTab,
-                  }, {
-                    path: 'data',
-                    component: TableDataTab,
-                  }, {
-                    path: 'script',
-                    component: TableScriptTab,
-                  }
-                ],
-              }, {
-                path: 'shell',
-                pathMatch: 'full',
-                component: DatabaseShellTab,
-              }, {
-                path: 'streams',
-                pathMatch: 'full',
-                component: DatabaseStreamsTab,
-              }, {
-                path: 'streams/:stream',
-                component: StreamPage,
-                children: [
-                  {
-                    path: '',
-                    pathMatch: 'full',
-                    redirectTo: 'columns',
-                  }, {
-                    path: 'columns',
-                    component: StreamColumnsTab,
-                  }, {
-                    path: 'data',
-                    component: StreamDataTab,
-                  }, {
-                    path: 'script',
-                    component: StreamScriptTab,
-                  }
-                ],
-              }]
-          }
-        ]
-      },
-      {
-        path: 'rocksdb',
-        runGuardsAndResolvers: 'always',
-        children: [
-          {
-            path: '',
-            pathMatch: 'full',
-            redirectTo: 'databases'
-          },
-          {
-            path: 'databases',
-            pathMatch: 'full',
-            component: RocksDbDatabasesPage,
-          },
-          {
-            path: 'databases/:tablespace',
-            children: [
-              {
-                path: '**',
-                component: RocksDbDatabasePage,
-              }
-            ]
-          },
-        ],
-      },
-      {
-        path: 'iam/service-accounts',
-        pathMatch: 'full',
-        component: ServiceAccountsPage,
-      },
-      {
-        path: 'iam/service-accounts/create',
-        pathMatch: 'full',
-        component: CreateServiceAccountPage,
-      },
-      {
-        path: 'iam/users',
-        pathMatch: 'full',
-        component: UsersPage,
-      },
-      {
-        path: 'iam/users/create',
-        pathMatch: 'full',
-        component: CreateUserPage,
-      },
-      {
-        path: 'iam/users/:username',
-        pathMatch: 'full',
-        component: UserPage,
-      },
-      {
-        path: 'iam/users/:username/edit',
-        pathMatch: 'full',
-        component: EditUserPage,
-      },
-      {
-        path: 'iam/groups',
-        pathMatch: 'full',
-        component: GroupsPage,
-      },
-      {
-        path: 'iam/groups/create',
-        pathMatch: 'full',
-        component: CreateGroupPage,
-      },
-      {
-        path: 'iam/groups/:name',
-        pathMatch: 'full',
-        component: GroupPage,
-      },
-      {
-        path: 'iam/groups/:name/edit',
-        pathMatch: 'full',
-        component: EditGroupPage,
-      },
-      {
-        path: 'iam/roles',
-        pathMatch: 'full',
-        component: RolesPage,
-      },
-      {
-        path: 'iam/roles/:name',
-        pathMatch: 'full',
-        component: RolePage,
-      },
-      {
-        path: 'threads',
-        pathMatch: 'full',
-        component: ThreadsPage,
+        redirectTo: 'tables',
       }, {
-        path: 'threads/:id',
-        component: ThreadPage,
-      }, {
-        path: 'system',
+        path: 'tables',
         pathMatch: 'full',
-        component: SystemPage,
-      }
-    ]
-  }
-];
+        component: DatabaseTablesTab,
+      }, {
+        path: 'tables/:table',
+        component: TablePage,
+        children: [{
+          path: '',
+          pathMatch: 'full',
+          redirectTo: 'info',
+        }, {
+          path: 'info',
+          component: TableInfoTab,
+        }, {
+          path: 'data',
+          component: TableDataTab,
+        }, {
+          path: 'script',
+          component: TableScriptTab,
+        }],
+      }, {
+        path: 'shell',
+        pathMatch: 'full',
+        component: DatabaseShellTab,
+      }, {
+        path: 'streams',
+        pathMatch: 'full',
+        component: DatabaseStreamsTab,
+      }, {
+        path: 'streams/:stream',
+        component: StreamPage,
+        children: [{
+          path: '',
+          pathMatch: 'full',
+          redirectTo: 'columns',
+        }, {
+          path: 'columns',
+          component: StreamColumnsTab,
+        }, {
+          path: 'data',
+          component: StreamDataTab,
+        }, {
+          path: 'script',
+          component: StreamScriptTab,
+        }],
+      }]
+    }]
+  }, {
+    path: 'rocksdb',
+    runGuardsAndResolvers: 'always',
+    children: [{
+      path: '',
+      pathMatch: 'full',
+      redirectTo: 'databases'
+    }, {
+      path: 'databases',
+      pathMatch: 'full',
+      component: RocksDbDatabasesPage,
+    }, {
+      path: 'databases/:tablespace',
+      children: [{
+        path: '**',
+        component: RocksDbDatabasePage,
+      }]
+    }],
+  }, {
+    path: 'iam/service-accounts',
+    pathMatch: 'full',
+    component: ServiceAccountsPage,
+  }, {
+    path: 'iam/service-accounts/create',
+    pathMatch: 'full',
+    component: CreateServiceAccountPage,
+  }, {
+    path: 'iam/users',
+    pathMatch: 'full',
+    component: UsersPage,
+  }, {
+    path: 'iam/users/create',
+    pathMatch: 'full',
+    component: CreateUserPage,
+  }, {
+    path: 'iam/users/:username',
+    pathMatch: 'full',
+    component: UserPage,
+  }, {
+    path: 'iam/users/:username/edit',
+    pathMatch: 'full',
+    component: EditUserPage,
+  }, {
+    path: 'iam/groups',
+    pathMatch: 'full',
+    component: GroupsPage,
+  }, {
+    path: 'iam/groups/create',
+    pathMatch: 'full',
+    component: CreateGroupPage,
+  }, {
+    path: 'iam/groups/:name',
+    pathMatch: 'full',
+    component: GroupPage,
+  }, {
+    path: 'iam/groups/:name/edit',
+    pathMatch: 'full',
+    component: EditGroupPage,
+  }, {
+    path: 'iam/roles',
+    pathMatch: 'full',
+    component: RolesPage,
+  }, {
+    path: 'iam/roles/:name',
+    pathMatch: 'full',
+    component: RolePage,
+  }, {
+    path: 'threads',
+    pathMatch: 'full',
+    component: ThreadsPage,
+  }, {
+    path: 'threads/:id',
+    component: ThreadPage,
+  }, {
+    path: 'system',
+    pathMatch: 'full',
+    component: SystemPage,
+  }]
+}];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

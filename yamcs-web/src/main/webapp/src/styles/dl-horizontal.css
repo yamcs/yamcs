@@ -24,7 +24,7 @@
 
 .dl-horizontal dd {
   margin-left: 180px;
-  min-height: 16px;
+  min-height: 20px;
 }
 
 .dl-horizontal dd:after {

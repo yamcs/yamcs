@@ -24,7 +24,6 @@ import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -304,7 +303,6 @@ public class HandlerContext {
     public void sendRedirect(String location) {
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaderNames.LOCATION, location);
-        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response)
-                .addListener(ChannelFutureListener.CLOSE);
+        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
     }
 }
