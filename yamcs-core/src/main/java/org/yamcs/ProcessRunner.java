@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.Spec.OptionType;
@@ -23,7 +24,7 @@ public class ProcessRunner extends AbstractYamcsService {
     private String logPrefix;
 
     private Process process;
-    private ScheduledExecutorService watchdog;
+    private ScheduledFuture<?> watchdog;
 
     @Override
     public Spec getSpec() {
@@ -52,7 +53,6 @@ public class ProcessRunner extends AbstractYamcsService {
 
         logLevel = config.getString("logLevel");
         logPrefix = config.getString("logPrefix", "[" + pb.command().get(0) + "] ");
-        watchdog = YamcsServer.getServer().getThreadPoolExecutor();
     }
 
     @Override
@@ -66,7 +66,8 @@ public class ProcessRunner extends AbstractYamcsService {
             return;
         }
 
-        watchdog.scheduleWithFixedDelay(() -> {
+        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        watchdog = exec.scheduleWithFixedDelay(() -> {
             if (!process.isAlive() && isRunning()) {
                 log.warn("Process terminated with exit value {}. Starting new process", process.exitValue());
                 try {
@@ -116,6 +117,7 @@ public class ProcessRunner extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        watchdog.cancel(true);
         process.destroy();
 
         // Give the process some time to stop before reporting success. During
