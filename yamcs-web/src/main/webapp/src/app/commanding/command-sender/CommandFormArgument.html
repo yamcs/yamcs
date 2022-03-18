@@ -9,7 +9,7 @@
     {{ argument.name }}
     <app-errors [controlName]="controlName"></app-errors>
     <div class="control-group">
-      <app-select [formControlName]="controlName" [options]="selectOptions">
+      <app-select [formControlName]="controlName" [options]="selectOptions$ | async">
       </app-select>&nbsp;
       <button class="ya-button" matTooltip="Lookup enumeration state"
               (click)="openSelectEnumerationDialog()">
