@@ -19,6 +19,28 @@ import com.google.common.base.CharMatcher;
  */
 public class ProcessRunner extends AbstractYamcsService {
 
+    private static enum RestartMode {
+        ALWAYS("always"),
+        ON_SUCCESS("on-success"),
+        ON_FAILURE("on-failure"),
+        NEVER("never");
+
+        String userOption;
+
+        RestartMode(String userOption) {
+            this.userOption = userOption;
+        }
+
+        static RestartMode fromUserOption(String userOption) {
+            for (RestartMode value : values()) {
+                if (value.userOption.equals(userOption)) {
+                    return value;
+                }
+            }
+            throw new IllegalArgumentException("Unexpected restart mode: '" + userOption + "'");
+        }
+    }
+
     private ProcessBuilder pb;
     private String logLevel;
     private String logPrefix;
@@ -26,20 +48,33 @@ public class ProcessRunner extends AbstractYamcsService {
     private Process process;
     private ScheduledFuture<?> watchdog;
 
+    private RestartMode restartMode;
+    private List<Integer> successExitCodes;
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("command", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING)
+        spec.addOption("command", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.STRING)
                 .withRequired(true);
         spec.addOption("directory", OptionType.STRING);
         spec.addOption("logLevel", OptionType.STRING).withDefault("INFO");
         spec.addOption("logPrefix", OptionType.STRING);
+        spec.addOption("restart", OptionType.STRING)
+                .withChoices("always", "on-success", "on-failure", "never")
+                .withDefault("never");
+        spec.addOption("successExitCode", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.INTEGER)
+                .withDefault(0);
         return spec;
     }
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
+
+        restartMode = RestartMode.fromUserOption(config.getString("restart"));
+        successExitCodes = config.getList("successExitCode");
 
         List<String> command = config.getList("command");
         pb = new ProcessBuilder(command);
@@ -69,11 +104,33 @@ public class ProcessRunner extends AbstractYamcsService {
         ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
         watchdog = exec.scheduleWithFixedDelay(() -> {
             if (!process.isAlive() && isRunning()) {
-                log.warn("Process terminated with exit value {}. Starting new process", process.exitValue());
-                try {
-                    startProcess();
-                } catch (IOException e) {
-                    log.error("Failed to start process", e);
+                int code = process.exitValue();
+
+                boolean restart = false;
+                if (successExitCodes.contains(code)) {
+                    if (restartMode == RestartMode.ALWAYS || restartMode == RestartMode.ON_SUCCESS) {
+                        log.info("Process exited with code {}. Starting new process", code);
+                        restart = true;
+                    } else {
+                        log.info("Process exited with code {}. Stopping service", code);
+                        stopAsync();
+                    }
+                } else {
+                    if (restartMode == RestartMode.ALWAYS || restartMode == RestartMode.ON_FAILURE) {
+                        log.warn("Process exited with code {}. Starting new process", code);
+                        restart = true;
+                    } else {
+                        log.warn("Process exited with code {}. Stopping service", code);
+                        stopAsync();
+                    }
+                }
+
+                if (restart) {
+                    try {
+                        startProcess();
+                    } catch (IOException e) {
+                        log.error("Failed to start process", e);
+                    }
                 }
             }
         }, 5, 5, TimeUnit.SECONDS);

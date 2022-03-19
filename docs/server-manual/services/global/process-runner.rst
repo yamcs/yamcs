@@ -1,7 +1,7 @@
 Process Runner
 ==============
 
-Runs an external process. If this process goes down, a new process instance is started.
+Runs an external process. If this process exits this Yamcs service stops too unless a ``restart`` option is configured and applicable.
 
 
 Class Name
@@ -37,3 +37,9 @@ logLevel (string)
 
 logPrefix (string)
     Prefix to prepend to all logged process output. If unspecified this defaults to '``[COMMAND]``'.
+
+restart (string)
+    When to start a new process if the original process exits. One of ``always``, ``on-success``, ``on-failure`` or ``never``. Default: ``never``.
+
+successExitCode (integer or integer[])
+    Exit codes of the subprocess that are considered successful. This is used to evaluate the appropriate ``restart`` behaviour. Default: ``0``.
