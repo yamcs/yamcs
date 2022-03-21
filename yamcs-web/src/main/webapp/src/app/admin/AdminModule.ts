@@ -6,6 +6,7 @@ import { RecordComponent } from './databases/database/table/RecordComponent';
 import { ShowEnumDialog } from './databases/database/table/ShowEnumDialog';
 import { ColumnValuePipe } from './databases/pipes/ColumnValuePipe';
 import { Shell } from './databases/shell/Shell';
+import { UserAgentPipe } from './http-traffic/UserAgentPipe';
 import { AddMembersDialog } from './iam/AddMembersDialog';
 import { AddRolesDialog } from './iam/AddRolesDialog';
 import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
@@ -21,6 +22,7 @@ import { ThreadsTable } from './threads/ThreadsTable';
 import { TraceElement } from './threads/TraceElement';
 
 const pipes = [
+  UserAgentPipe,
   ColumnValuePipe,
   MessageNamePipe,
 ];

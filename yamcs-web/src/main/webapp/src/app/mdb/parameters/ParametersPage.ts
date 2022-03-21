@@ -40,7 +40,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'type', label: 'Type', visible: true },
     { id: 'units', label: 'Units', visible: true },
-    { id: 'dataSource', label: 'Data Source', visible: true },
+    { id: 'dataSource', label: 'Data source', visible: true },
     { id: 'shortDescription', label: 'Description' },
     { id: 'actions', label: '', alwaysVisible: true },
   ];

@@ -3,23 +3,14 @@ package org.yamcs.http;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpUtils {
 
-    public static final FullHttpResponse EMPTY_BAD_REQUEST_RESPONSE = new DefaultFullHttpResponse(
-            HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
-            Unpooled.EMPTY_BUFFER);
-
     public static final FullHttpResponse CONTINUE_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
-
-    static {
-        EMPTY_BAD_REQUEST_RESPONSE.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
-    }
 
     /**
      * Returns the path for the given HTTP request. This path does not contain any query string information, and the

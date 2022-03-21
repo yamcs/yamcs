@@ -586,7 +586,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
             return;
         }
         try {
-            JsonArray arr = new JsonParser().parse(json).getAsJsonArray();
+            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
             for (JsonElement name : arr) {
                 columnParaNames.add(name.getAsString());
             }

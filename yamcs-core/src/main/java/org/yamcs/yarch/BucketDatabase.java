@@ -3,8 +3,6 @@ package org.yamcs.yarch;
 import java.io.IOException;
 import java.util.List;
 
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
-
 public interface BucketDatabase {
     Bucket createBucket(String bucketName) throws IOException;
 
@@ -12,12 +10,12 @@ public interface BucketDatabase {
      * Retrieve a bucket handler from the database.
      * 
      * @param bucketName
-     * @return the bucket with the given name or null if it does not exist 
+     * @return the bucket with the given name or null if it does not exist
      * @throws IOException
      */
     Bucket getBucket(String bucketName) throws IOException;
 
-    List<BucketProperties> listBuckets() throws IOException;
+    List<Bucket> listBuckets() throws IOException;
 
     void deleteBucket(String bucketName) throws IOException;
 }

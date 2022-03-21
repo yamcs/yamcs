@@ -12,12 +12,12 @@
   </ng-container>
 
   <ng-container matColumnDef="generationTime">
-    <th mat-header-cell *matHeaderCellDef>Generation Time</th>
+    <th mat-header-cell *matHeaderCellDef>Generation time</th>
     <td mat-cell *matCellDef="let pval">{{ (pval.generationTime | datetime) || '-' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="receptionTime">
-    <th mat-header-cell *matHeaderCellDef>Reception Time</th>
+    <th mat-header-cell *matHeaderCellDef>Reception time</th>
     <td mat-cell *matCellDef="let pval">{{ (pval.acquisitionTime | datetime) || '-' }}</td>
   </ng-container>
 
@@ -32,12 +32,12 @@
   </ng-container>
 
   <ng-container matColumnDef="rangeCondition">
-    <th mat-header-cell *matHeaderCellDef>Range Condition</th>
+    <th mat-header-cell *matHeaderCellDef>Range condition</th>
     <td mat-cell *matCellDef="let pval">{{ pval.rangeCondition || '-' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="acquisitionStatus">
-    <th mat-header-cell *matHeaderCellDef>Acquisition Status</th>
+    <th mat-header-cell *matHeaderCellDef>Acquisition status</th>
     <td mat-cell *matCellDef="let pval">{{ pval.acquisitionStatus || '-' }}</td>
   </ng-container>
 

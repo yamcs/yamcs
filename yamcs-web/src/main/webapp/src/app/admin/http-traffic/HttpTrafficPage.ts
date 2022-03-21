@@ -22,7 +22,6 @@ export class HttpTrafficPage implements AfterViewInit, OnDestroy {
 
   displayedColumns = [
     'id',
-    // 'userAgent',
     'protocol',
     'remoteAddress',
     'readBytes',
@@ -31,7 +30,7 @@ export class HttpTrafficPage implements AfterViewInit, OnDestroy {
     'writeThroughput',
     'request',
     'authorization',
-    'actions',
+    'userAgent',
   ];
 
   tableTrackerFn = (index: number, conn: ClientConnectionInfo) => conn.id;

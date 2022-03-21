@@ -1,0 +1,16 @@
+<nav mat-tab-nav-bar>
+  <a mat-tab-link
+     routerLink="../objects"
+     routerLinkActive
+     #rla="routerLinkActive"
+     [active]="rla.isActive">
+    OBJECTS
+  </a>
+  <a mat-tab-link
+     routerLink="../properties"
+     routerLinkActive
+     #rlb="routerLinkActive"
+     [active]="rlb.isActive">
+    PROPERTIES
+  </a>
+</nav>

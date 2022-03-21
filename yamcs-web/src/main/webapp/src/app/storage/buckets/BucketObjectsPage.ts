@@ -15,11 +15,11 @@ import { Upload } from './Upload';
 import { UploadProgressDialog } from './UploadProgressDialog';
 
 @Component({
-  templateUrl: './BucketPage.html',
-  styleUrls: ['./BucketPage.css'],
+  templateUrl: './BucketObjectsPage.html',
+  styleUrls: ['./BucketObjectsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BucketPage implements OnDestroy {
+export class BucketObjectsPage implements OnDestroy {
 
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
@@ -55,8 +55,8 @@ export class BucketPage implements OnDestroy {
     yamcs: YamcsService,
     title: Title,
   ) {
-    this.bucketInstance = route.snapshot.parent!.paramMap.get('instance')!;
-    this.name = route.snapshot.parent!.paramMap.get('name')!;
+    this.bucketInstance = route.snapshot.parent!.parent!.paramMap.get('instance')!;
+    this.name = route.snapshot.parent!.parent!.paramMap.get('name')!;
     title.setTitle(this.name);
     this.storageClient = yamcs.createStorageClient();
 
@@ -335,7 +335,7 @@ export class BucketPage implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: `/storage/${this.bucketInstance}/${this.name}` + path,
+        route: `/storage/buckets/${this.bucketInstance}/${this.name}/objects` + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

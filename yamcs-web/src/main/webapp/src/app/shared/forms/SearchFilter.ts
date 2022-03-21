@@ -55,6 +55,7 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
       map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
     );
 
+    this.showClear$.next(!!this.getValue());
     this.eventSubscription = merge(keyObservable, this.setEvent$).pipe(
       distinctUntilChanged(),
     ).subscribe(value => {

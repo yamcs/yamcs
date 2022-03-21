@@ -1,5 +1,8 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -13,7 +16,6 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 
 /**
  * Handlers favicon requests. Some of these are automatically issued by browsers, others are referenced in header
@@ -51,13 +53,14 @@ public class FaviconHandler extends Handler {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         if (resource.endsWith(".ico")) {
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "image/x-icon");
+            response.headers().set(CONTENT_TYPE, "image/x-icon");
         } else if (resource.endsWith(".svg")) {
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "image/svg+xml");
+            response.headers().set(CONTENT_TYPE, "image/svg+xml");
         } else if (resource.endsWith(".png")) {
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "image/png");
+            response.headers().set(CONTENT_TYPE, "image/png");
         }
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CACHE_CONTROL, "private, max-age=86400");
         ctx.sendResponse(response);
     }
 }

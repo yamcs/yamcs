@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
+import { BucketPageTabs } from './buckets/BucketPageTabs';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { CreateFolderDialog } from './buckets/CreateFolderDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
@@ -16,6 +17,7 @@ import { StorageToolbar } from './StorageToolbar';
   ],
   declarations: [
     routingComponents,
+    BucketPageTabs,
     CreateBucketDialog,
     CreateFolderDialog,
     RenameObjectDialog,

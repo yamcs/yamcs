@@ -1,5 +1,15 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.DATE;
+import static io.netty.handler.codec.http.HttpHeaderNames.EXPIRES;
+import static io.netty.handler.codec.http.HttpHeaderNames.IF_MODIFIED_SINCE;
+import static io.netty.handler.codec.http.HttpHeaderNames.LAST_MODIFIED;
+import static io.netty.handler.codec.http.HttpHeaderValues.CLOSE;
+import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -27,11 +37,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelProgressiveFuture;
 import io.netty.channel.ChannelProgressiveFutureListener;
 import io.netty.channel.DefaultFileRegion;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpContentCompressor;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -98,7 +108,7 @@ public class StaticFileHandler {
         }
 
         // Cache Validation
-        String ifModifiedSince = req.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);
+        String ifModifiedSince = req.headers().get(IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
             Date ifModifiedSinceDate;
@@ -113,7 +123,7 @@ public class StaticFileHandler {
                     return;
                 }
             } catch (ParseException e) {
-                log.debug("Cannot parse {} header'{}'", HttpHeaderNames.IF_MODIFIED_SINCE, ifModifiedSince);
+                log.debug("Cannot parse {} header'{}'", IF_MODIFIED_SINCE, ifModifiedSince);
             }
         }
 
@@ -126,7 +136,9 @@ public class StaticFileHandler {
         setDateAndCacheHeaders(response, file);
 
         if (HttpUtil.isKeepAlive(req)) {
-            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            response.headers().set(CONNECTION, KEEP_ALIVE);
+        } else {
+            response.headers().set(CONNECTION, CLOSE);
         }
 
         if (zeroCopy) {
@@ -193,7 +205,7 @@ public class StaticFileHandler {
      *            file to extract content type
      */
     protected void setContentTypeHeader(HttpResponse response, File file) {
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimetypes.getMimetype(file));
+        response.headers().set(CONTENT_TYPE, mimetypes.getMimetype(file));
     }
 
     /**
@@ -208,13 +220,13 @@ public class StaticFileHandler {
 
         // Date header
         Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
+        response.headers().set(DATE, dateFormatter.format(time.getTime()));
 
         // Add cache headers
         time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-        response.headers().set(HttpHeaderNames.EXPIRES, dateFormatter.format(time.getTime()));
-        response.headers().set(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-        response.headers().set(HttpHeaderNames.LAST_MODIFIED,
+        response.headers().set(EXPIRES, dateFormatter.format(time.getTime()));
+        response.headers().set(CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
+        response.headers().set(LAST_MODIFIED,
                 dateFormatter.format(new Date(fileToCache.lastModified())));
     }
 
@@ -222,11 +234,18 @@ public class StaticFileHandler {
      * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      */
     private static void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
-        setDateHeader(response);
         log.debug("{} {} 304", req.method(), req.uri());
-        // Close the connection as soon as the error message is sent.
-        ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
+        response.headers().set(CONTENT_LENGTH, 0);
+        setDateHeader(response);
+
+        if (HttpUtil.isKeepAlive(req)) {
+            response.headers().set(CONNECTION, KEEP_ALIVE);
+            ctx.channel().writeAndFlush(response);
+        } else {
+            response.headers().set(CONNECTION, CLOSE);
+            ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     private static String sanitizePath(String path) {
@@ -247,6 +266,6 @@ public class StaticFileHandler {
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
         Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
+        response.headers().set(DATE, dateFormatter.format(time.getTime()));
     }
 }

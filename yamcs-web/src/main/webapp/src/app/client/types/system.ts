@@ -353,7 +353,10 @@ export interface Service {
 export interface Bucket {
   name: string;
   size: number;
+  maxSize: number;
   numObjects: number;
+  maxObjects: number;
+  directory?: string;
 }
 
 export interface ListObjectsResponse {

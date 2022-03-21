@@ -21,6 +21,11 @@ export class StorageClient {
     return wrapper.buckets || [];
   }
 
+  async getBucket(instance: string, bucket: string): Promise<Bucket> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`);
+    return await response.json() as Bucket;
+  }
+
   async deleteBucket(instance: string, name: string) {
     const url = `${this.yamcs.apiUrl}/buckets/${instance}/${name}`;
     return await this.yamcs.doFetch(url, {

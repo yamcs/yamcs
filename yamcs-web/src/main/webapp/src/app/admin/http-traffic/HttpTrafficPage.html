@@ -6,9 +6,9 @@
   <div class="panel-content">
     <ng-container *ngIf="traffic$ | async as traffic">
       <dl class="dl-horizontal no-lead">
-        <dt>Cumulative Read</dt>
+        <dt>Cumulative read</dt>
         <dd>{{ traffic.readBytes | formatBytes }}</dd>
-        <dt>Cumulative Written</dt>
+        <dt>Cumulative written</dt>
         <dd>{{ traffic.writtenBytes | formatBytes }}</dd>
         <dt>Rx</dt>
         <dd>{{ (traffic.readThroughput * 8) | dataRate }}</dd>
@@ -20,7 +20,7 @@
     <div class="section-divider">
       <mat-divider></mat-divider>
     </div>
-    <h4>Current Connections</h4>
+    <h4>Current connections</h4>
     <table mat-table
            [dataSource]="dataSource"
            [trackBy]="tableTrackerFn"
@@ -36,8 +36,8 @@
       </ng-container>
 
       <ng-container matColumnDef="userAgent">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>User Agent</th>
-        <td mat-cell *matCellDef="let conn">{{ conn.httpRequest?.userAgent || '-' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="expand">User agent</th>
+        <td mat-cell *matCellDef="let conn">{{ (conn.httpRequest?.userAgent | userAgent) || '-' }}</td>
       </ng-container>
 
       <ng-container matColumnDef="protocol">
@@ -46,7 +46,7 @@
       </ng-container>
 
       <ng-container matColumnDef="remoteAddress">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Remote Address</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Remote address</th>
         <td mat-cell *matCellDef="let conn">{{ conn.remoteAddress || '-' }}</td>
       </ng-container>
 
@@ -82,12 +82,6 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Authorization</th>
         <td mat-cell *matCellDef="let conn">
           {{ conn.username || '-' }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="expand"></th>
-        <td mat-cell *matCellDef="let row">
         </td>
       </ng-container>
 

@@ -144,10 +144,10 @@
 
     <h4>Data Encoding</h4>
     <dl class="dl-horizontal no-trail">
-      <dt>Size in Bits</dt>
+      <dt>Size in bits</dt>
       <dd>{{ dataEncoding?.sizeInBits | nvl:'-' }}</dd>
       <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
-        <dt>Byte Order</dt>
+        <dt>Byte order</dt>
         <dd>
           <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
             {{ dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}

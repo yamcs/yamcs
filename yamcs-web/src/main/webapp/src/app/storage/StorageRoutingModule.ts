@@ -2,39 +2,52 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
-import { BucketPage } from './buckets/BucketPage';
+import { BucketObjectsPage } from './buckets/BucketObjectsPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
+import { BucketPropertiesPage } from './buckets/BucketPropertiesPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { StoragePage } from './StoragePage';
 
 
-const routes: Routes = [
-  {
+const routes: Routes = [{
+  path: '',
+  canActivate: [AuthGuard, ClearContextGuard],
+  canActivateChild: [AuthGuard],
+  runGuardsAndResolvers: 'always',
+  component: StoragePage,
+  children: [{
     path: '',
-    canActivate: [AuthGuard, ClearContextGuard],
-    canActivateChild: [AuthGuard],
-    runGuardsAndResolvers: 'always',
-    component: StoragePage,
-    children: [
-      {
+    pathMatch: 'full',
+    redirectTo: 'buckets',
+  }, {
+    path: 'buckets',
+    children: [{
+      path: '',
+      pathMatch: 'full',
+      component: BucketsPage,
+      data: { 'hasSidebar': false },
+    }, {
+      path: ':instance/:name',
+      children: [{
         path: '',
         pathMatch: 'full',
-        component: BucketsPage,
-        data: { 'hasSidebar': false }
+        redirectTo: 'objects',
       }, {
-        path: ':instance/:name',
+        path: 'objects',
         component: BucketPlaceholderPage,
-        children: [
-          {
-            path: '**',
-            component: BucketPage,
-            data: { 'hasSidebar': false }
-          }
-        ],
-      }
-    ]
-  }
-];
+        children: [{
+          path: '**',
+          component: BucketObjectsPage,
+          data: { 'hasSidebar': false }
+        }],
+      }, {
+        path: 'properties',
+        component: BucketPropertiesPage,
+        data: { 'hasSidebar': false },
+      }]
+    }]
+  }]
+}];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
@@ -44,6 +57,7 @@ export class StorageRoutingModule { }
 
 export const routingComponents = [
   BucketsPage,
-  BucketPage,
+  BucketObjectsPage,
   BucketPlaceholderPage,
+  BucketPropertiesPage,
 ];

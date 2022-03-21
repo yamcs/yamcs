@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 public class BucketDbTest {
@@ -46,8 +45,8 @@ public class BucketDbTest {
         RdbBucketDatabase bucketDb = new RdbBucketDatabase("test", tablespace);
         assertTrue(bucketDb.listBuckets().isEmpty());
 
-        RdbBucket bucket = bucketDb.createBucket("bucket1");
-        assertNotNull(bucket);
+        RdbBucket rdbBucket = bucketDb.createBucket("bucket1");
+        assertNotNull(rdbBucket);
         Exception e = null;
         try {
             bucketDb.createBucket("bucket1");
@@ -55,11 +54,11 @@ public class BucketDbTest {
             e = e1;
         }
         assertNotNull(e);
-        List<BucketProperties> bpl = bucketDb.listBuckets();
-        assertEquals(1, bpl.size());
-        BucketProperties bp = bpl.get(0);
-        assertEquals("bucket1", bp.getName());
-        assertEquals(0, bp.getSize());
+        List<Bucket> bl = bucketDb.listBuckets();
+        assertEquals(1, bl.size());
+        Bucket bucket = bl.get(0);
+        assertEquals("bucket1", bucket.getName());
+        assertEquals(0, bucket.getProperties().getSize());
 
         assertTrue(bucket.listObjects(x -> true).isEmpty());
         Map<String, String> props = new HashMap<>();
@@ -82,12 +81,12 @@ public class BucketDbTest {
         tablespace.loadDb(false);
         bucketDb = new RdbBucketDatabase("test", tablespace);
 
-        bpl = bucketDb.listBuckets();
-        assertEquals(1, bpl.size());
-        bp = bpl.get(0);
-        assertEquals("bucket1", bp.getName());
-        assertEquals(1000, bp.getSize());
-        assertEquals(1, bp.getNumObjects());
+        bl = bucketDb.listBuckets();
+        assertEquals(1, bl.size());
+        bucket = bl.get(0);
+        assertEquals("bucket1", bucket.getProperties().getName());
+        assertEquals(1000, bucket.getProperties().getSize());
+        assertEquals(1, bucket.getProperties().getNumObjects());
 
         bucket = bucketDb.getBucket("bucket1");
 
@@ -145,7 +144,7 @@ public class BucketDbTest {
         RdbBucketDatabase bucketDb = createDb(3);
         Bucket b = bucketDb.createBucket("bucket1");
         Exception e = null;
-        int n = RdbBucketDatabase.MAX_NUM_OBJECTS_PER_BUCKET;
+        int n = RdbBucketDatabase.DEFAULT_MAX_OBJECTS_PER_BUCKET;
         try {
             for (int i = 0; i < n + 1; i++) {
                 b.putObject("obj" + i, null, null, new byte[10]);
@@ -164,7 +163,7 @@ public class BucketDbTest {
         Bucket b = bucketDb.createBucket("bucket1");
         Exception e = null;
         try {
-            for (int i = 0; i < RdbBucketDatabase.MAX_BUCKET_SIZE / (1024 * 1024) + 1; i++) {
+            for (int i = 0; i < RdbBucketDatabase.DEFAULT_MAX_BUCKET_SIZE / (1024 * 1024) + 1; i++) {
                 b.putObject("obj" + i, null, null, new byte[1024 * 1024]);
             }
         } catch (Exception e1) {

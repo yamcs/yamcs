@@ -32,7 +32,7 @@ export class SelectEnumerationDialog implements AfterViewInit {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const argument = data.argument as Argument;
-    const isHex = argument.type.dataEncoding.encoding === 'UNSIGNED';
+    const isHex = argument.type.dataEncoding?.encoding === 'UNSIGNED';
     this.dataSource.filterPredicate = (enumValue, filter) => {
       const { label, value } = enumValue;
       return label.toLowerCase().indexOf(filter) >= 0

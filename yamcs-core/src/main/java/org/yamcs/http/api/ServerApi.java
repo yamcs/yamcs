@@ -33,6 +33,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.http.Topic;
+import org.yamcs.http.WebSocketFrameHandler;
 import org.yamcs.protobuf.AbstractServerApi;
 import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
@@ -226,6 +227,11 @@ public class ServerApi extends AbstractServerApi<Context> {
 
         List<ClientConnectionInfo> result = new ArrayList<>();
         for (Channel channel : httpServer.getClientChannels()) {
+            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
+            if (httpRequest == null) {
+                continue; // Could be in the process of being handled
+            }
+
             ClientConnectionInfo.Builder connectionb = ClientConnectionInfo.newBuilder()
                     .setId(channel.id().asShortText())
                     .setOpen(channel.isOpen())
@@ -254,21 +260,21 @@ public class ServerApi extends AbstractServerApi<Context> {
                 connectionb.setUsername(username);
             }
 
-            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
-            if (httpRequest != null) {
-                HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
-                        .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
-                        .setProtocol(httpRequest.protocolVersion().text())
-                        .setMethod(httpRequest.method().name())
-                        .setUri(httpRequest.uri());
-                String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
-                if (userAgent != null) {
-                    httpRequestb.setUserAgent(userAgent);
-                }
-
-                connectionb.setHttpRequest(httpRequestb.build());
+            String protocol = httpRequest.protocolVersion().text();
+            if (channel.pipeline().get(WebSocketFrameHandler.class) != null) {
+                protocol = "WebSocket";
+            }
+            HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
+                    .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
+                    .setProtocol(protocol)
+                    .setMethod(httpRequest.method().name())
+                    .setUri(httpRequest.uri());
+            String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
+            if (userAgent != null) {
+                httpRequestb.setUserAgent(userAgent);
             }
 
+            connectionb.setHttpRequest(httpRequestb.build());
             result.add(connectionb.build());
         }
 

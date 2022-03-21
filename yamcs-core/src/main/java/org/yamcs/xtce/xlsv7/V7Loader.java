@@ -652,7 +652,7 @@ public class V7Loader extends V7LoaderBase {
 
     private void setInitialValueAggregate(AggregateDataType.Builder<?> dtype, String initialValue) {
         try {
-            JsonElement el = new JsonParser().parse(initialValue);
+            JsonElement el = JsonParser.parseString(initialValue);
             if (!(el instanceof JsonObject)) {
                 throw new SpreadsheetLoadException(ctx,
                         "Expected an object as initial value but got a : " + el.getClass());
