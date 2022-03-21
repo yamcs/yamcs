@@ -75,6 +75,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
 
     int seqCount = 0;
 
+    // /yamcs/<server_id>
     private String namespace;
     private String serverId;
     XtceDb mdb;
@@ -301,10 +302,13 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return type;
     }
 
-    public SystemParameter createEnumeratedSystemParameter(String name, Class<? extends Enum<?>> enumClass,
+    /**
+     * Creates an enumerated system parameter by deducing the possible enumeration states from the java enum.
+     */
+    public SystemParameter createEnumeratedSystemParameter(String relativeName, Class<? extends Enum<?>> enumClass,
             String description) {
         EnumeratedParameterType type = createEnumeratedParameterType(enumClass);
-        return mdb.createSystemParameter(qualifiedName(YAMCS_SPACESYSTEM_NAME, name), type, description);
+        return mdb.createSystemParameter(qualifiedName(namespace, relativeName), type, description);
     }
 
     public static ParameterType createSystemParameterType(XtceDb mdb, String name, Value v) {
