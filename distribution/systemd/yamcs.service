@@ -35,3 +35,4 @@ WantedBy=multi-user.target
 # Alias for convenience.
 # This is only applied when the service is enabled
 Alias=yamcsd.service
+Alias=yamcs-server.service

@@ -67,8 +67,6 @@ rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
 mkdir -p "$rpmbuilddir/opt/yamcs"
 tar -xzf distribution/target/yamcs-$pomversion-linux-x86_64.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
 
-mkdir -p "$rpmbuilddir/etc/init.d"
-cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
 mkdir -p "$rpmbuilddir/usr/lib/systemd/system"
 cp -a distribution/systemd/* "$rpmbuilddir/usr/lib/systemd/system"
 cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
