@@ -16,6 +16,7 @@ import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SessionExpiredException;
 import org.yamcs.security.SessionManager;
 import org.yamcs.security.UserSession;
 
@@ -131,7 +132,11 @@ public class TokenStore extends AbstractHttpService {
         RefreshState state = refreshTokens.get(hmac);
         if (state != null) { // Token valid, generate new token (once only)
             String nextToken = generateRefreshToken(state.authenticationInfo, state.userSession);
-            renewSession(state.userSession);
+            try {
+                renewSession(state.userSession);
+            } catch (SessionExpiredException e) {
+                throw new UnauthorizedException("Token expired");
+            }
             RefreshResult result = new RefreshResult(state.authenticationInfo, nextToken);
             refreshCache.put(hmac, result);
             refreshTokens.remove(hmac);
@@ -147,7 +152,7 @@ public class TokenStore extends AbstractHttpService {
         }
     }
 
-    private void renewSession(UserSession userSession) {
+    private void renewSession(UserSession userSession) throws SessionExpiredException {
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();
         sessionManager.renewSession(userSession.getId());
