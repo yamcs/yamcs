@@ -29,6 +29,7 @@ This service is defined in ``etc/yamcs.yaml``. Example:
            port: 8099
            tlsCert: /path/to/server.crt
            tlsKey: /path/to/server.key
+           maxTupleSize: 131072
 
               
 Configuration Options
@@ -46,3 +47,6 @@ tlsCert (string or list of strings)
 
 tlsKey (string)
     **Required** if ``tlsCert`` is specified. The key to the certificate.
+
+maxTupleSize (integer)
+    Used for the slaves with tcpRole = server - configures the maximum size of the serialized tuples received from the master. If the serialized tuples are larger than this size, this limit has to be increased otherwise the tuples cannot be transferred. Default 131072 (128KB).
