@@ -121,7 +121,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         spec.addOption("enableTls", OptionType.BOOLEAN);
         spec.addOption("masterInstance", OptionType.STRING);
         spec.addOption("lastTxFile", OptionType.STRING);
-        spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(65536)
+        spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(131072)
                 .withDescription("Maximum size of the serialized tuple");
         return spec;
     }

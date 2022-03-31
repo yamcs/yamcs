@@ -66,3 +66,6 @@ streams (list of strings)
 
 lastTxFile (String)
     The name of file where the slave will keep track of the last transaction id received from the server. It defaults to the ``<service-name>-lastid.txt``
+
+maxTupleSize (integer)
+    Used in case the tcpRole = client - configures the maximum size of one message received from the master.  If the serialized tuples are larger than this size, this limit has to be increased otherwise the tuples cannot be transferred. Default 131072 (128KB).
