@@ -17,6 +17,11 @@ BuildArch: noarch
 Packet Viewer for Yamcs.
 
 
+%define debug_package %{nil}
+%define __arch_install_post %{nil}
+%define __os_install_post %{nil}
+
+
 %install
 cd %{name}-%{version}-%{release}
 
