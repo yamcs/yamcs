@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLException;
 
@@ -61,7 +62,8 @@ public class ReplicationSlave extends AbstractYamcsService {
     String masterInstance;
     long lastTxId;
     SlaveChannelHandler slaveChannelHandler;
-    List<String> streamNames;
+    // remote (master) stream name -> local stream name
+    Map<String, String> streamNames = new HashMap<>();
     RandomAccessFile lastTxFile;
 
     Path txtfilePath;
@@ -87,8 +89,17 @@ public class ReplicationSlave extends AbstractYamcsService {
                         "Cannot use updateSimTime unless the simulated time service is configured");
             }
         }
-
-        streamNames = config.getList("streams");
+        List<String> streams = config.getList("streams");
+        for (String s : streams) {
+            String[] a = s.split("\\s*\\-\\>\\s*");
+            if(a.length == 1) {
+                streamNames.put(a[0], a[0]);
+            } else if (a.length == 2) {
+                streamNames.put(a[0], a[1]);
+            } else {
+                throw new ConfigurationException("Invalid stream spec '" + s + "'");
+            }
+        }
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.CLIENT);
         if (tcpRole == TcpRole.CLIENT) {
             host = config.getString("masterHost");
@@ -228,7 +239,13 @@ public class ReplicationSlave extends AbstractYamcsService {
 
 
     public List<String> getStreamNames() {
-        return streamNames;
+        return streamNames.entrySet().stream().map(e -> {
+            if (e.getKey().equals(e.getValue())) {
+                return e.getKey();
+            } else {
+                return e.getKey() + "->" + e.getValue();
+            }
+        }).collect(Collectors.toList());
     }
 
     public boolean isTcpClient() {
@@ -355,16 +372,17 @@ public class ReplicationSlave extends AbstractYamcsService {
                     return;
                 }
                 log.debug("TX{}: received stream info {}", tmsg.txId, TextFormat.shortDebugString(streamInfo));
-                String streamName = streamInfo.getName();
-                if (!streamNames.contains(streamName)) {
+                String remoteStreamName = streamInfo.getName();
+                if (!streamNames.containsKey(remoteStreamName)) {
                     log.debug("TX{}: Ignoring stream {} because it is not in the list configured", tmsg.txId,
-                            streamName);
+                            remoteStreamName);
                     return;
                 }
+                String localStreamName = streamNames.get(remoteStreamName);
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-                Stream stream = ydb.getStream(streamName);
+                Stream stream = ydb.getStream(localStreamName);
                 if (stream == null) {
-                    log.warn("TX{}: Received data for stream {} which does not exist", tmsg.txId, streamName);
+                    log.warn("TX{}: Received data for stream {} which does not exist", tmsg.txId, localStreamName);
                     return;
                 }
                 streamWriters.put(streamInfo.getId(), new ByteBufToStream(stream, streamInfo));
