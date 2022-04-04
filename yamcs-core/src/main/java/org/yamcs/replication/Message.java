@@ -7,6 +7,7 @@ import java.util.zip.CRC32;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.StreamInfo;
+import org.yamcs.replication.protobuf.TimeMessage;
 import org.yamcs.replication.protobuf.Wakeup;
 import org.yamcs.utils.DecodingException;
 
@@ -35,6 +36,7 @@ public class Message {
     public final static byte RESPONSE = 3;
     public final static byte STREAM_INFO = 4;
     public final static byte DATA = 5;
+    public final static byte TIME = 6;
 
     final byte type;
     MessageLite protoMsg;
@@ -78,6 +80,10 @@ public class Message {
                 msg = new TransactionMessage(type, buf.getInt(), buf.getLong());
                 buf.getInt();//pointer to next metadata
                 msg.protoMsg = decodeProto(buf, StreamInfo.newBuilder()).build();
+                break;
+            case TIME:
+                msg = new Message(type);
+                msg.protoMsg = decodeProto(buf, TimeMessage.newBuilder()).build();
                 break;
             default:
                 throw new DecodingException("unknown message type " + type);
@@ -126,6 +132,12 @@ public class Message {
     public static Message get(Wakeup wp) {
         Message msg = new Message(WAKEUP);
         msg.protoMsg = wp;
+        return msg;
+    }
+
+    public static Message get(TimeMessage tm) {
+        Message msg = new Message(TIME);
+        msg.protoMsg = tm;
         return msg;
     }
 

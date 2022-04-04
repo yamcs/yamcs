@@ -9,20 +9,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
 import org.yamcs.AbstractYamcsService;
+import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.StreamInfo;
+import org.yamcs.replication.protobuf.TimeMessage;
+import org.yamcs.time.SimulationTimeService;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
@@ -44,6 +50,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.util.concurrent.ScheduledFuture;
 
 public class ReplicationSlave extends AbstractYamcsService {
     private TcpRole tcpRole;
@@ -61,11 +68,26 @@ public class ReplicationSlave extends AbstractYamcsService {
     int localInstanceId;
     SslContext sslCtx = null;
     int maxTupleSize;
+    long timeoutMillis;
+    SimulationTimeService simTimeService = null;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
-        this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
+        YamcsServerInstance ysi =YamcsServer.getServer().getInstance(yamcsInstance); 
+        this.localInstanceId = ysi.getInstanceId();
+        boolean updateSimTime = config.getBoolean("updateSimTime");
+        if (updateSimTime) {
+            TimeService srv = ysi.getTimeService();
+            if (srv instanceof SimulationTimeService) {
+                simTimeService = (SimulationTimeService) srv;
+                simTimeService.setTime0(0);
+            } else {
+                throw new ConfigurationException(
+                        "Cannot use updateSimTime unless the simulated time service is configured");
+            }
+        }
+
         streamNames = config.getList("streams");
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.CLIENT);
         if (tcpRole == TcpRole.CLIENT) {
@@ -92,6 +114,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         replicationDir.toFile().mkdirs();
         String lastTxFilename = config.getString("lastTxFile", serviceName + "-lastid.txt");
         this.maxTupleSize = config.getInt("maxTupleSize");
+        this.timeoutMillis = (long) (config.getDouble("timeoutSec") * 1000);
 
         txtfilePath = replicationDir.resolve(lastTxFilename);
         try {
@@ -123,6 +146,13 @@ public class ReplicationSlave extends AbstractYamcsService {
         spec.addOption("lastTxFile", OptionType.STRING);
         spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(131072)
                 .withDescription("Maximum size of the serialized tuple");
+        spec.addOption("timeoutSec", OptionType.FLOAT)
+                .withDescription(
+                        "Timeout in seconds. If no message is received in this time, the connection will be closed")
+                .withDefault(30);
+
+        spec.addOption("updateSimTime", OptionType.BOOLEAN).withDefault(false)
+                .withDescription("If true, update the simulation time with the time received from the master");
         return spec;
     }
 
@@ -138,6 +168,19 @@ public class ReplicationSlave extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        shutdown();
+        notifyStopped();
+    }
+
+    private void failService(String errMsg) {
+        log.warn("Replication failed: {}", errMsg);
+        log.warn("Shutting down the service");
+        shutdown();
+        notifyFailed(new Exception(errMsg));
+    }
+
+    private void shutdown() {
+        log.debug("Shutting down the replication slave");
         if (tcpClient != null) {
             tcpClient.stop();
         }
@@ -160,16 +203,6 @@ public class ReplicationSlave extends AbstractYamcsService {
             log.error("Failed to close the last TX id file");
             notifyFailed(e);
         }
-        notifyStopped();
-    }
-
-    private void failService(String errMsg) {
-        log.warn("Replication failed: {}", errMsg);
-        if (slaveChannelHandler != null) {
-            log.warn("Closing connection to master");
-            slaveChannelHandler.shutdown();
-        }
-        notifyFailed(new Exception(errMsg));
     }
 
     private void updateLastTxFile() {
@@ -192,6 +225,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         }
         return servers.get(0);
     }
+
 
     public List<String> getStreamNames() {
         return streamNames;
@@ -235,13 +269,25 @@ public class ReplicationSlave extends AbstractYamcsService {
         return slaveChannelHandler;
     }
 
+    private void processTimeMessage(TimeMessage timeMsg) {
+        if (simTimeService != null) {
+            simTimeService.setSimElapsedTime(timeMsg.getLocalTime(), timeMsg.getMissionTime());
+            if (timeMsg.hasSpeed()) {
+                simTimeService.setSimSpeed(timeMsg.getSpeed());
+            }
+        }
+    }
+
     public class SlaveChannelHandler extends ChannelInboundHandlerAdapter {
         ReplicationSlave replSlave;
         private ChannelHandlerContext channelHandlerContext;
         Map<Integer, ByteBufToStream> streamWriters = new HashMap<>();
+        long lastMsgReceivedTime;
+        private ScheduledFuture<?> timeoutFuture;
 
         public SlaveChannelHandler(ReplicationSlave slave) {
             this.replSlave = slave;
+            this.lastMsgReceivedTime = System.currentTimeMillis();
         }
 
         @Override
@@ -270,7 +316,7 @@ public class ReplicationSlave extends AbstractYamcsService {
                 ctx.close();
                 return;
             }
-
+            lastMsgReceivedTime = System.currentTimeMillis();
             if (msg.type == Message.DATA) {
                 TransactionMessage tmsg = (TransactionMessage) msg;
 
@@ -330,11 +376,15 @@ public class ReplicationSlave extends AbstractYamcsService {
                 } else {
                     log.info("Received response {}", resp);
                 }
+            } else if (msg.type == Message.TIME) {
+                TimeMessage timeMsg = (TimeMessage) msg.protoMsg;
+                processTimeMessage(timeMsg);
             } else {
                 failService("Unexpected message type " + msg.type + " received from the master");
                 return;
             }
         }
+
 
         private void checkMissing(TransactionMessage tmsg) {
             if (tmsg.txId != lastTxId + 1) {
@@ -371,8 +421,27 @@ public class ReplicationSlave extends AbstractYamcsService {
                     TextFormat.shortDebugString(req));
             ByteBuf buf = Unpooled.wrappedBuffer(Message.get(req).encode());
             channelHandlerContext.writeAndFlush(buf);
+            cancelTimeoutFuture();
+            timeoutFuture = channelHandlerContext.executor().scheduleAtFixedRate(this::checkTimeout, timeoutMillis,
+                    timeoutMillis, TimeUnit.MILLISECONDS);
         }
 
+        void checkTimeout() {
+            long now = System.currentTimeMillis();
+            if (now - lastMsgReceivedTime > timeoutMillis) {
+                log.warn("No message received in the last {} seconds. Closing the connection",
+                        (now - lastMsgReceivedTime) / 1000);
+                channelHandlerContext.close();
+                cancelTimeoutFuture();
+            }
+        }
+
+        void cancelTimeoutFuture() {
+            ScheduledFuture<?> sf = timeoutFuture;
+            if (sf != null) {
+                sf.cancel(true);
+            }
+        }
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
             this.channelHandlerContext = ctx;
@@ -380,6 +449,7 @@ public class ReplicationSlave extends AbstractYamcsService {
 
         public void shutdown() {
             channelHandlerContext.close();
+            cancelTimeoutFuture();
         }
 
         @Override
@@ -391,6 +461,7 @@ public class ReplicationSlave extends AbstractYamcsService {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             log.debug("Connection {} closed", ctx.channel().remoteAddress());
             super.channelInactive(ctx);
+            cancelTimeoutFuture();
             slaveChannelHandler = null;
         }
 
@@ -434,9 +505,7 @@ public class ReplicationSlave extends AbstractYamcsService {
                         if (cidx >= completeTuple.size()) {
                             log.warn(
                                     "TX{}: when deserializing data for stream {}: reference to unknown column index {}",
-                                    txId,
-                                    stream.getName(),
-                                    cidx);
+                                    txId, stream.getName(), cidx);
                             return;
                         }
                         int typeId = id >>> 24;

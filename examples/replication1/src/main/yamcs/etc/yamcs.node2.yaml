@@ -32,6 +32,7 @@ services:
         masterHost: localhost
         masterPort: 8099
         masterInstance: node1
+        updateSimTime: true
         streams: ["tm_realtime", "sys_param", "tm2_realtime"]
 
 
@@ -82,3 +83,9 @@ streamConfig:
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
   tc: ["tc_realtime"]
+
+timeService:
+     class: org.yamcs.time.SimulationTimeService
+     args:
+         time0: "2020-10-02T18:10:00.000Z"
+         speed: 1.0

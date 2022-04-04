@@ -224,11 +224,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
         if (config.containsKey("timeService")) {
             YConfiguration m = config.getConfig("timeService");
             String servclass = m.getString("class");
-            Object args = m.get("args");
-            if (args == null) {
-                timeService = YObjectLoader.loadObject(servclass, name);
-            } else {
+            if (m.containsKey("args")) {
+                YConfiguration args = m.getConfig("args");
                 timeService = YObjectLoader.loadObject(servclass, name, args);
+            } else {
+                timeService = YObjectLoader.loadObject(servclass, name);
             }
         } else {
             timeService = new RealtimeTimeService();
