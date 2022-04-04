@@ -44,7 +44,7 @@ services:
     - class: org.yamcs.replication.ReplicationMaster
       args:
           tcpRole: server
-          streams: ["tm_realtime", "sys_param", "tm2_realtime"]
+          streams: ["tm_realtime", "sys_param", "tm2_realtime", "proc_param"]
           #maxPages: 500
           #pageSize: 500
           #expirationDays: 7
