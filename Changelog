@@ -1,3 +1,9 @@
+Version 5.6.1 released 4-Apr-2022
+- Replication: detect and recover dead replication links
+- Replication: allow to synchronize the mission time across replication
+- Buckets: allow configurable limits for total size and number of objects in a bucket
+- Various tweaks and fixes
+
 Version 5.6.0 released 2-Mar-2022
 - Keep a log of admin, link, queue and alarm activity
 - Add support for folder creation within buckets
