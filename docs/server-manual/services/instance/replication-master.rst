@@ -11,6 +11,8 @@ The replication files are append only (except for a header which contains the nu
 
 The replication slaves are responsible for keeping track of their last received transaction id. In both TCP client and server mode, the slaves are sending to the master the first transaction id and the master starts replaying from there. In case the slave has not connected for a long time, the first transaction may be in one of the deleted files. The master will start sending from the first transaction available.
 
+New in version 5.6.1: the master will regularly send time messages in order to keep the connection alive if there is no data. The slave can optionally use the time message to update the local mission time, synchronizing it to the master.
+
 
 Class Name
 ----------
@@ -42,7 +44,6 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
                   enableTls: false
             reconnectionInterval: 5000
 
-              
 Configuration Options
 ---------------------
 
@@ -66,12 +67,13 @@ fileCloseTimeSec (integer)
 
 expirationDays (double)
     How many days to keep the replication files before removing them. Default: 7.
- 
- 
+
 slaves (list of maps)
     **Required** if the tcpRole is `client`. The list of slaves to connect to. Each slave is specified as a host/port and the slave instance name. In addition, TLS (encrypted connections) can be specified for each slave individually using the enableTls option. 
     The replication master will connect to the replication server on the remote host/port and will send a Wakeup message containing the salve instance name; the replication server will then redirect the connection to the corresponding replication slave if one has registered for the given instance.
 
 reconnectionIntervalSec (integer)
     If the tcpRole is `client` this configures how often in seconds the replication master will try to connect to the salve if the connection is broken. A negative value means that no reconnection will take place.
-               
+
+timeMsgFreqSec (integer)
+    Added in version 5.6.1. How often (in seconds) should send the time messages. Default: 10

@@ -11,7 +11,7 @@ import org.yamcs.utils.TimeEncoding;
  * timeService:
  *     class: org.yamcs.time.SimulationTimeService
  *     args:
- *         time0: 2020-10-02T18:10:00.000Z
+ *         time0: "2020-10-02T18:10:00.000Z"
  *         speed: 1.0
  * </pre>
  * 
@@ -55,7 +55,7 @@ public class SimulationTimeService implements TimeService {
         } else {
             time0 = TimeEncoding.getWallclockTime();
         }
-        speed = config.getLong("speed", 1);
+        speed = config.getDouble("speed", 1);
 
         javaTime = System.currentTimeMillis();
         simElapsedTime = 0;
@@ -83,9 +83,13 @@ public class SimulationTimeService implements TimeService {
         return t;
     }
 
-    public void setSimElapsedTime(long simElapsedTime) {
-        javaTime = System.currentTimeMillis();
+    public void setSimElapsedTime(long javaTime, long simElapsedTime) {
+        this.javaTime = javaTime;
         this.simElapsedTime = simElapsedTime;
+    }
+
+    public void setSimElapsedTime(long simElapsedTime) {
+        setSimElapsedTime(System.currentTimeMillis(), simElapsedTime);
     }
 
     /**
@@ -104,5 +108,9 @@ public class SimulationTimeService implements TimeService {
      */
     public void setSimSpeed(double simSpeed) {
         this.speed = simSpeed;
+    }
+
+    public double getSpeed() {
+        return speed;
     }
 }

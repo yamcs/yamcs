@@ -10,7 +10,9 @@ import org.yamcs.logging.Log;
 import org.yamcs.replication.ReplicationMaster.SlaveServer;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
+import org.yamcs.replication.protobuf.TimeMessage;
 import org.yamcs.replication.protobuf.Wakeup;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.DecodingException;
 
 import io.netty.buffer.ByteBuf;
@@ -18,6 +20,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.concurrent.ScheduledFuture;
 
 /**
  * 
@@ -25,29 +28,34 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  *
  */
 public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
-    ReplicationMaster replMaster;
+    final ReplicationMaster replMaster;
+    final TimeService timeService;
+    final Log log;
 
-    private ChannelHandlerContext channelHandlerContext;
     Request req;
+    private ChannelHandlerContext channelHandlerContext;
     ChannelFuture dataHandlingFuture;
     ReplicationFile currentFile;
     long nextTxToSend;
     ReplicationTail fileTail;
-    final Log log;
     SlaveServer slaveServer;
+    private ScheduledFuture<?> timeMsgFuture;
 
-    // called when we are TCP client, we first send a wakeup message and then we receive the request
-    public MasterChannelHandler(ReplicationMaster master, SlaveServer slaveServer) {
+
+    // called when we are TCP client
+    public MasterChannelHandler(TimeService timeService, ReplicationMaster master, SlaveServer slaveServer) {
         this.replMaster = master;
         this.slaveServer = slaveServer;
         this.req = null;
+        this.timeService = timeService;
         log = new Log(MasterChannelHandler.class, master.getYamcsInstance());
     }
 
     // called when we are connected to a TCP server
-    public MasterChannelHandler(ReplicationMaster master, Request req) {
+    public MasterChannelHandler(TimeService timeService, ReplicationMaster master, Request req) {
         this.replMaster = master;
         this.req = req;
+        this.timeService = timeService;
         log = new Log(MasterChannelHandler.class, master.getYamcsInstance());
     }
 
@@ -78,7 +86,8 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         } else if (msg.type == Message.RESPONSE) {
             Response resp = (Response) msg.protoMsg;
             if (resp.getResult() != 0) {
-                log.warn("Received negative response: {}", resp.getErrorMsg());
+                log.warn("Received negative response: {}, closing the connection", resp.getErrorMsg());
+                ctx.close();
                 return;
             } else {
                 log.info("Received response {}", resp);
@@ -89,18 +98,22 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    // called when tcpRole=Server and we have been added to the pipeline by the ReplicationServer
+    // if tcpRole=Server, called when we have been added to the pipeline by the ReplicationServer
+    // if tcpRole=Client, called when we have been added to the pipeline by the ReplicationClient
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         super.handlerAdded(ctx);
         this.channelHandlerContext = ctx;
-        if (req != null) {// this is the request in the constructor
+        if (req != null) {// this is the request in the constructor, if tcpRole=Server
             processRequest();
         }
     }
 
     public void shutdown() {
         channelHandlerContext.close();
+        if (timeMsgFuture != null) {
+            timeMsgFuture.cancel(true);
+        }
     }
 
     private void processRequest() {
@@ -113,8 +126,14 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
             log.info("The slave did not provide a startTxId, starting from 0");
             nextTxToSend = 0;
         }
+        scheduleTimeMsgs();
         goToNextFile();
+    }
 
+    private void scheduleTimeMsgs() {
+        long timeMsgFreqMillis = replMaster.timeMsgFreqMillis;
+        this.timeMsgFuture = channelHandlerContext.executor().scheduleAtFixedRate(this::sendTimeMsg,
+                0, timeMsgFreqMillis, TimeUnit.MILLISECONDS);
     }
 
     void goToNextFile() {
@@ -184,9 +203,20 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         log.warn("Caught exception {}", cause.getMessage());
     }
 
+    private void sendTimeMsg() {
+        TimeMessage tm = TimeMessage.newBuilder()
+                .setLocalTime(System.currentTimeMillis())
+                .setMissionTime(timeService.getMissionTime())
+                .setSpeed(timeService.getSpeed())
+                .build();
+        Message msg = Message.get(tm);
+        ByteBuf bb = Unpooled.wrappedBuffer(msg.encode());
+        channelHandlerContext.writeAndFlush(bb);
+    }
+
     /**
      * this is called when the TCP connection is established, only when we are working as TCP client in the other case
-     * the ReplicationServer adds us to the pipeline after the connection is estabilished)
+     * the ReplicationServer adds us to the pipeline after the connection is established)
      * <p>
      * Send a Wakeup message
      */
@@ -201,7 +231,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.debug("Connection {} closed", ctx.channel().remoteAddress());
+        log.info("Replication connection {} closed", ctx.channel().remoteAddress());
         super.channelInactive(ctx);
         if (dataHandlingFuture != null) {
             dataHandlingFuture.cancel(true);

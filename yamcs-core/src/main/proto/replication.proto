@@ -23,6 +23,18 @@ message Wakeup {
     optional string yamcsInstance = 2; 
 }
 
+//sent regularely from Master to Slave
+// contains the mission time relation to the local time
+// used also as a heartbeat to keep the TCP link alive and detect link failures
+message TimeMessage {
+    //local UNIX time in millisecs
+	optional int64 localTime = 1;
+	//Yamcs time in millisecs
+	optional int64 missionTime = 2;
+	//time speed (mission time vs wall clock time)
+	optional double speed = 3;
+}
+
 message Response {
    optional uint32 requestSeq = 1;
    optional int32 result = 2;

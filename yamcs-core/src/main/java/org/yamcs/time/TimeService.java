@@ -24,4 +24,20 @@ public interface TimeService {
     default public Instant getHresMissionTime() {
         return Instant.get(getMissionTime());
     }
+
+    /**
+     * If the time service is a simulated time, this gives the relation between the (simulated) mission time and the
+     * wall clock time:
+     * <ul>
+     * <li>1.0 = realtime speed.</li>
+     * <li>&gt;1.0 = faster than realtime</li>
+     * <li>&lt;1.0 = slower than realtime.</li>
+     * </ul>
+     *
+     * @return the relation between the mission time and the wall clock time
+     *
+     */
+    default public double getSpeed() {
+        return 1.0;
+    }
 }

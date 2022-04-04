@@ -82,6 +82,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     private long fileCloseTime;
     Pattern filePattern;
     int maxTupleSize;
+    long timeMsgFreqMillis;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
@@ -95,6 +96,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         maxPages = config.getInt("maxPages", 500);
         maxFileSize = 1024 * config.getInt("maxFileSizeKB", 100 * 1024);
         this.maxTupleSize = config.getInt("maxTupleSize");
+        this.timeMsgFreqMillis = config.getLong("timeMsgFreqSec") * 1000;
+
         int hdrSize = ReplicationFile.headerSize(pageSize, maxPages);
         if (maxFileSize < hdrSize) {
             throw new InitException(
@@ -179,6 +182,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         spec.addOption("slaves", OptionType.LIST).withElementType(OptionType.MAP).withSpec(slaveSpec);
         spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(65536)
                 .withDescription("Maximum size of the serialized tuple");
+        spec.addOption("timeMsgFreqSec", OptionType.INTEGER).withDefault(10)
+                .withDescription("How often (in seconds) to send the time message to the slaves");
 
         return spec;
     }
@@ -229,7 +234,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port,
                         sa.enableTls ? sslCtx : null, reconnectionInterval, maxTupleSize,
                         () -> {
-                            return new MasterChannelHandler(this, sa);
+                            return new MasterChannelHandler(YamcsServer.getTimeService(yamcsInstance), this, sa);
                         });
                 sa.client.start();
             }
@@ -355,7 +360,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     public ChannelHandler newChannelHandler(Request req) {
-        return new MasterChannelHandler(this, req);
+        return new MasterChannelHandler(YamcsServer.getTimeService(yamcsInstance), this, req);
     }
 
     public List<String> getStreamNames() {
