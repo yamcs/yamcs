@@ -71,23 +71,30 @@ public class SimulationTimeService implements TimeService {
      * <p>
      * {@code time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime)}
      * <p>
-     * where time0 is the value set with {@link #setTime0(long)}, simElapsedTime is the value set with
-     * {@link #setSimElapsedTime(long)}
-     * and the javaTime is the value returned by {@link System#currentTimeMillis()} last time when
-     * {@link #setSimElapsedTime(long)} has been called.
+     * where time0 is the value set with {@link #setTime0(long)}, speed is the value set with
+     * {@link #setSimSpeed(double)} and javaTime are the values set with {@link #setSimElapsedTime(long, long)}.
      */
     @Override
     public long getMissionTime() {
-        long t;
-        t = (long) (time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime));
-        return t;
+        return (long) (time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime));
     }
 
+    /**
+     * Sets the javaTime and simElapsedTime used to compute the mission time by {@link #getMissionTime()}
+     *
+     * @param javaTime
+     * @param simElapsedTime
+     */
     public void setSimElapsedTime(long javaTime, long simElapsedTime) {
         this.javaTime = javaTime;
         this.simElapsedTime = simElapsedTime;
     }
 
+    /**
+     * Same as setSimElapsedTime(System.currentTimeMillis(), simElapsedTime).
+     *
+     * @param simElapsedTime
+     */
     public void setSimElapsedTime(long simElapsedTime) {
         setSimElapsedTime(System.currentTimeMillis(), simElapsedTime);
     }
