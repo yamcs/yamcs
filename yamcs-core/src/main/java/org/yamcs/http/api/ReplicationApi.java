@@ -90,10 +90,10 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
                     if (ch != null && ch.isActive()) {
                         InetSocketAddress address = (InetSocketAddress) ch.localAddress();
                         masterb.setLocalAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
-                    }
-                    MasterChannelHandler handler = ch.pipeline().get(MasterChannelHandler.class);
-                    if (handler != null) {
-                        masterb.setNextTx(handler.getNextTxId());
+                        MasterChannelHandler handler = ch.pipeline().get(MasterChannelHandler.class);
+                        if (handler != null) {
+                            masterb.setNextTx(handler.getNextTxId());
+                        }
                     }
                 }
 
