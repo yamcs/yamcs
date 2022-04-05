@@ -5,7 +5,7 @@ Algorithms are user scripts that can perform arbitrary logic on a set of incomin
 
 Output parameters are very much identical to regular parameters. They can be calibrated (in which case the algorithm's direct outcome is considered the raw value), and they can also be subject to alarm generation.
 
-Algorithms can be written in JavaScript, Python or Java. By default Yamcs ships with support for JavaScript algorithms since the standard Oracle Java distribution contains the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
+Algorithms can be written in JavaScript, Python or Java. By default Yamcs supports JavaScript algorithms executed using the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
 
 
 Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes and methods are made available:
