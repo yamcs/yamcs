@@ -107,46 +107,52 @@ public class HttpTranscoder {
         FileUpload fup = null;
 
         int metadataSize = 0;
-        for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
-            if (data instanceof FileUpload) {
-                if (fup != null) {
-                    throw new HttpTranscodeException("Only one file upload is allowed in multipart/form data");
-                }
-                fup = (FileUpload) data;
-            } else if (data instanceof Attribute) {
-                Attribute att = (Attribute) data;
-                try {
-                    String name = att.getName();
-                    String value = att.getValue();
-                    metadataSize += (name.length() + value.length());
-                    bodyb.putMetadata(name, value);
-                } catch (IOException e) { // shouldn't happen for MemoryAttribute
-                    log.warn("Error while reading form/data attribute value", e);
-                    throw new HttpTranscodeException("error reading attribute value");
+        try {
+            for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
+                if (data instanceof FileUpload) {
+                    if (fup != null) {
+                        throw new HttpTranscodeException("Only one file upload is allowed in multipart/form data");
+                    }
+                    fup = (FileUpload) data;
+                } else if (data instanceof Attribute) {
+                    Attribute att = (Attribute) data;
+                    try {
+                        String name = att.getName();
+                        String value = att.getValue();
+                        metadataSize += (name.length() + value.length());
+                        bodyb.putMetadata(name, value);
+                    } catch (IOException e) { // shouldn't happen for MemoryAttribute
+                        log.warn("Error while reading form/data attribute value", e);
+                        throw new HttpTranscodeException("error reading attribute value");
+                    }
                 }
             }
-        }
-        if (metadataSize > MAX_METADATA_SIZE) {
-            throw new BadRequestException("Metadata size " + metadataSize
-                    + " bytes exceeds maximum allowed " + MAX_METADATA_SIZE);
-        }
-        if (fup == null) {
-            throw new HttpTranscodeException("No file upload was found in multipart/form data");
-        }
 
-        if (fup.getContentType() != null) {
-            bodyb.setContentType(fup.getContentType());
-        }
-        if (fup.getFilename() != null) {
-            bodyb.setFilename(fup.getFilename());
-        }
-        try (InputStream bufOut = new ByteBufInputStream(fup.content())) {
-            ByteString data = ByteString.readFrom(bufOut);
-            bodyb.setData(data);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            if (metadataSize > MAX_METADATA_SIZE) {
+                throw new BadRequestException("Metadata size " + metadataSize
+                        + " bytes exceeds maximum allowed " + MAX_METADATA_SIZE);
+            }
+            if (fup == null) {
+                throw new HttpTranscodeException("No file upload was found in multipart/form data");
+            }
+
+            if (fup.getContentType() != null) {
+                bodyb.setContentType(fup.getContentType());
+            }
+            if (fup.getFilename() != null) {
+                bodyb.setFilename(fup.getFilename());
+            }
+            try (InputStream bufOut = new ByteBufInputStream(fup.content())) {
+                ByteString data = ByteString.readFrom(bufOut);
+                bodyb.setData(data);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } finally {
+                fup.delete();
+            }
         } finally {
-            fup.delete();
+            decoder.destroy();
+            decoder = null;
         }
         return bodyb.build();
     }
