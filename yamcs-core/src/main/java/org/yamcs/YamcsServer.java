@@ -62,12 +62,12 @@ import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yaml.snakeyaml.Yaml;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.beust.jcommander.converters.PathConverter;
 import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import io.netty.util.ResourceLeakDetector;
 
 /**
  *
@@ -106,33 +106,7 @@ public class YamcsServer {
 
     private CrashHandler globalCrashHandler;
 
-    @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
-    private boolean version;
-
-    @Parameter(names = "--check", description = "Run syntax tests on configuration files and quit")
-    private boolean check;
-
-    @Parameter(names = "--log", description = "Level of verbosity")
-    private int verbose = 2;
-
-    @Parameter(names = "--log-config", description = "File with log configuration", converter = PathConverter.class)
-    private Path logConfig;
-
-    @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
-    private Path configDirectory = Paths.get("etc").toAbsolutePath();
-
-    @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
-    private Path dataDir;
-
-    @Parameter(names = "--no-stream-redirect", description = "Do not redirect stdout/stderr to the log system")
-    private boolean noStreamRedirect;
-
-    @Parameter(names = "--no-color", description = "Turn off console log colorization")
-    private boolean noColor;
-
-    @Parameter(names = { "-h", "--help" }, help = true, hidden = true)
-    private boolean help;
-
+    private YamcsServerOptions options = new YamcsServerOptions();
     private YConfiguration config;
     private Spec spec;
     private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
@@ -921,11 +895,11 @@ public class YamcsServer {
     }
 
     public Path getConfigDirectory() {
-        return configDirectory;
+        return options.configDirectory;
     }
 
     public Path getDataDirectory() {
-        return dataDir;
+        return options.dataDir;
     }
 
     public Path getIncomingDirectory() {
@@ -960,14 +934,14 @@ public class YamcsServer {
 
         System.setProperty("jxl.nowarnings", "true");
         System.setProperty("jacorb.home", System.getProperty("user.dir"));
-        System.setProperty("javax.net.ssl.trustStore", YAMCS.configDirectory.resolve("trustStore").toString());
+        System.setProperty("javax.net.ssl.trustStore", YAMCS.options.configDirectory.resolve("trustStore").toString());
 
         try {
             setupLogging();
 
             // Bootstrap YConfiguration such that it only considers physical files.
             // Not classpath resources.
-            YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.configDirectory));
+            YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.options.configDirectory));
 
             YAMCS.prepareStart();
         } catch (Exception e) {
@@ -975,7 +949,7 @@ public class YamcsServer {
             if (t instanceof ValidationException) {
                 String path = ((ValidationException) t).getContext().getPath();
                 LOG.error("{}: {}", path, e.getMessage());
-                if (YAMCS.check) {
+                if (YAMCS.options.check) {
                     System.out.println("Configuration Invalid");
                 }
                 YamcsLogManager.shutdown();
@@ -987,14 +961,19 @@ public class YamcsServer {
             }
         }
 
-        if (YAMCS.check) {
+        if (YAMCS.options.check) {
             System.out.println("Configuration OK");
             System.exit(0);
         }
 
+        ResourceLeakDetector.setLevel(YAMCS.options.nettyLeakDetection);
+        if (ResourceLeakDetector.isEnabled()) {
+            LOG.info("Netty leak detection: " + ResourceLeakDetector.getLevel());
+        }
+
         // Good to go!
         try {
-            LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
+            LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
             YAMCS.start();
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
@@ -1006,14 +985,14 @@ public class YamcsServer {
 
     private static void parseArgs(String[] args) {
         try {
-            JCommander jcommander = new JCommander(YAMCS);
+            JCommander jcommander = new JCommander(YAMCS.options);
             jcommander.setProgramName("yamcsd");
             jcommander.parse(args);
-            if (YAMCS.help) {
+            if (YAMCS.options.help) {
                 jcommander.usage();
                 System.exit(0);
-            } else if (YAMCS.version) {
-                System.out.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
+            } else if (YAMCS.options.version) {
+                System.out.println("Yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
                 PluginManager pluginManager = new PluginManager();
                 for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
                     PluginMetadata meta = pluginManager.getMetadata(plugin.getClass());
@@ -1028,7 +1007,7 @@ public class YamcsServer {
     }
 
     private static void setupLogging() throws SecurityException, IOException {
-        if (YAMCS.check) {
+        if (YAMCS.options.check) {
             Log.forceStandardStreams(Level.WARNING);
             return;
         }
@@ -1036,7 +1015,7 @@ public class YamcsServer {
         if (System.getProperty("java.util.logging.config.file") != null) {
             LOG.info("Logging configuration overriden via java property");
         } else {
-            Path configFile = YAMCS.configDirectory.resolve("logging.properties").toAbsolutePath();
+            Path configFile = YAMCS.options.configDirectory.resolve("logging.properties").toAbsolutePath();
             if (Files.exists(configFile)) {
                 try (InputStream in = Files.newInputStream(configFile)) {
                     YamcsLogManager.setup(in);
@@ -1054,7 +1033,7 @@ public class YamcsServer {
         System.setOut(new PrintStream(System.out) {
             @Override
             public void println(String x) {
-                if (YAMCS.noStreamRedirect) {
+                if (YAMCS.options.noStreamRedirect) {
                     super.println(x);
                 } else {
                     stdoutLogger.info(x);
@@ -1063,7 +1042,7 @@ public class YamcsServer {
 
             @Override
             public void println(Object x) {
-                if (YAMCS.noStreamRedirect) {
+                if (YAMCS.options.noStreamRedirect) {
                     super.println(x);
                 } else {
                     stdoutLogger.info(String.valueOf(x));
@@ -1074,7 +1053,7 @@ public class YamcsServer {
         System.setErr(new PrintStream(System.err) {
             @Override
             public void println(String x) {
-                if (YAMCS.noStreamRedirect) {
+                if (YAMCS.options.noStreamRedirect) {
                     super.println(x);
                 } else {
                     stderrLogger.severe(x);
@@ -1083,7 +1062,7 @@ public class YamcsServer {
 
             @Override
             public void println(Object x) {
-                if (YAMCS.noStreamRedirect) {
+                if (YAMCS.options.noStreamRedirect) {
                     super.println(x);
                 } else {
                     stdoutLogger.info(String.valueOf(x));
@@ -1093,7 +1072,7 @@ public class YamcsServer {
     }
 
     private static void setupDefaultLogging() throws SecurityException, IOException {
-        Level logLevel = toLevel(YAMCS.verbose);
+        Level logLevel = toLevel(YAMCS.options.verbose);
 
         // Not sure. This seems to be the best programmatic way. Changing Logger
         // instances directly only works on the weak instance.
@@ -1104,8 +1083,8 @@ public class YamcsServer {
         buf.append(defaultHandler).append(".level=").append(logLevel).append("\n");
         buf.append(defaultHandler).append(".formatter=").append(defaultFormatter).append("\n");
 
-        if (YAMCS.logConfig != null) {
-            try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
+        if (YAMCS.options.logConfig != null) {
+            try (InputStream in = Files.newInputStream(YAMCS.options.logConfig)) {
                 Properties props = new Properties();
                 props.load(in);
                 props.forEach((logger, verbosity) -> {
@@ -1124,7 +1103,7 @@ public class YamcsServer {
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             Formatter formatter = handler.getFormatter();
             if (formatter instanceof ConsoleFormatter) {
-                ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.noColor);
+                ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.options.noColor);
             }
         }
     }
@@ -1150,7 +1129,7 @@ public class YamcsServer {
 
         // Load the UTC-TAI.history file.
         // Give priority to a file in etc folder.
-        Path utcTaiFile = configDirectory.resolve("UTC-TAI.history");
+        Path utcTaiFile = options.configDirectory.resolve("UTC-TAI.history");
         if (Files.exists(utcTaiFile)) {
             try (InputStream in = Files.newInputStream(utcTaiFile)) {
                 TimeEncoding.setUp(in);
@@ -1229,7 +1208,7 @@ public class YamcsServer {
     }
 
     private void discoverTemplates() throws IOException {
-        Path templatesDir = configDirectory.resolve("instance-templates");
+        Path templatesDir = options.configDirectory.resolve("instance-templates");
         if (!Files.exists(templatesDir)) {
             return;
         }
@@ -1291,12 +1270,12 @@ public class YamcsServer {
         } else {
             globalCrashHandler = new LogCrashHandler();
         }
-        if (dataDir == null) {
-            dataDir = Paths.get(config.getString("dataDir"));
+        if (options.dataDir == null) {
+            options.dataDir = Paths.get(config.getString("dataDir"));
         }
-        YarchDatabase.setHome(dataDir.toAbsolutePath().toString());
+        YarchDatabase.setHome(options.dataDir.toAbsolutePath().toString());
         incomingDir = Paths.get(config.getString("incomingDir"));
-        instanceDefDir = dataDir.resolve("instance-def");
+        instanceDefDir = options.dataDir.resolve("instance-def");
 
         if (YConfiguration.configDirectory != null) {
             cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
@@ -1305,7 +1284,7 @@ public class YamcsServer {
         }
         Files.createDirectories(cacheDir);
 
-        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
+        Path globalDir = options.dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);
         Files.createDirectories(instanceDefDir);
 
@@ -1399,7 +1378,7 @@ public class YamcsServer {
         String msg = String.format("Yamcs started in %dms. Started %d of %d instances and %d services",
                 NANOSECONDS.toMillis(bootTime), instanceCount, instances.size(), serviceCount);
 
-        if (noStreamRedirect) {
+        if (options.noStreamRedirect) {
             // The init.d script uses this, by grepping for a known string
             // Note that the init.d script cannot grep the real log file because it
             // does not know its location.

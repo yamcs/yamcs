@@ -14,7 +14,7 @@ yamcsd
 
         yamcsd [--version] [--help] [--check] [--log LEVEL] [--log-config FILE]
                [--no-color] [--no-stream-redirect] [--etc-dir DIR]
-               [--data-dir DIR]
+               [--data-dir DIR] [--netty-leak-detection LEVEL]
 
 
 **DESCRIPTION**
@@ -51,6 +51,21 @@ yamcsd
     .. option:: --check
 
        Run syntax tests on configuration files and quit.
+
+    .. option:: --netty-leak-detection LEVEL
+
+       Level of leak detection used by the Netty library. Leak detection is disabled by default as it has a negative impact on performance. The available levels are:
+
+       DISABLED
+           Disables leak detection (default)
+       SIMPLE
+           Samples 1% of all Netty resources and reports when a leak is detected. Small overhead, but difficult to tell what caused the leak.
+       ADVANCED
+           Samples 1% of all Netty resources and reports when a leak is detected and where the object was recently accessed. High overhead.
+       PARANOID
+           Tracks all Netty resources and reports when a leak is detected and where the object was recently accessed. Very high overhead.
+      
+       Note that leak detection triggers only upon a GC.
 
     .. option:: -v, --version
 
