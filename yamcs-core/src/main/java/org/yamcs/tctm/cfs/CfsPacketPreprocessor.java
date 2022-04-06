@@ -58,6 +58,8 @@ import org.yamcs.utils.TimeEncoding;
  * </pre>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
+    protected static final String CONFIG_KEY_CHECK_SEQUENCE = "checkSequence";
+    
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
@@ -71,6 +73,8 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             this.timeEpoch = TimeEpochs.GPS;
         }
+
+        this.checkForSequenceDiscontinuity = config.getBoolean(CONFIG_KEY_CHECK_SEQUENCE, true);
     }
 
     @Override
