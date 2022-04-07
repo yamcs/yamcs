@@ -28,7 +28,7 @@ The higher resolution time is sent sometimes from external systems - for example
 Mission Time
 ------------
 
-The nission time in Yamcs is the "current" time - for a realtime mission that would be the wall clock time (in practice the computer time); for a simulation it would be the simulation time. 
+The mission time in Yamcs is the "current" time - for a realtime mission that would be the wall clock time (in practice the computer time); for a simulation it would be the simulation time. 
 
 The mission time is specific to a Yamcs instance and is given by the  :javadoc:`org.yamcs.time.TimeService` configured in that instance. The time service is configured using the ``timeService`` keyword in the yamcs.instance.yaml. 
 
