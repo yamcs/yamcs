@@ -27,7 +27,10 @@ import org.yamcs.utils.TimeEncoding;
  * <tr>
  * <td>seqCountOffset</td>
  * <td>Offset in the packet where to read the sequence count from. If negative, do not read the sequence count from
- * within the packet and set it to 0 instead.</td>
+ * within the packet and set it to 0 instead.
+ * <p>
+ * Note: this class does not check for sequence count continuity.
+ * </td>
  * </tr>
  * <tr>
  * <td>errorDetection</td>
@@ -43,10 +46,8 @@ import org.yamcs.utils.TimeEncoding;
  * <td>timeEncoding</td>
  * <td>Can be used to configure the way the timestamp is translated to Yamcs time. See the
  * {@link AbstractPacketPreprocessor} for details. If this option is not specified, the default epoch used is UNIX.
- * See the
  * </table>
  * 
- * @author nm
  *
  */
 public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {

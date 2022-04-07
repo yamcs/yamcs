@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
+import org.yamcs.tctm.CcsdsPacketPreprocessor;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -57,10 +58,8 @@ import org.yamcs.utils.TimeEncoding;
  *     timeIncludesLeapSeconds: true
  * </pre>
  */
-public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
-    private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
+public class CfsPacketPreprocessor extends CcsdsPacketPreprocessor {
     static final int MINIMUM_LENGTH = 12;
-    private boolean checkForSequenceDiscontinuity = true;
 
     public CfsPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
@@ -85,13 +84,9 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
         int apid = (apidseqcount >> 16) & 0x07FF;
         int seq = (apidseqcount) & 0x3FFF;
-        AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger(-1));
-        int oldseq = ai.getAndSet(seq);
 
-        if (checkForSequenceDiscontinuity && oldseq != -1 && ((seq - oldseq) & 0x3FFF) != 1) {
-            eventProducer.sendWarning("SEQ_COUNT_JUMP",
-                    "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
-        }
+        checkSequence(apid, seq);
+
         pkt.setSequenceCount(apidseqcount);
         if (useLocalGenerationTime) {
             pkt.setLocalGenTimeFlag();
@@ -123,14 +118,4 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         }
         return shiftFromEpoch(1000 * sec + subsecs * 1000 / 65536);
     }
-
-    public boolean checkForSequenceDiscontinuity() {
-        return checkForSequenceDiscontinuity;
-    }
-
-    @Override
-    public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
-        this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
-    }
-
 }
