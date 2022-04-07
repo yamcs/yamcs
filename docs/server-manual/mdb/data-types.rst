@@ -234,6 +234,7 @@ This example can be defined in the spreadsheet with the encoding ``terminated(0x
 
 
 .. rubric:: Example 2: prefixed size string encoded in undefined buffer
+
 The buffer is not explicitely defined so it is effectively as long as the prefix + string.
 The ``maxSizeInBits`` refers to the size of the buffer, so in this example the maximum size of the string will be 4.
 
