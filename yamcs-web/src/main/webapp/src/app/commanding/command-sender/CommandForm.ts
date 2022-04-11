@@ -166,8 +166,8 @@ export class CommandForm implements OnChanges {
     }
   }
 
-  getAssignments(): {[key: string]: any} {
-    const assignments: {[key: string]: any} = {};
+  getAssignments(): { [key: string]: any; } {
+    const assignments: { [key: string]: any; } = {};
     for (const arg of [...this.arguments, ...this.argumentsWithInitial]) {
       if (arg.type.engType === 'aggregate') {
         const value = this.getMemberAssignments(arg.name + '.', arg);
@@ -178,7 +178,10 @@ export class CommandForm implements OnChanges {
           if (arg.type.engType === 'boolean') {
             assignments[arg.name] = (this.form.value[arg.name] === 'true');
           } else {
-            assignments[arg.name] = this.form.value[arg.name];
+            // String is better at representing large numbers or precision
+            // to the server. Some inputs (hex) store a non-string value,
+            // so convert it here.
+            assignments[arg.name] = String(this.form.value[arg.name]);
           }
         }
       }
