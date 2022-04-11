@@ -20,6 +20,9 @@
 
   <label *ngSwitchCase="'boolean'">
     {{ argument.name }}
+    <app-help *ngIf="argument.description">
+      {{ argument.description }}
+    </app-help>
     <app-errors [controlName]="controlName"></app-errors>
     <br>
     <input type="radio"
@@ -78,6 +81,7 @@
       <div class="item" *ngIf="argument.type?.unitSet">
         {{ argument.type?.unitSet | units }}
       </div>
+      <div class="item" *ngIf="argument.type.signed === false">unsigned</div>
       <div class="item">{{ argument.type.engType }}</div>
 
       <mat-menu #argMenu="matMenu" class="ya-menu">
@@ -93,7 +97,7 @@
       <div class="item menu" matTooltip="Input options"
            [matMenuTriggerFor]="argMenu"
            (click)="$event.stopPropagation()"
-           *ngIf="argument.type.dataEncoding.encoding === 'UNSIGNED'">&#x2630;</div>
+           *ngIf="argument.type.signed === false">&#x2630;</div>
     </div>
     {{ argument.name }}
     <app-errors #err [controlName]="controlName"></app-errors>

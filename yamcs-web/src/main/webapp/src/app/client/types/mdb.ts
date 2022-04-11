@@ -202,6 +202,7 @@ export interface ArgumentType {
   dataEncoding: DataEncoding;
   unitSet: UnitInfo[];
   enumValue: EnumValue[];
+  signed: boolean;
   rangeMin: number;
   rangeMax: number;
   minChars: number;

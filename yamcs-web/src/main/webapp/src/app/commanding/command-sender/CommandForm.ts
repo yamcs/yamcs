@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { requireFloat, requireInteger } from '../../shared/forms/validators';
+import { requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
 
@@ -323,6 +323,9 @@ export class CommandForm implements OnChanges {
       validators.push(requireInteger);
     } else if (type.engType === 'float') {
       validators.push(requireFloat);
+    }
+    if (type.signed === false) {
+      validators.push(requireUnsigned);
     }
     if (type.rangeMax !== undefined) {
       validators.push(Validators.max(type.rangeMax));

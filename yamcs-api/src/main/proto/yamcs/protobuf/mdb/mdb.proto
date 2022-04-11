@@ -361,6 +361,10 @@ message ArgumentTypeInfo {
   
   // Maximum character count (only used by string arguments)
   optional int32 maxChars = 12;
+  
+  // True if the engineering type supports signed representation.
+  // (only used by integer arguments)
+  optional bool signed = 13;
 }
 
 message ArgumentInfo {

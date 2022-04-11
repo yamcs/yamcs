@@ -67,6 +67,7 @@
         <th>Name</th>
         <th>Description</th>
         <th>Type</th>
+        <th>Signed</th>
         <th>Encoding</th>
         <th>Size in bits</th>
         <th>Byte order</th>
@@ -85,6 +86,7 @@
             {{ argument.type?.engType || '-' }}
           </ng-container>
         </td>
+        <td>{{ argument.type?.signed ?? '-' }}</td>
         <td>{{ argument.type?.dataEncoding?.encoding || '-' }}</td>
         <td>{{ argument.type?.dataEncoding?.sizeInBits | nvl:'-' }}</td>
         <td>{{ argument.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}</td>
