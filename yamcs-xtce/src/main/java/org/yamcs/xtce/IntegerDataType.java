@@ -108,7 +108,23 @@ public abstract class IntegerDataType extends NumericDataType {
     @Override
     public Long convertType(Object value) {
         if (value instanceof Number) {
-            return ((Number) value).longValue();
+            long longValue = ((Number) value).longValue();
+            boolean negative = longValue < 0;
+
+            BigInteger bn = BigInteger.valueOf(negative ? -longValue : longValue);
+            int bs = sizeInBits;
+            if (signed) {
+                bs--;
+            }
+            if (bn.bitLength() > bs) {
+                throw new NumberFormatException("Number " + longValue + " does not fit the bit size (" + sizeInBits
+                        + (signed ? "/signed" : "unsigned") + ")");
+            }
+            long x = bn.longValue();
+            if (negative) {
+                x = -x;
+            }
+            return x;
         } else if (value instanceof String) {
             String stringValue = (String) value;
             String sv = stringValue.replace("_", "");
