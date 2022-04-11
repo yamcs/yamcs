@@ -65,7 +65,6 @@ import com.google.protobuf.util.Durations;
 public class TimelineApi extends AbstractTimelineApi<Context> {
     static final String MSG_NO_ID = "No id specified";
 
-
     private static final Log log = new Log(TimelineApi.class);
 
     @Override
@@ -392,7 +391,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
             @Override
             public void completeExceptionally(Throwable t) {
-                log.warn("Error retrieving timeline items", t);
+                log.warn("Error retrieving timeline views", t);
                 observer.completeExceptionally(t);
             }
 

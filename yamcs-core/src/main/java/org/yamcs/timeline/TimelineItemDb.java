@@ -358,7 +358,7 @@ public class TimelineItemDb implements ItemProvider {
 
                 @Override
                 public void complete() {
-                    if (count == limit) {
+                    if (count == limit + 1) {
                         consumer.complete(getRandomToken());
                     } else {
                         consumer.complete(null);

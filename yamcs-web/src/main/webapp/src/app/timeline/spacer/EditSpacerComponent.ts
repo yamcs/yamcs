@@ -26,7 +26,6 @@ export class EditSpacerComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
-    this.form.get('label')!.clearValidators();
     const props = addDefaultSpacerProperties(this.band.properties || {});
 
     // Angular does not seem to have form.addGroup. So we get creative.
