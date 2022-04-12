@@ -15,17 +15,16 @@ import org.yamcs.utils.YObjectLoader;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
-    implements TmPacketDataLink, SystemParametersProducer {
-  
+        implements TmPacketDataLink, SystemParametersProducer {
+
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
     PacketPreprocessor packetPreprocessor;
-    
+
     final Logger log = LoggerFactory.getLogger(this.getClass().getName());
-    
-    
+
     protected void initPreprocessor(String instance, Map<String, Object> args) {
-        if(args!=null) {
+        if (args != null) {
             this.packetPreprocessorClassName = YConfiguration.getString(args, "packetPreprocessorClassName",
                     IssPacketPreprocessor.class.getName());
             this.packetPreprocessorArgs = args.get("packetPreprocessorArgs");
@@ -33,10 +32,11 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             this.packetPreprocessorArgs = null;
         }
-        
+
         try {
             if (packetPreprocessorArgs != null) {
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance, packetPreprocessorArgs);
+                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                        packetPreprocessorArgs);
             } else {
                 packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
             }
@@ -48,7 +48,11 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             throw new ConfigurationException(e);
         }
     }
-   
+
+    public PacketPreprocessor getPacketPreprocessor() {
+        return packetPreprocessor;
+    }
+
     @Override
     public Collection<ParameterValue> getSystemParameters() {
         // TODO Auto-generated method stub

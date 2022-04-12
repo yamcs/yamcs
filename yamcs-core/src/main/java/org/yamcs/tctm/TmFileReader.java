@@ -25,13 +25,13 @@ public class TmFileReader {
     protected InputStream inputStream;
     int fileoffset = 0;
     int packetcount = 0;
-    PacketPreprocessor packetPreprocessor;
-    
+    protected PacketPreprocessor packetPreprocessor;
+
     /**
      * Constructs a reader for telemetry files. It reads the first two bytes to see if it's gzip
      * 
      * @param fileName
-     * @param packetPreprocessor 
+     * @param packetPreprocessor
      * @throws IOException
      */
     public TmFileReader(String fileName, PacketPreprocessor packetPreprocessor) throws IOException {
@@ -150,15 +150,16 @@ public class TmFileReader {
 
     public static void main(String[] args) throws IOException, ConfigurationException {
         YConfiguration.setup();
-        TmFileReader tfr=new TmFileReader(args[0], new IssPacketPreprocessor(null));
+        TmFileReader tfr = new TmFileReader(args[0], new IssPacketPreprocessor(null));
         PacketWithTime pwrt;
 
-        while((pwrt=tfr.readPacket(TimeEncoding.getWallclockTime()))!=null) {
-            CcsdsPacket c=new CcsdsPacket(pwrt.getPacket());
-            System.out.println("rectime: "+TimeEncoding.toString(pwrt.getReceptionTime())+" apid:" +c.getAPID()
-            +" seq: "+c.getSequenceCount()+" coarse: "+c.getCoarseTime()+" fine: "+c.getFineTime()+
-                    " time: "+ TimeEncoding.toCombinedFormat(c.getInstant())
-                    +" received: "+TimeEncoding.toCombinedFormat(pwrt.getReceptionTime())+" delta: "+(pwrt.getReceptionTime()-c.getInstant()));
+        while ((pwrt = tfr.readPacket(TimeEncoding.getWallclockTime())) != null) {
+            CcsdsPacket c = new CcsdsPacket(pwrt.getPacket());
+            System.out.println("rectime: " + TimeEncoding.toString(pwrt.getReceptionTime()) + " apid:" + c.getAPID()
+                    + " seq: " + c.getSequenceCount() + " coarse: " + c.getCoarseTime() + " fine: " + c.getFineTime() +
+                    " time: " + TimeEncoding.toCombinedFormat(c.getInstant())
+                    + " received: " + TimeEncoding.toCombinedFormat(pwrt.getReceptionTime()) + " delta: "
+                    + (pwrt.getReceptionTime() - c.getInstant()));
 
         }
     }

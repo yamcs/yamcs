@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.yamcs.utils.TimeEncoding;
-
 public class CcsdsPacket implements Comparable<CcsdsPacket> {
     static public final int DATA_OFFSET = 16;
 
