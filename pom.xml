@@ -158,6 +158,11 @@
 				<version>4.0.0</version>
 			</dependency>
 			<dependency>
+				<groupId>org.openjdk.nashorn</groupId>
+				<artifactId>nashorn-core</artifactId>
+				<version>15.3</version>
+			</dependency>
+			<dependency>
 				<groupId>org.python</groupId>
 				<artifactId>jython-standalone</artifactId>
 				<version>2.7.1</version>
@@ -226,8 +231,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<release>11</release>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -348,32 +352,6 @@
 	</distributionManagement>
 
 	<profiles>
-		<profile>
-			<id>java8-compatibility</id>
-			<activation>
-				<jdk>[9,)</jdk>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-compiler-plugin</artifactId>
-							<configuration>
-								<release>8</release>
-							</configuration>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<configuration>
-								<source>8</source>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
 		<profile>
 			<id>yamcs-release</id>
 			<activation>

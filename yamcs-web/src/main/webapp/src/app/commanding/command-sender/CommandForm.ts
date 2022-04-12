@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { requireFloat, requireInteger } from '../../shared/forms/validators';
+import { requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
 
@@ -166,8 +166,8 @@ export class CommandForm implements OnChanges {
     }
   }
 
-  getAssignments(): {[key: string]: any} {
-    const assignments: {[key: string]: any} = {};
+  getAssignments(): { [key: string]: any; } {
+    const assignments: { [key: string]: any; } = {};
     for (const arg of [...this.arguments, ...this.argumentsWithInitial]) {
       if (arg.type.engType === 'aggregate') {
         const value = this.getMemberAssignments(arg.name + '.', arg);
@@ -178,7 +178,10 @@ export class CommandForm implements OnChanges {
           if (arg.type.engType === 'boolean') {
             assignments[arg.name] = (this.form.value[arg.name] === 'true');
           } else {
-            assignments[arg.name] = this.form.value[arg.name];
+            // String is better at representing large numbers or precision
+            // to the server. Some inputs (hex) store a non-string value,
+            // so convert it here.
+            assignments[arg.name] = String(this.form.value[arg.name]);
           }
         }
       }
@@ -320,6 +323,9 @@ export class CommandForm implements OnChanges {
       validators.push(requireInteger);
     } else if (type.engType === 'float') {
       validators.push(requireFloat);
+    }
+    if (type.signed === false) {
+      validators.push(requireUnsigned);
     }
     if (type.rangeMax !== undefined) {
       validators.push(Validators.max(type.rangeMax));

@@ -67,6 +67,7 @@ import com.google.protobuf.util.Timestamps;
 public class AlgorithmManager extends AbstractProcessorService
         implements ParameterProvider, ProcessorService, ParameterProcessor {
     static final String KEY_ALGO_NAME = "algoName";
+    static final String JDK_BUILTIN_NASHORN_ENGINE_NAME = "Oracle Nashorn";
 
     XtceDb xtcedb;
 
@@ -123,6 +124,14 @@ public class AlgorithmManager extends AbstractProcessorService
     private static void registerScriptEngines() {
         ScriptEngineManager sem = new ScriptEngineManager();
         for (ScriptEngineFactory sef : sem.getEngineFactories()) {
+
+            // JDK11-14 are the last JDK versions to include a copy of Nashorn.
+            // Disable this copy, so that only Nashorn from the classpath is used.
+            // (both get detected by this loop with the same set of names).
+            if (JDK_BUILTIN_NASHORN_ENGINE_NAME.equals(sef.getEngineName())) {
+                continue;
+            }
+
             List<String> engineNames = sef.getNames();
             ScriptAlgorithmEngine engine = new ScriptAlgorithmEngine();
             for (String name : engineNames) {
@@ -445,6 +454,7 @@ public class AlgorithmManager extends AbstractProcessorService
      * Called by PRM when new parameters are received.
      * 
      */
+    @Override
     public void process(ProcessingData data) {
         for (AlgorithmExecutionContext ctx : contexts) {
             ctx.process(processor.getCurrentTime(), data);

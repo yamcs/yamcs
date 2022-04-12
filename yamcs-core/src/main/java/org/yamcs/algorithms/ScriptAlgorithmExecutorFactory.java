@@ -1,5 +1,7 @@
 package org.yamcs.algorithms;
 
+import static org.yamcs.algorithms.AlgorithmManager.JDK_BUILTIN_NASHORN_ENGINE_NAME;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
@@ -25,10 +28,9 @@ import org.yamcs.xtce.OutputParameter;
  * Handles the creation of algorithm executors for script algorithms for a given language and scriptEngine (currently
  * javascript or python are supported).
  * <p>
- * Each algorithm is created as a function in the scriptEngine.
- * There might be multiple executors for the same algorithm: for example in the command verifier there will be one
- * algorithm executor for each command.
- * However there will be only one function created in the script engine.
+ * Each algorithm is created as a function in the scriptEngine. There might be multiple executors for the same
+ * algorithm: for example in the command verifier there will be one algorithm executor for each command. However there
+ * will be only one function created in the script engine.
  *
  * 
  */
@@ -38,10 +40,22 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
 
     public ScriptAlgorithmExecutorFactory(ScriptEngineManager scriptEngineManager, String language,
             List<String> libraryNames) {
-        scriptEngine = scriptEngineManager.getEngineByName(language);
-        if (scriptEngine == null) {
+
+        // Custom lookup instead of ScriptEngineManager.getEngineByName because we want
+        // to include the JDK11-14 builtin Nashorn in favour of Nashorn from the classpath.
+        ScriptEngineFactory factory = scriptEngineManager.getEngineFactories().stream()
+                .filter(candidate -> !JDK_BUILTIN_NASHORN_ENGINE_NAME.equals(candidate.getEngineName())
+                        && candidate.getNames().contains(language))
+                .findFirst()
+                .orElse(null);
+
+        if (factory != null) {
+            scriptEngine = factory.getScriptEngine();
+            scriptEngine.setBindings(scriptEngineManager.getBindings(), ScriptContext.GLOBAL_SCOPE);
+        } else {
             throw new ConfigurationException("Cannot get a script engine for language " + language);
         }
+
         if (libraryNames != null) {
             loadLibraries(libraryNames);
         }
@@ -84,6 +98,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         }
     }
 
+    @Override
     public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
         String functionName = calg.getQualifiedName().replace("/", "_");
         String functionScript = generateFunctionCode(functionName, calg);

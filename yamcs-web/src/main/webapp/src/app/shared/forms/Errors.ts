@@ -10,6 +10,7 @@ const defaultErrors: { [key: string]: any; } = {
   notFloat: () => 'invalid float',
   notHex: () => 'invalid hex',
   notInteger: () => 'must be integer',
+  notUnsigned: () => 'must be unsigned',
   required: () => 'this field is required',
   minlength: () => 'string too small',
   maxlength: () => 'string too large',

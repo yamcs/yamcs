@@ -53,7 +53,7 @@ public class SessionManager {
         return sessions.values();
     }
 
-    public void renewSession(String id) {
+    public void renewSession(String id) throws SessionExpiredException {
         UserSession session = sessions.get(id);
         if (session == null) {
             throw new SessionExpiredException();

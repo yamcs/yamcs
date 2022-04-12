@@ -3,18 +3,26 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CanDeactivate } from '@angular/router';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { DisplayFilePage } from './DisplayFilePage';
 import { DisplayFilePageDirtyDialog } from './DisplayFilePageDirtyDialog';
 
 @Injectable()
 export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage> {
 
+  private bucket: string;
+
   // TODO this is just a workaround around the fact that our current version
   // of Angular seems to trigger our deactivate guard twice...
   private dialogOpen$ = new BehaviorSubject<boolean>(false);
   private dialogRef: MatDialogRef<DisplayFilePageDirtyDialog, any>;
 
-  constructor(private dialog: MatDialog, private authService: AuthService) {
+  constructor(
+    private dialog: MatDialog,
+    private authService: AuthService,
+    configService: ConfigService,
+  ) {
+    this.bucket = configService.getConfig().displayBucket;
   }
 
   canDeactivate(component: DisplayFilePage) {
@@ -54,7 +62,7 @@ export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage>
 
   private mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'displays')
+    return user.hasObjectPrivilege('ManageBucket', this.bucket)
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 }

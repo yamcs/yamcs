@@ -3,18 +3,26 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CanDeactivate } from '@angular/router';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { StackFilePage } from './StackFilePage';
 import { StackFilePageDirtyDialog } from './StackFilePageDirtyDialog';
 
 @Injectable()
 export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
 
+  private bucket: string;
+
   // TODO this is just a workaround around the fact that our current version
   // of Angular seems to trigger our deactivate guard twice...
   private dialogOpen$ = new BehaviorSubject<boolean>(false);
   private dialogRef: MatDialogRef<StackFilePageDirtyDialog, any>;
 
-  constructor(private dialog: MatDialog, private authService: AuthService) {
+  constructor(
+    private dialog: MatDialog,
+    private authService: AuthService,
+    configService: ConfigService,
+  ) {
+    this.bucket = configService.getConfig().stackBucket;
   }
 
   canDeactivate(component: StackFilePage) {
@@ -54,7 +62,7 @@ export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
 
   private mayManageStacks() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'stacks')
+    return user.hasObjectPrivilege('ManageBucket', this.bucket)
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 }

@@ -23,9 +23,9 @@ import javax.net.ssl.SSLException;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.ReplicationSlave.SlaveChannelHandler;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
@@ -95,7 +95,6 @@ public class ReplicationServer extends AbstractYamcsService {
             } else {
                 tlsCerts = Arrays.asList(config.getString("tlsCert"));
             }
-
 
             try {
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -199,6 +198,8 @@ public class ReplicationServer extends AbstractYamcsService {
                 log.warn("Failed to decode message", e);
                 sendErrorReturn(0, "Failed to decode message: " + e.getMessage());
                 return;
+            } finally {
+                ((ByteBuf) o).release();
             }
 
             if (msg.type == Message.WAKEUP) {// this is sent by a master when we are slave.

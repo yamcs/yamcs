@@ -848,6 +848,7 @@ public class XtceToGpbAssembler {
 
         if (argumentType instanceof IntegerArgumentType) {
             IntegerArgumentType iat = (IntegerArgumentType) argumentType;
+            infob.setSigned(iat.isSigned());
             if (iat.getValidRange() != null) {
                 if (iat.getValidRange().getMinInclusive() != Long.MIN_VALUE) {
                     infob.setRangeMin(iat.getValidRange().getMinInclusive());

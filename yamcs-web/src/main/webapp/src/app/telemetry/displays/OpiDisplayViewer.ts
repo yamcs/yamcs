@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
 import { NamedObjectId, ParameterSubscription, ParameterValue, StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -33,6 +34,7 @@ const OPS_DATASOURCE = "ops://";
 export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   // Parent element, used to calculate 100% bounds (excluding scroll size)
   private viewerContainerEl: HTMLDivElement;
@@ -55,8 +57,10 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     private synchronizer: Synchronizer,
     private messageService: MessageService,
     @Inject(APP_BASE_HREF) private baseHref: string,
+    configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
   }
 
   setViewerContainerEl(viewerContainerEl: HTMLDivElement) {
@@ -207,7 +211,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
     this.display.addProvider(this);
 
-    const objectUrl = this.storageClient.getObjectURL('_global', 'displays', objectName);
+    const objectUrl = this.storageClient.getObjectURL('_global', this.bucket, objectName);
 
     const idx = objectUrl.lastIndexOf('/') + 1;
     this.display.baseUrl = objectUrl.substring(0, idx);

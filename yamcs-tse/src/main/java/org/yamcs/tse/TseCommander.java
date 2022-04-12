@@ -90,6 +90,7 @@ public class TseCommander extends ProcessRunner {
             @Override
             public void failure(Service service) {
                 // Stop entire process as soon as one service fails.
+                service.failureCause().printStackTrace(System.err);
                 System.exit(1);
             }
         }, MoreExecutors.directExecutor());
