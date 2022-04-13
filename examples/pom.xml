@@ -75,37 +75,35 @@
         </property>
       </activation>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jar-plugin</artifactId>
-              <configuration>
-                <!-- yamcs-maven-plugin bundle goal requires an artifact -->
-                <skipIfEmpty>false</skipIfEmpty>
-              </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.yamcs</groupId>
-              <artifactId>yamcs-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>bundle-yamcs</id>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>bundle</goal>
-                  </goals>
-                  <configuration>
-                    <attach>false</attach>
-                    <formats>
-                      <format>tar.gz</format>
-                    </formats>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <!-- yamcs-maven-plugin bundle goal requires an artifact -->
+              <skipIfEmpty>false</skipIfEmpty>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.yamcs</groupId>
+            <artifactId>yamcs-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>bundle-yamcs</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>bundle</goal>
+                </goals>
+                <configuration>
+                  <attach>false</attach>
+                  <formats>
+                    <format>tar.gz</format>
+                  </formats>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>
