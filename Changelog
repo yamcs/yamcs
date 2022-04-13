@@ -1,3 +1,8 @@
+Version 5.6.2 released 11-Apr-2022
+- Added support for Java 17 by using Nashorn javascript engine as a module
+- Removed support for Java 1.8 - 19
+- Various tweaks and fixes
+
 Version 5.6.1 released 4-Apr-2022
 - Replication: detect and recover dead replication links
 - Replication: allow to synchronize the mission time across replication

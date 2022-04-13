@@ -5,7 +5,7 @@
 
 	<groupId>org.yamcs</groupId>
 	<artifactId>yamcs</artifactId>
-	<version>5.6.2-SNAPSHOT</version>
+	<version>5.6.2</version>
 
 	<packaging>pom</packaging>
 
@@ -264,6 +264,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.1.1</version>
 					<configuration>
+                                                <source>8</source>
 						<author>false</author>
 						<breakiterator>true</breakiterator>
 						<additionalOptions>
