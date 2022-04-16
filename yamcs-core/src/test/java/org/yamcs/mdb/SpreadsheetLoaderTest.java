@@ -1,11 +1,13 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
@@ -32,7 +34,7 @@ import org.yamcs.xtce.XtceDb;
 public class SpreadsheetLoaderTest {
     XtceDb db;
 
-    @Before
+    @BeforeEach
     public void setupXtceDb() {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
@@ -48,7 +50,6 @@ public class SpreadsheetLoaderTest {
 
         String aliasParam = p.getAlias("MDB:AliasParam");
         assertEquals("AliasParam1", aliasParam);
-
     }
 
     @Test
@@ -62,7 +63,6 @@ public class SpreadsheetLoaderTest {
         assertNotNull(cmd1);
         alias = cmd2.getAlias("MDB:Alias1");
         assertEquals("AlternativeName2", alias);
-
     }
 
     @Test

@@ -1,12 +1,13 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.TimeEncoding;
 
 public class WriterTest extends YarchTestCase {
@@ -112,15 +113,16 @@ public class WriterTest extends YarchTestCase {
         for (int i = 0; i < 10; i++) {
             int x = i;
             threads[i] = new Thread() {
+                @Override
                 public void run() {
                     TupleDefinition td1 = td.copy();
-                    td1.addColumn(new ColumnDefinition("p"+x, DataType.STRING));
-                    s.emitTuple(new Tuple(td1, new Object[] { t, "pn1", 1, "v"+x }));
+                    td1.addColumn(new ColumnDefinition("p" + x, DataType.STRING));
+                    s.emitTuple(new Tuple(td1, new Object[] { t, "pn1", 1, "v" + x }));
                 }
             };
             threads[i].start();
         }
-        for(int i = 0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             threads[i].join();
         }
         execute("close stream tbl_upsert_append_in");
@@ -131,8 +133,8 @@ public class WriterTest extends YarchTestCase {
 
         Tuple t1 = tuples.get(0);
         assertEquals("pn1", t1.getColumn("name"));
-        for(int i=0; i<10; i++) {
-            assertEquals("v"+i, (String) t1.getColumn("p"+i));
+        for (int i = 0; i < 10; i++) {
+            assertEquals("v" + i, (String) t1.getColumn("p" + i));
         }
 
         execute("drop table tbl_upsert_append");

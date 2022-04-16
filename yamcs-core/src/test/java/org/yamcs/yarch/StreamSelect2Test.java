@@ -1,10 +1,10 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StreamSelect2Test extends YarchTestCase {
     final int n = 51;
@@ -86,7 +86,7 @@ public class StreamSelect2Test extends YarchTestCase {
 
         execute("create stream stream_out1 as select x, y<<1, y>>1, y^x, y|x from stream_in where x & 0x1 = 0");
         List<Tuple> tlist = fetchAll("stream_out1");
-        assertEquals((n+1)/2, tlist.size());
+        assertEquals((n + 1) / 2, tlist.size());
         int k = 0;
         for (Tuple tuple : tlist) {
             int x = (Integer) tuple.getColumn(0);
@@ -278,5 +278,4 @@ public class StreamSelect2Test extends YarchTestCase {
             assertEquals(5, count);
         }
     }
-
 }

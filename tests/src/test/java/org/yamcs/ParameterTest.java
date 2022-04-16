@@ -1,18 +1,19 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.processor.ProcessorClient;
@@ -32,13 +33,13 @@ public class ParameterTest extends AbstractIntegrationTest {
 
     private ProcessorClient processorClient;
 
-    @Before
+    @BeforeEach
     public void prepare() {
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
     }
 
-    @Ignore
     @Test
+    @Disabled
     public void testParameterSubscriptionPerformance() throws Exception {
         long t0 = System.currentTimeMillis();
 
@@ -368,22 +369,26 @@ public class ParameterTest extends AbstractIntegrationTest {
         assertEquals(5.0, av.getValue(2).getFloatValue(), 1e-5);
     }
 
-    @Test(expected = ClientException.class)
-    public void testSetInvalidParameterValue() throws Exception {
-        try {
-            processorClient.setValue("/REFMDB/SUBSYS1/IntegerPara1_1_6", ValueHelper.newValue(3.14)).get();
-        } catch (ExecutionException e) {
-            throw (ClientException) e.getCause();
-        }
+    @Test
+    public void testSetInvalidParameterValue() {
+        assertThrows(ClientException.class, () -> {
+            try {
+                processorClient.setValue("/REFMDB/SUBSYS1/IntegerPara1_1_6", ValueHelper.newValue(3.14)).get();
+            } catch (ExecutionException e) {
+                throw (ClientException) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = ClientException.class)
-    public void testSetParameterWithInvalidType() throws Exception {
-        try {
-            processorClient.setValue("/REFMDB/SUBSYS1/LocalPara1", ValueHelper.newValue("blablab")).get();
-        } catch (ExecutionException e) {
-            throw (ClientException) e.getCause();
-        }
+    @Test
+    public void testSetParameterWithInvalidType() {
+        assertThrows(ClientException.class, () -> {
+            try {
+                processorClient.setValue("/REFMDB/SUBSYS1/LocalPara1", ValueHelper.newValue("blablab")).get();
+            } catch (ExecutionException e) {
+                throw (ClientException) e.getCause();
+            }
+        });
     }
 
     @Test

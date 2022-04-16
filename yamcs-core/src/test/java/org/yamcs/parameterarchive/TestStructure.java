@@ -1,6 +1,6 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -103,8 +103,8 @@ public class TestStructure {
         rdb.close();
     }
 
-    @Ignore
     @Test
+    @Disabled
     public void testAllParamsInOneCf() throws Exception {
         System.out.println("------------ numParams: " + numParams + " numBlocks: " + numBlocks + " numSamplesPerBloc: "
                 + numSamplesPerBloc);
@@ -144,8 +144,8 @@ public class TestStructure {
         return buf;
     }
 
-    @Ignore
     @Test
+    @Disabled
     public void testPlainTableVsHashMap() throws Exception {
         String path = "/tmp/dbtest";
         FileUtils.deleteRecursivelyIfExists(Paths.get(path));
@@ -210,6 +210,5 @@ public class TestStructure {
             System.out
                     .println("s: " + s + " time to retrieve all from db:" + (System.currentTimeMillis() - t1) + " ms");
         }
-
     }
 }

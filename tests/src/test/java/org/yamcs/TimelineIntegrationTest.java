@@ -1,9 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MAX;
 import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MIN;
 import static org.yamcs.client.utils.WellKnownTypes.toTimestamp;
@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
@@ -35,7 +35,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     private TimelineClient timelineClient;
     private YarchDatabaseInstance ydb;
 
-    @Before
+    @BeforeEach
     public void prepareTests() throws Exception {
         timelineClient = yamcsClient.createTimelineClient(yamcsInstance, "realtime");
         ydb = YarchDatabase.getInstance(yamcsInstance);

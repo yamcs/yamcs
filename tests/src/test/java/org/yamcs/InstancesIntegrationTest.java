@@ -1,8 +1,8 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +10,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.InstanceFilter;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
@@ -23,7 +23,7 @@ import com.google.common.io.CharStreams;
 
 public class InstancesIntegrationTest extends AbstractIntegrationTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws IOException {
         try (Reader in = new InputStreamReader(InstancesIntegrationTest.class.getResourceAsStream(
                 "/IntegrationTest/instance-templates/templ1/template.yaml"))) {

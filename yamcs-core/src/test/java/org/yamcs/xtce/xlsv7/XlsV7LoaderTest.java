@@ -1,12 +1,15 @@
 package org.yamcs.xtce.xlsv7;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
@@ -24,14 +27,14 @@ import org.yamcs.xtce.XtceDb;
 
 public class XlsV7LoaderTest {
     XtceDb db;
-    
-    @Before
+
+    @BeforeEach
     public void setupXtceDb() {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         db = XtceDbFactory.getInstanceByConfig("refmdb", "refmdb");
     }
-    
+
     @Test
     public void testParameterAliases() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
@@ -41,7 +44,6 @@ public class XlsV7LoaderTest {
 
         String aliasParam = p.getAlias("MDB:AliasParam");
         assertEquals("AliasParam1", aliasParam);
-
     }
 
     @Test
@@ -55,9 +57,8 @@ public class XlsV7LoaderTest {
         assertNotNull(cmd1);
         alias = cmd2.getAlias("MDB:Alias1");
         assertEquals("AlternativeName2", alias);
-
     }
-    
+
     @Test
     public void testCommandVerifiers() throws Exception {
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
@@ -66,20 +67,20 @@ public class XlsV7LoaderTest {
         List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
         assertEquals(2, verifiers.size());
     }
-    
+
     @Test
     public void testAlgorithmAliases() throws Exception {
         Algorithm algo = db.getAlgorithm("/REFMDB/SUBSYS1/sliding_window");
         assertNotNull(algo);
         String alias = algo.getAlias("namespace1");
         assertEquals("/alternative/name1", alias);
-    
+
         algo = db.getAlgorithm("/REFMDB/SUBSYS1/float_ypr");
         assertNotNull(algo);
         alias = algo.getAlias("namespace1");
         assertEquals("another alternative name", alias);
     }
-    
+
     @Test
     public void testContainerAliases() throws Exception {
         SequenceContainer container = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_2");
@@ -87,59 +88,58 @@ public class XlsV7LoaderTest {
         String alias = container.getAlias("MDB:Pathname");
         assertEquals("REFMDB\\ACQ\\PKTS\\PKT12", alias);
     }
-    
+
     @Test
     public void testReferenceAliases() throws Exception {
         Algorithm a = db.getAlgorithm("/REFMDB/SUBSYS1/algo_ext_spacesys");
         assertNotNull(a);
-        List<InputParameter> lin =  a.getInputSet();
+        List<InputParameter> lin = a.getInputSet();
         assertEquals(1, lin.size());
         assertEquals("/REFMDB/col-packet_id", lin.get(0).getParameterInstance().getParameter().getQualifiedName());
         List<OutputParameter> lout = a.getOutputSet();
         assertEquals(1, lout.size());
         assertEquals("/REFMDB/algo_ext_spacesys_out", lout.get(0).getParameter().getQualifiedName());
     }
-    
+
     @Test
     public void testTimeParam() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_1");
-        assertEquals(TimeEpoch.CommonEpochs.GPS, ((AbsoluteTimeParameterType)p.getParameterType()).getReferenceTime().getEpoch().getCommonEpoch());
-        
+        assertEquals(TimeEpoch.CommonEpochs.GPS,
+                ((AbsoluteTimeParameterType) p.getParameterType()).getReferenceTime().getEpoch().getCommonEpoch());
+
         p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
-        assertEquals(0.0039062500, ((AbsoluteTimeParameterType)p.getParameterType()).getScale(), 1e-5);
+        assertEquals(0.0039062500, ((AbsoluteTimeParameterType) p.getParameterType()).getScale(), 1e-5);
     }
-    
-    
+
     @Test
     public void testContextCalib() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_10_3");
         FloatParameterType ptype = (FloatParameterType) p.getParameterType();
         FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
-        
+
         assertEquals(1, encoding.getContextCalibratorList().size());
     }
-    
+
     @Test
     public void testInitialtValues() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue4");
         assertNull(p.getInitialValue());
-        Map<String, Object> m = (Map<String, Object>)p.getParameterType().getInitialValue();
-        assertEquals(42, ((Long)m.get("member1")).longValue());
-        assertEquals(2.72, ((Double)m.get("member2")).floatValue(), 1e-5);
-        
+        Map<String, Object> m = (Map<String, Object>) p.getParameterType().getInitialValue();
+        assertEquals(42, ((Long) m.get("member1")).longValue());
+        assertEquals(2.72, ((Double) m.get("member2")).floatValue(), 1e-5);
+
         p = db.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue6");
         assertNotNull(p.getInitialValue());
         m = (Map<String, Object>) p.getInitialValue();
-        assertEquals(1, ((Long)m.get("member1")).longValue());
-        assertEquals(2, ((Long)m.get("member2")).longValue());
-        assertEquals(3.0, ((Double)m.get("member3")).floatValue(), 1E-5);
-        
-        
+        assertEquals(1, ((Long) m.get("member1")).longValue());
+        assertEquals(2, ((Long) m.get("member2")).longValue());
+        assertEquals(3.0, ((Double) m.get("member3")).floatValue(), 1E-5);
+
         p = db.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue5");
         assertNull(p.getInitialValue());
         Object[] a = (Object[]) p.getParameterType().getInitialValue();
         assertEquals(4, a.length);
-        
-        assertEquals(2.2, ((Double)a[1]).floatValue(), 1e-5);
+
+        assertEquals(2.2, ((Double) a[1]).floatValue(), 1e-5);
     }
 }

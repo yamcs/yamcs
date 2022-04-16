@@ -1,9 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Command;
 import org.yamcs.client.CommandSubscription;
@@ -42,7 +42,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
     private CommandSubscription subscription;
     private MessageCaptor<CommandHistoryEntry> captor;
 
-    @Before
+    @BeforeEach
     public void prepareTests() throws Exception {
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);

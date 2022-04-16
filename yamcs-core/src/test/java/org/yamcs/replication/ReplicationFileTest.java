@@ -1,6 +1,12 @@
 package org.yamcs.replication;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.yamcs.replication.Message.DATA;
+import static org.yamcs.replication.Message.STREAM_INFO;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,26 +16,24 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.zip.CRC32;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.FileUtils;
-
-import static org.yamcs.replication.Message.*;
 
 public class ReplicationFileTest {
     static Random random = new Random();
     Path dir;
-    
-    @Before
+
+    @BeforeEach
     public void before() throws IOException {
         dir = Files.createTempDirectory("repltest");
     }
-    @After
+
+    @AfterEach
     public void after() throws IOException {
         FileUtils.deleteRecursivelyIfExists(dir);
     }
-    
 
     @Test
     public void test1() throws Exception {
@@ -68,7 +72,7 @@ public class ReplicationFileTest {
         long txid1 = rf.writeData(new MyTransaction(DATA, 200));
         assertEquals(-1, txid1);
         assertEquals(1, rf.numTx());
-        
+
         rf.getNewData(tail);
         assertEquals(0, tail.buf.remaining());
         assertTrue(tail.eof);
@@ -233,35 +237,36 @@ public class ReplicationFileTest {
         rf1.close();
 
     }
-    
 
     @Test
     public void test6() throws Exception {
-        
+
         Path file1 = dir.resolve("t5");
 
-        for(int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             java.nio.file.Files.deleteIfExists(file1);
-            ReplicationFile rf = ReplicationFile.newFile("test", file1, 0, 10, 17, ReplicationFile.headerSize(10, 17)+i+20);
+            ReplicationFile rf = ReplicationFile.newFile("test", file1, 0, 10, 17,
+                    ReplicationFile.headerSize(10, 17) + i + 20);
             long txId = rf.writeData(new MyTransaction(DATA, 10));
             assertEquals(-1, txId);
             assertTrue(rf.isFull());
             rf.close();
         }
-        
-        for(int i=0; i<30; i++) {
+
+        for (int i = 0; i < 30; i++) {
             java.nio.file.Files.deleteIfExists(file1);
-            ReplicationFile rf = ReplicationFile.newFile("test", file1, 0, 10, 17, ReplicationFile.headerSize(10, 17)+i+30);
+            ReplicationFile rf = ReplicationFile.newFile("test", file1, 0, 10, 17,
+                    ReplicationFile.headerSize(10, 17) + i + 30);
             long txId = rf.writeData(new MyTransaction(DATA, 10));
             assertEquals(0, txId);
             assertFalse(rf.isFull());
-            
+
             txId = rf.writeData(new MyTransaction(DATA, 10));
             assertEquals(-1, txId);
             assertTrue(rf.isFull());
             rf.close();
         }
-        
+
     }
 
     void verifyMetadata(ReplicationFile rf, MyTransaction... metaRecords) {
@@ -293,7 +298,6 @@ public class ReplicationFileTest {
             assertArrayEquals(meta.b, b1);
         }
     }
-
 
     private void checkCrc(ByteBuffer buf) {
         buf.limit(buf.limit() - 4);
@@ -334,5 +338,4 @@ public class ReplicationFileTest {
             return instanceId;
         }
     }
-
 }

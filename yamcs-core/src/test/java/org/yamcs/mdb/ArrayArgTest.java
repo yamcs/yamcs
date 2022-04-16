@@ -1,6 +1,7 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -10,8 +11,8 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
@@ -28,7 +29,7 @@ public class ArrayArgTest {
     private XtceDb db;
     private MetaCommandProcessor metaCommandProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
@@ -62,23 +63,27 @@ public class ArrayArgTest {
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
     }
 
-    @Test(expected = ErrorInCommand.class)
-    public void testCommandEncodingInvalidLength() throws ErrorInCommand, IOException {
+    @Test
+    public void testCommandEncodingInvalidLength() throws IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("length", "3");// length does not match the array length
         args.put("array1", "[1,2,3,4,5]");
-        metaCommandProcessor.buildCommand(mc, args);
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args);
+        });
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     public void testMaxLengthExceeded() throws ErrorInCommand, IOException {
         MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("array1", "[1,2,3,4,5,6]");
-        metaCommandProcessor.buildCommand(mc, args);
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args);
+        });
     }
 
     @Test

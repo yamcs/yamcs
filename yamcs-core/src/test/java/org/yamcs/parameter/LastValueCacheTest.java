@@ -1,21 +1,23 @@
 package org.yamcs.parameter;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.yamcs.parameter.LastValueCache.ParamBuffer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.parameter.LastValueCache.ParamBuffer;
 
 public class LastValueCacheTest {
     static Parameter p0, p1;
     static ParameterValue p0v0, p1v0, p1v1, p1v2, p1v3;
 
-    @BeforeClass
+    @BeforeAll
     static public void beforeTest() {
         TimeEncoding.setUp();
 
@@ -28,13 +30,14 @@ public class LastValueCacheTest {
         p1v1 = new ParameterValue(p1);
         p1v2 = new ParameterValue(p1);
         p1v3 = new ParameterValue(p1);
-
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void test0() {
-        LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
-        lvc.enableBuffering(p0, 3);
+        assertThrows(IllegalArgumentException.class, () -> {
+            LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
+            lvc.enableBuffering(p0, 3);
+        });
     }
 
     @Test
@@ -66,20 +69,23 @@ public class LastValueCacheTest {
         assertEquals(2, lvc.size());
         assertEquals(p1v1, lvc.getValue(p1));
 
-
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void test2() {
-        LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
-        lvc.getValue(p1, -1);
+        assertThrows(IllegalStateException.class, () -> {
+            LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
+            lvc.getValue(p1, -1);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void test3() {
-        LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
-        lvc.enableBuffering(p1, 2);
-        lvc.getValue(p1, -2);
+        assertThrows(IllegalStateException.class, () -> {
+            LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
+            lvc.enableBuffering(p1, 2);
+            lvc.getValue(p1, -2);
+        });
     }
 
     @Test
@@ -105,6 +111,5 @@ public class LastValueCacheTest {
         assertEquals(p1v2, lvc.getValue(p1, -1));
         assertEquals(p1v1, lvc.getValue(p1, -2));
         assertEquals(p1v0, lvc.getValue(p1, -3));
-
     }
 }

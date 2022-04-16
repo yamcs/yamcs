@@ -1,11 +1,13 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.ValidationException;
@@ -22,7 +24,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 public class ConfigTest {
     static String yamcsInstance = "cfdp-config-test";
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws StreamSqlException, ParseException {
         EventProducerFactory.setMockup(false);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -64,16 +66,14 @@ public class ConfigTest {
                 + "   receiverFaultHandlers: { AckLimitReached: ABANDON}"
                 + "}";
 
-
         YConfiguration conf = new YConfiguration("cfdp", new ByteArrayInputStream(confs.getBytes()), "test");
         CfdpService cfdpService = new CfdpService();
         conf = cfdpService.getSpec().validate(conf);
-        
+
         cfdpService.init(yamcsInstance, "CfdpService", conf);
 
         assertEquals(FaultHandlingAction.SUSPEND, cfdpService.getSenderFaultHandler(ConditionCode.ACK_LIMIT_REACHED));
         assertEquals(FaultHandlingAction.ABANDON, cfdpService.getReceiverFaultHandler(ConditionCode.ACK_LIMIT_REACHED));
-
     }
 
     @Test

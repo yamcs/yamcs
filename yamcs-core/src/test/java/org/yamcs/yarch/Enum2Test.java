@@ -1,13 +1,11 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.junit.Test;
-
-import com.google.common.base.Objects;
+import org.junit.jupiter.api.Test;
 
 public class Enum2Test extends YarchTestCase {
     int n = 20;
@@ -26,8 +24,9 @@ public class Enum2Test extends YarchTestCase {
 
         for (int i = 0; i < n; i++) {
             ByteBuffer bb = ByteBuffer.allocate(2000);
-            while (bb.remaining() > 0)
+            while (bb.remaining() > 0) {
                 bb.putInt(i);
+            }
             Tuple t = new Tuple(td, new Object[] {
                     1000L * i, "pn" + (i % 10), bb.array()
             });
@@ -41,11 +40,11 @@ public class Enum2Test extends YarchTestCase {
         populate("testenum1");
         execute("create stream testenum_out as select * from testenum1");
         final List<Tuple> tuples = fetchAll("testenum_out");
-        int k= 0;
+        int k = 0;
         for (int j = 0; j < 10; j++) {
             for (int i = 0; i < n / 10; i++) {
                 Tuple t = tuples.get(k);
-                assertEquals((j+10*i) * 1000l, (long) (Long) t.getColumn(1));
+                assertEquals((j + 10 * i) * 1000l, (long) (Long) t.getColumn(1));
                 assertEquals("pn" + j, (String) t.getColumn(0));
                 k++;
             }

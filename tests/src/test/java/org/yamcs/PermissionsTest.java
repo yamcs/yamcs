@@ -1,8 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -12,9 +13,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Page;
@@ -35,21 +36,23 @@ public class PermissionsTest extends AbstractIntegrationTest {
     private ProcessorClient processorClient;
     private ArchiveClient archiveClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void silenceWarnings() {
         // to avoid getting warnings in the test console for invalid permissions
         Logger.getLogger("org.yamcs").setLevel(Level.SEVERE);
     }
 
-    @Before
+    @BeforeEach
     public void prepare() {
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
     }
 
-    @Test(expected = UnauthorizedException.class)
-    public void testAuthenticationWebServices() throws ClientException {
-        yamcsClient.login("baduser", "wrongpassword".toCharArray());
+    @Test
+    public void testAuthenticationWebServices() {
+        assertThrows(UnauthorizedException.class, () -> {
+            yamcsClient.login("baduser", "wrongpassword".toCharArray());
+        });
     }
 
     @Test

@@ -1,6 +1,9 @@
 package org.yamcs.tctm;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -8,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,46 +18,36 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.utils.TimeEncoding;
 
-@RunWith(Parameterized.class)
 public class FilePollingTmDataLinkTest {
     int headerSize = 103;
 
-    @Parameter
-    public boolean gzipped;
-
-    @Parameters
-    public static Iterable<? extends Boolean> data() {
-        return Arrays.asList(true, false);
-    };
-
-    @BeforeClass
+    @BeforeAll
     static public void beforeClass() {
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(false);
     }
 
-    @Test
-    public void test1() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void test1(boolean gzipped) throws Exception {
         File incomingDir = Files.createTempDirectory("FilePollingTmDataLinkTest").toFile();
         File f1 = new File(incomingDir, "f1");
-        
+
         CcsdsPacket p1 = new CcsdsPacket(new byte[50]);
         p1.setHeader(100, 1, 0, 3, 1000);
         CcsdsPacket p2 = new CcsdsPacket(new byte[50]);
         p2.setHeader(100, 1, 0, 3, 1001);
 
-        try (OutputStream out = gzipped? new BufferedOutputStream(new FileOutputStream(f1)): new GZIPOutputStream(new FileOutputStream(f1)) ) {
+        try (OutputStream out = gzipped ? new BufferedOutputStream(new FileOutputStream(f1))
+                : new GZIPOutputStream(new FileOutputStream(f1))) {
             out.write(new byte[headerSize]);
             out.write(p1.getBytes());
             out.write(p2.getBytes());
@@ -71,6 +63,7 @@ public class FilePollingTmDataLinkTest {
         List<TmPacket> tmPackets = new ArrayList<>();
         fileLink.setTmSink(new TmSink() {
             int count = 0;
+
             @Override
             public void processPacket(TmPacket tmPacket) {
                 tmPackets.add(tmPacket);
@@ -90,5 +83,4 @@ public class FilePollingTmDataLinkTest {
         assertFalse(f1.exists());
         assertTrue(incomingDir.delete());
     }
-
 }

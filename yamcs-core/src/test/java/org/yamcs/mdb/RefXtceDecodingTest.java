@@ -1,10 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.LoggingUtils;
 import org.yamcs.ProcessorConfig;
@@ -26,15 +26,15 @@ public class RefXtceDecodingTest {
     static MetaCommandProcessor metaCommandProcessor;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         mdb = XtceDbFactory.createInstanceByConfig("refxtce");
         metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
-    
-    @Before
+
+    @BeforeEach
     public void before() {
         extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();

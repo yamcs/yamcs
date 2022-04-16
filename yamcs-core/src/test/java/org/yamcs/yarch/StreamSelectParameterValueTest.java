@@ -1,15 +1,15 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 
 public class StreamSelectParameterValueTest extends YarchTestCase {
-    
+
     final int n = 20;
 
     public void createFeeder1() throws YarchException {
@@ -51,5 +51,4 @@ public class StreamSelectParameterValueTest extends YarchTestCase {
         assertEquals(3.14, pv.getEngValue().getDoubleValue(), 1e-6);
         assertEquals("/test/StreamSelectParameterValueTest", pv.getParameterQualifiedName());
     }
-
 }

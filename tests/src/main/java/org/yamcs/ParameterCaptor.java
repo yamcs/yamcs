@@ -1,6 +1,6 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -70,7 +70,7 @@ public class ParameterCaptor {
 
     public void assertSilence() throws InterruptedException {
         List<ParameterValue> values = deliveryQueue.poll(TIMELY_WAIT_TIME, TimeUnit.MILLISECONDS);
-        assertNull("Received a message while a moment of silence was expected", values);
+        assertNull(values, "Received a message while a moment of silence was expected");
     }
 
     public void clear() {

@@ -1,9 +1,8 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
-import org.yamcs.mdb.XtceDbFactory;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.Parameter;

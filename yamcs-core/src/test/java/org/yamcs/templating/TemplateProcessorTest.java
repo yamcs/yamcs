@@ -1,10 +1,11 @@
 package org.yamcs.templating;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -17,11 +18,13 @@ public class TemplateProcessorTest {
         assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testUnsetVariable() {
-        String template = "Hello {{ a }} and {{b}}!";
-        Map<String, Object> args = ImmutableMap.of("a", "XX");
-        TemplateProcessor.process(template, args);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String template = "Hello {{ a }} and {{b}}!";
+            Map<String, Object> args = ImmutableMap.of("a", "XX");
+            TemplateProcessor.process(template, args);
+        });
     }
 
     @Test

@@ -1,15 +1,18 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class SecondaryIndex3Test extends YarchTestCase {
     int n = 2;
-    
+
     void populate(String tblName) throws Exception {
         ydb.execute("create table " + tblName
                 + "(a long, b int, c string, "
@@ -24,7 +27,7 @@ public class SecondaryIndex3Test extends YarchTestCase {
         }
         execute("close stream test_in");
     }
-    
+
     @Test
     public void testUpdatePk() throws Exception {
         populate("test1");

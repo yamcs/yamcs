@@ -1,9 +1,9 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
@@ -93,7 +93,6 @@ public class TestReferenceFinder {
 
     @Test
     public void test2() {
-
         SpaceSystem root = new SpaceSystem("");
         SpaceSystem a = new SpaceSystem("a");
         root.addSpaceSystem(a);

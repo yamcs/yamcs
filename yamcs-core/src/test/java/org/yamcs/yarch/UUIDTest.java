@@ -1,15 +1,18 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class UUIDTest extends YarchTestCase {
+
     int n = 10;
 
     private void populate(String tblName) throws Exception {

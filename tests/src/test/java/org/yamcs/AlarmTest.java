@@ -1,18 +1,18 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.XtceDbFactory;
@@ -21,14 +21,14 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlarmTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
@@ -41,7 +41,7 @@ public class AlarmTest {
     private Queue<Event> q;
     private AlarmReporter alarmReporter;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws ConfigurationException, ProcessorException {
         String yamcsInstance = "refmdb";
         EventProducerFactory.setMockup(true);
@@ -63,7 +63,7 @@ public class AlarmTest {
         alarmReporter.init(processor, YConfiguration.wrap(config), null);
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         processor.quit();
     }

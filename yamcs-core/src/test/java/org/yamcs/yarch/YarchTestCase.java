@@ -1,6 +1,6 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.parser.ParseException;
@@ -28,8 +28,8 @@ public abstract class YarchTestCase {
     protected String instance;
     Random random = new Random();
     ExecutionContext context;
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpYarch() throws Exception {
         YConfiguration.setupTest(null); // reset the prefix if maven runs multiple tests
         // in the same java
@@ -42,12 +42,11 @@ public abstract class YarchTestCase {
         // org.yamcs.LoggingUtils.enableLogging();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         YConfiguration config = YConfiguration.getConfiguration("yamcs");
         Path dir = Paths.get(config.getString("dataDir"));
         instance = "yarchtest_" + this.getClass().getSimpleName();
-      
 
         if (YarchDatabase.hasInstance(instance)) {
             YarchDatabase.removeInstance(instance);

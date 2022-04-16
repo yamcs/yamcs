@@ -1,24 +1,24 @@
 package org.yamcs.tctm.ccsds.error;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator.Ldpc256Encoder;
-import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
-import org.yamcs.utils.ByteArrayUtils;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.yamcs.tctm.ccsds.error.BitMatrix.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.yamcs.tctm.ccsds.error.BitMatrix.add;
 
 import java.util.Arrays;
 import java.util.Random;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator.Ldpc256Encoder;
+import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
+import org.yamcs.utils.ByteArrayUtils;
 
 public class LdpcEncoderTest {
     static BitMatrix h64;
     static BitMatrix h256;
 
-    @BeforeClass
+    @BeforeAll
     public static void buildH64() {
         BitMatrix im = BitMatrix.IdentityMatrix(16);
         BitMatrix zm = BitMatrix.ZeroMatrix(16);
@@ -45,7 +45,7 @@ public class LdpcEncoderTest {
         // System.out.println("h64: "+h64);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void buildH256() {
         BitMatrix zm = BitMatrix.ZeroMatrix(64);
         BitMatrix im = BitMatrix.IdentityMatrix(64);
@@ -87,7 +87,7 @@ public class LdpcEncoderTest {
     public void test64() {
         byte[] d = new byte[] { 8, 0, 5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
         Ldpc64Encoder.encode(d, 0, d, 8);
-    
+
         byte[] zero = new byte[8];
         assertArrayEquals(zero, h64.multiply(d));
 
@@ -95,49 +95,50 @@ public class LdpcEncoderTest {
         r.nextBytes(d);
 
         Ldpc64Encoder.encode(d, 0, d, 8);
-        assertArrayEquals("failing input data: " + Arrays.toString(d), zero, h64.multiply(d));
+        assertArrayEquals(zero, h64.multiply(d), "failing input data: " + Arrays.toString(d));
 
     }
 
-    @Ignore
     @Test
+    @Disabled
     public void test64Speed() {
         int n = 10_000_000;
         long c = 0;
         long t0 = System.currentTimeMillis();
         byte[] d = new byte[] { 8, 0, 5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
-        
+
         for (int i = 0; i < n; i++) {
             ByteArrayUtils.encodeLong(i, d, 0);
             Ldpc64Encoder.encode(d, 0, d, 8);
             c += d[8];
         }
         long t1 = System.currentTimeMillis();
-        
-        long delta = t1-t0;
-        System.out.println(c+" time: "+delta/1000+" sec speed "+delta*1000_000.0/n+" nanosec/ops, "+(n*8*1000.0)/(delta*1024*1024)+ " MBps");
+
+        long delta = t1 - t0;
+        System.out.println(c + " time: " + delta / 1000 + " sec speed " + delta * 1000_000.0 / n + " nanosec/ops, "
+                + (n * 8 * 1000.0) / (delta * 1024 * 1024) + " MBps");
     }
-    
-    @Ignore
+
     @Test
+    @Disabled
     public void test256Speed() {
         int n = 10_000_000;
         long c = 0;
         long t0 = System.currentTimeMillis();
         byte[] d = new byte[64];
-        
+
         for (int i = 0; i < n; i++) {
             ByteArrayUtils.encodeLong(i, d, 0);
             Ldpc256Encoder.encode(d, 0, d, 8);
             c += d[32];
         }
         long t1 = System.currentTimeMillis();
-        
-        long delta = t1-t0;
-        System.out.println(c+" time: "+delta/1000+" sec speed: "+delta*1000_000.0/n+" nanosec/ops, "+(n*32*1000.0)/(delta*1024*1024)+ " MBps");
+
+        long delta = t1 - t0;
+        System.out.println(c + " time: " + delta / 1000 + " sec speed: " + delta * 1000_000.0 / n + " nanosec/ops, "
+                + (n * 32 * 1000.0) / (delta * 1024 * 1024) + " MBps");
     }
 
-    
     @Test
     public void test256() {
         byte[] d = new byte[64];
@@ -150,7 +151,6 @@ public class LdpcEncoderTest {
         r.nextBytes(d);
 
         Ldpc256Encoder.encode(d, 0, d, 32);
-        assertArrayEquals("failing input data: " + Arrays.toString(d), zero, h256.multiply(d));
-
+        assertArrayEquals(zero, h256.multiply(d), "failing input data: " + Arrays.toString(d));
     }
 }

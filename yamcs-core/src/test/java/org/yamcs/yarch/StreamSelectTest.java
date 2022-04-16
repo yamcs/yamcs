@@ -1,8 +1,8 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -12,9 +12,9 @@ public class StreamSelectTest extends YarchTestCase {
     int n = 1000;
 
     void feed(Stream s, long start) throws StreamSqlException, ParseException {
-        long m = start/1000;
-        for (long i = m; i < m+n; i++) {
-            int x = (int) (i%10);
+        long m = start / 1000;
+        for (long i = m; i < m + n; i++) {
+            int x = (int) (i % 10);
             Tuple t = new Tuple(s.getDefinition(), new Object[] { i * 1000L, x });
             s.emitTuple(t);
         }
@@ -76,16 +76,16 @@ public class StreamSelectTest extends YarchTestCase {
         Stream s = ydb.getStream("tm_in");
         feed(s, 0);
         s.close();
-        assertEquals(n*2/10, sc1.count);
-        assertEquals(n*3/10, sc2.count);
+        assertEquals(n * 2 / 10, sc1.count);
+        assertEquals(n * 3 / 10, sc2.count);
     }
 
-    
     @Test
     public void testFilter3() throws Exception {
         long t0 = TimeEncoding.parse("2020-07-10T00:00:00");
         execute("create stream tm_in(gentime timestamp, id int)");
-        StreamChecker sc1 = new StreamChecker("tm_out1", "select * from tm_in where gentime > '2020-07-10T00:00:02' and '2020-07-10T00:00:05' >= gentime",
+        StreamChecker sc1 = new StreamChecker("tm_out1",
+                "select * from tm_in where gentime > '2020-07-10T00:00:02' and '2020-07-10T00:00:05' >= gentime",
                 new TupleChecker() {
                     int x = 3;
 
@@ -96,14 +96,13 @@ public class StreamSelectTest extends YarchTestCase {
                     }
                 });
 
-      
         Stream s = ydb.getStream("tm_in");
         feed(s, t0);
         s.close();
-        
+
         assertEquals(3, sc1.count);
     }
-    
+
     @Test
     public void testNegative() throws Exception {
         execute("create stream tm_negative_in(gentime timestamp, id int)");

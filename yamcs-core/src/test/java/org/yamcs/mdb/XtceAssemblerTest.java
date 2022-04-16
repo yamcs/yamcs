@@ -1,6 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.mdb.XtceDbFactory;
@@ -81,7 +85,7 @@ public class XtceAssemblerTest {
                 continue;
             }
             SpaceSystem ss2 = db2.getSpaceSystem(ss1.getQualifiedName());
-            assertNotNull("Cannot find " + ss1.getQualifiedName() + " in db2", ss2);
+            assertNotNull(ss2, "Cannot find " + ss1.getQualifiedName() + " in db2");
             compareSpaceSystems(ss1, ss2);
         }
     }
@@ -89,36 +93,35 @@ public class XtceAssemblerTest {
     private void compareSpaceSystems(SpaceSystem ss1, SpaceSystem ss2) throws Exception {
         for (Parameter p1 : ss1.getParameters()) {
             Parameter p2 = ss2.getParameter(p1.getName());
-            assertNotNull("Cannot find " + p1.getQualifiedName() + " in ss2", p2);
+            assertNotNull(p2, "Cannot find " + p1.getQualifiedName() + " in ss2");
             name = p1.getQualifiedName();
             compareObjects(p1, p2);
         }
 
         for (SequenceContainer sc1 : ss1.getSequenceContainers()) {
             SequenceContainer sc2 = ss2.getSequenceContainer(sc1.getName());
-            assertNotNull("Cannot find " + sc1.getQualifiedName() + " in ss2", sc2);
+            assertNotNull(sc2, "Cannot find " + sc1.getQualifiedName() + " in ss2");
             compareContainer(sc1, sc2);
         }
 
         for (MetaCommand mc1 : ss1.getMetaCommands()) {
             MetaCommand mc2 = ss2.getMetaCommand(mc1.getName());
             name = mc1.getQualifiedName();
-            assertNotNull("Cannot find " + mc1.getQualifiedName() + " in ss2", mc2);
+            assertNotNull(mc2, "Cannot find " + mc1.getQualifiedName() + " in ss2");
             compareObjects(mc1, mc2);
             compareContainer(mc1.getCommandContainer(), mc2.getCommandContainer());
         }
 
         for (Algorithm algo1 : ss1.getAlgorithms()) {
             Algorithm algo2 = ss2.getAlgorithm(algo1.getName());
-            assertNotNull("Cannot find " + algo1.getQualifiedName() + " in ss2", algo2);
+            assertNotNull(algo2, "Cannot find " + algo1.getQualifiedName() + " in ss2");
             compareObjects(algo1, algo2);
         }
     }
 
     private void compareContainer(Container sc1, Container sc2) throws Exception {
-        assertEquals(name + ": " + sc1.getQualifiedName() + " has a different number of entries",
-                sc1.getEntryList().size(),
-                sc2.getEntryList().size());
+        assertEquals(sc1.getEntryList().size(), sc2.getEntryList().size(),
+                name + ": " + sc1.getQualifiedName() + " has a different number of entries");
         for (int i = 0; i < sc1.getEntryList().size(); i++) {
             SequenceEntry se1 = sc1.getEntryList().get(i);
             SequenceEntry se2 = sc2.getEntryList().get(i);
@@ -143,7 +146,7 @@ public class XtceAssemblerTest {
             assertNotNull(l2);
         }
 
-        assertEquals(name, l1.size(), l2.size());
+        assertEquals(l1.size(), l2.size(), name);
         for (int i = 0; i < l1.size(); i++) {
             compareObjects(l1.get(i), l2.get(i));
         }
@@ -174,6 +177,7 @@ public class XtceAssemblerTest {
         assertTrue(set1.getAliases().equals(set2.getAliases()));
     }
 
+    @SuppressWarnings("rawtypes")
     private void compareObjects(Object o1, Object o2) throws Exception {
         Class c1 = o1.getClass();
         Class c2 = o2.getClass();
@@ -186,7 +190,7 @@ public class XtceAssemblerTest {
                 Object o1c = f.get(o1);
                 Object o2c = f.get(o2);
                 if (o1c == null) {
-                    assertNull(name + " " + o1 + " field: " + f.getName(), o2c);
+                    assertNull(o2c, name + " " + o1 + " field: " + f.getName());
                 } else if (o2c == null) {
                     fail(name + " " + o2 + " field: " + f.getName() + " is null, expected " + o1c);
                 } else if (o1c instanceof List<?>) {
@@ -198,9 +202,9 @@ public class XtceAssemblerTest {
                     name = name + ": " + f.getName();
                     compareMaps((Map<?, ?>) o1c, (Map<?, ?>) o2c);
                 } else if (o1c instanceof Comparable<?>) {
-                    assertEquals(name + " " + o1 + " field: " + f.getName(), o1c, o2c);
+                    assertEquals(o1c, o2c, name + " " + o1 + " field: " + f.getName());
                 } else if (o1c instanceof ByteOrder) {
-                    assertEquals(name + " " + o1 + " field: " + f.getName(), o1c, o2c);
+                    assertEquals(o1c, o2c, name + " " + o1 + " field: " + f.getName());
                 } else if (o1c instanceof XtceAliasSet) {
                     compareAliases((XtceAliasSet) o1c, (XtceAliasSet) o2c);
                 } else if (o1c instanceof MetaCommand || o1c instanceof Container || o1c instanceof Parameter) {

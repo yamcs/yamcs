@@ -1,15 +1,18 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class VarIntUtilTest {
 
     @Test
-    public void testVarInt32() throws Exception{
+    public void testVarInt32() throws Exception {
         ByteBuffer bb = ByteBuffer.allocate(10);
         VarIntUtil.writeVarInt32(bb, 3);
         assertEquals(1, bb.position());
@@ -47,47 +50,47 @@ public class VarIntUtilTest {
     }
 
     @Test
-    public void testDeltaDeltaZigZag() throws Exception{
+    public void testDeltaDeltaZigZag() throws Exception {
         int n = 100;
-        int[] a= new int[n];
-        for(int i=0;i<n;i++) {
-            a[i]=i;
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) {
+            a[i] = i;
         }
-        
+
         int[] ddz = VarIntUtil.encodeDeltaDeltaZigZag(a);
         assertEquals(n, ddz.length);
         assertEquals(0, ddz[0]);
         assertEquals(2, ddz[1]);
-        for(int i=2; i<n; i++) {
+        for (int i = 2; i < n; i++) {
             assertEquals(0, ddz[i]);
         }
         int[] b = VarIntUtil.decodeDeltaDeltaZigZag(ddz);
-        assertArrayEquals(a,  b);
-        
-        for(int i=0;i<n;i++) {
-            a[i]= -i;
+        assertArrayEquals(a, b);
+
+        for (int i = 0; i < n; i++) {
+            a[i] = -i;
         }
         ddz = VarIntUtil.encodeDeltaDeltaZigZag(a);
         b = VarIntUtil.decodeDeltaDeltaZigZag(ddz);
-        assertArrayEquals(a,  b);
-        
-        for(int i=0; i<n; i++) {
-            a[i]= (1<<31)+i * (((i&1)<<1)-1);
+        assertArrayEquals(a, b);
+
+        for (int i = 0; i < n; i++) {
+            a[i] = (1 << 31) + i * (((i & 1) << 1) - 1);
         }
         ddz = VarIntUtil.encodeDeltaDeltaZigZag(a);
         b = VarIntUtil.decodeDeltaDeltaZigZag(ddz);
-        assertArrayEquals(a,  b);
-        
+        assertArrayEquals(a, b);
+
     }
-    
+
     @Test
     public void testEncodeDecodeIntArray() {
-        IntArray s1 = IntArray.wrap(1,5,20);
+        IntArray s1 = IntArray.wrap(1, 5, 20);
         byte[] encoded = VarIntUtil.encodeDeltaIntArray(s1);
         IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
         assertTrue(s1.equals(s2));
     }
-    
+
     @Test
     public void testEncodeDecodeNegative() {
         IntArray s1 = IntArray.wrap(-1, 5, 20);
@@ -95,6 +98,7 @@ public class VarIntUtilTest {
         IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
         assertTrue(s1.equals(s2));
     }
+
     @Test
     public void testEncodeDecodeZeroLength() {
         IntArray s1 = new IntArray();
@@ -102,5 +106,4 @@ public class VarIntUtilTest {
         IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
         assertTrue(s1.equals(s2));
     }
-    
 }

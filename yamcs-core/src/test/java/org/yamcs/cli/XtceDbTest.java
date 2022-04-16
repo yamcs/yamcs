@@ -1,13 +1,13 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 
 public class XtceDbTest extends AbstractCliTest {
-    @Before
+    @BeforeEach
     public void resetConfig() {
         YConfiguration.setupTest(null);
     }

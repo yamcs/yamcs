@@ -1,9 +1,8 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Test;
-import org.yamcs.mdb.XtceDbFactory;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.XtceDb;
 
 public class XtceFilesetTest {

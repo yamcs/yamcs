@@ -1,12 +1,12 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
@@ -31,7 +31,7 @@ public class ModifyMissionDatabaseTest extends AbstractIntegrationTest {
 
     private ProcessorClient processorClient;
 
-    @Before
+    @BeforeEach
     public void prepare() {
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
     }

@@ -1,10 +1,12 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
@@ -24,7 +26,7 @@ public class PacketParseTest {
 
     @Test
     public void testEofPDU2() {
-        TLV tlv = new TLV((byte)3, new byte[] {3,4});
+        TLV tlv = new TLV((byte) 3, new byte[] { 3, 4 });
         CfdpHeader header = new CfdpHeader(true, false, false, false, 2, 2, 3, 4, 10);
         EofPacket p1 = new EofPacket(ConditionCode.FILE_CHECKSUM_FAILURE, 20, 100, tlv, header);
         ByteBuffer bb = ByteBuffer.allocate(100);

@@ -1,6 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -8,7 +12,7 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -23,6 +27,7 @@ import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatDataEncoding.Encoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
@@ -37,17 +42,16 @@ import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.FloatDataEncoding.Encoding;
-import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
 
 public class XmlLoaderTest {
 

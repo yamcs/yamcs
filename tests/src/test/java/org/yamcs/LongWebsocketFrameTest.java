@@ -1,14 +1,15 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.AbstractIntegrationTest.MyConnectionListener;
 import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.YamcsClient;
@@ -18,21 +19,23 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public class LongWebsocketFrameTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         YConfiguration.setupTest("LongWebsocketFrameTest");
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutDownYamcs() throws Exception {
         YamcsServer.getServer().shutDown();
     }
 
-    @Test(expected = TimeoutException.class)
-    public void testWithSmallFrame() throws Exception {
-        runIt(65536);
+    @Test
+    public void testWithSmallFrame() {
+        assertThrows(TimeoutException.class, () -> {
+            runIt(65536);
+        });
     }
 
     @Test

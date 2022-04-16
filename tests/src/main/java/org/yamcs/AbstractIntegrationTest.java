@@ -1,7 +1,7 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsClient;
@@ -53,12 +53,12 @@ public abstract class AbstractIntegrationTest {
         // LoggingUtils.enableLogging();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         setupYamcs();
     }
 
-    @Before
+    @BeforeEach
     public void before() throws ClientException {
         parameterProvider = ParameterProvider.instance[0];
         assertNotNull(parameterProvider);
@@ -93,13 +93,13 @@ public abstract class AbstractIntegrationTest {
         yamcs.start();
     }
 
-    @After
+    @AfterEach
     public void after() throws InterruptedException {
         yamcsClient.close();
         assertTrue(connectionListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
     }
 
-    @AfterClass
+    @AfterAll
     public static void shutDownYamcs() throws Exception {
         YamcsServer.getServer().shutDown();
     }

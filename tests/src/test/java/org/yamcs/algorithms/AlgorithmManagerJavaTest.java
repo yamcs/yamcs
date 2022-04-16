@@ -1,17 +1,17 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
@@ -33,7 +33,8 @@ import org.yamcs.xtce.XtceDb;
  * Java algorithms test
  */
 public class AlgorithmManagerJavaTest {
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
@@ -45,7 +46,7 @@ public class AlgorithmManagerJavaTest {
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
 
@@ -65,7 +66,7 @@ public class AlgorithmManagerJavaTest {
         prm = processor.getParameterRequestManager();
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         processor.quit();
     }

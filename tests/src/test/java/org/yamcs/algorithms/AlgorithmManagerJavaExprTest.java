@@ -1,15 +1,16 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.LoggingUtils;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
@@ -28,7 +29,8 @@ import org.yamcs.xtce.Parameter;
  * Java algorithms test
  */
 public class AlgorithmManagerJavaExprTest {
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
@@ -40,7 +42,7 @@ public class AlgorithmManagerJavaExprTest {
     private ParameterRequestManager prm;
     private AlgorithmManager algoMgr;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
 
@@ -52,7 +54,7 @@ public class AlgorithmManagerJavaExprTest {
         prm = processor.getParameterRequestManager();
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         processor.quit();
     }
@@ -95,7 +97,7 @@ public class AlgorithmManagerJavaExprTest {
 
         AlgorithmStatus status = algoMgr.getAlgorithmStatus(calg);
         assertEquals(0, status.getErrorCount());
-        
+
         // after 10 errors, it should be automatically deactivated
         for (int i = 0; i < 10; i++) {
             status = algoMgr.getAlgorithmStatus(calg);

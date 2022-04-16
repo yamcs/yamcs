@@ -1,13 +1,14 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.RocksDB;
 import org.yamcs.security.Directory;
 import org.yamcs.security.User;
@@ -17,13 +18,13 @@ import org.yamcs.yarch.YarchDatabase;
 public class UsersCliTest extends AbstractCliTest {
     static Path etcdata;
 
-    @BeforeClass
+    @BeforeAll
     public static void createDb() throws IOException {
         RocksDB.loadLibrary();
         etcdata = createTmpEtcData();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws IOException {
         FileUtils.deleteRecursively(etcdata);
     }

@@ -1,8 +1,9 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeQueued_KEY;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeReleased_KEY;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.TransmissionContraints_KEY;
@@ -15,10 +16,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.Processor;
@@ -61,14 +62,14 @@ public class RefXtceCommandingTest {
 
     LocalParameterManager localParaMgr;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.getInstance("refxtce");
         user = new User("test", null);
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         cmdReleaser = new MyCommandReleaser();
         cmdHistPublisher = new MyCmdHistPublisher();
@@ -81,7 +82,7 @@ public class RefXtceCommandingTest {
         proc.start();
     }
 
-    @After
+    @AfterEach
     public void after() {
         proc.stopAsync();
     }
@@ -115,12 +116,14 @@ public class RefXtceCommandingTest {
 
     }
 
-    @Test(expected = org.yamcs.ErrorInCommand.class)
-    public void testAggregateCmdArgIncompleteValue() throws Exception {
+    @Test
+    public void testAggregateCmdArgIncompleteValue() {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 0}");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test
@@ -158,12 +161,14 @@ public class RefXtceCommandingTest {
         assertEquals(3.14, bb.getDouble(), 1e-5);
     }
 
-    @Test(expected = org.yamcs.ErrorInCommand.class)
+    @Test
     public void testAggregateCmdArgOutOfRange() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42, m2: 123.4}");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test
@@ -177,22 +182,26 @@ public class RefXtceCommandingTest {
         assertEquals("010203AB", StringConverter.arrayToHexString(b, 2, 4));
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     public void testBinaryArgCmdTooLong() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         // max allowed length for arg1 is 10, the value below has 11 bytes, it will throw an exception
         args.put("arg1", "0102030405060708090A0B");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     public void testBinaryArgCmdTooShort() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         // min allowed length for arg1 is 2, the value below has 1 byte, it will throw an exception
         args.put("arg1", "01");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test

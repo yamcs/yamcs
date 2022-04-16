@@ -1,10 +1,9 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
-import org.yamcs.mdb.CalibratorProc;
-import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 
 public class JavaExpressionCalibratorFactoryTest {
@@ -14,15 +13,16 @@ public class JavaExpressionCalibratorFactoryTest {
         CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
         assertEquals(7, c.calibrate(4), 1e-5);
     }
-    
-    
-    @Test(expected=IllegalArgumentException.class)
+
+    @Test
     public void test2() {
-        JavaExpressionCalibrator jec = new JavaExpressionCalibrator("\"blabala\"");
-        CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
-        assertEquals(7, c.calibrate(4), 1e-5);
+        assertThrows(IllegalArgumentException.class, () -> {
+            JavaExpressionCalibrator jec = new JavaExpressionCalibrator("\"blabala\"");
+            CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
+            assertEquals(7, c.calibrate(4), 1e-5);
+        });
     }
-    
+
     @Test
     public void test3() {
         JavaExpressionCalibrator jec = new JavaExpressionCalibrator("v>0?v+5:v-5");

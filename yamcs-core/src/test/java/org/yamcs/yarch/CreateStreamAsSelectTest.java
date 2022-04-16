@@ -1,12 +1,12 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CreateStreamAsSelectTest extends YarchTestCase {
 
@@ -23,7 +23,7 @@ public class CreateStreamAsSelectTest extends YarchTestCase {
             public void doStart() {
                 for (int i = 0; i < n; i++) {
                     Long time = (long) (i * 1000);
-                    Tuple t = new Tuple(tpdef, new Object[] { time, i, UUID.randomUUID()});
+                    Tuple t = new Tuple(tpdef, new Object[] { time, i, UUID.randomUUID() });
                     emitTuple(t);
                 }
                 close();
@@ -47,16 +47,15 @@ public class CreateStreamAsSelectTest extends YarchTestCase {
             int const_three = (Integer) tuple.getColumn(0);
             assertEquals(const_three, 3);
             assertEquals("cucu", tuple.getColumn("bau"));
-            
+
             long time = (Long) tuple.getColumn(2);
             assertEquals(1000 * k, time);
-            
+
             int i = (Integer) tuple.getColumn(3);
             assertEquals(k, i);
-            
+
             UUID uuid = (UUID) tuple.getColumn(4);
             assertNotNull(uuid);
-            
         }
     }
 }

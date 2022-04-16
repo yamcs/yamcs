@@ -1,16 +1,19 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.yamcs.algorithms.AlgorithmManagerTest.getPwc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
@@ -25,14 +28,13 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
-import static org.yamcs.algorithms.AlgorithmManagerTest.getPwc;
-
 /**
  * Just a small sanity check to verify python/jython still works. Uses algorithms in the spreadsheet that are
  * interpreted the same in javascript and python
  */
 public class AlgorithmManagerPyTest {
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
@@ -45,7 +47,7 @@ public class AlgorithmManagerPyTest {
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
 
@@ -69,7 +71,7 @@ public class AlgorithmManagerPyTest {
         prm = processor.getParameterRequestManager();
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         processor.quit();
     }

@@ -1,6 +1,6 @@
 package org.yamcs;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.TimeSubscription;
 import org.yamcs.protobuf.SubscribeTimeRequest;
 

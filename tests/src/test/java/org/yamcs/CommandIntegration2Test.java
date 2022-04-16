@@ -1,9 +1,10 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.Command;
 import org.yamcs.client.CommandSubscription;
 import org.yamcs.client.processor.ProcessorClient;
@@ -24,7 +25,7 @@ public class CommandIntegration2Test extends AbstractIntegrationTest {
 
     String yamcsInstance2 = "IntegrationTest2";
 
-    @Before
+    @BeforeEach
     public void prepareTests() throws InterruptedException {
 
         processorClient = yamcsClient.createProcessorClient(yamcsInstance2, "realtime");

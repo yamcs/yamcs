@@ -1,10 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.RefMdbPacketGenerator.pFixedStringPara1_3_1;
 import static org.yamcs.RefMdbPacketGenerator.pFixedStringPara1_3_2;
 import static org.yamcs.RefMdbPacketGenerator.pFixedStringPara1_3_7;
@@ -26,18 +26,18 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ProcessorConfig;
+import org.yamcs.RefMdbPacketGenerator;
+import org.yamcs.YConfiguration;
+import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.FloatValue;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.RefMdbPacketGenerator;
-import org.yamcs.YConfiguration;
-import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -54,7 +54,7 @@ public class XtceTmExtractorTest {
 
     private static XtceDb xtcedb;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
@@ -324,8 +324,6 @@ public class XtceTmExtractorTest {
         assertEquals(tmGenerator.pIntegerPara1_11_1_unsigned_value / 2,
                 pv.getEngValue().getUint32Value() & 0xFFFFFFFFL);
     }
-
-
 
     @Test
     public void testPKT1_12_stringenum() {
@@ -783,6 +781,7 @@ public class XtceTmExtractorTest {
 
         return cpr.getParameterResult();
     }
+
     void printParaList(ParameterValueList pvl) {
         System.out.println(String.format("%-30s %10s %10s", "name", "eng", "raw"));
         System.out.println(String.format("----------------------------------------------------"));
@@ -797,8 +796,9 @@ public class XtceTmExtractorTest {
         StringBuilder sb = new StringBuilder();
         while (bb.hasRemaining()) {
             String s = Integer.toString(bb.get() & 0xFF, 16);
-            if (s.length() == 1)
+            if (s.length() == 1) {
                 sb.append("0");
+            }
             sb.append(s.toUpperCase());
         }
         bb.reset();

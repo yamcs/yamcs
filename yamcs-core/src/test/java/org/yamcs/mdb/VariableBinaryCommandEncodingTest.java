@@ -1,6 +1,7 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -11,8 +12,8 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
@@ -32,7 +33,7 @@ public class VariableBinaryCommandEncodingTest {
     private XtceDb db;
     private MetaCommandProcessor metaCommandProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
@@ -74,22 +75,26 @@ public class VariableBinaryCommandEncodingTest {
         assertArrayEquals(expected, b);
     }
 
-    @Test(expected = ErrorInCommand.class)
-    public void testCommandEncodingWithoutSizeTooSmall() throws ErrorInCommand, IOException {
+    @Test
+    public void testCommandEncodingWithoutSizeTooSmall() {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
         Map<String, Object> args = new HashMap<>();
         args.put("data", "01");
         args.put("value", "3.14");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
-    @Test(expected = ErrorInCommand.class)
-    public void testCommandEncodingWithoutSizeTooLong() throws ErrorInCommand, IOException {
+    @Test
+    public void testCommandEncodingWithoutSizeTooLong() {
         MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
         Map<String, Object> args = new HashMap<>();
         args.put("data", "01020304050607");
         args.put("value", "3.14");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     private byte[] createPacket(byte[] data, float value, boolean withSize) throws IOException {

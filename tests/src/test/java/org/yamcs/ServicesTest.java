@@ -1,10 +1,10 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.ServiceState;

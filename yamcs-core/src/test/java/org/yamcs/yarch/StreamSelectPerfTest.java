@@ -1,10 +1,10 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.Semaphore;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /* Results with compiled expression:
  *    Read 100000000 tuples in 27733 ms
@@ -76,7 +76,7 @@ public class StreamSelectPerfTest extends YarchTestCase {
                 long time = (Long) tuple.getColumn("time");
                 assertEquals(1000 * k, time);
                 int id = (Integer) tuple.getColumn("id");
-                ;
+
                 // System.out.println("id: "+id+", time: "+time);
                 assertEquals(k % 10, id);
                 do {

@@ -1,10 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
@@ -25,12 +25,12 @@ public class BucketDbTest {
     static String testDir = "/tmp/BucketDbTest";
     Random random = new Random();
 
-    @BeforeClass
+    @BeforeAll
     static public void beforeClass() {
         TimeEncoding.setUp();
     }
 
-    @Before
+    @BeforeEach
     public void cleanup() throws Exception {
         FileUtils.deleteRecursivelyIfExists(Paths.get(testDir));
     }

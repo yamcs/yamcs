@@ -1,12 +1,12 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 public class TestAncillaryData {

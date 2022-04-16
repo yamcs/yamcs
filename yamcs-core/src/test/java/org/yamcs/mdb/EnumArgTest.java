@@ -1,12 +1,13 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
@@ -23,7 +24,7 @@ public class EnumArgTest {
     private XtceDb db;
     private MetaCommandProcessor metaCommandProcessor;
 
-    @Before
+    @BeforeEach
     public void setup() throws DatabaseLoadException {
         YConfiguration.setupTest(null);
         db = XtceDbFactory.createInstanceByConfig("EnumArgCommandTest");
@@ -56,12 +57,14 @@ public class EnumArgTest {
     /*
      * Not allowed because there is no string state "2", and it is not safe to assume that numeric value is intended.
      */
-    @Test(expected = ErrorInCommand.class)
+    @Test
     public void testCommandEncoding_stringStateNumber() throws ErrorInCommand {
         MetaCommand mc = db.getMetaCommand("/EnumArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("phase", "2");
-        metaCommandProcessor.buildCommand(mc, args);
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args);
+        });
     }
 }

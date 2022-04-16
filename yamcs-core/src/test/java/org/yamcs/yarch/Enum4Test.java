@@ -1,17 +1,20 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 import com.google.common.collect.BiMap;
 
 public class Enum4Test extends YarchTestCase {
     int n = 10;
+
     private void populate(String tblname) throws Exception {
         execute("create table " + tblname
                 + "(id int, tags enum[], primary key(id))");
@@ -38,7 +41,7 @@ public class Enum4Test extends YarchTestCase {
         populate("test1");
 
         StreamSqlResult r = ydb.execute("select * from test1");
-        for(int i = 0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             assertTrue(r.hasNext());
             Tuple t = r.next();
             assertEquals(i, t.getIntColumn("id"));
@@ -48,11 +51,10 @@ public class Enum4Test extends YarchTestCase {
                 assertEquals("tag" + j, l.get(j));
             }
         }
-        
+
         assertFalse(r.hasNext());
 
         BiMap<String, Short> x = ydb.getTable("test1").getEnumValues("tags");
         assertEquals(n - 1, x.size());
     }
-
 }

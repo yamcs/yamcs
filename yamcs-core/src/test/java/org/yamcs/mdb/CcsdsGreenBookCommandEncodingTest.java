@@ -1,13 +1,13 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
@@ -27,7 +27,7 @@ public class CcsdsGreenBookCommandEncodingTest {
     static XtceDb xtcedb;
     static MetaCommandProcessor metaCommandProcessor;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("ccsds-green-book");

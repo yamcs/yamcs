@@ -1,9 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,11 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.yamcs.AbstractIntegrationTest;
-import org.yamcs.ParameterCaptor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Page;
@@ -75,7 +73,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
     }
 
-    @Before
+    @BeforeEach
     public void prepare() {
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
         realtime = yamcsClient.createProcessorClient(yamcsInstance, "realtime");
@@ -486,7 +484,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Ignore("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
+    @Disabled("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
     public void testTableLoadWithInvalidRecord() throws Exception {
         createTable("table1");
 
@@ -520,7 +518,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Ignore("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
+    @Disabled("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
     public void testTableLoadWithInvalidRecord2() throws Exception {
         createTable("table2");
 

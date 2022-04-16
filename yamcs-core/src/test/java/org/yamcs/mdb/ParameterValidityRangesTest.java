@@ -1,11 +1,11 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ContainerProcessingResult;
@@ -20,7 +20,7 @@ public class ParameterValidityRangesTest {
     static XtceDb db;
     long now = TimeEncoding.getWallclockTime();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         db = XtceDbFactory.createInstanceByConfig("ranges-test");
@@ -42,7 +42,6 @@ public class ParameterValidityRangesTest {
         ParameterValue pv1 = cpr.getParameterResult()
                 .getFirstInserted(db.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv1.getAcquisitionStatus());
-        
 
         ByteBuffer.wrap(buf).putDouble(-90.01);
         cpr = extractor.processPacket(buf, now, now);
@@ -50,6 +49,4 @@ public class ParameterValidityRangesTest {
                 .getFirstInserted(db.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv2.getAcquisitionStatus());
     }
-    
-    
 }

@@ -1,8 +1,8 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.EventSubscription;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.Event;

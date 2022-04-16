@@ -1,6 +1,9 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -8,14 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class GlobFileFinderTest {
     static Path tempDir, p_a, p_aa, p_b, p_c, p_c_abc, p_c_bbb, p_c_cbb, p_d, p_d_abc;
 
-    @BeforeClass
+    @BeforeAll
     public static void makeTempFiles() throws IOException {
         tempDir = Files.createTempDirectory("globtest");
 
@@ -31,7 +34,7 @@ public class GlobFileFinderTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws IOException {
         FileUtils.deleteRecursively(tempDir);
     }
@@ -91,13 +94,15 @@ public class GlobFileFinderTest {
         assertTrue(find(p_c_abc, l1));
         assertTrue(find(p_d_abc, l1));
     }
-    
-    @Test(expected = IllegalArgumentException.class)
+
+    @Test
     public void testIoLimit() throws Exception {
-        GlobFileFinder gff = new GlobFileFinder();
-        gff.setIoLimit(10);
-        
-        gff.find(tempDir.resolve("*/*").toString());
+        assertThrows(IllegalArgumentException.class, () -> {
+            GlobFileFinder gff = new GlobFileFinder();
+            gff.setIoLimit(10);
+
+            gff.find(tempDir.resolve("*/*").toString());
+        });
     }
 
     private boolean find(Path path, List<Path> plist) {

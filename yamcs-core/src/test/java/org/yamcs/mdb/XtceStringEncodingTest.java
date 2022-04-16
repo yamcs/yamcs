@@ -1,13 +1,14 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
@@ -26,7 +27,7 @@ public class XtceStringEncodingTest {
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         mdb = XtceDbFactory.createInstanceByConfig("xtce-strings-cmd");
@@ -34,7 +35,7 @@ public class XtceStringEncodingTest {
                 new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
@@ -105,15 +106,17 @@ public class XtceStringEncodingTest {
         assertArrayEquals(expected, b);
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     // null terminated string in undefined buffer exceeding the size
-    public void testFixedSizeString3_too_long() throws Exception {
+    public void testFixedSizeString3_too_long() {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command3");
         Map<String, Object> args = new HashMap<>();
 
         args.put("string3", "abcdef");
         args.put("para1", "258");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test
@@ -137,7 +140,7 @@ public class XtceStringEncodingTest {
         assertArrayEquals(expected, b);
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     // prefixed size string in buffer whose size is given by another argument which is too long
     public void testFixedSizeString4_too_long() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command4");
@@ -146,19 +149,23 @@ public class XtceStringEncodingTest {
         args.put("buf_length", "7");
         args.put("string4", "ab");
         args.put("para1", "258");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     // too long prefixed size string in buffer whose size is given by another argument
-    public void testFixedSizeString4_too_long2() throws Exception {
+    public void testFixedSizeString4_too_long2() {
         MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command4");
         Map<String, Object> args = new HashMap<>();
 
         args.put("buf_length", "4");
         args.put("string4", "abcd");
         args.put("para1", "258");
-        metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test
@@ -175,18 +182,20 @@ public class XtceStringEncodingTest {
         assertArrayEquals(expected, b);
     }
 
-    @Test(expected = ErrorInCommand.class)
+    @Test
     // prefixed size string in undefined buffer exceeding max size
-    public void testFixedSizeString5_too_long() throws Exception {
-        MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command5");
-        Map<String, Object> args = new HashMap<>();
+    public void testFixedSizeString5_too_long() {
+        assertThrows(ErrorInCommand.class, () -> {
+            MetaCommand mc = mdb.getMetaCommand("/StringsCmd/command5");
+            Map<String, Object> args = new HashMap<>();
 
-        args.put("string5", "abcde");
-        args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            args.put("string5", "abcde");
+            args.put("para1", "258");
+            byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
-        byte[] expected = new byte[] { 0x00, 0x02, 'a', 'b', 0x01, 0x02 };
-        assertArrayEquals(expected, b);
+            byte[] expected = new byte[] { 0x00, 0x02, 'a', 'b', 0x01, 0x02 };
+            assertArrayEquals(expected, b);
+        });
     }
 
     @Test

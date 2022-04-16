@@ -1,15 +1,16 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.utils.StringConverter;
 
@@ -17,7 +18,7 @@ public class PacketDecoderTest {
     List<byte[]> pl = new ArrayList<>();
     PacketDecoder pd = new PacketDecoder(1000, (byte[] p) -> pl.add(p));
 
-    @Before
+    @BeforeEach
     public void emptyList() {
         pl.clear();
         pd.skipIdlePackets(false);
@@ -40,6 +41,7 @@ public class PacketDecoderTest {
         assertFalse(pd.hasIncompletePacket());
         assertEquals(0, pl.size());
     }
+
     @Test
     public void testOneByteNoEncapsulationHeader() throws TcTmException {
         pd.stripEncapsulationHeader(true);
@@ -48,6 +50,7 @@ public class PacketDecoderTest {
         assertEquals(1, pl.size());
         assertEquals(0, pl.get(0).length);
     }
+
     @Test
     public void testTwoBytesEncapsulation() throws TcTmException {
         pd.process(new byte[] { (byte) 0xE1, 2 }, 0, 2);
@@ -104,15 +107,19 @@ public class PacketDecoderTest {
 
     }
 
-    @Test(expected = TcTmException.class)
-    public void testInvalidTwoBytesEncapsulation() throws TcTmException {
-        pd.process(new byte[] { (byte) 0xE1, 1 }, 0, 2);
+    @Test
+    public void testInvalidTwoBytesEncapsulation() {
+        assertThrows(TcTmException.class, () -> {
+            pd.process(new byte[] { (byte) 0xE1, 1 }, 0, 2);
+        });
     }
 
-    @Test(expected = TcTmException.class)
-    public void testInvalidFourBytesEncapsulation() throws TcTmException {
-        pd.process(new byte[] { (byte) 0xE2, 0, 0, 1 }, 0, 4);
-        assertFalse(pd.hasIncompletePacket());
+    @Test
+    public void testInvalidFourBytesEncapsulation() {
+        assertThrows(TcTmException.class, () -> {
+            pd.process(new byte[] { (byte) 0xE2, 0, 0, 1 }, 0, 4);
+            assertFalse(pd.hasIncompletePacket());
+        });
     }
 
     @Test
@@ -121,6 +128,6 @@ public class PacketDecoderTest {
         byte[] p = StringConverter.hexStringToArray(s);
         pd.process(p, 10, 496);
         assertFalse(pd.hasIncompletePacket());
-        
+
     }
 }

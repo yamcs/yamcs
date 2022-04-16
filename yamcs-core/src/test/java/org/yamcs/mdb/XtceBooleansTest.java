@@ -1,14 +1,14 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
@@ -31,14 +31,14 @@ public class XtceBooleansTest {
     MetaCommandProcessor metaCommandProcessor;
     static ProcessorData pdata;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         mdb = XtceDbFactory.createInstanceByConfig("xtce-booleans");
         pdata = new ProcessorData("test", "test", mdb, new ProcessorConfig());
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();

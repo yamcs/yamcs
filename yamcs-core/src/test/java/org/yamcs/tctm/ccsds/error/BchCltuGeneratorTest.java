@@ -1,12 +1,11 @@
 package org.yamcs.tctm.ccsds.error;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-import org.yamcs.tctm.ccsds.error.BchCltuGenerator.BchEncoder;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.yamcs.tctm.ccsds.AosFrameDecoderTest.intToByteArray;
+
+import org.junit.jupiter.api.Test;
+import org.yamcs.tctm.ccsds.error.BchCltuGenerator.BchEncoder;
 
 public class BchCltuGeneratorTest {
 
@@ -132,5 +131,4 @@ public class BchCltuGeneratorTest {
             0x00, 0x90, 0x68, 0x55, 0x55, 0x55, 0x55, 0x55,
             0x55, 0x06, 0xC5, 0xC5, 0xC5, 0xC5, 0xC5, 0xC5,
             0xC5, 0x79 });
-
 }

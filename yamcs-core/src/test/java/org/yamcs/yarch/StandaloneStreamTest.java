@@ -1,10 +1,10 @@
 package org.yamcs.yarch;
 
-import org.junit.Test;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 
 public class StandaloneStreamTest extends YarchTestCase {
 
@@ -15,10 +15,11 @@ public class StandaloneStreamTest extends YarchTestCase {
         assertNotNull(s);
     }
 
-    @Test(expected = GenericStreamSqlException.class)
+    @Test
     public void testBogusWhere() throws Exception {
-        execute("create stream tm_in(gentime timestamp, id int)");
-        execute("create stream testbogus as select * from tm_in where id+3");
-
+        assertThrows(GenericStreamSqlException.class, () -> {
+            execute("create stream tm_in(gentime timestamp, id int)");
+            execute("create stream testbogus as select * from tm_in where id+3");
+        });
     }
 }

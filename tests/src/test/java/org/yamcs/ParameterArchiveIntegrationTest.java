@@ -1,7 +1,7 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.Page;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.ListOptions;
@@ -29,7 +29,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private ArchiveClient archiveClient;
 
-    @Before
+    @BeforeEach
     public void cleanParameterCache() {
         Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
         p.getParameterCache().clear();

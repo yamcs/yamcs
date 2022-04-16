@@ -1,9 +1,9 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.nio.file.FileSystemException;
@@ -12,14 +12,15 @@ import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.yamcs.utils.FileUtils;
 
 public class RDBFactoryTest {
-    @BeforeClass
+
+    @BeforeAll
     public static void initRocksDb() {
         RocksDB.loadLibrary();
     }
@@ -111,5 +112,4 @@ public class RDBFactoryTest {
         assertNotNull(db3.getColumnFamilyHandle("c2"));
         assertNotNull(db3.getColumnFamilyHandle("c3"));
     }
-
 }
