@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -142,9 +143,20 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         }
     }
 
-    private void processPacket(long rectime, long gentime, byte[] packet) {
+    private void processPacket(long rectime, long gentime, byte[] packet) throws Exception {
         ByteBuffer buf = ByteBuffer.wrap(packet);
+
+        // As per CCSDS protocol, primary header is big endian
+        int expectedLength = ByteArrayUtils.decodeUnsignedShort(packet, 4) + 7;
+
+        if (packet.length < expectedLength) {
+            throw new Exception("Packet is smaller than the expected length."
+                    + "Packet length:" + packet.length + "\n"
+                    + "Expected length:" + expectedLength);
+        }
+
         buf.order(byteOrder);
+
         buf.position(12);
         String app = decodeString(buf, appNameMax);
         int eventId = buf.getShort();
