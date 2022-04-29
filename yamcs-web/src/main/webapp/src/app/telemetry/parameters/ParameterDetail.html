@@ -166,7 +166,7 @@
       <br>
       <span class="subtext">
         Generation time: {{ pval.generationTime | datetime }}<br>
-        Raw value: {{ (pval.rawValue | value) || '-' }}<br>
+        Raw value: {{ (pval.rawValue | value) ?? '-' }}<br>
       </span>
     </div>
   </ng-container>

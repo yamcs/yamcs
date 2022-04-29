@@ -2,7 +2,7 @@
   <dt>Algorithm</dt>
   <dd>{{ algorithm.qualifiedName | shortName }}</dd>
 
-  <dt>Space System</dt>
+  <dt>Space system</dt>
   <dd>
     <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/algorithms"
@@ -110,11 +110,11 @@
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
-  <dt>Input Parameters</dt>
+  <dt>Input parameters</dt>
   <dd>
     <table yaDataTable *ngIf="algorithm.inputParameter">
       <tr>
-        <th>Input Name</th>
+        <th>Input name</th>
         <th>Parameter</th>
         <th>Instance</th>
         <th>Mandatory</th>
@@ -143,11 +143,11 @@
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
-  <dt>Output Parameters</dt>
+  <dt>Output parameters</dt>
   <dd>
     <table yaDataTable *ngIf="algorithm.outputParameter">
       <tr>
-        <th>Output Name</th>
+        <th>Output name</th>
         <th>Parameter</th>
       </tr>
       <tr *ngFor="let outputParameter of algorithm.outputParameter">

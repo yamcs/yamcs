@@ -1,0 +1,20 @@
+<ng-container [ngSwitch]="value?.type">
+  <ng-container *ngSwitchCase="'ARRAY'">
+    <span class="toggle" *ngIf="collapsed$ | async" (click)="collapsed$.next(false)">▸</span>
+    <span class="toggle" *ngIf="!(collapsed$ | async)" (click)="collapsed$.next(true)">▾</span>
+    {{ value | value }}
+    <table *ngIf="!(collapsed$ | async)" class="detail">
+      <tr *ngFor="let item of (value.arrayValue || []); index as i">
+        <td>
+          <!-- todo nested collapse -->
+        </td>
+        <td>
+          <strong>{{ i }}</strong>: {{ item | value }}
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+  <ng-container *ngSwitchDefault>
+    {{ (value | value) ?? '-' }}
+  </ng-container>
+</ng-container>

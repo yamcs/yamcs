@@ -13,22 +13,26 @@
 
   <ng-container matColumnDef="generationTime">
     <th mat-header-cell *matHeaderCellDef>Generation time</th>
-    <td mat-cell *matCellDef="let pval">{{ (pval.generationTime | datetime) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval">{{ (pval.generationTime | datetime) ?? '-' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="receptionTime">
     <th mat-header-cell *matHeaderCellDef>Reception time</th>
-    <td mat-cell *matCellDef="let pval">{{ (pval.acquisitionTime | datetime) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval">{{ (pval.acquisitionTime | datetime) ?? '-' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="rawValue">
     <th mat-header-cell *matHeaderCellDef>Raw</th>
-    <td mat-cell *matCellDef="let pval" class="wrap200">{{ (pval.rawValue | value) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval" class="wrap200">
+      <app-value [value]="pval.rawValue"></app-value>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="engValue">
     <th mat-header-cell *matHeaderCellDef>Eng</th>
-    <td mat-cell *matCellDef="let pval" class="wrap200">{{ (pval.engValue | value) || '-' }}</td>
+    <td mat-cell *matCellDef="let pval" class="wrap200">
+      <app-value [value]="pval.engValue"></app-value>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="rangeCondition">

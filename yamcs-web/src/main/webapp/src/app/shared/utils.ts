@@ -164,7 +164,14 @@ export function convertValue(value: Value) {
     case 'ENUMERATED':
     case 'STRING':
       return value.stringValue;
+    case 'ARRAY':
+      const arrayValue: any[] = [];
+      for (const item of (value.arrayValue || [])) {
+        arrayValue.push(convertValue(item));
+      }
+      return arrayValue;
     default:
+      console.log('convert', value);
       throw new Error(`Unexpected value type ${value.type}`);
   }
 }
@@ -216,8 +223,9 @@ export function printValue(value: Value) {
     }
     return preview + '}';
   } else if (value.type === 'ARRAY') {
-    let preview = '[';
+    let preview = '';
     if (value.arrayValue) {
+      preview += `(${value.arrayValue.length}) [`;
       const n = Math.min(value.arrayValue.length, PREVIEW_LENGTH);
       for (let i = 0; i < n; i++) {
         if (i !== 0) {
@@ -228,9 +236,9 @@ export function printValue(value: Value) {
       if (n < value.arrayValue.length) {
         preview += ', …';
       }
-      preview += `] (${value.arrayValue.length})`;
+      preview += ']';
     } else {
-      preview += '] (0)';
+      preview += '(0) []';
     }
     return preview;
   } else {

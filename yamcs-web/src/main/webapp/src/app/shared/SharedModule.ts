@@ -125,6 +125,7 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
+import { ValueComponent } from './value/ValueComponent';
 import { AlarmLabel } from './widgets/AlarmLabel';
 import { Help } from './widgets/Help';
 import { Label } from './widgets/Label';
@@ -236,6 +237,7 @@ const sharedComponents = [
   TimezoneSelect,
   TitleCopy,
   ToolbarActions,
+  ValueComponent,
   WarningMessage,
 ];
 
