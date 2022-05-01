@@ -280,7 +280,7 @@ public class Processor extends AbstractService {
 
             notifyStarted();
         } catch (Exception e) {
-            notifyFailed(e.getCause());
+            notifyFailed(e);
         }
         propagateProcessorStateChange();
     }
