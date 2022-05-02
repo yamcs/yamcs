@@ -15,6 +15,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -104,12 +105,17 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 continue;
             }
             log.info("Injecting the content of {}", f);
+            long count = 0;
+            long minTime = TimeEncoding.MIN_INSTANT;
+            long maxTime = TimeEncoding.MAX_INSTANT;        
             try (PacketInputStream packetInputStream = getPacketInputStream(f.getAbsolutePath())) {
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {
                     updateStats(packet.length);
                     TmPacket tmpkt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
-
+                    minTime = Math.min(minTime, tmpkt.getGenerationTime());
+                    maxTime = Math.max(maxTime, tmpkt.getGenerationTime());
+                    count++;
                     processPacket(tmpkt);
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
@@ -120,6 +126,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             } catch (IOException | PacketTooLongException e) {
                 log.warn("Got IOException while reading from " + f + ": ", e);
             }
+            String msg = String.format("Ingested %s; pkt count: %d, time range: [%s, %s]", f, count, TimeEncoding.toString(minTime), TimeEncoding.toString(maxTime));
+            eventProducer.sendInfo("FILE_INGESTION", msg);
             if (deleteAfterImport) {
                 if (!f.delete()) {
                     log.warn("Could not remove {}", f);
