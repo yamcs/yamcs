@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.GlobFileFinder;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**

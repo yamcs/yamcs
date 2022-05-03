@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.SpaceSystemLoader;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 

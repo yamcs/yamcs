@@ -27,6 +27,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.EmptyNodeLoader;
+import org.yamcs.mdb.SpaceSystemLoader;
+import org.yamcs.mdb.SpreadsheetLoader;
+import org.yamcs.mdb.XtceLoader;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
@@ -34,7 +39,6 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NonStandardData;
@@ -42,7 +46,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.ArgumentReference;
@@ -365,11 +368,11 @@ public class XtceDbFactory {
         LoaderTree ltree;
 
         if ("xtce".equals(type)) {
-            type = "org.yamcs.xtce.XtceLoader";
+            type = XtceLoader.class.getName();
         } else if ("sheet".equals(type)) {
-            type = "org.yamcs.xtce.SpreadsheetLoader";
+            type = SpreadsheetLoader.class.getName();
         } else if ("emptyNode".equalsIgnoreCase(type)) {
-            type = "org.yamcs.xtce.EmptyNodeLoader";
+            type = EmptyNodeLoader.class.getName();
         }
         try {
             if (args == null) {

@@ -1,10 +1,21 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.yamcs.xtce.ANDedConditions;
+import org.yamcs.xtce.BooleanExpression;
+import org.yamcs.xtce.Comparison;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.Condition;
+import org.yamcs.xtce.ExpressionList;
+import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.ORedConditions;
+import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.util.NameReference;
 
 /**

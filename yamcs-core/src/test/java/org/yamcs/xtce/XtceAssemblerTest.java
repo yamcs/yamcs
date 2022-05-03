@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.XtceDbFactory;
 

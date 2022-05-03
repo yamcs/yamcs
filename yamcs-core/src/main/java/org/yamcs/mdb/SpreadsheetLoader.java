@@ -1,7 +1,8 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.xtce.SpaceSystem;
 
 import com.google.common.collect.ImmutableMap;
 

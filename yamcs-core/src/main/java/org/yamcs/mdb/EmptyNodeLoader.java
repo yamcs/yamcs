@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.RandomAccessFile;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.xtce.SpaceSystem;
 
 /**
  * Database "loader" that simply creates an empty SpaceSystem with the given name

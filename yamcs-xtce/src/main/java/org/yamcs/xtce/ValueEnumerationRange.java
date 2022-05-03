@@ -36,4 +36,12 @@ public class ValueEnumerationRange implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
 }

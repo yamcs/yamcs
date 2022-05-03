@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -26,6 +26,101 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.ANDedConditions;
+import org.yamcs.xtce.AbsoluteTimeArgumentType;
+import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.AlarmRanges;
+import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.AncillaryData;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentInstanceRef;
+import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayParameterEntry;
+import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.BinaryArgumentType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanArgumentType;
+import org.yamcs.xtce.BooleanExpression;
+import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.CheckWindow;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.Comparison;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.Condition;
+import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.ContextCalibrator;
+import org.yamcs.xtce.CustomAlgorithm;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DataType;
+import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.EnumeratedDataType;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.EnumerationContextAlarm;
+import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.FixedValueEntry;
+import org.yamcs.xtce.FloatArgumentType;
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.History;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerArgumentType;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.IntegerValue;
+import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MathAlgorithm;
+import org.yamcs.xtce.MathOperation;
+import org.yamcs.xtce.MathOperationCalibrator;
+import org.yamcs.xtce.Member;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.NumericAlarm;
+import org.yamcs.xtce.NumericContextAlarm;
+import org.yamcs.xtce.NumericDataEncoding;
+import org.yamcs.xtce.ORedConditions;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
+import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterOrArgumentRef;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.ParameterValueChange;
+import org.yamcs.xtce.PathElement;
+import org.yamcs.xtce.PolynomialCalibrator;
+import org.yamcs.xtce.ReferenceTime;
+import org.yamcs.xtce.Repeat;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SplineCalibrator;
+import org.yamcs.xtce.SplinePoint;
+import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.TransmissionConstraint;
+import org.yamcs.xtce.TriggerSetType;
+import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.ValueEnumerationRange;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.MathOperation.ElementType;
@@ -442,11 +537,11 @@ public class XtceAssembler {
         doc.writeStartElement("StaticAlarmRanges");
         AlarmRanges ar = na.getStaticAlarmRanges();
 
-        writeRange(doc, "WatchRange", ar.watchRange);
-        writeRange(doc, "WarningRange", ar.warningRange);
-        writeRange(doc, "DistressRange", ar.distressRange);
-        writeRange(doc, "CriticalRange", ar.criticalRange);
-        writeRange(doc, "SevereRange", ar.severeRange);
+        writeRange(doc, "WatchRange", ar.getWatchRange());
+        writeRange(doc, "WarningRange", ar.getWarningRange());
+        writeRange(doc, "DistressRange", ar.getDistressRange());
+        writeRange(doc, "CriticalRange", ar.getCriticalRange());
+        writeRange(doc, "SevereRange", ar.getSevereRange());
 
         doc.writeEndElement();
     }
@@ -613,8 +708,8 @@ public class XtceAssembler {
         for (ValueEnumerationRange ver : type.getValueEnumerationRangeList()) {
             doc.writeStartElement("Enumeration");
             doc.writeAttribute("label", ver.getLabel());
-            doc.writeAttribute("value", Long.toString((long) ver.min));
-            doc.writeAttribute("maxValue", Long.toString((long) ver.max));
+            doc.writeAttribute("value", Long.toString((long) ver.getMin()));
+            doc.writeAttribute("maxValue", Long.toString((long) ver.getMax()));
             doc.writeEndElement();
         }
 
@@ -987,12 +1082,12 @@ public class XtceAssembler {
         doc.writeEndElement();
         doc.writeEndElement();// SizeInBits
 
-        if (encoding.fromBinaryTransformAlgorithm != null) {
-            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.fromBinaryTransformAlgorithm,
+        if (encoding.getFromBinaryTransformAlgorithm() != null) {
+            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getFromBinaryTransformAlgorithm(),
                     "FromBinaryTransformAlgorithm");
         }
-        if (encoding.toBinaryTransformAlgorithm != null) {
-            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.toBinaryTransformAlgorithm,
+        if (encoding.getToBinaryTransformAlgorithm() != null) {
+            writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getToBinaryTransformAlgorithm(),
                     "ToBinaryTransformAlgorithm");
         }
 

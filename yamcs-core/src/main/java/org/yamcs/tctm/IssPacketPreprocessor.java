@@ -1,9 +1,6 @@
 package org.yamcs.tctm;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -52,11 +49,9 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class IssPacketPreprocessor extends CcsdsPacketPreprocessor {
 
-
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
-
 
     public IssPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
@@ -69,7 +64,7 @@ public class IssPacketPreprocessor extends CcsdsPacketPreprocessor {
     @Override
     public TmPacket process(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
-        
+
         if (packet.length < 16) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is 16 bytes.");
@@ -107,13 +102,12 @@ public class IssPacketPreprocessor extends CcsdsPacketPreprocessor {
         }
 
         checkSequence(apid, seq);
-        
-        long genTime = TimeEncoding.fromGpsCcsdsTime( ByteArrayUtils.decodeInt(packet, 6), packet[10]);
+
+        long genTime = TimeEncoding.fromGpsCcsdsTime(ByteArrayUtils.decodeInt(packet, 6), packet[10]);
         tmPacket.setGenerationTime(genTime);
         tmPacket.setSequenceCount(apidseqcount);
         tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
-
 
 }

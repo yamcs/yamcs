@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +11,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.xtce.ConditionParser.ParameterReferenceFactory;
+import org.yamcs.mdb.ConditionParser.ParameterReferenceFactory;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ParameterReference;
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.yamcs.http.BadRequestException;
+import org.yamcs.mdb.ConditionParser;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -23,7 +24,6 @@ import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;

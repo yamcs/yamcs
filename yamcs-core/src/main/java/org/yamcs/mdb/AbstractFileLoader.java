@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.File;
 import java.io.FileWriter;

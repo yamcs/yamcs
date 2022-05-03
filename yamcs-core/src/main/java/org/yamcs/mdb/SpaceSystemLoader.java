@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.mdb;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.xtce.SpaceSystem;
 
 /**
  * Interface implemented by the database loaders.

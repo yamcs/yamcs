@@ -2,7 +2,7 @@ package org.yamcs.xtceproc;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.xtce.SpreadsheetLoader;
+import org.yamcs.mdb.SpreadsheetLoader;
 
 public class TestMdbLoadingSpeed {
 
