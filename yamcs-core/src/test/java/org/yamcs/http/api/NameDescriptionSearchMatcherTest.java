@@ -7,9 +7,9 @@ import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.api.NameDescriptionSearchMatcher;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class NameDescriptionSearchMatcherTest {
 

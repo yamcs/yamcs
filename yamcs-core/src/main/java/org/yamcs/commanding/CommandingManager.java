@@ -13,6 +13,8 @@ import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.MetaCommandProcessor;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
@@ -22,8 +24,6 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.MetaCommandProcessor;
-import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 import com.google.common.util.concurrent.AbstractService;
 

@@ -12,6 +12,7 @@ import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Event.EventSeverity;
@@ -22,7 +23,6 @@ import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Generates alarm events for a processor, by subscribing to all relevant parameters.

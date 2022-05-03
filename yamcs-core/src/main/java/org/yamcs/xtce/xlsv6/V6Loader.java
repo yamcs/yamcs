@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ConditionParser;
+import org.yamcs.mdb.JavaExpressionCalibratorFactory;
 import org.yamcs.mdb.SpreadsheetLoadContext;
 import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.utils.StringConverter;
@@ -104,7 +105,6 @@ import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.xml.XtceAliasSet;
-import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.primitives.UnsignedLongs;

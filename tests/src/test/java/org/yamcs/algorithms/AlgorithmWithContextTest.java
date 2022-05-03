@@ -19,14 +19,14 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class AlgorithmWithContextTest {
 

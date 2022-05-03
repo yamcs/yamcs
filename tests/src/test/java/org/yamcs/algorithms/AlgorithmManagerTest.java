@@ -26,6 +26,7 @@ import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -38,7 +39,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlgorithmManagerTest {

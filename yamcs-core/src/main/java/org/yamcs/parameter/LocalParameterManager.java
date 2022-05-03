@@ -15,6 +15,8 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.DataTypeProcessor;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.utils.AggregateUtil;
@@ -24,8 +26,6 @@ import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.DataTypeProcessor;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.

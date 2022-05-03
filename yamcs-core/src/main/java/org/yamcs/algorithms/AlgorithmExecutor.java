@@ -1,7 +1,7 @@
 package org.yamcs.algorithms;
 
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Represents the execution context of one algorithm.

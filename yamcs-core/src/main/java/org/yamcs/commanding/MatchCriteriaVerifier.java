@@ -4,15 +4,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
+import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
 
 /**
  * Verifies commands by checking {@link MatchCriteria}. It implements the following XTCE verifier types:

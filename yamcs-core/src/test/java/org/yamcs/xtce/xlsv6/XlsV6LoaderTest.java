@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
@@ -19,7 +20,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class XlsV6LoaderTest {
     XtceDb db;

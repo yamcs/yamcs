@@ -9,12 +9,12 @@ import org.yamcs.algorithms.ActiveAlgorithm;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
 
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
     final Algorithm alg;

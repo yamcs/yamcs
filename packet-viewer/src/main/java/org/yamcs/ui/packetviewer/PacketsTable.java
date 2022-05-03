@@ -37,6 +37,8 @@ import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.TmPacket;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.ui.packetviewer.filter.PacketFilter;
 import org.yamcs.utils.TimeEncoding;
@@ -44,8 +46,6 @@ import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.XtceTmExtractor;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

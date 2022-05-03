@@ -25,6 +25,10 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
@@ -39,10 +43,6 @@ import org.yamcs.time.TimeService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
-import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
-import org.yamcs.xtceproc.ProcessingData;
 
 import com.google.common.util.concurrent.AbstractService;
 

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;

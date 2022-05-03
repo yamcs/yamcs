@@ -7,12 +7,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.events.EventProducer;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
-import org.yamcs.xtceproc.ProcessingData;
 
 import com.google.protobuf.util.Timestamps;
 

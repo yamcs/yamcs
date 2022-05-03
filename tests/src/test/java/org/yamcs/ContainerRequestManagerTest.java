@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ContainerRequestManagerTest {
 

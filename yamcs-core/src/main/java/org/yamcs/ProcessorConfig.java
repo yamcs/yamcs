@@ -2,9 +2,9 @@ package org.yamcs;
 
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ContainerProcessingOptions;
+import org.yamcs.mdb.MetaCommandProcessor;
 import org.yamcs.parameter.ParameterCacheConfig;
-import org.yamcs.xtceproc.ContainerProcessingOptions;
-import org.yamcs.xtceproc.MetaCommandProcessor;
 
 /**
  * Configuration options for a processor

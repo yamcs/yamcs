@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
@@ -14,7 +15,6 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessorData;
 
 /**
  * Library of functions available from within Algorithm scripts using this naming scheme:

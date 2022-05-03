@@ -19,6 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.events.EventProducer;
+import org.yamcs.mdb.DataEncodingDecoder;
+import org.yamcs.mdb.ParameterTypeProcessor;
+import org.yamcs.mdb.ParameterTypeUtils;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
@@ -30,10 +34,6 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtceproc.DataEncodingDecoder;
-import org.yamcs.xtceproc.ParameterTypeProcessor;
-import org.yamcs.xtceproc.ParameterTypeUtils;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of

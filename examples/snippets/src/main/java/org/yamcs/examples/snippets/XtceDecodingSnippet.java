@@ -7,9 +7,9 @@ import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmExtractor;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmExtractor;
 
 /**
  * Shows how to use Yamcs as a general-purpose library for decoding packets based on an XTCE XML definition.

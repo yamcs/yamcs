@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -24,7 +25,6 @@ import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class AlarmTest {
 

@@ -15,6 +15,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -22,7 +23,6 @@ import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Java algorithms test

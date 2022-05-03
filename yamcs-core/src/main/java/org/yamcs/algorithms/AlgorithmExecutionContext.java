@@ -10,14 +10,14 @@ import java.util.stream.Collectors;
 
 import org.yamcs.events.EventProducer;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.ProcessorData;
 
 /**
  * A context is a collection of active algorithms. Each algorithm has only one instance active in a given context.

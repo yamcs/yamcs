@@ -1,11 +1,11 @@
 package org.yamcs.algo;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
+import org.yamcs.mdb.AbstractDataEncoder;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtceproc.AbstractDataEncoder;
 
 public class LeadingSizeBinaryEncoder extends AbstractDataEncoder {
     

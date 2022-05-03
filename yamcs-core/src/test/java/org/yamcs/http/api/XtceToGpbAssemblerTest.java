@@ -7,10 +7,10 @@ import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.api.XtceToGpbAssembler;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Created by msc on 05.04.16.

@@ -17,6 +17,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
@@ -24,8 +26,6 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class LocalParameterManagerTest {
     XtceDb xtceDb;

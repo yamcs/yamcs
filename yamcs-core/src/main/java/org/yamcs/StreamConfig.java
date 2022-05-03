@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Stores the value of the streamConfiguration parameter from yamcs.instance.yaml Used to create the streams at Yamcs

@@ -3,12 +3,12 @@ package org.yamcs.management;
 import java.util.List;
 
 import org.yamcs.Processor;
+import org.yamcs.mdb.ProcessingStatistics;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.TmStatistics;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimestampUtil;
-import org.yamcs.xtceproc.ProcessingStatistics;
 
 /**
  * Provides common functionality to assemble and disassemble GPB messages

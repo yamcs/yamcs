@@ -8,6 +8,7 @@ import org.yamcs.Processor;
 import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
@@ -20,7 +21,6 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * A command which is just being sent (maybe in the queue) or that has been sent and command verifiers are pending.

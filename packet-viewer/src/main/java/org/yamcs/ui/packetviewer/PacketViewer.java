@@ -86,6 +86,9 @@ import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
@@ -105,9 +108,6 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.io.CountingInputStream;
 

@@ -22,11 +22,11 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.mdb.ProcessingStatistics;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamInfo;
-import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 

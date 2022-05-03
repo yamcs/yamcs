@@ -9,13 +9,13 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.mdb.ParameterAlarmChecker;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.ParameterAlarmChecker;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.common.util.concurrent.AbstractService;

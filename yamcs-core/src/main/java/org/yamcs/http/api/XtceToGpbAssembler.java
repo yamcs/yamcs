@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Mdb;
@@ -142,8 +144,6 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 public class XtceToGpbAssembler {
     static final Log log = new Log(XtceToGpbAssembler.class);

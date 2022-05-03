@@ -3,10 +3,10 @@ package org.yamcs.algorithms;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.OutputParameter;
-import org.yamcs.xtceproc.ProcessingData;
 
 public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor {
 

@@ -14,6 +14,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -24,7 +25,6 @@ import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 

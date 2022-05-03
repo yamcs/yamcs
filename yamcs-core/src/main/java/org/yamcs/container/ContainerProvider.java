@@ -1,10 +1,10 @@
 package org.yamcs.container;
 
 import org.yamcs.InvalidIdentification;
+import org.yamcs.mdb.ContainerListener;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtceproc.ContainerListener;
 
 import com.google.common.util.concurrent.Service;
 

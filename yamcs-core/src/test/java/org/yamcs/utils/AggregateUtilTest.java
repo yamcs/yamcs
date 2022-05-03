@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 
 import org.junit.Test;
+import org.yamcs.mdb.DataTypeProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.Value;
@@ -17,7 +18,6 @@ import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.util.DataTypeUtil;
-import org.yamcs.xtceproc.DataTypeProcessor;
 
 public class AggregateUtilTest {
 
