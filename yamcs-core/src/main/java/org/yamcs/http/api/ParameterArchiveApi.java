@@ -364,7 +364,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throws RocksDBException, DecodingException, IOException {
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
-        Consumer<ParameterIdValueList> consumer = new Consumer<ParameterIdValueList>() {
+        Consumer<ParameterIdValueList> consumer = new Consumer<>() {
             boolean first = true;
 
             @Override
