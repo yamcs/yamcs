@@ -57,7 +57,10 @@ public class SortedIntArray implements Serializable {
     }
 
     /**
-     * Inserts value to the array and return the position on which has been inserted
+     * Inserts value to the array and return the position on which has been inserted.
+     * <p>
+     * In case <code>x</code> is already present in the array, this function inserts the new value at a position after
+     * the values already present
      * 
      * @param x
      *            - value to be inserted
@@ -68,6 +71,10 @@ public class SortedIntArray implements Serializable {
         int pos = Arrays.binarySearch(a, 0, length, x);
         if (pos < 0) {
             pos = -pos - 1;
+        } else { // make sure we insert after the last value
+            while (pos < length && a[pos] == x) {
+                pos++;
+            }
         }
 
         ensureCapacity(length + 1);

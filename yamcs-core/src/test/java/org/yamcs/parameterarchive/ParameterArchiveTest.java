@@ -667,6 +667,32 @@ public class ParameterArchiveTest {
 
     }
 
+    @Test
+    public void testSameTimestamp() throws Exception {
+
+        ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
+
+        int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+                pv1_0.getRawValue().getType());
+
+        int pg1id = pgidMap.createAndGet(IntArray.wrap(p1id));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id));
+
+        pgSegment1.addRecord(100, Arrays.asList(pv1_0));
+        ParameterValue pv1_1 = getParameterValue(p1, 100, "blala200", 200);
+        pgSegment1.addRecord(100, Arrays.asList(pv1_1));
+
+        parchive.writeToArchive(pgSegment1);
+
+        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, true);
+        checkEquals(l1a.get(0), pv1_0, pv1_1);
+
+        List<ParameterIdValueList> l2a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
+                new int[] { pg1id }, true);
+        assertEquals(1, l1a.size());
+        checkEquals(l2a.get(0), 100, pv1_0, pv1_1);
+    }
+
     List<ParameterIdValueList> retrieveMultipleParameters(long start, long stop, int[] parameterIds,
             int[] parameterGroupIds, boolean ascending) throws Exception {
         return retrieveMultipleParameters(start, stop, parameterIds, parameterGroupIds, ascending, -1);
