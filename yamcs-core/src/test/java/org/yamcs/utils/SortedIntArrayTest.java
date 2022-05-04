@@ -66,6 +66,13 @@ public class SortedIntArrayTest {
         assertFalse(s1.hashCode() == s3.hashCode());
     }
     
+    @Test
+    public void testSameValue() {
+        SortedIntArray s = new SortedIntArray();
+        s.insert(0);
+        assertEquals(1, s.insert(2));
+        assertEquals(2, s.insert(2));
+    }
     
     private void assertItEquals(PrimitiveIterator.OfInt it, int ...a) {
         for(int i=0; i<a.length;i++) {

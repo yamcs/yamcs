@@ -374,10 +374,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                     first = false;
                     sendFromCache(pid, pcache, false, lastParameterTime.getLong(), mpvr.getStop(), replayListener);
                 }
-                ParameterValue pv = pidvList.getValues().get(0);
-                replayListener.update(new ParameterValueWithId(pv, pid.getId()));
-                if (replayListener.isReplayAbortRequested()) {
-                    throw new ConsumerAbortException();
+                for (ParameterValue pv : pidvList.getValues()) {
+                    replayListener.update(new ParameterValueWithId(pv, pid.getId()));
+                    if (replayListener.isReplayAbortRequested()) {
+                        throw new ConsumerAbortException();
+                    }
                 }
             }
         };
