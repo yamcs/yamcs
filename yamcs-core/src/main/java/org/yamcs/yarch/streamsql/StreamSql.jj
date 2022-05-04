@@ -768,6 +768,7 @@ Expression RelationalExpression() throws StreamSqlException: {
     List<Expression> list;
     LikeClause likeClause;
     InClause inClause;
+    IsNullClause isNullClause;
 } {
     expr = SimpleExpression() {retExpr=expr;}
     ( relOp=RelOp() expr = SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
@@ -778,7 +779,7 @@ Expression RelationalExpression() throws StreamSqlException: {
       |
       LOOKAHEAD(2) likeClause = LikeClause() { retExpr = new LikeExpression(expr, likeClause);}
       |
-      IsNullClause()
+      isNullClause = IsNullClause() { retExpr = new IsNullExpression(expr, isNullClause);}
    )?
     {
 	return retExpr;
@@ -826,9 +827,13 @@ LikeClause LikeClause() throws StreamSqlException:{
 
 }
 
-void IsNullClause() throws StreamSqlException:{
+IsNullClause IsNullClause() throws StreamSqlException:{
+	IsNullClause isNullClause = new IsNullClause();
 } {
-    "IS" ["NOT"] "NULL"
+    "IS" ["NOT" {isNullClause.setNegation(true);}] "NULL"
+    {
+    return isNullClause;
+    }
 }
 
 
