@@ -1,13 +1,13 @@
 <nav mat-tab-nav-bar>
   <a mat-tab-link
-     routerLink="../objects"
+     [routerLink]="['/storage/buckets', bucketInstance, bucket, 'objects']"
      routerLinkActive
      #rla="routerLinkActive"
      [active]="rla.isActive">
     OBJECTS
   </a>
   <a mat-tab-link
-     routerLink="../properties"
+     [routerLink]="['/storage/buckets', bucketInstance, bucket, 'properties']"
      routerLinkActive
      #rlb="routerLinkActive"
      [active]="rlb.isActive">

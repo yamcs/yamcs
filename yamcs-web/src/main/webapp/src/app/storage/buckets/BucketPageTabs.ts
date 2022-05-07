@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -8,6 +8,13 @@ import { YamcsService } from '../../core/services/YamcsService';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketPageTabs {
+
+  @Input()
+  bucketInstance: string;
+
+  @Input()
+  bucket: string;
+
   constructor(readonly yamcs: YamcsService) {
   }
 }

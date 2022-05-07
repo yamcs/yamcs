@@ -70,7 +70,7 @@
       </mat-sidenav>
       <mat-sidenav-content>
         <div class="panel-content">
-          <app-bucket-page-tabs></app-bucket-page-tabs>
+          <app-bucket-page-tabs [bucketInstance]="bucketInstance" [bucket]="name"></app-bucket-page-tabs>
           <div *ngIf="breadcrumb$ | async as breadcrumb" style="margin-top: 16px">
             <app-breadcrumb-trail>
               <app-breadcrumb [link]="['/storage/buckets']"
