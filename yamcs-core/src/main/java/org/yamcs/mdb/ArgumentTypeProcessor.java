@@ -310,11 +310,11 @@ public class ArgumentTypeProcessor {
             if (r != null) {
                 int length = v.length();
                 if (length < r.getMinInclusive()) {
-                    throw new ErrorInCommand("Value " + v + " supplied for parameter fo type " + type
+                    throw new ErrorInCommand("Value " + v + " supplied for parameter of type " + type
                             + " does not satisfy minimum length of " + r.getMinInclusive());
                 }
                 if (length > r.getMaxInclusive()) {
-                    throw new ErrorInCommand("Value " + v + " supplied for parameter fo type " + type
+                    throw new ErrorInCommand("Value " + v + " supplied for parameter of type " + type
                             + " does not satisfy maximum length of " + r.getMaxInclusive());
                 }
             }
@@ -327,12 +327,12 @@ public class ArgumentTypeProcessor {
                 int length = b.length;
                 if (length < r.getMinInclusive()) {
                     throw new ErrorInCommand(
-                            "Value " + StringConverter.arrayToHexString(b) + " supplied for parameter fo type " + type
+                            "Value " + StringConverter.arrayToHexString(b) + " supplied for parameter of type " + type
                                     + " does not satisfy minimum length of " + r.getMinInclusive());
                 }
                 if (length > r.getMaxInclusive()) {
                     throw new ErrorInCommand(
-                            "Value " + StringConverter.arrayToHexString(b) + " supplied for parameter fo type " + type
+                            "Value " + StringConverter.arrayToHexString(b) + " supplied for parameter of type " + type
                                     + " does not satisfy maximum length of " + r.getMaxInclusive());
                 }
             }

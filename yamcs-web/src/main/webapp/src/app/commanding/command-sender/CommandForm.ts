@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
+import { maxHexLengthValidator, minHexLengthValidator, requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
 
@@ -316,7 +316,7 @@ export class CommandForm implements OnChanges {
 
   private getValidatorsForType(type: ArgumentType) {
     const validators = [];
-    if (type.minChars !== 0) {
+    if (type.minChars !== 0 && type.minBytes !== 0) {
       validators.push(Validators.required);
     }
     if (type.engType === 'integer') {
@@ -338,6 +338,12 @@ export class CommandForm implements OnChanges {
     }
     if (type.maxChars !== undefined) {
       validators.push(Validators.maxLength(type.maxChars));
+    }
+    if (type.minBytes !== undefined) {
+      validators.push(minHexLengthValidator(type.minBytes));
+    }
+    if (type.maxBytes !== undefined) {
+      validators.push(maxHexLengthValidator(type.maxBytes));
     }
     return validators;
   }

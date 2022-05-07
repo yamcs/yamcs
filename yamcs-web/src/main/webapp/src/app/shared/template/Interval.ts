@@ -20,22 +20,30 @@ export class Interval implements OnChanges {
   @Input()
   rightInclusive = true;
 
+  @Input()
+  singleValueIfEqual = false;
+
   interval$ = new BehaviorSubject<string | null>(null);
 
   ngOnChanges() {
-    let result = '(-∞';
-    if (this.left !== undefined) {
-      result = this.leftInclusive ? '[' : '(';
-      result += this.left;
-    }
-
-    result += ', ';
-
-    if (this.right !== undefined) {
-      result += this.right;
-      result += this.rightInclusive ? ']' : ')';
+    let result;
+    if (this.singleValueIfEqual && this.left !== undefined && this.left === this.right) {
+      result = String(this.left);
     } else {
-      result += '+∞)';
+      result = '(-∞';
+      if (this.left !== undefined) {
+        result = this.leftInclusive ? '[' : '(';
+        result += this.left;
+      }
+
+      result += ', ';
+
+      if (this.right !== undefined) {
+        result += this.right;
+        result += this.rightInclusive ? ']' : ')';
+      } else {
+        result += '+∞)';
+      }
     }
 
     this.interval$.next(result);
