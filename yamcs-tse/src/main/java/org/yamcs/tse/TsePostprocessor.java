@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs.tse;
 
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.tse.api.TseCommand;

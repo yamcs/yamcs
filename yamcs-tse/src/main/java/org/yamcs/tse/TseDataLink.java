@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs.tse;
 
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +16,7 @@ import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.Value;
+import org.yamcs.tctm.AbstractLink;
 import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommand;
 import org.yamcs.tse.api.TseCommanderMessage;
@@ -24,7 +25,6 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.TseLoader;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;

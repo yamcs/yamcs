@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.tse;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,7 +10,17 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.DatabaseLoadException;
 import org.yamcs.mdb.SpaceSystemLoader;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.IntegerArgumentType;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
 public class TseLoader implements SpaceSystemLoader {
@@ -44,7 +54,7 @@ public class TseLoader implements SpaceSystemLoader {
 
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-        //we want to load all the time the file as fresh so no consistency date
+        // we want to load all the time the file as fresh so no consistency date
     }
 
     @Override
@@ -87,7 +97,8 @@ public class TseLoader implements SpaceSystemLoader {
 
         Argument commandArgument = new Argument(ARG_COMMAND);
         StringArgumentType.Builder commandArgumentType = new StringArgumentType.Builder().setName(ARG_COMMAND);
-        StringDataEncoding.Builder commandArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
+        StringDataEncoding.Builder commandArgumentEncoding = new StringDataEncoding.Builder()
+                .setSizeType(SizeType.TERMINATION_CHAR);
         commandArgumentEncoding.setTerminationChar((byte) 0x00);
         commandArgumentType.setEncoding(commandArgumentEncoding);
         commandArgument.setArgumentType(commandArgumentType.build());
@@ -123,7 +134,8 @@ public class TseLoader implements SpaceSystemLoader {
 
         Argument responseArgument = new Argument(ARG_RESPONSE);
         StringArgumentType.Builder responseArgumentType = new StringArgumentType.Builder().setName(ARG_RESPONSE);
-        StringDataEncoding.Builder responseArgumentEncoding = new StringDataEncoding.Builder().setSizeType(SizeType.TERMINATION_CHAR);
+        StringDataEncoding.Builder responseArgumentEncoding = new StringDataEncoding.Builder()
+                .setSizeType(SizeType.TERMINATION_CHAR);
         responseArgumentEncoding.setTerminationChar((byte) 0x00);
         responseArgumentType.setEncoding(responseArgumentEncoding);
         responseArgument.setArgumentType(responseArgumentType.build());
