@@ -973,7 +973,7 @@ public class YamcsServer {
 
         // Good to go!
         try {
-            LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
+            LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
             YAMCS.start();
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));

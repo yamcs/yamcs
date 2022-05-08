@@ -76,8 +76,12 @@ public class ServerApi extends AbstractServerApi<Context> {
     public void getServerInfo(Context ctx, Empty request, Observer<GetServerInfoResponse> observer) {
         System.gc();
         GetServerInfoResponse.Builder responseb = GetServerInfoResponse.newBuilder();
-        responseb.setYamcsVersion(YamcsVersion.VERSION);
-        responseb.setRevision(YamcsVersion.REVISION);
+        if (YamcsVersion.VERSION != null) {
+            responseb.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            responseb.setRevision(YamcsVersion.REVISION);
+        }
         responseb.setServerId(YamcsServer.getServer().getServerId());
 
         PluginManager pluginManager = YamcsServer.getServer().getPluginManager();
