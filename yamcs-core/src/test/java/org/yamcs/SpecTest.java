@@ -4,9 +4,12 @@ import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -343,5 +346,26 @@ public class SpecTest {
 
         Map<String, Object> result2 = spec.validate(of("bloe", 123));
         assertEquals(123, result2.get("bla"));
+    }
+
+    @Test
+    public void testListOfMapsWithNoValue() throws ValidationException {
+        Map<String, Object> modulesConfig = new HashMap<>();
+        modulesConfig.put("modules1", null);
+        modulesConfig.put("modules2", null);
+
+        Spec spec = new Spec();
+        spec.addOption("modules1", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(new Spec());
+
+        spec.addOption("modules2", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(new Spec())
+                .withDefault(new ArrayList<>());
+
+        Map<String, Object> result = spec.validate(modulesConfig);
+        assertNull(result.get("modules1"));
+        assertNull(result.get("modules2")); // The "key" is specified, so default does not apply
     }
 }
