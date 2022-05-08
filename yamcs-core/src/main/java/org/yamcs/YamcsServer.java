@@ -1379,9 +1379,6 @@ public class YamcsServer {
                 NANOSECONDS.toMillis(bootTime), instanceCount, instances.size(), serviceCount);
 
         if (options.noStreamRedirect) {
-            // The init.d script uses this, by grepping for a known string
-            // Note that the init.d script cannot grep the real log file because it
-            // does not know its location.
             System.out.println(msg);
         } else {
             // Associate the message with a specific logger
