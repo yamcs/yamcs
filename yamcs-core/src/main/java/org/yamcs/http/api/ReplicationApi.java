@@ -159,12 +159,16 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
         } else {
             ReplicationServer server = getReplicationServer();
             if (server != null) {
-                for (Channel ch : server.getActiveChannels(slave)) {
-                    ReplicationSlaveInfo.Builder slaveb = ReplicationSlaveInfo.newBuilder()
-                            .setInstance(slave.getYamcsInstance())
-                            .addAllStreams(streamNames)
-                            .setPush(true)
-                            .setTx(txid);
+                ReplicationSlaveInfo slavePrototype = ReplicationSlaveInfo.newBuilder()
+                        .setInstance(slave.getYamcsInstance())
+                        .addAllStreams(streamNames)
+                        .setPush(true)
+                        .setTx(txid)
+                        .buildPartial();
+
+                List<Channel> activeChannels = server.getActiveChannels(slave);
+                for (Channel ch : activeChannels) {
+                    ReplicationSlaveInfo.Builder slaveb = ReplicationSlaveInfo.newBuilder(slavePrototype);
 
                     InetSocketAddress address = (InetSocketAddress) ch.localAddress();
                     slaveb.setLocalAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
@@ -173,6 +177,9 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
                     slaveb.setRemoteAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
 
                     result.add(slaveb.build());
+                }
+                if (activeChannels.isEmpty()) {
+                    result.add(ReplicationSlaveInfo.newBuilder(slavePrototype).build());
                 }
             }
         }
