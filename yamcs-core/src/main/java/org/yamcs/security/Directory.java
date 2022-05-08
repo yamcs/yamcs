@@ -280,9 +280,11 @@ public class Directory {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
         }
-        String hash = hasher.createHash(password);
-        user.setHash(hash);
-        persistChanges();
+        if (!validateUserPassword(user.getName(), password)) {
+            String hash = hasher.createHash(password);
+            user.setHash(hash);
+            persistChanges();
+        }
     }
 
     public Account getAccount(String name) {

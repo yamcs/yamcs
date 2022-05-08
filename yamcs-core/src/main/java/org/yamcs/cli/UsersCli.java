@@ -1,6 +1,5 @@
 package org.yamcs.cli;
 
-import java.io.Console;
 import java.util.Arrays;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public class UsersCli extends Command {
                 console.println("username not specified");
                 exit(-1);
             }
-            System.out.println("username: " + username);
+
             User user = directory.getUser(username.get(0));
             if (user == null) {
                 console.println("invalid user '" + username + "'");
