@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -8,6 +8,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.yamcs.ContainerExtractionResult;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.events.EventProducerFactory;

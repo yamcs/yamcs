@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import java.util.ArrayList;
 import java.util.List;

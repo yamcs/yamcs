@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,12 +10,14 @@ import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.yamcs.AbstractIntegrationTest.MyConnectionListener;
+import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tests.AbstractIntegrationTest.MyConnectionListener;
 
 public class LongWebsocketFrameTest {
 

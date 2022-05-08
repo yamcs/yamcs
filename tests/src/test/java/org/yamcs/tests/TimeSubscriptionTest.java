@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.client.TimeSubscription;

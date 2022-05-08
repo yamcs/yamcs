@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,6 +11,8 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.yamcs.Processor;
+import org.yamcs.YamcsServer;
 import org.yamcs.client.Page;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.ListOptions;
@@ -195,8 +197,10 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1199, r0.getCount());
         assertEquals(1199, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
-        assertEquals("2018-01-01T11:40:01.000Z", r0.getTimeStart());
-        assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
+        assertEquals("2018-01-01T11:40:01.000Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStart())));
+        assertEquals("2018-01-01T11:59:59.000Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStop())));
 
         buildParameterArchive("2018-01-01T10:00:00", "2018-01-02T11:00:00");
 
@@ -216,13 +220,18 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         r0 = ranges.get(0);
         assertEquals(7200, r0.getCounts(0));
 
-        assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
-        assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); // last parameter time plus expiration
+        assertEquals("2018-01-01T10:00:00.000Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStart())));
+        // last parameter time plus expiration
+        assertEquals("2018-01-01T12:00:01.850Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStop())));
 
         Range r1 = ranges.get(1);
         assertEquals(3600, r1.getCounts(0));
-        assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
-        assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
+        assertEquals("2018-01-01T13:00:00.000Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r1.getStart())));
+        assertEquals("2018-01-01T13:59:59.000Z",
+                TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r1.getStop())));
 
         start = Instant.parse("2018-01-01T10:00:00Z");
         stop = Instant.parse("2018-01-02T11:00:00Z");

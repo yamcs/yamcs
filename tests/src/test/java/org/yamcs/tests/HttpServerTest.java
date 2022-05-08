@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Test;
+import org.yamcs.YamcsServer;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.base.HttpClient;
 import org.yamcs.http.HttpServer;

@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.yamcs.YamcsServer;
 import org.yamcs.client.InstanceFilter;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.ListInstancesResponse;

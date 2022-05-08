@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -6,6 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.Processor;
+import org.yamcs.TmPacket;
+import org.yamcs.TmPacketProvider;
+import org.yamcs.TmProcessor;
+import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.StringConverter;

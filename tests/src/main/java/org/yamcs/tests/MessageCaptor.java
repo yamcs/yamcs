@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.tests;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
