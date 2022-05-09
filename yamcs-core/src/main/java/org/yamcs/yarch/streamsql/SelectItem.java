@@ -18,7 +18,7 @@ public class SelectItem {
         if (alias != null)
             return alias;
         else
-            return expr.toString();
+            return expr.getColumnName();
     }
 
     public boolean isStar() {
