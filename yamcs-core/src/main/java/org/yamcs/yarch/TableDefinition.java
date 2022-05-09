@@ -435,6 +435,9 @@ public class TableDefinition {
         if (tdef == null) {
             throw new IllegalArgumentException("No column named '" + columnName + "'");
         }
+        if (value == null) {
+            throw new NullPointerException("Enum value cannot be null");
+        }
 
         Short enumValue = tdef.getEnumIndex(value);
         if (enumValue == null) {
@@ -553,8 +556,8 @@ public class TableDefinition {
                 byte dt = (byte) (cidx >>> 24);
                 cidx &= 0xFFFFFF;
                 if (cidx >= valueDef.size()) {
-                    throw new DatabaseCorruptionException(
-                            "Reference to index " + cidx + " found but the table definition does not have this column");
+                    throw new DatabaseCorruptionException("Reference to index " + cidx
+                            + " found in table" + name + " but the table definition does not have this column");
                 }
 
                 TableColumnDefinition tcd = valueDef.get(cidx);
@@ -570,7 +573,7 @@ public class TableDefinition {
             }
         } catch (IOException e) {
             throw new DatabaseCorruptionException(
-                    "cannot deserialize row from " + name + " "
+                    "Cannot deserialize row from " + name + " "
                             + "(key:" + StringConverter.byteBufferToHexString(ByteBuffer.wrap(k))
                             + ", value: " + StringConverter.byteBufferToHexString(ByteBuffer.wrap(v)) + ")",
                     e);
