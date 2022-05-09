@@ -187,4 +187,14 @@ public class TupleSourceExpression implements FilterableTarget {
     TupleDefinition getDefinition() {
         return definition;
     }
+
+    public boolean isFinite() {
+        switch(type) {
+        case TABLE:
+        case TABLE_HISTOGRAM:
+            return true;
+        default:
+            return false;
+        }
+    }
 }

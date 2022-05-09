@@ -87,7 +87,7 @@ public class RdbEngineTest extends YarchTestCase {
     }
 
     public TableDefinition populate() throws Exception {
-        String query = "create table table1(gentime timestamp, seqNum int, name string, values string[], primary key(gentime, seqNum)) histogram(name) "
+        String query = "create table table1(gentime timestamp, seqNum int, name string, vals string[], primary key(gentime, seqNum)) histogram(name) "
                 + "partition by time(gentime) table_format=compressed engine rocksdb2";
         execute(query);
         long t1 = TimeEncoding.parse("2016-12-16T00:00:00");

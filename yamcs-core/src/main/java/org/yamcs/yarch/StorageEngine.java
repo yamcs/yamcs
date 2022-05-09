@@ -115,4 +115,9 @@ public interface StorageEngine {
      */
     public List<SequenceInfo> getSequencesInfo(YarchDatabaseInstance ydb);
 
+    /**
+     * rename the table
+     */
+    public void renameTable(YarchDatabaseInstance ydb, TableDefinition tblDef, String newName);
+
 }

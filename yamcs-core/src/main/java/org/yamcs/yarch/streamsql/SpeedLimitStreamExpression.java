@@ -46,4 +46,9 @@ public class SpeedLimitStreamExpression implements StreamExpression {
             return sls;
         }
     }
+
+    @Override
+    public boolean isFinite() {
+        return false;
+    }
 }

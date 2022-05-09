@@ -95,45 +95,18 @@ public abstract class YarchTestCase {
         return fetchAll(sname);
     }
 
-    protected List<Tuple> fetchAll(String streamName) throws InterruptedException {
-        return fetch(streamName, null);
-    }
-
     /**
-     * fetch all tuples from outStream. If inStream is specified, do an inStream.start() after subscribing to outStream
-     * otherwise do an outStream.start()
-     * 
-     * The termination condition is also dictated by the stream where start is used
+     * fetch all tuples from outStream.
      * 
      */
-    protected List<Tuple> fetch(String outStream, String inStream) throws InterruptedException {
+    protected List<Tuple> fetchAll(String streamName) throws InterruptedException {
+
         final List<Tuple> tuples = new ArrayList<>();
         final Semaphore semaphore = new Semaphore(0);
-        Stream out = ydb.getStream(outStream);
+        Stream out = ydb.getStream(streamName);
         if (out == null) {
-            throw new IllegalArgumentException("No stream named '" + outStream + "' in instance " + instance);
+            throw new IllegalArgumentException("No stream named '" + streamName + "' in instance " + instance);
         }
-        Stream streamToStart = null;
-        if (inStream != null) {
-            streamToStart = ydb.getStream(inStream);
-            if (streamToStart == null) {
-                throw new IllegalArgumentException("No stream named '" + inStream + "' in instance " + instance);
-            }
-            streamToStart.addSubscriber(new StreamSubscriber() {
-
-                @Override
-                public void streamClosed(Stream stream) {
-                    semaphore.release();
-                }
-
-                @Override
-                public void onTuple(Stream stream, Tuple tuple) {
-                }
-            });
-        } else {
-            streamToStart = out;
-        }
-
         out.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {
@@ -146,8 +119,7 @@ public abstract class YarchTestCase {
             }
         });
 
-        streamToStart.start();
-
+        out.start();
         semaphore.acquire();
         return tuples;
     }
