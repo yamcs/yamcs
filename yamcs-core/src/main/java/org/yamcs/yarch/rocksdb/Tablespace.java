@@ -7,6 +7,7 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
@@ -114,8 +116,6 @@ public class Tablespace {
 
     RDBFactory rdbFactory;
 
-    // these two maps are only modified when a table is created and removed and are both synchronized on the
-    // partitionManagers object
     Map<TableDefinition, RdbTable> tables = new HashMap<>();
 
     static final Object DUMMY = new Object();
@@ -208,7 +208,7 @@ public class Tablespace {
 
     public List<TablespaceRecord> filter(Type type, String instanceName, Predicate<TablespaceRecord.Builder> p)
             throws YarchException, DatabaseCorruptionException {
-        List<TablespaceRecord> r = new ArrayList<>();
+        List<TablespaceRecord> rlist = new ArrayList<>();
         byte[] rangeStart = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
 
         try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart,
@@ -224,12 +224,12 @@ public class Tablespace {
                 if (p.test(tr)) {
                     if (tr.hasInstanceName()) {
                         if (instanceName.equals(tr.getInstanceName())) {
-                            r.add(tr.build());
+                            rlist.add(tr.build());
                         }
                     } else {
                         if (instanceName.equals(name)) {
                             tr.setInstanceName(name);
-                            r.add(tr.build());
+                            rlist.add(tr.build());
                         }
                     }
                 }
@@ -238,7 +238,7 @@ public class Tablespace {
         } catch (RocksDBException e1) {
             throw new YarchException(e1);
         }
-        return r;
+        return rlist;
     }
 
     /**
@@ -697,6 +697,37 @@ public class Tablespace {
             }
             return seq;
         }
+    }
+
+    public void renameTable(String yamcsInstance, TableDefinition tblDef, String newName) throws RocksDBException {
+        synchronized (tables) {
+            RdbTable table = tables.get(tblDef);
+            if (table == null) {
+                throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
+            }
+            String oldName = tblDef.getName();
+            List<TablespaceRecord> trList = getTableRecords(yamcsInstance, oldName, Type.TABLE_DEFINITION,
+                    Type.TABLE_PARTITION, Type.HISTOGRAM, Type.SECONDARY_INDEX)
+                            .stream().map(tr -> tr.toBuilder().setTableName(newName).build())
+                            .collect(Collectors.toList());
+
+            try (WriteBatch wb = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
+                for (TablespaceRecord tr : trList) {
+                    wb.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+                }
+                db.write(wo, wb);
+            }
+            tblDef.setName(newName);
+        }
+
+    }
+
+    private List<TablespaceRecord> getTableRecords(String yamcsInstance, String tblName, Type... types) {
+        List<TablespaceRecord> trList = new ArrayList<>();
+        for (Type type : types) {
+            trList.addAll(filter(type, yamcsInstance, tr -> tblName.equals(tr.getTableName())));
+        }
+        return trList;
     }
 
     ScheduledThreadPoolExecutor getExecutor() {

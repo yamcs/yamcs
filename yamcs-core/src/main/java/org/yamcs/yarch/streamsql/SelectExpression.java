@@ -287,4 +287,9 @@ public class SelectExpression implements StreamExpression {
             return stream;
         }
     }
+
+    @Override
+    public boolean isFinite() {
+        return tupleSourceExpression.isFinite();
+    }
 }

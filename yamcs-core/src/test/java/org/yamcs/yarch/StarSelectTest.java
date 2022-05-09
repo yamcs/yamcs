@@ -36,11 +36,9 @@ public class StarSelectTest extends YarchTestCase {
     @Test
     public void testStar1() throws Exception {
         createFeeder();
-        execute("create stream tm_out (cucu STRING, gentime TIMESTAMP, id int)");
+        ydb.execute("create stream tm_out as select 'cucu' as bau,* from tm_in");
 
-        execute("insert into tm_out select 'cucu' as bau,* from tm_in");
-
-        List<Tuple> tlist = fetch("tm_out", "tm_in");
+        List<Tuple> tlist = fetchAll("tm_out");
         assertEquals(n, tlist.size());
         for (int k = 0; k < n; k++) {
             Tuple tuple = tlist.get(k);

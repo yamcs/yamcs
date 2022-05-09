@@ -314,12 +314,7 @@ public class YarchDatabaseInstance {
      * 
      */
     public void createTable(TableDefinition tbldef) throws YarchException {
-        if (tables.containsKey(tbldef.getName())) {
-            throw new YarchException("A table named '" + tbldef.getName() + "' already exists");
-        }
-        if (streams.containsKey(tbldef.getName())) {
-            throw new YarchException("A stream named '" + tbldef.getName() + "' already exists");
-        }
+        checkExisting(tbldef.getName());
 
         StorageEngine se = YarchDatabase.getStorageEngine(tbldef.getStorageEngineName());
         if (se == null) {
@@ -342,16 +337,32 @@ public class YarchDatabaseInstance {
      * @param stream
      * @throws YarchException
      */
-    public void addStream(Stream stream) throws YarchException {
-        if (tables.containsKey(stream.getName())) {
-            throw new YarchException("A table named '" + stream.getName() + "' already exists");
-        }
-        if (streams.containsKey(stream.getName())) {
-            throw new YarchException("A stream named '" + stream.getName() + "' already exists");
-        }
+    public synchronized void addStream(Stream stream) throws YarchException {
+        checkExisting(stream.getName());
         streams.put(stream.getName(), stream);
         if (managementService != null) {
             managementService.registerStream(instanceName, stream);
+        }
+    }
+
+    public synchronized void renameTable(String name, String newName) {
+        checkExisting(newName);
+        TableDefinition tblDef = tables.get(name);
+        if (tblDef == null) {
+            throw new YarchException("A table named '" + name + "' does not exists");
+        }
+        getStorageEngine(tblDef).renameTable(this, tblDef, newName);
+        tables.put(newName, tblDef);
+        tables.remove(name);
+    }
+
+
+    private void checkExisting(String name) {
+        if (tables.containsKey(name)) {
+            throw new YarchException("A table named '" + name + "' already exists");
+        }
+        if (streams.containsKey(name)) {
+            throw new YarchException("A stream named '" + name + "' already exists");
         }
     }
 
@@ -373,7 +384,7 @@ public class YarchDatabaseInstance {
         return streams.get(name);
     }
 
-    public void dropTable(String tblName) {
+    public synchronized void dropTable(String tblName) {
         log.info("Dropping table {}", tblName);
         TableDefinition tbl = tables.remove(tblName);
         if (tbl == null) {
@@ -571,4 +582,5 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getDefaultStorageEngine().getSequencesInfo(this);
 
     }
+
 }

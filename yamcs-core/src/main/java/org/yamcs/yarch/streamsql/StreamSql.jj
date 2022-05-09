@@ -168,6 +168,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_RANGE:"RANGE">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
+|   <K_RENAME:"RENAME">
 |   <K_RESTART:"RESTART">
 |   <K_REVERSE:"REVERSE">
 |   <K_ROW:"ROW">
@@ -192,6 +193,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLESPACE:"TABLESPACE">
 |   <K_TIME:"TIME">
 |   <K_TIME_AND_VALUE:"TIME_AND_VALUE">
+|   <K_TO:"TO">
 |   <K_TUPLES:"TUPLES">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UPDATE:"UPDATE">
@@ -200,6 +202,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_USE:"USE">
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
+|   <K_VALUES:"VALUES">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WITH:"WITH">
@@ -287,17 +290,9 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     |
     statement=InsertStatement()
     |
-    statement=InsertAppendStatement()
-    |
     statement=SelectTableStatement()
     |
     statement=UpdateTableStatement()
-    |
-    statement=UpsertStatement()
-    |
-    statement=UpsertAppendStatement()
-    |
-    statement=LoadStatement()
     |
     statement=CloseStreamStatement()
     |
@@ -318,6 +313,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     LOOKAHEAD(2) statement=ShowSequencesStatement()
     |
     LOOKAHEAD(2) statement=AlterSequenceStatement()
+    |
+    LOOKAHEAD(2) statement=AlterTableStatement()
     )
     {
 	return statement;
@@ -552,6 +549,15 @@ AlterSequenceStatement AlterSequenceStatement() throws StreamSqlException: {
     }
 }
 
+AlterTableStatement AlterTableStatement() throws StreamSqlException: {
+    String name, newName;
+} {
+    <K_ALTER>  <K_TABLE> name=ObjectName() <K_RENAME> <K_TO> newName=ObjectName()
+    {
+	return new AlterTableStatement(name, newName);
+    }
+}
+
 StreamExpression StreamExpression() throws StreamSqlException:  {
     StreamExpression expression;
 } {
@@ -564,75 +570,45 @@ StreamExpression StreamExpression() throws StreamSqlException:  {
     }
 }
 
-
-
 void IntoClause() throws StreamSqlException:{
 } {
     "INTO" ObjectName()
 }
 
-
-void ColumnValues() throws StreamSqlException: {
-} {
-    ColumnValue() ("," ColumnValue())*
-  | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectExpression() ")"
-}
-
-void ColumnValue() throws StreamSqlException: {
-} {
-    ObjectName() "=" Expression()
-}
-
 InsertStatement InsertStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
+    List<String> columns = new ArrayList();
+    List<SelectItem> selectList;
+    String cn;
+    InsertMode insertMode;
 } {
-    "INSERT" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.INSERT);
-    }
+    (
+       <K_INSERT> {insertMode = InsertMode.INSERT;}
+       |
+       <K_UPSERT> {insertMode = InsertMode.UPSERT;}
+       |
+       <K_INSERT_APPEND> {insertMode = InsertMode.INSERT_APPEND;}
+       |
+       <K_UPSERT_APPEND> {insertMode = InsertMode.UPSERT_APPEND;}
+       |
+       <K_LOAD> {insertMode = InsertMode.LOAD;}
+    )
+    <K_INTO> name=ObjectName()
+    (
+         expression=StreamExpression()
+         {
+             return new InsertStatement(name, expression, insertMode);
+         }
+      |
+         "(" cn=ObjectName() {columns.add(cn);} ("," cn=ObjectName(){columns.add(cn);})* ")"
+         <K_VALUES>
+         "(" selectList = SelectList() ")"
+         {
+            return new InsertStatement(name, new InsertValuesExpression(columns, selectList), InsertMode.INSERT);
+         }
+    )
 }
-
-InsertStatement UpsertStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    <K_UPSERT> "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.UPSERT);
-    }
-}
-
-InsertStatement InsertAppendStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "INSERT_APPEND" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.INSERT_APPEND);
-    }
-}
-
-InsertStatement UpsertAppendStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "UPSERT_APPEND" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.UPSERT_APPEND);
-    }
-}
-
-InsertStatement LoadStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "LOAD" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.LOAD);
-    }
-}
-
 
 MergeExpression MergeExpression() throws StreamSqlException: {
     MergeExpression mergeExpr=new MergeExpression();

@@ -134,11 +134,10 @@ public abstract class Expression {
 
     protected void fillCode_InputDefVars(Collection<ColumnDefinition> inputs, StringBuilder code) {
         for (ColumnDefinition cd : inputs) {
-
             String javaColIdentifier = "col" + sanitizeName(cd.getName());
             DataType dtype = cd.getType();
             if (dtype.isPrimitiveJavaType()) {
-                code.append("\t\t" + dtype.primitiveJavaType() + " " + javaColIdentifier +
+                code.append("\t\t" + dtype.javaType() + " " + javaColIdentifier +
                         " =  (" + dtype.javaType() + ")tuple.getColumn(\""
                         + cd.getName() + "\");\n");
             } else {
@@ -150,6 +149,11 @@ public abstract class Expression {
     }
 
     protected void fillCode_getValueBody(StringBuilder code) throws StreamSqlException {
+        if (children != null) {
+            for (Expression c : children) {
+                c.fillCode_getValueBody(code);
+            }
+        }
     }
 
     public abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;

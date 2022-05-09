@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 public class BitwiseExpression extends Expression {
@@ -34,12 +32,15 @@ public class BitwiseExpression extends Expression {
         }
     }
 
+
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
         code.append("(");
+        code.append("(" + type.primitiveJavaType() + ")");
         children[0].fillCode_getValueReturn(code);
         for (int i = 0; i < ops.size(); i++) {
             code.append(ops.get(i).getSign());
+            code.append("(" + type.primitiveJavaType() + ")");
             children[i + 1].fillCode_getValueReturn(code);
         }
         code.append(")");

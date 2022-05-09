@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-public class InsertSelectTest extends YarchTestCase {
+public class CreateStreamAsSelectTest extends YarchTestCase {
 
     int n = 10;
 

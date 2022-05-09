@@ -275,6 +275,16 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
+    public void renameTable(YarchDatabaseInstance ydb, TableDefinition tblDef, String newName) {
+        Tablespace tablespace = getTablespace(ydb);
+        try {
+            tablespace.renameTable(ydb.getYamcsInstance(), tblDef, newName);
+        } catch (RocksDBException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    @Override
     public void migrateTableDefinition(YarchDatabaseInstance ydb, TableDefinition tblDef) throws YarchException {
         Tablespace tablespace = getTablespace(ydb);
         try {
@@ -331,4 +341,5 @@ public class RdbStorageEngine implements StorageEngine {
     static final int tbsIndex(byte[] dbKey) {
         return ByteArrayUtils.decodeInt(dbKey, 0);
     }
+
 }

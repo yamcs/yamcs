@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -14,6 +16,9 @@ import org.junit.Test;
 import org.rocksdb.RocksDBException;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
@@ -54,6 +59,7 @@ public class TablespaceTest {
         verify1(tablespace2, tbl3p1, tbl3p2);
         assertEquals(5, tablespace2.maxTbsIndex);
     }
+
 
     private void verify1(Tablespace tablespace, byte[] tbl3p1, byte[] tbl3p2) throws RocksDBException, IOException {
         List<TablespaceRecord> l = tablespace.getTablePartitions("inst", "tbl1");
@@ -132,6 +138,36 @@ public class TablespaceTest {
             assertTrue(tr.hasPartition());
             assertEquals(expectedDir, tr.getPartition().getPartitionDir());
         }
+    }
+
+    @Test
+    public void testRenameTable() throws Exception {
+        String dir = testDir + "/tablespace3";
+        Tablespace tablespace = new Tablespace("tablespace3");
+        tablespace.setCustomDataDir(dir);
+        tablespace.loadDb(false);
+        TupleDefinition tupleDef = new TupleDefinition();
+        tupleDef.addColumn("x", DataType.INT);
+        TableDefinition tblDef = new TableDefinition("tbl1", tupleDef, Arrays.asList("x"));
+        tablespace.createTable("inst", tblDef);
+        createTablePartitionRecord(tablespace, "inst", "tbl1", null, null);
+        
+        tablespace.renameTable("inst", tblDef, "tbl2");
+        assertEquals("tbl2", tblDef.getName());
+        tablespace.close();
+
+        Tablespace tablespace2 = new Tablespace("tablespace4");
+        tablespace2.setCustomDataDir(dir);
+        tablespace2.loadDb(false);
+
+        Collection<TableDefinition> tdefs = tablespace2.loadTables("inst");
+        assertEquals(1, tdefs.size());
+        TableDefinition tblDef2 = tdefs.iterator().next();
+        assertEquals("tbl2", tblDef2.getName());
+
+        List<TablespaceRecord> trList = tablespace2.getTablePartitions("inst", "tbl2");
+        assertEquals(1, trList.size());
+        tablespace2.close();
     }
 
     private TablespaceRecord createTablePartitionRecord(Tablespace tablespace, String yamcsInstance, String tblName,

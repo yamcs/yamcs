@@ -21,6 +21,10 @@ public class SelectItem {
             return expr.toString();
     }
 
+    public boolean isStar() {
+        return this == STAR;
+    }
+
     @Override
     public String toString() {
         if (alias == null)

@@ -68,4 +68,14 @@ class MergeExpression implements StreamExpression {
     public TupleDefinition getOutputDefinition() {
         return null;
     }
+
+    @Override
+    public boolean isFinite() {
+        for (TupleSourceExpression tsrc : sources) {
+            if (!tsrc.isFinite()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
