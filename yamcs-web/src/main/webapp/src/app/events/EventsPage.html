@@ -47,8 +47,9 @@
       </div>
       <div class="filter-bar">
         <app-select [options]="severityOptions" formControlName="severity"></app-select>
-        <app-select [options]="sourceOptions$ | async"
-                    formControlName="source"></app-select>
+        <app-multi-select [options]="sourceOptions$ | async"
+                          formControlName="source"
+                          emptyOption="Any source"></app-multi-select>
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"

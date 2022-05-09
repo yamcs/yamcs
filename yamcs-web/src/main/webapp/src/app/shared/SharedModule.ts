@@ -57,6 +57,7 @@ import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { DurationInput } from './forms/DurationInput';
 import { Errors } from './forms/Errors';
 import { HexIntegerInput } from './forms/HexIntegerInput';
+import { MultiSelect } from './forms/MultiSelect';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
@@ -215,6 +216,7 @@ const sharedComponents = [
   Markdown,
   MessageBar,
   More,
+  MultiSelect,
   ObjectSelector,
   ParameterLegend,
   ParameterPlot,

@@ -27,7 +27,7 @@ export class ExportEventsDialog implements OnDestroy {
     stop: new FormControl(null),
     severity: new FormControl(null, Validators.required),
     q: new FormControl(null),
-    source: new FormControl(null),
+    source: new FormControl([]),
     delimiter: new FormControl(null, Validators.required),
   });
 
@@ -40,7 +40,7 @@ export class ExportEventsDialog implements OnDestroy {
       start: data.start ? utils.toISOString(data.start) : '',
       stop: data.stop ? utils.toISOString(data.stop) : '',
       q: data.q || '',
-      source: data.source || '',
+      source: data.source,
       severity: data.severity,
       delimiter: 'TAB',
     });
@@ -71,9 +71,9 @@ export class ExportEventsDialog implements OnDestroy {
       if (this.form.value['q']) {
         dlOptions.q = this.form.value['q'];
       }
-      if (this.form.value['source']) {
+      if (this.form.value['source'].length) {
         const source = this.form.value['source'];
-        dlOptions.source = (source !== 'ANY') ? source : null;
+        dlOptions.source = source;
       }
       const url = this.yamcs.yamcsClient.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);
