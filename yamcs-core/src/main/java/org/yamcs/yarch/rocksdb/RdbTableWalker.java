@@ -76,14 +76,13 @@ public class RdbTableWalker extends AbstractTableWalker {
         DbIterator iterator = null;
 
         RdbPartition p1 = (RdbPartition) interval.iterator().next();
-        YRDB rdb;
+        final YRDB rdb;
         if (p1.dir != null) {
             log.debug("opening database {}", p1.dir);
             rdb = tablespace.getRdb(p1.dir, false);
         } else {
             rdb = tablespace.getRdb();
         }
-
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         if (!follow) {
@@ -137,6 +136,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
             if (snapshot != null) {
                 snapshot.close();
+                rdb.getDb().releaseSnapshot(snapshot);
                 snapshot = null;
             }
             readOptions.close();

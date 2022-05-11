@@ -55,10 +55,10 @@ public class MultiParameterRetrieval {
 
         Merger merger = new Merger(mpvr, consumer);
 
-
+        ParameterIterator it = null;
         try {
             while (!queue.isEmpty()) {
-                ParameterIterator it = queue.poll();
+                it = queue.poll();
                 merger.process(it.getParameterId(), it.getParameterGroupId(), it.value());
 
                 if (merger.sentEnough())
@@ -73,7 +73,10 @@ public class MultiParameterRetrieval {
         } catch (ConsumerAbortException e) {
             log.debug("Stopped early due to receiving ConsumerAbortException");
         } finally {
-            queue.forEach(it -> it.close());
+            if (it != null) {
+                it.close();
+            }
+            queue.forEach(it1 -> it1.close());
         }
         log.trace("Retrieval finished");
     }
