@@ -8,14 +8,12 @@ import org.yamcs.utils.ByteArrayUtils;
  * @author nm
  *
  */
-public class DescendingPrefixIterator implements DbIterator {
-    final RocksIterator iterator;
+public class DescendingPrefixIterator extends AbstractDbIterator {
     final byte[] prefix;
-    boolean valid;
     byte[] curKey;
     
     public DescendingPrefixIterator(RocksIterator it, byte[] prefix) {
-        this.iterator = it;
+        super(it);
         this.prefix = prefix;
         if(prefix.length==0) {
             throw new IllegalArgumentException("the prefix has to be at least one byte long");
@@ -42,11 +40,6 @@ public class DescendingPrefixIterator implements DbIterator {
                 valid = ByteArrayUtils.compare(prefix, curKey) == 0;
             }
         }
-    }
-    
-    @Override
-    public boolean isValid() {
-        return valid;
     }
 
     @Override
@@ -78,14 +71,4 @@ public class DescendingPrefixIterator implements DbIterator {
         checkValid();
         return iterator.value();
     }
-
-    private void checkValid() {
-        if(!valid) throw new IllegalStateException("iterator is not valid");
-    }
-    @Override
-    public void close() {
-        valid = false;
-        iterator.close();
-    }
-
 }

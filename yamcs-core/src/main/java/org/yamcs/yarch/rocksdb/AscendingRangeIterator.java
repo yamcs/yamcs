@@ -10,11 +10,9 @@ import org.yamcs.yarch.DbRange;
  * @author nm
  *
  */
-public class AscendingRangeIterator implements DbIterator {
-    private final RocksIterator iterator;
+public class AscendingRangeIterator extends AbstractDbIterator {
     final byte[] rangeStart;
     final byte[] rangeEnd;
-    private boolean valid = false;
     private byte[] curKey;
 
     /**
@@ -27,7 +25,7 @@ public class AscendingRangeIterator implements DbIterator {
      * 
      */
     public AscendingRangeIterator(RocksIterator it, byte[] rangeStart, byte[] rangeEnd) {
-        this.iterator = it;
+        super(it);
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         init();
@@ -68,16 +66,10 @@ public class AscendingRangeIterator implements DbIterator {
         }
     }
 
-    @Override
-    public boolean isValid() {
-        return valid;
-    }
 
     @Override
     public void next() {
-        if (!valid) {
-            throw new IllegalStateException("iterator is not valid");
-        }
+        checkValid();
 
         iterator.next();
         if (iterator.isValid()) {
@@ -94,23 +86,15 @@ public class AscendingRangeIterator implements DbIterator {
     }
 
     public byte[] key() {
-        if (!valid) {
-            throw new IllegalStateException("iterator is not valid");
-        }
+        checkValid();
         return curKey;
     }
 
-    public byte[] value() {
-        if (!valid) {
-            throw new IllegalStateException("iterator is not valid");
-        }
-        return iterator.value();
-    }
 
-    @Override
-    public void close() {
-        valid = false;
-        iterator.close();
+
+    public byte[] value() {
+        checkValid();
+        return iterator.value();
     }
 
     @Override

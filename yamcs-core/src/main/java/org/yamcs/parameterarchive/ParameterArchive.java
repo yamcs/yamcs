@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
@@ -218,7 +219,8 @@ public class ParameterArchive extends AbstractYamcsService {
         Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             writeToBatch(writeBatch, pgs);
-            tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
+            RocksDB db = tablespace.getRdb(p.partitionDir, false).getDb();
+            db.write(wo, writeBatch);
         }
     }
 
@@ -511,6 +513,16 @@ public class ParameterArchive extends AbstractYamcsService {
         return realtimeFiller;
     }
 
+    public void compact() {
+        try {
+            for (Partition p : partitions) {
+                tablespace.getRdb(p.partitionDir, false).getDb().compactRange();
+            }
+        } catch (RocksDBException e) {
+            throw new ParameterArchiveException("error compacting", e);
+        }
+    }
+
     public static class Partition extends TimeInterval {
         final String partitionDir;
 
@@ -534,4 +546,5 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
+
 }

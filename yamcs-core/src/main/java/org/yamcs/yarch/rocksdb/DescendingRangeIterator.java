@@ -2,7 +2,6 @@ package org.yamcs.yarch.rocksdb;
 
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.DbRange;
 
 /**
@@ -17,11 +16,9 @@ import org.yamcs.yarch.DbRange;
  * @author nm
  *
  */
-public class DescendingRangeIterator implements DbIterator {
-    final RocksIterator iterator;
+public class DescendingRangeIterator extends AbstractDbIterator {
     final byte[] rangeStart;
     final byte[] rangeEnd;
-    boolean valid = false;
     private byte[] curKey;
 
     /**
@@ -32,7 +29,7 @@ public class DescendingRangeIterator implements DbIterator {
      * @param rangeEnd
      */
     public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, byte[] rangeEnd) {
-        this.iterator = it;
+        super(it);
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         init();
@@ -81,15 +78,8 @@ public class DescendingRangeIterator implements DbIterator {
     }
 
     @Override
-    public boolean isValid() {
-        return valid;
-    }
-
-    @Override
     public void prev() {
-        if (!valid) {
-            throw new IllegalStateException("iterator is not valid");
-        }
+        checkValid();
 
         iterator.prev();
         if (iterator.isValid()) {
@@ -113,20 +103,12 @@ public class DescendingRangeIterator implements DbIterator {
     }
 
     public byte[] key() {
-        if (!valid)
-            throw new IllegalStateException("iterator is not valid");
+        checkValid();
         return curKey;
     }
 
     public byte[] value() {
-        if (!valid)
-            throw new IllegalStateException("iterator is not valid");
+        checkValid();
         return iterator.value();
-    }
-
-    @Override
-    public void close() {
-        valid = false;
-        iterator.close();
     }
 }
