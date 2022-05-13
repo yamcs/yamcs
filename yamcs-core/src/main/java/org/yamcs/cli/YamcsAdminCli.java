@@ -10,6 +10,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.YarchDatabase;
 
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.converters.PathConverter;
@@ -39,6 +40,9 @@ public class YamcsAdminCli extends Command {
     @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
     private Path dataDir;
 
+    @Parameter(names = "--format", description = "Set the format for printing output", converter = OutputFormatConverter.class)
+    OutputFormat format = OutputFormat.DEFAULT;
+
     @Parameter(names = "--log", description = "Level of verbosity")
     private int verbose = 1;
 
@@ -59,6 +63,21 @@ public class YamcsAdminCli extends Command {
     @Override
     void validate() throws ParameterException {
         selectedCommand.validate();
+    }
+
+    // Keep public, required by JCommander
+    public static class OutputFormatConverter implements IStringConverter<OutputFormat> {
+
+        @Override
+        public OutputFormat convert(String value) {
+            try {
+                return OutputFormat.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new ParameterException(
+                        "Unknown value for --format. Possible values: "
+                                + OutputFormat.joinOptions());
+            }
+        }
     }
 
     public static void main(String[] args) {

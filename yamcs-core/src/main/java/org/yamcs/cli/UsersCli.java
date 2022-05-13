@@ -2,14 +2,18 @@ package org.yamcs.cli;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.rocksdb.RocksDB;
+import org.yamcs.http.api.IamApi;
+import org.yamcs.protobuf.UserInfo;
 import org.yamcs.security.Directory;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.protobuf.util.JsonFormat;
 
 /**
  * Generates password hashes for use in users.yaml
@@ -240,11 +244,22 @@ public class UsersCli extends Command {
             RocksDB.loadLibrary();
             Directory directory = new Directory();
 
-            TableStringBuilder b = new TableStringBuilder("username", "display name", "email", "active", "superuser");
-            directory.getUsers().forEach(user -> {
-                b.addLine(user.getName(), user.getDisplayName(), user.getEmail(), user.isActive(), user.isSuperuser());
-            });
-            console.println(b.toString());
+            switch (getFormat()) {
+            case JSON:
+                List<UserInfo> users = directory.getUsers().stream()
+                        .map(user -> IamApi.toUserInfo(user, true, directory))
+                        .collect(Collectors.toList());
+                console.println(printJsonArray(users));
+                break;
+            default:
+                TableStringBuilder b = new TableStringBuilder("username", "display name", "email", "active",
+                        "superuser");
+                directory.getUsers().forEach(user -> {
+                    b.addLine(user.getName(), user.getDisplayName(), user.getEmail(), user.isActive(),
+                            user.isSuperuser());
+                });
+                console.println(b.toString());
+            }
         }
     }
 
@@ -274,19 +289,26 @@ public class UsersCli extends Command {
                 exit(-1);
             }
 
-            TableStringBuilder b = new TableStringBuilder(2);
-            b.addLine("id:", user.getId());
-            b.addLine("username:", user.getName());
-            b.addLine("display name:", user.getDisplayName());
-            b.addLine("email:", user.getEmail());
-            b.addLine("active:", user.isActive());
-            b.addLine("superuser:", user.isSuperuser());
-            b.addLine("roles:", String.join(", ", user.getRoles()));
-            b.addLine("external:", user.isExternallyManaged());
-            b.addLine("created:", printInstant(user.getCreationTime()));
-            b.addLine("confirmed:", printInstant(user.getConfirmationTime()));
-            b.addLine("last login:", printInstant(user.getLastLoginTime()));
-            console.println(b.toString());
+            switch (getFormat()) {
+            case JSON:
+                UserInfo userinfo = IamApi.toUserInfo(user, true, directory);
+                console.println(JsonFormat.printer().print(userinfo));
+                break;
+            default:
+                TableStringBuilder b = new TableStringBuilder(2);
+                b.addLine("id:", user.getId());
+                b.addLine("username:", user.getName());
+                b.addLine("display name:", user.getDisplayName());
+                b.addLine("email:", user.getEmail());
+                b.addLine("active:", user.isActive());
+                b.addLine("superuser:", user.isSuperuser());
+                b.addLine("roles:", String.join(", ", user.getRoles()));
+                b.addLine("external:", user.isExternallyManaged());
+                b.addLine("created:", printInstant(user.getCreationTime()));
+                b.addLine("confirmed:", printInstant(user.getConfirmationTime()));
+                b.addLine("last login:", printInstant(user.getLastLoginTime()));
+                console.println(b.toString());
+            }
         }
 
         private String printInstant(long instant) {
