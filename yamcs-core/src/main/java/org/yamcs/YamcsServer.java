@@ -933,8 +933,10 @@ public class YamcsServer {
         parseArgs(args);
 
         System.setProperty("jxl.nowarnings", "true");
-        System.setProperty("jacorb.home", System.getProperty("user.dir"));
-        System.setProperty("javax.net.ssl.trustStore", YAMCS.options.configDirectory.resolve("trustStore").toString());
+        if (System.getProperty("javax.net.ssl.trustStore") == null) {
+            System.setProperty("javax.net.ssl.trustStore",
+                    YAMCS.options.configDirectory.resolve("trustStore").toString());
+        }
 
         try {
             setupLogging();
