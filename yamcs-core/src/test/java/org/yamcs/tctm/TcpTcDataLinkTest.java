@@ -114,8 +114,8 @@ public class TcpTcDataLinkTest {
         Map<String, Object> config = new HashMap<>();
         config.put("tcMaxRate", tcMaxRate);
         config.put("tcQueueSize", ncommands);
-        config.put("tcHost", "localhost");
-        config.put("tcPort", mtc.port);
+        config.put("host", "localhost");
+        config.put("port", mtc.port);
         config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink();
@@ -145,8 +145,8 @@ public class TcpTcDataLinkTest {
     @Test
     public void testTcpTcDefault() throws ConfigurationException, InterruptedException, IOException {
         Map<String, Object> config = new HashMap<>();
-        config.put("tcHost", "localhost");
-        config.put("tcPort", mtc.port);
+        config.put("host", "localhost");
+        config.put("port", mtc.port);
         config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink();
