@@ -17,6 +17,8 @@ yamcsadmin users
 
     :doc:`add-role <yamcsadmin_users_add-role>`
         Add a role to a user.
+    :doc:`create <yamcsadmin_users_check-password>`
+        Check a user's password.
     :doc:`create <yamcsadmin_users_create>`
         Create new user.
     :doc:`delete <yamcsadmin_users_delete>`
@@ -37,6 +39,7 @@ yamcsadmin users
     :hidden:
 
     add-role <yamcsadmin_users_add-role>
+    check-password <yamcsadmin_users_check-password>
     create <yamcsadmin_users_create>
     delete <yamcsadmin_users_delete>
     describe <yamcsadmin_users_describe>

@@ -24,12 +24,13 @@ public class UsersCli extends Command {
     public UsersCli(YamcsAdminCli yamcsCli) {
         super("users", yamcsCli);
         addSubCommand(new AddRole());
+        addSubCommand(new CheckPassword());
         addSubCommand(new CreateUser());
         addSubCommand(new DeleteUser());
         addSubCommand(new DescribeUser());
         addSubCommand(new ListUsers());
         addSubCommand(new RemoveRole());
-        addSubCommand(new ResetUserPassword());
+        addSubCommand(new ResetPassword());
         addSubCommand(new UpdateUser());
         TimeEncoding.setUp();
     }
@@ -352,12 +353,12 @@ public class UsersCli extends Command {
     }
 
     @Parameters(commandDescription = "Reset a user's password")
-    private class ResetUserPassword extends Command {
+    private class ResetPassword extends Command {
 
         @Parameter()
         private List<String> username;
 
-        ResetUserPassword() {
+        ResetPassword() {
             super("reset-password", UsersCli.this);
         }
 
@@ -399,6 +400,54 @@ public class UsersCli extends Command {
 
             directory.changePassword(user, newPassword);
             console.println("Password updated successfully");
+        }
+    }
+
+    @Parameters(commandDescription = "Check a user's password")
+    private class CheckPassword extends Command {
+
+        @Parameter()
+        private List<String> username;
+
+        CheckPassword() {
+            super("check-password", UsersCli.this);
+        }
+
+        @Override
+        void execute() throws Exception {
+            RocksDB.loadLibrary();
+            Directory directory = new Directory();
+
+            if (username == null) {
+                console.println("username not specified");
+                exit(-1);
+            }
+
+            User user = directory.getUser(username.get(0));
+            if (user == null) {
+                console.println("invalid user '" + username.get(0) + "'");
+                exit(-1);
+            }
+            if (user.isExternallyManaged()) {
+                console.println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
+                exit(-1);
+            }
+
+            char[] password;
+            String passwordString = System.getenv("YAMCSADMIN_PASSWORD");
+            if (passwordString == null) {
+                console.print("Enter password: ");
+                password = console.readPassword(false);
+            } else {
+                password = passwordString.trim().toCharArray();
+            }
+
+            if (directory.validateUserPassword(user.getName(), password)) {
+                console.println("Password correct");
+            } else {
+                console.println("Password incorrect");
+                exit(-1);
+            }
         }
     }
 }
