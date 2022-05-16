@@ -49,11 +49,11 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     public void uplinkCommand(PreparedCommand pc) throws IOException {
-        byte[] binary = cmdPostProcessor.process(pc);
+        byte[] binary = postprocess(pc);
         if (binary == null) {
-            log.warn("command postprocessor did not process the command");
             return;
         }
+
         DatagramPacket packet = new DatagramPacket(binary, binary.length, address, port);
         socket.send(packet);
         dataCount.getAndIncrement();

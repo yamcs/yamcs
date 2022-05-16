@@ -211,27 +211,26 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 
     @Override
     public boolean sendCommand(PreparedCommand pc) {
-        String reason;
-
-        byte[] binary = cmdPostProcessor.process(pc);
-        if (binary != null) {
-
-            try {
-                sendBuffer(binary);
-                dataOutCount.getAndIncrement();
-                ackCommand(pc.getCommandId());
+        byte[] binary = pc.getBinary();
+        if (!pc.disablePostprocessing()) {
+            binary = cmdPostProcessor.process(pc);
+            if (binary == null) {
+                log.warn("command postprocessor did not process the command");
                 return true;
-            } catch (IOException e) {
-                reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
-                log.warn(reason);
             }
-
-        } else {
-            reason = "Command postprocessor did not process the command";
         }
 
-        failedCommand(pc.getCommandId(), reason);
-        return true;
+        try {
+            sendBuffer(binary);
+            dataOutCount.getAndIncrement();
+            ackCommand(pc.getCommandId());
+            return true;
+        } catch (IOException e) {
+            String reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
+            log.warn(reason);
+            failedCommand(pc.getCommandId(), reason);
+            return true;
+        }
     }
 
     @Override

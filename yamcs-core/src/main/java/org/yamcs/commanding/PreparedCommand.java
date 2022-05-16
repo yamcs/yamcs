@@ -49,6 +49,8 @@ public class PreparedCommand {
 
     boolean disableCommandVerifiers = false;
 
+    boolean disablePostprocessing = false;
+
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
     private Set<String> userAssignedArgumentNames;
@@ -410,6 +412,17 @@ public class PreparedCommand {
 
     public void disableCommandVerifiers(boolean b) {
         disableCommandVerifiers = b;
+    }
+
+    /**
+     * @return true if no post-processing should occur on this command
+     */
+    public boolean disablePostprocessing() {
+        return disablePostprocessing;
+    }
+
+    public void disablePostprocessing(boolean b) {
+        disablePostprocessing = b;
     }
 
     public void addVerifierConfig(String name, VerifierConfig verifierConfig) {
