@@ -156,7 +156,7 @@ nakLimit (integer)
 senderFaultHandlers (map)
     A definitions of the actions to be taken when the sender encounters different faults. The definitions are in the form of ``conditionCode -> action`` map. The possible condition codes are:  
     AckLimitReached, KeepAliveLimitReached, InvalidTransmissionMode, FilestoreRejection, FileChecksumFailure, FileSizeError, NakLimitReached, InactivityDetected, InvalidFileStructure, CheckLimitReached and UnsupportedChecksum.
-    The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is estabilished again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
+    The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is established again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
     Note that the error can be generated locally or recieved from the peer in a FIN PDU.
 
 receiverFaultHandlers (map)

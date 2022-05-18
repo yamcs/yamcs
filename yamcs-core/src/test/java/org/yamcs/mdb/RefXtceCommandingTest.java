@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeQueued_KEY;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeReleased_KEY;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.TransmissionContraints_KEY;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.TransmissionConstraints_KEY;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -213,8 +213,8 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "PENDING",
-                TransmissionContraints_KEY, "NOK",
+                TransmissionConstraints_KEY, "PENDING",
+                TransmissionConstraints_KEY, "NOK",
                 AcknowledgeReleased_KEY, "NOK");
         assertNull(cmdReleaser.getCmd(2000));
     }
@@ -232,7 +232,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK");
-        verifyCmdHist(TransmissionContraints_KEY, "OK");
+        verifyCmdHist(TransmissionConstraints_KEY, "OK");
         verifyCmdHist(AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
     }
@@ -246,7 +246,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "OK",
+                TransmissionConstraints_KEY, "OK",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
     }
@@ -262,7 +262,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "SCHEDULED",
                 AcknowledgeReleased_KEY, "OK");
 
@@ -282,7 +282,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "SCHEDULED",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
@@ -307,7 +307,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
@@ -334,7 +334,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
@@ -360,7 +360,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
@@ -379,7 +379,7 @@ public class RefXtceCommandingTest {
         commandingManager.sendCommand(user, pc);
 
         verifyCmdHist(AcknowledgeQueued_KEY, "OK",
-                TransmissionContraints_KEY, "NA",
+                TransmissionConstraints_KEY, "NA",
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));

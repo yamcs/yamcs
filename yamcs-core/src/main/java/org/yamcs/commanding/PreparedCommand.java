@@ -35,21 +35,13 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * Stores command source, binary attributes
- *
+ * Stores command information
  */
 public class PreparedCommand {
-    private byte[] binary;
+
     private CommandId id;
     private MetaCommand metaCommand;
     private final UUID uuid; // Used in REST API as an easier single-field ID. Not persisted.
-
-    // if true, the transmission constraints (if existing) will not be checked
-    boolean disableTransmissionConstraints = false;
-
-    boolean disableCommandVerifiers = false;
-
-    boolean disablePostprocessing = false;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
@@ -71,17 +63,35 @@ public class PreparedCommand {
     public final static String CNAME_SOURCE = "source";
     public final static String CNAME_ASSIGNMENTS = "assignments";
     public final static String CNAME_COMMENT = "comment";
+    public final static String CNAME_NO_POSTPROCESSING = "noPostprocessing";
+    public final static String CNAME_NO_TRANSMISSION_CONSTRAINTS = "noTransmissionConstraints";
+    public final static String CNAME_NO_VERIFIERS = "noVerifiers";
 
-    private static Set<String> reservedNames = new HashSet<>();
+    private static Set<String> reservedColumns = new HashSet<>();
     static {
-        reservedNames.add(CNAME_GENTIME);
-        reservedNames.add(CNAME_SEQNUM);
-        reservedNames.add(CNAME_ORIGIN);
-        reservedNames.add(CNAME_USERNAME);
-        reservedNames.add(CNAME_BINARY);
-        reservedNames.add(CNAME_CMDNAME);
-        reservedNames.add(CNAME_SOURCE);
-        reservedNames.add(CNAME_ASSIGNMENTS);
+        reservedColumns.add(CNAME_GENTIME);
+        reservedColumns.add(CNAME_SEQNUM);
+        reservedColumns.add(CNAME_ORIGIN);
+        reservedColumns.add(CNAME_USERNAME);
+        reservedColumns.add(CNAME_BINARY);
+        reservedColumns.add(CNAME_CMDNAME);
+        reservedColumns.add(CNAME_SOURCE);
+        reservedColumns.add(CNAME_ASSIGNMENTS);
+        reservedColumns.add(CNAME_COMMENT);
+        reservedColumns.add(CNAME_NO_POSTPROCESSING);
+        reservedColumns.add(CNAME_NO_TRANSMISSION_CONSTRAINTS);
+        reservedColumns.add(CNAME_NO_VERIFIERS);
+    }
+
+    /**
+     * Columns that can't be updated via cmdhist_realtime attributes.
+     */
+    public static Set<String> protectedColumns = new HashSet<>();
+    static {
+        protectedColumns.add(CNAME_GENTIME);
+        protectedColumns.add(CNAME_SEQNUM);
+        protectedColumns.add(CNAME_ORIGIN);
+        protectedColumns.add(CNAME_ASSIGNMENTS);
     }
 
     public PreparedCommand(CommandId id) {
@@ -91,11 +101,9 @@ public class PreparedCommand {
 
     /**
      * Used for testing the uplinkers
-     * 
-     * @param binary
      */
     public PreparedCommand(byte[] binary) {
-        this.setBinary(binary);
+        setBinary(binary);
         uuid = UUID.randomUUID();
     }
 
@@ -104,7 +112,7 @@ public class PreparedCommand {
     }
 
     public void setSource(String source) {
-        setStringAttribute(CNAME_SOURCE, source);
+        setAttribute(CNAME_SOURCE, source);
     }
 
     public String getSource() {
@@ -112,7 +120,7 @@ public class PreparedCommand {
     }
 
     public void setComment(String comment) {
-        setStringAttribute(CNAME_COMMENT, comment);
+        setAttribute(CNAME_COMMENT, comment);
     }
 
     public String getComment() {
@@ -121,6 +129,17 @@ public class PreparedCommand {
 
     public String getCmdName() {
         return id.getCommandName();
+    }
+
+    public Boolean getBooleanAttribute(String attrname) {
+        CommandHistoryAttribute a = getAttribute(attrname);
+        if (a != null) {
+            Value v = ValueUtility.fromGpb(a.getValue());
+            if (v.getType() == Type.BOOLEAN) {
+                return v.getBooleanValue();
+            }
+        }
+        return null;
     }
 
     public String getStringAttribute(String attrname) {
@@ -134,10 +153,12 @@ public class PreparedCommand {
         return null;
     }
 
-    public CommandHistoryAttribute getAttribute(String name) {
-        for (CommandHistoryAttribute a : attributes) {
-            if (name.equals(a.getName())) {
-                return a;
+    public byte[] getBinaryAttribute(String attrname) {
+        CommandHistoryAttribute a = getAttribute(attrname);
+        if (a != null) {
+            Value v = ValueUtility.fromGpb(a.getValue());
+            if (v.getType() == Type.BINARY) {
+                return v.getBinaryValue();
             }
         }
         return null;
@@ -149,8 +170,6 @@ public class PreparedCommand {
 
     /**
      * String useful for logging. Contains command name and sequence number
-     * 
-     * @return
      */
     public String getLoggingId() {
         return id.getCommandName() + "-" + id.getSequenceNumber();
@@ -177,9 +196,12 @@ public class PreparedCommand {
     }
 
     static public CommandId getCommandId(Tuple t) {
-        CommandId cmdId = CommandId.newBuilder().setGenerationTime((Long) t.getColumn(CNAME_GENTIME))
-                .setOrigin((String) t.getColumn(CNAME_ORIGIN)).setSequenceNumber((Integer) t.getColumn(CNAME_SEQNUM))
-                .setCommandName((String) t.getColumn(CNAME_CMDNAME)).build();
+        CommandId cmdId = CommandId.newBuilder()
+                .setGenerationTime((Long) t.getColumn(CNAME_GENTIME))
+                .setOrigin((String) t.getColumn(CNAME_ORIGIN))
+                .setSequenceNumber((Integer) t.getColumn(CNAME_SEQNUM))
+                .setCommandName((String) t.getColumn(CNAME_CMDNAME))
+                .build();
         return cmdId;
     }
 
@@ -190,11 +212,6 @@ public class PreparedCommand {
         al.add(id.getOrigin());
         al.add(id.getSequenceNumber());
         al.add(id.getCommandName());
-
-        if (getBinary() != null) {
-            td.addColumn(CNAME_BINARY, DataType.BINARY);
-            al.add(getBinary());
-        }
 
         for (CommandHistoryAttribute a : attributes) {
             td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
@@ -231,19 +248,6 @@ public class PreparedCommand {
         return assignments;
     }
 
-    public void setBinary(byte[] b) {
-        this.binary = b;
-    }
-
-    public String getUsername() {
-        CommandHistoryAttribute cha = getAttribute(CNAME_USERNAME);
-        if (cha == null) {
-            return null;
-        }
-
-        return cha.getValue().getStringValue();
-    }
-
     public List<CommandHistoryAttribute> getAttributes() {
         return attributes;
     }
@@ -275,22 +279,17 @@ public class PreparedCommand {
         CommandId cmdId = getCommandId(t);
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
+
         for (int i = 0; i < t.size(); i++) {
             ColumnDefinition cd = t.getColumnDefinition(i);
             String name = cd.getName();
-            if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
-                    || CNAME_ASSIGNMENTS.equals(name) || CNAME_COMMENT.equals(name)) {
+            if (isProtectedColumn(name)) {
                 continue;
             }
             Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
             CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
                     .setValue(ValueUtility.toGbp(v)).build();
             pc.attributes.add(a);
-        }
-        pc.setBinary((byte[]) t.getColumn(CNAME_BINARY));
-        if (t.hasColumn(CNAME_COMMENT)) {
-            String comment = (String) t.getColumn(CNAME_COMMENT);
-            pc.setComment(comment);
         }
 
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
@@ -324,23 +323,6 @@ public class PreparedCommand {
         return pc;
     }
 
-    public void setStringAttribute(String name, String value) {
-        int i;
-        for (i = 0; i < attributes.size(); i++) {
-            CommandHistoryAttribute a = attributes.get(i);
-            if (name.equals(a.getName())) {
-                break;
-            }
-        }
-        CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
-                .setValue(ValueHelper.newValue(value)).build();
-        if (i < attributes.size()) {
-            attributes.set(i, a);
-        } else {
-            attributes.add(a);
-        }
-    }
-
     public void addStringAttribute(String name, String value) {
         CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
                 .setValue(ValueHelper.newValue(value)).build();
@@ -349,19 +331,27 @@ public class PreparedCommand {
 
     public void addAttribute(CommandHistoryAttribute cha) {
         String name = cha.getName();
-        if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
-                || CNAME_ASSIGNMENTS.equals(name)) {
+        if (isProtectedColumn(name)) {
             throw new IllegalArgumentException("Cannot use '" + name + "' as a command attribute");
         }
         attributes.add(cha);
     }
 
     public byte[] getBinary() {
-        return binary;
+        return getBinaryAttribute(CNAME_BINARY);
+    }
+
+    public void setBinary(byte[] b) {
+        setAttribute(CNAME_BINARY, b);
+    }
+
+    public String getUsername() {
+        CommandHistoryAttribute cha = getAttribute(CNAME_USERNAME);
+        return cha != null ? cha.getValue().getStringValue() : null;
     }
 
     public void setUsername(String username) {
-        setStringAttribute(CNAME_USERNAME, username);
+        setAttribute(CNAME_USERNAME, username);
     }
 
     public MetaCommand getMetaCommand() {
@@ -385,44 +375,40 @@ public class PreparedCommand {
         return argAssignment;
     }
 
-    @Override
-    public String toString() {
-        return "PreparedCommand(" + uuid + ", " + StringConverter.toString(id) + ")";
-    }
-
-    public void disableTransmissionContraints(boolean b) {
-        disableTransmissionConstraints = b;
+    public void disableTransmissionConstraints(boolean b) {
+        setAttribute(CNAME_NO_TRANSMISSION_CONSTRAINTS, b);
     }
 
     /**
-     * 
      * @return true if the transmission constraints have to be disabled for this command
      */
-    public boolean disableTransmissionContraints() {
-        return disableTransmissionConstraints;
+    public boolean disableTransmissionConstraints() {
+        Boolean attr = getBooleanAttribute(CNAME_NO_TRANSMISSION_CONSTRAINTS);
+        return attr != null ? attr.booleanValue() : false;
     }
 
     /**
-     * 
      * @return true if the command verifiers have to be disabled for this command
      */
     public boolean disableCommandVerifiers() {
-        return disableCommandVerifiers;
+        Boolean attr = getBooleanAttribute(CNAME_NO_VERIFIERS);
+        return attr != null ? attr.booleanValue() : false;
     }
 
     public void disableCommandVerifiers(boolean b) {
-        disableCommandVerifiers = b;
+        setAttribute(CNAME_NO_VERIFIERS, b);
     }
 
     /**
      * @return true if no post-processing should occur on this command
      */
     public boolean disablePostprocessing() {
-        return disablePostprocessing;
+        Boolean attr = getBooleanAttribute(CNAME_NO_POSTPROCESSING);
+        return attr != null ? attr.booleanValue() : false;
     }
 
     public void disablePostprocessing(boolean b) {
-        disablePostprocessing = b;
+        setAttribute(CNAME_NO_POSTPROCESSING, b);
     }
 
     public void addVerifierConfig(String name, VerifierConfig verifierConfig) {
@@ -434,5 +420,53 @@ public class PreparedCommand {
      */
     public Map<String, VerifierConfig> getVerifierOverride() {
         return verifierConfig;
+    }
+
+    public CommandHistoryAttribute getAttribute(String name) {
+        for (CommandHistoryAttribute a : attributes) {
+            if (name.equals(a.getName())) {
+                return a;
+            }
+        }
+        return null;
+    }
+
+    public void setAttribute(String name, Object value) {
+        int i;
+        for (i = 0; i < attributes.size(); i++) {
+            CommandHistoryAttribute attr = attributes.get(i);
+            if (name.equals(attr.getName())) {
+                break;
+            }
+        }
+        CommandHistoryAttribute.Builder attr = CommandHistoryAttribute.newBuilder()
+                .setName(name);
+        if (value instanceof String) {
+            attr.setValue(ValueHelper.newValue((String) value));
+        } else if (value instanceof Boolean) {
+            attr.setValue(ValueHelper.newValue((Boolean) value));
+        } else if (value instanceof byte[]) {
+            attr.setValue(ValueHelper.newValue((byte[]) value));
+        } else {
+            throw new IllegalArgumentException("Unexpected attribute type");
+        }
+        if (i < attributes.size()) {
+            attributes.set(i, attr.build());
+        } else {
+            attributes.add(attr.build());
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "PreparedCommand(" + uuid + ", " + StringConverter.toString(id) + ")";
+    }
+
+    public static boolean isReservedColumn(String columnName) {
+        return reservedColumns.contains(columnName);
+    }
+
+    public static boolean isProtectedColumn(String columnName) {
+        return protectedColumns.contains(columnName);
     }
 }

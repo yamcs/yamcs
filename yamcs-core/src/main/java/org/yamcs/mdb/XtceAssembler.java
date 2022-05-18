@@ -1189,7 +1189,7 @@ public class XtceAssembler {
         if (command.hasTransmissionConstraints()) {
             doc.writeStartElement("TransmissionConstraintList");
             for (TransmissionConstraint constraint : command.getTransmissionConstraintList()) {
-                writeTransmisisonContraint(doc, constraint);
+                writeTransmissionConstraint(doc, constraint);
             }
             doc.writeEndElement();
         }
@@ -1534,7 +1534,7 @@ public class XtceAssembler {
         doc.writeEndElement();// CommandContainer
     }
 
-    private void writeTransmisisonContraint(XMLStreamWriter doc, TransmissionConstraint constraint)
+    private void writeTransmissionConstraint(XMLStreamWriter doc, TransmissionConstraint constraint)
             throws XMLStreamException {
         doc.writeStartElement("TransmissionConstraint");
         if (constraint.getTimeout() > 0) {

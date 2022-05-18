@@ -30,10 +30,10 @@ public class Command implements Comparable<Command> {
     };
 
     private static final String PREFIX_COMMAND_COMPLETE = "CommandComplete";
-    private static final String PREFIX_TRANSMISSION_CONTRAINTS = "TransmissionConstraints";
+    private static final String PREFIX_TRANSMISSION_CONSTRAINTS = "TransmissionConstraints";
     private static final String[] STANDARD_ATTRIBUTE_PREFIXES = new String[] {
             PREFIX_COMMAND_COMPLETE,
-            PREFIX_TRANSMISSION_CONTRAINTS,
+            PREFIX_TRANSMISSION_CONSTRAINTS,
     };
 
     private static final String SUFFIX_TIME = "_Time";

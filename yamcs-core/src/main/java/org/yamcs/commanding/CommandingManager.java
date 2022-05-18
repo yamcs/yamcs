@@ -60,7 +60,8 @@ public class CommandingManager extends AbstractService {
     }
 
     /**
-     * pc is a command whose source is included. parse the source populate the binary part and the definition.
+     * Creates a new {@link PreparedCommand} where the binary is created by processing the provided arguments and
+     * matching it against the MDB definition.
      */
     public PreparedCommand buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList, String origin,
             int seq, User user) throws ErrorInCommand, YamcsException {
@@ -77,6 +78,22 @@ public class CommandingManager extends AbstractService {
 
         Set<String> userAssignedArgumentNames = new HashSet<>(argAssignmentList.keySet());
         pc.setArgAssignment(cbr.getArgs(), userAssignedArgumentNames);
+
+        return pc;
+    }
+
+    /**
+     * Creates a new {@link PreparedCommand} with raw provided binary.
+     */
+    public PreparedCommand buildRawCommand(MetaCommand mc, byte[] binary, String origin, int seq, User user) {
+        log.debug("Building raw command {} of length {}", mc.getName(), binary.length);
+
+        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin)
+                .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
+        PreparedCommand pc = new PreparedCommand(cmdId);
+        pc.setMetaCommand(mc);
+        pc.setBinary(binary);
+        pc.setUsername(user.getName());
 
         return pc;
     }
@@ -130,7 +147,7 @@ public class CommandingManager extends AbstractService {
         if (!paramsToSubscribe.isEmpty()) {
             processor.getParameterProcessorManager().subscribeToProviders(paramsToSubscribe);
         } else {
-            log.debug("No parameter required for post transmission contraint check");
+            log.debug("No parameter required for post transmission constraint check");
         }
         commandQueueManager.startAsync();
         commandQueueManager.awaitRunning();

@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.yamcs.Spec.OptionType;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.logging.YamcsLogManager;
@@ -308,7 +309,11 @@ public class YamcsServer {
         CommandOption previous = commandOptions.putIfAbsent(option.getId(), option);
         if (previous != null) {
             throw new IllegalArgumentException(
-                    "A command option with '" + option.getId() + "' was already registered with Yamcs");
+                    "A command option '" + option.getId() + "' was already registered with Yamcs");
+        }
+        if (PreparedCommand.isReservedColumn(option.getId())) {
+            throw new IllegalArgumentException(
+                    "Command options may not be named '" + option.getId() + "'. This name is reserved");
         }
     }
 

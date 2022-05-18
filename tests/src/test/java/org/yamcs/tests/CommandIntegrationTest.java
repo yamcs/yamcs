@@ -91,7 +91,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NOK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NOK);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK,
                 "Transmission constraints check failed");
 
@@ -118,8 +118,8 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.PENDING);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NOK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.PENDING);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NOK);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.NOK,
                 "Transmission constraints check failed");
 
@@ -146,7 +146,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
 
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
     }
 
@@ -168,13 +168,13 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
 
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY,
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY,
                 AckStatus.PENDING);
 
         Value v = ValueHelper.newValue(true);
         processorClient.setValue("/REFMDB/SUBSYS1/AllowCriticalTC2", v).get();
 
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.OK);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.OK);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
     }
 
@@ -198,7 +198,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);
@@ -239,7 +239,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
 
         cmdhist = captor.expectTimely();
@@ -275,7 +275,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
@@ -303,7 +303,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
@@ -334,7 +334,7 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeQueued_KEY, AckStatus.OK);
-        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionContraints_KEY, AckStatus.NA);
+        checkNextCmdHistoryAck(CommandHistoryPublisher.TransmissionConstraints_KEY, AckStatus.NA);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.PENDING);
         checkNextCmdHistoryAck(CommandHistoryPublisher.AcknowledgeReleased_KEY, AckStatus.OK);
         checkNextCmdHistoryAck("Verifier_Execution", AckStatus.OK);

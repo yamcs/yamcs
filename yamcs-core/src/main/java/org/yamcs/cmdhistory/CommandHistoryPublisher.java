@@ -20,7 +20,7 @@ public interface CommandHistoryPublisher {
     };
 
     public final static String CommandComplete_KEY = "CommandComplete";
-    public final static String TransmissionContraints_KEY = "TransmissionConstraints";
+    public final static String TransmissionConstraints_KEY = "TransmissionConstraints";
     public final static String AcknowledgeQueued_KEY = "Acknowledge_Queued";
     public final static String AcknowledgeReleased_KEY = "Acknowledge_Released";
 

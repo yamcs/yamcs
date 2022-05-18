@@ -145,7 +145,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             if (request.hasDisableTransmissionConstraints()) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                preparedCommand.disableTransmissionContraints(request.getDisableTransmissionConstraints());
+                preparedCommand.disableTransmissionConstraints(request.getDisableTransmissionConstraints());
             } else if (request.getVerifierConfigCount() > 0) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 List<String> invalidVerifiers = new ArrayList<>();
@@ -385,7 +385,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .where("gentime = ?", gentime)
                 .where("seqNum = ?", seqNum)
                 .where("origin = ?", origin);
-
         List<CommandHistoryEntry> commands = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
