@@ -133,7 +133,7 @@ public class ParameterArchive extends AbstractYamcsService {
         }
 
         if (!config.containsKey("backFiller") && !config.containsKey("realtimeFiller")) {
-            backFiller = new BackFiller(this, null);
+            backFiller = new BackFiller(this, YConfiguration.emptyConfig());
         }
 
         try {
@@ -514,13 +514,18 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     public void compact() {
+
         try {
+            log.debug("Compacting all partitions");
+            long t0 = System.currentTimeMillis();
             for (Partition p : partitions) {
                 tablespace.getRdb(p.partitionDir, false).getDb().compactRange();
             }
+            log.debug("Compaction finished in {} millisec", System.currentTimeMillis() - t0);
         } catch (RocksDBException e) {
             throw new ParameterArchiveException("error compacting", e);
         }
+
     }
 
     public static class Partition extends TimeInterval {
@@ -546,5 +551,4 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
-
 }
