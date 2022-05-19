@@ -30,7 +30,7 @@ public class StreamSelectTest extends YarchTestCase {
 
                     @Override
                     public void check(int count, long time, int id) {
-                        assertEquals(1000 * x, time);
+                        assertEquals(1000l * x, time);
                         assertEquals(x % 10, id);
                         do {
                             x++;
@@ -51,7 +51,7 @@ public class StreamSelectTest extends YarchTestCase {
 
                     @Override
                     public void check(int count, long time, int id) {
-                        assertEquals(1000 * x, time);
+                        assertEquals(1000l * x, time);
                         assertEquals(x % 10, id);
                         do {
                             x++;
@@ -65,7 +65,7 @@ public class StreamSelectTest extends YarchTestCase {
 
                     @Override
                     public void check(int count, long time, int id) {
-                        assertEquals(1000 * x, time);
+                        assertEquals(1000l * x, time);
                         assertEquals(x % 10, id);
                         do {
                             x++;
@@ -91,7 +91,7 @@ public class StreamSelectTest extends YarchTestCase {
 
                     @Override
                     public void check(int count, long time, int id) {
-                        assertEquals(t0 + 1000 * x, time);
+                        assertEquals(t0 + 1000l * x, time);
                         x++;
                     }
                 });
@@ -114,7 +114,7 @@ public class StreamSelectTest extends YarchTestCase {
 
                     @Override
                     public void check(int count, long time, int id) {
-                        assertEquals(1000 * x[count], time);
+                        assertEquals(1000l * x[count], time);
                         assertEquals(x[count], id);
                     }
                 });
