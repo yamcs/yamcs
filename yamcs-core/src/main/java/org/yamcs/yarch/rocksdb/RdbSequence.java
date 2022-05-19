@@ -128,6 +128,7 @@ public class RdbSequence implements Sequence {
      * 
      * @return
      */
+	@Override
     public long get() {
         return seq.get();
     }

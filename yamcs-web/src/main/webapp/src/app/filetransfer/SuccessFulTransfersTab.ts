@@ -36,7 +36,7 @@ export class SuccessfulTransfersTab implements OnDestroy {
       this.serviceName$.next(service);
       this.switchService(service);
     });
-    this.syncSubscription = synchronizer.sync(() => {
+/*    this.syncSubscription = synchronizer.sync(() => {
       if (this.dirty) {
         const values = [...this.transfersById.values()];
         values.sort((a, b) => this.compareTransfers(a.transfer, b.transfer));
@@ -44,7 +44,7 @@ export class SuccessfulTransfersTab implements OnDestroy {
         this.dirty = false;
       }
     });
-  }
+*/  }
 
   private compareTransfers(a: Transfer, b: Transfer) {
     const time1 = a.creationTime || a.startTime || "";
@@ -86,8 +86,7 @@ export class SuccessfulTransfersTab implements OnDestroy {
     if (item) {
       item.updateTransfer(transfer);
     } else {
-      const objectUrl = this.storageClient.getObjectURL(
-        '_global', transfer.bucket, transfer.objectName);
+      const objectUrl = transfer.objectName !== undefined ? this.storageClient.getObjectURL('_global', transfer.bucket, transfer.objectName) : '';
       item = new TransferItem(transfer, objectUrl);
       this.transfersById.set(transfer.id, item);
     }

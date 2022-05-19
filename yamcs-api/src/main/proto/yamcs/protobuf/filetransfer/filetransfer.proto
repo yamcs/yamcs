@@ -10,6 +10,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/buckets/buckets.proto";
 
 // This API deals with transmission (upload and download) of file to and from spacecraft.
 // The API can be used to interface any implementation of the FileTransferService.
@@ -76,6 +77,22 @@ service FileTransferApi {
       topic: "file-transfers"
     };
   }
+
+  // Request file list from remote
+  rpc RequestFileList(ListFilesRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/filetransfer/{instance}/{serviceName}/requestfiles"
+      body: "*"
+    };
+  }
+
+  // Get latest file list
+  rpc GetFileList(ListFilesRequest) returns (yamcs.protobuf.buckets.ListObjectsResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/filetransfer/{instance}/{serviceName}/getfiles"
+      body: "*"
+    };
+  }
 }
 
 enum TransferDirection {
@@ -107,17 +124,20 @@ message ListFileTransferServicesResponse {
 
 //This message is used to configure the yacms-web
 message FileTransferCapabilities {
-    //if true, yamcs-web shows a button for initiating an upload
-	optional bool upload = 1;
-	 
-	 //if true, yamcs-web shows a button for initiating a download
-	optional bool download = 2;
-	
-	//if true, yamcs-web will allow to chose reliable/non-reliable transfer 
-	optional bool reliability = 3;
-	
-    //if true, yamcs-web will show the section with the destination file/folder name (upload only)
-	optional bool remotePath = 4 ;
+  //if true, yamcs-web shows a button for initiating an upload
+  optional bool upload = 1;
+
+  //if true, yamcs-web shows a button for initiating a download
+  optional bool download = 2;
+
+  //if true, yamcs-web will allow to chose reliable/non-reliable transfer 
+  optional bool reliability = 3;
+
+  //if true, yamcs-web will show the section with the destination file/folder name (upload only)
+  optional bool remotePath = 4;
+
+  // true = service supports remote file list
+  optional bool fileList = 5;
 }
 
 
@@ -186,8 +206,6 @@ message CreateTransferRequest {
     // Requests the receiver to send a Finished PDU at the end of the transfer
     optional bool closureRequested = 4;
   }
-  message DownloadOptions {
-  }
 
   optional string instance = 1;
   //service name
@@ -208,16 +226,13 @@ message CreateTransferRequest {
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
   
-  optional DownloadOptions downloadOptions = 6;
+  optional UploadOptions uploadOptions = 6;
   
-  // Configuration options specific to ``UPLOAD`` transfers.
-  optional UploadOptions uploadOptions = 7;
-
   //used to derive the source entity id
-  optional string source = 9;
+  optional string source = 7;
 
   //used to derive the destination entity id
-  optional string destination = 10;
+  optional string destination = 9;
 }
 
 message PauseTransferRequest {
@@ -272,4 +287,15 @@ message SubscribeTransfersRequest {
   optional string instance = 1;
   // service name
   optional string serviceName = 2;
+}
+
+message ListFilesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  // service name
+  optional string serviceName = 2;
+  // Entity from which to get the file list
+  optional string destination = 3;
+  // Path of folder to list files from
+  optional string remotePath = 4;
 }

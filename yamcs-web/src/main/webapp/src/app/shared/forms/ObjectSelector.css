@@ -1,7 +1,3 @@
-table {
-  cursor: pointer;
-}
-
 .folder:hover {
   text-decoration: underline;
 }

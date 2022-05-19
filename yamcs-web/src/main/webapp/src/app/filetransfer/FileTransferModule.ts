@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { FileTransferRoutingModule, routingComponents } from './FileTransferRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
-import { UploadFileDialog } from './UploadFileDialog';
 import { DownloadFileDialog } from './DownloadFileDialog';
 
 @NgModule({
@@ -13,7 +12,6 @@ import { DownloadFileDialog } from './DownloadFileDialog';
   declarations: [
     routingComponents,
     FileTransferTable,
-    UploadFileDialog,
     DownloadFileDialog,
   ],
 })

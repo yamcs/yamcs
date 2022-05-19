@@ -1,0 +1,102 @@
+::ng-deep .mat-dialog-container {
+  border-radius: 0;
+  position: relative;
+}
+
+.transfer-files {
+  position: relative;
+  height: calc(100% - 64px - 60px);
+}
+
+table.ya-data-table {
+  width: 100%;
+}
+
+.ya-data-table td {
+  border: none;
+}
+
+.transfer-options {
+  position: relative;
+  height: 60px;
+  overflow: hidden;
+}
+
+.transfer-options div {
+  max-width: 150px;
+  float: left;
+  padding: 8px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  height: 64px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #d3d3d3;
+}
+
+label.table-caption {
+  margin: 0;
+}
+
+.header-container {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  right: 0;
+  display: flex;
+}
+
+.tables-container {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+}
+
+.bucket-caption-wrapper {
+  margin-top: 6px;
+  flex: 0 0 140px;
+}
+
+.object-breadcrumb {
+  overflow: hidden;
+  margin: 0 8px 0 8px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: calc(50% - 140px - 16px);
+}
+
+.remote-breadcrumb {
+  overflow: hidden;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: calc(50% - 140px - 16px);
+}
+
+.bucket-table-wrapper {
+  overflow: auto;
+  border: 1px solid #d3d3d3;
+  flex: 0 0 140px;
+}
+
+.object-table-wrapper {
+  overflow: auto;
+  border: 1px solid #d3d3d3;
+  margin: 0 8px 0 8px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: calc(50% - 140px - 16px);
+}
+
+.remote-table-wrapper {
+  overflow: auto;
+  border: 1px solid #d3d3d3;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: calc(50% - 140px - 16px);
+}

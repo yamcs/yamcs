@@ -55,17 +55,32 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     this.storageClient = yamcs.createStorageClient();
   }
 
+  // Called when bucket is changed
   ngOnChanges() {
-    if (this.instance && this.bucket) {
+    if (this.instance) {
       this.loadCurrentFolder();
     }
   }
 
+  // Called when breadcrumb is selected
   changePrefix(prefix: string) {
     this.loadCurrentFolder(prefix);
   }
 
   private loadCurrentFolder(prefix?: string) {
+    if (!this.bucket) {
+      // The object selector for remote files does not have a bucket.
+      // Show an empty folder, which will trigger prefixChange() to update breadcrumb and get the file list.
+      const newPrefix = prefix || null;
+      // Only clear folder (and get new file list) if we are entering a different folder.
+      // If the user selects the same folder at the breadcrumb we must not clear the table.
+      if (newPrefix !== this.currentPrefix$.value) {
+        const dir: ListObjectsResponse = { prefixes: [], objects: [] };
+        this.setFolderContent(prefix, dir);
+      }
+      return;
+    }
+
     const options: ListObjectsOptions = {
       delimiter: '/',
     };
@@ -74,16 +89,22 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     }
 
     this.storageClient.listObjects(this.instance, this.bucket.name, options).then(dir => {
-      this.changedir(dir);
-      const newPrefix = prefix || null;
-      if (newPrefix !== this.currentPrefix$.value) {
-        this.currentPrefix$.next(newPrefix);
-        this.prefixChange.emit(newPrefix);
-      }
+      this.setFolderContent(prefix, dir);
     });
   }
 
-  private changedir(dir: ListObjectsResponse) {
+  // Update html table and breadcrumb
+  setFolderContent(prefix: string | undefined, dir: ListObjectsResponse) {
+    this.changeDir(dir); // Update html table
+    const newPrefix = prefix || null;
+    if (newPrefix !== this.currentPrefix$.value) {
+      this.currentPrefix$.next(newPrefix); // Show or hide parent folder
+      this.prefixChange.emit(newPrefix); // Update breadcrumb
+    }
+  }
+
+  // Update form; update dataSource and notify html to update table
+  private changeDir(dir: ListObjectsResponse) {
     this.selectedFileNames.clear();
     this.updateFileNames();
     const items: BrowseItem[] = [];
@@ -94,18 +115,20 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       });
     }
     for (const object of dir.objects || []) {
+      const url: string = this.bucket != null ? this.storageClient.getObjectURL(this.instance, this.bucket.name, object.name) : '';
       items.push({
         folder: false,
         name: object.name,
         modified: object.created,
         size: object.size,
-        objectUrl: this.storageClient.getObjectURL(this.instance, this.bucket.name, object.name),
+        objectUrl: url,
       });
     }
     this.dataSource.data = items;
     this.changeDetection.detectChanges();
   }
 
+  // Called from html when a row is selected
   selectFile(row: BrowseItem) {
     if (row.folder) {
       this.loadCurrentFolder(row.name);
@@ -124,6 +147,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     }
   }
 
+  // Update form
   private updateFileNames() {
     this.onChange(Array.from(this.selectedFileNames).join("|"));
   }
@@ -137,12 +161,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     if (currentPrefix) {
       const withoutTrailingSlash = currentPrefix.slice(0, -1);
       const idx = withoutTrailingSlash.lastIndexOf('/');
-      if (idx) {
-        const parentPrefix = withoutTrailingSlash.substring(0, idx + 1);
-        this.selectedFileNames.clear();
-        this.updateFileNames();
-        this.loadCurrentFolder(parentPrefix);
-      }
+      const parentPrefix = idx != -1 ? withoutTrailingSlash.substring(0, idx + 1) : undefined;
+      this.selectedFileNames.clear();
+      this.updateFileNames();
+      this.loadCurrentFolder(parentPrefix);
     }
   }
 

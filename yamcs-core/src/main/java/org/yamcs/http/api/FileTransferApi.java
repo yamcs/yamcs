@@ -28,10 +28,13 @@ import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
+import org.yamcs.protobuf.ListFilesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
+import org.yamcs.protobuf.ListObjectsResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
+import org.yamcs.protobuf.ObjectInfo;
 import org.yamcs.protobuf.PauseTransferRequest;
 import org.yamcs.protobuf.ResumeTransferRequest;
 import org.yamcs.protobuf.SubscribeTransfersRequest;
@@ -165,6 +168,13 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
 
+			if (request.hasUploadOptions()) {
+				UploadOptions opts = request.getUploadOptions();
+				if (opts.hasReliable()) {
+					transferOptions.setReliable(opts.getReliable());
+				}
+			}
+
             String sourcePath = request.getRemotePath();
             String source = request.hasSource() ? request.getSource() : null;
             String destination = request.hasDestination() ? request.getDestination() : null;
@@ -244,6 +254,35 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         }
         ftService.registerTransferMonitor(listener);
     }
+
+	/**
+	 * <pre>
+	 *  Request file list from remote
+	 * </pre>
+	 */
+	@Override
+	public void requestFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
+		ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+		ftService.requestFileList(request.getDestination(), request.getRemotePath());
+		observer.complete(Empty.getDefaultInstance());
+	}
+	
+	/**
+	 * <pre>
+	 *  Get latest file list from service
+	 * </pre>
+	 */
+	@Override
+	public void getFileList(Context ctx, ListFilesRequest request, Observer<ListObjectsResponse> observer) {
+		ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+		ListObjectsResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
+		if (response == null) {
+			response = ListObjectsResponse.newBuilder().build();
+		}
+		observer.complete(response);
+	}
 
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
         FileTransferServiceInfo.Builder infob = FileTransferServiceInfo.newBuilder()

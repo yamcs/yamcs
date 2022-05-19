@@ -7,14 +7,14 @@ import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, G
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
-import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
+import { CreateTransferRequest, ListFilesRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
-import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
+import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListObjectsResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
@@ -1184,9 +1184,9 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as TransfersPage;
   }
 
-  async createFileTransfer(instance: string, service: string, options: CreateTransferRequest) {
+  async createFileTransfer(instance: string, service: string, request: CreateTransferRequest) {
     const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers`;
-    const body = JSON.stringify(options);
+    const body = JSON.stringify(request);
     const response = await this.doFetch(url, {
       body,
       method: 'POST',
@@ -1207,6 +1207,19 @@ export default class YamcsClient implements HttpHandler {
   async cancelFileTransfer(instance: string, service: string, id: number) {
     const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers/${id}:cancel`;
     return this.doFetch(url, { method: 'POST' });
+  }
+
+  async requestFileList(instance: string, service: string, request: ListFilesRequest) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/requestfiles`;
+    const body = JSON.stringify(request);
+    return this.doFetch(url, { body, method: 'POST' });
+  }
+
+  async getFileList(instance: string, service: string, request: ListFilesRequest) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/getfiles`;
+    const body = JSON.stringify(request);
+    const response = await this.doFetch(url, { body, method: 'POST' });
+    return await response.json() as ListObjectsResponse;
   }
 
   async getApids(instance: string) {
