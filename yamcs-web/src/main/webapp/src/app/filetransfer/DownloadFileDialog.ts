@@ -61,11 +61,19 @@ export class DownloadFileDialog {
       reliable: [true, []],
     });
 
-    this.filesForm.valueChanges.subscribe(() => {
-      this.updateButtonStates();
+    // Subscribe to some form variables to determine enabled state of buttons
+    this.filesForm.get('object')?.valueChanges.subscribe(value => {
+      this.updateButtonStates(value, this.filesForm.get('remoteFile')!.value, this.optionsForm.get('remotePath')!.value);
+    });
+    this.filesForm.get('remoteFile')?.valueChanges.subscribe(value => {
+      this.updateButtonStates(this.filesForm.get('object')!.value, value, this.optionsForm.get('remotePath')!.value);
+    });
+    this.optionsForm.get('remotePath')?.valueChanges.subscribe(value => {
+      this.updateButtonStates(this.filesForm.get('object')!.value, this.filesForm.get('remoteFile')!.value, value);
     });
 
-    this.optionsForm.get('destination')!.valueChanges.subscribe(dest => {
+    // If a destination is selected -> display cached file list if any
+    this.optionsForm.get('destination')?.valueChanges.subscribe(dest => {
       // New destination selected -> Go to root folder
       this.getFileList(dest, '');
     });
@@ -79,16 +87,16 @@ export class DownloadFileDialog {
     this.selectedBucket$.next(bucket);
   }
 
-  updateButtonStates() {
+  updateButtonStates(localFiles: string, remoteFile: string, textfieldPath: string) {
     var remotePath = '';
-    if (this.service.capabilities.fileList && this.filesForm.value['remoteFile']) {
-       remotePath = this.filesForm.value['remoteFile'];
-    } else if (this.service.capabilities.remotePath && this.filesForm.value['remotePath']) {
-       remotePath = this.filesForm.value['remotePath'];
+    if (this.service.capabilities.fileList && remoteFile) {
+       remotePath = remoteFile;
+    } else if (this.service.capabilities.remotePath && textfieldPath) {
+       remotePath = textfieldPath;
     }
     this.isDownloadEnabled = this.service.capabilities.download && this.selectedBucket$.value! && remotePath != '' && this.optionsForm.valid;
 
-    this.isUploadEnabled = this.service.capabilities.upload && this.filesForm.value['object'] && this.optionsForm.valid;
+    this.isUploadEnabled = this.service.capabilities.upload && localFiles != '' && this.optionsForm.valid;
   }
 
   // Returns remote folder path
@@ -108,10 +116,12 @@ export class DownloadFileDialog {
     // Must have either a selected file from the object selector or a file from the text field.
     // Capabilities are taken into account.
     var remotePath: string;
-    if (this.service.capabilities.remotePath && this.filesForm.value['remotePath']) {
-       remotePath = this.filesForm.value['remotePath'];
-    } else if (this.service.capabilities.fileList && this.filesForm.value['remoteFile']) {
-       remotePath = this.filesForm.value['remoteFile'];
+    const formTextInputPath = this.optionsForm.get('remotePath')!.value;
+    const formSelectedFile = this.filesForm.get('remoteFile')!.value;
+    if (this.service.capabilities.remotePath && formTextInputPath) {
+       remotePath = formTextInputPath;
+    } else if (this.service.capabilities.fileList && formSelectedFile) {
+       remotePath = formSelectedFile;
     } else {
       return;
     }
@@ -129,10 +139,10 @@ export class DownloadFileDialog {
       bucket: this.selectedBucket$.value!.name,
       objectName: localPath,
       remotePath: remotePath,
-      source: this.optionsForm.value['source'],
-      destination: this.optionsForm.value['destination'],
+      source: this.optionsForm.get('source')!.value,
+      destination: this.optionsForm.get('destination')!.value,
       uploadOptions: {
-        reliable: this.optionsForm.value['reliable']
+        reliable: this.optionsForm.get('reliable')!.value
       }
     }).then(() => {
       this.dialogRef.close();
@@ -147,11 +157,12 @@ export class DownloadFileDialog {
 
     const promises = objectNames.map((name) => {
       var remotePath: string;
-      if (this.service.capabilities.remotePath && this.filesForm.value['remotePath']) {
+      const formTextInputPath = this.optionsForm.get('remotePath')!.value;
+      if (this.service.capabilities.remotePath && formTextInputPath) {
         // Use text field as remote path (overrides remote file selector)
-        remotePath = this.filesForm.value['remotePath'];
+        remotePath = formTextInputPath;
       } else if (this.service.capabilities.fileList) {
-        // Use selected folder (not file) as remote path, and append object name
+        // Use selected folder (not selected file) as remote path, and append local object name
         const localParts: string[] = name.split('/');
         remotePath = this.getSelectedRemoteFolderPath() + '/' + localParts[localParts.length - 1];
       } else {
@@ -165,10 +176,10 @@ export class DownloadFileDialog {
         bucket: this.selectedBucket$.value!.name,
         objectName: name,
         remotePath: remotePath,
-        source: this.optionsForm.value['source'],
-        destination: this.optionsForm.value['destination'],
+        source: this.optionsForm.get('source')!.value,
+        destination: this.optionsForm.get('destination')!.value,
         uploadOptions: {
-          reliable: this.optionsForm.value['reliable']
+          reliable: this.optionsForm.get('reliable')!.value
         }
       });
     });

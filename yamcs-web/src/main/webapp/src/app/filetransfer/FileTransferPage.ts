@@ -125,9 +125,6 @@ export class FileTransferPage implements OnDestroy {
     }
   }
 
-  uploadFile(service: FileTransferService) {
-  }
-
   downloadFile(service: FileTransferService) {
     const dialogRef = this.dialog.open(DownloadFileDialog, {
       width: '70%',
