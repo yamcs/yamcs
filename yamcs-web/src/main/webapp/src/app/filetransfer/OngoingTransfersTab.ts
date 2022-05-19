@@ -82,13 +82,12 @@ export class OngoingTransfersTab implements OnDestroy {
           case 'PAUSED':
           case 'CANCELLING':
           case 'QUEUED':
-          case 'COMPLETED':
             this.setOrUpdate(transfer);
             break;
-//          case 'FAILED':
-//          case 'COMPLETED':
-//            this.transfersById.delete(transfer.id);
-//            break;
+          case 'FAILED':
+          case 'COMPLETED':
+            this.transfersById.delete(transfer.id);
+            break;
         }
 
         // throttle updates, it can get spammy

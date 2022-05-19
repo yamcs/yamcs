@@ -36,7 +36,7 @@ export class SuccessfulTransfersTab implements OnDestroy {
       this.serviceName$.next(service);
       this.switchService(service);
     });
-/*    this.syncSubscription = synchronizer.sync(() => {
+    this.syncSubscription = synchronizer.sync(() => {
       if (this.dirty) {
         const values = [...this.transfersById.values()];
         values.sort((a, b) => this.compareTransfers(a.transfer, b.transfer));
@@ -44,7 +44,7 @@ export class SuccessfulTransfersTab implements OnDestroy {
         this.dirty = false;
       }
     });
-*/  }
+  }
 
   private compareTransfers(a: Transfer, b: Transfer) {
     const time1 = a.creationTime || a.startTime || "";

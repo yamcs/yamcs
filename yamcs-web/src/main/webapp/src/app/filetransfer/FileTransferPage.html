@@ -15,23 +15,12 @@
     </ng-container>
 
     <ng-container *ngIf="service$ | async as service">
-     <ng-container *ngIf="service.capabilities.upload">
-      <button mat-button
-              color="primary"
-              (click)="uploadFile(service)">
-        <mat-icon>cloud_upload</mat-icon>
-        UPLOAD FILE
-      </button>
-     </ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="service$ | async as service">
-     <ng-container *ngIf="service.capabilities.download">
+     <ng-container *ngIf="service.capabilities.download || service.capabilities.upload">
       <button mat-button
               color="primary"
               (click)="downloadFile(service)">
-        <mat-icon>cloud_download</mat-icon>
-        DOWNLOAD FILE
+        <mat-icon>cloud</mat-icon>
+        NEW TRANSFER
       </button>
      </ng-container>
     </ng-container>
