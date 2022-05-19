@@ -145,7 +145,7 @@
       <ng-container cdkColumnDef="seqNumber">
         <th mat-header-cell *cdkHeaderCellDef>Sequence Number</th>
         <td mat-cell *cdkCellDef="let row">
-          {{ row.seqNumber || '-' }}
+          {{ row.seqNumber ?? '-' }}
         </td>
       </ng-container>
 

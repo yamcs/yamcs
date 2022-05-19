@@ -56,8 +56,11 @@ export class EventBuffer {
     const splicedEvents = this.archiveEvents
       .concat(realtimeEvents)
       .sort((e1, e2) => {
-        const res = -e1.generationTime.localeCompare(e2.generationTime);
-        return res !== 0 ? res : (e1.seqNumber - e2.seqNumber);
+        let res = -e1.generationTime.localeCompare(e2.generationTime);
+        if (res === 0) {
+          res = -e1.source.localeCompare(e2.source);
+        }
+        return res !== 0 ? res : (e2.seqNumber - e1.seqNumber);
       });
     return splicedEvents;
   }
