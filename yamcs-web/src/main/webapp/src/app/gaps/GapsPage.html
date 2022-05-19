@@ -10,9 +10,9 @@
     </button>
 
     <button mat-icon-button
-            matTooltip="Jump to now"
+            matTooltip="Reload data"
             color="primary"
-            (click)="jumpToNow()">
+            (click)="loadData()">
       <mat-icon>refresh</mat-icon>
     </button>
   </app-instance-toolbar>
@@ -22,7 +22,8 @@
     <form [formGroup]="filterForm">
       <div class="filter-bar" style="margin-top: 16px">
         <app-select [options]="apidOptions$ | async"
-                    formControlName="apid"></app-select>
+                    formControlName="apid"
+                    emptyOption="-- select an APID --"></app-select>
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
@@ -34,17 +35,25 @@
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>
         </ng-container>
-        <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
-          <button class="ya-button" (click)="jumpToNow()">
-            Jump to now
-          </button>
-        </ng-container>
       </div>
     </form>
 
+    <app-empty-message *ngIf="!filterForm.value.apid">
+      No APID selected
+    </app-empty-message>
+    <ng-container *ngIf="filterForm.valid">
+      <app-empty-message *ngIf="!dataSource.data.length">
+        No data for the current filter criteria.
+      </app-empty-message>
+      <app-empty-message *ngIf="hasMore$ | async">
+        Too many results. Please narrow down the request range.
+      </app-empty-message>
+    </ng-container>
+
     <table mat-table
            [dataSource]="dataSource"
-           class="ya-data-table expand">
+           class="ya-data-table expand"
+           *ngIf="!(hasMore$ | async) && dataSource.data.length">
 
       <ng-container cdkColumnDef="select">
         <th mat-header-cell *cdkHeaderCellDef class="checkbox">
@@ -56,13 +65,6 @@
                  (change)="$event ? selection.toggle(gap) : null"
                  [checked]="selection.isSelected(gap)"
                  [disabled]="!gap.start || !gap.stop">
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="apid">
-        <th mat-header-cell *matHeaderCellDef>APID</th>
-        <td mat-cell *matCellDef="let gap">
-          {{ gap.apid }}
         </td>
       </ng-container>
 

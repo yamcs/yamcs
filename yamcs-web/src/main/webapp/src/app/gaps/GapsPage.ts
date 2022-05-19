@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -33,15 +33,14 @@ export class GapsPage {
   appliedInterval: string;
 
   filterForm = new FormGroup({
-    apid: new FormControl('ANY'),
-    interval: new FormControl('NO_LIMIT'),
+    apid: new FormControl(null, [Validators.required]),
+    interval: new FormControl('PT1H', [Validators.required]),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
   });
 
   displayedColumns = [
     'select',
-    'apid',
     'start',
     'stop',
     'duration',
@@ -51,15 +50,15 @@ export class GapsPage {
     'actions',
   ];
 
-  apidOptions$ = new BehaviorSubject<Option[]>([
-    { id: 'ANY', label: 'Any APID' },
-  ]);
+  apidOptions$ = new BehaviorSubject<Option[]>([]);
 
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour' },
+    { id: 'PT3H', label: 'Last 3 hours' },
     { id: 'PT6H', label: 'Last 6 hours' },
+    { id: 'PT12H', label: 'Last 12 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
-    { id: 'NO_LIMIT', label: 'No limit' },
+    { id: 'P2D', label: 'Last 48 hours' },
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
@@ -69,6 +68,7 @@ export class GapsPage {
 
   dataSource = new MatTableDataSource<Gap>();
   selection = new SelectionModel<Gap>(true, []);
+  hasMore$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private yamcs: YamcsService,
@@ -96,7 +96,7 @@ export class GapsPage {
     this.loadData();
 
     this.filterForm.get('apid')!.valueChanges.forEach(apid => {
-      this.apid = (apid !== 'ANY') ? apid : null;
+      this.apid = apid;
       this.loadData();
     });
 
@@ -107,11 +107,6 @@ export class GapsPage {
         const customStop = this.validStop || now;
         this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
         this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
-      } else if (nextInterval === 'NO_LIMIT') {
-        this.validStart = null;
-        this.validStop = null;
-        this.appliedInterval = nextInterval;
-        this.loadData();
       } else {
         this.validStop = new Date();
         this.validStart = subtractDuration(this.validStop, nextInterval);
@@ -137,22 +132,15 @@ export class GapsPage {
         const customStop = queryParams.get('customStop')!;
         this.filterForm.get('customStop')!.setValue(customStop);
         this.validStop = utils.toDate(customStop);
-      } else if (this.appliedInterval === 'NO_LIMIT') {
-        this.validStart = null;
-        this.validStop = null;
       } else {
         this.validStop = new Date();
         this.validStart = subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
-      this.appliedInterval = 'NO_LIMIT';
-      this.validStop = null;
-      this.validStart = null;
+      this.appliedInterval = 'PT1H';
+      this.validStop = new Date();
+      this.validStart = subtractDuration(this.validStop, this.appliedInterval);
     }
-  }
-
-  jumpToNow() {
-    this.filterForm.get('interval')!.setValue('NO_LIMIT');
   }
 
   applyCustomDates() {
@@ -165,7 +153,13 @@ export class GapsPage {
   loadData() {
     this.selection.clear();
     this.updateURL();
+
+    if (!this.apid) {
+      return;
+    }
+
     const options: GetGapsOptions = {
+      limit: 500
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
@@ -173,12 +167,17 @@ export class GapsPage {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.apid !== null && this.apid !== undefined) {
-      options.apid = Number(this.apid);
-    }
+    options.apid = Number(this.apid);
 
     this.yamcs.yamcsClient.getGaps(this.yamcs.instance!, options)
-      .then(page => this.dataSource.data = (page.gaps || []).reverse())
+      .then(page => {
+        const gaps = (page.gaps || []).reverse();
+        // No reverse pagination on this resource, so we use the token
+        // to detect whether a smaller request should be page.
+        // (if we didn't only the head of the entire data range would be visible)
+        this.hasMore$.next(!!page.continuationToken);
+        this.dataSource.data = gaps;
+      })
       .catch(err => this.messageService.showError(err));
   }
 
@@ -193,7 +192,7 @@ export class GapsPage {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        apid: this.apid ?? null,
+        apid: this.apid,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

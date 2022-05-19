@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 
 /*
  * This component is a hack around the Angular routing system. It forces a full
@@ -40,12 +40,16 @@ export class ContextSwitchPage implements OnInit {
       fragments[i] = decodeURIComponent(fragments[i]);
     }
 
+    const queryParams: Params = {
+      ...tree.queryParams,
+      c: context,
+    };
+    for (const key in queryParams) {
+      let value = queryParams[key];
+      queryParams[key] = value ? decodeURIComponent(value.replace(/__TEMP__/g, '%')) : value;
+    }
+
     // Pass an array of fragments, job done!
-    this.router.navigate(fragments, {
-      queryParams: {
-        ...tree.queryParams,
-        c: context,
-      }
-    });
+    this.router.navigate(fragments, { queryParams });
   }
 }

@@ -12,6 +12,10 @@ mat-toolbar-row {
   background-color: #212121;
 }
 
+.app-bar.replay {
+  background-color: darkviolet;
+}
+
 .logo-wrapper {
   padding-left: 16px;
   padding-right: 16px;
