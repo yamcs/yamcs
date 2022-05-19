@@ -13,6 +13,7 @@ export interface FileTransferCapabilities {
   download: boolean;
   reliability: boolean;
   remotePath: boolean;
+  fileList: boolean;
 }
 
 export interface Entity {
@@ -52,6 +53,11 @@ export interface CreateTransferRequest {
 
 export interface TransfersPage {
   transfers: Transfer[];
+}
+
+export interface ListFilesRequest {
+  remotePath: string;
+  destination: string;
 }
 
 export interface ServicesPage {

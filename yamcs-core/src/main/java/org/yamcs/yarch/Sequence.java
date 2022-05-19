@@ -9,6 +9,7 @@ package org.yamcs.yarch;
  *
  */
 public interface Sequence {
+	long get();
     long next() throws YarchException;
     void reset(long value);
 }

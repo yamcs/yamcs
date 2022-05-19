@@ -46,6 +46,7 @@ import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.protobuf.ListObjectsResponse;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -741,6 +742,15 @@ public class CfdpService extends AbstractYamcsService
                 .build();
     }
 
+	@Override
+	public void requestFileList(String destination, String remotePath) {
+	}
+	
+	@Override
+	public ListObjectsResponse getFileList(String destination, String remotePath) {
+		return null;
+	}
+	
     ScheduledThreadPoolExecutor getExecutor() {
         return executor;
     }

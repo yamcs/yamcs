@@ -82,12 +82,13 @@ export class OngoingTransfersTab implements OnDestroy {
           case 'PAUSED':
           case 'CANCELLING':
           case 'QUEUED':
+          case 'COMPLETED':
             this.setOrUpdate(transfer);
             break;
-          case 'FAILED':
-          case 'COMPLETED':
-            this.transfersById.delete(transfer.id);
-            break;
+//          case 'FAILED':
+//          case 'COMPLETED':
+//            this.transfersById.delete(transfer.id);
+//            break;
         }
 
         // throttle updates, it can get spammy
@@ -103,8 +104,7 @@ export class OngoingTransfersTab implements OnDestroy {
     if (item) {
       item.updateTransfer(transfer);
     } else {
-      const objectUrl = this.storageClient.getObjectURL(
-        '_global', transfer.bucket, transfer.objectName);
+      const objectUrl = transfer.objectName !== undefined ? this.storageClient.getObjectURL('_global', transfer.bucket, transfer.objectName) : '';
       item = new TransferItem(transfer, objectUrl);
       this.transfersById.set(transfer.id, item);
     }

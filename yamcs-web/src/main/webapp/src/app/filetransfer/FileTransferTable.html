@@ -13,7 +13,10 @@
   <ng-container matColumnDef="localFile">
     <th mat-header-cell *matHeaderCellDef style="width: 200px">Local file</th>
     <td mat-cell *matCellDef="let item">
-      <a [href]="item.objectUrl" download>{{ item.transfer.objectName }}</a>
+      <ng-container *ngIf="item.objectUrl">
+        <a [href]="item.objectUrl" download>{{ item.transfer.objectName }}</a>
+      </ng-container>
+      <ng-container *ngIf="!item.objectUrl">-</ng-container>
     </td>
   </ng-container>
 
