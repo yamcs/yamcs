@@ -97,16 +97,13 @@ public class RelationalExpression extends Expression {
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        code.append("(");
         DataType ch0dt = children[0].getType();
         if (ch0dt.isComparable()) {
-            code.append("Comparators.compare(");
+            code.append("SqlExpressions." + relOp.name() + "(");
             children[0].fillCode_getValueReturn(code);
             code.append(", ");
             children[1].fillCode_getValueReturn(code);
             code.append(") ");
-            code.append(relOp.getSign());
-            code.append(" 0");
         } else {
             switch (relOp) {
             case NOT_EQUAL:
@@ -130,7 +127,6 @@ public class RelationalExpression extends Expression {
                         "Cannot use " + relOp + " not supported for data type " + ch0dt);
             }
         }
-        code.append(")");
     }
 
     @Override
