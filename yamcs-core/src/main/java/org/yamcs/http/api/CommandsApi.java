@@ -53,7 +53,6 @@ import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -232,10 +231,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .setUsername(preparedCommand.getUsername())
                 .addAllAssignments(preparedCommand.getAssignments());
 
+        byte[] unprocessedBinary = preparedCommand.getUnprocessedBinary();
+        if (unprocessedBinary != null) {
+            responseb.setUnprocessedBinary(ByteString.copyFrom(unprocessedBinary));
+        }
+
         byte[] binary = preparedCommand.getBinary();
         if (binary != null) {
-            responseb.setBinary(ByteString.copyFrom(binary))
-                    .setHex(StringConverter.arrayToHexString(binary));
+            responseb.setBinary(ByteString.copyFrom(binary));
         }
 
         if (queue != null) {

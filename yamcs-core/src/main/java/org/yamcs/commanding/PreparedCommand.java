@@ -58,6 +58,7 @@ public class PreparedCommand {
     public final static String CNAME_SEQNUM = StandardTupleDefinitions.SEQNUM_COLUMN;
     public final static String CNAME_ORIGIN = StandardTupleDefinitions.TC_ORIGIN_COLUMN;
     public final static String CNAME_USERNAME = "username";
+    public final static String CNAME_UNPROCESSED_BINARY = "unprocessedBinary";
     public final static String CNAME_BINARY = "binary";
     public final static String CNAME_CMDNAME = "cmdName";
     public final static String CNAME_SOURCE = "source";
@@ -73,6 +74,7 @@ public class PreparedCommand {
         reservedColumns.add(CNAME_SEQNUM);
         reservedColumns.add(CNAME_ORIGIN);
         reservedColumns.add(CNAME_USERNAME);
+        reservedColumns.add(CNAME_UNPROCESSED_BINARY);
         reservedColumns.add(CNAME_BINARY);
         reservedColumns.add(CNAME_CMDNAME);
         reservedColumns.add(CNAME_SOURCE);
@@ -343,6 +345,14 @@ public class PreparedCommand {
 
     public void setBinary(byte[] b) {
         setAttribute(CNAME_BINARY, b);
+    }
+
+    public byte[] getUnprocessedBinary() {
+        return getBinaryAttribute(CNAME_UNPROCESSED_BINARY);
+    }
+
+    public void setUnprocessedBinary(byte[] b) {
+        setAttribute(CNAME_UNPROCESSED_BINARY, b);
     }
 
     public String getUsername() {

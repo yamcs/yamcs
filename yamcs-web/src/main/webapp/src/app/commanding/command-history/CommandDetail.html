@@ -14,6 +14,16 @@
   </table>
 </div>
 
+<ng-container *ngIf="command.unprocessedBinary && (command.unprocessedBinary !== command.binary)">
+  <div class="block-title">Unprocessed binary</div>
+  <div class="block no-print">
+    <app-hex [base64String]="command.unprocessedBinary"></app-hex>
+  </div>
+  <div class="block print-only">
+    {{ (command.unprocessedBinary | hex) || '-' }}
+  </div>
+</ng-container>
+
 <ng-container *ngIf="command.binary">
   <div class="block-title">Binary</div>
   <div class="block no-print">

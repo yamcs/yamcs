@@ -73,6 +73,7 @@ public class CommandingManager extends AbstractService {
                 .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
+        pc.setUnprocessedBinary(cbr.getCmdPacket());
         pc.setBinary(cbr.getCmdPacket());
         pc.setUsername(user.getName());
 
@@ -92,6 +93,7 @@ public class CommandingManager extends AbstractService {
                 .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
+        pc.setUnprocessedBinary(binary);
         pc.setBinary(binary);
         pc.setUsername(user.getName());
 
