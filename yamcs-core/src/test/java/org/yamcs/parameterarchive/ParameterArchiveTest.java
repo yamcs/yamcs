@@ -98,6 +98,9 @@ public class ParameterArchiveTest {
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
+        Map<String, Object> bfc = new HashMap<>();
+        bfc.put("enabled", Boolean.FALSE);
+        conf.put("backFiller", bfc);
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));
         parchive.init(instance, "test", config);
@@ -121,7 +124,7 @@ public class ParameterArchiveTest {
         // close and reopen the archive to check that the parameter is still there
 
         parchive = new ParameterArchive();
-        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+        YConfiguration config = parchive.getSpec().validate(ParameterArchiveTest.backFillerDisabledConfig());
         parchive.init(instance, "test", config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
@@ -712,6 +715,13 @@ public class ParameterArchiveTest {
         return c.list;
     }
 
+    public static YConfiguration backFillerDisabledConfig() {
+        Map<String, Object> pam = new HashMap<>();
+        Map<String, Object> bfm = new HashMap<>();
+        bfm.put("enabled", Boolean.FALSE);
+        pam.put("backFiller", bfm);
+        return YConfiguration.wrap(pam);
+    }
 
     class SingleValueConsumer implements Consumer<ParameterValueArray> {
         List<ParameterValueArray> list = new ArrayList<>();
@@ -733,4 +743,5 @@ public class ParameterArchiveTest {
             list.add(x);
         }
     }
+
 }

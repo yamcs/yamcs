@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,7 +46,8 @@ public class ArrayAndAggregatesTest {
         rse.createTablespace(instance);
 
         parchive = new ParameterArchive();
-        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+
+        YConfiguration config = parchive.getSpec().validate(ParameterArchiveTest.backFillerDisabledConfig());
         parchive.init(instance, "test", config);
         pidDb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
