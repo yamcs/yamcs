@@ -317,25 +317,29 @@ public class IndexRequestProcessor implements Runnable {
             start = hreq.seekTime;
         }
         IndexIterator it;
+
         if (hreq.name2id == null || hreq.name2id.isEmpty()) {
             it = tmIndexer.getIterator(null, start, stop);
         } else {
             List<NamedObjectId> names = new ArrayList<>(hreq.name2id.values());
             it = tmIndexer.getIterator(names, start, stop);
         }
-
-        ArchiveRecord ar;
-        while ((ar = it.getNextRecord()) != null) {
-            sendData(ar);
-            if (tokenData != null) {
-                tokenData.lastId = ar.getId();
-                tokenData.lastTime = TimeEncoding.fromProtobufTimestamp(ar.getLast());
+        try {
+            ArchiveRecord ar;
+            while ((ar = it.getNextRecord()) != null) {
+                sendData(ar);
+                if (tokenData != null) {
+                    tokenData.lastId = ar.getId();
+                    tokenData.lastTime = TimeEncoding.fromProtobufTimestamp(ar.getLast());
+                }
+                if (limit > 0 && count >= limit) {
+                    return false;
+                }
             }
-            if (limit > 0 && count >= limit) {
-                return false;
-            }
+            return true;
+        } finally {
+            it.close();
         }
-        return true;
     }
 
     void sendData(ArchiveRecord ar) {
