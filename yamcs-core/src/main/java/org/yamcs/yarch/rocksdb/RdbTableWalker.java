@@ -135,8 +135,8 @@ public class RdbTableWalker extends AbstractTableWalker {
                 iterator.close();
             }
             if (snapshot != null) {
-                snapshot.close();
                 rdb.getDb().releaseSnapshot(snapshot);
+                snapshot.close();
                 snapshot = null;
             }
             readOptions.close();
