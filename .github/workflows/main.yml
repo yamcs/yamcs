@@ -17,11 +17,15 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Run test suite
         run: mvn -B --no-transfer-progress -Dsurefire.useFile=false test
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
-           name: hs_err_pid
-           path: yamcs-core/hs_err*
+           name: errdump
+           path: |
+             yamcs-core/hs_err*
+             yamcs-core/target/surefire-reports/*.dump*
+             tests/hs_err*
+             tests/target/surefire-reports/*.dump*
 
   javadoc:
     name: Javadoc ${{ matrix.java }}
