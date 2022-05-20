@@ -1,10 +1,11 @@
 package org.yamcs.alarms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -13,9 +14,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
@@ -28,7 +29,7 @@ public class AlarmServerTest {
     AlarmServer<Parameter, ParameterValue> alarmServer;
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
-    @BeforeClass
+    @BeforeAll
     static public void setupBeforeClass() {
         EventProducerFactory.setMockup(true);
         TimeEncoding.setUp();
@@ -41,7 +42,7 @@ public class AlarmServerTest {
         return pv;
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         alarmServer = new AlarmServer<>("toto", timer);
     }
@@ -189,8 +190,8 @@ public class AlarmServerTest {
         assertNull(alarmServer.getActiveAlarm(p1, 1));
     }
 
-    @Test(expected = AlarmSequenceException.class)
-    public void testGetActiveAlarmWithInvalidId() throws AlarmSequenceException {
+    @Test
+    public void testGetActiveAlarmWithInvalidId() {
         MyListener l = new MyListener();
         alarmServer.addAlarmListener(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
@@ -201,7 +202,10 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.getMostSevereValue());
         assertEquals(pv1_0, aa.getTriggerValue());
 
-        alarmServer.getActiveAlarm(p1, 123 /* wrong id */);
+        assertThrows(AlarmSequenceException.class, () -> {
+            alarmServer.getActiveAlarm(p1, 123 /* wrong id */);
+        });
+
     }
 
     @Test

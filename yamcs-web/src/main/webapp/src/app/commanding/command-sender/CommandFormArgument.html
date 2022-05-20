@@ -3,7 +3,7 @@
               [ngSwitch]="argument.type?.engType">
 
   <label *ngSwitchCase="'enumeration'">
-    <div class="meta">
+    <div class="meta" [class.error]="err.invalid$ | async">
       <div class="item">{{ argument.type.engType }}</div>
     </div>
     {{ argument.name }}
@@ -40,7 +40,15 @@
   </label>
 
   <label *ngSwitchCase="'binary'">
-    <div class="meta">
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item"
+           *ngIf="argument.type.minBytes !== undefined || argument.type.maxBytes !== undefined">
+        bytes:
+        <app-interval [left]="argument.type.minBytes"
+                      [right]="argument.type.maxBytes"
+                      [singleValueIfEqual]="true">
+        </app-interval>
+      </div>
       <div class="item" [class.error]="err.invalid$ | async">{{ argument.type.engType }}</div>
     </div>
     {{ argument.name }}
@@ -49,7 +57,7 @@
   </label>
 
   <label *ngSwitchCase="'aggregate'">
-    <div class="meta">
+    <div class="meta" [class.error]="err.invalid$ | async">
       <div class="item">{{ argument.type.engType }}</div>
     </div>
     {{ argument.name }}
@@ -75,7 +83,8 @@
            *ngIf="argument.type.minChars !== undefined || argument.type.maxChars !== undefined">
         chars:
         <app-interval [left]="argument.type.minChars"
-                      [right]="argument.type.maxChars">
+                      [right]="argument.type.maxChars"
+                      [singleValueIfEqual]="true">
         </app-interval>
       </div>
       <div class="item" *ngIf="argument.type?.unitSet">

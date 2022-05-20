@@ -1,11 +1,11 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
@@ -27,7 +27,7 @@ public class XtceAlgorithmTest {
     private static ParameterRequestManager prm;
     private static ParameterProcessorManager ppm;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);

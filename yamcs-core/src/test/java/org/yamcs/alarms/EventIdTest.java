@@ -1,12 +1,13 @@
 package org.yamcs.alarms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class EventIdTest {
 
@@ -32,19 +33,25 @@ public class EventIdTest {
         assertEquals("/YSS/SIMULATOR/Random_event_generator", id.type);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testStringParseException1() {
-        new EventId("huh");
+        assertThrows(IllegalArgumentException.class, () -> {
+            new EventId("huh");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testStringParseException2() {
-        new EventId("/huh");
+        assertThrows(IllegalArgumentException.class, () -> {
+            new EventId("/huh");
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullSource() {
-        new EventId(null, "type");
+        assertThrows(NullPointerException.class, () -> {
+            new EventId(null, "type");
+        });
     }
 
     @Test

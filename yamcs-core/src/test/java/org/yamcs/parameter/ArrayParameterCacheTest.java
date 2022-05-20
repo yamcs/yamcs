@@ -1,14 +1,14 @@
 package org.yamcs.parameter;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.yamcs.parameter.ParameterValue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.parameterarchive.TestUtils;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
@@ -19,7 +19,7 @@ public class ArrayParameterCacheTest {
     Parameter p1 = new Parameter("p1");
     Parameter p2 = new Parameter("p2");
 
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         TimeEncoding.setUp();
     }
@@ -31,11 +31,9 @@ public class ArrayParameterCacheTest {
         ArrayParameterCache pcache = new ArrayParameterCache("test", pcc); // 1 second
         assertNull(pcache.getLastValue(p1));
 
-        
         ParameterValue p1v1 = getStringParameterValue(p1, 10);
         p1v1.setExpireMillis(1000);
-        
-        
+
         ParameterValue p2v1 = getFloatParameterValue(p2, 10);
         p2v1.setAcquisitionStatus(AcquisitionStatus.INVALID);
         pcache.update(Arrays.asList(p1v1, p2v1));
@@ -45,7 +43,7 @@ public class ArrayParameterCacheTest {
 
         ParameterValue p1v2 = getStringParameterValue(p1, 20);
         p1v2.setExpireMillis(1000);
-        
+
         pcache.update(Arrays.asList(p1v2));
 
         TestUtils.checkEquals(p1v2, pcache.getLastValue(p1));
@@ -102,7 +100,7 @@ public class ArrayParameterCacheTest {
             pcache.update(Arrays.asList(pv));
         }
         ParameterValue pv0 = expectedPVlist.get(0);
-        
+
         List<ParameterValue> pvlist = pcache.getAllValues(p1);
         assertEquals(10, pvlist.size());
         for (int i = 0; i < 10; i++) {
@@ -203,7 +201,7 @@ public class ArrayParameterCacheTest {
     ParameterValue getUint64ParameterValue(Parameter p, long t) {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(t);
-        pv.setAcquisitionTime(t+5);
+        pv.setAcquisitionTime(t + 5);
         pv.setEngineeringValue(ValueUtility.getUint64Value(t));
         return pv;
     }

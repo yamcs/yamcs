@@ -268,8 +268,8 @@ export interface UserInfo {
   identities: ExternalIdentity[];
   clearance: string;
 
-  systemPrivilege: string[];
-  objectPrivilege: ObjectPrivilege[];
+  systemPrivileges: string[];
+  objectPrivileges: ObjectPrivilege[];
 }
 
 export interface ExternalIdentity {
@@ -320,7 +320,7 @@ export interface RoleAssignmentInfo {
 
 export interface ObjectPrivilege {
   type: string;
-  object: string[];
+  objects: string[];
 }
 
 export interface RoleInfo {

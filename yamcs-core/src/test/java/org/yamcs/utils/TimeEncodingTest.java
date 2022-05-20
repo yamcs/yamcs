@@ -1,8 +1,8 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,14 +10,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.time.Instant;
 
 public class TimeEncodingTest {
     static final long j1972 = (2L * 365 * 24 * 3600 + 10) * 1000 + 123;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         TimeEncoding.setUp();
     }
@@ -155,24 +155,21 @@ public class TimeEncodingTest {
         assertEquals(1580605360001L, TimeEncoding.parse("2020-02-02T01:02:03.001234Z"));
     }
 
-    
     @Test
     public void testParseHres() {
         Instant t = TimeEncoding.parseHres("2020-02-02T01:02:03.001Z");
         assertEquals(1580605360001L, t.getMillis());
         assertEquals(0, t.getPicos());
-        
-        
+
         Instant t1 = TimeEncoding.parseHres("2020-02-02T01:02:03.001012Z");
         assertEquals(1580605360001L, t1.getMillis());
         assertEquals(12000000, t1.getPicos());
-        
-        
+
         Instant t2 = TimeEncoding.parseHres("2020-02-02T01:02:03.001123456789Z");
         assertEquals(1580605360001L, t2.getMillis());
         assertEquals(123456789, t2.getPicos());
     }
-    
+
     @Test
     public void testToString() {
         assertEquals("2008-12-31T23:59:59.000Z", TimeEncoding.toString(1230768032000L));

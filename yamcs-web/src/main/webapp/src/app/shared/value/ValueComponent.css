@@ -1,0 +1,8 @@
+.toggle {
+  cursor: pointer;
+  padding-right: 0.5em;
+}
+
+table.detail td:not(:first-child) {
+  padding-left: 4px;
+}

@@ -1,13 +1,13 @@
 package org.yamcs.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.http.auth.JwtHelper;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.utils.TimeEncoding;
@@ -16,12 +16,12 @@ import com.google.gson.JsonObject;
 
 public class JwtHelperTest {
 
-    @BeforeClass()
+    @BeforeAll
     public static void beforeClass() {
         TimeEncoding.setUp();
     }
 
-    @Test()
+    @Test
     public void testUnsigned() throws JwtDecodeException {
         String unsignedToken = JwtHelper.generateUnsignedToken("Yamcs", "someUser", 1000);
 

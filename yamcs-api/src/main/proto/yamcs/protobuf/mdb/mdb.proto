@@ -365,6 +365,12 @@ message ArgumentTypeInfo {
   // True if the engineering type supports signed representation.
   // (only used by integer arguments)
   optional bool signed = 13;
+  
+  // Minimum byte count (only used by binary arguments)
+  optional int32 minBytes = 14;
+  
+  // Maximum character count (only used by binary arguments)
+  optional int32 maxBytes = 15;
 }
 
 message ArgumentInfo {

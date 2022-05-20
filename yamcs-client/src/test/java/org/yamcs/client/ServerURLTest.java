@@ -1,8 +1,9 @@
 package org.yamcs.client;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.base.ServerURL;
 
 public class ServerURLTest {
@@ -87,8 +88,10 @@ public class ServerURLTest {
         assertEquals("http://bla:8090/foo/bar", url.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalid() {
-        ServerURL.parse("bla");
+        assertThrows(IllegalArgumentException.class, () -> {
+            ServerURL.parse("bla");
+        });
     }
 }

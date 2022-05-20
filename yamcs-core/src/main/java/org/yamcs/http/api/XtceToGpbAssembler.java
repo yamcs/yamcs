@@ -74,6 +74,7 @@ import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -885,6 +886,17 @@ public class XtceToGpbAssembler {
                 }
                 if (sizeRange.getMaxInclusive() != Long.MAX_VALUE) {
                     infob.setMaxChars((int) sizeRange.getMaxInclusive());
+                }
+            }
+        } else if (argumentType instanceof BinaryArgumentType) {
+            BinaryArgumentType bat = (BinaryArgumentType) argumentType;
+            IntegerRange sizeRange = bat.getSizeRangeInBytes();
+            if (sizeRange != null) {
+                if (sizeRange.getMinInclusive() != Long.MIN_VALUE) {
+                    infob.setMinBytes((int) sizeRange.getMinInclusive());
+                }
+                if (sizeRange.getMaxInclusive() != Long.MAX_VALUE) {
+                    infob.setMaxBytes((int) sizeRange.getMaxInclusive());
                 }
             }
         }

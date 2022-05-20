@@ -1,13 +1,12 @@
 package org.yamcs.mdb;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.yamcs.mdb.SpreadsheetLoader;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class TestMdbLoadingSpeed {
 
     @Test
-    @Ignore
+    @Disabled
     public void test1() {
         for (int i = 0; i < 100; i++) {
             long t0 = System.currentTimeMillis();

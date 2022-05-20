@@ -82,6 +82,7 @@ export interface GetGapsOptions {
   start?: string;
   stop?: string;
   apid?: number;
+  limit?: number;
 }
 
 export interface IssueCommandOptions {

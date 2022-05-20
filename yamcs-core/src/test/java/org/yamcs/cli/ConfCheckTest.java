@@ -1,19 +1,20 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 
 public class ConfCheckTest extends AbstractCliTest {
-    @Before
+
+    @BeforeEach
     public void resetConfig() {
         YConfiguration.setupTest(null);
     }
@@ -25,7 +26,6 @@ public class ConfCheckTest extends AbstractCliTest {
         String out = mconsole.output();
         assertTrue(out.contains("Configuration OK"));
     }
-
 
     @Test
     public void testConfCheckNOK1() throws Exception {

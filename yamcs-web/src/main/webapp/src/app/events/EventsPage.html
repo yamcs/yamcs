@@ -47,8 +47,9 @@
       </div>
       <div class="filter-bar">
         <app-select [options]="severityOptions" formControlName="severity"></app-select>
-        <app-select [options]="sourceOptions$ | async"
-                    formControlName="source"></app-select>
+        <app-multi-select [options]="sourceOptions$ | async"
+                          formControlName="source"
+                          emptyOption="Any source"></app-multi-select>
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
@@ -108,7 +109,8 @@
       <ng-container cdkColumnDef="message">
         <th mat-header-cell *cdkHeaderCellDef>Message</th>
         <td mat-cell *cdkCellDef="let row" class="mono" style="white-space: pre; width: 100%">
-          <app-highlight [text]="row.message || '-'" [term]="filterForm.value.filter"></app-highlight>
+          <app-event-message [message]="row.message"
+                             [highlight]="filterForm.value.filter"></app-event-message>
         </td>
       </ng-container>
 
@@ -143,7 +145,7 @@
       <ng-container cdkColumnDef="seqNumber">
         <th mat-header-cell *cdkHeaderCellDef>Sequence Number</th>
         <td mat-cell *cdkCellDef="let row">
-          {{ row.seqNumber || '-' }}
+          {{ row.seqNumber ?? '-' }}
         </td>
       </ng-container>
 

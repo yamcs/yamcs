@@ -1,9 +1,10 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.*;
-import static org.yamcs.utils.StringConverter.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.yamcs.utils.StringConverter.arrayToHexString;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ByteArrayUtilsTest {
     @Test
@@ -12,9 +13,11 @@ public class ByteArrayUtilsTest {
         assertEquals("0200", plusOne("01FF"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPlusOneOverflow() {
-        plusOne("FFFF");
+        assertThrows(IllegalArgumentException.class, () -> {
+            plusOne("FFFF");
+        });
     }
 
     @Test
@@ -23,11 +26,12 @@ public class ByteArrayUtilsTest {
         assertEquals("01FF", minusOne("0200"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testMinusOneUnderflow() {
-        minusOne("0000");
+        assertThrows(IllegalArgumentException.class, () -> {
+            minusOne("0000");
+        });
     }
-
 
     private String plusOne(String hex) {
         return arrayToHexString(ByteArrayUtils.plusOne(h2b(hex)));
@@ -195,5 +199,4 @@ public class ByteArrayUtilsTest {
     private byte[] h2b(String hex) {
         return StringConverter.hexStringToArray(hex);
     }
-
 }

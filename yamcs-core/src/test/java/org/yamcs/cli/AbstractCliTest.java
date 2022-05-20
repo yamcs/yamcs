@@ -7,8 +7,8 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.yamcs.FileBasedConfigurationResolver;
 import org.yamcs.YConfiguration;
 
@@ -18,7 +18,7 @@ public abstract class AbstractCliTest {
     PrintStream psout;
     static MockConsole mconsole = new MockConsole();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Command.console = mconsole;
         Command.exitFunction = status -> {
@@ -26,7 +26,7 @@ public abstract class AbstractCliTest {
         };
     }
 
-    @Before
+    @BeforeEach
     public void resetOutput() {
         mconsole.reset();
     }
@@ -89,7 +89,7 @@ public abstract class AbstractCliTest {
 
         @Override
         public char[] readPassword(boolean echoInput) {
-            if(firstPassword) {
+            if (firstPassword) {
                 firstPassword = false;
                 return password1;
             } else {
@@ -99,6 +99,7 @@ public abstract class AbstractCliTest {
     }
 
     // this replaces System.exit(status) called from the CLI commands
+    @SuppressWarnings("serial")
     public static class ExitException extends Error {
         final int exitStatus;
 

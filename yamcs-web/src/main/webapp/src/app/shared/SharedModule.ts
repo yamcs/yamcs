@@ -57,6 +57,7 @@ import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { DurationInput } from './forms/DurationInput';
 import { Errors } from './forms/Errors';
 import { HexIntegerInput } from './forms/HexIntegerInput';
+import { MultiSelect } from './forms/MultiSelect';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
@@ -125,6 +126,7 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
+import { ValueComponent } from './value/ValueComponent';
 import { AlarmLabel } from './widgets/AlarmLabel';
 import { Help } from './widgets/Help';
 import { Label } from './widgets/Label';
@@ -214,6 +216,7 @@ const sharedComponents = [
   Markdown,
   MessageBar,
   More,
+  MultiSelect,
   ObjectSelector,
   ParameterLegend,
   ParameterPlot,
@@ -236,6 +239,7 @@ const sharedComponents = [
   TimezoneSelect,
   TitleCopy,
   ToolbarActions,
+  ValueComponent,
   WarningMessage,
 ];
 

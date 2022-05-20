@@ -9,7 +9,8 @@ import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
-import { OpiDisplayImageResolver } from './OpiDisplayImageResolver';
+import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
+import { OpiDisplayPathResolver } from './OpiDisplayPathResolver';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 
@@ -169,7 +170,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
     this.display.imagesPrefix = `${this.baseHref}static/`;
-    this.display.setImageResolver(new OpiDisplayImageResolver(this.storageClient, this.display));
+    this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
+    this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {
@@ -210,12 +212,10 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     });
 
     this.display.addProvider(this);
+    this.display.absPrefix = this.storageClient.getObjectURL('_global', this.bucket, '');
 
     const objectUrl = this.storageClient.getObjectURL('_global', this.bucket, objectName);
-
-    const idx = objectUrl.lastIndexOf('/') + 1;
-    this.display.baseUrl = objectUrl.substring(0, idx);
-    const promise = this.display.setSource(objectUrl.substring(idx));
+    const promise = this.display.setSource(objectUrl);
     promise.then(() => {
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
     });
@@ -270,10 +270,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       const frameHeight = this.viewerContainerEl.clientHeight;
 
       const { width, height } = displayInstance.unscaledBounds;
-      console.log('fit', width, height, 'within', frameWidth, frameHeight);
       const xScale = frameWidth / width;
       const yScale = frameHeight / height;
-      console.log('scales', xScale, yScale);
       this.display.scale = Math.min(xScale, yScale);
     }
   }

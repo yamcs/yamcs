@@ -1,14 +1,18 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.yamcs.utils.FileUtils;
@@ -21,17 +25,16 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 public class BackupCliTest extends AbstractCliTest {
     static Path etcdata;
 
-    @BeforeClass
+    @BeforeAll
     public static void createDb() throws IOException {
         RocksDB.loadLibrary();
         etcdata = createTmpEtcData();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws IOException {
         FileUtils.deleteRecursively(etcdata);
     }
-
 
     @Test
     public void test1() throws Exception {
@@ -47,7 +50,7 @@ public class BackupCliTest extends AbstractCliTest {
         String backupDir = etcdata.resolve("backup").toString();
         String restore1Dir = etcdata.resolve("restore1").toString();
         String restore2Dir = etcdata.resolve("restore2").toString();
-        
+
         Tablespace tbl = new Tablespace("test");
         tbl.setCustomDataDir(dataDir + "/test.rdb");
         tbl.loadDb(false);
@@ -74,7 +77,6 @@ public class BackupCliTest extends AbstractCliTest {
 
         verifyBackupList(backupDir, 1, 2);
 
-
         // restore backup1
         Bucket rbucket1 = restoreBackup(backupDir, restore1Dir, 1);
         byte[] robj1 = rbucket1.getObject("obj1");
@@ -88,7 +90,6 @@ public class BackupCliTest extends AbstractCliTest {
 
         byte[] robj2 = rbucket2.getObject("obj2");
         assertArrayEquals(obj2, robj2);
-
 
         // create backup 3
         mconsole.reset();
@@ -119,7 +120,7 @@ public class BackupCliTest extends AbstractCliTest {
         runMain("--debug", "backup", "list", "--backup-dir", backupDir);
         String[] lines = mconsole.output().split("\n");
         assertEquals(id.length + 1, lines.length);
-        for (int i=0; i<id.length; i++) {
+        for (int i = 0; i < id.length; i++) {
             assertTrue(lines[i + 1].startsWith(Integer.toString(id[i])));
         }
     }
@@ -136,6 +137,5 @@ public class BackupCliTest extends AbstractCliTest {
         Bucket rbucket = bdb.getBucket("mybucket");
         assertNotNull(rbucket);
         return rbucket;
-
     }
 }

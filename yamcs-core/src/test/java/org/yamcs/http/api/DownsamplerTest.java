@@ -1,10 +1,11 @@
 package org.yamcs.http.api;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.http.api.Downsampler.Sample;
 
 public class DownsamplerTest {
@@ -62,8 +63,10 @@ public class DownsamplerTest {
         assertEquals(1, samples.size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSamplingInvalid() {
-        new Downsampler(2, 1, 3);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Downsampler(2, 1, 3);
+        });
     }
 }

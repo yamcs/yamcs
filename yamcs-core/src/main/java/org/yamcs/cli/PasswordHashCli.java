@@ -1,6 +1,5 @@
 package org.yamcs.cli;
 
-import java.io.Console;
 import java.util.Arrays;
 
 import org.yamcs.security.PBKDF2PasswordHasher;
@@ -20,18 +19,24 @@ public class PasswordHashCli extends Command {
 
     @Override
     void execute() throws Exception {
-        console.println("Enter password: ");
-        char[] newPassword = console.readPassword(false);
-        console.println("Confirm password: ");
-        char[] confirmedPassword = console.readPassword(false);
+        char[] password;
+        String passwordString = System.getenv("YAMCSADMIN_PASSWORD");
+        if (passwordString == null) {
+            console.println("Enter password: ");
+            password = console.readPassword(false);
+            console.println("Confirm password: ");
+            char[] confirmedPassword = console.readPassword(false);
 
-        if (!Arrays.equals(newPassword, confirmedPassword)) {
-            console.println("Password confirmation does not match\n");
-            exit(-1);
+            if (!Arrays.equals(password, confirmedPassword)) {
+                console.println("Password confirmation does not match\n");
+                exit(-1);
+            }
+        } else {
+            password = passwordString.trim().toCharArray();
         }
 
         PasswordHasher hasher = new PBKDF2PasswordHasher();
-        console.println(hasher.createHash(confirmedPassword));
+        console.println(hasher.createHash(password));
         console.println("\n");
     }
 }

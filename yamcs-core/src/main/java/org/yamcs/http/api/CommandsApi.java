@@ -53,7 +53,6 @@ import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -145,7 +144,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             if (request.hasDisableTransmissionConstraints()) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                preparedCommand.disableTransmissionContraints(request.getDisableTransmissionConstraints());
+                preparedCommand.disableTransmissionConstraints(request.getDisableTransmissionConstraints());
             } else if (request.getVerifierConfigCount() > 0) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 List<String> invalidVerifiers = new ArrayList<>();
@@ -232,10 +231,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .setUsername(preparedCommand.getUsername())
                 .addAllAssignments(preparedCommand.getAssignments());
 
+        byte[] unprocessedBinary = preparedCommand.getUnprocessedBinary();
+        if (unprocessedBinary != null) {
+            responseb.setUnprocessedBinary(ByteString.copyFrom(unprocessedBinary));
+        }
+
         byte[] binary = preparedCommand.getBinary();
         if (binary != null) {
-            responseb.setBinary(ByteString.copyFrom(binary))
-                    .setHex(StringConverter.arrayToHexString(binary));
+            responseb.setBinary(ByteString.copyFrom(binary));
         }
 
         if (queue != null) {
@@ -385,7 +388,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .where("gentime = ?", gentime)
                 .where("seqNum = ?", seqNum)
                 .where("origin = ?", origin);
-
         List<CommandHistoryEntry> commands = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 

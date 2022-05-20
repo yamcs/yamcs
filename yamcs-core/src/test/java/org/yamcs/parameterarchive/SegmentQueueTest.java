@@ -1,11 +1,13 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.RealtimeArchiveFiller.SegmentQueue;
@@ -13,10 +15,10 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.utils.ValueUtility;
 
 public class SegmentQueueTest {
-    
+
     /** The size of an interval, in milliseconds. (2^23 seconds) */
     private static final long INTERVAL_SIZE_MILLIS = 8388608000L;
-    
+
     @Test
     public void test1() {
 
@@ -33,13 +35,12 @@ public class SegmentQueueTest {
 
         List<BasicParameterValue> plist3 = getParaList(11);
         sq.addRecord(11, plist3);// this will be added to a new segment because the maxSegmentSize is 2
-        
+
         pvsegList = sq.getPVSegments(1, true);
         testEquals(pvsegList, Arrays.asList(Arrays.asList(9l, 10l), Arrays.asList(11l)));
 
         pvsegList = sq.getPVSegments(1, false);// descending
         testEquals(pvsegList, Arrays.asList(Arrays.asList(11l), Arrays.asList(9l, 10l)));
-
     }
 
     @Test
@@ -67,7 +68,7 @@ public class SegmentQueueTest {
         testEquals(pvsegList, Arrays.asList(Arrays.asList(t1 - 1, t1), Arrays.asList(t1 + 1, t1 + 2)));
 
     }
-    
+
     /**
      * Tests that with an empty queue no segments are returned.
      */
@@ -78,22 +79,22 @@ public class SegmentQueueTest {
         assertEquals(0, sq.getPVSegments(1, false).size());
         assertEquals(0, sq.getPVSegments(1, true).size());
     }
-    
+
     /**
      * Tests that the queue is full when one slot is still open, so that <code>head!=tail</code>.
      */
     @Test
     public void testQueueCapacity() {
         SegmentQueue sq = new SegmentQueue(1, IntArray.wrap(1), 2);
-        
+
         // Add one value in each separate interval, until the cache has only one
         // slot free.
-        for (int i=0; i < SegmentQueue.QSIZE - 1; ++i) {
+        for (int i = 0; i < SegmentQueue.QSIZE - 1; ++i) {
             List<BasicParameterValue> plist = getParaList(i * INTERVAL_SIZE_MILLIS);
             assertTrue(sq.addRecord(i * INTERVAL_SIZE_MILLIS, plist));
-            assertEquals(i+1, sq.size());
-            assertEquals(i+1, sq.getPVSegments(1, false).size());
-            assertEquals(i+1, sq.getPVSegments(1, true).size());
+            assertEquals(i + 1, sq.size());
+            assertEquals(i + 1, sq.getPVSegments(1, false).size());
+            assertEquals(i + 1, sq.getPVSegments(1, true).size());
         }
 
         // Inserting another value in a new interval should fail, since then the queue would
@@ -102,10 +103,10 @@ public class SegmentQueueTest {
         List<BasicParameterValue> plist = getParaList(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS);
         assertFalse(sq.addRecord(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS, plist));
         assertFalse(sq.isEmpty());
-        
+
         // We should be able to retrieve all segments in the queue.
-        assertEquals(SegmentQueue.QSIZE-1, sq.getPVSegments(1, false).size());
-        assertEquals(SegmentQueue.QSIZE-1, sq.getPVSegments(1, true).size());
+        assertEquals(SegmentQueue.QSIZE - 1, sq.getPVSegments(1, false).size());
+        assertEquals(SegmentQueue.QSIZE - 1, sq.getPVSegments(1, true).size());
     }
 
     private void testEquals(List<ParameterValueSegment> pvsegList, List<List<Long>> l) {

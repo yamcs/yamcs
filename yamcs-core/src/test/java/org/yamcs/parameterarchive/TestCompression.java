@@ -3,8 +3,8 @@ package org.yamcs.parameterarchive;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -16,8 +16,8 @@ import org.yamcs.utils.FileUtils;
 
 public class TestCompression {
 
-    @Ignore
     @Test
+    @Disabled
     public void test() throws Exception {
         String path = "/tmp/testcompression";
         File file = new File(path);
@@ -73,5 +73,4 @@ public class TestCompression {
         }
         return v;
     }
-
 }

@@ -1,5 +1,6 @@
 package org.yamcs.cli;
 
+@SuppressWarnings("serial")
 public class ExitException extends RuntimeException {
 
     public ExitException() {
@@ -22,5 +23,4 @@ public class ExitException extends RuntimeException {
     public ExitException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
-
 }

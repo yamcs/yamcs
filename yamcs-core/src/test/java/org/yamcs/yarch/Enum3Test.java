@@ -1,11 +1,11 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class Enum3Test extends YarchTestCase {
     int n = 10;
@@ -24,8 +24,9 @@ public class Enum3Test extends YarchTestCase {
 
         for (int i = 0; i < n; i++) {
             ByteBuffer bb = ByteBuffer.allocate(2000);
-            while (bb.remaining() > 0)
+            while (bb.remaining() > 0) {
                 bb.putInt(i);
+            }
             Tuple t = new Tuple(td, new Object[] {
                     1000L * i, "pn" + (i % 10), bb.array()
             });

@@ -207,6 +207,8 @@ export interface ArgumentType {
   rangeMax: number;
   minChars: number;
   maxChars: number;
+  minBytes: number;
+  maxBytes: number;
   member: ArgumentMember[];
   zeroStringValue: string;
   oneStringValue: string;

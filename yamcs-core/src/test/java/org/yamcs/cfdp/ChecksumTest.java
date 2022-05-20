@@ -1,10 +1,10 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Random;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.python.bouncycastle.util.Arrays;
 import org.yamcs.utils.StringConverter;
 
@@ -27,13 +27,13 @@ public class ChecksumTest {
         Random r = new Random();
         byte[] data = new byte[r.nextInt(1000)];
         r.nextBytes(data);
-        
+
         long checksum1 = ChecksumCalculator.calculateChecksum(data);
-        
+
         long checksum2 = 0;
         int k = 0;
         while (k < data.length) {
-            int l = 1+r.nextInt(data.length - k);
+            int l = 1 + r.nextInt(data.length - k);
             checksum2 += ChecksumCalculator.calculateChecksum(Arrays.copyOfRange(data, k, k + l), k, l);
             k += l;
         }

@@ -1,11 +1,12 @@
 package org.yamcs.time;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.yamcs.utils.StringConverter.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.yamcs.utils.StringConverter.hexStringToArray;
 
 import java.nio.BufferUnderflowException;
+
+import org.junit.jupiter.api.Test;
 
 public class FixedSizeTimeDecoderTest {
 
@@ -37,15 +38,18 @@ public class FixedSizeTimeDecoderTest {
         assertEquals(0x0102030405060708l, t);
     }
 
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidSize() {
-        new FixedSizeTimeDecoder(7, 1000);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new FixedSizeTimeDecoder(7, 1000);
+        });
     }
 
-    @Test(expected = BufferUnderflowException.class)
+    @Test
     public void testBufferUnderflow() {
-        FixedSizeTimeDecoder decoder = new FixedSizeTimeDecoder(4, 1000);
-        decoder.decodeRaw(hexStringToArray("0102030405060708"), 5);
+        assertThrows(BufferUnderflowException.class, () -> {
+            FixedSizeTimeDecoder decoder = new FixedSizeTimeDecoder(4, 1000);
+            decoder.decodeRaw(hexStringToArray("0102030405060708"), 5);
+        });
     }
 }

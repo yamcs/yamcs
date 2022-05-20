@@ -1,14 +1,14 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
@@ -41,7 +41,7 @@ public class RefXtceAlgorithmTest {
 
     private static MyProcService mpp = new MyProcService();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);
@@ -106,7 +106,6 @@ public class RefXtceAlgorithmTest {
         prm.addRequest(Arrays.asList(plist), (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         return params;
     }
-
 
     static class MyProcService extends AbstractService implements ParameterProvider {
         ParameterProcessorManager ppm;
@@ -188,7 +187,5 @@ public class RefXtceAlgorithmTest {
 
             return new AlgorithmExecutionResult(pv);
         }
-
-
     }
 }

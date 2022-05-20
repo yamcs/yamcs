@@ -417,11 +417,12 @@ public class LinkManager {
         }
     }
 
+    public List<Link> getLinks() {
+        return new ArrayList<>(linksByName.values());
+    }
+
     /**
      * Return the link by the given name or null if there is no such link.
-     *
-     * @param linkName
-     * @return
      */
     public Link getLink(String linkName) {
         return linksByName.get(linkName);

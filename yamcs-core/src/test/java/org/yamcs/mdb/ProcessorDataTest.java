@@ -1,9 +1,9 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
@@ -17,7 +17,7 @@ import org.yamcs.xtce.XtceDb;
 
 public class ProcessorDataTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
     }
@@ -56,6 +56,5 @@ public class ProcessorDataTest {
         arrv = (ArrayValue) pv.getEngValue();
         assertEquals(1, arrv.flatLength());
         assertEquals(-10.12, arrv.getElementValue(0).getFloatValue(), 1e-5);
-
     }
 }

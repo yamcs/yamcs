@@ -1,23 +1,24 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestRenameTable extends YarchTestCase {
 
     TupleDefinition tdef;
 
-    @Before
+    @BeforeEach
     public void before() {
         tdef = new TupleDefinition();
         tdef.addColumn("t", DataType.TIMESTAMP);
         tdef.addColumn("v", DataType.INT);
     }
+
     @Test
     public void test1() throws Exception {
         ydb.execute("create table test1 (t timestamp, v int, primary key(t))");

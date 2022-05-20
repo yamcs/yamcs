@@ -1,21 +1,23 @@
 package org.yamcs.xtce;
 
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 public class TestValidRange {
     @Test
-    public void testXtce11Range() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+    public void testXtce11Range()
+            throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
         XtceStaxReader reader = new XtceStaxReader();
         SpaceSystem ss = reader.readXmlDocument("src/test/resources/BogusSAT-1.xml");
-        IntegerArgumentType argType = ( IntegerArgumentType) ss.getSubsystem("SC001")
+        IntegerArgumentType argType = (IntegerArgumentType) ss.getSubsystem("SC001")
                 .getSubsystem("BusElectronics")
                 .getMetaCommand("Reaction_Wheel_Control")
                 .getArgument("RW_UNIT_ID")
@@ -25,9 +27,10 @@ public class TestValidRange {
         assertEquals(2, range.getMaxInclusive());
         assertTrue(range.isValidRangeAppliesToCalibrated());
     }
-    
+
     @Test
-    public void testFloatArgRangeXTCE12() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+    public void testFloatArgRangeXTCE12()
+            throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
         XtceStaxReader reader = new XtceStaxReader();
         SpaceSystem ss = reader.readXmlDocument("src/test/resources/ranges-test.xml");
         FloatArgumentType argType = (FloatArgumentType) ss.getMetaCommand("SetTemperature")
@@ -40,14 +43,15 @@ public class TestValidRange {
         assertFalse(range.isMaxInclusive());
         assertTrue(range.isValidRangeAppliesToCalibrated());
     }
-   
+
     @Test
-    public void testParamRange() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
+    public void testParamRange()
+            throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
         XtceStaxReader reader = new XtceStaxReader();
         SpaceSystem ss = reader.readXmlDocument("src/test/resources/ranges-test.xml");
         FloatParameterType ptype = (FloatParameterType) ss.getParameter("latitude").getParameterType();
         FloatValidRange range = ptype.getValidRange();
-        
+
         assertEquals(-90.0, range.getMin(), 1e-6);
         assertEquals(90.0, range.getMax(), 1e-6);
         assertTrue(range.isMinInclusive());

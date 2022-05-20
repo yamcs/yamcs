@@ -30,11 +30,11 @@ export class User {
   }
 
   getSystemPrivileges() {
-    return this.userInfo.systemPrivilege || [];
+    return this.userInfo.systemPrivileges || [];
   }
 
   getObjectPrivileges(): ObjectPrivilege[] {
-    return this.userInfo.objectPrivilege || [];
+    return this.userInfo.objectPrivileges || [];
   }
 
   hasSystemPrivilege(privilege: string) {
@@ -50,7 +50,7 @@ export class User {
     }
     for (const p of this.getObjectPrivileges()) {
       if (p.type === type) {
-        for (const expression of p.object) {
+        for (const expression of p.objects) {
           if (object.match(expression)) {
             return true;
           }

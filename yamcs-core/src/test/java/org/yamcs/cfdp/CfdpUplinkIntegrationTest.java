@@ -1,6 +1,9 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,11 +16,11 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
@@ -59,7 +62,7 @@ public class CfdpUplinkIntegrationTest {
 
     private YConfiguration config;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         EventProducerFactory.setMockup(false);
         Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
@@ -69,24 +72,24 @@ public class CfdpUplinkIntegrationTest {
         YamcsServer.getServer().start();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-        
+
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         YamcsServer.getServer().shutDown();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         client = YamcsClient.newBuilder("localhost", 9193).build();
         cfdpClient = new FileTransferClient(client, yamcsInstance, "CfdpService");
         config = getConfig();
     }
 
-    @After
+    @AfterEach
     public void after() {
         client.close();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -120,7 +123,6 @@ public class CfdpUplinkIntegrationTest {
         assertNotNull(ce);
         assertTrue(ce.getMessage().contains("No such transaction"));
     }
-    
 
     private void checkEquals(String name, int id, EntityInfo einfo) {
         assertEquals(name, einfo.getName());
@@ -199,14 +201,15 @@ public class CfdpUplinkIntegrationTest {
         byte[] data = createObject("randomfile71", 1000);
         uploadAndCheck("randomfile71", data, true, Arrays.asList(1), TransferState.COMPLETED, TransferState.COMPLETED);
     }
-    
+
     @Test
     public void testClass2WithMetadtaAfterEof() throws Exception {
         byte[] data = createObject("randomfile72", 1000);
         config.getRoot().put("immediateNak", false);
-        uploadAndCheck(config, "randomfile72", data, true, Arrays.asList(1), TransferState.COMPLETED, TransferState.COMPLETED);
+        uploadAndCheck(config, "randomfile72", data, true, Arrays.asList(1), TransferState.COMPLETED,
+                TransferState.COMPLETED);
     }
-    
+
     @Test
     public void testClass2WithNackLimitReached() throws Exception {
         byte[] data = createObject("randomfile81", 1000);
@@ -223,23 +226,22 @@ public class CfdpUplinkIntegrationTest {
 
     @Test
     public void testPauseResume() throws Exception {
-        
-        //patch the sleepBetweenPdus such that the transfer does not finish immediately
+
+        // patch the sleepBetweenPdus such that the transfer does not finish immediately
         CfdpService cfdpService = YamcsServer.getServer().getServices(yamcsInstance, CfdpService.class).get(0);
         cfdpService.getConfig().getRoot().put("sleepBetweenPdu", Long.valueOf(500));
-        
-        //start receiver
+
+        // start receiver
         MyFileReceiver receiver = new MyFileReceiver(Collections.emptyList(), config);
-        
-        //create object
+
+        // create object
         String objName = "randomfile23-01-2022";
         byte[] data = createObject(objName, 1000);
         ObjectId object = ObjectId.of(outgoingBucket.getName(), objName);
 
-        //initiate transfer
+        // initiate transfer
         TransferInfo tinfo = cfdpClient.upload(object, UploadOptions.reliable(true)).get();
         assertEquals(data.length, tinfo.getTotalSize());
-
 
         cfdpClient.pause(tinfo.getId()).get();
         int tCount = receiver.tcount;
@@ -263,7 +265,6 @@ public class CfdpUplinkIntegrationTest {
 
         byte[] recdata = incomingBucket.getObject(receiver.trsf.getObjectName());
         assertArrayEquals(data, recdata);
-
 
         // restore back the old value (otherwise the tests following this will be slow and even fail)
         cfdpService.getConfig().getRoot().put("sleepBetweenPdu", Long.valueOf(10));
@@ -296,7 +297,6 @@ public class CfdpUplinkIntegrationTest {
         TransferInfo tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
         assertEquals(expectedSenderState, tinfo1.getState());
         assertEquals(expectedReceiverState, rec.trsf.getTransferState());
-
 
         if (expectedReceiverState == TransferState.COMPLETED) {
             byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
@@ -388,7 +388,6 @@ public class CfdpUplinkIntegrationTest {
         public void resume() {
             trsf.resume();
         }
-
 
         @Override
         public void stateChanged(FileTransfer cfdpTransfer) {

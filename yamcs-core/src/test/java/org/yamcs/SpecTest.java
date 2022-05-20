@@ -2,14 +2,18 @@ package org.yamcs;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.Spec.OptionType;
 
 public class SpecTest {
@@ -28,17 +32,21 @@ public class SpecTest {
         spec.validate(of("bla", "a value"));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testRequiredButMissing() throws ValidationException {
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.STRING).withRequired(true);
-        spec.validate(of());
+    @Test
+    public void testRequiredButMissing() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.STRING).withRequired(true);
+            spec.validate(of());
+        });
     }
 
-    @Test(expected = ValidationException.class)
-    public void testUnknownOption() throws ValidationException {
-        Spec spec = new Spec();
-        spec.validate(of("bla", "a value"));
+    @Test
+    public void testUnknownOption() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.validate(of("bla", "a value"));
+        });
     }
 
     @Test
@@ -53,11 +61,13 @@ public class SpecTest {
         assertEquals(123, result.get("whatever"));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testWrongType() throws ValidationException {
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.STRING);
-        spec.validate(of("bla", 123));
+    @Test
+    public void testWrongType() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.STRING);
+            spec.validate(of("bla", 123));
+        });
     }
 
     @Test
@@ -68,12 +78,14 @@ public class SpecTest {
         spec.validate(of("bla", "valid"));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testInvalidChoice() throws ValidationException {
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.STRING)
-                .withChoices("valid", "other");
-        spec.validate(of("bla", "this is wrong"));
+    @Test
+    public void testInvalidChoice() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.STRING)
+                    .withChoices("valid", "other");
+            spec.validate(of("bla", "this is wrong"));
+        });
     }
 
     @Test
@@ -83,11 +95,13 @@ public class SpecTest {
         spec.validate(of("bla", asList(123, 456)));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testWrongElementType() throws ValidationException {
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.LIST).withElementType(OptionType.INTEGER);
-        spec.validate(of("bla", asList("str1", "str2")));
+    @Test
+    public void testWrongElementType() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.LIST).withElementType(OptionType.INTEGER);
+            spec.validate(of("bla", asList("str1", "str2")));
+        });
     }
 
     @Test
@@ -100,14 +114,16 @@ public class SpecTest {
         spec.validate(of("bla", of("subkey", 123)));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testSubMapValidation() throws ValidationException {
-        Spec blaSpec = new Spec();
-        blaSpec.addOption("subkey", OptionType.INTEGER);
+    @Test
+    public void testSubMapValidation() {
+        assertThrows(ValidationException.class, () -> {
+            Spec blaSpec = new Spec();
+            blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.MAP).withSpec(blaSpec);
-        spec.validate(of("bla", of("wrongKey", 123)));
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.MAP).withSpec(blaSpec);
+            spec.validate(of("bla", of("wrongKey", 123)));
+        });
     }
 
     @Test
@@ -123,17 +139,19 @@ public class SpecTest {
         spec.validate(of("bla", asList(of("subkey", 123))));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testListofMapValidation() throws ValidationException {
-        Spec blaSpec = new Spec();
-        blaSpec.addOption("subkey", OptionType.INTEGER);
+    @Test
+    public void testListofMapValidation() {
+        assertThrows(ValidationException.class, () -> {
+            Spec blaSpec = new Spec();
+            blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.LIST)
-                .withElementType(OptionType.MAP)
-                .withSpec(blaSpec);
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.LIST)
+                    .withElementType(OptionType.MAP)
+                    .withSpec(blaSpec);
 
-        spec.validate(of("bla", asList(of("wrong", 123))));
+            spec.validate(of("bla", asList(of("wrong", 123))));
+        });
     }
 
     @Test
@@ -311,12 +329,14 @@ public class SpecTest {
         assertEquals(123, result2.get("bla"));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testAliasExists() throws ValidationException {
-        Spec spec = new Spec();
-        spec.addOption("bla", OptionType.ANY).withAliases("bloe");
+    @Test
+    public void testAliasExists() {
+        assertThrows(ValidationException.class, () -> {
+            Spec spec = new Spec();
+            spec.addOption("bla", OptionType.ANY).withAliases("bloe");
 
-        spec.validate(of("bla", 123, "bloe", 456));
+            spec.validate(of("bla", 123, "bloe", 456));
+        });
     }
 
     @Test
@@ -326,5 +346,26 @@ public class SpecTest {
 
         Map<String, Object> result2 = spec.validate(of("bloe", 123));
         assertEquals(123, result2.get("bla"));
+    }
+
+    @Test
+    public void testListOfMapsWithNoValue() throws ValidationException {
+        Map<String, Object> modulesConfig = new HashMap<>();
+        modulesConfig.put("modules1", null);
+        modulesConfig.put("modules2", null);
+
+        Spec spec = new Spec();
+        spec.addOption("modules1", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(new Spec());
+
+        spec.addOption("modules2", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(new Spec())
+                .withDefault(new ArrayList<>());
+
+        Map<String, Object> result = spec.validate(modulesConfig);
+        assertNull(result.get("modules1"));
+        assertNull(result.get("modules2")); // The "key" is specified, so default does not apply
     }
 }

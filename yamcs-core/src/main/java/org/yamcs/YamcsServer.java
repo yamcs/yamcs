@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.yamcs.Spec.OptionType;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.logging.YamcsLogManager;
@@ -308,7 +309,11 @@ public class YamcsServer {
         CommandOption previous = commandOptions.putIfAbsent(option.getId(), option);
         if (previous != null) {
             throw new IllegalArgumentException(
-                    "A command option with '" + option.getId() + "' was already registered with Yamcs");
+                    "A command option '" + option.getId() + "' was already registered with Yamcs");
+        }
+        if (PreparedCommand.isReservedColumn(option.getId())) {
+            throw new IllegalArgumentException(
+                    "Command options may not be named '" + option.getId() + "'. This name is reserved");
         }
     }
 
@@ -933,8 +938,10 @@ public class YamcsServer {
         parseArgs(args);
 
         System.setProperty("jxl.nowarnings", "true");
-        System.setProperty("jacorb.home", System.getProperty("user.dir"));
-        System.setProperty("javax.net.ssl.trustStore", YAMCS.options.configDirectory.resolve("trustStore").toString());
+        if (System.getProperty("javax.net.ssl.trustStore") == null) {
+            System.setProperty("javax.net.ssl.trustStore",
+                    YAMCS.options.configDirectory.resolve("trustStore").toString());
+        }
 
         try {
             setupLogging();
@@ -973,7 +980,7 @@ public class YamcsServer {
 
         // Good to go!
         try {
-            LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
+            LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
             YAMCS.start();
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
@@ -1379,9 +1386,6 @@ public class YamcsServer {
                 NANOSECONDS.toMillis(bootTime), instanceCount, instances.size(), serviceCount);
 
         if (options.noStreamRedirect) {
-            // The init.d script uses this, by grepping for a known string
-            // Note that the init.d script cannot grep the real log file because it
-            // does not know its location.
             System.out.println(msg);
         } else {
             // Associate the message with a specific logger

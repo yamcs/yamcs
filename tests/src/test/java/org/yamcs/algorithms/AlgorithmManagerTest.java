@@ -1,9 +1,9 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,18 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.LoggingUtils;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorService;
 import org.yamcs.ProcessorServiceWithConfig;
-import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.XtceDbFactory;
@@ -34,6 +32,8 @@ import org.yamcs.protobuf.AlgorithmTrace.Log;
 import org.yamcs.protobuf.AlgorithmTrace.Run;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue;
+import org.yamcs.tests.LoggingUtils;
+import org.yamcs.tests.RefMdbPacketGenerator;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
@@ -42,7 +42,8 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlgorithmManagerTest {
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
@@ -55,7 +56,7 @@ public class AlgorithmManagerTest {
     private Queue<Event> q;
     AlgorithmManager algMgr;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
         q = EventProducerFactory.getMockupQueue();
@@ -85,7 +86,7 @@ public class AlgorithmManagerTest {
                 service.getClass().getName(), config);
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         proc.quit();
     }
@@ -117,8 +118,8 @@ public class AlgorithmManagerTest {
                 + "( null: OutputValueBinding [rawValue=null, value=2.1672918051481247, updated=true]) returnValue: null"));
     }
 
-    @Ignore
     @Test
+    @Disabled
     // this can be used to test the performance of a very simple addition algorithm
     // to do that, you can comment in/out the right version of the parameter
     //
@@ -565,6 +566,5 @@ public class AlgorithmManagerTest {
     void verifyEqual(ParameterValue pv, Parameter p, float v) {
         assertEquals(p, pv.getParameter());
         assertEquals(v, pv.getEngValue().getFloatValue(), 1e-5);
-
     }
 }

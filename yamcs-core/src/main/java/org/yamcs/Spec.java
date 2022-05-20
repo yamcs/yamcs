@@ -368,6 +368,10 @@ public class Spec {
                 return arg;
             }
 
+            if (arg == null) {
+                return null;
+            }
+
             OptionType argType = forArgument(arg);
             if (this == argType) {
                 return arg;
@@ -380,9 +384,9 @@ public class Spec {
                 }
             } else if (this == FLOAT) {
                 if (arg instanceof Integer) {
-                    return new Double((Integer) arg);
+                    return Double.valueOf((Integer) arg);
                 } else if (arg instanceof Long) {
-                    return new Double((Long) arg);
+                    return Double.valueOf((Long) arg);
                 }
             }
             throw new ValidationException(ctx, String.format(
@@ -403,6 +407,8 @@ public class Spec {
                 return LIST;
             } else if (arg instanceof Map) {
                 return MAP;
+            } else if (arg == null) {
+                throw new IllegalArgumentException("Cannot derive type for null argument");
             } else {
                 throw new IllegalArgumentException(
                         "Cannot derive type for argument of class " + arg.getClass().getName());
@@ -605,6 +611,10 @@ public class Spec {
             if (deprecationMessage != null) {
                 log.warn("Argument {} has been deprecated: {}", path, deprecationMessage);
             }
+            if (arg == null) {
+                return null;
+            }
+
             arg = type.convertArgument(ctx, path, arg, elementType);
 
             if (choices != null && !choices.contains(arg)) {

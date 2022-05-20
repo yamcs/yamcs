@@ -3,7 +3,7 @@ Systemd Unit File
 
 Yamcs package installations include a systemd unit file for starting and stopping Yamcs as a service.
 
-The unit file is located at ``/usr/lib/systemd/system/yamcs.service`` for RPM packages, and ``/lib/systemd/system/yamcs.service`` for Debian packages.
+The unit file is located at ``/usr/lib/systemd/system/yamcs.service``.
 
 You should not modify this file directly, but instead use standard systemd mechanisms to customize unit files. See the instructions for your operating system.
 

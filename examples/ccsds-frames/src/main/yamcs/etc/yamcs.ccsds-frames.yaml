@@ -156,7 +156,7 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
-  - type: "org.yamcs.xtce.TseLoader"
+  - type: "org.yamcs.tse.TseLoader"
     subLoaders:
       - type: "sheet"
         spec: "mdb/tse/simulator.xls"

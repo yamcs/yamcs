@@ -1,18 +1,16 @@
 package org.yamcs.security;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-/**
- * Created by msc on 07/05/15.
- */
 public class Pbkdf2PasswordHasherTest {
+
     @Test
     public void hash_validate_ok() throws InvalidKeySpecException, NoSuchAlgorithmException {
         PBKDF2PasswordHasher hasher = new PBKDF2PasswordHasher();
@@ -22,9 +20,9 @@ public class Pbkdf2PasswordHasherTest {
         assertNotEquals(hash, secondHash);
 
         String wrongPassword = "wrong";
-        assertFalse("Wrong password should not be accepted",
-                (hasher.validatePassword(wrongPassword.toCharArray(), hash)));
+        assertFalse(hasher.validatePassword(wrongPassword.toCharArray(), hash),
+                "Wrong password should not be accepted");
 
-        assertTrue("Good password should be accepted", hasher.validatePassword(password.toCharArray(), hash));
+        assertTrue(hasher.validatePassword(password.toCharArray(), hash), "Good password should be accepted");
     }
 }

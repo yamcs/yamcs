@@ -13,24 +13,24 @@ services:
 
 dataLinks:
   - name: tm_realtime
-    class: org.yamcs.AbstractIntegrationTest$PacketProvider
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
     num: 2
     stream: tm_realtime
   - name: tm2_realtime
-    class: org.yamcs.AbstractIntegrationTest$PacketProvider
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
     num: 3
     stream: tm2_realtime
             
   - name: pp_realtime
-    class: org.yamcs.AbstractIntegrationTest$ParameterProvider
+    class: org.yamcs.tests.AbstractIntegrationTest$ParameterProvider
     stream: pp_realtime
     num: 1
   - name: datalink_tc1
-    class: org.yamcs.AbstractIntegrationTest$TcDataLink
+    class: org.yamcs.tests.AbstractIntegrationTest$TcDataLink
     stream: tcstream1
     num: 1
   - name: datalink_tc2
-    class: org.yamcs.AbstractIntegrationTest$TcDataLink
+    class: org.yamcs.tests.AbstractIntegrationTest$TcDataLink
     stream: tcstream2
     num: 2
 

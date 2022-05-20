@@ -1,5 +1,6 @@
 <mat-toolbar color="primary" *ngIf="user$ | async as user">
-  <mat-toolbar-row class="app-bar">
+  <mat-toolbar-row class="app-bar"
+                   [class.replay]="(connectionInfo$ | async)?.processor?.replay">
     <div *ngIf="tag" class="tag">
       {{ tag }}
     </div>

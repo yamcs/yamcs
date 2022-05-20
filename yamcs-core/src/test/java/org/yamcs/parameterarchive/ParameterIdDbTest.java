@@ -1,13 +1,13 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
@@ -16,7 +16,7 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 public class ParameterIdDbTest {
     Tablespace tablespace;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         File f = new File("/tmp/TestParameterIdDb");
         FileUtils.deleteRecursivelyIfExists(f.toPath());
@@ -27,7 +27,7 @@ public class ParameterIdDbTest {
         tablespace.loadDb(false);
     }
 
-    @After
+    @AfterEach
     public void after() {
         tablespace.close();
     }
@@ -114,7 +114,6 @@ public class ParameterIdDbTest {
             assertEquals(fqn, pids[0].getParamFqn());
 
             assertEquals(p, pidDb.getParameterId(p).getPid());
-
         }
     }
 
@@ -127,6 +126,5 @@ public class ParameterIdDbTest {
         assertEquals(2, pids.length);
         assertEquals(p1, pids[0].getPid());
         assertEquals(p2, pids[1].getPid());
-
     }
 }

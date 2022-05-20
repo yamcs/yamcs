@@ -1,8 +1,8 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -100,5 +100,4 @@ public class TestUtils {
             assertEquals(pv.getEngValue(), c.values.get(i));
         }
     }
-
 }

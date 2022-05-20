@@ -1,8 +1,8 @@
 package org.yamcs.tctm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -16,10 +16,10 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -32,23 +32,22 @@ import org.yamcs.utils.TimeEncoding;
 public class TcpTcDataLinkTest {
     MyTcpServer mtc;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws IOException {
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(false);
     }
 
-    @Before
+    @BeforeEach
     public void setupTcpServer() throws IOException {
         mtc = new MyTcpServer();
         mtc.start();
     }
 
-    @After
+    @AfterEach
     public void shutdownTcpServer() throws IOException {
         mtc = new MyTcpServer();
         mtc.quit();
-
     }
 
     static public class MyTcpServer extends Thread {
@@ -115,8 +114,8 @@ public class TcpTcDataLinkTest {
         Map<String, Object> config = new HashMap<>();
         config.put("tcMaxRate", tcMaxRate);
         config.put("tcQueueSize", ncommands);
-        config.put("tcHost", "localhost");
-        config.put("tcPort", mtc.port);
+        config.put("host", "localhost");
+        config.put("port", mtc.port);
         config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink();
@@ -133,12 +132,12 @@ public class TcpTcDataLinkTest {
         }
 
         assertTrue(semaphore.tryAcquire(ncommands, 10, TimeUnit.SECONDS));
-        assertTrue("Number of commands sent is smaller than queue size: ", mypub.successful.size() >= ncommands);
+        assertTrue(mypub.successful.size() >= ncommands, "Number of commands sent is smaller than queue size");
         for (int i = 5; i < mypub.successful.size() - tcMaxRate; i++) {
             int seq1 = mypub.successful.get(i);
             int seq2 = mypub.successful.get(i + tcMaxRate);
             long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
-            assertTrue("gap is not right: " + gap, gap >= 850 && gap < 1150);
+            assertTrue(gap >= 850 && gap < 1150, "gap is not right: " + gap);
         }
         dataLink.stopAsync();
     }
@@ -146,8 +145,8 @@ public class TcpTcDataLinkTest {
     @Test
     public void testTcpTcDefault() throws ConfigurationException, InterruptedException, IOException {
         Map<String, Object> config = new HashMap<>();
-        config.put("tcHost", "localhost");
-        config.put("tcPort", mtc.port);
+        config.put("host", "localhost");
+        config.put("port", mtc.port);
         config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink();

@@ -1,8 +1,9 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.security.PBKDF2PasswordHasher;
 import org.yamcs.security.PasswordHasher;
 
@@ -11,7 +12,7 @@ public class PasswordHashTest extends AbstractCliTest {
     @Test
     public void testPasswordNotMatching() throws Exception {
         mconsole.setPassword("pass1".toCharArray(), "pass2".toCharArray());
-        int exitStatus =runMain("--etc-dir", "src/test/resources/YamcsServer", "password-hash"); 
+        int exitStatus = runMain("--etc-dir", "src/test/resources/YamcsServer", "password-hash");
         assertEquals(-1, exitStatus);
         assertTrue(mconsole.output().contains("Password confirmation does not match"));
     }

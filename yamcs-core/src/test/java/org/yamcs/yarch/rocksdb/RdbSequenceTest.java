@@ -1,6 +1,7 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,11 +12,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.yamcs.utils.FileUtils;
@@ -28,23 +29,23 @@ public class RdbSequenceTest {
     YRDB rdb;
     ColumnFamilyHandle cfMetadata;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         RocksDB.loadLibrary();
         dbdir = Files.createTempDirectory("rdbtest");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         FileUtils.deleteRecursively(dbdir);
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         openDb();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         closeDb();
     }
@@ -106,11 +107,13 @@ public class RdbSequenceTest {
         }
     }
 
-    @Test(expected = YarchException.class)
-    public void testClose() throws Exception {
-        RdbSequence seq = new RdbSequence("testclose", rdb, cfMetadata);
-        seq.close();
-        seq.next();
+    @Test
+    public void testClose() {
+        assertThrows(YarchException.class, () -> {
+            RdbSequence seq = new RdbSequence("testclose", rdb, cfMetadata);
+            seq.close();
+            seq.next();
+        });
     }
 
     private void openDb() throws Exception {

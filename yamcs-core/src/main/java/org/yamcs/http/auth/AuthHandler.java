@@ -35,6 +35,7 @@ import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
+import org.yamcs.security.Directory;
 import org.yamcs.security.OpenIDAuthModule;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SessionManager;
@@ -406,7 +407,7 @@ public class AuthHandler extends Handler {
         responseb.setTokenType("bearer");
         responseb.setAccessToken(jwt);
         responseb.setExpiresIn(ttl);
-        responseb.setUser(IamApi.toUserInfo(user, true));
+        responseb.setUser(IamApi.toUserInfo(user, true, getDirectory()));
 
         if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);
@@ -423,5 +424,9 @@ public class AuthHandler extends Handler {
 
     public static SecurityStore getSecurityStore() {
         return YamcsServer.getServer().getSecurityStore();
+    }
+
+    private static Directory getDirectory() {
+        return getSecurityStore().getDirectory();
     }
 }

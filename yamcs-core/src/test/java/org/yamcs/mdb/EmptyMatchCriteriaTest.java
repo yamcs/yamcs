@@ -1,10 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.XtceDbFactory;
@@ -21,7 +21,7 @@ public class EmptyMatchCriteriaTest {
         XtceDb db = XtceDbFactory.createInstanceByConfig("empty-match-criteria");
         XtceTmExtractor extractor = new XtceTmExtractor(db);
         long now = TimeEncoding.getWallclockTime();
-        
+
         extractor.startProviding(db.getParameter("/EMC/para2"));
         byte[] buf = new byte[16];
         ByteBuffer bb = ByteBuffer.wrap(buf);
@@ -33,5 +33,4 @@ public class EmptyMatchCriteriaTest {
         ParameterValue pv = pvl.getFirstInserted(db.getParameter("/EMC/para2"));
         assertEquals(2.0, pv.getEngValue().getDoubleValue(), 1e-5);
     }
-
 }

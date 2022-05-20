@@ -26,9 +26,9 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
@@ -258,22 +258,22 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
-            preReleaseCommad(q, activeCommand);
+            preReleaseCommand(q, activeCommand);
 
         }
 
         return q;
     }
 
-    // if there are transmission constrains, start the checker;
+    // if there are transmission constraints, start the checker;
     // if not just release the command
-    private void preReleaseCommad(CommandQueue q, ActiveCommand pc) {
+    private void preReleaseCommand(CommandQueue q, ActiveCommand pc) {
         long missionTime = timeService.getMissionTime();
-        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionContraints()) {
+        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionConstraints()) {
             startTransmissionConstraintChecker(q, pc);
         } else {
             commandHistoryPublisher.publishAck(pc.getCommandId(),
-                    CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
+                    CommandHistoryPublisher.TransmissionConstraints_KEY, missionTime, AckStatus.NA);
             q.remove(pc, true);
             releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
@@ -287,14 +287,14 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         constraintChecker.checkImmediate();
     }
 
-    private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
+    private void onTransmissionConstraintCheckPending(TransmissionConstraintChecker tcChecker) {
         tcChecker.activeCommand.setPendingTransmissionConstraints(true);
         notifyUpdated(tcChecker.queue, tcChecker.activeCommand);
         commandHistoryPublisher.publishAck(tcChecker.activeCommand.getCommandId(),
-                CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
+                CommandHistoryPublisher.TransmissionConstraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
     }
 
-    private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
+    private void onTransmissionConstraintCheckFinished(TransmissionConstraintChecker tcChecker) {
         ActiveCommand pc = tcChecker.activeCommand;
         pc.setPendingTransmissionConstraints(false);
         CommandQueue q = tcChecker.queue;
@@ -307,14 +307,14 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
 
         if (status == TCStatus.OK) {
             q.remove(pc, true);
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionConstraints_KEY,
                     missionTime, AckStatus.OK);
             releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
             q.remove(pc, false);
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionConstraints_KEY,
                     missionTime, AckStatus.NOK);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK,
@@ -524,7 +524,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         if (command != null) {
-            preReleaseCommad(queue, command);
+            preReleaseCommand(queue, command);
             return command.getPreparedCommand();
         } else {
             return null;
@@ -591,7 +591,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         queue.state = newState;
         if (queue.state == QueueState.ENABLED) {
             for (ActiveCommand pc : queue.getCommands()) {
-                preReleaseCommad(queue, pc);
+                preReleaseCommand(queue, pc);
             }
         }
         if (queue.state == QueueState.DISABLED) {
@@ -772,10 +772,10 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                 aggregateStatus = tcsUpdate.aggrStatus;
 
                 if (aggregateStatus == TCStatus.PENDING) {
-                    onTransmissionContraintCheckPending(this);
+                    onTransmissionConstraintCheckPending(this);
                     scheduleCheck(this, tcsUpdate.scheduleNextCheck);
                 } else {
-                    onTransmissionContraintCheckFinished(this);
+                    onTransmissionConstraintCheckFinished(this);
                 }
             });
 

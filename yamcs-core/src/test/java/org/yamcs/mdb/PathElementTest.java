@@ -1,8 +1,10 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.PathElement;
 
 public class PathElementTest {
@@ -27,10 +29,12 @@ public class PathElementTest {
         assertArrayEquals(null, pe.getIndex());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void test4() {
-        PathElement pe = PathElement.fromString("xyz[");
-        assertEquals(null, pe.getName());
-        assertArrayEquals(new int[] { 3 }, pe.getIndex());
+        assertThrows(IllegalArgumentException.class, () -> {
+            PathElement pe = PathElement.fromString("xyz[");
+            assertEquals(null, pe.getName());
+            assertArrayEquals(new int[] { 3 }, pe.getIndex());
+        });
     }
 }

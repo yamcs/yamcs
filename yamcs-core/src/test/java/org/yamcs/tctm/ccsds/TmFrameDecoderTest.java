@@ -1,8 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.tctm.ccsds.AosFrameDecoderTest.intToByteArray;
 
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TcTmException;
 
@@ -29,20 +29,22 @@ public class TmFrameDecoderTest {
         assertEquals(-1, tf.getShStart());
 
         assertEquals(6, tf.getFirstHeaderPointer());
-        
+
         assertTrue(tf.hasOcf());
         assertEquals(0x01000000, tf.getOcf());
     }
 
-    @Test(expected = TcTmException.class)
-    public void testCorruptedFrame01() throws TcTmException {
+    @Test
+    public void testCorruptedFrame01() {
         byte[] data = intToByteArray(TM_FRAME_01);
         data[10] = 12; // change a byte to break the crc
 
         TmManagedParameters tmp = getParams();
         TmFrameDecoder tfd = new TmFrameDecoder(tmp);
 
-        tfd.decode(data, 0, data.length);
+        assertThrows(TcTmException.class, () -> {
+            tfd.decode(data, 0, data.length);
+        });
     }
 
     TmManagedParameters getParams() {
@@ -210,5 +212,4 @@ public class TmFrameDecoderTest {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0xC9, 0x48, 0x01, 0x00, 0x00,
             0x00, 0xBB, 0xD6 };
-
 }

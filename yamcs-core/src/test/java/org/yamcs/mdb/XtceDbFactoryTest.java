@@ -1,13 +1,14 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.Parameter;
@@ -35,7 +36,8 @@ public class XtceDbFactoryTest {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
 
-        ReferenceFinder refFinder = new ReferenceFinder(s ->{});
+        ReferenceFinder refFinder = new ReferenceFinder(s -> {
+        });
         Map<String, Object> m = new HashMap<>();
         m.put("type", "sheet");
         m.put("spec", "mdb/refmdb.xls");
@@ -66,6 +68,4 @@ public class XtceDbFactoryTest {
         assertNotNull(rr);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", rr.getNameDescription().getQualifiedName());
     }
-
-   
 }

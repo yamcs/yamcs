@@ -106,8 +106,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             }
             log.info("Injecting the content of {}", f);
             long count = 0;
-            long minTime = TimeEncoding.MIN_INSTANT;
-            long maxTime = TimeEncoding.MAX_INSTANT;
+            long minTime = TimeEncoding.MAX_INSTANT;
+            long maxTime = TimeEncoding.MIN_INSTANT;
             try (PacketInputStream packetInputStream = getPacketInputStream(f.getAbsolutePath())) {
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {
@@ -126,7 +126,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             } catch (IOException | PacketTooLongException e) {
                 log.warn("Got IOException while reading from " + f + ": ", e);
             }
-            String msg = String.format("Ingested %s; pkt count: %d, time range: [%s, %s]", f, count, TimeEncoding.toString(minTime), TimeEncoding.toString(maxTime));
+            String msg = String.format("Ingested %s; pkt count: %d, time range: [%s, %s]", f, count,
+                    TimeEncoding.toString(minTime), TimeEncoding.toString(maxTime));
             eventProducer.sendInfo("FILE_INGESTION", msg);
             if (deleteAfterImport) {
                 if (!f.delete()) {

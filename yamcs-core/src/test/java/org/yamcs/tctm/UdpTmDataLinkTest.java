@@ -1,6 +1,9 @@
 package org.yamcs.tctm;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,8 +15,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.LoggingUtils;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -21,9 +24,8 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.Link.Status;
 import org.yamcs.utils.TimeEncoding;
 
-
 public class UdpTmDataLinkTest {
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         EventProducerFactory.setMockup(false);
         TimeEncoding.setUp();
@@ -33,7 +35,7 @@ public class UdpTmDataLinkTest {
     @Test
     public void test1() throws Exception {
         ArrayBlockingQueue<TmPacket> pktQueue = new ArrayBlockingQueue<>(10);
-        
+
         UdpTmDataLink link = new UdpTmDataLink();
         Map<String, Object> config = new HashMap<>();
         Random rand = new Random();
@@ -45,10 +47,10 @@ public class UdpTmDataLinkTest {
         config.put("checksum", port);
         link.init("test", "test", YConfiguration.wrap(config));
         link.setTmSink(p -> pktQueue.add(p));
-        
+
         link.startAsync();
         link.awaitRunning();
-        
+
         assertEquals(Status.OK, link.connectionStatus());
 
         DatagramSocket socket = new DatagramSocket();
@@ -82,13 +84,4 @@ public class UdpTmDataLinkTest {
         link.stopAsync();
         link.awaitTerminated();
     }
-
-    TmSink sink = new TmSink() {
-
-        @Override
-        public void processPacket(TmPacket tmPacket) {
-            // TODO Auto-generated method stub
-
-        }
-    };
 }

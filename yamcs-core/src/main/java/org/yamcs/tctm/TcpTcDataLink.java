@@ -29,6 +29,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     protected Selector selector;
     SelectionKey selectionKey;
 
+    @Override
     public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, name, config);
         configure(yamcsInstance, config);
@@ -36,13 +37,8 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     }
 
     private void configure(String yamcsInstance, YConfiguration config) {
-        if (config.containsKey("tcHost")) {// this is when the config is specified in tcp.yaml
-            host = config.getString("tcHost");
-            port = config.getInt("tcPort");
-        } else {
-            host = config.getString("host");
-            port = config.getInt("port");
-        }
+        host = config.getString("host");
+        port = config.getInt("port");
     }
 
     @Override
@@ -167,7 +163,6 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
     }
 
-  
     @Override
     public void shutDown() throws Exception {
         disconnect();
@@ -175,12 +170,11 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     public void uplinkCommand(PreparedCommand pc) {
-        byte[] binary = cmdPostProcessor.process(pc);
+        byte[] binary = postprocess(pc);
         if (binary == null) {
-            log.warn("command postprocessor did not process the command");
             return;
         }
-        
+
         int retries = 5;
         boolean sent = false;
 
@@ -234,7 +228,6 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
         openSocket();
     }
-
 
     @Override
     protected Status connectionStatus() {

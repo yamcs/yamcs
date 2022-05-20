@@ -1,19 +1,21 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
 public class AggregateDataTypeTest {
     Member m11, m1, m2, m3;
     AggregateParameterType aptm11, apt;
 
-    @Before
+    @BeforeEach
     public void before() {
         IntegerParameterType ipt = new IntegerParameterType.Builder().setSizeInBits(32)
                 .setEncoding(new IntegerDataEncoding.Builder()).build();
@@ -30,10 +32,8 @@ public class AggregateDataTypeTest {
 
     }
 
-
     @Test
     public void testGetMember() {
-
         assertEquals(1, aptm11.numMembers());
 
         assertEquals(3, apt.numMembers());
@@ -46,16 +46,17 @@ public class AggregateDataTypeTest {
         assertEquals(m2, apt.getMember("m2"));
         assertEquals(m3, apt.getMember("m3"));
 
-
         assertEquals(m11, apt.getMember(new String[] { "m1", "m11" }));
         assertNull(apt.getMember(new String[] { "m1", "m2" }));
         assertNull(apt.getMember(new String[] { "m2", "m1" }));
         assertNull(apt.getMember(new String[] { "m1", "m11", "m3" }));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetMemberInvalid() {
-        apt.getMember(new String[] {});
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.getMember(new String[] {});
+        });
     }
 
     @Test
@@ -79,6 +80,7 @@ public class AggregateDataTypeTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testConvertType() {
 
         // convert string to map
@@ -89,7 +91,6 @@ public class AggregateDataTypeTest {
         Map<String, Object> vm1 = (Map<String, Object>) v.get("m1");
         assertEquals(3l, vm1.get("m11"));
         assertEquals(5l, v.get("m3"));
-
 
         // convert map to map
         Map<String, Object> v2 = apt.convertType(v);
@@ -109,69 +110,89 @@ public class AggregateDataTypeTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal1() {
-        apt.convertType(3);
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.convertType(3);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal2() {
-        apt.convertType("[3, 4]");
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.convertType("[3, 4]");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal3() {
-        apt.convertType("{m1' 3}");
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.convertType("{m1' 3}");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal4() {
-        apt.convertType("{m2: 3}");
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.convertType("{m2: 3}");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal5() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-        Map<String, Object> m = apt.convertType(s);
-        m.remove("m1");
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
+            Map<String, Object> m = apt.convertType(s);
+            m.remove("m1");
 
-        apt.convertType(m);
+            apt.convertType(m);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal6() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-        Map<String, Object> m = apt.convertType(s);
-        m.put("m10", 10);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
+            Map<String, Object> m = apt.convertType(s);
+            m.put("m10", 10);
 
-        apt.convertType(m);
+            apt.convertType(m);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertTypeIllegal7() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4, \"m10\": 10}";
-        apt.convertType(s);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4, \"m10\": 10}";
+            apt.convertType(s);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testToStringIllegal() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-        Map<String, Object> m = apt.convertType(s);
-        m.put("m10", 5);
-        apt.toString(m);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
+            Map<String, Object> m = apt.convertType(s);
+            m.put("m10", 5);
+            apt.toString(m);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testToStringIllegal1() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-        Map<String, Object> m = apt.convertType(s);
-        m.remove("m2");
-        apt.toString(m);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
+            Map<String, Object> m = apt.convertType(s);
+            m.remove("m2");
+            apt.toString(m);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testToStringIllegal2() {
-        apt.toString(3);
+        assertThrows(IllegalArgumentException.class, () -> {
+            apt.toString(3);
+        });
     }
 
     @Test
@@ -182,6 +203,7 @@ public class AggregateDataTypeTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testConvertRaw() {
         String s = "{\"m1\":{\"m11\":3},\"m2\":4, \"m3\": 9}";
         Map<String, Object> v = apt.parseStringForRawValue(s);
@@ -192,28 +214,35 @@ public class AggregateDataTypeTest {
         assertEquals(9, v.get("m3"));
     }
 
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertRawIllegal1() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-        apt.parseStringForRawValue(s);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
+            apt.parseStringForRawValue(s);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertRawIllegal2() {
-        String s = "{\"m1\":{\"m11\":3},\"m2\":4, \"m3\": 9, \"m10\": 10}";
-        apt.parseStringForRawValue(s);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1\":{\"m11\":3},\"m2\":4, \"m3\": 9, \"m10\": 10}";
+            apt.parseStringForRawValue(s);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertRawIllegal4() {
-        String s = "{\"m1 :4}";
-        apt.parseStringForRawValue(s);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "{\"m1 :4}";
+            apt.parseStringForRawValue(s);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConvertRawIllegal5() {
-        String s = "[5, 6]";
-        apt.parseStringForRawValue(s);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String s = "[5, 6]";
+            apt.parseStringForRawValue(s);
+        });
     }
 }

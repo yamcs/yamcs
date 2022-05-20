@@ -1,51 +1,64 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class TableUpdateTest extends YarchTestCase {
 
-    @Test(expected = StreamSqlException.class)
-    public void testInvalidTable() throws Exception {
-        execute("update invalid_table set d =\"new value\"");
+    @Test
+    public void testInvalidTable() {
+        assertThrows(StreamSqlException.class, () -> {
+            execute("update invalid_table set d =\"new value\"");
+        });
     }
 
-    @Test(expected = StreamSqlException.class)
-    public void testInvalidValue() throws Exception {
-        createTable("invl2");
-        execute("update invl2 set d = x");
+    @Test
+    public void testInvalidValue() {
+        assertThrows(StreamSqlException.class, () -> {
+            createTable("invl2");
+            execute("update invl2 set d = x");
+        });
     }
 
-    @Test(expected = StreamSqlException.class)
-    public void testInvalidConversion() throws Exception {
-        createTable("invl3");
-        execute("update invl3 set d = a");
+    @Test
+    public void testInvalidConversion() {
+        assertThrows(StreamSqlException.class, () -> {
+            createTable("invl3");
+            execute("update invl3 set d = a");
+        });
     }
 
-    @Test(expected = StreamSqlException.class)
-    public void testInvalidWhere() throws Exception {
-        createTable("invl4");
-        execute("update invl4 set d = 'bla' where a");
+    @Test
+    public void testInvalidWhere() {
+        assertThrows(StreamSqlException.class, () -> {
+            createTable("invl4");
+            execute("update invl4 set d = 'bla' where a");
+        });
     }
 
-    @Test(expected = StreamSqlException.class)
-    public void testPKupdateDuplicate() throws Exception {
-        populate("invl4");
-        execute("update invl4 set b = 3");
-        StreamSqlResult r = ydb.execute("select * from invl4");
-        System.out.println("r.hasnext: " + r.hasNext());
-        while (r.hasNext()) {
-            System.out.println("r: " + r.next());
-        }
+    @Test
+    public void testPKupdateDuplicate() {
+        assertThrows(StreamSqlException.class, () -> {
+            populate("invl4");
+            execute("update invl4 set b = 3");
+            StreamSqlResult r = ydb.execute("select * from invl4");
+            System.out.println("r.hasnext: " + r.hasNext());
+            while (r.hasNext()) {
+                System.out.println("r: " + r.next());
+            }
+        });
     }
 
     @Test
@@ -91,10 +104,10 @@ public class TableUpdateTest extends YarchTestCase {
 
         verify("select * from tbl12",
                 (a, b, c, d, e) -> {
-                    if(a==1) {
+                    if (a == 1) {
                         assertEquals("new value", d);
                     } else {
-                        assertEquals("r"+a+b+c, d);
+                        assertEquals("r" + a + b + c, d);
                     }
                 }, 1000);
         execute("drop table tbl12");
@@ -108,20 +121,18 @@ public class TableUpdateTest extends YarchTestCase {
         Tuple t = r.next();
         assertEquals(900l, t.getLongColumn("inspected"));
         assertEquals(800l, t.getLongColumn("updated"));
-        
-        
+
         verify("select * from tbl12",
                 (a, b, c, d, e) -> {
-                    if(a>1) {
-                        assertEquals("bubu"+b, d);
+                    if (a > 1) {
+                        assertEquals("bubu" + b, d);
                     } else {
-                        assertEquals("r"+a+b+c, d);
+                        assertEquals("r" + a + b + c, d);
                     }
                 }, 1000);
         execute("drop table tbl12");
     }
 
-    
     @Test
     public void testUpdateIdxLimit() throws Exception {
         populate("tbl12");
@@ -133,10 +144,10 @@ public class TableUpdateTest extends YarchTestCase {
 
         verify("select * from tbl12",
                 (a, b, c, d, e) -> {
-                    if(a==1 && b==0 & c<2) {
+                    if (a == 1 && b == 0 & c < 2) {
                         assertEquals("new value", d);
                     } else {
-                        assertEquals("r"+a+b+c, d);
+                        assertEquals("r" + a + b + c, d);
                     }
                 }, 1000);
         execute("drop table tbl12");
@@ -153,7 +164,7 @@ public class TableUpdateTest extends YarchTestCase {
 
         verify("select * from tbl13",
                 (a, b, c, d, e) -> {
-                    if(a==1 && b==0 & c<2) {
+                    if (a == 1 && b == 0 & c < 2) {
                         assertEquals("new value", e);
                     } else {
                         assertNull(e);
@@ -175,7 +186,7 @@ public class TableUpdateTest extends YarchTestCase {
         Stream s = ydb.getStream("abcd_in");
 
         for (int a = 0; a < n; a++) {
-            for (int b = n-1; b >= 0; b--) {
+            for (int b = n - 1; b >= 0; b--) {
                 for (int c = 0; c < n; c++) {
                     s.emitTuple(new Tuple(s.getDefinition(), Arrays.asList(a, b, c, "r" + a + b + c)));
                 }
@@ -203,7 +214,7 @@ public class TableUpdateTest extends YarchTestCase {
                 int b = (Integer) tuple.getColumn(1);
                 int c = (Integer) tuple.getColumn(2);
                 String d = (String) tuple.getColumn(3);
-                String e = tuple.size()>4? (String) tuple.getColumn(4): null;
+                String e = tuple.size() > 4 ? (String) tuple.getColumn(4) : null;
 
                 checker.check(a, b, c, d, e);
                 ai.getAndIncrement();

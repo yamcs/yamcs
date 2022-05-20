@@ -1,12 +1,12 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * test for insert modes in a table with a dynamic schema
@@ -80,7 +80,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         ydb.execute("create stream test_insert_out as select * from test_insert");
         Stream sout = ydb.getStream("test_insert_out");
         final Semaphore semaphore = new Semaphore(0);
-        final ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+        final ArrayList<Tuple> tuples = new ArrayList<>();
         sout.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {
@@ -141,7 +141,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         execute("create stream test_inserta_out as select * from test_inserta");
         Stream sout = ydb.getStream("test_inserta_out");
         final Semaphore semaphore = new Semaphore(0);
-        final ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+        final ArrayList<Tuple> tuples = new ArrayList<>();
         sout.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {
@@ -199,7 +199,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         ydb.execute("create stream test_upsert_out as select * from test_upsert");
         Stream sout = ydb.getStream("test_upsert_out");
         final Semaphore semaphore = new Semaphore(0);
-        final ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+        final ArrayList<Tuple> tuples = new ArrayList<>();
         sout.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {
@@ -257,7 +257,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         ydb.execute("create stream test_upserta_out as select * from test_upserta");
         Stream sout = ydb.getStream("test_upserta_out");
         final Semaphore semaphore = new Semaphore(0);
-        final ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+        final ArrayList<Tuple> tuples = new ArrayList<>();
         sout.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {

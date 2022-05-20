@@ -1,8 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RandomizerTest {
 
@@ -18,7 +18,7 @@ public class RandomizerTest {
         for (int i = 0; i < n; i++) {
             int x = a[i] & 0xFF;
             sb.append(fourbitsToString(x >> 4)).append(" ").append(fourbitsToString(x & 0xF));
-            if(i!=n-1) {
+            if (i != n - 1) {
                 sb.append(" ");
             }
         }

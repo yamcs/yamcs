@@ -27,13 +27,8 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
-        if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
-            host = config.getString("tmHost");
-            port = config.getInt("tmPort");
-        } else {
-            host = config.getString("host");
-            port = config.getInt("port");
-        }
+        host = config.getString("host");
+        port = config.getInt("port");
         initialDelay = config.getLong("initialDelay", -1);
 
         if (config.containsKey("packetInputStreamClassName")) {

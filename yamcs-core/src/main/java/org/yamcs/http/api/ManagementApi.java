@@ -100,9 +100,13 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         YamcsServer yamcs = YamcsServer.getServer();
 
         SystemInfo.Builder b = SystemInfo.newBuilder()
-                .setYamcsVersion(YamcsVersion.VERSION)
-                .setRevision(YamcsVersion.REVISION)
                 .setServerId(yamcs.getServerId());
+        if (YamcsVersion.VERSION != null) {
+            b.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            b.setRevision(YamcsVersion.REVISION);
+        }
 
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         b.setUptime(runtime.getUptime());

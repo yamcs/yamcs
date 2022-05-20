@@ -12,7 +12,7 @@ export class PreferenceStore {
   constructor() {
     const sidebar = !(localStorage.getItem('yamcs.sidebar') === 'false');
     this.sidebar$.next(sidebar);
-    const detailPane = localStorage.getItem('yamcs.detailPane') === 'true';
+    const detailPane = !(localStorage.getItem('yamcs.detailPane') === 'false');
     this.detailPane$.next(detailPane);
   }
 

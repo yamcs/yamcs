@@ -39,7 +39,7 @@ public class ActiveCommand implements CommandHistoryConsumer {
 
     // this is the time when the clock starts ticking for fullfilling the transmission constraint
     // -1 means it has not been set yet
-    private long transmissionContraintCheckStart = -1;
+    private long transmissionConstraintCheckStart = -1;
 
     CopyOnWriteArrayList<ParameterProcessor> cmdParamProcessors = new CopyOnWriteArrayList<>();
 
@@ -76,12 +76,12 @@ public class ActiveCommand implements CommandHistoryConsumer {
         this.pendingTransmissionConstraint = b;
     }
 
-    public long getTransmissionContraintCheckStart() {
-        return transmissionContraintCheckStart;
+    public long getTransmissionConstraintCheckStart() {
+        return transmissionConstraintCheckStart;
     }
 
-    public void setTransmissionContraintCheckStart(long transmissionContraintCheckStart) {
-        this.transmissionContraintCheckStart = transmissionContraintCheckStart;
+    public void setTransmissionConstraintCheckStart(long transmissionConstraintCheckStart) {
+        this.transmissionConstraintCheckStart = transmissionConstraintCheckStart;
     }
 
     public MetaCommand getMetaCommand() {
@@ -108,8 +108,8 @@ public class ActiveCommand implements CommandHistoryConsumer {
      * 
      * @return true if the transmission constraints have to be disabled for this command
      */
-    public boolean disableTransmissionContraints() {
-        return preparedCommand.disableTransmissionConstraints;
+    public boolean disableTransmissionConstraints() {
+        return preparedCommand.disableTransmissionConstraints();
     }
 
     /**
@@ -117,7 +117,7 @@ public class ActiveCommand implements CommandHistoryConsumer {
      * @return true if the command verifiers have to be disabled for this command
      */
     public boolean disableCommandVerifiers() {
-        return preparedCommand.disableCommandVerifiers;
+        return preparedCommand.disableCommandVerifiers();
     }
 
     public Map<String, VerifierConfig> getVerifierOverride() {

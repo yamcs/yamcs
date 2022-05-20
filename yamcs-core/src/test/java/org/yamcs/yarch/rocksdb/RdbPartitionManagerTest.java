@@ -1,7 +1,7 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,8 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
@@ -24,10 +24,9 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 
-
 public class RdbPartitionManagerTest {
 
-    @BeforeClass
+    @BeforeAll
     static public void init() {
         TimeEncoding.setUp();
     }
@@ -117,7 +116,7 @@ public class RdbPartitionManagerTest {
         tablespace.setCustomDataDir(tmpdir);
 
         tablespace.loadDb(true);
-        
+
         table = new RdbTable("test", tablespace, tblDef, 1);
         pm = table.getPartitionManager();
         pm.readPartitions();
@@ -128,7 +127,7 @@ public class RdbPartitionManagerTest {
         Path path = Paths.get(tmpdir);
         FileUtils.deleteRecursivelyIfExists(path);
     }
-    
+
     @Test
     public void createAndIteratePartitions1() throws Exception {
         Tablespace tablespace = new Tablespace("test");
@@ -140,7 +139,7 @@ public class RdbPartitionManagerTest {
         TableDefinition tblDef = getTableDefTimeAndValue();
 
         RdbTable table = new RdbTable("test", tablespace, tblDef, 1);
-        
+
         RdbPartitionManager pm = table.getPartitionManager();
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("0001-01-01T00:00:00"), 1);
         assertEquals("0001/001", part.dir);

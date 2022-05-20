@@ -202,7 +202,6 @@ public class SortedIntArray implements Serializable {
         }
     }
 
-  
     /**
      * Performs a binary search and returns true if this array contains the value.
      * 
@@ -214,7 +213,6 @@ public class SortedIntArray implements Serializable {
     public boolean contains(int x) {
         return Arrays.binarySearch(a, 0, length, x) >= 0;
     }
-
 
     public static SortedIntArray decodeFromVarIntArray(byte[] buf) {
         if (buf.length == 0) {
@@ -237,19 +235,23 @@ public class SortedIntArray implements Serializable {
             return true;
         }
 
-        if (obj == null)
+        if (obj == null) {
             return false;
+        }
 
-        if (getClass() != obj.getClass())
+        if (getClass() != obj.getClass()) {
             return false;
+        }
 
         SortedIntArray other = (SortedIntArray) obj;
-        if (length != other.length)
+        if (length != other.length) {
             return false;
+        }
 
         for (int i = 0; i < length; i++) {
-            if (a[i] != other.a[i])
+            if (a[i] != other.a[i]) {
                 return false;
+            }
         }
 
         return true;
@@ -265,7 +267,8 @@ public class SortedIntArray implements Serializable {
             a[i] += x;
         }
     }
-    
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         int n = length - 1;
@@ -273,8 +276,9 @@ public class SortedIntArray implements Serializable {
         b.append('[');
         for (int i = 0;; i++) {
             b.append(a[i]);
-            if (i == n)
+            if (i == n) {
                 return b.append(']').toString();
+            }
             b.append(", ");
         }
     }

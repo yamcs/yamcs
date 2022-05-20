@@ -193,7 +193,7 @@ message TcoCoefficients {
 message TcoStatus {
 
   //Currently used coefficients.
-  // If not present, the synchronization is not estabilished
+  // If not present, the synchronization is not established
   optional TcoCoefficients coefficients = 1;
   
   //The time when the coefficients have been computed

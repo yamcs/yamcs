@@ -1,10 +1,15 @@
 package org.yamcs.mdb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
+
 import javax.xml.stream.XMLStreamException;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.utils.TimeEncoding;
@@ -18,12 +23,8 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
- * Tests that an XTCE document with a variable-length binary data types can be
- * parsed successfully.
+ * Tests that an XTCE document with a variable-length binary data types can be parsed successfully.
  */
 public class VariableBinaryXtceTest {
 
@@ -34,7 +35,7 @@ public class VariableBinaryXtceTest {
 
     private XtceDb db;
 
-    @Before
+    @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
@@ -71,7 +72,5 @@ public class VariableBinaryXtceTest {
         Argument sizeArgument = db.getMetaCommand(COMMAND_QN)
                 .getArgument("size");
         assertEquals(sizeArgument.getName(), bde.getDynamicSize().getDynamicInstanceRef().getName());
-
     }
-
 }

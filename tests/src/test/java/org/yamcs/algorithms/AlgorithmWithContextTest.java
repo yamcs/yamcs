@@ -1,28 +1,28 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
-import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.tests.RefMdbPacketGenerator;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -35,14 +35,14 @@ public class AlgorithmWithContextTest {
     private RefMdbPacketGenerator tmGenerator;
     private ParameterProcessorManager ppm;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         EventProducerFactory.setMockup(true);
     }
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws Exception {
         db = XtceDbFactory.getInstance("refmdb");
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
@@ -60,7 +60,7 @@ public class AlgorithmWithContextTest {
         ppm = proc.getParameterProcessorManager();
     }
 
-    @After
+    @AfterEach
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         proc.quit();
     }
@@ -87,5 +87,4 @@ public class AlgorithmWithContextTest {
         assertNull(params.get(0));
         assertEquals(10, ((Number) params.get(1)).intValue());
     }
-
 }

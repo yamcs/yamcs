@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.yamcs</groupId>
 	<artifactId>yamcs</artifactId>
-	<version>5.6.3-SNAPSHOT</version>
+	<version>5.7.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -49,23 +48,23 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<nettyVersion>4.1.71.Final</nettyVersion>
+		<nettyVersion>4.1.77.Final</nettyVersion>
 		<protobufVersion>3.19.4</protobufVersion>
 		<rocksdbVersion>5.18.4</rocksdbVersion>
-		<slf4jVersion>1.7.1</slf4jVersion>
+		<slf4jVersion>1.7.36</slf4jVersion>
 	</properties>
 
 	<modules>
 		<module>examples</module>
 		<module>packet-viewer</module>
 		<module>simulator</module>
+		<module>tests</module>
 		<module>yamcs-api</module>
 		<module>yamcs-client</module>
 		<module>yamcs-core</module>
 		<module>yamcs-tse</module>
 		<module>yamcs-web</module>
 		<module>yamcs-xtce</module>
-		<module>tests</module>
 
 		<!-- Keep as last. It hosts the nexus uploading after a successful build -->
 		<module>distribution</module>
@@ -73,8 +72,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -89,7 +88,7 @@
 			<dependency>
 				<groupId>com.fazecast</groupId>
 				<artifactId>jSerialComm</artifactId>
-				<version>2.1.1</version>
+				<version>2.9.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -99,7 +98,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>30.1.1-jre</version>
+				<version>31.1-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
@@ -114,22 +113,14 @@
 			<dependency>
 				<groupId>io.dropwizard.metrics</groupId>
 				<artifactId>metrics-core</artifactId>
-				<version>4.0.3</version>
+				<version>4.2.9</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
-				<artifactId>netty-codec-http</artifactId>
+				<artifactId>netty-bom</artifactId>
 				<version>${nettyVersion}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-handler</artifactId>
-				<version>${nettyVersion}</version>
-			</dependency>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.13.1</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>net.sourceforge.javacsv</groupId>
@@ -141,7 +132,8 @@
 				<artifactId>jxl</artifactId>
 				<version>2.6.12</version>
 				<exclusions>
-					<exclusion> <!-- Prefer SLF4J replacement -->
+					<exclusion>
+						<!-- Prefer SLF4J replacement -->
 						<groupId>log4j</groupId>
 						<artifactId>log4j</artifactId>
 					</exclusion>
@@ -151,6 +143,13 @@
 				<groupId>org.codehaus.janino</groupId>
 				<artifactId>janino</artifactId>
 				<version>2.7.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>5.8.2</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -165,7 +164,7 @@
 			<dependency>
 				<groupId>org.python</groupId>
 				<artifactId>jython-standalone</artifactId>
-				<version>2.7.1</version>
+				<version>2.7.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.rocksdb</groupId>
@@ -262,9 +261,9 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.1.1</version>
+					<version>3.4.0</version>
 					<configuration>
-                                                <source>8</source>
+						<release>11</release>
 						<author>false</author>
 						<breakiterator>true</breakiterator>
 						<additionalOptions>

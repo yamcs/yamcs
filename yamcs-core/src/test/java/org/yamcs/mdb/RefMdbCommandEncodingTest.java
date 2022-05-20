@@ -1,17 +1,18 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.python.google.common.collect.ImmutableMap;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
@@ -29,14 +30,11 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-/**
- * Created by msc on 27/05/15.
- */
 public class RefMdbCommandEncodingTest {
     static XtceDb xtcedb;
     static MetaCommandProcessor metaCommandProcessor;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("refmdb");
@@ -421,8 +419,8 @@ public class RefMdbCommandEncodingTest {
         assertTrue(e.getMessage().contains("Cannot assign value to p4"));
     }
 
-    @Test(expected = ErrorInCommand.class)
-    public void testExceptionOnReassigningInheritanceArgument() throws Exception {
+    @Test
+    public void testExceptionOnReassigningInheritanceArgument() {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("uint8_arg", "2");
@@ -430,7 +428,9 @@ public class RefMdbCommandEncodingTest {
         args.put("int32_arg", "2");
         args.put("uint64_arg", "2");
         args.put("ccsds-apid", "123"); // Already assigned by parent
-        metaCommandProcessor.buildCommand(mc, args);
+        assertThrows(ErrorInCommand.class, () -> {
+            metaCommandProcessor.buildCommand(mc, args);
+        });
     }
 
     @Test

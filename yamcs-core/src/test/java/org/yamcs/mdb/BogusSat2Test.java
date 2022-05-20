@@ -1,12 +1,16 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ContainerProcessingResult;
@@ -29,7 +33,7 @@ public class BogusSat2Test {
     static XtceDb db;
     long now = TimeEncoding.getWallclockTime();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         db = XtceDbFactory.createInstanceByConfig("BogusSAT2");

@@ -6,11 +6,9 @@ import java.util.List;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -43,23 +41,19 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
 
     @Override
     public void onTuple(Stream s, Tuple tuple) {
-        if (tuple.hasColumn(PreparedCommand.CNAME_SOURCE)) {
-            // From yamcs 5.4.4 it is not anymore necessary because the CommandingManager will send directly the command
-            // to the CommandHistoryRequestManager.
-            // This maybe necessary if a new command is put on the stream from somewhere else.
-            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
-            chrm.addCommand(pc);
-        } else {
+        // Skip stream update for 'first' tuple (username is set only in first message).
+        if (!tuple.hasColumn(PreparedCommand.CNAME_USERNAME)) {
             int i = StandardTupleDefinitions.TC.getColumnDefinitions().size();
             CommandId cmdId = PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns = tuple.getDefinition().getColumnDefinitions();
-            List<Attribute> l = new ArrayList<>(columns.size()-i);
+            List<Attribute> l = new ArrayList<>(columns.size() - i);
             while (i < columns.size()) {
                 ColumnDefinition cd = columns.get(i++);
-                String key = cd.getName();
-                Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(key));
-                l.add(new Attribute(key, v));
+                String name = cd.getName();
+                if (!PreparedCommand.isProtectedColumn(name)) {
+                    Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(name));
+                    l.add(new Attribute(name, v));
+                }
             }
             chrm.updateCommand(cmdId, l);
         }
@@ -67,7 +61,7 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
 
     @Override
     public void streamClosed(Stream stream) {
-        notifyFailed(new Exception("Stream "+ stream.getName()+" closed"));
+        notifyFailed(new Exception("Stream " + stream.getName() + " closed"));
     }
 
     @Override

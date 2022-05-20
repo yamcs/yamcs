@@ -22,6 +22,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.Console;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Printer;
 
 /**
  * This represents a command together with its options and subcommands
@@ -89,7 +92,7 @@ public abstract class Command {
         }
 
         // Special case. Global --version flag prints version info and quits
-        if (this instanceof YamcsAdminCli && ((YamcsAdminCli) this).version) {
+        if (getRootCommand().version) {
             console.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
             PluginManager pluginManager;
             try {
@@ -126,6 +129,18 @@ public abstract class Command {
         selectedCommand.parse(Arrays.copyOfRange(args, k + 1, args.length));
     }
 
+    OutputFormat getFormat() {
+        return getRootCommand().format;
+    }
+
+    private YamcsAdminCli getRootCommand() {
+        Command command = this;
+        while (command.parent != null) {
+            command = command.parent;
+        }
+        return (YamcsAdminCli) command;
+    }
+
     int getArity(String arg) {
         for (ParameterDescription pd : jc.getParameters()) {
             if (Arrays.asList(pd.getParameter().names()).contains(arg)) {
@@ -160,6 +175,22 @@ public abstract class Command {
             sb.append(" ");
         }
         return sb.toString();
+    }
+
+    String printJsonArray(List<? extends Message> messages) {
+        StringBuilder buf = new StringBuilder("[");
+        Printer printer = JsonFormat.printer();
+        try {
+            for (int i = 0; i < messages.size(); i++) {
+                if (i != 0) {
+                    buf.append(", ");
+                }
+                printer.appendTo(messages.get(i), buf);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return buf.append("]").toString();
     }
 
     public String getName() {

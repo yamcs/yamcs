@@ -6,11 +6,11 @@
   <div class="panel-content" *ngIf="info$ | async as info">
     <dl class="dl-horizontal" style="margin-top: 0">
       <dt>Yamcs version</dt>
-      <dd>{{ info.yamcsVersion }}</dd>
+      <dd>{{ info.yamcsVersion || '-' }}</dd>
       <dt>Build</dt>
-      <dd>{{ info.revision }}</dd>
+      <dd>{{ info.revision || '-' }}</dd>
       <dt>Server ID</dt>
-      <dd>{{ info.serverId }}</dd>
+      <dd>{{ info.serverId || '-' }}</dd>
     </dl>
     <dl class="dl-horizontal">
       <dt>OS</dt>

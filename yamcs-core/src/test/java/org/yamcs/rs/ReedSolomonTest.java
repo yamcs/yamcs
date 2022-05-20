@@ -1,35 +1,28 @@
 package org.yamcs.rs;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ReedSolomonTest {
     int n = 10;
     Random rand = new Random();
 
-    @Parameters
-    public static Iterable<? extends RsParams> data() {
-        return Arrays.asList(
+    public static Stream<RsParams> data() {
+        return Stream.of(
                 new RsParams(4, 4, 6, 1, 0x13, 5),
                 new RsParams(32, 8, 112, 11, 0x187, 0));
     }
 
-    @Parameter
-    public RsParams rsp;
-
-
-    @Test
-    public void test1() throws ReedSolomonException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void test1(RsParams rsp) throws ReedSolomonException {
         ReedSolomon rs = new ReedSolomon(rsp.nroots, rsp.symsize, rsp.fcr, rsp.prim, rsp.gfpoly, rsp.pad);
 
         byte[] parity = new byte[rsp.nroots];
@@ -81,18 +74,21 @@ public class ReedSolomonTest {
     }
 
     private String toString(byte[] a) {
-        if (a == null)
+        if (a == null) {
             return "null";
+        }
         int iMax = a.length - 1;
-        if (iMax == -1)
+        if (iMax == -1) {
             return "[]";
+        }
 
         StringBuilder b = new StringBuilder();
         b.append('[');
         for (int i = 0;; i++) {
             b.append(a[i] & 0xFF);
-            if (i == iMax)
+            if (i == iMax) {
                 return b.append(']').toString();
+            }
             b.append(", ");
         }
     }

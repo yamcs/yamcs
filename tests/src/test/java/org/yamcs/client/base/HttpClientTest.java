@@ -1,15 +1,15 @@
 package org.yamcs.client.base;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.ConnectException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.yamcs.AbstractIntegrationTest;
+import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
+import org.yamcs.tests.AbstractIntegrationTest;
 
 import io.netty.handler.codec.http.HttpMethod;
 

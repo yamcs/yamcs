@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Observable } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from '../../../lib';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { User } from '../../shared/User';
 
@@ -12,12 +12,17 @@ import { User } from '../../shared/User';
 })
 export class ProfilePage {
 
-  user$: Observable<User | null>;
+  user$ = new BehaviorSubject<User | null>(null);
   config: WebsiteConfig;
 
-  constructor(authService: AuthService, title: Title, configService: ConfigService) {
+  constructor(title: Title, configService: ConfigService, yamcs: YamcsService) {
     title.setTitle('Profile');
-    this.user$ = authService.user$;
     this.config = configService.getConfig();
+
+    // Fetch a fresh copy instead of using the one from AuthService,
+    // there may have been updates (clearance in particular)
+    yamcs.yamcsClient.getUserInfo().then(userinfo => {
+      this.user$.next(new User(userinfo));
+    });
   }
 }

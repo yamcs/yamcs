@@ -44,7 +44,7 @@ export class EventsPage {
   filterForm = new FormGroup({
     filter: new FormControl(),
     severity: new FormControl('INFO'),
-    source: new FormControl('ANY'),
+    source: new FormControl([]),
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
@@ -77,7 +77,6 @@ export class EventsPage {
   ];
 
   sourceOptions$ = new BehaviorSubject<Option[]>([
-    { id: 'ANY', label: 'Any source' },
   ]);
 
   intervalOptions: Option[] = [
@@ -93,7 +92,7 @@ export class EventsPage {
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private severity = 'INFO';
-  private source: string;
+  private source: string[] = [];
   private filter: string;
 
   constructor(
@@ -151,7 +150,7 @@ export class EventsPage {
     });
 
     this.filterForm.get('source')!.valueChanges.forEach(source => {
-      this.source = (source !== 'ANY') ? source : null;
+      this.source = source;
       this.loadData();
     });
 
@@ -186,7 +185,7 @@ export class EventsPage {
       this.filterForm.get('severity')!.setValue(this.severity);
     }
     if (queryParams.has('source')) {
-      this.source = queryParams.get('source')!;
+      this.source = queryParams.getAll('source')!;
       this.filterForm.get('source')!.setValue(this.source);
     }
     if (queryParams.has('interval')) {
@@ -262,7 +261,7 @@ export class EventsPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    if (this.source) {
+    if (this.source.length) {
       options.source = this.source;
     }
 
@@ -279,7 +278,7 @@ export class EventsPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    if (this.source) {
+    if (this.source.length) {
       options.source = this.source;
     }
 
@@ -293,7 +292,7 @@ export class EventsPage {
       queryParams: {
         filter: this.filter || null,
         severity: this.severity,
-        source: this.source || null,
+        source: this.source.length ? this.source : null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
@@ -326,7 +325,7 @@ export class EventsPage {
         start: this.validStart,
         stop: this.validStop,
         q: this.filter,
-        source: this.source || 'ANY',
+        source: this.source,
         sourceOptions: this.sourceOptions$.value,
       },
     });

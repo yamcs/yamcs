@@ -1,15 +1,15 @@
 package org.yamcs.archive;
 
-import static org.junit.Assert.assertEquals;
-
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.yamcs.cmdhistory.StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
@@ -21,9 +21,8 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
-import static org.yamcs.cmdhistory.StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME;
 /**
- * Generates and saves some some command history and then it performs a replay via ActiveMQ
+ * Generates and saves some some command history and then it performs a replay
  * 
  * 
  * @author nm

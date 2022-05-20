@@ -184,11 +184,8 @@ message IssueCommandResponse {
   // and ``assignments``.
   optional string source = 2 [deprecated=true];
 
-  // Deprecated. If you require a hex representation of this
-  // command, you can build it based on the field ``binary``.
-  optional string hex = 3 [deprecated=true];
-
   repeated CommandAssignment assignments = 12;
+  optional bytes unprocessedBinary = 13;
   optional bytes binary = 4;
   optional string username = 11;
   optional string queue = 10;

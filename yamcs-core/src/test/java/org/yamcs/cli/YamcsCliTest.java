@@ -1,8 +1,9 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YamcsVersion;
 
 public class YamcsCliTest extends AbstractCliTest {
@@ -21,9 +22,7 @@ public class YamcsCliTest extends AbstractCliTest {
         assertEquals(0, runMain("-h"));
 
         assertEquals(usage + "\n", mconsole.output());
-
     }
-
 
     @Test
     public void testVersion() throws Exception {
@@ -46,5 +45,4 @@ public class YamcsCliTest extends AbstractCliTest {
         assertEquals(1, runMain("--bogus"));
         assertTrue(mconsole.output().contains("Unknown option '--bogus'"));
     }
-    
 }

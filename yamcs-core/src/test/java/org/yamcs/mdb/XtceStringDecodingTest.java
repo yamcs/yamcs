@@ -1,10 +1,11 @@
 package org.yamcs.mdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ContainerProcessingResult;
@@ -21,13 +22,13 @@ public class XtceStringDecodingTest {
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("xtce-strings-tm");
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         extractor = new XtceTmExtractor(xtcedb);
         extractor.provideAll();

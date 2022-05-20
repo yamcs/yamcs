@@ -1,30 +1,31 @@
 package org.yamcs.http.api;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.yamcs.http.api.ParameterRanger.MultiRange;
+import org.yamcs.http.api.ParameterRanger.Range;
+import org.yamcs.http.api.ParameterRanger.SingleRange;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.http.api.ParameterRanger.MultiRange;
-import org.yamcs.http.api.ParameterRanger.Range;
-import org.yamcs.http.api.ParameterRanger.SingleRange;
 
 public class ParameterRangerTest {
     @Test
     public void test1() {
         ParameterRanger ranger = new ParameterRanger(-1, -1, 6, 2);
-        
+
         ParameterValueArray pva = getPva("a", "b", "c", "b", "a", "a");
         ranger.accept(pva);
         List<Range> rlist = ranger.getRanges();
         assertEquals(1, rlist.size());
         checkMultiRange((MultiRange) rlist.get(0), 6, new int[] { 3, 2 }, new String[] { "a", "b" });
-
     }
 
     @Test
@@ -51,14 +52,12 @@ public class ParameterRangerTest {
         checkSingleRange((SingleRange) rlist.get(1), 5, "a");
 
         checkSingleRange((SingleRange) rlist.get(2), 1, null);
-
     }
 
     @Test
     public void test4() {
         ParameterRanger ranger = new ParameterRanger(-1, 1, 3, 1);
-        ParameterValueArray pva = getPva("a", "a", "b",
-                "c", "c", "c");
+        ParameterValueArray pva = getPva("a", "a", "b", "c", "c", "c");
         ranger.accept(pva);
         List<Range> rlist = ranger.getRanges();
         assertEquals(2, rlist.size());
@@ -89,7 +88,6 @@ public class ParameterRangerTest {
 
     void checkMultiRange(MultiRange mr, int count, int[] counts, String[] values) {
         assertEquals(count, mr.totalCount());
-
 
         assertArrayEquals(counts, mr.counts.toArray());
         assertEquals(values.length, mr.valueCount());

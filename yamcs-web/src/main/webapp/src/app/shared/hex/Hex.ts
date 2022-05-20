@@ -157,7 +157,7 @@ export class Hex implements AfterViewInit, OnChanges {
         for (const nibble of component.nibbles) {
           let bgColor;
           let fgColor = '#000000';
-          if (this.highlight && this.highlight.overlaps(nibble.range)) {
+          if (!this.pressStart && this.highlight && this.highlight.overlaps(nibble.range)) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
             bgColor = '#009e87';
@@ -198,7 +198,7 @@ export class Hex implements AfterViewInit, OnChanges {
         }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
 
         let bgColor;
-        if (this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
+        if (!this.pressStart && this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
           bgColor = 'lightgrey';
         } else if (this.selection && this.selection.containsBitExclusive(component.bitpos)) {
           bgColor = '#009e87';
@@ -251,7 +251,7 @@ export class Hex implements AfterViewInit, OnChanges {
 
           let bgColor;
           let fgColor = '#777';
-          if (this.highlight && this.highlight.overlaps(c.range)) {
+          if (!this.pressStart && this.highlight && this.highlight.overlaps(c.range)) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(c.range)) {
             bgColor = '#009e87';

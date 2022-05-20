@@ -1,12 +1,17 @@
 package org.yamcs.mdb;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
 import javax.xml.stream.XMLStreamException;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.XtceDbFactory;
@@ -16,12 +21,8 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-
 /**
- * Tests that a packet containing a binary data type with variable size can be
- * unpacked correctly.
+ * Tests that a packet containing a binary data type with variable size can be unpacked correctly.
  */
 public class VariableBinaryDecodingTest {
 
@@ -31,7 +32,7 @@ public class VariableBinaryDecodingTest {
 
     private XtceDb db;
 
-    @Before
+    @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 

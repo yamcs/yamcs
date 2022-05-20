@@ -14,6 +14,8 @@ const defaultErrors: { [key: string]: any; } = {
   required: () => 'this field is required',
   minlength: () => 'string too small',
   maxlength: () => 'string too large',
+  minhexlength: () => 'hexstring too small',
+  maxhexlength: () => 'hexstring too large',
 };
 
 @Component({

@@ -1,9 +1,10 @@
 package org.yamcs.parameter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,9 +14,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.XtceDbFactory;
@@ -33,14 +34,14 @@ public class LocalParameterManagerTest {
     LocalParameterManager localParamMgr;
     Parameter p1, p2, p4, p7, p9;
 
-    @BeforeClass
+    @BeforeAll
     static public void setupTime() {
         YConfiguration.setupTest(null);
         XtceDbFactory.reset();
 
     }
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
         localParamMgr = new LocalParameterManager();
         localParamMgr.init("test");
@@ -161,12 +162,14 @@ public class LocalParameterManagerTest {
         assertEquals(TimeEncoding.parse(ts), tv.getTimestampValue());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testInvalidConversion1() throws Exception {
-        localParamMgr.startProviding(p1);
-        ParameterValue pv1 = new ParameterValue(p1);
-        pv1.setEngValue(ValueUtility.getUint64Value(Integer.MAX_VALUE * 2 + 1)); // out of range for UINT32
-        localParamMgr.updateParameters(Arrays.asList(pv1));
+    @Test
+    public void testInvalidConversion1() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            localParamMgr.startProviding(p1);
+            ParameterValue pv1 = new ParameterValue(p1);
+            pv1.setEngValue(ValueUtility.getUint64Value(Integer.MAX_VALUE * 2 + 1)); // out of range for UINT32
+            localParamMgr.updateParameters(Arrays.asList(pv1));
+        });
     }
 
     class MyParamProcessor implements ParameterProcessor {

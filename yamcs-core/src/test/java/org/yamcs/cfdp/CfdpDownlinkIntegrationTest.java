@@ -1,8 +1,8 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,11 +16,11 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.AckPacket;
@@ -72,7 +72,7 @@ public class CfdpDownlinkIntegrationTest {
     // executor used by the test sender
     ScheduledThreadPoolExecutor myExecutor;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         EventProducerFactory.setMockup(true);
         Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
@@ -87,12 +87,12 @@ public class CfdpDownlinkIntegrationTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         YamcsServer.getServer().shutDown();
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         client = YamcsClient.newBuilder("localhost", 9193).build();
         cfdpClient = new FileTransferClient(client, yamcsInstance, "CfdpService");
@@ -109,7 +109,7 @@ public class CfdpDownlinkIntegrationTest {
         EventProducerFactory.getMockupQueue().clear();
     }
 
-    @After
+    @AfterEach
     public void after() {
         client.close();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -160,8 +160,8 @@ public class CfdpDownlinkIntegrationTest {
 
         // in this time the transfer state on the downlink should be cancelling
         TransferInfo tinfo = getTransfer(seqNum);
-        assertEquals("Expected CANCELLING, actual state: " + tinfo.toString(), TransferState.CANCELLING,
-                tinfo.getState());
+        assertEquals(TransferState.CANCELLING, tinfo.getState(),
+                "Expected CANCELLING, actual state: " + tinfo);
 
         // send the FIN ACK
         AckPacket ack = new AckPacket(FileDirectiveCode.FINISHED, FileDirectiveSubtypeCode.FINISHED_BY_END_SYSTEM,
