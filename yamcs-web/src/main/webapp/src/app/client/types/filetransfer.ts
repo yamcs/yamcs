@@ -1,5 +1,7 @@
 import { WebSocketCall } from '../WebSocketCall';
 
+import { ObjectInfo } from './system';
+
 export interface FileTransferService {
   instance: string;
   name: string;
@@ -60,6 +62,12 @@ export interface ListFilesRequest {
   destination: string;
 }
 
+export interface ListFilesResponse {
+  files: ObjectInfo[];
+  destination: string;
+  remotePath: string;
+}
+
 export interface ServicesPage {
   services: FileTransferService[];
 }
@@ -70,3 +78,4 @@ export interface SubscribeTransfersRequest {
 }
 
 export type TransferSubscription = WebSocketCall<SubscribeTransfersRequest, Transfer>;
+export type RemoteFileListSubscription = WebSocketCall<SubscribeTransfersRequest, ListFilesResponse>;

@@ -41,12 +41,13 @@ import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.TransferMonitor;
+import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
-import org.yamcs.protobuf.ListObjectsResponse;
+import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -560,6 +561,12 @@ public class CfdpService extends AbstractYamcsService
         transferListeners.remove(listener);
     }
 
+	@Override
+	public void registerRemoteFileListMonitor(RemoteFileListMonitor listener) {}
+
+	@Override
+	public void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener) {}
+
     @Override
     protected void doStart() {
         notifyStarted();
@@ -747,7 +754,7 @@ public class CfdpService extends AbstractYamcsService
 	}
 	
 	@Override
-	public ListObjectsResponse getFileList(String destination, String remotePath) {
+	public ListFilesResponse getFileList(String destination, String remotePath) {
 		return null;
 	}
 	
