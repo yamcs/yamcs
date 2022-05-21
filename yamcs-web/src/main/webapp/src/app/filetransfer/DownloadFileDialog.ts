@@ -1,9 +1,10 @@
-import { Component, Inject, ViewChild } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
+import { Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, FileTransferService, StorageClient } from '../client';
+import { Bucket, FileTransferService, ListFilesResponse, ListObjectsResponse, RemoteFileListSubscription, StorageClient } from '../client';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
 
@@ -12,7 +13,7 @@ import { ObjectSelector } from '../shared/forms/ObjectSelector';
   templateUrl: './DownloadFileDialog.html',
   styleUrls: ['./DownloadFileDialog.css'],
 })
-export class DownloadFileDialog {
+export class DownloadFileDialog implements OnDestroy {
 
   isDownloadEnabled = false;
   isUploadEnabled = false;
@@ -27,6 +28,8 @@ export class DownloadFileDialog {
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
+
+  private fileListSubscription: RemoteFileListSubscription;
 
   @ViewChild('selector')
   objectSelector: ObjectSelector;
@@ -49,6 +52,22 @@ export class DownloadFileDialog {
     this.storageClient.getBuckets('_global').then(buckets => {
       this.dataSource.data = buckets || [];
     });
+
+    // Subscribe to remote file list updates
+    this.fileListSubscription = this.yamcs.yamcsClient.createRemoteFileListSubscription({
+      instance: this.yamcs.instance!,
+      serviceName: this.service.name,
+    }, fileList => {
+      if (fileList.destination == this.optionsForm.get('destination')!.value) {
+        const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
+        if (fileList.remotePath == currentFolder) {
+          const dir = this.remoteFileListToBucketObjects(fileList);
+          this.remoteSelector.setFolderContent(currentFolder, dir);
+        }
+      }
+    });
+
+    // Setup forms
     this.filesForm = formBuilder.group({
       object: ['', []],
       remoteFile: ['', []],
@@ -71,7 +90,7 @@ export class DownloadFileDialog {
       this.updateButtonStates(this.filesForm.get('object')!.value, this.filesForm.get('remoteFile')!.value, value);
     });
 
-    // If a destination is selected -> display cached file list if any
+    // If a new destination is selected -> display cached file list if any
     this.optionsForm.get('destination')?.valueChanges.subscribe(dest => {
       // New destination selected -> Go to root folder
       this.getFileList(dest, '');
@@ -86,7 +105,7 @@ export class DownloadFileDialog {
     this.selectedBucket$.next(bucket);
   }
 
-  updateButtonStates(localFiles: string, remoteFile: string, textfieldPath: string) {
+  private updateButtonStates(localFiles: string, remoteFile: string, textfieldPath: string) {
     var remotePath = '';
     if (this.service.capabilities.fileList && remoteFile) {
       remotePath = remoteFile;
@@ -221,16 +240,25 @@ export class DownloadFileDialog {
         remotePath: prefix,
         destination: dest
       }).then(response => {
-
-        // For testing subfolders we set one subfolder:
-        const num = prefix.split('/').length;
-        const folderName = dest + ' Test Folder ' + num + '/';
-        const fullFolderName = prefix + folderName;
-        response.prefixes = [fullFolderName];
-
-        this.remoteSelector.setFolderContent(prefix, response);
+        const dir = this.remoteFileListToBucketObjects(response);
+        this.remoteSelector.setFolderContent(prefix, dir);
       });
     }
+  }
+
+  private remoteFileListToBucketObjects(fileList: ListFilesResponse) {
+    let dir: ListObjectsResponse = {
+      prefixes: [],
+      objects: [],
+    };
+    for (const file of fileList.files || []) {
+      if (file.size == 0) {
+        dir.prefixes.push(fileList.remotePath + '/' + file.name);
+      } else {
+        dir.objects.push(file);
+      }
+    }
+    return dir;
   }
 
   updateLocalBreadcrumb(prefix: string) {
@@ -293,6 +321,12 @@ export class DownloadFileDialog {
       prefix = prefix + '/';
     }
     this.remoteSelector.changePrefix(prefix);
+  }
+
+  ngOnDestroy() {
+    if (this.fileListSubscription) {
+      this.fileListSubscription.cancel();
+    }
   }
 }
 

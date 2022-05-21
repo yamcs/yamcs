@@ -6,7 +6,7 @@ import java.util.List;
 import org.yamcs.YamcsService;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
-import org.yamcs.protobuf.ListObjectsResponse;
+import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -182,6 +182,9 @@ public interface FileTransferService extends YamcsService {
      */
     void unregisterTransferMonitor(TransferMonitor listener);
 
+	void registerRemoteFileListMonitor(RemoteFileListMonitor listener);
+	void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener);
+
 	/**
 	 * Start fetching a new file list from remote.
 	 */
@@ -190,5 +193,5 @@ public interface FileTransferService extends YamcsService {
 	/**
 	 * Return latest file list of the given destination.
 	 */
-	ListObjectsResponse getFileList(String destination, String remotePath);
+	ListFilesResponse getFileList(String destination, String remotePath);
 }

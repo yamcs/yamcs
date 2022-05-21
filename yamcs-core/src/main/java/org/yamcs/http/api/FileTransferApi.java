@@ -16,6 +16,7 @@ import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
+import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.http.BadRequestException;
@@ -29,12 +30,11 @@ import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListFilesRequest;
+import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
-import org.yamcs.protobuf.ListObjectsResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
-import org.yamcs.protobuf.ObjectInfo;
 import org.yamcs.protobuf.PauseTransferRequest;
 import org.yamcs.protobuf.ResumeTransferRequest;
 import org.yamcs.protobuf.SubscribeTransfersRequest;
@@ -255,6 +255,16 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ftService.registerTransferMonitor(listener);
     }
 
+	@Override
+	public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request, Observer<ListFilesResponse> observer) {
+		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+		RemoteFileListMonitor listener = fileList -> {
+			observer.next(fileList);
+		};
+		observer.setCancelHandler(() -> ftService.unregisterRemoteFileListMonitor(listener));
+		ftService.registerRemoteFileListMonitor(listener);
+	}
+	
 	/**
 	 * <pre>
 	 *  Request file list from remote
@@ -274,12 +284,12 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 	 * </pre>
 	 */
 	@Override
-	public void getFileList(Context ctx, ListFilesRequest request, Observer<ListObjectsResponse> observer) {
+	public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
 		ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
 		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-		ListObjectsResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
+		ListFilesResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
 		if (response == null) {
-			response = ListObjectsResponse.newBuilder().build();
+			response = ListFilesResponse.newBuilder().build();
 		}
 		observer.complete(response);
 	}

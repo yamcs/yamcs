@@ -78,6 +78,13 @@ service FileTransferApi {
     };
   }
 
+  // Receive remote file lists
+  rpc SubscribeRemoteFileList(SubscribeTransfersRequest) returns (stream ListFilesResponse) {
+    option (yamcs.api.websocket) = {
+      topic: "remote-file-list"
+    };
+  }
+
   // Request file list from remote
   rpc RequestFileList(ListFilesRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
@@ -87,7 +94,7 @@ service FileTransferApi {
   }
 
   // Get latest file list
-  rpc GetFileList(ListFilesRequest) returns (yamcs.protobuf.buckets.ListObjectsResponse) {
+  rpc GetFileList(ListFilesRequest) returns (ListFilesResponse) {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/getfiles"
       body: "*"
@@ -298,4 +305,10 @@ message ListFilesRequest {
   optional string destination = 3;
   // Path of folder to list files from
   optional string remotePath = 4;
+}
+
+message ListFilesResponse {
+  repeated yamcs.protobuf.buckets.ObjectInfo files = 1;
+  optional string destination = 2;
+  optional string remotePath = 3;
 }
