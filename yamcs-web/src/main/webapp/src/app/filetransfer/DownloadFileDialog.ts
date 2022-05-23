@@ -117,16 +117,16 @@ export class DownloadFileDialog implements OnDestroy {
     this.isUploadEnabled = this.service.capabilities.upload && localFiles != '' && this.optionsForm.valid;
   }
 
-  // Returns remote folder path
+  // Returns remote folder path, ready to concatenate a file name
   private getSelectedRemoteFolderPath() {
-    const items: BreadcrumbItem[] = this.remoteBreadcrumb$.value!;
-    return items.length != 0 ? items[items.length - 1].prefix : '';
+    const items = this.remoteBreadcrumb$.value!;
+    return items.length != 0 ? items[items.length - 1].prefix + '/' : '';
   }
 
   // Returns local folder path
   private getSelectedLocalFolderPath() {
-    const items: BreadcrumbItem[] = this.breadcrumb$.value!;
-    return items.length != 0 ? items[items.length - 1].prefix : '';
+    const items = this.breadcrumb$.value!;
+    return items.length != 0 ? items[items.length - 1].prefix + '/' : '';
   }
 
   startDownload() {
@@ -144,14 +144,11 @@ export class DownloadFileDialog implements OnDestroy {
       return;
     }
 
-    // Get file name from remote and store in selected bucket folder.
-    var localPath: string = this.getSelectedLocalFolderPath();
-    if (localPath) {
-      localPath = localPath + '/';
-    }
-    const remoteParts: string[] = remotePath.split('/');
-    localPath = localPath + remoteParts[remoteParts.length - 1];
+    // Get file name from remote and append it to selected bucket folder.
+    const remoteParts = remotePath.split('/');
+    const localPath = this.getSelectedLocalFolderPath() + remoteParts[remoteParts.length - 1];
 
+    // Start transfer
     this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
       direction: 'DOWNLOAD',
       bucket: this.selectedBucket$.value!.name,
@@ -174,6 +171,9 @@ export class DownloadFileDialog implements OnDestroy {
     }
 
     const promises = objectNames.map((name) => {
+      // Get the full file name path from the text field, or the selected file (with full path).
+      // Must have either a selected file from the object selector or a file from the text field.
+      // Capabilities are taken into account.
       var remotePath: string;
       const formTextInputPath = this.optionsForm.get('remotePath')!.value;
       if (this.service.capabilities.remotePath && formTextInputPath) {
@@ -181,14 +181,15 @@ export class DownloadFileDialog implements OnDestroy {
         remotePath = formTextInputPath;
       } else if (this.service.capabilities.fileList) {
         // Use selected folder (not selected file) as remote path, and append local object name
-        const localParts: string[] = name.split('/');
-        remotePath = this.getSelectedRemoteFolderPath() + '/' + localParts[localParts.length - 1];
+        const parts = name.split('/');
+        remotePath = this.getSelectedRemoteFolderPath() + parts[parts.length - 1];
       } else {
         // Use object name as remote file name, with no remote folder
-        const localParts: string[] = name.split('/');
-        remotePath = localParts[localParts.length - 1];
+        const parts = name.split('/');
+        remotePath = parts[parts.length - 1];
       }
 
+      // Start transfer
       this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
         direction: 'UPLOAD',
         bucket: this.selectedBucket$.value!.name,
