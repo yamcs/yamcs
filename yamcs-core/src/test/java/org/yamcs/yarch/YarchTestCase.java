@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
-import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 
@@ -70,6 +70,10 @@ public abstract class YarchTestCase {
         context = new ExecutionContext(ydb);
     }
 
+    @AfterEach
+    public void setDown() {
+        context.close();
+    }
     /**
      * Reloads the database from disk (without removing the data)
      */

@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -56,7 +57,7 @@ public class InsertValuesExpression implements StreamExpression {
             values.add(o);
         }
 
-        return new Stream(c.db, "InsertValuesExpression" + this.hashCode(), tdef) {
+        return new Stream(c.getDb(), "InsertValuesExpression" + this.hashCode(), tdef) {
             @Override
             public void doStart() {
                 Tuple t = new Tuple(tdef, values);

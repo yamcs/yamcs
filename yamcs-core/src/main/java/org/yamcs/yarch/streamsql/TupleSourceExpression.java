@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 import org.yamcs.logging.Log;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.HistogramReaderStream;
 import org.yamcs.yarch.Stream;
@@ -75,7 +76,7 @@ public class TupleSourceExpression implements FilterableTarget {
                 if (histoColumn == null) {
                     definition = tableDefinition.getTupleDefinition();
                     type = Type.TABLE;
-                    tableWalkerBuilder = new TableWalkerBuilder(ydb, tableDefinition);
+                    tableWalkerBuilder = new TableWalkerBuilder(c, tableDefinition);
                     tableWalkerBuilder.setAscending(ascending);
                     tableWalkerBuilder.setFollow(follow);
                 } else {

@@ -67,10 +67,10 @@ public interface StorageEngine {
      * 
      * Creates a new table iterator.
      * 
-     * @param ydb
+     * @param ctx
      * @param tblDef
      */
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending,
+    public TableWalker newTableWalker(ExecutionContext ctx, TableDefinition tblDef, boolean ascending,
             boolean follow);
 
     public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName,

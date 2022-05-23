@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchException;

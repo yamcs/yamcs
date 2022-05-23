@@ -14,6 +14,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.Sequence;
@@ -98,11 +99,11 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl,
+    public TableWalker newTableWalker(ExecutionContext ctx, TableDefinition tbl,
             boolean ascending, boolean follow) {
-        Tablespace tblsp = getTablespace(ydb, tbl);
+        Tablespace tblsp = getTablespace(ctx.getDb(), tbl);
 
-        return tblsp.newTableWalker(ydb, tbl, ascending, follow);
+        return tblsp.newTableWalker(ctx, tbl, ascending, follow);
     }
 
     @Override

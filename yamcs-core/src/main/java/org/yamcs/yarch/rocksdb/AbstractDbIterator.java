@@ -6,6 +6,7 @@ import org.yamcs.logging.Log;
 public abstract class AbstractDbIterator implements DbIterator {
     protected boolean valid = false;
     protected final RocksIterator iterator;
+    
     final static Log log = new Log(AbstractDbIterator.class);
 
     public AbstractDbIterator(RocksIterator it) {

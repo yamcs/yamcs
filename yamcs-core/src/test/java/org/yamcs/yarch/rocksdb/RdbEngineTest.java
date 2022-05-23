@@ -11,6 +11,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
@@ -79,8 +80,8 @@ public class RdbEngineTest extends YarchTestCase {
 
     private void checkNoReaderStreamPossible(RdbStorageEngine rse, TableDefinition tblDef) {
         IllegalArgumentException iae = null;
-        try {
-            rse.newTableWalker(ydb, tblDef, true, true);
+        try (ExecutionContext ctx = new ExecutionContext(ydb)) {
+            rse.newTableWalker(ctx, tblDef, true, true);
         } catch (IllegalArgumentException e) {
             iae = e;
         }

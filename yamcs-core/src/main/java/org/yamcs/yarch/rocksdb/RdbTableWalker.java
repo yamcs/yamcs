@@ -15,12 +15,12 @@ import org.rocksdb.WriteOptions;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.AbstractTableWalker;
 import org.yamcs.yarch.DbRange;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
-import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
@@ -31,14 +31,13 @@ public class RdbTableWalker extends AbstractTableWalker {
     static AtomicInteger count = new AtomicInteger(0);
 
     boolean batchUpdates = false;
-    Snapshot snapshot = null;
     protected TableVisitor visitor;
 
-    protected RdbTableWalker(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition,
+    protected RdbTableWalker(ExecutionContext ctx, TableDefinition tableDefinition,
             boolean ascending, boolean follow) {
-        super(ydb, tableDefinition, ascending, follow);
+        super(ctx, tableDefinition, ascending, follow);
 
-        this.tablespace = tablespace;
+        this.tablespace = ctx.getTablespace();
     }
 
     /**
@@ -86,9 +85,7 @@ public class RdbTableWalker extends AbstractTableWalker {
         ReadOptions readOptions = new ReadOptions();
         readOptions.setTailing(follow);
         if (!follow) {
-            if (snapshot == null) {
-                snapshot = rdb.getDb().getSnapshot();
-            }
+            Snapshot snapshot = ctx.getSnapshot(rdb);
             readOptions.setSnapshot(snapshot);
         }
         WriteBatch writeBatch = batchUpdates ? new WriteBatch() : null;
@@ -135,11 +132,6 @@ public class RdbTableWalker extends AbstractTableWalker {
                 iterator.close();
             }
             readOptions.close();
-            if (snapshot != null) {
-                rdb.getDb().releaseSnapshot(snapshot);
-                snapshot.close();
-                snapshot = null;
-            }
 
             tablespace.dispose(rdb);
 
@@ -147,17 +139,6 @@ public class RdbTableWalker extends AbstractTableWalker {
                 writeBatch.close();
             }
         }
-    }
-
-    /**
-     * If set, the snapshot will be used to iterate the database but only if the follow = false
-     * <p>
-     * The snapshot will be release at the end
-     * 
-     * @param snapshot
-     */
-    public void setSnapshot(Snapshot snapshot) {
-        this.snapshot = snapshot;
     }
 
     // return true if the end condition has been reached

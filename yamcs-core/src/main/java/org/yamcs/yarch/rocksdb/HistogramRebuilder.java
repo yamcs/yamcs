@@ -10,7 +10,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.rocksdb.RocksDBException;
-import org.rocksdb.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.ByteArrayWrapper;
@@ -18,6 +17,7 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DbRange;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramInfo;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitionManager;
@@ -95,13 +95,14 @@ public class HistogramRebuilder {
     private void rebuildHistogramsForInterval(Interval interval, CompletableFuture<Void> cf) {
         HistogramWriter histoWriter = tablespace.getTable(tableDefinition).getHistogramWriter();
         RdbPartition p0 = (RdbPartition) interval.iterator().next();
-        try (Snapshot snapshot = histoWriter.startQueueing(p0.dir).get()) {
+        try (ExecutionContext ctx = new ExecutionContext(ydb)) {
+            ctx.setTablespace(tablespace);
+            ctx.addSnapshot(tablespace.getRdb(p0.dir), histoWriter.startQueueing(p0.dir).get());
             if (!deleteHistograms(interval, cf)) {
                 return;
             }
 
-            RdbTableWalker tw = new RdbTableWalker(tablespace, ydb, tableDefinition, true, false);
-            tw.setSnapshot(snapshot);
+            RdbTableWalker tw = new RdbTableWalker(ctx, tableDefinition, true, false);
             try {
                 MyTableVisitor visitor = new MyTableVisitor(interval, cf);
                 tw.walkInterval(interval, new DbRange(), visitor);

@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;

@@ -22,7 +22,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
-import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
@@ -356,7 +355,6 @@ public class YarchDatabaseInstance {
         tables.remove(name);
     }
 
-
     private void checkExisting(String name) {
         if (tables.containsKey(name)) {
             throw new YarchException("A table named '" + name + "' already exists");
@@ -433,18 +431,19 @@ public class YarchDatabaseInstance {
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener, long limit) throws StreamSqlException {
-        ExecutionContext context = new ExecutionContext(this);
-        stmt.execute(context, resultListener, limit);
+        try (ExecutionContext context = new ExecutionContext(this)) {
+            stmt.execute(context, resultListener, limit);
+        }
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener) throws StreamSqlException {
-        ExecutionContext context = new ExecutionContext(this);
-        stmt.execute(context, resultListener, Long.MAX_VALUE);
+        try (ExecutionContext context = new ExecutionContext(this)) {
+            stmt.execute(context, resultListener, Long.MAX_VALUE);
+        }
     }
 
     public void executeUnchecked(StreamSqlStatement stmt, ResultListener resultListener) {
-        try {
-            ExecutionContext context = new ExecutionContext(this);
+        try (ExecutionContext context = new ExecutionContext(this)) {
             stmt.execute(context, resultListener, Long.MAX_VALUE);
         } catch (StreamSqlException e) {
             throw new YarchException(e);

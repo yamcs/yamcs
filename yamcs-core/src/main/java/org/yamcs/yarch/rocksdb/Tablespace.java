@@ -7,7 +7,6 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +28,7 @@ import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.Sequence;
@@ -637,13 +637,13 @@ public class Tablespace {
         return list;
     }
 
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef,
+    public TableWalker newTableWalker(ExecutionContext ctx, TableDefinition tblDef,
             boolean ascending, boolean follow) {
         if (!tables.containsKey(tblDef)) {
             throw new IllegalArgumentException("Unknown table '" + tblDef.getName() + "'");
         }
-
-        RdbTableWalker rrs = new RdbTableWalker(this, ydb, tblDef, ascending, follow);
+        ctx.setTablespace(this);
+        RdbTableWalker rrs = new RdbTableWalker(ctx, tblDef, ascending, follow);
         walkers.put(rrs, DUMMY);
         return rrs;
     }

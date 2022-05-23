@@ -8,6 +8,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Row;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableVisitor;
@@ -49,7 +50,7 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
         AtomicLong updated = new AtomicLong();
         AtomicLong inspected = new AtomicLong();
         try {
-            TableWalkerBuilder twb = new TableWalkerBuilder(ydb, tableDefinition);
+            TableWalkerBuilder twb = new TableWalkerBuilder(context, tableDefinition);
             if (whereClause != null) {
                 whereClause.addFilter(twb);
             }

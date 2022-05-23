@@ -1,5 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.yarch.ExecutionContext;
+
 /**
  * Tag interface for all StreamSQL statements. The execute method locks the dictionary for the period of execution.
  */

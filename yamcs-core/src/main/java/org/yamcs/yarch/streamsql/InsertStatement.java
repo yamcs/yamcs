@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;

@@ -8,11 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
@@ -104,8 +104,9 @@ public class StreamInitializer {
         log.debug("Loading SQL File {}", o);
         String filename = (String) o;
         File f = new File(filename);
-        ExecutionContext context = new ExecutionContext(YarchDatabase.getInstance(yamcsInstance));
-        try (FileReader reader = new FileReader(f)) {
+
+        try (ExecutionContext context = new ExecutionContext(YarchDatabase.getInstance(yamcsInstance));
+                FileReader reader = new FileReader(f)) {
             StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;
             while ((stmt = parser.StreamSqlStatement()) != null) {
