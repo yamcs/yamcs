@@ -30,6 +30,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     { id: 'className', label: 'Class name' },
     { id: 'in', label: 'In count', visible: true },
     { id: 'out', label: 'Out count', visible: true },
+    { id: 'detailedStatus', label: 'Detail', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
