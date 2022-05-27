@@ -33,7 +33,7 @@ export class GapsPage {
   appliedInterval: string;
 
   filterForm = new FormGroup({
-    apid: new FormControl(null, [Validators.required]),
+    apid: new FormControl([]),
     interval: new FormControl('PT1H', [Validators.required]),
     customStart: new FormControl(null),
     customStop: new FormControl(null),
@@ -43,6 +43,7 @@ export class GapsPage {
     'select',
     'start',
     'stop',
+    'apid',
     'duration',
     'startSequence',
     'stopSequence',
@@ -64,7 +65,7 @@ export class GapsPage {
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
-  private apid: string;
+  private apid: string[] = [];
 
   dataSource = new MatTableDataSource<Gap>();
   selection = new SelectionModel<Gap>(true, []);
@@ -101,15 +102,15 @@ export class GapsPage {
     });
 
     this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+      const now = this.yamcs.getMissionTime();
       if (nextInterval === 'CUSTOM') {
-        const now = new Date();
         const customStart = this.validStart || now;
         const customStop = this.validStop || now;
         this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
         this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
       } else {
-        this.validStop = new Date();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStop = null;
+        this.validStart = subtractDuration(now, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -119,7 +120,7 @@ export class GapsPage {
   private initializeOptions() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('apid')) {
-      this.apid = queryParams.get('apid')!;
+      this.apid = queryParams.getAll('apid')!;
       this.filterForm.get('apid')!.setValue(this.apid);
     }
     if (queryParams.has('interval')) {
@@ -133,12 +134,12 @@ export class GapsPage {
         this.filterForm.get('customStop')!.setValue(customStop);
         this.validStop = utils.toDate(customStop);
       } else {
-        this.validStop = new Date();
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = 'PT1H';
-      this.validStop = new Date();
+      this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, this.appliedInterval);
     }
   }
@@ -154,10 +155,6 @@ export class GapsPage {
     this.selection.clear();
     this.updateURL();
 
-    if (!this.apid) {
-      return;
-    }
-
     const options: GetGapsOptions = {
       limit: 500
     };
@@ -167,11 +164,15 @@ export class GapsPage {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    options.apid = Number(this.apid);
+    if (this.apid.length) {
+      options.apids = this.apid.map(apid => Number(apid));
+    }
 
     this.yamcs.yamcsClient.getGaps(this.yamcs.instance!, options)
       .then(page => {
-        const gaps = (page.gaps || []).reverse();
+        const gaps = (page.gaps || [])
+          .sort(utils.objectCompareFn('-start', '-apid'));
+
         // No reverse pagination on this resource, so we use the token
         // to detect whether a smaller request should be page.
         // (if we didn't only the head of the entire data range would be visible)
@@ -183,7 +184,7 @@ export class GapsPage {
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = this.dataSource.data.filter(row => row.start && row.stop).length;
     return numSelected === numRows;
   }
 
@@ -192,7 +193,7 @@ export class GapsPage {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        apid: this.apid,
+        apid: this.apid.length ? this.apid : null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

@@ -76,13 +76,16 @@ export class MultiSelect implements ControlValueAccessor {
   registerOnTouched(fn: any) {
   }
 
-  getLabel(id: string) {
-    const option = this.findOption(id);
-    if (option) {
-      return option.label || option.id;
-    } else {
-      return id;
-    }
+  getLabel(ids: string[]) {
+    const labels = ids.map(id => {
+      const option = this.findOption(id);
+      if (option) {
+        return option.label || option.id;
+      } else {
+        return id;
+      }
+    });
+    return labels.join(', ');
   }
 
   private findOption(id: string) {

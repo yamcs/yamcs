@@ -390,3 +390,46 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
 export function lpad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
 }
+
+export function objectCompareFn(...fields: string[]) {
+  fields = [...fields];
+  const reverse: boolean[] = [];
+  for (let i = 0; i < fields.length; i++) {
+    if (fields[i].startsWith('-')) {
+      reverse.push(true);
+      fields[i] = fields[i].substring(1);
+    } else {
+      reverse.push(false);
+    }
+  }
+  return (a: any, b: any) => {
+    let rc = 0;
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      let aField = (a.hasOwnProperty(field) ? (a as any)[field] : null) ?? null;
+      let bField = (b.hasOwnProperty(field) ? (b as any)[field] : null) ?? null;
+      if (typeof aField === 'string') {
+        aField = aField.toLowerCase();
+      }
+      if (typeof bField === 'string') {
+        bField = bField.toLowerCase();
+      }
+      if (aField === bField) {
+        rc = 0;
+      } else if (aField === null) {
+        rc = -1;
+      } else if (bField == null) {
+        rc = 1;
+      } else {
+        rc = (aField > bField) ? 1 : -1;
+      }
+      if (reverse[i]) {
+        rc = -rc;
+      }
+      if (rc !== 0) {
+        break;
+      }
+    }
+    return rc;
+  };
+}

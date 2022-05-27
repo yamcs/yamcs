@@ -76,8 +76,7 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
-  sourceOptions$ = new BehaviorSubject<Option[]>([
-  ]);
+  sourceOptions$ = new BehaviorSubject<Option[]>([]);
 
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour' },
