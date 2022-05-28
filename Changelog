@@ -1,3 +1,10 @@
+Version 5.7.0 relased 27-May-2022
+- implemented backend support for raw TCs (telecommands which are not generated from the mission database) and bypassing the postprocessor.
+- Renamed several java packages to avoid having the same package in different jars (this practice has been discouraged since the introduction of java modules) 
+  The "org.yamcs.xtceproc" and "org.yamcs.xtce" in yamcs-core has bene renamed to "org.yamcs.mdb". May require update of custom plugins if they use classes from those packages.
+- Various tweaks and fixes
+
+
 Version 5.6.2 released 11-Apr-2022
 - Added support for Java 17 by using Nashorn javascript engine as a module
 - Removed support for Java 1.8 - 19
