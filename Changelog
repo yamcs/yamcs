@@ -1,3 +1,10 @@
+Version 5.7.1 relased 30-May-2022
+- Allow 200 aliaes in the yaml files (used to be 50). The number can be configured via the java property org.yamcs.yaml.maxAliases 
+- yamcs-web: Show detail field on links page
+- yamcs-client: fix generation of command source for command with binary arguments
+- fixed units in the data links synthesized parameters (e.g. /yamcs/<hostname>/tm_realtime/packetRate)
+
+
 Version 5.7.0 relased 27-May-2022
 - implemented backend support for raw TCs (telecommands which are not generated from the mission database) and bypassing the postprocessor.
 - Renamed several java packages to avoid having the same package in different jars (this practice has been discouraged since the introduction of java modules) 
