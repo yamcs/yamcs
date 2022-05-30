@@ -41,6 +41,8 @@
       <dd>{{ link.dataInCount | number }}</dd>
       <dt>Out count</dt>
       <dd>{{ link.dataOutCount | number }}</dd>
+      <dt>Detail</dt>
+      <dd>{{ link.detailedStatus || '-' }}</dd>
     </dl>
 
     <ng-container *ngIf="cop1Config$ | async as config">

@@ -81,7 +81,7 @@ export interface Range {
 export interface GetGapsOptions {
   start?: string;
   stop?: string;
-  apid?: number;
+  apids?: number[];
   limit?: number;
 }
 

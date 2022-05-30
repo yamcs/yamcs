@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -464,10 +465,12 @@ public class LinkManager {
 
         boolean hasChanged() {
             try {
+                String prevDetailedStatus = linkInfo.hasDetailedStatus() ? linkInfo.getDetailedStatus() : null;
                 if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
                         || linkInfo.getDisabled() != link.isDisabled()
                         || linkInfo.getDataInCount() != link.getDataInCount()
-                        || linkInfo.getDataOutCount() != link.getDataOutCount()) {
+                        || linkInfo.getDataOutCount() != link.getDataOutCount()
+                        || !Objects.equals(prevDetailedStatus, link.getDetailedStatus())) {
 
                     LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
                             .setDisabled(link.isDisabled())

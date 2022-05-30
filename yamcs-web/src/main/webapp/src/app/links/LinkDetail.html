@@ -32,6 +32,11 @@
   {{ link.dataOutCount | number }}
 </div>
 
+<div class="block-title">Detail</div>
+<div class="block">
+  {{ link.detailedStatus || '-' }}
+</div>
+
 <div class="action-bar" *ngIf="mayControlLinks()">
   <button class="ya-button"
           (click)="enableLink()"
