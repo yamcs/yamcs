@@ -14,6 +14,7 @@ import org.yamcs.time.SimulationTimeService;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.UnitType;
 
 public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
     protected AtomicLong packetCount = new AtomicLong(0);
@@ -71,10 +72,10 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     @Override
     public void setupSystemParameters(SystemParametersService sysParamService) {
         super.setupSystemParameters(sysParamService);
-        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.DOUBLE,
+        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.DOUBLE, new UnitType("Bps"),
                 "Number of bytes per second computed over a five second interval");
         spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.DOUBLE,
-                "Number of packets per second computed over a five second interval");
+                new UnitType("p/s"), "Number of packets per second computed over a five second interval");
     }
 
     @Override

@@ -16,20 +16,13 @@ public class JvmParameterProducer implements SystemParametersProducer {
     private Parameter spJvmTotalMemory, spJvmMemoryUsed, spJvmTheadCount;
 
     public JvmParameterProducer(SystemParametersService sysParamsService) {
-        spJvmTotalMemory = sysParamsService.createSystemParameter("jvmTotalMemory", Type.UINT64,
+        UnitType kbunit = new UnitType("KB");
+        spJvmTotalMemory = sysParamsService.createSystemParameter("jvmTotalMemory", Type.UINT64, kbunit,
                 "Total amount of memory allocated by the Java Virtual Machine");
-        IntegerParameterType spJvmTotalMemoryType = (IntegerParameterType) spJvmTotalMemory.getParameterType();
-        List<UnitType> unitSet = new ArrayList<>(1);
-        unitSet.add(new UnitType("KB"));
-        spJvmTotalMemoryType.setUnitSet(unitSet);
         log.debug("Publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
-        spJvmMemoryUsed = sysParamsService.createSystemParameter("jvmMemoryUsed", Type.UINT64,
+        spJvmMemoryUsed = sysParamsService.createSystemParameter("jvmMemoryUsed", Type.UINT64, kbunit,
                 "Amount of memory currently used in the Java Virtual Machine");
-        IntegerParameterType spJvmMemoryUsedType = (IntegerParameterType) spJvmMemoryUsed.getParameterType();
-        unitSet = new ArrayList<>(1);
-        unitSet.add(new UnitType("KB"));
-        spJvmMemoryUsedType.setUnitSet(unitSet);
         log.debug("Publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
         spJvmTheadCount = sysParamsService.createSystemParameter("jvmThreadCount", Type.UINT32,
