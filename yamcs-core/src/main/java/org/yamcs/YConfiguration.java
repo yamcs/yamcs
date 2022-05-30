@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -84,7 +85,8 @@ public class YConfiguration {
     @SuppressWarnings("unchecked")
     public YConfiguration(String subsystem, InputStream is, String confpath) {
         this.rootLocation = confpath;
-        Yaml yaml = new Yaml();
+        Yaml yaml = getYamlParser();
+
         try {
             Object o = yaml.load(is);
             if (o == null) {
@@ -100,6 +102,16 @@ public class YConfiguration {
         configurations.put(subsystem, this);
     }
 
+    /**
+     * Create a Yaml parser by taking into account some system properties.
+     */
+    private Yaml getYamlParser() {
+        LoaderOptions loaderOptions = new LoaderOptions();
+        int maxAliases = Integer.parseInt(System.getProperty("org.yamcs.yaml.maxAliases", "200"));
+        loaderOptions.setMaxAliasesForCollections(maxAliases);
+
+        return new Yaml(loaderOptions);
+    }
     /**
      * 
      * @param parent
