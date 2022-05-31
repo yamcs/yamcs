@@ -182,16 +182,16 @@ public interface FileTransferService extends YamcsService {
      */
     void unregisterTransferMonitor(TransferMonitor listener);
 
-	void registerRemoteFileListMonitor(RemoteFileListMonitor listener);
-	void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener);
+    void registerRemoteFileListMonitor(RemoteFileListMonitor listener);
+    void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener);
 
-	/**
-	 * Start fetching a new file list from remote.
-	 */
-	void requestFileList(String destination, String remotePath);
+    /**
+     * Start fetching a new file list from remote.
+     */
+    void requestFileList(String destination, String remotePath);
 
-	/**
-	 * Return latest file list of the given destination.
-	 */
-	ListFilesResponse getFileList(String destination, String remotePath);
+    /**
+     * Return latest file list of the given destination.
+     */
+    ListFilesResponse getFileList(String destination, String remotePath);
 }

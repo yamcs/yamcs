@@ -3,6 +3,7 @@ import { SharedModule } from '../shared/SharedModule';
 import { FileTransferRoutingModule, routingComponents } from './FileTransferRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
 import { DownloadFileDialog } from './DownloadFileDialog';
+import { RemoteFileSelector } from './RemoteFileSelector';
 
 @NgModule({
   imports: [
@@ -12,6 +13,7 @@ import { DownloadFileDialog } from './DownloadFileDialog';
   declarations: [
     routingComponents,
     FileTransferTable,
+    RemoteFileSelector,
     DownloadFileDialog,
   ],
 })
