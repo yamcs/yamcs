@@ -10,7 +10,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
-import "yamcs/protobuf/buckets/buckets.proto";
 
 // This API deals with transmission (upload and download) of file to and from spacecraft.
 // The API can be used to interface any implementation of the FileTransferService.
@@ -88,7 +87,7 @@ service FileTransferApi {
   // Request file list from remote
   rpc RequestFileList(ListFilesRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/filetransfer/{instance}/{serviceName}/requestfiles"
+      post: "/api/filetransfer/{instance}/{serviceName}/files:sync"
       body: "*"
     };
   }
@@ -96,8 +95,8 @@ service FileTransferApi {
   // Get latest file list
   rpc GetFileList(ListFilesRequest) returns (ListFilesResponse) {
     option (yamcs.api.route) = {
-      post: "/api/filetransfer/{instance}/{serviceName}/getfiles"
-      body: "*"
+      get: "/api/filetransfer/{instance}/{serviceName}/files"
+      field_mask_root: "files"
     };
   }
 }
@@ -236,10 +235,10 @@ message CreateTransferRequest {
   optional UploadOptions uploadOptions = 6;
   
   //used to derive the source entity id
-  optional string source = 7;
+  optional string source = 9;
 
   //used to derive the destination entity id
-  optional string destination = 9;
+  optional string destination = 10;
 }
 
 message PauseTransferRequest {
@@ -307,8 +306,14 @@ message ListFilesRequest {
   optional string remotePath = 4;
 }
 
+message RemoteFile {
+  optional string name = 1;
+  optional google.protobuf.Timestamp created = 2;
+  optional uint64 size = 3;
+}
+
 message ListFilesResponse {
-  repeated yamcs.protobuf.buckets.ObjectInfo files = 1;
+  repeated RemoteFile files = 1;
   optional string destination = 2;
   optional string remotePath = 3;
 }

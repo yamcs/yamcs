@@ -1195,15 +1195,15 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async requestFileList(instance: string, service: string, request: ListFilesRequest) {
-    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/requestfiles`;
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/files:sync`;
     const body = JSON.stringify(request);
     return this.doFetch(url, { body, method: 'POST' });
   }
 
   async getFileList(instance: string, service: string, request: ListFilesRequest) {
-    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/getfiles`;
-    const body = JSON.stringify(request);
-    const response = await this.doFetch(url, { body, method: 'POST' });
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/files`;
+    const url2 =  url + this.queryString(request);
+    const response = await this.doFetch(url2);
     return await response.json() as ListFilesResponse;
   }
 

@@ -3,10 +3,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, FileTransferService, RemoteFileListSubscription, ListFilesResponse, ListObjectsResponse, StorageClient } from '../client';
+import { Bucket, FileTransferService, RemoteFileListSubscription, ListFilesResponse, StorageClient } from '../client';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
+import { RemoteFileSelector } from './RemoteFileSelector';
 
 @Component({
   selector: 'app-download-file-dialog',
@@ -35,7 +36,7 @@ export class DownloadFileDialog implements OnDestroy {
   objectSelector: ObjectSelector;
 
   @ViewChild('remoteSelector')
-  remoteSelector: ObjectSelector;
+  remoteSelector: RemoteFileSelector;
 
   constructor(
     private dialogRef: MatDialogRef<DownloadFileDialog>,
@@ -61,8 +62,7 @@ export class DownloadFileDialog implements OnDestroy {
       if (fileList.destination == this.optionsForm.get('destination')!.value) {
         const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
         if (fileList.remotePath == currentFolder) {
-          const dir = this.remoteFileListToBucketObjects(fileList);
-          this.remoteSelector.setFolderContent(currentFolder, dir);
+          this.remoteSelector.setFolderContent(currentFolder, fileList);
         }
       }
     });
@@ -240,26 +240,10 @@ export class DownloadFileDialog implements OnDestroy {
       this.yamcs.yamcsClient.getFileList(this.yamcs.instance!, this.service.name, {
         remotePath: prefix,
         destination: dest
-      }).then(response => {
-        const dir = this.remoteFileListToBucketObjects(response);
-        this.remoteSelector.setFolderContent(prefix, dir);
+      }).then(fileList => {
+        this.remoteSelector.setFolderContent(prefix, fileList);
       });
     }
-  }
-
-  private remoteFileListToBucketObjects(fileList: ListFilesResponse) {
-    let dir: ListObjectsResponse = {
-      prefixes: [],
-      objects: [],
-    };
-    for (const file of fileList.files || []) {
-      if (file.size == 0) {
-        dir.prefixes.push(fileList.remotePath + '/' + file.name);
-      } else {
-        dir.objects.push(file);
-      }
-    }
-    return dir;
   }
 
   updateLocalBreadcrumb(prefix: string) {

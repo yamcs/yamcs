@@ -1,7 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
 
-import { ObjectInfo } from './system';
-
 export interface FileTransferService {
   instance: string;
   name: string;
@@ -62,8 +60,14 @@ export interface ListFilesRequest {
   destination: string;
 }
 
+export interface RemoteFile {
+  name: string;
+  created: string;
+  size: number;
+}
+
 export interface ListFilesResponse {
-  files: ObjectInfo[];
+  files: RemoteFile[];
   destination: string;
   remotePath: string;
 }

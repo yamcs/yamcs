@@ -61,12 +61,12 @@
 
     <div class="remote-table-wrapper">
       <ng-container *ngIf="service.capabilities.fileList">
-        <app-object-selector #remoteSelector
+        <remote-file-selector #remoteSelector
                              formControlName="remoteFile"
                              [isMultiSelect]="false"
                              [foldersOnly]="false"
                              (prefixChange)="updateRemoteBreadcrumb($event)">
-        </app-object-selector>
+        </remote-file-selector>
       </ng-container>
     </div>
   </div>

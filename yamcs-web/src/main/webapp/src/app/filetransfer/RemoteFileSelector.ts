@@ -2,29 +2,26 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, fo
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '../core/services/YamcsService';
+import { ListFilesResponse } from '../client';
 
 @Component({
-  selector: 'app-object-selector',
-  templateUrl: './ObjectSelector.html',
-  styleUrls: ['./ObjectSelector.css'],
+  selector: 'remote-file-selector',
+  templateUrl: './RemoteFileSelector.html',
+  styleUrls: ['./RemoteFileSelector.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => ObjectSelector),
+      useExisting: forwardRef(() => RemoteFileSelector),
       multi: true
     }
   ]
 })
-export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestroy {
+export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDestroy {
 
   @Input()
   instance = '_global';
-
-  @Input()
-  bucket: Bucket;
 
   @Input()
   isMultiSelect: boolean;
@@ -39,11 +36,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   prefixChange = new EventEmitter<string | null>();
 
   displayedColumns = ['name', 'size', 'modified'];
-  dataSource = new MatTableDataSource<BrowseItem>([]);
+  dataSource = new MatTableDataSource<RemoteFileItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
 
-  private storageClient: StorageClient;
   private selectedFileNames: Set<string> = new Set();
 
   private onChange = (_: string | null) => { };
@@ -51,62 +47,62 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
 
   private selectionSubscription: Subscription;
 
-  constructor(yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
-    this.storageClient = yamcs.createStorageClient();
+  constructor(private changeDetection: ChangeDetectorRef) {
   }
 
+  // Called when inputs have changed
   ngOnChanges() {
-    if (this.instance && this.bucket) {
+    if (this.instance) {
       this.loadCurrentFolder();
     }
   }
 
+  // Called when breadcrumb is selected
   changePrefix(prefix: string) {
     this.loadCurrentFolder(prefix);
   }
 
   private loadCurrentFolder(prefix?: string) {
-    const options: ListObjectsOptions = {
-      delimiter: '/',
-    };
-    if (prefix) {
-      options.prefix = prefix;
-    }
+    // Show an empty folder, which will trigger prefixChange() to update breadcrumb and get the file list.
+    const newPrefix = prefix || null;
 
-    this.storageClient.listObjects(this.instance, this.bucket.name, options).then(dir => {
-      this.changedir(dir);
-      const newPrefix = prefix || null;
-      if (newPrefix !== this.currentPrefix$.value) {
-        this.currentPrefix$.next(newPrefix);
-        this.prefixChange.emit(newPrefix);
-      }
-    });
+    // Only clear folder (and get new file list) if we are entering a different folder.
+    // If the user selects the same folder at the breadcrumb we must not clear the table.
+    if (newPrefix !== this.currentPrefix$.value) {
+      const dir: ListFilesResponse = { files: [], destination: '', remotePath: '' };
+      this.setFolderContent(prefix, dir);
+    }
   }
 
-  private changedir(dir: ListObjectsResponse) {
+  // Update html table and breadcrumb
+  setFolderContent(prefix: string | undefined, dir: ListFilesResponse) {
+    this.changeDir(dir); // Update html table
+    const newPrefix = prefix || null;
+    if (newPrefix !== this.currentPrefix$.value) {
+      this.currentPrefix$.next(newPrefix); // Show or hide parent folder
+      this.prefixChange.emit(newPrefix); // Update breadcrumb
+    }
+  }
+
+  // Update form; update dataSource and notify html to update table
+  private changeDir(dir: ListFilesResponse) {
     this.selectedFileNames.clear();
     this.updateFileNames();
-    const items: BrowseItem[] = [];
-    for (const prefix of dir.prefixes || []) {
+    const items: RemoteFileItem[] = [];
+    for (const file of dir.files || []) {
       items.push({
-        folder: true,
-        name: prefix,
-      });
-    }
-    for (const object of dir.objects || []) {
-      items.push({
-        folder: false,
-        name: object.name,
-        modified: object.created,
-        size: object.size,
-        objectUrl: this.storageClient.getObjectURL(this.instance, this.bucket.name, object.name),
+        folder: file.size == 0,
+        name: file.name,
+        modified: file.created,
+        size: file.size,
       });
     }
     this.dataSource.data = items;
     this.changeDetection.detectChanges();
   }
 
-  selectFile(row: BrowseItem) {
+  // Called from html when a row is selected
+  selectFile(row: RemoteFileItem) {
     if (row.folder) {
       this.loadCurrentFolder(row.name);
     } else if (!this.foldersOnly) {
@@ -124,11 +120,12 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     }
   }
 
+  // Update form
   private updateFileNames() {
     this.onChange(Array.from(this.selectedFileNames).join("|"));
   }
 
-  isSelected(row: BrowseItem) {
+  isSelected(row: RemoteFileItem) {
     return this.selectedFileNames.has(row.name);
   }
 
@@ -137,12 +134,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     if (currentPrefix) {
       const withoutTrailingSlash = currentPrefix.slice(0, -1);
       const idx = withoutTrailingSlash.lastIndexOf('/');
-      if (idx) {
-        const parentPrefix = withoutTrailingSlash.substring(0, idx + 1);
-        this.selectedFileNames.clear();
-        this.updateFileNames();
-        this.loadCurrentFolder(parentPrefix);
-      }
+      const parentPrefix = idx != -1 ? withoutTrailingSlash.substring(0, idx + 1) : undefined;
+      this.selectedFileNames.clear();
+      this.updateFileNames();
+      this.loadCurrentFolder(parentPrefix);
     }
   }
 
@@ -165,10 +160,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   }
 }
 
-export class BrowseItem {
+export class RemoteFileItem {
   folder: boolean;
   name: string;
   modified?: string;
-  objectUrl?: string;
   size?: number;
 }

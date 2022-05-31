@@ -253,44 +253,44 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ftService.registerTransferMonitor(listener);
     }
 
-	@Override
-	public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request, Observer<ListFilesResponse> observer) {
-		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-		RemoteFileListMonitor listener = fileList -> {
-			observer.next(fileList);
-		};
-		observer.setCancelHandler(() -> ftService.unregisterRemoteFileListMonitor(listener));
-		ftService.registerRemoteFileListMonitor(listener);
-	}
-	
-	/**
-	 * <pre>
-	 *  Request file list from remote
-	 * </pre>
-	 */
-	@Override
-	public void requestFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
-		ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
-		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-		ftService.requestFileList(request.getDestination(), request.getRemotePath());
-		observer.complete(Empty.getDefaultInstance());
-	}
-	
-	/**
-	 * <pre>
-	 *  Get latest file list from service
-	 * </pre>
-	 */
-	@Override
-	public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
-		ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
-		FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-		ListFilesResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
-		if (response == null) {
-			response = ListFilesResponse.newBuilder().build();
-		}
-		observer.complete(response);
-	}
+    @Override
+    public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request, Observer<ListFilesResponse> observer) {
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        RemoteFileListMonitor listener = fileList -> {
+            observer.next(fileList);
+        };
+        observer.setCancelHandler(() -> ftService.unregisterRemoteFileListMonitor(listener));
+        ftService.registerRemoteFileListMonitor(listener);
+    }
+
+    /**
+     * <pre>
+     *  Request file list from remote
+     * </pre>
+     */
+    @Override
+    public void requestFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        ftService.requestFileList(request.getDestination(), request.getRemotePath());
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    /**
+     * <pre>
+     *  Get latest file list from service
+     * </pre>
+     */
+    @Override
+    public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        ListFilesResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
+        if (response == null) {
+            response = ListFilesResponse.newBuilder().build();
+        }
+        observer.complete(response);
+    }
 
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
         FileTransferServiceInfo.Builder infob = FileTransferServiceInfo.newBuilder()
