@@ -150,6 +150,8 @@ public final class Constants {
     public static final String ELEM_ANCILLARY_DATA = "AncillaryData";
     public static final String ELEM_VALID_RANGE = "ValidRange";
     public static final String ELEM_VALID_RANGE_SET = "ValidRangeSet";
+    public static final String ELEM_TO_STRING = "ToString";
+    public static final String ELEM_NUMBER_FORMAT = "NumberFormat";
     public static final String ELEM_BINARY_ENCODING = "BinaryEncoding";
     public static final String ELEM_DEFAULT_SIGNIFICANCE = "DefaultSignificance";
     public static final String ELEM_VERIFIER_SET = "VerifierSet";

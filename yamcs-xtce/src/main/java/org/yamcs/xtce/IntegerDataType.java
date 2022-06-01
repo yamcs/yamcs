@@ -23,6 +23,12 @@ public abstract class IntegerDataType extends NumericDataType {
      * DataEncoding.
      */
     IntegerValidRange validRange;
+    /**
+     * XTCE: This element provides the implementation with assistance rendering the value as a string for users.
+     * <p>
+     * Note that XTCE wraps NumberFormatType in another type ToStringType, which we don't do.
+     */
+    NumberFormatType numberFormat;
 
     protected IntegerDataType(Builder<?> builder) {
         super(builder);
@@ -35,6 +41,9 @@ public abstract class IntegerDataType extends NumericDataType {
         }
         if (builder.validRange != null) {
             validRange = builder.validRange;
+        }
+        if (builder.numberFormat != null) {
+            numberFormat = builder.numberFormat;
         }
 
         if (builder.baseType instanceof IntegerDataType) {
@@ -49,6 +58,9 @@ public abstract class IntegerDataType extends NumericDataType {
             if (builder.validRange == null && baseType.validRange != null) {
                 this.validRange = baseType.validRange;
             }
+            if (builder.numberFormat == null && baseType.numberFormat != null) {
+                this.numberFormat = baseType.numberFormat;
+            }
         }
         setInitialValue(builder);
     }
@@ -58,6 +70,7 @@ public abstract class IntegerDataType extends NumericDataType {
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
         this.validRange = t.validRange;
+        this.numberFormat = t.numberFormat;
     }
 
     public boolean isSigned() {
@@ -90,6 +103,10 @@ public abstract class IntegerDataType extends NumericDataType {
     @Override
     public Long getInitialValue() {
         return (Long) initialValue;
+    }
+
+    public NumberFormatType getNumberFormat() {
+        return numberFormat;
     }
 
     /**
@@ -198,6 +215,7 @@ public abstract class IntegerDataType extends NumericDataType {
         Integer sizeInBits;
         Boolean signed;
         IntegerValidRange validRange;
+        NumberFormatType numberFormat;
 
         public Builder() {
         }
@@ -207,6 +225,7 @@ public abstract class IntegerDataType extends NumericDataType {
             this.sizeInBits = dataType.sizeInBits;
             this.signed = dataType.signed;
             this.validRange = dataType.validRange;
+            this.numberFormat = dataType.numberFormat;
         }
 
         public T setSizeInBits(int sizeInBits) {
@@ -225,6 +244,11 @@ public abstract class IntegerDataType extends NumericDataType {
 
         public T setValidRange(IntegerValidRange range) {
             this.validRange = range;
+            return self();
+        }
+
+        public T setNumberFormat(NumberFormatType numberFormat) {
+            this.numberFormat = numberFormat;
             return self();
         }
     }

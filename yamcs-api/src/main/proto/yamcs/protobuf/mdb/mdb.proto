@@ -260,6 +260,24 @@ message ParameterTypeInfo {
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
   map<string, AncillaryDataInfo> ancillaryData = 10;
+  
+  // Provides hints on how to format the engineering
+  // value as a string.
+  optional NumberFormatTypeInfo numberFormat = 11;
+}
+
+message NumberFormatTypeInfo {
+  optional string numberBase = 1;
+  optional int32 minimumFractionDigits = 2;
+  optional int32 maximumFractionDigits = 3;
+  optional int32 minimumIntegerDigits = 4;
+  optional int32 maximumIntegerDigits = 5;
+  optional string negativeSuffix = 6;
+  optional string positiveSuffix = 7;
+  optional string negativePrefix = 8;
+  optional string positivePrefix = 9;
+  optional bool showThousandsGrouping = 10;
+  optional string notation = 11;
 }
 
 message GetContainerRequest {

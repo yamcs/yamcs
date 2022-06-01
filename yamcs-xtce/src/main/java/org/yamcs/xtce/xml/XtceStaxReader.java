@@ -1,8 +1,7 @@
 package org.yamcs.xtce.xml;
 
-import static org.yamcs.xtce.xml.Constants.*;
-
 import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.xml.Constants.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -849,6 +848,8 @@ public class XtceStaxReader {
                 typeBuilder.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isStartElementWithName(ELEM_VALID_RANGE)) {
                 typeBuilder.setValidRange(readFloatValidRange());
+            } else if (isStartElementWithName(ELEM_TO_STRING)) {
+                typeBuilder.setNumberFormat(readToString());
             } else if (isEndElementWithName(ELEM_FLOAT_PARAMETER_TYPE)) {
                 return incompleteType;
             } else {
@@ -1047,12 +1048,71 @@ public class XtceStaxReader {
                 fvr = readFloatValidRange();
             } else if (isEndElementWithName(ELEM_VALID_RANGE_SET)) {
                 if (fvr == null) {
-                    throw new XMLStreamException("No ValidRange supecified ", xmlEvent.getLocation());
+                    throw new XMLStreamException("No ValidRange specified ", xmlEvent.getLocation());
                 }
                 fvr.setValidRangeAppliesToCalibrated(calib);
                 return fvr;
             }
         }
+    }
+
+    private NumberFormatType readToString() throws XMLStreamException {
+        log.trace(ELEM_TO_STRING);
+        NumberFormatType numberFormat = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(ELEM_NUMBER_FORMAT)) {
+                if (numberFormat != null) {
+                    throw new XMLStreamException("Only one NumberFormat supported", xmlEvent.getLocation());
+                }
+                numberFormat = readNumberFormat();
+            } else if (isEndElementWithName(ELEM_TO_STRING)) {
+                if (numberFormat == null) {
+                    throw new XMLStreamException("No NumberFormat specified", xmlEvent.getLocation());
+                }
+                return numberFormat;
+            }
+        }
+    }
+
+    private NumberFormatType readNumberFormat() throws XMLStreamException {
+        log.trace(ELEM_NUMBER_FORMAT);
+        StartElement element = xmlEvent.asStartElement();
+        NumberFormatType format = new NumberFormatType();
+        String numberBase = readAttribute("numberBase", element, "Decimal");
+        format.setNumberBase(RadixType.valueOf(numberBase.toUpperCase()));
+        int minimumFractionDigits = readIntAttribute("minimumFractionDigits", element, 0);
+        format.setMinimumFractionDigits(minimumFractionDigits);
+
+        String value = readAttribute("maximumFractionDigits", element, null);
+        if (value != null) {
+            format.setMaximumFractionDigits(Integer.parseInt(value));
+        }
+
+        int minimumIntegerDigits = readIntAttribute("minimumIntegerDigits", element, 1);
+        format.setMinimumIntegerDigits(minimumIntegerDigits);
+
+        value = readAttribute("maximumIntegerDigits", element, null);
+        if (value != null) {
+            format.setMaximumIntegerDigits(Integer.parseInt(value));
+        }
+
+        String negativeSuffix = readAttribute("negativeSuffix", element, "");
+        format.setNegativeSuffix(negativeSuffix.isEmpty() ? null : negativeSuffix);
+        String positiveSuffix = readAttribute("positiveSuffix", element, "");
+        format.setPositiveSuffix(positiveSuffix.isEmpty() ? null : positiveSuffix);
+        String negativePrefix = readAttribute("negativePrefix", element, "-");
+        format.setNegativePrefix(negativePrefix.isEmpty() ? null : negativePrefix);
+        String positivePrefix = readAttribute("positivePrefix", element, "");
+        format.setPositivePrefix(positivePrefix.isEmpty() ? null : positivePrefix);
+
+        boolean showThousandsGrouping = readBooleanAttribute("showThousandsGrouping", element, false);
+        format.setShowThousandsGrouping(showThousandsGrouping);
+
+        String notation = readAttribute("notation", element, "normal");
+        format.setNotation(FloatingPointNotationType.valueOf(notation.toUpperCase()));
+
+        return format;
     }
 
     private void readAlarmAttributes(AlarmType alarm) {
@@ -1337,6 +1397,8 @@ public class XtceStaxReader {
                 typeBuilder.setNumericContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isStartElementWithName(ELEM_VALID_RANGE)) {
                 typeBuilder.setValidRange(readIntegerValidRange(typeBuilder.isSigned()));
+            } else if (isStartElementWithName(ELEM_TO_STRING)) {
+                typeBuilder.setNumberFormat(readToString());
             } else if (isEndElementWithName(ELEM_INTEGER_PARAMETER_TYPE)) {
                 return incompleteType;
             } else {
@@ -1901,7 +1963,7 @@ public class XtceStaxReader {
         } catch (IllegalArgumentException e) {
             String s = Arrays.stream(AlarmLevels.values()).map(al -> al.xtceName)
                     .collect(Collectors.joining(", ", "[", "]"));
-            
+
             throw new XMLStreamException("Invalid alarm level '" + level + "'; use one of: " + s);
         }
     }
@@ -3172,6 +3234,8 @@ public class XtceStaxReader {
                 typeBuilder.setValidRange(readFloatValidRange());
             } else if (isStartElementWithName(ELEM_VALID_RANGE_SET)) {
                 typeBuilder.setValidRange(readFloatValidRangeSet());
+            } else if (isStartElementWithName(ELEM_TO_STRING)) {
+                typeBuilder.setNumberFormat(readNumberFormat());
             } else if (isEndElementWithName(ELEM_FLOAT_ARGUMENT_TYPE)) {
                 return incompleteType;
             } else {
@@ -4151,7 +4215,7 @@ public class XtceStaxReader {
     private void addToSkipStatistics(String xtceSectionName) {
         Integer count = xtceSkipStatistics.get(xtceSectionName);
         if (count == null) {
-            xtceSkipStatistics.put(xtceSectionName, new Integer(1));
+            xtceSkipStatistics.put(xtceSectionName, Integer.valueOf(1));
         } else {
             xtceSkipStatistics.put(xtceSectionName, count + 1);
         }

@@ -42,6 +42,7 @@ import org.yamcs.protobuf.Mdb.HistoryInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.MemberInfo;
+import org.yamcs.protobuf.Mdb.NumberFormatTypeInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterDimensionInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
@@ -116,6 +117,7 @@ import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.NumberFormatType;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -744,6 +746,9 @@ public class XtceToGpbAssembler {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
                 }
+                if (ipt.getNumberFormat() != null) {
+                    infob.setNumberFormat(toNumberFormatTypeInfo(ipt.getNumberFormat()));
+                }
             } else if (parameterType instanceof FloatParameterType) {
                 FloatParameterType fpt = (FloatParameterType) parameterType;
                 if (fpt.getDefaultAlarm() != null) {
@@ -753,6 +758,9 @@ public class XtceToGpbAssembler {
                     for (NumericContextAlarm contextAlarm : fpt.getContextAlarmList()) {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
+                }
+                if (fpt.getNumberFormat() != null) {
+                    infob.setNumberFormat(toNumberFormatTypeInfo(fpt.getNumberFormat()));
                 }
             } else if (parameterType instanceof EnumeratedParameterType) {
                 EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
@@ -797,6 +805,35 @@ public class XtceToGpbAssembler {
                 infob.setAbsoluteTimeInfo(timeb);
             }
         }
+        return infob.build();
+    }
+
+    private static NumberFormatTypeInfo toNumberFormatTypeInfo(NumberFormatType numberFormatType) {
+        NumberFormatTypeInfo.Builder infob = NumberFormatTypeInfo.newBuilder();
+        infob.setNumberBase(numberFormatType.getNumberBase().name());
+        infob.setMinimumFractionDigits(numberFormatType.getMinimumFractionDigits());
+        if (numberFormatType.getMaximumFractionDigits() >= 0) {
+            infob.setMaximumFractionDigits(numberFormatType.getMaximumFractionDigits());
+        }
+        infob.setMinimumIntegerDigits(numberFormatType.getMinimumIntegerDigits());
+        if (numberFormatType.getMaximumIntegerDigits() >= 0) {
+            infob.setMaximumIntegerDigits(numberFormatType.getMaximumIntegerDigits());
+        }
+        if (numberFormatType.getNegativeSuffix() != null) {
+            infob.setNegativeSuffix(numberFormatType.getNegativeSuffix());
+        }
+        if (numberFormatType.getPositiveSuffix() != null) {
+            infob.setPositiveSuffix(numberFormatType.getPositiveSuffix());
+        }
+        if (numberFormatType.getNegativePrefix() != null) {
+            infob.setNegativePrefix(numberFormatType.getNegativePrefix());
+        }
+        if (numberFormatType.getPositivePrefix() != null) {
+            infob.setPositivePrefix(numberFormatType.getPositivePrefix());
+        }
+        infob.setShowThousandsGrouping(numberFormatType.isShowThousandsGrouping());
+        infob.setNotation(numberFormatType.getNotation().name());
+
         return infob.build();
     }
 
