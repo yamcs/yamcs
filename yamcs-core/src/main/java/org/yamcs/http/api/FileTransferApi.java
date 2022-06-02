@@ -168,12 +168,12 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
 
-			if (request.hasUploadOptions()) {
-				UploadOptions opts = request.getUploadOptions();
-				if (opts.hasReliable()) {
-					transferOptions.setReliable(opts.getReliable());
-				}
-			}
+            if (request.hasUploadOptions()) {
+                UploadOptions opts = request.getUploadOptions();
+                if (opts.hasReliable()) {
+                    transferOptions.setReliable(opts.getReliable());
+                }
+            }
 
             String sourcePath = request.getRemotePath();
             String source = request.hasSource() ? request.getSource() : null;

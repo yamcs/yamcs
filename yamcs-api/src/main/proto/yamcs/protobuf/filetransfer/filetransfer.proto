@@ -212,6 +212,8 @@ message CreateTransferRequest {
     // Requests the receiver to send a Finished PDU at the end of the transfer
     optional bool closureRequested = 4;
   }
+  message DownloadOptions {
+  }
 
   optional string instance = 1;
   //service name
@@ -232,7 +234,10 @@ message CreateTransferRequest {
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
   
-  optional UploadOptions uploadOptions = 6;
+  optional DownloadOptions downloadOptions = 6;
+
+  // Configuration options specific to ``UPLOAD`` transfers.
+  optional UploadOptions uploadOptions = 7;
   
   //used to derive the source entity id
   optional string source = 9;
