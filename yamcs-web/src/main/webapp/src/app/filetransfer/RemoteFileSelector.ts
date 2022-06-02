@@ -90,12 +90,21 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     this.updateFileNames();
     const items: RemoteFileItem[] = [];
     for (const file of dir.files || []) {
-      items.push({
-        folder: file.size == 0,
-        name: file.name,
-        modified: file.created,
-        size: file.size,
-      });
+      const fullFileName = dir.remotePath + '/' + file.name;
+      if (file.size == 0) {
+        items.push({
+          folder: true,
+          name: fullFileName,
+          modified: file.created,
+        });
+      } else {
+        items.push({
+          folder: false,
+          name: fullFileName,
+          modified: file.created,
+          size: file.size,
+        });
+      }
     }
     this.dataSource.data = items;
     this.changeDetection.detectChanges();

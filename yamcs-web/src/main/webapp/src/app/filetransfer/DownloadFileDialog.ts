@@ -229,8 +229,9 @@ export class DownloadFileDialog implements OnDestroy {
   }
 
   requestFileList() {
+    const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
     this.yamcs.yamcsClient.requestFileList(this.yamcs.instance!, this.service.name, {
-      remotePath: this.filesForm.value['remotePath'],
+      remotePath: currentFolder,
       destination: this.optionsForm.value['destination']
     })
   }
