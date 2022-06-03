@@ -57,11 +57,10 @@
   </label>
 
   <label *ngSwitchCase="'aggregate'">
-    <div class="meta" [class.error]="err.invalid$ | async">
+    <div class="meta">
       <div class="item">{{ argument.type.engType }}</div>
     </div>
     {{ argument.name }}
-    <app-errors #err [controlName]="controlName"></app-errors>
     <div class="members">
       <ng-container *ngFor="let member of argument.type?.member">
         <app-command-form-argument [argument]="member" [formGroup]="formGroup"
