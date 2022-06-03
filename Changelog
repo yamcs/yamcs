@@ -1,4 +1,7 @@
-Version 5.7.1 relased 30-May-2022
+Version 5.7.2 released 3-Jun-2022
+- yamcs-web: fix render issue with enumerated and command aggregate arguments
+
+Version 5.7.1 released 30-May-2022
 - Allow 200 aliaes in the yaml files (used to be 50). The number can be configured via the java property org.yamcs.yaml.maxAliases 
 - yamcs-web: Show detail field on links page
 - yamcs-client: fix generation of command source for command with binary arguments
