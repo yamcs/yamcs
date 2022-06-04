@@ -30,6 +30,7 @@ public class FaviconHandler extends Handler {
             "favicon.ico",
             "favicon-16x16.png",
             "favicon-32x32.png",
+            "favicon-notification.ico",
             "safari-pinned-tab.svg",
     };
 
