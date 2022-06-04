@@ -34,8 +34,10 @@
               }
             ],
             "styles": [
+              "src/styles/vars.css",
               "src/styles/material-theme.scss",
               "src/styles/material-icons.css",
+              "src/styles/scrollbar.css",
               "src/styles/styles.css",
               "src/styles/data-table.css",
               "src/styles/dl-horizontal.css",

@@ -64,8 +64,6 @@ export class HttpTrafficPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
   }
 }
