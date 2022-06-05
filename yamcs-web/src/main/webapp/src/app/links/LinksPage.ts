@@ -313,11 +313,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.selectionSubscription) {
-      this.selectionSubscription.unsubscribe();
-    }
-    if (this.linkSubscription) {
-      this.linkSubscription.cancel();
-    }
+    this.selectionSubscription?.unsubscribe();
+    this.linkSubscription?.cancel();
   }
 }

@@ -15,7 +15,6 @@ import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { CommandDownloadLinkPipe } from './pipes/CommandDownloadLinkPipe';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
-import { QueuesTable } from './queues/QueuesTable';
 import { CreateFolderDialog } from './stacks/CreateFolderDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { EditStackEntryDialog } from './stacks/EditStackEntryDialog';
@@ -47,7 +46,6 @@ const pipes = [
     CreateStackDialog,
     ExtraAcknowledgmentsTable,
     QueuedCommandsTable,
-    QueuesTable,
     RenameStackDialog,
     SelectEnumerationDialog,
     SendCommandWizardStep,
