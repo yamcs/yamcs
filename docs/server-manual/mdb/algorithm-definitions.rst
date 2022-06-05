@@ -161,7 +161,7 @@ The class has two main methods ``updateParameters`` which is called each time on
 
 The abstract class :javadoc:`org.yamcs.algorithms.AbstractAlgorithmExecutor` offers some helper methods and can be used as base class for implementation of such algorithm.
 
-If the algorithm is used for data decoding, it has to implement the :javadoc:`org.yamcs.xtceproc.DataDecoder` interface instead (see below).
+If the algorithm is used for data decoding, it has to implement the :javadoc:`org.yamcs.mdb.DataDecoder` interface instead (see below).
 
 
 Command verifier algorithms
@@ -184,4 +184,4 @@ These algorithms work differently from the other ones and have are some limitati
 * only Java is supported as a language
 * not possible to specify input parameters
 
-These algorithms have to implement the interface :javadoc:`org.yamcs.xtceproc.DataDecoder`.
+These algorithms have to implement the interface :javadoc:`org.yamcs.mdb.DataDecoder`.

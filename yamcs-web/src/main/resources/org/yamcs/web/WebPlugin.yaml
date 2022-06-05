@@ -141,28 +141,54 @@ options:
 
   events:
     title: Events
-    type: LIST
-    elementType: MAP
+    description:
+      - Configure event-related properties.
+    type: MAP
     suboptions:
       extraColumns:
         title: Extra Columns
         description:
           - Additional event columns specific to a deployment.
-          - This feature makes use of Protobuf 2 extensions to the Event message.
-        type: MAP
+        type: LIST
+        elementType: MAP
         suboptions:
           id:
             title: ID
+            description:
+              - Identifier of this column. This corresponds with a key in the
+                extra map of an event.
             type: STRING
             required: true
           label:
             title: Label
+            description:
+              - Descriptive name of this column.
             type: STRING
             required: true
+          visible:
+            title: Visible
+            description:
+              - Whether this column is visible by default.
+            type: BOOLEAN
+            default: true
+          alwaysVisible:
+            title: Always Visible
+            description:
+              - Whether this column always visible.
+              - If false, the user may choose to hide it.
+            type: BOOLEAN
+            default: false
           after:
             title: After
+            description:
+              - Identifier of the column after which to position this column.
             type: STRING
             required: true
-          width:
-            title: Width
-            type: STRING
+            choices:
+              - severity
+              - gentime
+              - message
+              - source
+              - type
+              - rectime
+              - seqNumber

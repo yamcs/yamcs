@@ -45,6 +45,8 @@ public class Spec {
         OPTION_DESCRIPTOR.addOption("deprecationMessage", OptionType.STRING);
         OPTION_DESCRIPTOR.addOption("elementType", OptionType.STRING)
                 .withChoices(OptionType.class);
+        OPTION_DESCRIPTOR.addOption("choices", OptionType.LIST)
+                .withElementType(OptionType.ANY);
         OPTION_DESCRIPTOR.addOption("suboptions", OptionType.MAP)
                 .withSpec(ANY);
     }
@@ -674,12 +676,12 @@ public class Spec {
      */
     @SuppressWarnings("unchecked")
     public static Spec fromDescriptor(Map<String, Map<String, Object>> optionDescriptors) throws ValidationException {
-        Spec spec = new Spec();
-        for (Entry<String, Map<String, Object>> entry : optionDescriptors.entrySet()) {
-            String optionName = entry.getKey();
-            Map<String, Object> optionDescriptor = OPTION_DESCRIPTOR.validate(entry.getValue());
+        var spec = new Spec();
+        for (var entry : optionDescriptors.entrySet()) {
+            var optionName = entry.getKey();
+            var optionDescriptor = OPTION_DESCRIPTOR.validate(entry.getValue());
 
-            Option option = spec.addOption(optionName, OptionType.valueOf((String) optionDescriptor.get("type")))
+            var option = spec.addOption(optionName, OptionType.valueOf((String) optionDescriptor.get("type")))
                     .withTitle((String) optionDescriptor.get("title"))
                     .withDefault(optionDescriptor.get("default"))
                     .withRequired((boolean) optionDescriptor.get("required"))
@@ -692,10 +694,14 @@ public class Spec {
                 option.withElementType(OptionType.valueOf((String) optionDescriptor.get("elementType")));
             }
             if (optionDescriptor.containsKey("suboptions")) {
-                Map<String, Map<String, Object>> suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor
+                var suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor
                         .get("suboptions");
-                Spec subspec = fromDescriptor(suboptionDescriptors);
+                var subspec = fromDescriptor(suboptionDescriptors);
                 option.withSpec(subspec);
+            }
+            if (optionDescriptor.containsKey("choices")) {
+                var choices = (List<Object>) optionDescriptor.get("choices");
+                option.withChoices(choices.toArray());
             }
         }
         return spec;

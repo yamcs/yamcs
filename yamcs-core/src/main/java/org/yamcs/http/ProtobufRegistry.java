@@ -3,8 +3,6 @@ package org.yamcs.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +11,6 @@ import java.util.Map;
 import org.yamcs.api.AnnotationsProto;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
-import org.yamcs.logging.Log;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -23,15 +20,10 @@ import com.google.protobuf.DescriptorProtos.MethodOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
 import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
-import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 
 public class ProtobufRegistry {
-
-    private static final Log log = new Log(ProtobufRegistry.class);
 
     // Indexes by fully-qualified protobuf name
     private Map<String, RpcDescriptor> rpcs = new HashMap<>();
@@ -124,25 +116,6 @@ public class ProtobufRegistry {
                 }
             }
         }
-    }
-
-    public void installExtension(Class<?> extensionClass, Field field) throws IllegalAccessException {
-        @SuppressWarnings("unchecked")
-        GeneratedExtension<?, Type> genExtension = (GeneratedExtension<?, Type>) field.get(null);
-        extensionRegistry.add(genExtension);
-
-        Descriptor extendedMessage = genExtension.getDescriptor().getContainingType();
-        FieldDescriptor extensionField = genExtension.getDescriptor();
-        log.info("Installing {} extension: {}", extendedMessage.getFullName(), extensionField.getFullName());
-
-        List<ExtensionInfo> fieldExtensions = extensionsByMessage.get(extendedMessage);
-        if (fieldExtensions == null) {
-            fieldExtensions = new ArrayList<>();
-            extensionsByMessage.put(extendedMessage, fieldExtensions);
-        }
-
-        ExtensionInfo extensionInfo = extensionRegistry.findImmutableExtensionByName(extensionField.getFullName());
-        fieldExtensions.add(extensionInfo);
     }
 
     public ExtensionRegistry getExtensionRegistry() {

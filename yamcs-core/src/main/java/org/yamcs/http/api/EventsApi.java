@@ -27,7 +27,6 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
-import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractEventsApi;
 import org.yamcs.protobuf.CreateEventRequest;
@@ -54,7 +53,6 @@ import com.csvreader.CsvWriter;
 import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
 import com.google.protobuf.util.Timestamps;
 
 public class EventsApi extends AbstractEventsApi<Context> {
@@ -71,11 +69,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
-    private ProtobufRegistry protobufRegistry;
-
-    public EventsApi(ProtobufRegistry protobufRegistry) {
-        this.protobufRegistry = protobufRegistry;
-    }
 
     @Override
     public void listEvents(Context ctx, ListEventsRequest request, Observer<ListEventsResponse> observer) {
@@ -166,6 +159,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         Db.Event.Builder eventb = Db.Event.newBuilder();
         eventb.setCreatedBy(ctx.user.getName());
         eventb.setMessage(request.getMessage());
+        eventb.putAllExtra(request.getExtraMap());
 
         if (request.hasType()) {
             eventb.setType(request.getType());
@@ -355,7 +349,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             }
         }
 
-        CsvEventStreamer streamer = new CsvEventStreamer(protobufRegistry, observer, delimiter);
+        CsvEventStreamer streamer = new CsvEventStreamer(observer, delimiter);
         StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
     }
 
@@ -402,26 +396,20 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     private static class CsvEventStreamer implements StreamSubscriber {
 
-        ProtobufRegistry protobufRegistry;
         Observer<HttpBody> observer;
         char columnDelimiter;
 
-        CsvEventStreamer(ProtobufRegistry protobufRegistry, Observer<HttpBody> observer, char columnDelimiter) {
-            this.protobufRegistry = protobufRegistry;
+        CsvEventStreamer(Observer<HttpBody> observer, char columnDelimiter) {
             this.observer = observer;
             this.columnDelimiter = columnDelimiter;
 
-            List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-            String[] rec = new String[5 + extensionFields.size()];
+            String[] rec = new String[5];
             int i = 0;
             rec[i++] = "Source";
             rec[i++] = "Generation Time";
             rec[i++] = "Reception Time";
             rec[i++] = "Event Type";
             rec[i++] = "Event Text";
-            for (ExtensionInfo extension : extensionFields) {
-                rec[i++] = "" + extension.descriptor.getName();
-            }
 
             String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
             String filename = "event_export_" + dateString + ".csv";
@@ -445,18 +433,13 @@ public class EventsApi extends AbstractEventsApi<Context> {
             Db.Event incoming = (Db.Event) tuple.getColumn("body");
             Event event = fromDbEvent(incoming);
 
-            List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-
-            String[] rec = new String[5 + extensionFields.size()];
+            String[] rec = new String[5];
             int i = 0;
             rec[i++] = event.getSource();
             rec[i++] = Timestamps.toString(event.getGenerationTime());
             rec[i++] = Timestamps.toString(event.getReceptionTime());
             rec[i++] = event.getType();
             rec[i++] = event.getMessage();
-            for (ExtensionInfo extension : extensionFields) {
-                rec[i++] = "" + event.getField(extension.descriptor);
-            }
 
             HttpBody body = HttpBody.newBuilder()
                     .setData(toByteString(rec))
@@ -509,7 +492,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
     }
 
     public static Event fromDbEvent(Db.Event other) {
-        Event.Builder evb = Event.newBuilder();
+        Event.Builder evb = Event.newBuilder()
+                .putAllExtra(other.getExtraMap());
         if (other.hasSource()) {
             evb.setSource(other.getSource());
         }

@@ -44,6 +44,9 @@ message Event {
   
     // Set by API when event was posted by a user
     optional string createdBy = 10;
+
+    // Additional properties
+    map<string, string> extra = 11;
 }
 
 enum ProtoDataType {

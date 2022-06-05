@@ -6,13 +6,13 @@ The objects are grouped into ``buckets``; each bucket has a name and is simply a
 
 Inside a bucket each object is identified by an name and has associated a set of metadata. The name is usually (but not necessarily) a UNIX directory like path "/a/b/c/" and the metadata is a list of ``key: value`` where both the key and the value are strings.
 
-Yamcs supports two ways of storing the objects: inside the RocksDB database or on the server filesystem as files. For RocksDB buckets, each object is stored in a (key, value) record, the key is the object name prepended by a prefix identifiyng the bucket and the value is the object data.
+Yamcs supports two ways of storing the objects: inside the RocksDB database or on the server filesystem as files. For RocksDB buckets, each object is stored in a (key, value) record, the key is the object name prepended by a prefix identifying the bucket and the value is the object data.
 For filesystems buckets, each bucket represents a directory on disk and the objects are the files in that directory (including subdirectories). The filesystem buckets do not support metadata currently.
 
 A bucket is limited to 100MB in size and maximum 1000 objects. In addition, the HTTP API imposes a limit of 5MB for each uploaded object. Note that since the filesystem buckets can be changed outside Yamcs (just copying files in a directory) the total size limit or the number of objects limit may be exceeded.
 
 
-The RocksDB buckets can be created in the configuration or programmatically using the `HTTP API <https://docs.yamcs.org/yamcs-http-api/buckets/>`_.
+The RocksDB buckets can be created in the configuration or programmatically using the :apidoc:`HTTP API <buckets>`.
 
 The filesystem buckets can only be defined in the configuration by using the ``buckets`` configuration option as shown below.
 
