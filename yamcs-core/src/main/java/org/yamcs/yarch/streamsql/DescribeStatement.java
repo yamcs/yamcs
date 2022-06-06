@@ -18,6 +18,7 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
         TDEF_TABLE.addColumn("column", DataType.STRING);
         TDEF_TABLE.addColumn("type", DataType.STRING);
         TDEF_TABLE.addColumn("key", DataType.STRING);
+        TDEF_TABLE.addColumn("extra", DataType.STRING);
     }
 
     private static final TupleDefinition TDEF_STREAM = new TupleDefinition();
@@ -52,19 +53,21 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
     }
 
     private void describeTable(TableDefinition tdef, Consumer<Tuple> consumer) {
-        for (ColumnDefinition cdef : tdef.getKeyDefinition()) {
-            Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
+        for (var cdef : tdef.getKeyDefinition()) {
+            var tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
-                    "*"
+                    "*",
+                    cdef.isAutoIncrement() ? "auto_increment" : "",
             });
             consumer.accept(tuple);
         }
-        for (ColumnDefinition cdef : tdef.getValueDefinition()) {
-            Tuple tuple = new Tuple(TDEF_TABLE, new Object[] {
+        for (var cdef : tdef.getValueDefinition()) {
+            var tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
-                    null
+                    "",
+                    cdef.isAutoIncrement() ? "auto_increment" : "",
             });
             consumer.accept(tuple);
         }

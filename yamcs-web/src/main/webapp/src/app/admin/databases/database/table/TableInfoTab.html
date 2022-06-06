@@ -1,12 +1,14 @@
 <div class="panel-content" *ngIf="table$ | async as table">
   <h3>Key</h3>
-  <table yaDataTable>
+  <table yaDataTable class="expand">
     <tr>
-      <th width="200">Column</th>
+      <th>Column</th>
       <th>Type</th>
+      <th>Extra</th>
+      <th class="expand"></th>
     </tr>
     <tr *ngFor="let column of table.keyColumn">
-      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>{{ column.name }}</td>
       <td>
         <ng-container *ngIf="column.type === 'ENUM'">
           <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
@@ -15,6 +17,10 @@
           {{ column.type }}
         </ng-container>
       </td>
+      <td>
+        {{ column.autoIncrement ? 'auto_increment' : '-' }}
+      </td>
+      <td></td>
     </tr>
   </table>
 
@@ -23,11 +29,13 @@
   <h3>Value</h3>
   <table yaDataTable>
     <tr>
-      <th width="200">Column</th>
+      <th>Column</th>
       <th>Type</th>
+      <th>Extra</th>
+      <th class="expand"></th>
     </tr>
     <tr *ngFor="let column of table.valueColumn">
-      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>{{ column.name }}</td>
       <td>
         <ng-container *ngIf="column.type === 'ENUM'">
           <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
@@ -36,6 +44,10 @@
           {{ column.type }}
         </ng-container>
       </td>
+      <td>
+        {{ column.autoIncrement ? 'auto_increment' : '-' }}
+      </td>
+      <td></td>
     </tr>
   </table>
 

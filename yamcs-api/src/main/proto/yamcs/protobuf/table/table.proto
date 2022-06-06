@@ -301,6 +301,10 @@ message ColumnInfo {
   optional string name = 1;
   optional string type = 2;
   repeated EnumValue enumValue = 3;
+
+  // Attribute indicating automatic auto increment upon
+  // record insertion. Only set for table column info. 
+  optional bool autoIncrement = 4;
 }
 
 message EnumValue {
