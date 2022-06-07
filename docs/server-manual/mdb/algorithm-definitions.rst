@@ -153,7 +153,7 @@ Yamcs will locate the given class which must be implementing the :javadoc:`org.y
 
 * ``algorithmDef`` represents the algorithm definition; it can be used for example to retrieve the MDB algorithm name, input parameters, etc.
 * ``context`` is an object holiding some contextual information related to where the algorithm is running. Generally this refers to a processor but for command verifiers there is a restricted context to distinguish the same algorithm running as verifier for different commands.
-* ``objs`` is an optional argument parsed from the yaml.
+* ``arg`` is an optional argument parsed using the snakeyaml parser (can be a Integer, Long, Double, Map or List).
 
 If the optional argument is not present in the algorithm text definition,  then the class constructor  should only have two parameters.
 

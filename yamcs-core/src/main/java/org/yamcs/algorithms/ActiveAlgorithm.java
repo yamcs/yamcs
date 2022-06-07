@@ -13,6 +13,7 @@ import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.OutputParameter;
 
 import com.google.protobuf.util.Timestamps;
 
@@ -202,9 +203,18 @@ public class ActiveAlgorithm {
         return statusb;
     }
 
+    /**
+     *
+     * @see {@link AlgorithmExecutor#getOutputSet()}
+     */
+    public List<OutputParameter> getOutputSet() {
+        return executor.getOutputSet();
+    }
+
     @Override
     public String toString() {
         return "ActiveAlgorithm " + algorithm.getName() + "[runCount=" + runCount + ", lastRun=" + lastRun
                 + ", errorMessage=" + errorMessage + ", errorCount=" + errorCount + ", errorTime=" + errorTime + "]";
     }
+
 }

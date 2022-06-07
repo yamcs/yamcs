@@ -340,6 +340,22 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testReplayAggregateAlgoOutput() throws Exception {
+        generatePkt1AndTm2Pkt1("2022-06-01T10:00:00", 300);
+
+        Page<ParameterValue> page = archiveClient
+                .listValues("/REFMDB/SUBSYS1/AlgoJavaAggr4.member2", Instant.parse("2022-06-01T10:00:00Z"), null,
+                ListOptions.source("replay"),
+                ListOptions.limit(3))
+                .get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+        assertEquals(3, values.size());
+        assertEquals(23, values.get(0).getEngValue().getUint32Value());
+    }
+
+    @Test
     public void testEmptyIndex() throws Exception {
         Instant start = Instant.parse("2035-01-02T00:00:00Z");
         Page<IndexGroup> page = archiveClient.listPacketIndex(start, null).get();

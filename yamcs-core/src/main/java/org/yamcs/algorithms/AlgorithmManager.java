@@ -175,8 +175,15 @@ public class AlgorithmManager extends AbstractProcessorService
         // Eagerly activate the algorithm if no outputs (with lazy activation,
         // it would never trigger because there's nothing to subscribe to)
         if (algo.getOutputSet().isEmpty() && !ctx.containsAlgorithm(algo.getQualifiedName())) {
-            activateAndInit(algo, ctx);
+            ActiveAlgorithm activeAlgo = activateAndInit(algo, ctx);
+            List<OutputParameter> outList = activeAlgo.getOutputSet();
+            if (outList != null) {
+                for (OutputParameter oParam : outList) {
+                    outParamIndex.add(oParam.getParameter());
+                }
+            }
         }
+
         TriggerSetType tst = algo.getTriggerSet();
         if (tst == null) {
             eventProducer.sendWarning("No trigger set for algorithm '" + algo.getQualifiedName() + "'");
@@ -317,6 +324,9 @@ public class AlgorithmManager extends AbstractProcessorService
                 }
             }
         }
+        if (log.isTraceEnabled()) {
+            log.trace("For algorithm {}, susbscribing to the prm for {}", algorithm.getName(), newItems);
+        }
         if (!newItems.isEmpty()) {
             parameterProcessorManager.subscribeToProviders(newItems);
         }
@@ -334,7 +344,6 @@ public class AlgorithmManager extends AbstractProcessorService
 
     AlgorithmExecutor makeExecutor(Algorithm algorithm, AlgorithmExecutionContext execCtx) throws AlgorithmException {
         AlgorithmExecutor executor;
-
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
             AlgorithmExecutorFactory factory = getFactory(calg, execCtx);

@@ -62,7 +62,14 @@ ArchiveWithPpExclusion:
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 ArchiveRetrieval:
     services:
-        - class: org.yamcs.tctm.ReplayService           
+        - class: org.yamcs.tctm.ReplayService
+        - class: org.yamcs.algorithms.AlgorithmManager
+          args:
+              libraries:
+                  JavaScript:
+                      - mdb/algolib.js
+                  python:
+                      - mdb/algolib.py
     config:
         parameterCache:
             enabled: false

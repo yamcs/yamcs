@@ -69,7 +69,6 @@ public class RefXtceDecodingTest {
 
     @Test
     public void testNumericStringEncoding() {
-        LoggingUtils.enableTracing();
         byte[] buf = new byte[] { '1', '0', '0', 0, 0, 0,
                 '-', '3', '.', '1', '4', 0 };
         ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
