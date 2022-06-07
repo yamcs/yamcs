@@ -150,9 +150,12 @@
       </ng-container>
 
       <ng-container *ngFor="let extraColumn of extraColumns" [cdkColumnDef]="extraColumn.id">
-        <th mat-header-cell *cdkHeaderCellDef [style.width]="extraColumn.width || '200px'">{{ extraColumn.label }}</th>
+        <th mat-header-cell *cdkHeaderCellDef>{{ extraColumn.label }}</th>
         <td mat-cell *cdkCellDef="let row">
-          {{ row[extraColumn.id] || '-' }}
+          <ng-container *ngIf="row.extra">
+            {{ row.extra[extraColumn.id] ?? '-' }}
+          </ng-container>
+          <ng-container *ngIf="!row.extra">-</ng-container>
         </td>
       </ng-container>
 

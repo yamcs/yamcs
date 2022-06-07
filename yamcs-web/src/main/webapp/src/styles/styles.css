@@ -240,7 +240,7 @@ button.ya-button .material-icons {
 }
 
 button.ya-button.primary {
-  background-color: #009e87;
+  background-color: var(--y-accent);
   color: white;
   border-color: rgba(0, 0, 0, 0.1);
 }
@@ -259,7 +259,7 @@ button.ya-button.primary {
 }
 
 input[type="checkbox"], input[type="radio"] {
-  accent-color: #009e87;
+  accent-color: var(--y-accent);
 }
 
 .action-bar {

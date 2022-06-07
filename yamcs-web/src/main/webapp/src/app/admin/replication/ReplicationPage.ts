@@ -55,8 +55,6 @@ export class ReplicationPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.replicationInfoSubscription) {
-      this.replicationInfoSubscription.cancel();
-    }
+    this.replicationInfoSubscription?.cancel();
   }
 }

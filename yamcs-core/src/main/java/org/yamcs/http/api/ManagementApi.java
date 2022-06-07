@@ -5,14 +5,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -55,6 +50,7 @@ import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ProcessInfo;
 import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
@@ -84,6 +80,8 @@ import org.yamcs.xtce.XtceDb;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
 
 public class ManagementApi extends AbstractManagementApi<Context> {
 
@@ -92,66 +90,26 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     public static final Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
     @Override
-    public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+    public void subscribeSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
         if (!ctx.user.isSuperuser()) {
             throw new ForbiddenException("Access is limited to superusers");
         }
 
-        YamcsServer yamcs = YamcsServer.getServer();
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var systemInfo = toSystemInfo();
+            observer.next(systemInfo);
+        }, 0, 5, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
+    }
 
-        SystemInfo.Builder b = SystemInfo.newBuilder()
-                .setServerId(yamcs.getServerId());
-        if (YamcsVersion.VERSION != null) {
-            b.setYamcsVersion(YamcsVersion.VERSION);
+    @Override
+    public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Access is limited to superusers");
         }
-        if (YamcsVersion.REVISION != null) {
-            b.setRevision(YamcsVersion.REVISION);
-        }
-
-        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-        b.setUptime(runtime.getUptime());
-        b.setJvm(runtime.getVmName() + " " + runtime.getVmVersion() + " (" + runtime.getVmVendor() + ")");
-        b.setWorkingDirectory(new File("").getAbsolutePath());
-        b.setConfigDirectory(yamcs.getConfigDirectory().toAbsolutePath().toString());
-        b.setDataDirectory(yamcs.getDataDirectory().toAbsolutePath().toString());
-        b.setCacheDirectory(yamcs.getCacheDirectory().toAbsolutePath().toString());
-        b.setJvmThreadCount(Thread.activeCount());
-
-        MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
-        MemoryUsage heap = memory.getHeapMemoryUsage();
-        b.setHeapMemory(heap.getCommitted());
-        b.setUsedHeapMemory(heap.getUsed());
-        if (heap.getMax() != -1) {
-            b.setMaxHeapMemory(heap.getMax());
-        }
-        MemoryUsage nonheap = memory.getNonHeapMemoryUsage();
-        b.setNonHeapMemory(nonheap.getCommitted());
-        b.setUsedNonHeapMemory(nonheap.getUsed());
-        if (nonheap.getMax() != -1) {
-            b.setMaxNonHeapMemory(nonheap.getMax());
-        }
-
-        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        b.setOs(os.getName() + " " + os.getVersion());
-        b.setArch(os.getArch());
-        b.setAvailableProcessors(os.getAvailableProcessors());
-        b.setLoadAverage(os.getSystemLoadAverage());
-
-        try {
-            for (Path root : FileSystems.getDefault().getRootDirectories()) {
-                FileStore store = Files.getFileStore(root);
-                b.addRootDirectories(RootDirectory.newBuilder()
-                        .setDirectory(root.toString())
-                        .setType(store.type())
-                        .setTotalSpace(store.getTotalSpace())
-                        .setUnallocatedSpace(store.getUnallocatedSpace())
-                        .setUsableSpace(store.getUsableSpace()));
-            }
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-
-        observer.complete(b.build());
+        var systemInfo = toSystemInfo();
+        observer.complete(systemInfo);
     }
 
     @Override
@@ -501,6 +459,70 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
     }
 
+    private static SystemInfo toSystemInfo() {
+        var yamcs = YamcsServer.getServer();
+
+        var b = SystemInfo.newBuilder()
+                .setServerId(yamcs.getServerId());
+        if (YamcsVersion.VERSION != null) {
+            b.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            b.setRevision(YamcsVersion.REVISION);
+        }
+
+        var process = ProcessHandle.current();
+        b.setProcess(toProcessInfo(process));
+
+        var runtime = ManagementFactory.getRuntimeMXBean();
+        b.setUptime(runtime.getUptime());
+        b.setJvm(runtime.getVmName() + " " + runtime.getVmVersion() + " (" + runtime.getVmVendor() + ")");
+        b.setWorkingDirectory(new File("").getAbsolutePath());
+        b.setConfigDirectory(yamcs.getConfigDirectory().toAbsolutePath().toString());
+        b.setDataDirectory(yamcs.getDataDirectory().toAbsolutePath().toString());
+        b.setCacheDirectory(yamcs.getCacheDirectory().toAbsolutePath().toString());
+        b.setJvmThreadCount(Thread.activeCount());
+
+        var memory = ManagementFactory.getMemoryMXBean();
+        var heap = memory.getHeapMemoryUsage();
+        b.setHeapMemory(heap.getCommitted());
+        b.setUsedHeapMemory(heap.getUsed());
+        if (heap.getMax() != -1) {
+            b.setMaxHeapMemory(heap.getMax());
+        }
+        var nonheap = memory.getNonHeapMemoryUsage();
+        b.setNonHeapMemory(nonheap.getCommitted());
+        b.setUsedNonHeapMemory(nonheap.getUsed());
+        if (nonheap.getMax() != -1) {
+            b.setMaxNonHeapMemory(nonheap.getMax());
+        }
+
+        var os = ManagementFactory.getOperatingSystemMXBean();
+        b.setOs(os.getName() + " " + os.getVersion());
+        b.setArch(os.getArch());
+        b.setAvailableProcessors(os.getAvailableProcessors());
+        var systemLoadAverage = os.getSystemLoadAverage();
+        if (systemLoadAverage >= 0) {
+            b.setLoadAverage(os.getSystemLoadAverage());
+        }
+
+        try {
+            for (var root : FileSystems.getDefault().getRootDirectories()) {
+                var store = Files.getFileStore(root);
+                b.addRootDirectories(RootDirectory.newBuilder()
+                        .setDirectory(root.toString())
+                        .setType(store.type())
+                        .setTotalSpace(store.getTotalSpace())
+                        .setUnallocatedSpace(store.getUnallocatedSpace())
+                        .setUsableSpace(store.getUsableSpace()));
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        return b.build();
+    }
+
     private Predicate<YamcsServerInstance> getFilter(List<String> flist) throws HttpException {
         if (flist == null) {
             return ysi -> true;
@@ -562,6 +584,40 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         } else {
             throw new BadRequestException("Unknown filter key '" + pr.key + "'");
         }
+    }
+
+    private static ProcessInfo toProcessInfo(ProcessHandle process) {
+        var processb = ProcessInfo.newBuilder()
+                .setPid(process.pid());
+        var processInfo = process.info();
+        if (processInfo.user().isPresent()) {
+            processb.setUser(processInfo.user().get());
+        }
+        if (processInfo.startInstant().isPresent()) {
+            var startTime = processInfo.startInstant().get();
+            processb.setStartTime(Timestamp.newBuilder()
+                    .setSeconds(startTime.getEpochSecond())
+                    .setNanos(startTime.getNano()));
+        }
+        if (processInfo.totalCpuDuration().isPresent()) {
+            var duration = processInfo.totalCpuDuration().get();
+            processb.setTotalCpuDuration(Durations.fromSeconds(duration.getSeconds()));
+        }
+        if (processInfo.command().isPresent()) {
+            var command = processInfo.command().get();
+            processb.setCommand(command);
+        }
+        if (processInfo.arguments().isPresent()) {
+            for (var argument : processInfo.arguments().get()) {
+                processb.addArguments(argument);
+            }
+        }
+
+        process.children()
+                .map(ManagementApi::toProcessInfo)
+                .forEach(processb::addChildren);
+
+        return processb.build();
     }
 
     public static ServiceInfo toServiceInfo(ServiceWithConfig serviceWithConfig, String instance, String processor) {

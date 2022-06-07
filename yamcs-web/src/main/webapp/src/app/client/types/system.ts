@@ -343,6 +343,8 @@ export type ClearanceSubscription = WebSocketCall<void, Clearance>;
 
 export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
 
+export type SystemInfoSubscription = WebSocketCall<void, SystemInfo>;
+
 export interface Service {
   instance: string;
   name: string;

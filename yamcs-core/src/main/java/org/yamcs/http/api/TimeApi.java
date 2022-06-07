@@ -1,11 +1,8 @@
 package org.yamcs.http.api;
 
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -73,20 +70,20 @@ public class TimeApi extends AbstractTimeApi<Context> {
 
     @Override
     public void subscribeTime(Context ctx, SubscribeTimeRequest request, Observer<Timestamp> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        var instance = ManagementApi.verifyInstance(request.getInstance());
         TimeProvider provider;
         if (request.hasProcessor()) {
-            Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+            var processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
             provider = () -> processor.getCurrentTime();
         } else {
-            YamcsServer yamcs = YamcsServer.getServer();
-            TimeService timeService = yamcs.getInstance(instance).getTimeService();
+            var yamcs = YamcsServer.getServer();
+            var timeService = yamcs.getInstance(instance).getTimeService();
             provider = () -> timeService.getMissionTime();
         }
 
-        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
-        ScheduledFuture<?> future = exec.scheduleAtFixedRate(() -> {
-            long time = provider.getTime();
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var time = provider.getTime();
             observer.next(TimeEncoding.toProtobufTimestamp(time));
         }, 0, 1, TimeUnit.SECONDS);
 

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
+import { FaviconService } from '../../core/services/FaviconService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -19,7 +20,11 @@ export class AlarmLabel implements OnDestroy {
 
   private statusSubscription: GlobalAlarmStatusSubscription;
 
-  constructor(readonly yamcs: YamcsService, authService: AuthService) {
+  constructor(
+    readonly yamcs: YamcsService,
+    readonly faviconService: FaviconService,
+    authService: AuthService,
+  ) {
     this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
       if (connectionInfo && connectionInfo.instance) {
         /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
@@ -34,6 +39,8 @@ export class AlarmLabel implements OnDestroy {
             };
             this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
               this.status$.next(status);
+              const alarmCount = status.unacknowledgedCount + status.acknowledgedCount;
+              this.faviconService.showNotification(alarmCount > 0);
             });
           }
           context += ';' + connectionInfo.processor;
@@ -47,16 +54,13 @@ export class AlarmLabel implements OnDestroy {
   }
 
   private clearAlarmSubscription() {
-    if (this.statusSubscription) {
-      this.statusSubscription.cancel();
-    }
+    this.statusSubscription?.cancel();
     this.status$.next(null);
+    this.faviconService.showNotification(false);
   }
 
   ngOnDestroy() {
     this.clearAlarmSubscription();
-    if (this.connectionInfoSubscription) {
-      this.connectionInfoSubscription.unsubscribe();
-    }
+    this.connectionInfoSubscription?.unsubscribe();
   }
 }

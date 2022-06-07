@@ -34,7 +34,7 @@
       <dt>Uptime</dt>
       <dd>{{ info.uptime | duration }}</dd>
       <dt>Load average</dt>
-      <dd>{{ info.loadAverage | number:'1.2-2' }}</dd>
+      <dd>{{ (info.loadAverage | number:'1.2-2') || '-' }}</dd>
       <dt>Available processors</dt>
       <dd>{{ info.availableProcessors }}</dd>
       <dt>Heap memory</dt>
@@ -89,5 +89,37 @@
         <td></td>
       </tr>
     </table>
+    <br>
+    <h4>Process tree</h4>
+    <table yaDataTable class="expand">
+      <tr>
+        <th>PID</th>
+        <th>User</th>
+        <th>Start time</th>
+        <th class="expand">Command</th>
+      </tr>
+      <ng-container *ngTemplateOutlet="processTemplate; context:{process: info.process, indent: 0, last: false}">
+      </ng-container>
+    </table>
   </div>
 </app-admin-page>
+
+<ng-template #processTemplate let-process="process" let-indent="indent" let-last="last">
+  <tr>
+    <td>{{ process.pid }}</td>
+    <td>{{ process.user }}</td>
+    <td>{{ (process.startTime | datetime) || '-' }}</td>
+    <td>
+      <ng-container *ngIf="indent">
+        <span class="tree mono">{{ " ".repeat(indent) }}</span>
+        <span class="tree mono" *ngIf="!last">├──</span>
+        <span class="tree mono" *ngIf="last">└──</span>
+      </ng-container>
+      {{ process.command }}
+    </td>
+  </tr>
+  <ng-container *ngFor="let child of (process.children || []); last as last">
+    <ng-container *ngTemplateOutlet="processTemplate; context:{process: child, indent: indent + 2, last: last}">
+    </ng-container>
+  </ng-container>
+</ng-template>

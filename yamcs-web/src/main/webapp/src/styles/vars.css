@@ -1,0 +1,18 @@
+html {
+  /* RGB values, for opacity mixing */
+  --y-white-rgb: 255, 255, 255;
+  --y-black-rgb: 0, 0, 0;
+  --y-accent-rgb: 0, 158, 135;
+  --y-contrast-rgb: var(--y-black-rgb);
+
+  --y-accent: rgb(var(--y-accent-rgb));
+  --y-accent-foreground: #ffffff;
+  --y-border-color: rgba(var(--y-contrast-rgb), 0.1);
+
+  --y-scrollbar-thumb: #606060;
+}
+
+html.dark {
+  --y-accent-rgb: 62, 166, 255;
+  --y-contrast-rgb: var(--y-white-rgb);
+}

@@ -63,7 +63,7 @@ export class EventsPage {
   ];
 
   /**
-   * Columns specific to a site
+   * Columns specific to a Yamcs deployment
    */
   extraColumns: ExtraColumnInfo[] = [];
 

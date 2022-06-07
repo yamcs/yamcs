@@ -137,6 +137,9 @@ message CreateEventRequest {
   // events coming from the same source. If not set Yamcs will automatically
   // assign a sequential number as if every submitted event is unique.
   optional int32 sequenceNumber = 7;
+
+  // Additional properties
+  map<string, string> extra = 8;
 }
 
 message StreamEventsRequest {

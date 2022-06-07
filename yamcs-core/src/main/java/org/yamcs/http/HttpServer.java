@@ -3,7 +3,6 @@ package org.yamcs.http;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -150,10 +149,6 @@ public class HttpServer extends AbstractYamcsService {
 
     @Override
     public Spec getSpec() {
-        Spec gpbSpec = new Spec();
-        gpbSpec.addOption("class", OptionType.STRING).withRequired(true);
-        gpbSpec.addOption("field", OptionType.STRING).withRequired(true);
-
         Spec corsSpec = new Spec();
         corsSpec.addOption("allowOrigin", OptionType.STRING).withRequired(true);
         corsSpec.addOption("allowCredentials", OptionType.BOOLEAN).withRequired(true);
@@ -189,7 +184,6 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
-        spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
         spec.addOption("bindings", OptionType.LIST)
@@ -251,21 +245,6 @@ public class HttpServer extends AbstractYamcsService {
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
         reverseLookup = config.getBoolean("reverseLookup");
 
-        if (config.containsKey("gpbExtensions")) {
-            List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
-            try {
-                for (Map<String, Object> conf : extensionsConf) {
-                    String className = YConfiguration.getString(conf, "class");
-                    String fieldName = YConfiguration.getString(conf, "field");
-                    Class<?> extensionClass = Class.forName(className);
-                    Field field = extensionClass.getField(fieldName);
-                    protobufRegistry.installExtension(extensionClass, field);
-                }
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                throw new InitException("Could not load GPB extensions", e);
-            }
-        }
-
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
             String[] origins = ycors.getString("allowOrigin").split(",");
@@ -295,7 +274,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new CommandsApi());
         addApi(new Cop1Api());
         addApi(new DatabaseApi());
-        addApi(new EventsApi(protobufRegistry));
+        addApi(new EventsApi());
         addApi(new IamApi(tokenStore));
         addApi(new IndexesApi());
         addApi(new LinksApi(auditLog));

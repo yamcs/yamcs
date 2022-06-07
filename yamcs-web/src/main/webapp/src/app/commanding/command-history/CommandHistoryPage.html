@@ -114,7 +114,8 @@
         <ng-container matColumnDef="commandId">
           <th mat-header-cell *matHeaderCellDef>ID</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.id }}
+            <a [routerLink]="['/commanding/history', item.id]"
+               [queryParams]="{c: yamcs.context}">{{ item.id }}</a>
           </td>
         </ng-container>
 

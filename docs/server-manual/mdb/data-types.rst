@@ -34,7 +34,7 @@ As mentioned above, one important function of a data type is to describe how to 
  - String data encoding
  - Binary data encoding
 
-Note that the ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``xyz`` in the ``xyz data type`` refers to type of the engineering value.
+Note that ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``xyz`` in ``xyz data type`` refers to type of the engineering value.
 
 One will certanly notice that there is no direct encoding for absolute times, enumerated, aggregated and array value types. Currently these can only be encoded/decoded by other means (e.g. an aggregate value will be decoded by decoding its members, an enumerated value by decoding its integer or string representation).
 
@@ -42,7 +42,7 @@ The integer and float encodings have optionally a calibrator which allow transfo
 
 There may be MDB data types without encoding - these are used by local parameters which are never encoded on wire.
 
-All the data encodings in Yamcs can be performed by user defined java code by implementing the :javadoc:`org.yamcs.xtceproc.DataEncoder` or :javadoc:`org.yamcs.xtceprocDataDecoder` respectively. Such code has to be written if the encoding format is not part of Yamcs.
+All the data encodings in Yamcs can be performed by user defined java code by implementing the :javadoc:`org.yamcs.mdb.DataEncoder` or :javadoc:`org.yamcs.mdb.DataDecoder` respectively. Such code has to be written if the encoding format is not part of Yamcs.
 
 Parameter types vs Argument types
 ---------------------------------
@@ -278,14 +278,14 @@ Note the _``yamcs_ignore`` parameter reference which is used to workaround XTCE 
 
 More XTCE examples:
 
-* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-tm.xml>`_
-* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/src/test/resources/xtce/strings-cmd.xml>`_
+* :source:`yamcs-core/src/test/resources/xtce/strings-tm.xml`
+* :source:`yamcs-core/src/test/resources/xtce/strings-cmd.xml`
 
 More Spreadsheet examples:
 
-* `<https://github.com/yamcs/yamcs/blob/master/yamcs-core/mdb/refmdb.xls>`_
+* :source:`yamcs-core/mdb/refmdb.xls`
 
-Finally, we mention that string values can also be encoded with a binary encoder; the translation from string to binary is using the `String#getBytes <https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-->`_ method.
+Finally, we mention that string values can also be encoded with a binary encoder; the translation from string to binary is using the `String#getBytes <https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes>`_ method.
 
 
 Binary data type

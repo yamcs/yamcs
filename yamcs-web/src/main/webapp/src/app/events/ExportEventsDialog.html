@@ -25,8 +25,9 @@
     <br>
     <label>
       Source<br>
-      <app-select formControlName="source" [options]="data.sourceOptions">
-      </app-select>
+      <app-multi-select formControlName="source"
+                        [options]="data.sourceOptions"
+                        emptyOption="Any source"></app-multi-select>
     </label>
     <br>
     <label>

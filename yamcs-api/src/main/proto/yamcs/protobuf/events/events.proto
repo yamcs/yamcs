@@ -35,5 +35,6 @@ message Event {
   // Set by API when event was posted by a user
   optional string createdBy = 10;
 
-  extensions 100 to 10000;
+  // Additional properties
+  map<string, string> extra = 11;
 }

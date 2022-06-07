@@ -8,6 +8,7 @@ import { ActionLogTab as ClearanceActionLogTab } from './clearances/ActionLogTab
 import { ClearancesEnabledGuard } from './clearances/ClearancesEnabledGuard';
 import { ClearancesPage } from './clearances/ClearancesPage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
+import { CommandPage } from './command-history/CommandPage';
 import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage } from './command-sender/SendCommandPage';
@@ -53,7 +54,14 @@ const routes: Routes = [
         component: CommandReportPage,
       }, {
         path: 'history',
-        component: CommandHistoryPage,
+        children: [{
+          path: '',
+          pathMatch: 'full',
+          component: CommandHistoryPage,
+        }, {
+          path: ':commandId',
+          component: CommandPage,
+        }]
       }, {
         path: 'queues',
         component: QueuesPage,
@@ -112,6 +120,7 @@ export const routingComponents = [
   ClearancesPage,
   ClearanceActionLogTab,
   CommandHistoryPage,
+  CommandPage,
   CommandReportPage,
   ConfigureCommandPage,
   QueuedCommandsTab,
