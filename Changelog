@@ -1,3 +1,13 @@
+Version 5.7.3 released 9-Jun-2022
+- CCSDS TM/TC randomizer: fixed the interpretation of offset/length parameters (may affect custom encoders which want to randomize/derandomzie only parts of the frames).
+- Allow custom (Java) algorithms to provide the list of output parameters at runtime (rather than in the MDB definition) such that the algorithms are not skipped at replay time if no output parameter has been declared in the MDB def.
+- MDB: added internal support for ToString allowing to define how to display the values of parameters (will be implemented in the future in yamcs-web and Yamcs Studio)
+- yamcs-web:
+  - Show favicon badge when there is an alarm
+  - Add group action for queues
+  - Show process tree on system page
+  - Add Command detail page
+
 Version 5.7.2 released 3-Jun-2022
 - yamcs-web: fix render issue with enumerated and command aggregate arguments
 
