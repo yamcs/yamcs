@@ -386,6 +386,12 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as TimelineItemsPage;
   }
 
+  async getTimelineItem(instance: string, id: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/items/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as TimelineItem;
+  }
+
   async createTimelineBand(instance: string, options: CreateTimelineBandRequest) {
     const body = JSON.stringify(options);
     const url = `${this.apiUrl}/timeline/${instance}/bands`;

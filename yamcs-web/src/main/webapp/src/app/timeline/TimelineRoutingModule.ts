@@ -8,6 +8,7 @@ import { CreateCommandBandPage } from './commandBand/CreateCommandBandPage';
 import { CreateBandPage } from './CreateBandPage';
 import { CreateViewPage } from './CreateViewPage';
 import { EditBandPage } from './EditBandPage';
+import { EditItemPage } from './EditItemPage';
 import { EditViewPage } from './EditViewPage';
 import { CreateItemBandPage } from './itemBand/CreateItemBandPage';
 import { ItemsPage } from './ItemsPage';
@@ -75,6 +76,10 @@ const routes: Routes = [
         path: 'items',
         pathMatch: 'full',
         component: ItemsPage,
+      }, {
+        path: 'items/:item',
+        pathMatch: 'full',
+        component: EditItemPage,
       }
     ]
   }
@@ -95,6 +100,7 @@ export const routingComponents = [
   CreateTimeRulerPage,
   CreateViewPage,
   EditBandPage,
+  EditItemPage,
   EditViewPage,
   ItemsPage,
   TimelineChartPage,
