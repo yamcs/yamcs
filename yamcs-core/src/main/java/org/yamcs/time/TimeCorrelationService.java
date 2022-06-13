@@ -252,7 +252,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             while (res.hasNext()) {
                 tmpl.add(TcoCoefficients.fromTuple(res.next()));
             }
-
+            res.close();
             if (!tmpl.isEmpty()) {
                 curCoefficients = tmpl.get(0);
             }
