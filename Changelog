@@ -1,3 +1,8 @@
+Version 5.7.4 released 15-Jun-2022
+- added an option to the /api/stream-archive/{instance}:streamParameterValues (which extracts parameters using replays) to filter the packets based on the tm links  
+on which they have been originally received.
+ For example typically a different link is used to receive dump (recorded on-board) packets; This option can be used to extract parameters only from those. Or could be used to retrieve only from the realtime packets skipping the dump.
+
 Version 5.7.3 released 9-Jun-2022
 - CCSDS TM/TC randomizer: fixed the interpretation of offset/length parameters (may affect custom encoders which want to randomize/derandomzie only parts of the frames).
 - Allow custom (Java) algorithms to provide the list of output parameters at runtime (rather than in the MDB definition) such that the algorithms are not skipped at replay time if no output parameter has been declared in the MDB def.
