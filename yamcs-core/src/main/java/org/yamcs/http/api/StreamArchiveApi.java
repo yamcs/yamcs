@@ -35,6 +35,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
@@ -214,6 +215,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         }
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
+
+        if (request.getTmLinksCount() > 0) {
+            repl.setPacketRequest(PacketReplayRequest.newBuilder().addAllTmLinks(request.getTmLinksList()).build());
+        }
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
 

@@ -69,6 +69,7 @@ import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.ProtobufDataType;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableColumnDefinition;

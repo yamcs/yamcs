@@ -41,6 +41,7 @@ import org.yamcs.protobuf.StreamEventsRequest;
 import org.yamcs.protobuf.SubscribeEventsRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;

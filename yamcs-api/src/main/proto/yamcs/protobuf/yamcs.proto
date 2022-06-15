@@ -124,6 +124,8 @@ message ParameterReplayRequest {
 message PacketReplayRequest {
   // No filter, means all packets for which privileges exist, are sent
   repeated NamedObjectId nameFilter = 1;
+  //if specified, only replay packets originally received on one of those links
+  repeated string tmLinks = 2;
 }
 
 message EventReplayRequest {

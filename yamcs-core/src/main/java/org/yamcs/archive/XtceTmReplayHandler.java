@@ -11,6 +11,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
@@ -66,35 +67,21 @@ public class XtceTmReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public String getSelectCmd() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ").append(ProtoDataType.TM_PACKET.getNumber()).append(",* from tm ");
+    public SqlBuilder getSelectCmd() {
+        SqlBuilder sqlb = ReplayHandler.init(XtceTmRecorder.TABLE_NAME, ProtoDataType.TM_PACKET, request);
+
         if (partitions != null) {
             if (partitions.isEmpty()) {
                 return null;
             }
-            sb.append("WHERE pname IN (");
-            boolean first = true;
-            for (String pn : partitions) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                sb.append("'").append(pn).append("'");
-            }
-            sb.append(")");
-            appendTimeClause(sb, request, false);
-        } else {
-            if (request.hasStart() || (request.hasStop())) {
-                sb.append("WHERE ");
-                appendTimeClause(sb, request, true);
-            }
+            sqlb.whereColIn("pname", partitions);
         }
-        if (request.isReverse()) {
-            sb.append(" ORDER DESC");
+
+        if (request.getPacketRequest().getTmLinksCount() > 0) {
+            sqlb.whereColIn("link", request.getPacketRequest().getTmLinksList());
         }
-        return sb.toString();
+
+        return sqlb;
     }
 
     @Override
@@ -105,22 +92,6 @@ public class XtceTmReplayHandler implements ReplayHandler {
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
         return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
-    }
-
-    static void appendTimeClause(StringBuilder sb, ReplayOptions request, boolean firstRestriction) {
-        if (request.hasStart() || (request.hasStop())) {
-            if (!firstRestriction) {
-                sb.append(" and ");
-            }
-            if (request.hasStart()) {
-                sb.append("gentime>=" + request.getStart());
-                if (request.hasStop()) {
-                    sb.append(" and gentime<" + request.getStop());
-                }
-            } else {
-                sb.append("gentime<" + request.getStop());
-            }
-        }
     }
 
     public static class ReplayPacket {

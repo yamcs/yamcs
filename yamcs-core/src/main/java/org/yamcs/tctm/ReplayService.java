@@ -60,8 +60,6 @@ import com.google.protobuf.util.JsonFormat;
 /**
  * Provides telemetry packets and processed parameters from the yamcs archive.
  * 
- * @author nm
- * 
  */
 public class ReplayService extends AbstractProcessorService
         implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {

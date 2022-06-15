@@ -10,7 +10,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
-import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -18,6 +17,7 @@ import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.Tuple;

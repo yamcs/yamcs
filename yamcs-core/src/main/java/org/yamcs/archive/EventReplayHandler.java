@@ -1,5 +1,6 @@
 package org.yamcs.archive;
 
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
@@ -15,28 +16,10 @@ public class EventReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public String getSelectCmd() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ").append(ProtoDataType.EVENT.getNumber()).append(",* from events");
-        appendWhereClause(sb, request);
-        if (request.isReverse()) {
-            sb.append(" ORDER DESC");
-        }
-        return sb.toString();
-    }
+    public SqlBuilder getSelectCmd() {
+        SqlBuilder sqlb = ReplayHandler.init(EventRecorder.TABLE_NAME, ProtoDataType.EVENT, request);
 
-    static void appendWhereClause(StringBuilder sb, ReplayOptions request) {
-        if (request.hasStart() || (request.hasStop())) {
-            sb.append(" where ");
-            if (request.hasStart()) {
-                sb.append(" gentime>=" + request.getStart());
-                if (request.hasStop()) {
-                    sb.append(" and gentime<" + request.getStop());
-                }
-            } else {
-                sb.append(" gentime<" + request.getStop());
-            }
-        }
+        return sqlb;
     }
 
     @Override

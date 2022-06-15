@@ -720,6 +720,15 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
+    public byte[] generate_PKT13() {
+        int pkt13Length = headerLength + 4;
+        ByteBuffer bb = ByteBuffer.allocate(pkt13Length);
+        fill_CcsdsHeader(bb, 995, 13);
+        bb.putFloat(headerLength, 100.100f);
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
     private void putFixedStringParam(ByteBuffer bb, String value, int bits) {
         int baSize = bits / 8;
         if (bits == -1) {

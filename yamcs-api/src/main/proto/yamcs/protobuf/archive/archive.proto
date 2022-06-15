@@ -51,11 +51,16 @@ service StreamArchiveApi {
   }
 }
 
+//Retrieves parameters by performing a replay
 message StreamParameterValuesRequest {
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated NamedObjectId ids = 4;
+
+  //Since version 5.4.0, Yamcs records the name of the TM link on which a TM packet is received together with the packet (in the tm table)
+  // This option, if specified, allows retrieving as part of replay only the packets originally received on one of the links specified
+  repeated string tmLinks = 5;
 }
 
 message ParameterGroupInfo {

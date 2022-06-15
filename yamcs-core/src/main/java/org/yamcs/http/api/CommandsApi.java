@@ -61,6 +61,7 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;

@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;

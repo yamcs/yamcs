@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.yarch;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,42 +45,70 @@ public class SqlBuilder {
     }
 
     public SqlBuilder whereColAfter(String colName, Timestamp timestamp) {
-        return whereColAfter(colName, timestamp, true);
+        return whereColAfter(colName, TimeEncoding.fromProtobufTimestamp(timestamp), true);
+    }
+
+    public SqlBuilder whereColAfter(String colName, long instant) {
+        return whereColAfter(colName, instant, true);
+    }
+
+    public SqlBuilder whereColAfterOrEqual(String colName, long instant) {
+        return whereColAfter(colName, instant, false);
     }
 
     public SqlBuilder whereColAfterOrEqual(String colName, Timestamp timestamp) {
-        return whereColAfter(colName, timestamp, false);
+        return whereColAfter(colName, TimeEncoding.fromProtobufTimestamp(timestamp), false);
     }
 
-    private SqlBuilder whereColAfter(String colName, Timestamp timestamp, boolean strict) {
+    private SqlBuilder whereColAfter(String colName, long instant, boolean strict) {
         StringBuilder cond = new StringBuilder();
         cond.append(colName);
         cond.append(strict ? " > " : " >= ");
-        cond.append(TimeEncoding.fromProtobufTimestamp(timestamp));
+        cond.append(instant);
         conditions.add(cond.toString());
         return this;
     }
 
     public SqlBuilder whereColBeforeOrEqual(String colName, Timestamp timestamp) {
-        return whereColBefore(colName, timestamp, false);
+        return whereColBefore(colName, TimeEncoding.fromProtobufTimestamp(timestamp), false);
+    }
+
+    public SqlBuilder whereColBeforeOrEqual(String colName, long instant) {
+        return whereColBefore(colName, instant, false);
     }
 
     public SqlBuilder whereColBefore(String colName, Timestamp timestamp) {
-        return whereColBefore(colName, timestamp, true);
+        return whereColBefore(colName, TimeEncoding.fromProtobufTimestamp(timestamp), true);
     }
 
-    private SqlBuilder whereColBefore(String colName, Timestamp timestamp, boolean strict) {
+    public SqlBuilder whereColBefore(String colName, long instant) {
+        return whereColBefore(colName, instant, true);
+    }
+
+    private SqlBuilder whereColBefore(String colName, long instant, boolean strict) {
         StringBuilder cond = new StringBuilder();
         cond.append(colName);
         cond.append(strict ? " < " : " <= ");
-        cond.append(TimeEncoding.fromProtobufTimestamp(timestamp));
+        cond.append(instant);
         conditions.add(cond.toString());
         return this;
     }
 
     public SqlBuilder whereColIn(String colName, Collection<?> values) {
+        return whereColInNotIn(colName, values, true);
+    }
+
+    public SqlBuilder whereColNotIn(String colName, Collection<?> values) {
+        return whereColInNotIn(colName, values, false);
+    }
+
+    private SqlBuilder whereColInNotIn(String colName, Collection<?> values, boolean in) {
         StringBuilder cond = new StringBuilder();
-        cond.append(colName).append(" IN (");
+        cond.append(colName);
+        if (!in) {
+            cond.append(" NOT");
+        }
+        cond.append(" IN (");
         boolean first = true;
         for (Object o : values) {
             if (first) {
@@ -96,7 +124,6 @@ public class SqlBuilder {
 
         return this;
     }
-
     public SqlBuilder descend(boolean descend) {
         this.descend = descend;
         return this;

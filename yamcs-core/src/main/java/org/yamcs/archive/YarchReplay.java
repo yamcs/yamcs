@@ -1,6 +1,8 @@
 package org.yamcs.archive;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,6 +21,7 @@ import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SpeedLimitStream;
 import org.yamcs.yarch.SpeedSpec;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -148,11 +151,13 @@ public class YarchReplay implements StreamSubscriber {
         if (handlers.size() > 1) {
             sb.append("MERGE ");
         }
+        List<Object> args = new ArrayList<Object>();
 
         boolean first = true;
         for (ReplayHandler rh : handlers.values()) {
-            String selectCmd = rh.getSelectCmd();
+            SqlBuilder selectCmd = rh.getSelectCmd();
             if (selectCmd != null) {
+                args.addAll(selectCmd.getQueryArguments());
                 if (first) {
                     first = false;
                 } else {
@@ -161,7 +166,7 @@ public class YarchReplay implements StreamSubscriber {
                 if (handlers.size() > 1) {
                     sb.append("(");
                 }
-                sb.append(selectCmd);
+                sb.append(selectCmd.toString());
                 if (handlers.size() > 1) {
                     sb.append(")");
                 }
@@ -199,9 +204,9 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         String query = sb.toString();
-        log.debug("running query {}", query);
+        log.debug("running query {} with args {} ", query, args);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        ydb.execute(query);
+        ydb.execute(query, args.toArray());
         Stream s = ydb.getStream(streamName);
         s.addSubscriber(this);
         numPacketsSent = 0;

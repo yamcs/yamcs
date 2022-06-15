@@ -345,8 +345,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         Page<ParameterValue> page = archiveClient
                 .listValues("/REFMDB/SUBSYS1/AlgoJavaAggr4.member2", Instant.parse("2022-06-01T10:00:00Z"), null,
-                ListOptions.source("replay"),
-                ListOptions.limit(3))
+                        ListOptions.source("replay"),
+                        ListOptions.limit(3))
                 .get();
 
         List<ParameterValue> values = new ArrayList<>();
@@ -378,6 +378,23 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         received = new ArrayList<>();
         archiveClient.streamPacketIndex(received::add, start, stop).get();
         assertEquals(4, received.size());
+    }
+
+    @Test
+    public void testStreamValues() throws Exception {
+        generatePkt13AndTm2Pkt1("2022-06-15T13:50:00", 120);
+        Instant start = Instant.parse("2022-06-15T13:50:00Z");
+        Instant stop = Instant.parse("2022-06-15T13:50:10Z");
+        List<Map<String, ParameterValue>> l = new ArrayList<>();
+        archiveClient.streamValues(Arrays.asList("/REFMDB/tm2_para2"), m -> l.add(m), start, stop).get();
+        assertEquals(20, l.size());
+
+        l.clear();
+        // replay only data received originally via tm2_realtime, that will halve the number of parameters
+        archiveClient.streamValues(Arrays.asList("/REFMDB/tm2_para2"),
+                Arrays.asList("tm2_realtime"),
+                m -> l.add(m), start, stop).get();
+        assertEquals(10, l.size());
     }
 
     @Test

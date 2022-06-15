@@ -146,6 +146,17 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
+    void generatePkt13AndTm2Pkt1(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT13();
+
+            packetGenerator2.setGenerationTime(t0 + 1000 * i);
+            packetGenerator2.generate_TM2_PKT1();
+        }
+    }
+
     static class MyConnectionListener implements ConnectionListener {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);

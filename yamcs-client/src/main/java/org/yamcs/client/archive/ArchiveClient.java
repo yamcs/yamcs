@@ -523,6 +523,11 @@ public class ArchiveClient {
 
     public CompletableFuture<Void> streamValues(List<String> parameters,
             StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
+        return streamValues(parameters, null, consumer, start, stop);
+    }
+
+    public CompletableFuture<Void> streamValues(List<String> parameters, List<String> tmLinks,
+            StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
         StreamParameterValuesRequest.Builder requestb = StreamParameterValuesRequest.newBuilder()
                 .setInstance(instance);
         for (String parameter : parameters) {
@@ -534,6 +539,10 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+        if (tmLinks != null) {
+            requestb.addAllTmLinks(tmLinks);
+        }
+
         CompletableFuture<Void> f = new CompletableFuture<>();
         streamArchiveService.streamParameterValues(null, requestb.build(), new Observer<ParameterData>() {
 
