@@ -124,6 +124,7 @@ options:
         technically possible.
     type: BOOLEAN
     default: false
+    hidden: true
 
   tc:
     title: Show Commanding Functionalities
