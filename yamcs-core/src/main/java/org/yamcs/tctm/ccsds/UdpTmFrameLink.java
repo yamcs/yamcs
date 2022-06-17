@@ -97,9 +97,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     DatagramPacket datagramWithAsm = new DatagramPacket(new byte[maxLength + 4 ], maxLength + 4);
                     datagram = new DatagramPacket(new byte[maxLength], maxLength);
                     tmSocket.receive(datagramWithAsm);
-                    System.out.println("received data: "+ StringConverter
-                    .arrayToHexString(datagramWithAsm.getData(), datagramWithAsm.getOffset(), datagramWithAsm.getLength(), true));
-
+                    
                     // Select the first four bytes
                     for(int i = 0; i < 4; i++){
                         firstsBytes[i]=datagramWithAsm.getData()[i];
