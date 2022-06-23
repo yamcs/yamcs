@@ -12,6 +12,14 @@
   <name>Yamcs :: API</name>
   <description>Used by external clients to communicate with Yamcs</description>
 
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License (LGPL)</name>
+      <url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+    </license>
+  </licenses>
+
+
   <properties>
     <javaModuleName>org.yamcs.api</javaModuleName>
   </properties>
