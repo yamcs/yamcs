@@ -89,8 +89,9 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     this.selectedFileNames.clear();
     this.updateFileNames();
     const items: RemoteFileItem[] = [];
+    const prefix: string = dir.remotePath ? dir.remotePath + '/' : ''
     for (const file of dir.files || []) {
-      const fullFileName = dir.remotePath + '/' + file.name;
+      const fullFileName = prefix + file.name;
       if (file.size == 0) {
         items.push({
           folder: true,
