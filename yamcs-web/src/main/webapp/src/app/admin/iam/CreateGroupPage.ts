@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,12 +16,12 @@ import { AddMembersDialog, MemberItem } from './AddMembersDialog';
 })
 export class CreateGroupPage {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   memberItems$ = new BehaviorSubject<MemberItem[]>([]);
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
@@ -32,8 +32,8 @@ export class CreateGroupPage {
   ) {
     title.setTitle('Create a Group');
     this.form = formBuilder.group({
-      name: new FormControl('', [Validators.required]),
-      description: new FormControl(),
+      name: new UntypedFormControl('', [Validators.required]),
+      description: new UntypedFormControl(),
     });
   }
 

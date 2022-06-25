@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -38,10 +38,10 @@ export class ParameterDataTab {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   dataSource: ParameterDataDataSource;

@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -25,7 +25,7 @@ export class EditItemPage implements OnDestroy {
     { id: 'START_ON', label: 'Start on' },
   ];
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   private formSubscription: Subscription;
@@ -38,7 +38,7 @@ export class EditItemPage implements OnDestroy {
     private messageService: MessageService,
     private route: ActivatedRoute,
     private router: Router,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     readonly location: Location,
   ) {
     title.setTitle('Edit Item');

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AcknowledgeAlarmOptions, Alarm } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
@@ -11,11 +11,11 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class AcknowledgeAlarmDialog {
 
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<AcknowledgeAlarmDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

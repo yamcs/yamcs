@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,9 +22,9 @@ import { ShelveAlarmDialog } from './ShelveAlarmDialog';
 })
 export class AlarmsPage implements OnDestroy {
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    view: new FormControl('standard'),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    view: new UntypedFormControl('standard'),
   });
 
   // Alarm to show in detail pane (only on single selection)

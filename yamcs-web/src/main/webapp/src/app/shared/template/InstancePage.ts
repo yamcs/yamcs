@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, of, Subscription } from 'rxjs';
@@ -20,7 +20,7 @@ export class InstancePage implements OnInit, OnDestroy {
 
   connectionInfo$: Observable<ConnectionInfo | null>;
 
-  searchControl = new FormControl(null);
+  searchControl = new UntypedFormControl(null);
   filteredOptions: Observable<Parameter[]>;
 
   user: User;

@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -33,7 +33,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild(ColumnChooser)
   columnChooser: ColumnChooser;
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 

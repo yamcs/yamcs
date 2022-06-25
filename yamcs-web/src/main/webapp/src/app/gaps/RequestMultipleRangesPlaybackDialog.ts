@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { Gap, PlaybackRange } from '../client';
@@ -15,9 +15,9 @@ export class RequestMultipleRangesPlaybackDialog {
   gaps: Gap[];
   linkOptions$ = new BehaviorSubject<Option[]>([]);
 
-  form = new FormGroup({
-    mergeTolerance: new FormControl(30),
-    link: new FormControl('', Validators.required),
+  form = new UntypedFormGroup({
+    mergeTolerance: new UntypedFormControl(30),
+    link: new UntypedFormControl('', Validators.required),
   });
 
   constructor(

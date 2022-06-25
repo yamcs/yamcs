@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -14,7 +14,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class UsersPage implements AfterViewInit {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   filterValue$ = new BehaviorSubject<string | null>(null);
 

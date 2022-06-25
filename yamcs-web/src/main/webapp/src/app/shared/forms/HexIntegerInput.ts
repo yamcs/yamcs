@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator } from '@angular/forms';
 
 @Component({
   selector: 'app-hex-integer-input',
@@ -65,7 +65,7 @@ export class HexIntegerInput implements ControlValueAccessor, Validator {
   registerOnTouched(fn: any) {
   }
 
-  validate(control: FormControl) {
+  validate(control: UntypedFormControl) {
     if (!control.value) {
       return null;
     }

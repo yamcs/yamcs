@@ -37,6 +37,6 @@
 
 @media print {
   .none, .watch, .warning, .distress, .critical, .severe {
-    color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

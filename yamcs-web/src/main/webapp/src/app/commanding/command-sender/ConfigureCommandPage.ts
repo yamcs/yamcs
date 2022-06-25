@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -33,7 +33,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
   private connectionInfoSubscription: Subscription;
 
-  armControl = new FormControl();
+  armControl = new UntypedFormControl();
 
   constructor(
     route: ActivatedRoute,

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,13 +41,13 @@ export class EventsPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    severity: new FormControl('INFO'),
-    source: new FormControl([]),
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    severity: new UntypedFormControl('INFO'),
+    source: new UntypedFormControl([]),
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   dataSource: EventsDataSource;

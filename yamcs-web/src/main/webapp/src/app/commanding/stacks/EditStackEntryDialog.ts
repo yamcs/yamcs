@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { Command, Value } from '../../client';
@@ -54,7 +54,7 @@ export class EditStackEntryDialog {
   // the form nested in *ngIf from outside the *ngIf.
   commandFormValid$ = new BehaviorSubject<boolean>(false);
 
-  selectCommandForm: FormGroup;
+  selectCommandForm: UntypedFormGroup;
 
   selectedCommand$ = new BehaviorSubject<Command | null>(null);
   templateProvider: StackEntryTemplateProvider | null;
@@ -62,7 +62,7 @@ export class EditStackEntryDialog {
   constructor(
     private dialogRef: MatDialogRef<EditStackEntryDialog>,
     readonly yamcs: YamcsService,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private changeDetection: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

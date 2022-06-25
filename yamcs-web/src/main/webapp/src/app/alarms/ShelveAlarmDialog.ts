@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Alarm, ShelveAlarmOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
@@ -13,7 +13,7 @@ import * as utils from '../shared/utils';
 })
 export class ShelveAlarmDialog {
 
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
 
   durationOptions: Option[] = [
     { id: 'PT15M', label: '15 minutes' },
@@ -26,7 +26,7 @@ export class ShelveAlarmDialog {
 
   constructor(
     private dialogRef: MatDialogRef<ShelveAlarmDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

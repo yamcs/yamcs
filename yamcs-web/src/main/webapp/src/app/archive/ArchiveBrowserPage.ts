@@ -1,7 +1,7 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
@@ -54,7 +54,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   @ViewChild('container', { static: true })
   container: ElementRef;
 
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
 
   private timeline: Timeline;
   private moveInterval?: number;
@@ -88,14 +88,14 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       ];
     }
 
-    this.filterForm = new FormGroup({});
+    this.filterForm = new UntypedFormGroup({});
     const queryParams = this.route.snapshot.queryParamMap;
     for (const option of this.legendOptions) {
       let checked = option.checked;
       if (queryParams.has(option.id)) {
         checked = queryParams.get(option.id) === 'true';
       }
-      this.filterForm.addControl(option.id, new FormControl(checked));
+      this.filterForm.addControl(option.id, new UntypedFormControl(checked));
     }
 
     const bodyRef = new ElementRef(document.body);

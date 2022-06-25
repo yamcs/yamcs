@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
@@ -11,9 +11,9 @@ import { subtractDuration } from '../../shared/utils';
 })
 export class SelectRangeDialog {
 
-  form = new FormGroup({
-    start: new FormControl(null, Validators.required),
-    stop: new FormControl(null, Validators.required),
+  form = new UntypedFormGroup({
+    start: new UntypedFormControl(null, Validators.required),
+    stop: new UntypedFormControl(null, Validators.required),
   });
 
   constructor(

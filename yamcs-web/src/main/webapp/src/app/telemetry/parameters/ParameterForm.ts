@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { Parameter } from '../../client';
 
@@ -12,7 +12,7 @@ import { Parameter } from '../../client';
 export class ParameterForm implements OnInit {
 
   @Input()
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
 
   @Input()
   parameter: Parameter;

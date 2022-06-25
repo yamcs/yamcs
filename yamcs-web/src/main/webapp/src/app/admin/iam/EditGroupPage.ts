@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { AddMembersDialog, MemberItem } from './AddMembersDialog';
 })
 export class EditGroupPage implements OnDestroy {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   group$: Promise<GroupInfo>;
   private group: GroupInfo;
 
@@ -26,7 +26,7 @@ export class EditGroupPage implements OnDestroy {
   private formSubscription: Subscription;
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     title: Title,
     private router: Router,
     route: ActivatedRoute,
@@ -41,8 +41,8 @@ export class EditGroupPage implements OnDestroy {
     this.group$.then(group => {
       this.group = group;
       this.form = formBuilder.group({
-        name: new FormControl(group.name),
-        description: new FormControl(group.description),
+        name: new UntypedFormControl(group.name),
+        description: new UntypedFormControl(group.description),
       });
       this.formSubscription = this.form.valueChanges.subscribe(() => {
         this.dirty$.next(true);

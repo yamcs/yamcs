@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
@@ -14,10 +14,10 @@ export class CreateDisplayDialog {
   page = 1;
 
   // Page 1
-  typeForm: FormGroup;
+  typeForm: UntypedFormGroup;
 
   // Page 2
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   @ViewChild('filename')
   filenameInput: ElementRef;
@@ -27,7 +27,7 @@ export class CreateDisplayDialog {
 
   constructor(
     private dialogRef: MatDialogRef<CreateDisplayDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,

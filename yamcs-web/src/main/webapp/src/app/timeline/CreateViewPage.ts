@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TimelineBand } from '../client/types/timeline';
@@ -12,12 +12,12 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class CreateViewPage {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
     private router: Router,
   ) {

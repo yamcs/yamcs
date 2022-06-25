@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { AddRolesDialog, RoleItem } from './AddRolesDialog';
 })
 export class EditUserPage implements OnDestroy {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   user$: Promise<UserInfo>;
   private user: UserInfo;
 
@@ -26,7 +26,7 @@ export class EditUserPage implements OnDestroy {
   private formSubscription: Subscription;
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
@@ -41,10 +41,10 @@ export class EditUserPage implements OnDestroy {
     this.user$.then(user => {
       this.user = user;
       this.form = formBuilder.group({
-        displayName: new FormControl(user.displayName),
-        email: new FormControl(user.email),
-        active: new FormControl(user.active),
-        superuser: new FormControl(user.superuser),
+        displayName: new UntypedFormControl(user.displayName),
+        email: new UntypedFormControl(user.email),
+        active: new UntypedFormControl(user.active),
+        superuser: new UntypedFormControl(user.superuser),
       });
       this.formSubscription = this.form.valueChanges.subscribe(() => {
         this.dirty$.next(true);

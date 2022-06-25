@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { Gap, PlaybackRange } from '../client';
@@ -14,11 +14,11 @@ export class RequestSingleRangePlaybackDialog {
   gaps: Gap[];
   linkOptions$ = new BehaviorSubject<Option[]>([]);
 
-  form = new FormGroup({
-    apid: new FormControl('', Validators.required),
-    start: new FormControl('', Validators.required),
-    stop: new FormControl('', Validators.required),
-    link: new FormControl('', Validators.required),
+  form = new UntypedFormGroup({
+    apid: new UntypedFormControl('', Validators.required),
+    start: new UntypedFormControl('', Validators.required),
+    stop: new UntypedFormControl('', Validators.required),
+    link: new UntypedFormControl('', Validators.required),
   });
 
   constructor(

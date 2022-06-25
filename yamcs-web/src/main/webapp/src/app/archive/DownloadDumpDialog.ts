@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';
@@ -14,12 +14,12 @@ export class DownloadDumpDialog {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<DownloadDumpDialog>,
     private yamcs: YamcsService,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) data: any,
   ) {
     this.form = formBuilder.group({

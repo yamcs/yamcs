@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject } from 'rxjs';
 import { Command, GetCommandsOptions } from '../../client';
@@ -44,7 +44,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   @ViewChild('searchFilter')
   searchFilter: SearchFilter;
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 

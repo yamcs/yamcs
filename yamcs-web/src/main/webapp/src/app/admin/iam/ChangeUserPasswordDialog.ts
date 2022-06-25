@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserInfo } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -17,18 +17,18 @@ const PASSWORD_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
 })
 export class ChangeUserPasswordDialog {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   user: UserInfo;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private yamcs: YamcsService,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
   ) {
     this.user = data.user;
     this.form = formBuilder.group({
-      password: new FormControl(null, Validators.required),
-      passwordConfirmation: new FormControl(null, Validators.required),
+      password: new UntypedFormControl(null, Validators.required),
+      passwordConfirmation: new UntypedFormControl(null, Validators.required),
     }, {
       validator: PASSWORD_VALIDATOR,
     });

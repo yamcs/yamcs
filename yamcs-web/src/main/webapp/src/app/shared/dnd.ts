@@ -12,7 +12,7 @@ export interface FileWithFullPath extends File {
 export async function listDroppedFiles(dataTransfer: DataTransfer): Promise<FileWithFullPath[]> {
   const droppedFiles: FileWithFullPath[] = [];
   const items = dataTransfer.items;
-  if (items && items.length && items[0].webkitGetAsEntry) {
+  if (items && items.length && (items[0] as any).webkitGetAsEntry) {
 
     // Convert all items to entries
     // (important to do this _before_ recursing on subtrees)
@@ -23,11 +23,9 @@ export async function listDroppedFiles(dataTransfer: DataTransfer): Promise<File
         entries.push(entry);
       }
     }
-    console.log('entries', entries);
+
     for (const entry of entries) {
-      console.log('maybe', entry);
       const moreFiles = await listFilesUnderEntry(entry);
-      console.log('files', moreFiles);
       droppedFiles.push(...moreFiles);
     }
   } else {

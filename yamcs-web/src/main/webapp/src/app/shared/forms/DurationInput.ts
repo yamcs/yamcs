@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms';
 import { Option } from './Select';
 
 // Used as a signal to show validation results
@@ -35,11 +35,11 @@ export class DurationInput implements ControlValueAccessor, Validator {
 
   private onChange = (_: string | null) => { };
 
-  resolutionControl: FormControl;
+  resolutionControl: UntypedFormControl;
 
   constructor(
   ) {
-    this.resolutionControl = new FormControl('seconds', Validators.required);
+    this.resolutionControl = new UntypedFormControl('seconds', Validators.required);
     this.resolutionControl.valueChanges.subscribe(() => this.fireChange());
   }
 
@@ -69,7 +69,7 @@ export class DurationInput implements ControlValueAccessor, Validator {
   registerOnTouched(fn: any) {
   }
 
-  validate(control: FormControl): ValidationErrors | null {
+  validate(control: UntypedFormControl): ValidationErrors | null {
     if (control.value === INVALID_PROTOSTRING) {
       return { duration: true };
     }

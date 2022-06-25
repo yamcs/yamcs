@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditRecord, GetAuditRecordsOptions } from '../../client';
@@ -27,11 +27,11 @@ export class ActionLogTab {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    interval: new FormControl('NO_LIMIT'),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    interval: new UntypedFormControl('NO_LIMIT'),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   displayedColumns = [

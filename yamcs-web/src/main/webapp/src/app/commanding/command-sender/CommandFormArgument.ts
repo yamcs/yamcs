@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { Argument, ArgumentMember, EnumValue } from '../../client';
@@ -15,7 +15,7 @@ import { SelectEnumerationDialog } from './SelectEnumerationDialog';
 export class CommandFormArgument implements OnInit, AfterViewInit {
 
   @Input()
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
 
   @Input()
   argument: Argument | ArgumentMember;

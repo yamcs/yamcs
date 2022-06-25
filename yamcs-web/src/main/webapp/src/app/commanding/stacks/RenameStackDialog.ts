@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -12,14 +12,14 @@ import { BasenamePipe } from '../../shared/pipes/BasenamePipe';
 })
 export class RenameStackDialog {
 
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   private storageClient: StorageClient;
   private bucket: string;
 
   constructor(
     private dialogRef: MatDialogRef<RenameStackDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     basenamePipe: BasenamePipe,
     configService: ConfigService,

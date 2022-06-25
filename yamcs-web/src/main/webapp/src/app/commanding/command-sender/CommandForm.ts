@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
@@ -79,15 +79,15 @@ export class CommandForm implements OnChanges {
   argumentsWithInitial: Argument[] = [];
   showAll$ = new BehaviorSubject<boolean>(false);
 
-  form = new FormGroup({});
+  form = new UntypedFormGroup({});
   config: WebsiteConfig;
 
   constructor(configService: ConfigService, authService: AuthService) {
     this.user = authService.getUser()!;
     this.commandOptions = configService.getCommandOptions();
-    this.form.addControl('extra__comment', new FormControl(''));
+    this.form.addControl('extra__comment', new UntypedFormControl(''));
     for (const option of this.commandOptions) {
-      this.form.addControl('extra__' + option.id, new FormControl(''));
+      this.form.addControl('extra__' + option.id, new UntypedFormControl(''));
     }
     this.config = configService.getConfig();
     this.showAll$.next(!this.config.collapseInitializedArguments);
@@ -278,7 +278,7 @@ export class CommandForm implements OnChanges {
 
       const validators = this.getValidatorsForType(argument.type);
       this.form.addControl(
-        argument.name, new FormControl(initialValue, validators));
+        argument.name, new UntypedFormControl(initialValue, validators));
     }
   }
 
@@ -309,7 +309,7 @@ export class CommandForm implements OnChanges {
         const controlName = prefix + member.name;
         const validators = this.getValidatorsForType(member.type as ArgumentType);
         this.form.addControl(
-          controlName, new FormControl('', validators));
+          controlName, new UntypedFormControl('', validators));
       }
     }
   }

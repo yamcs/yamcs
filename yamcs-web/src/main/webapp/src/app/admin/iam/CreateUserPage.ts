@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { CreateUserRequest } from '../../client';
@@ -13,10 +13,10 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateUserPage {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     title: Title,
     private router: Router,
     private yamcs: YamcsService,
@@ -24,11 +24,11 @@ export class CreateUserPage {
   ) {
     title.setTitle('Create a User');
     this.form = formBuilder.group({
-      name: new FormControl('', [Validators.required]),
-      displayName: new FormControl('', [Validators.required]),
-      email: new FormControl('', [Validators.required]),
-      password: new FormControl(),
-      passwordConfirmation: new FormControl(),
+      name: new UntypedFormControl('', [Validators.required]),
+      displayName: new UntypedFormControl('', [Validators.required]),
+      email: new UntypedFormControl('', [Validators.required]),
+      password: new UntypedFormControl(),
+      passwordConfirmation: new UntypedFormControl(),
     });
   }
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,8 +16,8 @@ export class ServicesPage {
 
   instance = '_global';
 
-  filterForm = new FormGroup({
-    instance: new FormControl('_global'),
+  filterForm = new UntypedFormGroup({
+    instance: new UntypedFormControl('_global'),
   });
 
   instanceOptions$ = new BehaviorSubject<Option[]>([

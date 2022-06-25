@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -31,11 +31,11 @@ export class AdminActivityPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   displayedColumns = [

@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -14,7 +14,7 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class EditViewPage implements OnDestroy {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   dirty$ = new BehaviorSubject<boolean>(false);
   private formSubscription: Subscription;
@@ -26,7 +26,7 @@ export class EditViewPage implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     readonly location: Location,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
   ) {
     title.setTitle('Edit View');
     const id = route.snapshot.paramMap.get('view')!;
