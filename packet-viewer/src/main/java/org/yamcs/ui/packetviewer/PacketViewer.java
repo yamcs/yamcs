@@ -1067,17 +1067,17 @@ public class PacketViewer extends JFrame implements ActionListener,
      */
     @SuppressWarnings("unchecked")
     public List<String[]> getRecentFiles() {
-        List<String[]> recentFiles = null;
+        List<String[]> recentFiles = new ArrayList<>();
         Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
         if (obj instanceof ArrayList) {
-            recentFiles = (ArrayList<String[]>) obj;
+            recentFiles.addAll((ArrayList<String[]>) obj);
         }
+
         // Remove outdated entries
-        recentFiles = recentFiles.stream()
+        return recentFiles.stream()
                 .filter(f -> f.length == 3)
                 .filter(f -> fileFormats.get(f[2]) != null)
                 .collect(Collectors.toList());
-        return (recentFiles != null) ? recentFiles : new ArrayList<>();
     }
 
     private void updateRecentFiles(File file, FileFormat fileFormat, String xtceDb) {
