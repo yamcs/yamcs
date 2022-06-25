@@ -510,19 +510,11 @@ public class ConnectDialog extends JDialog implements ActionListener {
             data.username = username;
             data.password = password.toCharArray();
         }
+        data.useServerMdb = useServerMdb;
+        data.localMdbConfig = (String) localMdbConfigCombo.getSelectedItem();
+        data.streamName = streamName.getText();
+        data.instance = instance;
         return data;
-    }
-
-    public String getInstance() {
-        return instance;
-    }
-
-    public boolean getUseServerMdb() {
-        return useServerMdb;
-    }
-
-    public String getLocalMdbConfig() {
-        return (String) localMdbConfigCombo.getSelectedItem();
     }
 
     public int showDialog() {
@@ -535,9 +527,5 @@ public class ConnectDialog extends JDialog implements ActionListener {
     public static void main(String[] args) {
         ConnectDialog ycd = new ConnectDialog(null, true, true, true);
         ycd.showDialog();
-    }
-
-    public String getStreamName() {
-        return streamName.getText();
     }
 }

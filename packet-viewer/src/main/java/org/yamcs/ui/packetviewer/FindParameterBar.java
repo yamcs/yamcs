@@ -127,7 +127,7 @@ public class FindParameterBar extends JPanel {
         };
         openAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
         openAction.putValue(Action.ACCELERATOR_KEY,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         getActionMap().put(OPEN_ACTION, openAction);
     }
 

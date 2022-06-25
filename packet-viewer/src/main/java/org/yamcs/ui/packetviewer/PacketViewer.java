@@ -85,6 +85,7 @@ import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.client.base.ServerURL;
 import org.yamcs.mdb.DatabaseLoadException;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.XtceDbFactory;
@@ -148,12 +149,12 @@ public class PacketViewer extends JFrame implements ActionListener,
     private OpenFileDialog openFileDialog;
     private YamcsClient client;
     private ConnectDialog connectDialog;
+    private ConnectData connectData;
     Preferences uiPrefs;
 
     // used for decoding full packets
     private XtceTmProcessor tmProcessor;
 
-    String streamName;
     private String defaultNamespace;
     private PacketPreprocessor realtimePacketPreprocessor;
 
@@ -376,7 +377,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         menuBar.add(fileMenu);
 
         // Ctrl on win/linux, Command on mac
-        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
         JMenuItem menuitem = new JMenuItem("Open...", KeyEvent.VK_O);
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, menuKey));
@@ -582,8 +583,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
             int ret = connectDialog.showDialog();
             if (ret == ConnectDialog.APPROVE_OPTION) {
-                streamName = connectDialog.getStreamName();
-                connectYamcs(connectDialog.getConnectData());
+                var connectData = connectDialog.getConnectData();
+                connectYamcs(connectData);
             }
         } else if (cmd.startsWith("recent-file-")) {
             JMenuItem mi = (JMenuItem) ae.getSource();
@@ -649,7 +650,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        String instance = connectDialog.getInstance();
+        String instance = connectData.instance;
         log("Loading remote mission database for Yamcs instance " + instance);
         try {
             byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
@@ -822,6 +823,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     void connectYamcs(ConnectData connectData) {
         disconnect();
+        this.connectData = connectData;
         String context = connectData.contextPath;
         if (context != null && context.isEmpty()) {
             context = null;
@@ -1008,12 +1010,12 @@ public class PacketViewer extends JFrame implements ActionListener,
     public void connected() {
         try {
             log("connected to " + client.getHost() + ":" + client.getPort());
-            if (connectDialog.getUseServerMdb()) {
-                if (!loadRemoteMissionDatabase(connectDialog.getInstance())) {
+            if (connectData.useServerMdb) {
+                if (!loadRemoteMissionDatabase(connectData.instance)) {
                     return;
                 }
             } else {
-                if (!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) {
+                if (!loadLocalXtcedb(connectData.localMdbConfig)) {
                     return;
                 }
             }
@@ -1031,13 +1033,13 @@ public class PacketViewer extends JFrame implements ActionListener,
 
                 @Override
                 public void onError(Throwable t) {
-                    showError("Error subscribing to " + streamName + ": " + t.getMessage());
+                    showError("Error subscribing: " + t.getMessage());
                 }
             });
 
             subscription.sendMessage(SubscribePacketsRequest.newBuilder()
-                    .setInstance(connectDialog.getInstance())
-                    .setStream(streamName)
+                    .setInstance(connectData.instance)
+                    .setStream(connectData.streamName)
                     .build());
         } catch (Exception e) {
             log(e.toString());
@@ -1048,7 +1050,6 @@ public class PacketViewer extends JFrame implements ActionListener,
     @Override
     public void connecting() {
         log("connecting to " + client.getHost() + ":" + client.getPort());
-
     }
 
     @Override
@@ -1144,27 +1145,34 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     private static void printUsageAndExit(boolean full) {
-        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [-s name] [file|url]");
+        System.err.println("usage: packetviewer.sh [-h] [-l n] -x MDB FILE");
+        System.err.println("   or: packetviewer.sh [-h] [-l n] [-x MDB] -i INSTANCE [-s STREAM] URL");
         if (full) {
             System.err.println();
-            System.err.println("    file       The file to open at startup. Requires the use of -db");
-            System.err.println("    url        Connect at startup to the given url");
+            System.err.println("    FILE         The file to open at startup. Requires the use of -x");
+            System.err.println();
+            System.err.println("    URL          Connect at startup to the given url. Requires the use of -i");
             System.err.println();
             System.err.println("OPTIONS");
-            System.err.println("    -h         Print a help message and exit");
+            System.err.println("    -h           Print a help message and exit");
             System.err.println();
-            System.err.println("    -l  n      Limit the view to n packets only. If the Packet Viewer is");
-            System.err.println("               connected to a live instance, only the last n packets will");
-            System.err.println("               be visible. For offline file consulting, only the first n");
-            System.err.println("               packets of the file will be displayed.");
-            System.err.println("               Defaults to 1000 for realtime connections. There is no");
-            System.err.println("               default limitation for viewing offline files.");
+            System.err.println("    -l n         Limit the view to n packets only. If the Packet Viewer is");
+            System.err.println("                 connected to a live instance, only the last n packets will");
+            System.err.println("                 be visible. For offline file consulting, only the first n");
+            System.err.println("                 packets of the file will be displayed.");
+            System.err.println("                 Defaults to 1000 for realtime connections. There is no");
+            System.err.println("                 default limitation for viewing offline files.");
             System.err.println();
-            System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
-            System.err.println("               mdb.yaml configuration file.");
+            System.err.println("    -x MDB       Name of the applicable MDB as specified in the");
+            System.err.println("                 mdb.yaml configuration file.");
+            System.err.println();
+            System.err.println("    -i INSTANCE  Yamcs instance name.");
+            System.err.println();
+            System.err.println("    -s STREAM    Yamcs stream name. Default: tm_realtime.");
             System.err.println();
             System.err.println("EXAMPLES");
             System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
+            System.err.println("        packetviewer.sh -l 50 -i simulator http://localhost:8090");
         }
         System.exit(1);
     }
@@ -1176,7 +1184,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     public static void main(String[] args) throws ConfigurationException, URISyntaxException {
         // Scan args
-        String file = null;
+        String fileOrURL = null;
         Map<String, String> options = new HashMap<>();
         for (int i = 0; i < args.length; i++) {
             if ("-h".equals(args[i])) {
@@ -1191,7 +1199,19 @@ public class PacketViewer extends JFrame implements ActionListener,
                 if (i + 1 < args.length) {
                     options.put(args[i], args[++i]);
                 } else {
-                    printArgsError("Name of XTCE DB not specified for -x option");
+                    printArgsError("Name of MDB not specified for -x option");
+                }
+            } else if ("-i".equals(args[i])) {
+                if (i + 1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of the instance not specified for -i option");
+                }
+            } else if ("-s".equals(args[i])) {
+                if (i + 1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of the stream not specified for -s option");
                 }
             } else if ("--etc-dir".equals(args[i])) {
                 if (i + 1 < args.length) {
@@ -1203,7 +1223,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("Unknown option: " + args[i]);
             } else { // i should now be positioned at [file|url]
                 if (i == args.length - 1) {
-                    file = args[i];
+                    fileOrURL = args[i];
                 } else {
                     printArgsError("Too many arguments. Only one file can be opened at a time");
                 }
@@ -1218,14 +1238,19 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("-l argument must be integer. Got: " + options.get("-l"));
             }
         }
-        if (file != null && file.startsWith("http://")) {
-            if (!options.containsKey("-l")) {
-                maxLines = 1000; // Default for realtime connections
-            }
-        }
-        if (file != null) {
-            if (!options.containsKey("-x")) {
-                printArgsError("-x argument must be specified when opening a file");
+        boolean isURL = fileOrURL != null && (fileOrURL.startsWith("http://") || fileOrURL.startsWith("https://"));
+        if (fileOrURL != null) {
+            if (isURL) {
+                if (!options.containsKey("-l")) {
+                    maxLines = 1000; // Default for realtime connections
+                }
+                if (!options.containsKey("-i")) {
+                    printArgsError("-i argument must be specified when opening a URL");
+                }
+            } else { // File
+                if (!options.containsKey("-x")) {
+                    printArgsError("-x argument must be specified when opening a file");
+                }
             }
         }
 
@@ -1237,9 +1262,27 @@ public class PacketViewer extends JFrame implements ActionListener,
             YConfiguration.setupTool();
         }
         theApp = new PacketViewer(maxLines);
-        if (file != null) {
-            FileFormat fileFormat = theApp.fileFormats.values().iterator().next();
-            theApp.openFile(new File(file), fileFormat, (String) options.get("-x"));
+        if (fileOrURL != null) {
+            if (isURL) {
+                var serverURL = ServerURL.parse(fileOrURL);
+                var connectData = new ConnectData();
+                connectData.host = serverURL.getHost();
+                connectData.port = serverURL.getPort();
+                connectData.contextPath = serverURL.getContext();
+                connectData.tls = serverURL.isTLS();
+                connectData.instance = options.get("-i");
+                connectData.streamName = options.getOrDefault("-s", "tm_realtime");
+                if (options.containsKey("-x")) {
+                    connectData.useServerMdb = false;
+                    connectData.localMdbConfig = options.get("-x");
+                } else {
+                    connectData.useServerMdb = true;
+                }
+                theApp.connectYamcs(connectData);
+            } else { // File
+                var fileFormat = theApp.fileFormats.values().iterator().next();
+                theApp.openFile(new File(fileOrURL), fileFormat, options.get("-x"));
+            }
         }
     }
 
