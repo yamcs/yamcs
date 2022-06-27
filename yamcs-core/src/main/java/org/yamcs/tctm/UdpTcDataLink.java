@@ -38,8 +38,30 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
     }
 
     @Override
+    public void doDisable() {
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
+        if (thread != null) {
+            thread.interrupt();
+        }
+    }
+
+    @Override
+    public void doEnable() {
+        thread = new Thread(this);
+        thread.setName(this.getClass().getSimpleName() + "-" + linkName);
+        thread.start();
+    }
+
+    @Override
     public String getDetailedStatus() {
+        if (isDisabled()) {
+            return "DISABLED";
+        } else {
         return String.format("OK, connected to %s:%d", host, port);
+        }
     }
 
     @Override
