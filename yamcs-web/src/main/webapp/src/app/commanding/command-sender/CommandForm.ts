@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentType, Command, CommandOption, Member, Value } from '../../client';
+import { AggregateValue, Argument, ArgumentType, Command, CommandOption, CommandOptionType, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { maxHexLengthValidator, minHexLengthValidator, requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
@@ -55,6 +55,7 @@ function renderValue(value: Value) {
 
 export interface TemplateProvider {
   getAssignment(name: string): Value | void;
+  getOption(id: string, expectedType: CommandOptionType): Value | void;
   getComment(): string | void;
 }
 
@@ -109,6 +110,16 @@ export class CommandForm implements OnChanges {
 
     if (!this.command) {
       return;
+    }
+
+    // Populate initial option values
+    if (this.templateProvider && this.showCommandOptions()) {
+      for (const option of this.config.commandOptions || []) {
+        const previousValue = this.templateProvider.getOption(option.id, option.type);
+        if (previousValue !== undefined) {
+          this.form.controls['extra__' + option.id].setValue(renderValue(previousValue));
+        }
+      }
     }
 
     // Order command definitions top-down

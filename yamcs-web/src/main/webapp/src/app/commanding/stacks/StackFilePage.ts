@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CommandSubscription, StorageClient } from '../../client';
+import { CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -59,7 +59,7 @@ export class StackFilePage implements OnDestroy {
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
-    configService: ConfigService,
+    private configService: ConfigService,
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
@@ -316,16 +316,30 @@ export class StackFilePage implements OnDestroy {
 
   private parseEntry(node: Element): StackEntry {
     const args: { [key: string]: any; } = {};
+    const extra: { [key: string]: Value; } = {};
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i] as Element;
       if (child.nodeName === 'commandArgument') {
         const argumentName = this.getStringAttribute(child, 'argumentName');
         args[argumentName] = this.getStringAttribute(child, 'argumentValue');
+      } else if (child.nodeName === 'extraOptions') {
+        for (let j = 0; j < child.childNodes.length; j++) {
+          const extraChild = child.childNodes[j] as Element;
+          if (extraChild.nodeName === 'extraOption') {
+            const id = this.getStringAttribute(extraChild, 'id');
+            const stringValue = this.getStringAttribute(extraChild, 'value');
+            const value = this.convertOptionStringToValue(id, stringValue);
+            if (value) {
+              extra[id] = value;
+            }
+          }
+        }
       }
     }
     const entry: StackEntry = {
       name: this.getStringAttribute(node, 'qualifiedName'),
       args,
+      extra,
     };
 
     if (node.hasAttribute('comment')) {
@@ -333,6 +347,22 @@ export class StackFilePage implements OnDestroy {
     }
 
     return entry;
+  }
+
+  private convertOptionStringToValue(id: string, value: string): Value | null {
+    for (const option of this.configService.getCommandOptions()) {
+      if (option.id === id) {
+        switch (option.type) {
+          case 'BOOLEAN':
+            return { type: 'BOOLEAN', booleanValue: value === 'true' };
+          case 'NUMBER':
+            return { type: 'SINT32', sint32Value: Number(value) };
+          default:
+            return { type: 'STRING', stringValue: value };
+        }
+      }
+    }
+    return null;
   }
 
   addCommand() {

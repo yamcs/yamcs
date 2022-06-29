@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Clearance, Command, CommandHistoryEntry } from '../../client';
+import { Clearance, Command, CommandHistoryEntry, CommandOptionType, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -185,6 +185,43 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
           return assignment.value;
         }
       }
+    }
+  }
+
+  getOption(id: string, expectedType: CommandOptionType) {
+    for (const attr of (this.entry.attr || [])) {
+      if (attr.name === id) {
+        switch (expectedType) {
+          case 'BOOLEAN':
+            return this.getBooleanOption(attr.value);
+          case 'NUMBER':
+            return this.getNumberOption(attr.value);
+          case 'STRING':
+            return this.getStringOption(attr.value);
+        }
+      }
+    }
+  }
+
+  private getBooleanOption(value: Value) {
+    if (value.type === 'BOOLEAN') {
+      return value;
+    }
+  }
+
+  private getNumberOption(value: Value) {
+    switch (value.type) {
+      case 'SINT32':
+      case 'UINT32':
+      case 'SINT64':
+      case 'UINT64':
+        return value;
+    }
+  }
+
+  private getStringOption(value: Value) {
+    if (value.type === 'STRING') {
+      return value;
     }
   }
 

@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { Command, Value } from '../../client';
+import { Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
@@ -10,7 +10,7 @@ import { StackEntry } from './StackEntry';
 
 export interface CommandResult {
   command: Command;
-  args: { [key: string]: any };
+  args: { [key: string]: any; };
   extra: { [key: string]: Value; };
   comment?: string;
 }
@@ -27,6 +27,44 @@ export class StackEntryTemplateProvider implements TemplateProvider {
         const value = this.entry.args[argName];
         return { type: 'STRING', stringValue: value } as Value;
       }
+    }
+  }
+
+  getOption(id: string, expectedType: CommandOptionType) {
+    for (const extraId in (this.entry.extra || {})) {
+      if (extraId === id) {
+        const value = this.entry.extra![extraId];
+        switch (expectedType) {
+          case 'BOOLEAN':
+            return this.getBooleanOption(value);
+          case 'NUMBER':
+            return this.getNumberOption(value);
+          case 'STRING':
+            return this.getStringOption(value);
+        }
+      }
+    }
+  }
+
+  private getBooleanOption(value: Value) {
+    if (value.type === 'BOOLEAN') {
+      return value;
+    }
+  }
+
+  private getNumberOption(value: Value) {
+    switch (value.type) {
+      case 'SINT32':
+      case 'UINT32':
+      case 'SINT64':
+      case 'UINT64':
+        return value;
+    }
+  }
+
+  private getStringOption(value: Value) {
+    if (value.type === 'STRING') {
+      return value;
     }
   }
 
