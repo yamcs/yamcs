@@ -118,7 +118,7 @@ sequenceNrLength (integer)
     The length in bytes of the sequence number for the outgoing CFDP transfers. Default: ``4``
     
 maxPduSize (integer)
-    The maximum length of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
+    The maximum length in bytes of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
 
 sleepBetweenPdus (integer)
     The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
