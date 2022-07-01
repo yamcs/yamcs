@@ -58,7 +58,7 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return String.format("DISABLED (should connect to %s:%d", host, port);
         } else {
         return String.format("OK, connected to %s:%d", host, port);
         }
