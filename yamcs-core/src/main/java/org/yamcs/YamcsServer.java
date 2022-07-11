@@ -61,6 +61,7 @@ import org.yamcs.yarch.rocksdb.RDBFactory;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yaml.snakeyaml.Yaml;
 
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -68,6 +69,8 @@ import com.beust.jcommander.converters.PathConverter;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import io.netty.util.ResourceLeakDetector;
 
 /**
  *
@@ -125,6 +128,9 @@ public class YamcsServer {
 
     @Parameter(names = "--no-color", description = "Turn off console log colorization")
     private boolean noColor;
+
+    @Parameter(names = "--netty-leak-detection", description = "Enable leak detection (incurs overhead)", converter = LeakLevelConverter.class)
+    private ResourceLeakDetector.Level nettyLeakDetection = ResourceLeakDetector.Level.DISABLED;
 
     @Parameter(names = { "-h", "--help" }, help = true, hidden = true)
     private boolean help;
@@ -924,6 +930,11 @@ public class YamcsServer {
             System.exit(0);
         }
 
+        ResourceLeakDetector.setLevel(YAMCS.nettyLeakDetection);
+        if (ResourceLeakDetector.isEnabled()) {
+            LOG.info("Netty leak detection: " + ResourceLeakDetector.getLevel());
+        }
+
         // Good to go!
         try {
             LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
@@ -1369,5 +1380,20 @@ public class YamcsServer {
 
     public ScheduledThreadPoolExecutor getThreadPoolExecutor() {
         return timer;
+    }
+
+    // Keep public, required by JCommander
+    public static class LeakLevelConverter implements IStringConverter<ResourceLeakDetector.Level> {
+
+        @Override
+        public ResourceLeakDetector.Level convert(String value) {
+            try {
+                return ResourceLeakDetector.Level.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new ParameterException(
+                        "Unknown value for --netty-leak-detection. Possible values: "
+                                + Arrays.asList(ResourceLeakDetector.Level.values()));
+            }
+        }
     }
 }
