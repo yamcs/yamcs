@@ -130,7 +130,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return String.format("DISABLED (should connect to %s:%d)", host, port);
         } else {
         return String.format("OK, connected to %s:%d", host, port);
         }
