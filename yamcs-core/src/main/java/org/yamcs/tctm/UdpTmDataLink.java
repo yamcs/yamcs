@@ -131,7 +131,8 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return String.format("DISABLE, should connect to: %s", port,
+                    port, packetCount.get(), invalidDatagramCount);
         } else {
             return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
                     port, packetCount.get(), invalidDatagramCount);
