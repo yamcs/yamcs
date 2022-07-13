@@ -7,14 +7,7 @@ The text below documents several aspects of working with time in Yamcs.
 Time Encoding
 -------------
 
-Yamcs uses 8 bytes signed integers (long in java) for representing milliseconds since 1-Jan-1970 00:00:00 TAI, including leap seconds. The Yamcs time in milliseconds is the UNIX time (in milliseconds) + leap seconds.  
-
-In practice, in 2022, the following is true:
-
-.. code-block:: java
-
-  TimeEncoding.getWallclockTime() = System.currentTimeMillis() + 37000.
-
+Yamcs uses 8 bytes signed integers (long in java) for representing milliseconds since 1-Jan-1970 00:00:00 TAI, including leap seconds. The Yamcs time in milliseconds is the UNIX time (in milliseconds) + leap seconds. 
 
 The leap seconds are loaded from the file UTC-TAI.history in the Yamcs etc directory. This file is part of the so called IERS (International Earth Rotation and Reference Systems Service) Bulletin C and is published here: `<https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history>`_.
 
@@ -24,11 +17,24 @@ Yamcs also has a high resolution time implemented in the class :javadoc:`org.yam
 
 The higher resolution time is sent sometimes from external systems - for example a Ground Station may timestamp the incoming packets with a microsecond or nanosecond precise time (derived from an atomic clock) - this time is available as the Earth Reception Time via the yamcs-sle plugin.
 
+The class that allows working with times, offering conversion functionality between the Yamcs time and UTC is :javadoc:`org.yamcs.utils.TimeEncoding`.
+
+
+Wall clock time
+--------------
+
+The wall clock time is the computer time converted to Yamcs format. The getWallclockTime() function in the TimeEncoding can be used to get the current wallclock time. In practice, in 2022, the following is true:
+
+.. code-block:: java
+
+  TimeEncoding.getWallclockTime() = System.currentTimeMillis() + 37000.
+
+Note that Linux usually does time "smearing" around the leap seconds - it shortens the duration of the second for sevearal hours prior and several hours post the the leap second, to accomodate the extra second. Yamcs does not take the smearing into account, therefore the getWallclockTime() does not return entirely accurate times when the smearing takes place.
 
 Mission Time
 ------------
 
-The mission time in Yamcs is the "current" time - for a realtime mission that would be the wall clock time (in practice the computer time); for a simulation it would be the simulation time. 
+The mission time in Yamcs is the "current" time - for a realtime mission that would be the wall clock time ; for a simulation it would be the simulation time. 
 
 The mission time is specific to a Yamcs instance and is given by the  :javadoc:`org.yamcs.time.TimeService` configured in that instance. The time service is configured using the ``timeService`` keyword in the yamcs.instance.yaml. 
 
