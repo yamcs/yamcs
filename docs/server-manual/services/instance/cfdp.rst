@@ -109,9 +109,10 @@ remoteEntities (map)
     The list can contain also a bucket name used if the matching local entity does not define a bucket. In the example above if a file is downlinked having source (spacecraft) id = 7 and destination (Yamcs) id = 12, it will end up in bucket3.
 
 entityIdLength (integer)
-    The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the 
-    header of all the CFDP PDUs.
-    These lengths determine the size of the PDU header. 
+    The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the header of all the CFDP PDUs. These lengths together with the sequenceNrLength determine the size of the PDU header:    
+    
+    ``PDU_header_size(bytes) = 4 + 2 * entityIdLength + sequenceNrLength``
+    
     For the incoming transfers the remote peer specifies the lengths. Default: ``2``
      
 sequenceNrLength (integer)
