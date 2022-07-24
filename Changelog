@@ -1,3 +1,9 @@
+Version 5.7.5 released 24-Jul-2022
+- CFDP fixes
+  - the pendingAfterCompletion parameter can be specified now
+  - when starting a new download the number of pending downloads excludes the ones just finished and also the uploads. The number is used to compare with the maxNumberDownloads parameter - if the maximum would be exceeded a new download transfer would not be initiated and the respective PDU dropped
+
+
 Version 5.7.4 released 15-Jun-2022
 - added an option to the /api/stream-archive/{instance}:streamParameterValues (which extracts parameters using replays) to filter the packets based on the tm links  
 on which they have been originally received.
