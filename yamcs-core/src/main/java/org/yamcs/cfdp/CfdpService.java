@@ -89,6 +89,7 @@ public class CfdpService extends AbstractYamcsService
     static final String SEQUENCE_NAME = "cfdp";
 
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
+
     Queue<QueuedCfdpTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -172,6 +173,7 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("maxNumPendingDownloads", OptionType.INTEGER).withDefault(100);
         spec.addOption("maxNumPendingUploads", OptionType.INTEGER).withDefault(10);
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
+        spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
 
         return spec;
     }
@@ -410,6 +412,12 @@ public class CfdpService extends AbstractYamcsService
                 .count();
     }
 
+    private long numPendingDownloads() {
+        return pendingTransfers.values().stream()
+                .filter(trsf -> isRunning(trsf) && trsf.getDirection() == TransferDirection.DOWNLOAD)
+                .count();
+    }
+
     static boolean isRunning(OngoingCfdpTransfer trsf) {
         return trsf.state == TransferState.RUNNING || trsf.state == TransferState.PAUSED
                 || trsf.state == TransferState.CANCELLING;
@@ -463,7 +471,8 @@ public class CfdpService extends AbstractYamcsService
                 return;
             }
             // the communication partner has initiated a transfer
-            if (pendingTransfers.size() >= maxNumPendingDownloads) {
+
+            if (numPendingDownloads() >= maxNumPendingDownloads) {
                 eventProducer.sendWarning(ETYPE_TX_LIMIT_REACHED, "Maximum number of pending downloads "
                         + maxNumPendingDownloads + " reached. Dropping packet " + packet);
             } else {

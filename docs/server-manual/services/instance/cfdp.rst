@@ -176,4 +176,5 @@ allowConcurrentFileOverwrites (boolean)
     If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case of multiple files are uploaded from the yamcs-web. Default: ``true``
 
 pendingAfterCompletion (integer)
-    Number of milliseconds to keep the transaction in memory after completion. During this time, the PDUs received belonging to this transaction are still answered. Default: 600000 (10 minutes)
+    Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: 600000 (10 minutes).
+    Consequentially if a new transfer would start with the same id (for example following an on-board computer reboot), the transfer will not be recognized as new before this timer has expired.
