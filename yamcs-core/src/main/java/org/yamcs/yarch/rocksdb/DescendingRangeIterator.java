@@ -7,11 +7,7 @@ import org.yamcs.yarch.DbRange;
 /**
  * Wrapper around a rocksdb iterator that only supports prev() and is restricted to a range.
  * <p>
- * If the rangeStart or rangeEnd are specified, any key which starts or it's equal with them is considered as matching.
- * <p>
- * That means they will all be returned when {@code strictStart/End=false}
- * or they will all be skipped if {@code strictStart/End=true}.
- * 
+ * If the rangeStart or rangeEnd are specified, any key which starts or it is equal with them is considered as matching.
  * 
  * @author nm
  *

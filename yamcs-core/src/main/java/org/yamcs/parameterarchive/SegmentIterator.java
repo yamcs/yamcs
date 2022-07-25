@@ -80,6 +80,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.retrieveParameterStatus = req.isRetrieveParameterStatus();
 
         int pid = parameterId.getPid();
+        // we use the 0 and Byte.MAX_VALUE for the segment type to make sure we catch all types.
+        // ENG_VALUE=0 and PARAMETER_STATUS=2 could have been used as well
         rangeStart = new SegmentKey(pid, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
                 (byte) 0).encode();
         rangeStop = new SegmentKey(pid, parameterGroupId, req.stop, Byte.MAX_VALUE).encode();
@@ -168,6 +170,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         return parameterId;
     }
 
+
     class SubIterator {
         final Partition partition;
         private SegmentKey currentKey;
@@ -175,6 +178,10 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         private byte[] currentEngValueSegment;
         private byte[] currentRawValueSegment;
         private byte[] currentStatusSegment;
+        /**
+         * The dbIterator iterates over all segment types (raw value, eng value, parameter status). The time values are
+         * received using point loockups.
+         */
         DbIterator dbIterator;
         boolean valid;
 

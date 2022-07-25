@@ -18,7 +18,7 @@ import org.yamcs.yarch.rocksdb.DbIterator;
 import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
 
 /**
- * Same as {@link SegmentIterator} but provides segments for multiple parameters from the same group in one step
+ * Same as {@link SegmentIterator} but provides segments for multiple parameters from the same group in one step.
  *
  */
 public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValueSegment> {
@@ -59,17 +59,15 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
         topIt = partitions.iterator();
         int timeParaId = parchive.getParameterIdDb().getTimeParameterId();
+
+        // the ranges below are used for iterating over the time segments - those use the SegmentKey.TYPE_ENG_VALUE as
+        // segment type
         rangeStart = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
                 SegmentKey.TYPE_ENG_VALUE).encode();
-        rangeStop = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(req.stop),
-                SegmentKey.TYPE_ENG_VALUE).encode();
+        rangeStop = new SegmentKey(timeParaId, parameterGroupId, req.stop, SegmentKey.TYPE_ENG_VALUE).encode();
 
         rtfiller = parchive.getRealtimeFiller();
-        /*
-         * if (rtfiller != null && req.isAscending()) {
-         * rtIterator = rtfiller.getSegments(parameterId, parameterGroupId, ascending).iterator();
-         * }
-         */
+
         next();
     }
 
@@ -82,16 +80,6 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     }
 
     public void next() {
-        /*
-         * if (ascending && rtIterator != null) {
-         * if (rtIterator.hasNext()) {
-         * curValue = rtIterator.next();
-         * return;
-         * } else {
-         * rtIterator = null;
-         * }
-         * }
-         */
         subIt = getPartitionIterator();
         if (subIt != null) {
             curValue = subIt.value();
@@ -100,16 +88,6 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         } else {
             curValue = null;
         }
-        /*
-         * if (!ascending && rtfiller != null) {
-         * if (rtIterator == null) {
-         * rtIterator = rtfiller.getSegments(parameterId, parameterGroupId, ascending).iterator();
-         * }
-         * if (rtIterator.hasNext()) {
-         * curValue = rtIterator.next();
-         * }
-         * }
-         */
     }
 
     private SubIterator getPartitionIterator() {
@@ -143,12 +121,18 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         return parameterGroupId;
     }
 
+
     class SubIterator {
         final Partition partition;
         private SegmentKey currentKey;
         SegmentEncoderDecoder segmentEncoder = new SegmentEncoderDecoder();
         SortedTimeSegment currentTimeSegment;
 
+        /**
+         * The dbIterator iterates over the time segments. The other segments (eng value, raw value, status) are
+         * retrieved using another iterator in the {@link #value() function}
+         *
+         */
         DbIterator dbIterator;
         boolean valid;
 

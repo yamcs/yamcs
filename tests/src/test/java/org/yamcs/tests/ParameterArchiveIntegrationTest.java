@@ -375,6 +375,16 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         engValue = pv.getEngValue().getArrayValue(1).getAggregateValue().getValue(2);
         assertEquals(0.5, engValue.getFloatValue(), 1e-5);
+
+        stop = Instant.parse("2021-05-17T20:00:01Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/array_para1",
+                start, stop, ListOptions.ascending(true)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(1, values.size());
+
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {

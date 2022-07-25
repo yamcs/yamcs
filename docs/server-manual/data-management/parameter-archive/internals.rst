@@ -62,7 +62,7 @@ Inside the data partitions we store (key, value) records where:
 
 * | **key**
 
-  | parameter_id, ParameterGroup_id, type, segment_start_time (the type = 0, 1 or 2 for the eng value, raw value or parameter status)
+  | parameter_id, ParameterGroup_id, segment_start_time, type (the type = 0, 1 or 2 for the eng value, raw value or parameter status)
 
 * | **value**
 
