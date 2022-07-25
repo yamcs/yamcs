@@ -31,7 +31,8 @@ message ClientMessage {
   // (impacting all calls on that connection).
   //
   // This attribute is only applied when it is set on the first message of a call.
-  int32 maxDroppedWrites = 5;
+  // Since Yamcs 5.7.6 this option is deprecated in favour of lowPriority below.
+  int32 maxDroppedWrites = 5 [deprecated = true];
 
   //If set to true, permit the server to drop messages if writing the message would cause the
   // channel to exceed the highWaterMark

@@ -1,17 +1,14 @@
 package org.yamcs.http;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.Observer;
-import org.yamcs.http.WebSocketFrameHandler.Priority;
+import org.yamcs.http.WebSocketServerMessageHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
-import org.yamcs.protobuf.ServerMessage;
+import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 
-import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 public class WebSocketObserver implements Observer<Message> {
@@ -19,11 +16,8 @@ public class WebSocketObserver implements Observer<Message> {
     private Log log;
 
     private final TopicContext ctx;
-    private final WebSocketFrameHandler frameHandler;
 
     private int messageCount = 0;
-    private int dropCount = 0;
-    private final int maxDrops;
     private final boolean lowPriority;
     private boolean cancelled;
     private boolean completed;
@@ -32,10 +26,8 @@ public class WebSocketObserver implements Observer<Message> {
     private boolean replied;
     private List<Message> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
 
-    public WebSocketObserver(TopicContext ctx, WebSocketFrameHandler frameHandler) {
+    public WebSocketObserver(TopicContext ctx) {
         this.ctx = ctx;
-        this.frameHandler = frameHandler;
-        this.maxDrops = ctx.getMaxDroppedWrites();
         this.lowPriority = ctx.isLowPriority();
         log = new Log(WebSocketObserver.class);
         log.setContext(ctx.toString());
@@ -65,42 +57,19 @@ public class WebSocketObserver implements Observer<Message> {
             }
         }
 
-        // Increase even if it not sent.
         messageCount++;
 
         if (!ctx.nettyContext.channel().isOpen()) {
             ctx.cancel(null);
-            ctx.nettyContext.close();
             return;
         }
 
-        boolean sent = sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
-        if (!sent) {
-            dropCount++;
-
-            if (!lowPriority && dropCount >= maxDrops) {
-                log.warn("Too many ({}) dropped messages. Forcing disconnect", dropCount);
-                ctx.cancel(null); // Cancel the call first, to avoid log messages going beyond maxDrops
-                ctx.nettyContext.close();
-            }
-            return;
-        }
-        dropCount = 0;
+        sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
     }
 
-    private boolean sendMessage(String type, Message data, Priority priority) {
-        ServerMessage message = ServerMessage.newBuilder()
-                .setType(type)
-                .setCall(ctx.getId())
-                .setSeq(messageCount)
-                .setData(Any.pack(data, HttpServer.TYPE_URL_PREFIX))
-                .build();
-        try {
-            return frameHandler.writeMessage(ctx.nettyContext, message, priority);
-        } catch (IOException e) {
-            cancelCall(e.getMessage());
-            throw new UncheckedIOException(e);
-        }
+    private void sendMessage(String type, Message data, Priority priority) {
+        ctx.nettyContext.channel()
+                .writeAndFlush(new InternalServerMessage(type, ctx.getId(), messageCount, data, priority));
     }
 
     void cancelCall(String reason) {
