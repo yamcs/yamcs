@@ -69,6 +69,10 @@ public class TopicContext extends Context {
         return (maxDroppedWrites >= 0) ? maxDroppedWrites : 0;
     }
 
+    public boolean isLowPriority() {
+        return clientMessage.getLowPriority();
+    }
+
     public void close() {
         cancel(null);
     }

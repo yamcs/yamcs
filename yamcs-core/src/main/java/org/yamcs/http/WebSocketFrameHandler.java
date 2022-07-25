@@ -27,6 +27,7 @@ import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.WriteBufferWaterMark;
@@ -51,6 +52,21 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     private List<TopicContext> contexts = new ArrayList<>();
     private Map<Integer, Observer<Message>> clientObserversByCall = new HashMap<>();
+
+    // avoid flooding the log with messsages about dropped frames
+    private boolean logDroppedFrames = true;
+
+    public static enum Priority {
+        /* messages are dropped if causing the buffer to become not writable */
+        LOW,
+        /* messages are dropped if the buffer is not writable */
+        NORMAL,
+        /*
+         * messages are written (in fact queued by netty) even if the buffer is not writable.
+         * Too many of these will cause OOM
+         */
+        HIGH
+    };
 
     public WebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user,
             WriteBufferWaterMark writeBufferWaterMark) {
@@ -145,7 +161,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             writeMessage(nettyContext, ServerMessage.newBuilder()
                     .setType("reply")
                     .setData(Any.pack(reply, HttpServer.TYPE_URL_PREFIX))
-                    .build());
+                    .build(), Priority.HIGH);
         }
     }
 
@@ -180,7 +196,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         writeMessage(nettyContext, ServerMessage.newBuilder()
                 .setType("state")
                 .setData(Any.pack(stateb.build(), HttpServer.TYPE_URL_PREFIX))
-                .build());
+                .build(), Priority.HIGH);
     }
 
     private void cancelCall(ChannelHandlerContext nettyContext, ClientMessage clientMessage)
@@ -245,17 +261,55 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         clientObserver.next(apiRequest);
     }
 
-    void writeMessage(ChannelHandlerContext nettyContext, ServerMessage serverMessage) throws IOException {
+    /**
+     * Sends the message to the netty channel.
+     * <p>
+     * Depending on the priority the message may not be sent.
+     * <p>
+     * return true if the message has been sent
+     * 
+     */
+    boolean writeMessage(ChannelHandlerContext nettyContext, ServerMessage serverMessage, Priority priority)
+            throws IOException {
+        WebSocketFrame frame;
+
         if (protobuf) {
             ByteBuf buf = nettyContext.alloc().buffer();
             try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
                 serverMessage.writeTo(bufOut);
             }
-            nettyContext.channel().writeAndFlush(new BinaryWebSocketFrame(buf));
+            frame = new BinaryWebSocketFrame(buf);
         } else {
             String json = httpServer.getJsonPrinter().print(serverMessage);
-            nettyContext.channel().writeAndFlush(new TextWebSocketFrame(json));
+            frame = new TextWebSocketFrame(json);
         }
+        Channel nettyChannel = nettyContext.channel();
+        long frameLength = frame.content().readableBytes();
+        long bytesBeforeUnwritable = nettyChannel.bytesBeforeUnwritable();
+
+        boolean send = priority == Priority.HIGH ||
+                (priority == Priority.NORMAL && bytesBeforeUnwritable > 0) ||
+                (priority == Priority.LOW && bytesBeforeUnwritable > frameLength);
+
+        if (send) {
+            nettyChannel.writeAndFlush(frame);
+            logDroppedFrames = true;
+        } else if (logDroppedFrames) {
+            if (priority == Priority.LOW) {
+                log.warn("Frame skipped because writing the frame would make the channel not writtable "
+                        + "(frameLenght: {}, bytesBeforeUnwritable: {}", frameLength, bytesBeforeUnwritable);
+                if (frameLength > writeBufferWaterMark.high()) {
+                    log.warn("This frame size exceeds the high water mark (currently set to {}) "
+                            + "so it will always be dropped. Consider increasing the high water mark",
+                            writeBufferWaterMark.high());
+                }
+            } else {
+                log.warn("Frame skipped because the channel is not writable");
+            }
+            logDroppedFrames = false;
+        }
+
+        return send;
     }
 
     /**

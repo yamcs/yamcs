@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.Observer;
+import org.yamcs.http.WebSocketFrameHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
 import org.yamcs.protobuf.ServerMessage;
@@ -17,12 +18,13 @@ public class WebSocketObserver implements Observer<Message> {
 
     private Log log;
 
-    private TopicContext ctx;
-    private WebSocketFrameHandler frameHandler;
+    private final TopicContext ctx;
+    private final WebSocketFrameHandler frameHandler;
 
     private int messageCount = 0;
     private int dropCount = 0;
-    private int maxDrops = 0;
+    private final int maxDrops;
+    private final boolean lowPriority;
     private boolean cancelled;
     private boolean completed;
     private Runnable cancelHandler;
@@ -34,6 +36,7 @@ public class WebSocketObserver implements Observer<Message> {
         this.ctx = ctx;
         this.frameHandler = frameHandler;
         this.maxDrops = ctx.getMaxDroppedWrites();
+        this.lowPriority = ctx.isLowPriority();
         log = new Log(WebSocketObserver.class);
         log.setContext(ctx.toString());
 
@@ -43,7 +46,7 @@ public class WebSocketObserver implements Observer<Message> {
     void sendReply(Reply reply) {
         synchronized (this) { // Guard 'replied' and 'pendingMessages'
             try {
-                sendMessage("reply", reply);
+                sendMessage("reply", reply, Priority.HIGH);
             } finally {
                 replied = true;
             }
@@ -51,10 +54,6 @@ public class WebSocketObserver implements Observer<Message> {
             pendingMessages.forEach(message -> next(message));
             pendingMessages.clear();
         }
-    }
-
-    void sendOneof(String type, Message message) {
-        sendMessage(type, message);
     }
 
     @Override
@@ -69,28 +68,27 @@ public class WebSocketObserver implements Observer<Message> {
         // Increase even if it not sent.
         messageCount++;
 
-        boolean isOpen = ctx.nettyContext.channel().isOpen();
-        boolean isWritable = ctx.nettyContext.channel().isWritable();
-        if (!isOpen || !isWritable) {
+        if (!ctx.nettyContext.channel().isOpen()) {
+            ctx.cancel(null);
+            ctx.nettyContext.close();
+            return;
+        }
+
+        boolean sent = sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
+        if (!sent) {
             dropCount++;
-            if (!isOpen) {
-                log.warn("Skipping frame because channel is not open");
-            } else {
-                log.warn("Skipping frame because channel is not writable");
-            }
-            if (dropCount >= maxDrops) {
+
+            if (!lowPriority && dropCount >= maxDrops) {
                 log.warn("Too many ({}) dropped messages. Forcing disconnect", dropCount);
                 ctx.cancel(null); // Cancel the call first, to avoid log messages going beyond maxDrops
                 ctx.nettyContext.close();
             }
             return;
         }
-
-        sendMessage(ctx.getTopic().getName(), message);
         dropCount = 0;
     }
 
-    private void sendMessage(String type, Message data) {
+    private boolean sendMessage(String type, Message data, Priority priority) {
         ServerMessage message = ServerMessage.newBuilder()
                 .setType(type)
                 .setCall(ctx.getId())
@@ -98,7 +96,7 @@ public class WebSocketObserver implements Observer<Message> {
                 .setData(Any.pack(data, HttpServer.TYPE_URL_PREFIX))
                 .build();
         try {
-            frameHandler.writeMessage(ctx.nettyContext, message);
+            return frameHandler.writeMessage(ctx.nettyContext, message, priority);
         } catch (IOException e) {
             cancelCall(e.getMessage());
             throw new UncheckedIOException(e);

@@ -32,6 +32,16 @@ message ClientMessage {
   //
   // This attribute is only applied when it is set on the first message of a call.
   int32 maxDroppedWrites = 5;
+
+  //If set to true, permit the server to drop messages if writing the message would cause the
+  // channel to exceed the highWaterMark
+  // (see https://docs.yamcs.org/yamcs-server-manual/services/global/http-server/)
+  // This attribute is only applied when it is set on the first message of a call.
+  //
+  // Note that if a message exceeds the highWaterMark, with this option set it will always be dropped.
+  // A warning will be printed in the Yamcs logs in this case.
+  //
+  bool lowPriority = 6;
 }
 
 message ServerMessage {
