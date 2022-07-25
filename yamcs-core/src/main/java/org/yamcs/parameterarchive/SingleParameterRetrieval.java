@@ -130,7 +130,6 @@ public class SingleParameterRetrieval {
         ValueSegment rawValueSegment = pvs.rawValueSegment;
         ParameterStatusSegment parameterStatusSegment = pvs.parameterStatusSegment;
         SortedTimeSegment timeSegment = pvs.timeSegment;
-
         int posStart, posStop;
         if (pvr.ascending) {
             posStart = timeSegment.search(pvr.start);

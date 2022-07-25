@@ -64,6 +64,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     SubIterator subIt;
 
     final boolean ascending, retrieveEngValues, retrieveRawValues, retrieveParameterStatus;
+    final long start, stop;
 
     ParameterValueSegment curValue;
     Iterator<ParameterValueSegment> rtIterator;
@@ -74,6 +75,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
+        this.start = req.start;
+        this.stop = req.stop;
         this.ascending = req.isAscending();
         this.retrieveEngValues = req.isRetrieveEngineeringValues();
         this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.isRetrieveRawValues();
@@ -107,12 +110,21 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     }
 
     public void next() {
+        // descending with a realtime filler: retrieve first the values from the realtime that are in range
         if (!ascending && rtIterator != null) {
-            if (rtIterator.hasNext()) {
+            curValue = null;
+            while (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
-                return;
-            } else {
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= start) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
                 rtIterator = null;
+            } else {
+                return;
             }
         }
 
@@ -125,12 +137,24 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             curValue = null;
         }
 
+        // ascending with a realtime filler: retrieve at the end the values from the realtime that are in range
         if (ascending && rtfiller != null) {
             if (rtIterator == null) {
                 rtIterator = rtfiller.getSegments(parameterId.getPid(), parameterGroupId, ascending).iterator();
             }
-            if (rtIterator.hasNext()) {
+            long lastSegmentTime = curValue == null ? start : curValue.getSegmentEnd();
+            curValue = null;
+
+            while (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= lastSegmentTime) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
+                rtIterator = null;
             }
         }
     }
@@ -169,7 +193,6 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     public ParameterId getParameterId() {
         return parameterId;
     }
-
 
     class SubIterator {
         final Partition partition;
@@ -301,7 +324,6 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
             }
-
             return pvs;
         }
 

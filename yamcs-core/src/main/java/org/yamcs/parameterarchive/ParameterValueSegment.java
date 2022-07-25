@@ -1,5 +1,7 @@
 package org.yamcs.parameterarchive;
 
+import org.yamcs.utils.TimeEncoding;
+
 public class ParameterValueSegment {
 
     SortedTimeSegment timeSegment;
@@ -22,11 +24,6 @@ public class ParameterValueSegment {
         this.timeSegment = timeSegment;
     }
 
-    @Override
-    public String toString() {
-        return "ParameterValueSegment[size: " + timeSegment.size() + "]";
-    }
-
     public long getSegmentStart() {
         return timeSegment.getSegmentStart();
     }
@@ -37,5 +34,12 @@ public class ParameterValueSegment {
 
     public int size() {
         return timeSegment.size();
+    }
+
+    @Override
+    public String toString() {
+        return "ParameterValueSegment[size: " + timeSegment.size() + ", start: "
+                + TimeEncoding.toString(getSegmentStart())
+                + ", end: " + TimeEncoding.toString(getSegmentEnd()) + "]";
     }
 }
