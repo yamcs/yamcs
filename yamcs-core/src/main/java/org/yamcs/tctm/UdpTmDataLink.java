@@ -55,7 +55,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         if (!isDisabled()) {
             try {
                 tmSocket = new DatagramSocket(port);
-                new Thread(this).start();
+                Thread thread = new Thread(this);
+                thread.setName("UdpTmDataLink-" + linkName);
+                thread.start();
             } catch (SocketException e) {
                 notifyFailed(e);
             }
