@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { MessageService } from '../core/services/MessageService';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
@@ -33,7 +34,7 @@ export default class YamcsClient implements HttpHandler {
   readonly connected$ = new BehaviorSubject<boolean>(false);
   private webSocketClient?: WebSocketClient;
 
-  constructor(readonly baseHref = '/') {
+  constructor(readonly baseHref = '/', private messageService: MessageService) {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
     this.staticUrl = `${this.baseHref}static`;
@@ -1293,7 +1294,7 @@ export default class YamcsClient implements HttpHandler {
 
   prepareWebSocketClient() {
     if (!this.webSocketClient) {
-      this.webSocketClient = new WebSocketClient(this.apiUrl);
+      this.webSocketClient = new WebSocketClient(this.apiUrl, this.messageService);
       // Copy connection updates from the WebSocketConnection to the subject in
       // this class. Our local subject must always be available even when the
       // WebSocket was not yet set up (for example because auth is still

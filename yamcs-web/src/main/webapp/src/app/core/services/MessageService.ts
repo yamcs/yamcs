@@ -4,6 +4,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, filter, map, Subscription } from 'rxjs';
 
+export interface SiteMessage {
+  level: 'WARNING' | 'ERROR';
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -13,7 +18,7 @@ export class MessageService implements OnDestroy {
    * Active error message. Each message replaces
    * the previous one.
    */
-  errorMessage$ = new BehaviorSubject<string | null>(null);
+  siteMessage$ = new BehaviorSubject<SiteMessage | null>(null);
 
   private routerSubscription: Subscription;
 
@@ -34,16 +39,19 @@ export class MessageService implements OnDestroy {
     });
   }
 
+  showWarning(message: string) {
+    this.siteMessage$.next({ level: 'WARNING', message });
+  }
+
   showError(error: string | Error) {
-    if (error instanceof Error) {
-      this.errorMessage$.next(error.message);
-    } else {
-      this.errorMessage$.next(error);
-    }
+    this.siteMessage$.next({
+      level: 'ERROR',
+      message: (error instanceof Error) ? error.message : error,
+    });
   }
 
   dismiss() {
-    this.errorMessage$.next(null);
+    this.siteMessage$.next(null);
     this.snackBar.dismiss();
   }
 

@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { MessageService } from '../core/services/MessageService';
 import { WebSocketCall } from './WebSocketCall';
 
 export type ClientMessage = {
@@ -27,7 +28,7 @@ export class WebSocketClient {
 
   private requestSequence = 0;
 
-  constructor(apiUrl: string) {
+  constructor(apiUrl: string, private messageService: MessageService) {
     const currentLocation = window.location;
     let url = 'ws://';
     if (currentLocation.protocol === 'https:') {
@@ -75,6 +76,9 @@ export class WebSocketClient {
   private doCreateSubscription<O, D>(type: string, lowPriority: boolean, options: O, observer: (data: D) => void) {
     const id = ++this.requestSequence;
     const call = new WebSocketCall(this, id, type, observer);
+    call.addFrameLossListener(() => {
+      this.messageService.showWarning('A gap was detected in one of the data feeds. Typically this occurs when data is fastly updating.');
+    });
     this.calls.push(call);
     this.sendMessage({ type, id, lowPriority, options });
     return call;

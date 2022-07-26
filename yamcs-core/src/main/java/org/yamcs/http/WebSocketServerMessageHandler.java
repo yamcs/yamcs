@@ -83,7 +83,7 @@ public class WebSocketServerMessageHandler extends ChannelOutboundHandlerAdapter
             if (priority == Priority.LOW) {
                 if (logDroppedFrames) {
                     log.warn("Frame skipped because writing the frame would make the channel not writable "
-                            + "(frameLength: {}, bytesBeforeUnwritable: {}", frameLength, bytesBeforeUnwritable);
+                            + "(frameLength: {}, bytesBeforeUnwritable: {})", frameLength, bytesBeforeUnwritable);
                     if (frameLength > highWaterMark) {
                         log.warn("This frame size exceeds the high water mark (currently set to {}) "
                                 + "so it will always be dropped. Consider increasing the high water mark",
