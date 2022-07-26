@@ -7,4 +7,9 @@ public class ConnectData {
     String username;
     char[] password;
     String contextPath;
+
+    boolean useServerMdb;
+    String localMdbConfig;
+    String streamName;
+    String instance;
 }

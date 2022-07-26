@@ -32,6 +32,7 @@ export interface Column {
   name: string;
   type: string;
   enumValue: SQLEnumValue[];
+  autoIncrement?: boolean;
 }
 
 export interface SQLEnumValue {

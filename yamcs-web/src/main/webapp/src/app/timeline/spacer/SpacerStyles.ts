@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 
 export interface SpacerProperties {
   [key: string]: any,
@@ -42,5 +42,5 @@ export function mergeProperties(base: SpacerProperties, partial: Partial<SpacerP
 export class SpacerStyles {
 
   @Input()
-  form: FormGroup;
+  form: UntypedFormGroup;
 }

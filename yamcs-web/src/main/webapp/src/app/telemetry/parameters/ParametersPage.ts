@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -20,10 +20,10 @@ import { ListItem, ParametersDataSource } from './ParametersDataSource';
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    type: new FormControl('ANY'),
-    source: new FormControl('ANY'),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    type: new UntypedFormControl('ANY'),
+    source: new UntypedFormControl('ANY'),
   });
 
   shortName = false;

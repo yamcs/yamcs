@@ -280,7 +280,7 @@ public class TableApi extends AbstractTableApi<Context> {
             throw new ForbiddenException("Insufficient privileges");
         }
 
-        return new Observer<WriteRowsRequest>() {
+        return new Observer<>() {
 
             Map<Integer, ColumnSerializer<?>> serializers = new HashMap<>();
             Map<Integer, ColumnDefinition> colDefinitions = new HashMap<>();
@@ -688,6 +688,10 @@ public class TableApi extends AbstractTableApi<Context> {
                 Collections.sort(enumValueList, (v1, v2) -> Integer.compare(v1.getValue(), v2.getValue()));
                 infob.addAllEnumValue(enumValueList);
             }
+        }
+        if (cdef instanceof TableColumnDefinition) {
+            var tcdef = (TableColumnDefinition) cdef;
+            infob.setAutoIncrement(tcdef.isAutoIncrement());
         }
         return infob.build();
     }

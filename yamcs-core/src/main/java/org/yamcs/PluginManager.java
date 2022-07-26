@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,20 +23,20 @@ public class PluginManager {
     private Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
 
     public PluginManager() throws IOException {
-        YamcsServer yamcs = YamcsServer.getServer();
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-            String propsResource = "/META-INF/yamcs/" + plugin.getClass().getName() + "/plugin.properties";
-            Properties props = new Properties();
-            try (InputStream in = getClass().getResourceAsStream(propsResource)) {
+        var yamcs = YamcsServer.getServer();
+        for (var plugin : ServiceLoader.load(Plugin.class)) {
+            var propsResource = "/META-INF/yamcs/" + plugin.getClass().getName() + "/plugin.properties";
+            var props = new Properties();
+            try (var in = getClass().getResourceAsStream(propsResource)) {
                 props.load(in);
             }
 
-            PluginMetadata pluginMetadata = new PluginMetadata(props);
+            var pluginMetadata = new PluginMetadata(props);
             metadata.put(plugin.getClass(), pluginMetadata);
 
             // Allow plugins to manually define a spec, but default to
             // autodiscovery based on a resource descriptor.
-            Spec spec = plugin.getSpec();
+            var spec = plugin.getSpec();
             if (spec == null) {
                 spec = discoverPluginOptions(plugin.getClass());
             }
@@ -49,12 +48,12 @@ public class PluginManager {
 
     @SuppressWarnings("unchecked")
     private Spec discoverPluginOptions(Class<?> pluginClass) throws IOException {
-        try (InputStream in = pluginClass.getResourceAsStream(pluginClass.getSimpleName() + ".yaml")) {
+        try (var in = pluginClass.getResourceAsStream(pluginClass.getSimpleName() + ".yaml")) {
             if (in != null) {
-                Yaml yaml = new Yaml();
+                var yaml = new Yaml();
                 Map<String, Object> pluginDescriptor = yaml.load(in);
                 if (pluginDescriptor.containsKey("options")) {
-                    Map<String, Map<String, Object>> optionDescriptors = (Map<String, Map<String, Object>>) pluginDescriptor
+                    var optionDescriptors = (Map<String, Map<String, Object>>) pluginDescriptor
                             .get("options");
                     try {
                         return Spec.fromDescriptor(optionDescriptors);
@@ -90,8 +89,8 @@ public class PluginManager {
             disabledPlugins = Collections.emptyList();
         }
 
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-            PluginMetadata meta = metadata.get(plugin.getClass());
+        for (var plugin : ServiceLoader.load(Plugin.class)) {
+            var meta = metadata.get(plugin.getClass());
             if (disabledPlugins.contains(meta.getName())) {
                 log.debug("Ignoring plugin {} (disabled by user config)", meta.getName());
             } else {
@@ -101,12 +100,12 @@ public class PluginManager {
     }
 
     public void loadPlugins() throws PluginException {
-        YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
-        for (Plugin plugin : plugins.values()) {
-            PluginMetadata meta = metadata.get(plugin.getClass());
+        var yamcsConfig = YamcsServer.getServer().getConfig();
+        for (var plugin : plugins.values()) {
+            var meta = metadata.get(plugin.getClass());
             log.debug("Loading plugin {} {}", meta.getName(), meta.getVersion());
             try {
-                YConfiguration config = YConfiguration.emptyConfig();
+                var config = YConfiguration.emptyConfig();
                 if (yamcsConfig.containsKey(meta.getName())) {
                     config = yamcsConfig.getConfig(meta.getName());
                 }

@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnChanges, ViewChild } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, ViewChild } from '@angular/core';
 import { BitRange } from '../BitRange';
 import { EventHandler } from '../draw/EventHandler';
 import { Graphics } from '../draw/Graphics';
@@ -11,6 +12,8 @@ import { HexModel, Line } from './model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hex implements AfterViewInit, OnChanges {
+
+  fontPreloaded$: Promise<boolean>;
 
   @ViewChild('canvasEl')
   canvasEl: ElementRef;
@@ -31,10 +34,22 @@ export class Hex implements AfterViewInit, OnChanges {
   private selection?: BitRange;
   private pressStart?: BitRange;
 
+  constructor(@Inject(APP_BASE_HREF) baseHref: string) {
+    const resourceUrl = `url(${baseHref}static/RobotoMono-Regular.woff2)`;
+    this.fontPreloaded$ = new Promise(resolve => {
+      const robotoMono = new FontFace('Roboto Mono', resourceUrl);
+      robotoMono.load().then(() => resolve(true)).catch(() => resolve(false));
+    });
+  }
+
   ngAfterViewInit() {
+    this.fontPreloaded$.then(() => this.initCanvas());
+  }
+
+  private initCanvas() {
     const el = this.canvasEl.nativeElement as HTMLCanvasElement;
     const ctx = el.getContext('2d')!;
-    ctx.font = `${this.fontSize}px monospace`;
+    ctx.font = `${this.fontSize}px 'Roboto Mono', monospace`;
     this.charWidth = ctx.measureText('0').width;
 
     this.g = new Graphics(el);
@@ -116,7 +131,7 @@ export class Hex implements AfterViewInit, OnChanges {
       y,
       baseline: 'top',
       align: 'left',
-      font: `${this.fontSize}px monospace`,
+      font: `${this.fontSize}px 'Roboto Mono', monospace`,
       color: '#777777',
       text,
     });
@@ -176,7 +191,7 @@ export class Hex implements AfterViewInit, OnChanges {
             x, y,
             baseline: 'top',
             align: 'left',
-            font: `${this.fontSize}px monospace`,
+            font: `${this.fontSize}px 'Roboto Mono', monospace`,
             color: fgColor,
             text: nibble.content,
           });
@@ -270,7 +285,7 @@ export class Hex implements AfterViewInit, OnChanges {
             x, y,
             baseline: 'top',
             align: 'left',
-            font: `${this.fontSize}px monospace`,
+            font: `${this.fontSize}px 'Roboto Mono', monospace`,
             color: fgColor,
             text: c.content,
           });

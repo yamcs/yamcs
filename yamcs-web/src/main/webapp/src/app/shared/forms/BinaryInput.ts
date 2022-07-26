@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, ValidatorFn } from '@angular/forms';
+import { AbstractControl, ControlValueAccessor, UntypedFormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, ValidatorFn } from '@angular/forms';
 
 const requireHex: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   if (!control.value) {
@@ -51,7 +51,7 @@ export class BinaryInput implements ControlValueAccessor, Validator {
   registerOnTouched(fn: any) {
   }
 
-  validate(control: FormControl) {
+  validate(control: UntypedFormControl) {
     if (!control.value) {
       return null;
     }

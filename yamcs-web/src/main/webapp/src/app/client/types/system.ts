@@ -112,10 +112,12 @@ export interface PluginInfo {
   vendor: string;
 }
 
+export type CommandOptionType = 'BOOLEAN' | 'STRING' | 'NUMBER';
+
 export interface CommandOption {
   id: string;
   verboseName: string;
-  type: 'BOOLEAN' | 'STRING' | 'NUMBER';
+  type: CommandOptionType;
   help: string;
 }
 

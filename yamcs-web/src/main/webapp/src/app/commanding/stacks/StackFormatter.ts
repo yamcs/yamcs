@@ -23,6 +23,51 @@ export class StackFormatter {
       if (entry.comment) {
         entryEl.setAttribute('comment', entry.comment);
       }
+      if (entry.extra) {
+        const extraOptionsEl = doc.createElement('extraOptions');
+        for (const id in entry.extra) {
+          const extraOptionEl = doc.createElement('extraOption');
+          extraOptionEl.setAttribute('id', id);
+          const value = entry.extra[id];
+          switch (value.type) {
+            case 'BOOLEAN':
+              extraOptionEl.setAttribute('value', '' + value.booleanValue);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'FLOAT':
+              extraOptionEl.setAttribute('value', '' + value.floatValue);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'DOUBLE':
+              extraOptionEl.setAttribute('value', '' + value.doubleValue);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'UINT32':
+              extraOptionEl.setAttribute('value', '' + value.uint32Value);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'SINT32':
+              extraOptionEl.setAttribute('value', '' + value.sint32Value);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'ENUMERATED':
+            case 'STRING':
+              extraOptionEl.setAttribute('value', '' + value.stringValue);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'UINT64':
+              extraOptionEl.setAttribute('value', '' + value.uint64Value);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            case 'SINT64':
+              extraOptionEl.setAttribute('value', '' + value.sint64Value);
+              extraOptionsEl.appendChild(extraOptionEl);
+              break;
+            default: // Ignore
+          }
+        }
+        entryEl.appendChild(extraOptionsEl);
+      }
       for (const argName in entry.args) {
         const argumentEl = doc.createElement('commandArgument');
         argumentEl.setAttribute('argumentName', argName);

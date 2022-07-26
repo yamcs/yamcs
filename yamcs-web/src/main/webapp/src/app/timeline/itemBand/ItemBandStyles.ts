@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { Option } from '../../shared/forms/Select';
 
 export interface ItemBandProperties {
@@ -77,5 +77,5 @@ export class ItemBandStyles {
   ];
 
   @Input()
-  form: FormGroup;
+  form: UntypedFormGroup;
 }

@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -46,12 +46,12 @@ export class CommandHistoryPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    queue: new FormControl('ANY'),
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    queue: new UntypedFormControl('ANY'),
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   dataSource: CommandHistoryDataSource;

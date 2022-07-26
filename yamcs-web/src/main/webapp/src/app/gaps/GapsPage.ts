@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -32,11 +32,11 @@ export class GapsPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    apid: new FormControl([]),
-    interval: new FormControl('PT1H', [Validators.required]),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    apid: new UntypedFormControl([]),
+    interval: new UntypedFormControl('PT1H', [Validators.required]),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   displayedColumns = [

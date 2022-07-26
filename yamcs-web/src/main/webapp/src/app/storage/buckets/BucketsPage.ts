@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -20,7 +20,7 @@ import { CreateBucketDialog } from './CreateBucketDialog';
 })
 export class BucketsPage implements AfterViewInit {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
@@ -40,8 +40,8 @@ export class BucketsPage implements AfterViewInit {
     'actions',
   ];
 
-  filterForm = new FormGroup({
-    instance: new FormControl('_global'),
+  filterForm = new UntypedFormGroup({
+    instance: new UntypedFormControl('_global'),
   });
 
   instanceOptions$ = new BehaviorSubject<Option[]>([

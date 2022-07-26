@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -26,7 +26,7 @@ export class AddMembersDialog implements AfterViewInit {
     'name',
   ];
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;

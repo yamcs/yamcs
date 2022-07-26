@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { TimelineBand } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -12,7 +12,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class EditCommandBandComponent implements AfterViewInit {
 
   @Input()
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   @Input()
   band: TimelineBand;

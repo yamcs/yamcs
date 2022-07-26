@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UpdateTimelineItemRequest } from '../../client/types/timeline';
 import { MessageService } from '../../core/services/MessageService';
@@ -22,11 +22,11 @@ export class EditItemDialog {
     { id: 'START_ON', label: 'Start on' },
   ];
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<EditItemDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     private messageService: MessageService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,

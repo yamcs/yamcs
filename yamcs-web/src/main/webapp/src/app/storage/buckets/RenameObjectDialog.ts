@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -11,14 +11,14 @@ import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
 })
 export class RenameObjectDialog {
 
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   private bucketInstance: string;
   private storageClient: StorageClient;
 
   constructor(
     private dialogRef: MatDialogRef<RenameObjectDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     filenamePipe: FilenamePipe,
     @Inject(MAT_DIALOG_DATA) readonly data: any,

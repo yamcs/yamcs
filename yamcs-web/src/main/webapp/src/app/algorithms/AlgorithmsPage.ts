@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -17,9 +17,9 @@ import { AlgorithmsDataSource, ListItem } from './AlgorithmsDataSource';
 })
 export class AlgorithmsPage implements AfterViewInit, OnDestroy {
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    scope: new FormControl('ANY'),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    scope: new UntypedFormControl('ANY'),
   });
 
   shortName = false;

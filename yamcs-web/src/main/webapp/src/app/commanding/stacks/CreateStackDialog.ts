@@ -1,5 +1,5 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -11,7 +11,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateStackDialog {
 
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   @ViewChild('filename')
   filenameInput: ElementRef;
@@ -21,7 +21,7 @@ export class CreateStackDialog {
 
   constructor(
     private dialogRef: MatDialogRef<CreateStackDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { UpdateTimelineBandRequest } from '../../client/types/timeline';
@@ -13,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class EditBandDialog implements OnDestroy {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   private formSubscription: Subscription;
@@ -22,7 +22,7 @@ export class EditBandDialog implements OnDestroy {
     private dialogRef: MatDialogRef<EditBandDialog>,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const band = data.band;

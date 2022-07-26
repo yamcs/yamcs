@@ -16,7 +16,6 @@
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
       <button mat-button (click)="openInstanceDialog()">
-        <mat-icon>scatter_plot</mat-icon>
         {{ connectionInfo.instance?.name }}
         <mat-icon>arrow_drop_down</mat-icon>
       </button>

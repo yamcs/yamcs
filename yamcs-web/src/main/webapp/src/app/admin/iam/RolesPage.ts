@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -13,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class RolesPage implements AfterViewInit {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;

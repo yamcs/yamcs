@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { InitiateCop1Request } from '../client';
 
-const CombinedValidator: ValidatorFn = (form: FormGroup) => {
+const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
   const type = form.get('type')!.value;
 
   const clcwCheckTimeout = form.get('clcwCheckTimeout')!.value;
@@ -23,11 +23,11 @@ const CombinedValidator: ValidatorFn = (form: FormGroup) => {
 })
 export class InitiateCop1Dialog {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<InitiateCop1Dialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.form = formBuilder.group({

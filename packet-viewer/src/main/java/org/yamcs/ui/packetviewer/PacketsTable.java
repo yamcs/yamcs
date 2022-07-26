@@ -158,7 +158,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         this.packetFilter = packetFilter;
         RowFilter<PacketsTableModel, Object> rf = null;
         if (packetFilter != null) {
-            rf = new RowFilter<PacketsTableModel, Object>() {
+            rf = new RowFilter<>() {
                 @Override
                 public boolean include(Entry<? extends PacketsTableModel, ? extends Object> entry) {
                     ListPacket packet = (ListPacket) entry.getValue(2);
@@ -281,7 +281,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
 
     private void createActions() {
         // Ctrl on win/linux, Command on mac
-        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
         //
         // GO TO PACKET

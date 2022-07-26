@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Component({
@@ -17,7 +17,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class TagSelect implements ControlValueAccessor {
 
-  control = new FormControl(null);
+  control = new UntypedFormControl(null);
 
   filteredOptions: Observable<string[]>;
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -15,11 +15,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateInstancePage2 {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   template$ = new BehaviorSubject<InstanceTemplate | null>(null);
 
   constructor(
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     private router: Router,
     private messageService: MessageService,
@@ -28,7 +28,7 @@ export class CreateInstancePage2 {
   ) {
     title.setTitle('Create an Instance');
     this.form = formBuilder.group({
-      name: new FormControl('', [Validators.required])
+      name: new UntypedFormControl('', [Validators.required])
     });
 
     const templateId = route.snapshot.paramMap.get('template')!;
@@ -41,7 +41,7 @@ export class CreateInstancePage2 {
           initialValue = variable.initial;
         }
 
-        this.form.addControl(variable.name, new FormControl(initialValue, validators));
+        this.form.addControl(variable.name, new UntypedFormControl(initialValue, validators));
       }
     });
   }

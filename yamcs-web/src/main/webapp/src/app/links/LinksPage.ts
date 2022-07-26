@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,7 +18,7 @@ import { LinkItem } from './LinkItem';
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   // Link to show detail pane (only on single selection)
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
