@@ -158,7 +158,7 @@ public class HttpServer extends AbstractYamcsService {
 
         Spec lohiSpec = new Spec();
         lohiSpec.addOption("low", OptionType.INTEGER).withDefault(32 * 1024);
-        lohiSpec.addOption("high", OptionType.INTEGER).withDefault(64 * 1024);
+        lohiSpec.addOption("high", OptionType.INTEGER).withDefault(128 * 1024);
 
         Spec websocketSpec = new Spec();
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);

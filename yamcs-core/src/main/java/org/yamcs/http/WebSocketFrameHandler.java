@@ -13,29 +13,25 @@ import org.yamcs.logging.Log;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
 import org.yamcs.protobuf.Reply;
-import org.yamcs.protobuf.ServerMessage;
 import org.yamcs.protobuf.State;
 import org.yamcs.security.User;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
+
+import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
@@ -83,6 +79,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
             // After upgrade, no further HTTP messages will be received
             nettyContext.pipeline().remove(HttpRequestHandler.class);
+
+            nettyContext.pipeline()
+                    .addLast(new WebSocketServerMessageHandler(httpServer, protobuf, writeBufferWaterMark.high()));
         } else {
             super.userEventTriggered(nettyContext, evt);
         }
@@ -142,10 +141,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     .setReplyTo(message.getId())
                     .setException(e.toMessage())
                     .build();
-            writeMessage(nettyContext, ServerMessage.newBuilder()
-                    .setType("reply")
-                    .setData(Any.pack(reply, HttpServer.TYPE_URL_PREFIX))
-                    .build());
+            writeMessage(nettyContext, "reply", reply);
         }
     }
 
@@ -177,10 +173,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         for (TopicContext ctx : contexts) {
             stateb.addCalls(ctx.dumpState());
         }
-        writeMessage(nettyContext, ServerMessage.newBuilder()
-                .setType("state")
-                .setData(Any.pack(stateb.build(), HttpServer.TYPE_URL_PREFIX))
-                .build());
+        writeMessage(nettyContext, "state", stateb.build());
     }
 
     private void cancelCall(ChannelHandlerContext nettyContext, ClientMessage clientMessage)
@@ -211,7 +204,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             apiRequest = clientMessage.getOptions().unpack(requestPrototype.getClass());
         }
 
-        WebSocketObserver observer = new WebSocketObserver(ctx, this);
+        WebSocketObserver observer = new WebSocketObserver(ctx);
         ctx.addListener(cancellationCause -> {
             observer.cancelCall(cancellationCause != null ? cancellationCause.getMessage() : null);
         });
@@ -245,17 +238,17 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         clientObserver.next(apiRequest);
     }
 
-    void writeMessage(ChannelHandlerContext nettyContext, ServerMessage serverMessage) throws IOException {
-        if (protobuf) {
-            ByteBuf buf = nettyContext.alloc().buffer();
-            try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
-                serverMessage.writeTo(bufOut);
-            }
-            nettyContext.channel().writeAndFlush(new BinaryWebSocketFrame(buf));
-        } else {
-            String json = httpServer.getJsonPrinter().print(serverMessage);
-            nettyContext.channel().writeAndFlush(new TextWebSocketFrame(json));
-        }
+    /**
+     * Sends the message to the netty channel.
+     * <p>
+     * Depending on the priority the message may not be sent.
+     * <p>
+     * return true if the message has been sent
+     * 
+     */
+    void writeMessage(ChannelHandlerContext nettyContext, String type, Message data)
+            throws IOException {
+        nettyContext.channel().writeAndFlush(new InternalServerMessage(type, data));
     }
 
     /**

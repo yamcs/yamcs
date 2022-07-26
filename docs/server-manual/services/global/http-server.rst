@@ -83,12 +83,12 @@ WebSocket sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 maxFrameLength (integer)
-    Maximum frame length in bytes. Default: ``65536``
+    Maximum frame length in bytes. This is applied to incoming frames. Default: ``65536``
 
 writeBufferWaterMark (map)
     Water marks for the write buffer of each WebSocket connection. When the buffer is full, messages are dropped. High values lead to increased memory use, but connections will be more resilient against unstable networks (i.e. high jitter). Increasing the values also help if a large number of messages are generated in bursts. The map requires keys ``low`` and ``high`` indicating the low/high water mark in bytes.
 
-    Default: ``{ low: 32768, high: 65536}``
+    Default: ``{ low: 32768, high: 131072 }``
 
 
 CORS sub-configuration

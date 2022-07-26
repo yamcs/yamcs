@@ -7,6 +7,9 @@ import { ServerMessage, WebSocketClient } from './WebSocketClient';
 export class WebSocketCall<O, D> {
 
   private _id?: number;
+  private seq = 0; // Mirror of received seq count on server messages
+  private _frameLoss = false;
+  private frameLossListeners = new Set<() => void>();
 
   constructor(
     private client: WebSocketClient,
@@ -20,6 +23,26 @@ export class WebSocketCall<O, D> {
    */
   get id() {
     return this._id;
+  }
+
+  /**
+   * True if a WebSocket frame loss was detected specific to this call
+   * (at any point during this call).
+   */
+  get frameLoss() {
+    return this._frameLoss;
+  }
+
+  /**
+   * Receive a notification when a frame loss is detected. Only one
+   * such notification is sent.
+   */
+  addFrameLossListener(frameLossListener: () => void) {
+    this.frameLossListeners.add(frameLossListener);
+  }
+
+  removeFrameLossListener(frameLossListener: () => void) {
+    this.frameLossListeners.delete(frameLossListener);
   }
 
   sendMessage(options: O) {
@@ -49,11 +72,17 @@ export class WebSocketCall<O, D> {
         console.error(`Received ${errCode} ${errType} for topic '${this.type}': ${errDetail}`);
       }
     } else if (msg.type === this.type && msg.call === this.id) {
+      if (!this.frameLoss && (this.seq + 1 !== msg.seq)) {
+        this._frameLoss = true;
+        this.frameLossListeners.forEach(listener => listener());
+      }
+      this.seq = msg.seq;
       this.observer(msg.data);
     }
   }
 
   cancel() {
     this.client.cancelCall(this);
+    this.frameLossListeners.clear();
   }
 }

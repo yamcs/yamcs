@@ -2,7 +2,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService, SiteMessage } from '../../core/services/MessageService';
 
 @Component({
   selector: 'app-message-bar',
@@ -21,12 +21,12 @@ import { MessageService } from '../../core/services/MessageService';
 })
 export class MessageBar {
 
-  errorMessage$: Observable<string | null>;
+  siteMessage$: Observable<SiteMessage | null>;
   show$: Observable<boolean>;
 
   constructor(private messageService: MessageService) {
-    this.errorMessage$ = messageService.errorMessage$;
-    this.show$ = this.errorMessage$.pipe(
+    this.siteMessage$ = messageService.siteMessage$;
+    this.show$ = this.siteMessage$.pipe(
       map(msg => !!msg)
     );
   }

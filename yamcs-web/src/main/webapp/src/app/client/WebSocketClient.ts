@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { MessageService } from '../core/services/MessageService';
 import { WebSocketCall } from './WebSocketCall';
 
 export type ClientMessage = {
@@ -8,6 +9,7 @@ export type ClientMessage = {
   options: any;
   id?: number;
   call?: number;
+  lowPriority?: boolean;
 };
 
 export type ServerMessage = {
@@ -26,7 +28,7 @@ export class WebSocketClient {
 
   private requestSequence = 0;
 
-  constructor(apiUrl: string) {
+  constructor(apiUrl: string, private messageService: MessageService) {
     const currentLocation = window.location;
     let url = 'ws://';
     if (currentLocation.protocol === 'https:') {
@@ -44,12 +46,6 @@ export class WebSocketClient {
         next: () => this.connected$.next(true)
       }
     });
-    //this.webSocketConnection$ = this.webSocket.pipe(
-    // retryWhen(errors => {
-    //  console.log('Cannot connect to Yamcs');
-    //  return errors.pipe(delay(1000));
-    //}),
-    //);
 
     this.webSocket$.pipe(
       tap((msg: ServerMessage) => {
@@ -58,11 +54,33 @@ export class WebSocketClient {
     ).subscribe();
   }
 
+  /**
+   * Create a subscription on the active WebSocket connection. This should
+   * be used for subscriptions where all server messages are expected to
+   * be received. If we cannot read sufficiently fast, Yamcs will close the
+   * entire connection (shared with other subscriptions).
+   */
   createSubscription<O, D>(type: string, options: O, observer: (data: D) => void) {
+    return this.doCreateSubscription(type, false, options, observer);
+  }
+
+  /**
+   * Create a low-priority subscription on the active WebSocket connection. Yamcs may
+   * drop WebSocket frames coming from this type of subscription, if we are not able
+   * to read fast enough.
+   */
+  createLowPrioritySubscription<O, D>(type: string, options: O, observer: (data: D) => void) {
+    return this.doCreateSubscription(type, true, options, observer);
+  }
+
+  private doCreateSubscription<O, D>(type: string, lowPriority: boolean, options: O, observer: (data: D) => void) {
     const id = ++this.requestSequence;
     const call = new WebSocketCall(this, id, type, observer);
+    call.addFrameLossListener(() => {
+      this.messageService.showWarning('A gap was detected in one of the data feeds. Typically this occurs when data is fastly updating.');
+    });
     this.calls.push(call);
-    this.sendMessage({ type, id, options });
+    this.sendMessage({ type, id, lowPriority, options });
     return call;
   }
 
