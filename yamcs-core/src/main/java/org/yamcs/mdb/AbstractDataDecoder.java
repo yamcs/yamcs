@@ -1,12 +1,9 @@
 package org.yamcs.mdb;
 
-import java.util.Set;
-
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmExecutionResult;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.Parameter;
 
 /**
  * stubbed implementation of DataDecoder that "removes" all the AlgorithmExecutor methods -
@@ -18,10 +15,6 @@ import org.yamcs.xtce.Parameter;
  */
 public abstract class AbstractDataDecoder implements DataDecoder {
     public Algorithm getAlgorithm() {
-        return null;
-    }
-
-    public Set<Parameter> getRequiredParameters() {
         return null;
     }
 

@@ -1,12 +1,10 @@
 package org.yamcs.algorithms;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 import org.yamcs.events.EventProducer;
 import org.yamcs.logging.Log;
@@ -147,8 +145,8 @@ public class AlgorithmExecutionContext {
         return removeAlgorithm(algorithm.getQualifiedName());
     }
 
-    public Collection<Algorithm> getAlgorithms() {
-        return executionOrder.stream().map(ActiveAlgorithm::getAlgorithm).collect(Collectors.toList());
+    public List<ActiveAlgorithm> getActiveAlgorithms() {
+        return executionOrder;
     }
 
     public ProcessorData getProcessorData() {

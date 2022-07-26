@@ -234,7 +234,7 @@ public class AlgorithmManagerJavaTest {
             v = newValue.getEngValue().getFloatValue();
         }
 
-        public List<OutputParameter> getOutputSet() {
+        public List<OutputParameter> getOutputList() {
             return Collections.singletonList(new OutputParameter(out));
         }
     }

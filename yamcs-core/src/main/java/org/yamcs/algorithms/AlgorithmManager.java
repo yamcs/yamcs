@@ -169,14 +169,14 @@ public class AlgorithmManager extends AbstractProcessorService
     }
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
-        for (OutputParameter oParam : algo.getOutputSet()) {
+        for (OutputParameter oParam : algo.getOutputList()) {
             outParamIndex.add(oParam.getParameter());
         }
         // Eagerly activate the algorithm if no outputs (with lazy activation,
         // it would never trigger because there's nothing to subscribe to)
-        if (algo.getOutputSet().isEmpty() && !ctx.containsAlgorithm(algo.getQualifiedName())) {
+        if (algo.getOutputList().isEmpty() && !ctx.containsAlgorithm(algo.getQualifiedName())) {
             ActiveAlgorithm activeAlgo = activateAndInit(algo, ctx);
-            List<OutputParameter> outList = activeAlgo.getOutputSet();
+            List<OutputParameter> outList = activeAlgo.getOutputList();
             if (outList != null) {
                 for (OutputParameter oParam : outList) {
                     outParamIndex.add(oParam.getParameter());
@@ -268,10 +268,12 @@ public class AlgorithmManager extends AbstractProcessorService
 
         algorithmsInError.remove(algorithm.getQualifiedName());
 
-        subscribeRequiredParameters(algorithm);
+
 
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
         activeAlgo = new ActiveAlgorithm(algorithm, execCtx, executor);
+
+        subscribeRequiredParameters(activeAlgo);
         execCtx.addAlgorithm(activeAlgo);
 
         return activeAlgo;
@@ -297,17 +299,17 @@ public class AlgorithmManager extends AbstractProcessorService
         return activeAlgo;
     }
 
-    private void subscribeRequiredParameters(Algorithm algorithm) {
-        enableBuffering(algorithm);
+    private void subscribeRequiredParameters(ActiveAlgorithm activeAlgo) {
+        enableBuffering(activeAlgo);
 
         ArrayList<Parameter> newItems = new ArrayList<>();
-        for (Parameter param : getParametersOfInterest(algorithm)) {
+        for (Parameter param : getParametersOfInterest(activeAlgo)) {
             if (!requiredInParams.contains(param)) {
                 requiredInParams.add(param);
                 // Recursively activate other algorithms on which this algorithm depends
                 if (canProvide(param)) {
                     for (Algorithm algo : xtcedb.getAlgorithms()) {
-                        if (algorithm != algo) {
+                        if (activeAlgo.getAlgorithm() != algo) {
                             for (OutputParameter oParam : algo.getOutputSet()) {
                                 if (oParam.getParameter() == param) {
                                     activateAndInit(algo, globalCtx);
@@ -325,7 +327,7 @@ public class AlgorithmManager extends AbstractProcessorService
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("For algorithm {}, susbscribing to the prm for {}", algorithm.getName(), newItems);
+            log.trace("For algorithm {}, subscribing to the prm for {}", activeAlgo.getName(), newItems);
         }
         if (!newItems.isEmpty()) {
             parameterProcessorManager.subscribeToProviders(newItems);
@@ -333,8 +335,8 @@ public class AlgorithmManager extends AbstractProcessorService
     }
 
     // if the input parameters require old values, make sure the parameter LastValueCache is configured for it
-    private void enableBuffering(Algorithm algorithm) {
-        for (InputParameter inputPara : algorithm.getInputList()) {
+    private void enableBuffering(ActiveAlgorithm activeAlgo) {
+        for (InputParameter inputPara : activeAlgo.getInputList()) {
             ParameterInstanceRef pref = inputPara.getParameterInstance();
             if (pref != null && pref.getInstance() < 0) {
                 processor.getLastValueCache().enableBuffering(pref.getParameter(), -pref.getInstance() + 1);
@@ -410,7 +412,7 @@ public class AlgorithmManager extends AbstractProcessorService
                         keep = true;
                         break;
                     }
-                    for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
+                    for (var otherAlgo : globalCtx.getActiveAlgorithms()) {
                         if (getParametersOfInterest(otherAlgo).contains(oParameter.getParameter())) {
                             keep = true;
                             break;
@@ -422,7 +424,7 @@ public class AlgorithmManager extends AbstractProcessorService
                     it.remove();
                     globalCtx.removeAlgorithm(algo);
                 } else {
-                    stillRequired.addAll(getParametersOfInterest(algo));
+                    stillRequired.addAll(getParametersOfInterest(activeAlgo));
                 }
             }
             requiredInParams.retainAll(stillRequired);
@@ -570,14 +572,14 @@ public class AlgorithmManager extends AbstractProcessorService
      * Returns all the parameters that this algorithm want to receive updates on. This includes not only the input
      * parameters, but also any parameters that are part of the trigger set.
      */
-    private static Set<Parameter> getParametersOfInterest(Algorithm algorithm) {
-        Stream<Parameter> inputParams = algorithm.getInputList().stream()
+    private static Set<Parameter> getParametersOfInterest(ActiveAlgorithm activeAlgo) {
+        Stream<Parameter> inputParams = activeAlgo.getInputList().stream()
                 .filter(ip -> ip.getParameterInstance() != null).map(ip -> ip.getParameterInstance()
                         .getParameter());
-        if (algorithm.getTriggerSet() == null) {
+        if (activeAlgo.getTriggerSet() == null) {
             return inputParams.collect(Collectors.toSet());
         } else {
-            Stream<Parameter> triggerParams = algorithm.getTriggerSet().getOnParameterUpdateTriggers().stream()
+            Stream<Parameter> triggerParams = activeAlgo.getTriggerSet().getOnParameterUpdateTriggers().stream()
                     .map(t -> t.getParameter());
             return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
         }
