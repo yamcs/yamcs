@@ -82,7 +82,7 @@ public class WebSocketServerMessageHandler extends ChannelOutboundHandlerAdapter
         } else {
             if (priority == Priority.LOW) {
                 if (logDroppedFrames) {
-                    log.warn("Frame skipped because writing the frame would make the channel not writtable "
+                    log.warn("Frame skipped because writing the frame would make the channel not writable "
                             + "(frameLength: {}, bytesBeforeUnwritable: {}", frameLength, bytesBeforeUnwritable);
                     if (frameLength > highWaterMark) {
                         log.warn("This frame size exceeds the high water mark (currently set to {}) "
@@ -100,6 +100,7 @@ public class WebSocketServerMessageHandler extends ChannelOutboundHandlerAdapter
         }
     }
 
+    @SuppressWarnings("serial")
     public static class MessageDroppedException extends Exception {
         final long bytesBeforeUnwritable;
 

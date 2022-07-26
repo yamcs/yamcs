@@ -600,7 +600,8 @@ export default class YamcsClient implements HttpHandler {
   }
 
   createParameterSubscription(options: SubscribeParametersRequest, observer: (data: SubscribeParametersData) => void): ParameterSubscription {
-    return this.webSocketClient!.createSubscription('parameters', options, observer);
+    // Allow dropped frames in case of high rate
+    return this.webSocketClient!.createLowPrioritySubscription('parameters', options, observer);
   }
 
   createStreamStatisticsSubscription(options: SubscribeStreamStatisticsRequest, observer: (event: StreamEvent) => void): StreamStatisticsSubscription {
@@ -608,7 +609,8 @@ export default class YamcsClient implements HttpHandler {
   }
 
   createStreamSubscription(options: SubscribeStreamRequest, observer: (data: StreamData) => void): StreamSubscription {
-    return this.webSocketClient!.createSubscription('stream', options, observer);
+    // Allow dropped frames in case of high rate
+    return this.webSocketClient!.createLowPrioritySubscription('stream', options, observer);
   }
 
   createQueueStatisticsSubscription(options: SubscribeQueueStatisticsRequest, observer: (queue: CommandQueue) => void): QueueStatisticsSubscription {
