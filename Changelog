@@ -1,3 +1,8 @@
+Version 5.7.6 released 27-Jul-2022
+- added a low priority option when subscribing via websocket. This allows the yamcs-web to keep connected if there is high incoming data rate, at the expense of some of the messages not displayed.
+- bug fix parameter archive retrieval end conditions (sometimes it would send data that was past the stop time of the request)
+- allow java algorithms to specify their input list (if for any reason is not available in the xtce definition)
+
 Version 5.7.5 released 24-Jul-2022
 - CFDP fixes
   - the pendingAfterCompletion parameter can be specified now
