@@ -1,20 +1,34 @@
-<ng-container [ngSwitch]="value?.type">
-  <ng-container *ngSwitchCase="'ARRAY'">
-    <span class="toggle" *ngIf="collapsed$ | async" (click)="collapsed$.next(false)">▸</span>
-    <span class="toggle" *ngIf="!(collapsed$ | async)" (click)="collapsed$.next(true)">▾</span>
-    {{ value | value }}
-    <table *ngIf="!(collapsed$ | async)" class="detail">
-      <tr *ngFor="let item of (value.arrayValue || []); index as i">
+<ng-container *ngIf="(value?.type === 'AGGREGATE' || value?.type === 'ARRAY'); else simpleValue">
+  <table *ngIf="nodes$ | async as nodes">
+    <ng-container *ngFor="let node of nodes">
+      <tr *ngIf="!node.parent || node.parent.expanded">
         <td>
-          <!-- todo nested collapse -->
-        </td>
-        <td>
-          <strong>{{ i }}</strong>: {{ item | value }}
+          <div class="indent" [style.width.px]="node.margin"></div>
+          <ng-container *ngIf="node.children">
+            <span class="toggle" *ngIf="!node.expanded"
+                  (click)="expandNode(node)">▸</span>
+            <span class="toggle" *ngIf="node.expanded"
+                  (click)="collapseNode(node)">▾</span>
+          </ng-container>
+
+          <ng-container *ngIf="node.key !== undefined">
+            <span class="key">{{ node.key }}</span><span class="symbol">: </span>
+          </ng-container>
+
+          <ng-container *ngIf="node.expanded">
+            <ng-container *ngIf="node.value.type === 'ARRAY'">
+              <span class="value expandable">Array({{ node.value.arrayValue?.length || 0 }})</span>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="!node.expanded || node.value.type !== 'ARRAY'">
+            <span class="value"
+                  [class.expandable]="node.children">{{ node.value | value }}</span>
+          </ng-container>
         </td>
       </tr>
-    </table>
-  </ng-container>
-  <ng-container *ngSwitchDefault>
-    {{ (value | value) ?? '-' }}
-  </ng-container>
+    </ng-container>
+  </table>
 </ng-container>
+<ng-template #simpleValue>
+  {{ (value | value) ?? '-' }}
+</ng-template>
