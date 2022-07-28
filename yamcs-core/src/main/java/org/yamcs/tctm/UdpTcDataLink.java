@@ -44,14 +44,12 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
             socket = null;
         }
         if (thread != null) {
-            thread.interrupt();
+            super.doDisable        
         }
     }
 
-    @Override
     public void doEnable() {
         thread = new Thread(this);
-        thread.setName(this.getClass().getSimpleName() + "-" + linkName);
         thread.start();
     }
 
