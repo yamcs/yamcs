@@ -151,6 +151,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     @Override
     protected void doEnable() {
         thread = new Thread(this);
+        thread.setName(this.getClass().getSimpleName() + "-" + linkName);
         thread.start();
     }
 
