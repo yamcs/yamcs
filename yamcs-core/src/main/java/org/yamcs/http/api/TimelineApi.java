@@ -613,6 +613,10 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (request.hasGroupId()) {
             item.setGroupUuid(parseUuid(request.getGroupId()));
         }
+        if (request.hasDescription()) {
+            item.setDescription(request.getDescription());
+        }
+
         item.setTags(request.getTagsList());
         return item;
     }

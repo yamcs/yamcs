@@ -71,12 +71,14 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag1")
                 .addTags("tag2")
+                .setDescription("description 1")
                 .build();
 
         TimelineItem item1b = timelineClient.addItem(item1a).get();
         assertEquals(item1a.getStart(), item1b.getStart());
         assertEquals(item1a.getDuration(), item1b.getDuration());
         assertEquals(item1a.getTagsList(), item1b.getTagsList());
+        assertEquals(item1a.getDescription(), item1b.getDescription());
 
         TimelineItem item1c = timelineClient.getItem(item1b.getId()).get();
 

@@ -79,6 +79,9 @@ public class TimelineClient {
         if (item.hasGroupId()) {
             requestb.setGroupId(item.getGroupId());
         }
+        if (item.hasDescription()) {
+            requestb.setDescription(item.getDescription());
+        }
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;

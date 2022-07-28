@@ -46,6 +46,7 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_GROUP_ID = "group_id";
     public static final String CNAME_RELTIME_ID = "reltime_id";
     public static final String CNAME_RELTIME_START = "reltime_start";
+    public static final String CNAME_DESCRIPTION = "description";
 
     static {
         TIMELINE_DEF.addColumn(CNAME_START, DataType.TIMESTAMP);

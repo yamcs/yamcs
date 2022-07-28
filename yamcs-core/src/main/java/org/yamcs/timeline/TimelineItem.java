@@ -1,13 +1,6 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineItemDb.CNAME_DURATION;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_GROUP_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_NAME;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_START;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_START;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_TAGS;
+import static org.yamcs.timeline.TimelineItemDb.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +50,9 @@ public abstract class TimelineItem {
         }
         if (tuple.hasColumn(CNAME_TAGS)) {
             this.tags = tuple.getColumn(CNAME_TAGS);
+        }
+        if (tuple.hasColumn(CNAME_DESCRIPTION)) {
+            this.description = tuple.getColumn(CNAME_DESCRIPTION);
         }
     }
 
@@ -169,6 +165,10 @@ public abstract class TimelineItem {
         if (tags != null) {
             protob.addAllTags(tags);
         }
+        if (description != null) {
+            protob.setDescription(description);
+        }
+
         addToProto(protob);
         return protob.build();
     }
@@ -191,6 +191,10 @@ public abstract class TimelineItem {
         if (groupUuid != null) {
             tuple.addColumn(CNAME_GROUP_ID, DataType.UUID, groupUuid);
         }
+        if (description != null) {
+            tuple.addColumn(CNAME_DESCRIPTION, DataType.STRING, description);
+        }
+
         addToTuple(tuple);
         return tuple;
     }

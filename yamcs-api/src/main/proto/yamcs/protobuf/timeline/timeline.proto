@@ -194,6 +194,9 @@ message TimelineItem {
   // to that item as well as the relative start (the duration is the same as given by the duration above)
   //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
   optional RelativeTime relativeTime = 8;
+
+  //item description
+  optional string description = 9;
 }
 
 enum TimelineBandType {
@@ -284,6 +287,9 @@ message CreateItemRequest {
   //if this item time specification is relative to another item, relativeTime contains a reference
   // to that item as well as the relative start (the duration is the same as given by the duration above)
   optional RelativeTime relativeTime = 9;
+
+  //item description
+  optional string description = 10;
 }
 
 message GetItemRequest {
