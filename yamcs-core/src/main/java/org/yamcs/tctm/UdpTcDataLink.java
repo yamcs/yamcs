@@ -64,7 +64,7 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     public void shutDown() {
-        socket.close();
+        doDisable();
     }
 
     @Override
