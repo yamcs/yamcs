@@ -4,13 +4,15 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.yamcs.filetransfer.InvalidRequestException;
+import org.yamcs.http.BadRequestException;
+import org.yamcs.protobuf.ItemFilter;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 
 public interface ItemProvider {
 
     public TimelineItem getItem(String id);
 
-    public void getItems(int limit, String next, ItemFilter filter, ItemListener consumer);
+    public void getItems(int limit, String next, RetrievalFilter filter, ItemListener consumer);
 
     /**
      * Add an item and return the added item.
@@ -45,4 +47,9 @@ public interface ItemProvider {
     public Collection<String> getTags();
 
     public TimelineSourceCapabilities getCapabilities();
+
+    /**
+     * Checks that the source can filter based on the criteria specified
+     */
+    public void validateFilter(ItemFilter filter) throws BadRequestException;
 }

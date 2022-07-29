@@ -8,6 +8,7 @@ import java.util.List;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
+import com.google.protobuf.MessageLite;
 
 /**
  * Types supported by yarch. Currently TUPLE and LIST do now work well.
@@ -71,6 +72,10 @@ public class DataType {
 
     public static DataType protobuf(String className) {
         return new ProtobufDataType(className);
+    }
+
+    public static DataType protobuf(Class<? extends MessageLite> clazz) {
+        return new ProtobufDataType(clazz.getName());
     }
 
     /**

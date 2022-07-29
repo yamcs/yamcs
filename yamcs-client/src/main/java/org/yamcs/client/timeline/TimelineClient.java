@@ -212,7 +212,7 @@ public class TimelineClient {
         AddBandRequest.Builder requestb = AddBandRequest.newBuilder()
                 .setType(band.getType())
                 .setInstance(instance);
-        requestb.addAllTags(band.getTagsList());
+        requestb.addAllFilters(band.getFiltersList());
         requestb.putAllProperties(band.getPropertiesMap());
         if (band.hasName()) {
             requestb.setName(band.getName());
@@ -223,6 +223,12 @@ public class TimelineClient {
         if (band.hasShared()) {
             requestb.setShared(band.getShared());
         }
+        if(band.hasSource()) {
+            requestb.setSource(band.getSource());
+        }
+
+
+
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
         timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));
         return f;

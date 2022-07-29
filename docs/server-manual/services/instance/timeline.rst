@@ -32,3 +32,16 @@ TBD: the service supports crontab like functionality.
 Item templates can be placed into the crontab and they will be automatically instantiated at the set time. This allows for example automatically creating regular occuring activities.
 The service does not support complex instantiations of item or activity groups (e.g. items that depend on one-eachother) - if such functionality is desired, the user can script the creation as part of one activity.
 
+Bands
+=========
+
+The bands are the horizontal areas covering a time interval and containing a set of items. The band type determines how the items are displayed. A band displays only items from a single source (or no source at all).
+
+There are different types of bands:
+
+* TIME_RULER displays time in user chosen timezone
+* SPACER is used to insert a horizontal space in the view
+
+
+Views
+========

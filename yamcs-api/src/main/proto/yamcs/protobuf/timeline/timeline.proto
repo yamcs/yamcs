@@ -76,7 +76,7 @@ service TimelineApi {
     };
   }
   
-  // Add a band. The band must not have the id set.
+  // Add a band.
   rpc AddBand(AddBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/bands"
@@ -177,7 +177,11 @@ enum TimelineItemType {
 }
   
 message TimelineItem {
-  // Item identifier
+  // Item identifier.
+  // The identifier is set and recognized by the source.
+  // It is possible but unlikely that two items coming from two different sources will have the same id.
+  // The rdb source sets the id to an uuid
+  // The commands source sets the id to the command id
   optional string id = 1;
   
   // Item name
@@ -187,6 +191,7 @@ message TimelineItem {
   optional google.protobuf.Timestamp start = 4;
   optional google.protobuf.Duration duration = 5;
   repeated string tags = 6;
+
   //if this item is part of a group, this is the group identifier
   optional string groupId = 7;
     
@@ -210,7 +215,7 @@ message TimelineBand {
   // Yamcs instance name
   optional string instance = 1;
 
-  // Band identifier
+  // Band identifier. This is a UUID
   optional string id = 2;
 
   // Band name
@@ -226,10 +231,13 @@ message TimelineBand {
   optional string source = 6;
 
   //the band contains only items with these tags; if the list is empty, then all items from the given source are part of the band
-  repeated string tags = 7;
+  //this is deprecated, the filters below should be used to select the items
+  repeated string tags = 7 [deprecated=true];
 
-  //a query filter which can be used to limit additionally the items which are part of the band
-  //optional string filter = 8;
+  //The filters are to be considered in an AND manner.
+  // An item will be part of the band if it matches all the filters.
+  // If the list is empty, then all items from the given source are part of the band
+  repeated ItemFilter filters = 8;
 
   // Type of band
   optional TimelineBandType type = 9;
@@ -245,7 +253,7 @@ message TimelineView {
   // Yamcs instance name
   optional string instance = 1;
 
-  // View identifier
+  // View identifier. This is a UUID
   optional string id = 2;
 
   // View name
@@ -347,8 +355,11 @@ message ListItemsRequest {
   optional google.protobuf.Timestamp start = 5;
   optional google.protobuf.Timestamp stop = 6;
   
-  // Include only items matching a specific band's tags
+  // Use the band defined source and filter
   optional string band = 7;
+
+  // If the band is not specified, these filters and the source above will be used
+  repeated ItemFilter filters = 8;
 }
 
 
@@ -428,10 +439,11 @@ message AddBandRequest {
   optional string source = 4;
 
   // Items containing these tags will be part of the timeline
-  repeated string tags = 5;
+  // this is deprecated, the filters below should be used instead
+  repeated string tags = 5 [deprecated = true];
   
   //a query filter which can be used to limit additionally the items which are part of the band
-  //  optional string filter = 6;
+  repeated ItemFilter filters = 6;
   
   // Type of band
   optional TimelineBandType type = 7;
@@ -469,9 +481,15 @@ message UpdateBandRequest {
   
   // Items containing these tags will be part of the timeline
   repeated string tags = 6;
-  
+
   // Additional properties used by yamcs-web to render this band
   map<string, string> properties = 7;
+
+  //Where the items shown on this band come from
+  optional string source = 8;
+
+  //filters to apply when retrieving the items
+  repeated ItemFilter filters = 9;
 }
 
 message ListBandsRequest {
@@ -549,3 +567,22 @@ message ListViewsResponse {
   repeated TimelineView views = 1;
 }
 /******************* End Views ***********************/
+
+
+//an item matches the filter if it matches any of the criteria from the list.
+//if the list is empty, the filter will not match
+message ItemFilter {
+  // The filter criteria depends very much of the source which provides the item
+  // rdb source
+  //  supported key is "tag"
+  //   -> An item matches if the value proprty is among its tags
+  // commands source
+  //  supported key is "cmdNamePattern"
+  //  value is considered as a regexp and match against the cmdName from the cmdhist table
+  message FilterCriterion {
+    optional string key = 1;
+    optional string value = 2;
+  }
+
+ repeated FilterCriterion criteria = 1;
+}

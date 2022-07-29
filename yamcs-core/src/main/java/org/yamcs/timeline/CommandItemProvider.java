@@ -4,9 +4,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.ItemFilter;
+import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
@@ -18,14 +22,23 @@ import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
+/**
+ * Implements the "commands" timeline source providing items derived from the command history.
+ * <p>
+ * The filtering criteria which can be applied is based on the command name patterns (regular expressions matching
+ * command names)
+ *
+ */
 public class CommandItemProvider implements ItemProvider {
-
+    public final static String CRIT_KEY_CMD_NAME_PATTERN = "cmdNamePattern";
     private Log log;
     private YarchDatabaseInstance ydb;
+    TupleMatcher matcher;
 
     public CommandItemProvider(String yamcsInstance) {
         log = new Log(getClass(), yamcsInstance);
         ydb = YarchDatabase.getInstance(yamcsInstance);
+        matcher = new TupleMatcher();
     }
 
     @Override
@@ -34,25 +47,30 @@ public class CommandItemProvider implements ItemProvider {
     }
 
     @Override
-    public void getItems(int limit, String next, ItemFilter filter, ItemListener consumer) {
-        try {
-            SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
-            TimeInterval interval = filter.getTimeInterval();
-            if (interval.hasEnd()) {
-                sqlb.where("gentime < ?", interval.getEnd());
-            }
-            if (interval.hasStart()) {
-                sqlb.where("gentime >= ?", interval.getStart());
-            }
-            sqlb.limit(limit + 1);
+    public void getItems(int limit, String next, RetrievalFilter filter, ItemListener consumer) {
 
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+        TimeInterval interval = filter.getTimeInterval();
+        System.out.println("interval.start: " + interval.getStart() + " end: " + interval.getEnd());
+        if (interval.hasEnd()) {
+            sqlb.where("gentime < ?", interval.getEnd());
+        }
+        if (interval.hasStart()) {
+            sqlb.where("gentime >= ?", interval.getStart());
+        }
+
+        sqlb.limit(limit + 1);
+
+        try {
             StreamSqlStatement stmt = ydb.createStatement(sqlb.toString(),
                     sqlb.getQueryArguments().toArray());
             ydb.execute(stmt, new ResultListener() {
 
                 @Override
                 public void next(Tuple tuple) {
-                    consumer.next(toItem(tuple));
+                    if (matcher.matches(filter, tuple)) {
+                        consumer.next(toItem(tuple));
+                    }
                 }
 
                 @Override
@@ -67,6 +85,16 @@ public class CommandItemProvider implements ItemProvider {
             });
         } catch (StreamSqlException | ParseException e) {
             log.error("Exception when executing query", e);
+        }
+    }
+
+    @Override
+    public void validateFilter(ItemFilter filter) throws BadRequestException {
+        for (var c : filter.getCriteriaList()) {
+            if (!CRIT_KEY_CMD_NAME_PATTERN.equals(c.getKey())) {
+                throw new BadRequestException(
+                        "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_CMD_NAME_PATTERN);
+            }
         }
     }
 
@@ -112,5 +140,20 @@ public class CommandItemProvider implements ItemProvider {
         event.setStart(gentime);
         event.setName(tuple.getColumn(PreparedCommand.CNAME_CMDNAME));
         return event;
+    }
+
+    private static class TupleMatcher extends FilterMatcher<Tuple> {
+        @Override
+        protected boolean criterionMatch(FilterCriterion c, Tuple tuple) {
+            String cmdName = tuple.getColumn(StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME);
+            if (cmdName == null) {
+                return false;
+            }
+            if (CRIT_KEY_CMD_NAME_PATTERN.equals(c.getKey())) {
+                return cmdName.matches(c.getValue());
+            } else {
+                return false;
+            }
+        }
     }
 }

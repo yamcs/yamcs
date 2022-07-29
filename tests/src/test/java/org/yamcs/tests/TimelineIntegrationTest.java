@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
+import org.yamcs.protobuf.ItemFilter;
+import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineBandType;
 import org.yamcs.protobuf.TimelineItem;
@@ -255,8 +257,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setName("name")
                 .setDescription("description")
                 .setShared(true)
-                .addTags("tag1")
-                .addTags("tag2")
+                .addFilters(getTagFilter("tag1", "tag2"))
                 .putAllProperties(Collections.singletonMap("key1", "value1"))
                 .build();
 
@@ -264,8 +265,16 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .get();
         assertEquals(band1a.getName(), band1b.getName());
         assertEquals(band1a.getDescription(), band1b.getDescription());
-        assertEquals(band1a.getTagsList(), band1b.getTagsList());
+        assertEquals(band1a.getFiltersList(), band1b.getFiltersList());
         assertEquals(band1a.getPropertiesMap(), band1b.getPropertiesMap());
+    }
+
+    private ItemFilter getTagFilter(String... tags) {
+        ItemFilter.Builder ifb = ItemFilter.newBuilder();
+        for (String tag : tags) {
+            ifb.addCriteria(FilterCriterion.newBuilder().setKey("tag").setValue(tag).build());
+        }
+        return ifb.build();
     }
 
     @Test
@@ -311,6 +320,35 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         }
         assertNotNull(t);
         assertTrue(t.toString().contains("Invalid"));
+    }
+
+    @Test
+    public void testCommands() throws Exception {
+        ydb.execute("insert into cmdhist (gentime, cmdName, origin, seqNum) values(?, ?, ?, ?)", 1000l,
+                "timeline_testA", "test", 1);
+        ydb.execute("insert into cmdhist (gentime, cmdName, origin, seqNum) values(?, ?, ?, ?)", 1001l,
+                "timeline_testAB", "test", 2);
+        ydb.execute("insert into cmdhist (gentime, cmdName, origin, seqNum) values(?, ?, ?, ?)", 1002l,
+                "timeline_testB", "test", 3);
+
+        var band = timelineClient.addBand(TimelineBand.newBuilder()
+                .setSource("commands").setName("cmd_test")
+                .addFilters(ItemFilter.newBuilder()
+                        .addCriteria(FilterCriterion.newBuilder()
+                                .setKey("cmdNamePattern").setValue("time.*_testA.*")
+                                .build())
+                        .build())
+                .build())
+                .get();
+        System.out.println("sending band: " + band);
+        Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, band.getId()).get();
+
+        Iterator<TimelineItem> iterator = page.iterator();
+        TimelineItem item1 = iterator.next();
+        assertEquals("timeline_testA", item1.getName());
+        TimelineItem item2 = iterator.next();
+        assertEquals("timeline_testAB", item2.getName());
+        assertFalse(iterator.hasNext());
     }
 
     void verifyEmpty() throws Exception {
