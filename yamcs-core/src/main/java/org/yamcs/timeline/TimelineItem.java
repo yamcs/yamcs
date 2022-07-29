@@ -25,6 +25,8 @@ import com.google.protobuf.util.Durations;
  */
 public abstract class TimelineItem {
     protected final String id;
+    protected final TimelineItemType type;
+
     protected long start, duration;
 
     // if the item start is relative to another item
@@ -41,10 +43,12 @@ public abstract class TimelineItem {
     protected String description;
     protected List<String> tags;
 
-    protected TimelineItem(Tuple tuple) {
+    protected TimelineItem(TimelineItemType type, Tuple tuple) {
         this.id = ((UUID) tuple.getColumn(CNAME_ID)).toString();
+        this.type = type;
         this.start = tuple.getTimestampColumn(CNAME_START);
         this.duration = tuple.getLongColumn(CNAME_DURATION);
+
         if (tuple.hasColumn(CNAME_NAME)) {
             this.name = tuple.getColumn(CNAME_NAME);
         }
@@ -56,8 +60,9 @@ public abstract class TimelineItem {
         }
     }
 
-    public TimelineItem(String id) {
+    public TimelineItem(TimelineItemType type, String id) {
         this.id = id;
+        this.type = type;
     }
 
     public long getStart() {
@@ -136,6 +141,10 @@ public abstract class TimelineItem {
         return id;
     }
 
+    public TimelineItemType getType() {
+        return type;
+    }
+
     public void setDuration(long duration) {
         this.duration = duration;
     }
@@ -148,6 +157,7 @@ public abstract class TimelineItem {
 
     public org.yamcs.protobuf.TimelineItem toProtoBuf() {
         org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
+        protob.setType(type);
         protob.setId(id.toString());
         protob.setStart(TimeEncoding.toProtobufTimestamp(start));
         protob.setDuration(Durations.fromMillis(duration));
@@ -175,7 +185,9 @@ public abstract class TimelineItem {
 
     public Tuple toTuple() {
         Tuple tuple = new Tuple();
+
         tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(id));
+        tuple.addEnumColumn(CNAME_TYPE, type.name());
         tuple.addTimestampColumn(CNAME_START, start);
         tuple.addColumn(CNAME_DURATION, duration);
         if (name != null) {

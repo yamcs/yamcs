@@ -43,6 +43,7 @@ import org.yamcs.protobuf.UpdateBandRequest;
 import org.yamcs.protobuf.UpdateItemRequest;
 import org.yamcs.protobuf.UpdateViewRequest;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.timeline.Activity;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.AutomatedActivity;
 import org.yamcs.timeline.BandListener;
@@ -53,6 +54,7 @@ import org.yamcs.timeline.ItemProvider;
 import org.yamcs.timeline.ManualActivity;
 import org.yamcs.timeline.TimelineBandDb;
 import org.yamcs.timeline.TimelineEvent;
+import org.yamcs.timeline.TimelineItemDb;
 import org.yamcs.timeline.TimelineService;
 import org.yamcs.timeline.TimelineViewDb;
 import org.yamcs.timeline.ViewListener;
@@ -146,6 +148,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             item.setDuration(Durations.toMillis(request.getDuration()));
         }
 
+        if (request.hasStatus()) {
+            if (item instanceof Activity) {
+                ((Activity) item).setStatus(request.getStatus());
+            } else {
+                throw new BadRequestException("Status can only be set on activities not on " + item.getType());
+            }
+        }
+
         item.setGroupUuid(request.hasGroupId() ? parseUuid(request.getGroupId()) : null);
         item.setTags(request.getTagsList());
 
@@ -227,10 +237,9 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void listTags(Context ctx, ListTimelineTagsRequest request, Observer<ListTimelineTagsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
-                request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
+        TimelineItemDb itemdb = timelineService.getTimelineItemDb();
         ListTimelineTagsResponse.Builder responseb = ListTimelineTagsResponse.newBuilder()
-                .addAllTags(timelineSource.getTags());
+                .addAllTags(itemdb.getTags());
         observer.complete(responseb.build());
 
     }

@@ -1,7 +1,6 @@
 package org.yamcs.timeline;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.StandardTupleDefinitions;
@@ -51,7 +50,6 @@ public class CommandItemProvider implements ItemProvider {
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         TimeInterval interval = filter.getTimeInterval();
-        System.out.println("interval.start: " + interval.getStart() + " end: " + interval.getEnd());
         if (interval.hasEnd()) {
             sqlb.where("gentime < ?", interval.getEnd());
         }
@@ -89,11 +87,13 @@ public class CommandItemProvider implements ItemProvider {
     }
 
     @Override
-    public void validateFilter(ItemFilter filter) throws BadRequestException {
-        for (var c : filter.getCriteriaList()) {
-            if (!CRIT_KEY_CMD_NAME_PATTERN.equals(c.getKey())) {
-                throw new BadRequestException(
-                        "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_CMD_NAME_PATTERN);
+    public void validateFilters(List<ItemFilter> filters) throws BadRequestException {
+        for (var filter : filters) {
+            for (var c : filter.getCriteriaList()) {
+                if (!CRIT_KEY_CMD_NAME_PATTERN.equals(c.getKey())) {
+                    throw new BadRequestException(
+                            "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_CMD_NAME_PATTERN);
+                }
             }
         }
     }
@@ -116,11 +116,6 @@ public class CommandItemProvider implements ItemProvider {
     @Override
     public TimelineItem deleteTimelineGroup(UUID uuid) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Collection<String> getTags() {
-        return Collections.emptyList();
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
+import org.yamcs.protobuf.ExecutionStatus;
 import org.yamcs.protobuf.ItemFilter;
 import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineBand;
@@ -152,7 +153,26 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         assertEquals("tag2", item1.getTags(0));
         assertEquals("tag3", item1.getTags(1));
         assertEquals(false, iterator.hasNext());
+    }
 
+    @Test
+    public void testActivity1() throws Exception {
+        verifyEmpty();
+        TimelineItem item1a = TimelineItem.newBuilder()
+                .setType(TimelineItemType.MANUAL_ACTIVITY)
+                .setStart(toTimestamp(Instant.parse("2022-07-29T00:00:00Z")))
+                .setDuration(Durations.fromMillis(1001))
+                .addTags("tag1")
+                .addTags("tag2")
+                .build();
+
+        item1a = timelineClient.addItem(item1a).get();
+        assertEquals(ExecutionStatus.PLANNED, item1a.getStatus());
+
+        TimelineItem item1b = item1a.toBuilder().setStatus(ExecutionStatus.IN_PROGRESS).build();
+        item1b = timelineClient.updateItem(item1b).get();
+
+        assertEquals(ExecutionStatus.IN_PROGRESS, item1b.getStatus());
     }
 
     @Test
@@ -340,7 +360,6 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                         .build())
                 .build())
                 .get();
-        System.out.println("sending band: " + band);
         Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, band.getId()).get();
 
         Iterator<TimelineItem> iterator = page.iterator();

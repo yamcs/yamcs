@@ -66,7 +66,7 @@ service TimelineApi {
     };
   }
   
-  // List all tags available for a source
+  // List all tags available for the 'rdb' source.
   //
   // Note that currently the 'rdb' source does not discard unused tags
   // (e.g. if all item using one tag have been deleted, the tag will still be returned by this call)
@@ -175,7 +175,16 @@ enum TimelineItemType {
 	//a grouping of activities - unlike the ITEM_GROUP, this group in itself is an automated activity
 	ACTIVITY_GROUP = 5;
 }
-  
+
+//execution status of activities
+enum ExecutionStatus {
+    PLANNED = 1;
+    IN_PROGRESS = 2;
+    COMPLETED = 3;
+    ABORTED = 4;
+    FAILED = 5;
+}
+
 message TimelineItem {
   // Item identifier.
   // The identifier is set and recognized by the source.
@@ -202,6 +211,9 @@ message TimelineItem {
 
   //item description
   optional string description = 9;
+
+  //execution status is valid for activities
+  optional ExecutionStatus status = 10;
 }
 
 enum TimelineBandType {
@@ -338,6 +350,9 @@ message UpdateItemRequest {
 
   //new relative time
   optional RelativeTime relativeTime = 9;
+
+  //new status (valid for activities)
+  optional ExecutionStatus status = 10;
 }
 
 message ListItemsRequest {

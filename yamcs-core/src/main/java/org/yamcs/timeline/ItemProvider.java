@@ -1,6 +1,6 @@
 package org.yamcs.timeline;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.filetransfer.InvalidRequestException;
@@ -44,12 +44,10 @@ public interface ItemProvider {
 
     public TimelineItem deleteTimelineGroup(UUID id);
 
-    public Collection<String> getTags();
-
     public TimelineSourceCapabilities getCapabilities();
 
     /**
      * Checks that the source can filter based on the criteria specified
      */
-    public void validateFilter(ItemFilter filter) throws BadRequestException;
+    public void validateFilters(List<ItemFilter> filters) throws BadRequestException;
 }

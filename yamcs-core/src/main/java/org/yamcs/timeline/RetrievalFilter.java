@@ -12,7 +12,6 @@ public class RetrievalFilter {
     @Deprecated
     List<String> tags;
 
-
     public RetrievalFilter(TimeInterval interval, List<ItemFilter> itemFilters) {
         this.interval = interval;
         this.itemFilters = itemFilters;
@@ -21,7 +20,6 @@ public class RetrievalFilter {
     TimeInterval getTimeInterval() {
         return interval;
     }
-
 
     public List<ItemFilter> getItemFilters() {
         return itemFilters;

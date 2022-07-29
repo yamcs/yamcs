@@ -187,6 +187,10 @@ public class TimelineClient {
         if (item.hasGroupId()) {
             requestb.setGroupId(item.getGroupId());
         }
+        if (item.hasStatus()) {
+            requestb.setStatus(item.getStatus());
+        }
+
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.updateItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
@@ -223,11 +227,9 @@ public class TimelineClient {
         if (band.hasShared()) {
             requestb.setShared(band.getShared());
         }
-        if(band.hasSource()) {
+        if (band.hasSource()) {
             requestb.setSource(band.getSource());
         }
-
-
 
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
         timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));

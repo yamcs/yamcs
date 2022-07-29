@@ -48,6 +48,7 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_ID = "uuid";
     public static final String CNAME_NAME = "name";
     public static final String CNAME_TYPE = "type";
+    public static final String CNAME_STATUS = "status";
     public static final String CNAME_TAGS = "tags";
     public static final String CNAME_GROUP_ID = "group_id";
     public static final String CNAME_RELTIME_ID = "reltime_id";
@@ -417,7 +418,6 @@ public class TimelineItemDb implements ItemProvider {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
     }
 
-    @Override
     public Collection<String> getTags() {
         rwlock.readLock().lock();
         try {
@@ -453,14 +453,15 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     @Override
-    public void validateFilter(ItemFilter filter) throws BadRequestException {
-        for (var c : filter.getCriteriaList()) {
-            if (!CRIT_KEY_TAG.equals(c.getKey())) {
-                throw new BadRequestException(
-                        "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_TAG);
+    public void validateFilters(List<ItemFilter> filters) throws BadRequestException {
+        for (var filter : filters) {
+            for (var c : filter.getCriteriaList()) {
+                if (!CRIT_KEY_TAG.equals(c.getKey())) {
+                    throw new BadRequestException(
+                            "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_TAG);
+                }
             }
         }
-
     }
 
     private static class TupleMatcher extends FilterMatcher<Tuple> {
