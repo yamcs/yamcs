@@ -7,10 +7,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MouseTracker, Timeline, TimeLocator, TimeRuler, Tool } from '@fqqb/timeline';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { IndexGroup } from '../client';
 import { MessageService } from '../core/services/MessageService';
+import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
@@ -67,6 +68,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   private packetNames: string[] = [];
 
+  private subscriptions: Subscription[] = [];
+
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
@@ -77,6 +80,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dateTimePipe: DateTimePipe,
     private messageService: MessageService,
+    private synchronizer: Synchronizer,
   ) {
     title.setTitle('Archive Browser');
 
@@ -170,7 +174,12 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     }
 
     const locator = new TimeLocator(this.timeline);
-    locator.time = () => this.yamcs.getMissionTime().getTime();
+    locator.time = this.yamcs.getMissionTime().getTime();
+    this.subscriptions.push(
+      this.synchronizer.sync(() => {
+        locator.time = this.yamcs.getMissionTime().getTime();
+      })
+    );
 
     new MouseTracker(this.timeline);
     const axis = new TimeRuler(this.timeline);
@@ -273,7 +282,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   setTool(tool: Tool) {
     this.tool$.next(tool);
-    this.timeline.setActiveTool(tool);
+    this.timeline.tool = tool;
   }
 
   replayRange() {
@@ -457,6 +466,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
     this.timeline.disconnect();
   }
 }
