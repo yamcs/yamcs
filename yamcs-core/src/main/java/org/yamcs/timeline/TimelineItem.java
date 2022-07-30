@@ -29,7 +29,7 @@ public abstract class TimelineItem {
 
     protected long start, duration;
 
-    // if the item start is relative to another item
+    // if relativeItemUuid!= null -> the item start is relative to another item
     protected UUID relativeItemUuid;
     protected long relativeStart;
 
@@ -153,9 +153,9 @@ public abstract class TimelineItem {
         this.tags = tags;
     }
 
-    protected abstract void addToProto(org.yamcs.protobuf.TimelineItem.Builder protob);
+    protected abstract void addToProto(boolean detail, org.yamcs.protobuf.TimelineItem.Builder protob);
 
-    public org.yamcs.protobuf.TimelineItem toProtoBuf() {
+    public org.yamcs.protobuf.TimelineItem toProtoBuf(boolean detail) {
         org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
         protob.setType(type);
         protob.setId(id.toString());
@@ -175,11 +175,14 @@ public abstract class TimelineItem {
         if (tags != null) {
             protob.addAllTags(tags);
         }
-        if (description != null) {
-            protob.setDescription(description);
+
+        if (detail) {
+            if (description != null) {
+                protob.setDescription(description);
+            }
         }
 
-        addToProto(protob);
+        addToProto(detail, protob);
         return protob.build();
     }
 

@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractTimelineApi;
 import org.yamcs.protobuf.AddBandRequest;
+import org.yamcs.protobuf.AddItemLogRequest;
 import org.yamcs.protobuf.AddViewRequest;
 import org.yamcs.protobuf.CreateItemRequest;
 import org.yamcs.protobuf.DeleteBandRequest;
@@ -22,6 +24,7 @@ import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
 import org.yamcs.protobuf.DeleteViewRequest;
 import org.yamcs.protobuf.GetBandRequest;
+import org.yamcs.protobuf.GetItemLogRequest;
 import org.yamcs.protobuf.GetItemRequest;
 import org.yamcs.protobuf.GetViewRequest;
 import org.yamcs.protobuf.ListBandsRequest;
@@ -34,9 +37,11 @@ import org.yamcs.protobuf.ListTimelineTagsRequest;
 import org.yamcs.protobuf.ListTimelineTagsResponse;
 import org.yamcs.protobuf.ListViewsRequest;
 import org.yamcs.protobuf.ListViewsResponse;
+import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.RelativeTime;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineView;
 import org.yamcs.protobuf.UpdateBandRequest;
@@ -79,7 +84,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         org.yamcs.timeline.TimelineItem item = req2Item(request);
         try {
             item = timelineSource.addItem(item);
-            observer.complete(item.toProtoBuf());
+            observer.complete(item.toProtoBuf(true));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -100,7 +105,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (item == null) {
             throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
         } else {
-            observer.complete(item.toProtoBuf());
+            observer.complete(item.toProtoBuf(true));
         }
     }
 
@@ -121,15 +126,22 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
         }
 
-        if (request.hasName()) {
+        List<String> changeList = new ArrayList<>();
+        if (request.hasName() && !request.getName().equals(item.getName())) {
             item.setName(request.getName());
+            changeList.add("name");
         }
 
         if (request.hasStart()) {
             if (request.hasRelativeTime()) {
                 throw new BadRequestException("Cannot specify both start and relative time");
             }
-            item.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            long newStart = TimeEncoding.fromProtobufTimestamp(request.getStart());
+            if (item.getStart() != newStart) {
+                changeList.add("start");
+                item.setStart(newStart);
+            }
+            item.setRelativeItemUuid(null);
 
         } else if (request.hasRelativeTime()) {
             RelativeTime relt = request.getRelativeTime();
@@ -139,29 +151,65 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             if (!relt.hasRelativeStart()) {
                 throw new BadRequestException("relative start is required in the relative time");
             }
-            item.setRelativeItemUuid(parseUuid(relt.getRelto()));
-            item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
-        } else {
-            throw new BadRequestException("One of start or relativeTime has to be specified");
-        }
-        if (request.hasDuration()) {
-            item.setDuration(Durations.toMillis(request.getDuration()));
-        }
+            var relto = parseUuid(relt.getRelto());
+            if (!relto.equals(item.getRelativeItemUuid())) {
+                item.setRelativeItemUuid(relto);
+                changeList.add("relativeItemUuid");
+            }
 
-        if (request.hasStatus()) {
-            if (item instanceof Activity) {
-                ((Activity) item).setStatus(request.getStatus());
-            } else {
-                throw new BadRequestException("Status can only be set on activities not on " + item.getType());
+            long relstart = Durations.toMillis(relt.getRelativeStart());
+            if (relstart != item.getRelativeStart()) {
+                item.setRelativeStart(relstart);
+                changeList.add("relativeStart");
             }
         }
 
-        item.setGroupUuid(request.hasGroupId() ? parseUuid(request.getGroupId()) : null);
-        item.setTags(request.getTagsList());
+        if (request.hasDuration()) {
+            long duration = Durations.toMillis(request.getDuration());
+            if (item.getDuration() != duration) {
+                item.setDuration(duration);
+                changeList.add("duration");
+            }
+        }
+        if (item instanceof Activity) {
+            Activity activity = (Activity) item;
+            if (request.hasStatus() && activity.getStatus() != request.getStatus()) {
+                activity.setStatus(request.getStatus());
+                changeList.add("status");
+            }
+            if (request.hasFailureReason() && !request.getFailureReason().equals(activity.getFailureReason())) {
+                activity.setFailureReason(request.getFailureReason());
+                changeList.add("failureReason");
+            }
+        }
+
+        if (request.hasGroupId()) {
+            UUID gid = request.getGroupId().isBlank() ? null : parseUuid(request.getGroupId());
+            if (!Objects.equals(gid, item.getGroupUuid())) {
+                item.setGroupUuid(gid);
+                changeList.add("groupUuid");
+            }
+        }
+        if (request.getTagsCount() > 0) {
+            List<String> tags = new ArrayList<>(request.getTagsList());
+            Collections.sort(tags);
+            if (!tags.equals(item.getTags())) {
+                item.setTags(tags);
+                changeList.add("tags");
+            }
+        } else if (request.hasClearTags() && request.getClearTags()) {
+            if (item.getTags() != null) {
+                item.setTags(null);
+                changeList.add("tags");
+            }
+        }
 
         try {
             item = timelineSource.updateItem(item);
-            observer.complete(item.toProtoBuf());
+
+            timelineSource.addItemLog(item.getId(), LogEntry.newBuilder().setUser(ctx.user.getName()).setType("update")
+                    .setMsg(changeList.toString()).build());
+            observer.complete(item.toProtoBuf(true));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -181,31 +229,31 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (request.hasStop()) {
             interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
+        boolean details = request.hasDetails() && request.getDetails();
 
         ItemProvider timelineSource;
         RetrievalFilter filter;
+        String source;
 
         if (request.hasBand()) {
             UUID bandId = UUID.fromString(request.getBand());
             var band = timelineService.getTimelineBandDb().getBand(bandId);
-            String source = band.getSource() == null ? TimelineService.RDB_TIMELINE_SOURCE : band.getSource();
-            timelineSource = verifySource(timelineService, source);
+            source = band.getSource() == null ? TimelineService.RDB_TIMELINE_SOURCE : band.getSource();
 
             filter = new RetrievalFilter(interval, band.getItemFilters());
             filter.setTags(band.getTags());
         } else {
-            timelineSource = verifySource(timelineService,
-                    request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
+            source = request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE;
             filter = new RetrievalFilter(interval, request.getFiltersList());
         }
+        timelineSource = verifySource(timelineService, source);
 
-        ListItemsResponse.Builder resp = ListItemsResponse.newBuilder();
+        ListItemsResponse.Builder resp = ListItemsResponse.newBuilder().setSource(source);
 
         timelineSource.getItems(limit, next, filter, new ItemListener() {
-
             @Override
             public void next(org.yamcs.timeline.TimelineItem item) {
-                resp.addItems(item.toProtoBuf());
+                resp.addItems(item.toProtoBuf(details));
             }
 
             @Override
@@ -222,6 +270,48 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
                 observer.complete(resp.build());
             }
         });
+
+    }
+
+    @Override
+    public void getItemLog(Context ctx, GetItemLogRequest request, Observer<TimelineItemLog> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
+        TimelineService timelineService = verifyService(request.getInstance());
+        ItemProvider timelineSource = verifySource(timelineService,
+                request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
+
+        if (!request.hasId()) {
+            throw new BadRequestException(MSG_NO_ID);
+        }
+        String id = request.getId();
+        TimelineItemLog log = timelineSource.getItemLog(id);
+        if (log == null) {
+            throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
+        } else {
+            observer.complete(log);
+        }
+    }
+
+    @Override
+    public void addItemLog(Context ctx, AddItemLogRequest request, Observer<LogEntry> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
+        TimelineService timelineService = verifyService(request.getInstance());
+        ItemProvider timelineSource = verifySource(timelineService,
+                request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
+
+        if (!request.hasId()) {
+            throw new BadRequestException(MSG_NO_ID);
+        }
+        if (!request.hasEntry()) {
+            throw new BadRequestException("log entry is mandatory");
+        }
+        String id = request.getId();
+        LogEntry log = timelineSource.addItemLog(id, request.getEntry());
+        if (log == null) {
+            throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
+        } else {
+            observer.complete(log);
+        }
 
     }
 
@@ -488,7 +578,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (item == null) {
             throw new NotFoundException(MSG_ITEM_NOT_FOUND(request.getId()));
         } else {
-            observer.complete(item.toProtoBuf());
+            observer.complete(item.toProtoBuf(true));
         }
 
     }
@@ -510,7 +600,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (item == null) {
             throw new NotFoundException(MSG_ITEM_NOT_FOUND(request.getId()));
         } else {
-            observer.complete(item.toProtoBuf());
+            observer.complete(item.toProtoBuf(true));
         }
 
     }
@@ -689,4 +779,5 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     static final String MSG_VIEW_NOT_FOUND(String id) {
         return "View " + id + " not found";
     }
+
 }

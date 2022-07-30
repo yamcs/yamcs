@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.protobuf.ItemFilter;
+import org.yamcs.protobuf.LogEntry;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 
 public interface ItemProvider {
@@ -50,4 +52,18 @@ public interface ItemProvider {
      * Checks that the source can filter based on the criteria specified
      */
     public void validateFilters(List<ItemFilter> filters) throws BadRequestException;
+
+    /**
+     * Returns the item log or null if the item does not exist
+     */
+    default TimelineItemLog getItemLog(String id) {
+        return TimelineItemLog.newBuilder().setId(id).build();
+    }
+
+    /**
+     * Adds an entry to the log table
+     */
+    default LogEntry addItemLog(String id, LogEntry entry) {
+        throw new UnsupportedOperationException();
+    }
 }

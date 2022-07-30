@@ -17,6 +17,7 @@ import org.yamcs.protobuf.CreateItemRequest;
 import org.yamcs.protobuf.DeleteBandRequest;
 import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.GetItemLogRequest;
 import org.yamcs.protobuf.GetItemRequest;
 import org.yamcs.protobuf.ListBandsRequest;
 import org.yamcs.protobuf.ListBandsResponse;
@@ -29,6 +30,7 @@ import org.yamcs.protobuf.ListTimelineTagsResponse;
 import org.yamcs.protobuf.TimelineApiClient;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.protobuf.UpdateItemRequest;
 
@@ -112,6 +114,16 @@ public class TimelineClient {
                 .setSource(source)
                 .setId(id);
         timelineService.deleteItem(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<TimelineItemLog> getItemLog(String id) {
+        CompletableFuture<TimelineItemLog> f = new CompletableFuture<>();
+        GetItemLogRequest.Builder requestb = GetItemLogRequest.newBuilder()
+                .setInstance(instance)
+                .setSource(RDB_TIMELINE_SOURCE)
+                .setId(id);
+        timelineService.getItemLog(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 

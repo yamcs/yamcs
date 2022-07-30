@@ -17,7 +17,7 @@ public class ItemGroup extends TimelineItem {
     }
 
     @Override
-    protected void addToProto(Builder protob) {
+    protected void addToProto(boolean detail, Builder protob) {
     }
 
     @Override

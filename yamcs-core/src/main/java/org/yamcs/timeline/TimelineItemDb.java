@@ -16,8 +16,10 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.ItemFilter;
+import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.protobuf.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
@@ -54,6 +56,7 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_RELTIME_ID = "reltime_id";
     public static final String CNAME_RELTIME_START = "reltime_start";
     public static final String CNAME_DESCRIPTION = "description";
+    public static final String CNAME_FAILURE_REASON = "failure_reason";
     public static final String CRIT_KEY_TAG = "tag";
 
     static {
@@ -74,6 +77,7 @@ public class TimelineItemDb implements ItemProvider {
     final YarchDatabaseInstance ydb;
     final Stream timelineStream;
     final TupleMatcher matcher;
+    final TimelineItemLogDb logDb;
 
     LoadingCache<UUID, TimelineItem> itemCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
@@ -95,6 +99,8 @@ public class TimelineItemDb implements ItemProvider {
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
+
+        logDb = new TimelineItemLogDb(yamcsInstance);
         matcher = new TupleMatcher();
     }
 
@@ -479,8 +485,21 @@ public class TimelineItemDb implements ItemProvider {
         }
     }
 
+    @Override
+    public TimelineItemLog getItemLog(String id) {
+        UUID uuid = UUID.fromString(id);
+        return logDb.getLog(uuid);
+    }
+
+    @Override
+    public LogEntry addItemLog(String id, LogEntry entry) {
+        UUID uuid = UUID.fromString(id);
+        return logDb.addLogEntry(uuid, entry);
+    }
+
     @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
 
     }
+
 }

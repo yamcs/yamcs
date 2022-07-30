@@ -27,6 +27,7 @@ import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineBandType;
 import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.yarch.YarchDatabase;
@@ -173,6 +174,10 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         item1b = timelineClient.updateItem(item1b).get();
 
         assertEquals(ExecutionStatus.IN_PROGRESS, item1b.getStatus());
+
+        TimelineItemLog log = timelineClient.getItemLog(item1b.getId()).get();
+        assertEquals(1, log.getEntriesCount());
+        assertEquals("[status]", log.getEntries(0).getMsg());
     }
 
     @Test

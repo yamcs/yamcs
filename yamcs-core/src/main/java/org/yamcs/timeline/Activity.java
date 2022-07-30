@@ -22,23 +22,48 @@ public abstract class Activity extends TimelineItem {
 
     Activity(TimelineItemType type, Tuple tuple) {
         super(type, tuple);
+        String dbstatus = tuple.getColumn(CNAME_STATUS);
+        this.status = ExecutionStatus.valueOf(dbstatus);
+
+        if (tuple.hasColumn(CNAME_FAILURE_REASON)) {
+            this.failureReason = tuple.getColumn(CNAME_FAILURE_REASON);
+        }
     }
 
     public void setStatus(ExecutionStatus status) {
         this.status = status;
     }
 
+    public ExecutionStatus getStatus() {
+        return status;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
+    }
+
     @Override
-    protected void addToProto(Builder protob) {
+    protected void addToProto(boolean detail, Builder protob) {
         protob.setStatus(status);
+        if (failureReason != null) {
+            protob.setFailureReason(failureReason);
+        }
     }
 
     @Override
     protected void addToTuple(Tuple tuple) {
         tuple.addEnumColumn(CNAME_STATUS, status.name());
+        if (failureReason != null) {
+            tuple.addColumn(CNAME_FAILURE_REASON, failureReason);
+        }
     }
 
     static class Dependence {
         UUID id;
     }
+
 }
