@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.Arrays;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -28,6 +29,8 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     Object packetPreprocessorArgs;
     Thread thread;
     Boolean asmPresent; 
+    byte[] asm; 
+
 
     /**
      * Creates a new UDP Frame Data Link
@@ -40,6 +43,11 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         port = config.getInt("port");
         int maxLength = frameHandler.getMaxFrameSize();
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
+        // Detect if the Attached Synchro Marker (ASM) is present in the data link part of the yamcs.instance.yaml file
+        asmPresent = config.getBoolean("asmPresent", false); // By default ASM is absent 
+        if(asmPresent){
+            asm = hexStringToByteArray("1ACFFC1D");
+        }
     }
 
     @Override
@@ -66,22 +74,18 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         while (isRunningAndEnabled()) {
             try {
 
-                // Detect if the Attached Synchro Marker (ASM) is present in the data link part of the yamcs.instance.yaml file
-                asmPresent = config.getBoolean("asmPresent", false); // By default ASM is setted as false   
-                
                 // Array to select the first four bytes 
-                byte[] firstsBytes = new byte[4];
+                byte[] firstBytes = new byte[4];
                 
                 if (!asmPresent) {
                     tmSocket.receive(datagram);
 
                     // Select the first four bytes
                     for(int i = 0; i < 4; i++){
-                        firstsBytes[i]=datagram.getData()[i];
+                        firstBytes[i]=datagram.getData()[i];
                     }
-                    String firstBytesStr = convertBytesToHexadecimal(firstsBytes);
 
-                    if (firstBytesStr.equals("1ACFFC1D"))
+                    if (Arrays.equals(firstBytes, asm))
                         throw new IllegalArgumentException("You specified your frame does not begin with the Attached Synchronization Marker but it seems it is...");
 
                     else { // If !asmPresent and the data indeed does not start with the ASM 
@@ -100,12 +104,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     
                     // Select the first four bytes
                     for(int i = 0; i < 4; i++){
-                        firstsBytes[i]=datagramWithAsm.getData()[i];
+                        firstBytes[i]=datagramWithAsm.getData()[i];
                     }
-                    String firstBytesStr = convertBytesToHexadecimal(firstsBytes);
-                    System.out.println("ASM: "+firstBytesStr);
 
-                    if (!firstBytesStr.equals("1ACFFC1D")){
+                    if (!Arrays.equals(firstBytes, asm)){
                         throw new IllegalArgumentException("You specified your frame begins with the Attached Synchronization Marker word but it is not.");
                     }
 
@@ -170,17 +172,17 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     }
 
     /**
-     *  A parsing method used to compare the frame first words and the ASM as strings
+     *  A parsing method used to initialize the ASM from a string value
+     *  s must be an even-length string.
      */
-    public static String convertBytesToHexadecimal(byte[] byteArray)
-    {
-        String hex = "";
-    
-    // Iterating through each byte in the array
-        for (byte i : byteArray) {
-            hex += String.format("%02X", i);
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
         }
-    
-        return(hex);
+        return data;
     }
 }
+
