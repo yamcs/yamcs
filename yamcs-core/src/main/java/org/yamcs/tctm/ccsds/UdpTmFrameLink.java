@@ -46,9 +46,12 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
         // Detect if the Attached Synchro Marker (ASM) is present in the data link part of the yamcs.instance.yaml file
         asmPresent = config.getBoolean("asmPresent", false); // By default ASM is absent 
+        asmLength=0;
         if(asmPresent){
             asm = hexStringToByteArray("1ACFFC1D");
+            asmLength=4;
         }
+
     }
 
     @Override
@@ -74,12 +77,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public void run() {
         while (isRunningAndEnabled()) {
             try {
-                if (asmPresent){
-                    asmLength=4;
-                }
-                else{
-                    asmLength=0;
-                }
+
                 // Array to select the first four bytes 
                 byte[] firstBytes = new byte[4];
                 
