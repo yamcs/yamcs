@@ -30,6 +30,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     Thread thread;
     Boolean asmPresent; 
     byte[] asm; 
+    int asmLength;
 
 
     /**
@@ -73,7 +74,12 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public void run() {
         while (isRunningAndEnabled()) {
             try {
-
+                if (asmPresent){
+                    asmLength=4;
+                }
+                else{
+                    asmLength=0;
+                }
                 // Array to select the first four bytes 
                 byte[] firstBytes = new byte[4];
                 
@@ -86,7 +92,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     }
 
                     if (Arrays.equals(firstBytes, asm))
-                        throw new IllegalArgumentException("You specified your frame does not begin with the Attached Synchronization Marker but it seems it is...");
+                        log.warn("Yaml configuration specifies frames do not begin with the Attached Synchronization Marker but it seems there are...");
 
                     else { // If !asmPresent and the data indeed does not start with the ASM 
                         if (log.isTraceEnabled()) {
@@ -110,19 +116,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     if (!Arrays.equals(firstBytes, asm)){
                         throw new IllegalArgumentException("You specified your frame begins with the Attached Synchronization Marker word but it is not.");
                     }
-
-                    else{ // If asmPresent and the data indeed start with the ASM       
-
-                        if (log.isTraceEnabled()) {
-                            log.trace("Received datagram of length {}: {}", datagramWithAsm.getLength(), StringConverter
-                                    .arrayToHexString(datagramWithAsm.getData(), datagramWithAsm.getOffset(), datagramWithAsm.getLength(), true));
-                        }
-                        datagram.setData(datagramWithAsm.getData(), datagramWithAsm.getOffset()+4, datagramWithAsm.getLength()-4);
-                    }
                 }
 
-                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
-                        datagram.getLength());
+                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset() + asmLength,
+                        datagram.getLength() - asmLength);
             }
 
             catch (IOException e) {
