@@ -238,7 +238,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (request.hasBand()) {
             UUID bandId = UUID.fromString(request.getBand());
             var band = timelineService.getTimelineBandDb().getBand(bandId);
-            source = band.getSource() == null ? TimelineService.RDB_TIMELINE_SOURCE : band.getSource();
+            source = band.getSource() != null ? band.getSource()
+                    : request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE;
 
             filter = new RetrievalFilter(interval, band.getItemFilters());
             filter.setTags(band.getTags());
