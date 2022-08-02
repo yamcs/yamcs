@@ -45,3 +45,5 @@ There are different types of bands:
 
 Views
 ========
+
+A view is a sorted collection of bands displaying a common timewindow.

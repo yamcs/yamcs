@@ -1,13 +1,14 @@
 syntax="proto2";
 
 package yamcs.protobuf.timeline;
-option java_package = "org.yamcs.protobuf";
+option java_package = "org.yamcs.protobuf.timeline";
 option java_outer_classname = "TimelineProto";
 option java_multiple_files = true;
 
 import "yamcs/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "yamcs/protobuf/activities/activities.proto";
 
 //Methods related to the Timeline Service.
 service TimelineApi {
@@ -63,7 +64,7 @@ service TimelineApi {
       post: "/api/timeline/{instance}/items/{id}/log"
     };
   }
-
+    
   // Delete a group
   rpc DeleteTimelineGroup(DeleteTimelineGroupRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
@@ -191,14 +192,7 @@ enum TimelineItemType {
 	ACTIVITY_GROUP = 5;
 }
 
-//execution status of activities
-enum ExecutionStatus {
-    PLANNED = 1;
-    IN_PROGRESS = 2;
-    COMPLETED = 3;
-    ABORTED = 4;
-    FAILED = 5;
-}
+
 
 message TimelineItem {
   // Item identifier.
@@ -227,12 +221,23 @@ message TimelineItem {
   //item description
   optional string description = 9;
 
-  //for activities: execution status
-  optional ExecutionStatus status = 10;
-
-  //for activities: if the status is FAILED or ABORTED, this may indicate the reason
-  //some information may also be available in the item log 
-  optional string failureReason = 11;
+  //The fields below are valid for activities
+  
+  //details of the activity
+  optional yamcs.protobuf.activities.ActivityDetails activityDetails = 10;
+  
+  //The activity status.
+  // If the activity is automated and it has started, it is a duplicate of the status from the activityRun
+  // Otherwise it might be SCHEDULED or SKIPPED or for manual activities it is the status set by the operator
+  optional yamcs.protobuf.activities.ExecutionStatus activityStatus = 11;
+  
+  //If the activity has failed this gives the reason
+  // For automated activities, it is a copy of the reason in the activityRun;
+  // For manual activities it is the text given by the operator
+  optional string failureReason = 12;
+  
+  //for automated activities which have been started, contains the runId from the activities service
+  optional string activityRunId = 13;
 }
 
 message LogEntry {
@@ -392,10 +397,11 @@ message UpdateItemRequest {
   optional RelativeTime relativeTime = 10;
 
   //new status (valid for activities)
-  optional ExecutionStatus status = 11;
-
-  //failure reason (valid for activities)
+  optional yamcs.protobuf.activities.ExecutionStatus status = 11;
+  
+  //if the manual activity has failed, this may indicate the reason
   optional string failureReason = 12;
+  
 }
 
 message ListItemsRequest {
@@ -513,6 +519,9 @@ message ListTimelineTagsRequest {
 message ListTimelineTagsResponse {
   repeated string tags = 1;
 }
+
+
+
 /******************* End Items ***********************/
 
 

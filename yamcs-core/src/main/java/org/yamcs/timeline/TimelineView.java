@@ -55,13 +55,13 @@ public class TimelineView {
         this.bands.addAll(bands);
     }
 
-    public org.yamcs.protobuf.TimelineView toProtobuf() {
-        List<org.yamcs.protobuf.TimelineBand> bands = this.bands.stream()
-                .map(id -> org.yamcs.protobuf.TimelineBand.newBuilder()
+    public org.yamcs.protobuf.timeline.TimelineView toProtobuf() {
+        List<org.yamcs.protobuf.timeline.TimelineBand> bands = this.bands.stream()
+                .map(id -> org.yamcs.protobuf.timeline.TimelineBand.newBuilder()
                         .setId(id.toString())
                         .build())
                 .collect(Collectors.toList());
-        org.yamcs.protobuf.TimelineView.Builder b = org.yamcs.protobuf.TimelineView.newBuilder()
+        var b = org.yamcs.protobuf.timeline.TimelineView.newBuilder()
                 .setId(id.toString())
                 .addAllBands(bands);
         if (name != null) {

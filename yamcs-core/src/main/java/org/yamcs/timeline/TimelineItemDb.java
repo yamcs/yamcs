@@ -15,11 +15,11 @@ import org.yamcs.InitException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.LogEntry;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
-import org.yamcs.protobuf.TimelineItemLog;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.LogEntry;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
+import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.timeline.TimelineItemLog;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
@@ -42,7 +42,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-public class TimelineItemDb implements ItemProvider {
+public class TimelineItemDb implements TimelineSource {
     static final Random random = new Random();
     public static final TupleDefinition TIMELINE_DEF = new TupleDefinition();
     public static final String CNAME_START = "start";
@@ -57,6 +57,9 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_RELTIME_START = "reltime_start";
     public static final String CNAME_DESCRIPTION = "description";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
+    public static final String CNAME_ACTUAL_START = "actual_start";
+    public static final String CNAME_ACTUAL_STOP = "actual_stop";
+
     public static final String CRIT_KEY_TAG = "tag";
 
     static {

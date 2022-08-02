@@ -12,27 +12,27 @@ import org.yamcs.api.Observer;
 import org.yamcs.client.Page;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
-import org.yamcs.protobuf.AddBandRequest;
-import org.yamcs.protobuf.CreateItemRequest;
-import org.yamcs.protobuf.DeleteBandRequest;
-import org.yamcs.protobuf.DeleteItemRequest;
-import org.yamcs.protobuf.DeleteTimelineGroupRequest;
-import org.yamcs.protobuf.GetItemLogRequest;
-import org.yamcs.protobuf.GetItemRequest;
-import org.yamcs.protobuf.ListBandsRequest;
-import org.yamcs.protobuf.ListBandsResponse;
-import org.yamcs.protobuf.ListItemsRequest;
-import org.yamcs.protobuf.ListItemsResponse;
-import org.yamcs.protobuf.ListSourcesRequest;
-import org.yamcs.protobuf.ListSourcesResponse;
-import org.yamcs.protobuf.ListTimelineTagsRequest;
-import org.yamcs.protobuf.ListTimelineTagsResponse;
-import org.yamcs.protobuf.TimelineApiClient;
-import org.yamcs.protobuf.TimelineBand;
-import org.yamcs.protobuf.TimelineItem;
-import org.yamcs.protobuf.TimelineItemLog;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
-import org.yamcs.protobuf.UpdateItemRequest;
+import org.yamcs.protobuf.timeline.AddBandRequest;
+import org.yamcs.protobuf.timeline.CreateItemRequest;
+import org.yamcs.protobuf.timeline.DeleteBandRequest;
+import org.yamcs.protobuf.timeline.DeleteItemRequest;
+import org.yamcs.protobuf.timeline.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.timeline.GetItemLogRequest;
+import org.yamcs.protobuf.timeline.GetItemRequest;
+import org.yamcs.protobuf.timeline.ListBandsRequest;
+import org.yamcs.protobuf.timeline.ListBandsResponse;
+import org.yamcs.protobuf.timeline.ListItemsRequest;
+import org.yamcs.protobuf.timeline.ListItemsResponse;
+import org.yamcs.protobuf.timeline.ListSourcesRequest;
+import org.yamcs.protobuf.timeline.ListSourcesResponse;
+import org.yamcs.protobuf.timeline.ListTimelineTagsRequest;
+import org.yamcs.protobuf.timeline.ListTimelineTagsResponse;
+import org.yamcs.protobuf.timeline.TimelineApiClient;
+import org.yamcs.protobuf.timeline.TimelineBand;
+import org.yamcs.protobuf.timeline.TimelineItem;
+import org.yamcs.protobuf.timeline.TimelineItemLog;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
+import org.yamcs.protobuf.timeline.UpdateItemRequest;
 
 public class TimelineClient {
     static public final String RDB_TIMELINE_SOURCE = "rdb";
@@ -199,8 +199,8 @@ public class TimelineClient {
         if (item.hasGroupId()) {
             requestb.setGroupId(item.getGroupId());
         }
-        if (item.hasStatus()) {
-            requestb.setStatus(item.getStatus());
+        if (item.hasActivityStatus()) {
+            requestb.setStatus(item.getActivityStatus());
         }
 
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();

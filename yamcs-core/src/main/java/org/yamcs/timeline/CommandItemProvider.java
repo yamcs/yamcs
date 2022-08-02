@@ -8,9 +8,9 @@ import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.SqlBuilder;
@@ -28,7 +28,7 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * command names)
  *
  */
-public class CommandItemProvider implements ItemProvider {
+public class CommandItemProvider implements TimelineSource {
     public final static String CRIT_KEY_CMD_NAME_PATTERN = "cmdNamePattern";
     private Log log;
     private YarchDatabaseInstance ydb;

@@ -1,0 +1,138 @@
+syntax="proto2";
+
+package yamcs.protobuf.activities;
+option java_package = "org.yamcs.protobuf.activities";
+option java_outer_classname = "ActivitiesProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "yamcs/protobuf/commanding/commands_service.proto";
+
+
+service ActivitiesApi {
+
+  // Start an activity. The activity must be in the PLANNED status
+  rpc StartActivity(StartActivityRequest) returns (ActivityRun) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}"
+      body: "*"
+    };
+  }
+  
+   // End a running activity.
+  rpc EndActivity(EndActivityRequest) returns (ActivityRun) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/{id}"
+      body: "*"
+    };
+  }
+}
+
+enum ActivityType {
+   COMMAND = 0;
+   COMMAND_STACK = 1;
+   //SPELL_PROCEDURE = 2;
+  // PYTHON_SCRIPT = 3;
+  // SHELL_SCRIPT = 4;
+  // 
+}
+
+
+message ActivityDetails {
+  optional ActivityType type = 1;
+  //if true means the activity will automatically start when the time is due
+  // otherwise the activity has to be started manually. The operator should be informed in this case that the activity has to start.
+  // by default the flag is set to false for manual activities and true for automated activities
+  optional bool autoRun = 2;
+  
+  //if type = COMMAND
+  optional yamcs.protobuf.commanding.IssueCommandRequest cmdRequest = 3;
+  
+  //if type = COMMAND_STACK
+  optional CommandStackDetails stackDetails = 4;
+  
+}
+
+message CommandStackDetails {
+   optional string bucketInstance = 1;
+   optional string bucketName = 2;
+   optional string objectName = 3;
+}
+
+//an instance of a run of an activity
+message ActivityRun {
+  optional ExecutionStatus status = 1;
+
+  
+  //for activities: if the activity has started, this records the starting time
+  optional google.protobuf.Timestamp start = 2;
+  
+  //for activities: if the activity has completed (either successfully or with failure), this records the end time
+  optional google.protobuf.Timestamp end = 3;
+
+  //if the status is FAILED or ABORTED, this may indicate the reason
+  //some information may also be available in the item log 
+  optional string failureReason = 4;
+}
+
+message LogEntry {
+  optional google.protobuf.Timestamp time = 1;
+  optional string type = 2;
+  optional string msg = 3;
+}
+
+message ActivityLog {
+  
+  //activity run id
+  optional string id = 1;
+  
+  //activity log
+  repeated LogEntry entries = 2;
+}
+
+message StartActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Item source
+  optional string source = 2;
+
+  // Item identifier
+  optional string id = 3;
+}
+
+//execution status of activities
+enum ExecutionStatus {
+    // activity has not started yet
+    PLANNED = 1;
+    
+    // activity is currently running
+    IN_PROGRESS = 2;
+    
+    // activity has completed successfully
+    COMPLETED = 3;
+    
+    // activity was stopped before completion
+    ABORTED = 4;
+    
+    //activity has failed
+    FAILED = 5;
+}
+
+message EndActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Item source
+  optional string source = 2;
+
+  // Item identifier
+  optional string id = 3;
+  
+  //one of the ABORTED, COMPLETED or FAILED
+  optional ExecutionStatus endStatus = 4;
+  
+  //if endStatus is FAILED or ABORTED, this may indicate the reason
+  optional string failureReason = 5;
+}

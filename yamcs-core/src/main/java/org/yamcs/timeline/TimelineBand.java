@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
-import org.yamcs.protobuf.TimelineBandType;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.timeline.TimelineBandType;
 import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -102,8 +102,8 @@ public class TimelineBand {
         return name;
     }
 
-    public org.yamcs.protobuf.TimelineBand toProtobuf() {
-        org.yamcs.protobuf.TimelineBand.Builder b = org.yamcs.protobuf.TimelineBand.newBuilder()
+    public org.yamcs.protobuf.timeline.TimelineBand toProtobuf() {
+        org.yamcs.protobuf.timeline.TimelineBand.Builder b = org.yamcs.protobuf.timeline.TimelineBand.newBuilder()
                 .setId(id.toString())
                 .setType(type)
                 .setShared(shared)

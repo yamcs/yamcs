@@ -6,7 +6,7 @@ import java.util.Map;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
 
 /**
  * This service manages the Yamcs timeline.
@@ -21,7 +21,7 @@ public class TimelineService extends AbstractYamcsService {
     public static final String RDB_TIMELINE_SOURCE = "rdb";
     public static final String COMMANDS_TIMELINE_SOURCE = "commands";
 
-    Map<String, ItemProvider> timelineSources = new HashMap<>();
+    Map<String, TimelineSource> timelineSources = new HashMap<>();
 
     TimelineBandDb timelineBandDb;
     TimelineViewDb timelineViewDb;
@@ -39,13 +39,13 @@ public class TimelineService extends AbstractYamcsService {
 
     public Map<String, TimelineSourceCapabilities> getSources() {
         Map<String, TimelineSourceCapabilities> r = new HashMap<>();
-        for (Map.Entry<String, ItemProvider> me : timelineSources.entrySet()) {
+        for (Map.Entry<String, TimelineSource> me : timelineSources.entrySet()) {
             r.put(me.getKey(), me.getValue().getCapabilities());
         }
         return r;
     }
 
-    public ItemProvider getSource(String source) {
+    public TimelineSource getSource(String source) {
         return timelineSources.get(source);
     }
 

@@ -5,12 +5,12 @@ import java.util.UUID;
 
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.LogEntry;
-import org.yamcs.protobuf.TimelineItemLog;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.LogEntry;
+import org.yamcs.protobuf.timeline.TimelineItemLog;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
 
-public interface ItemProvider {
+public interface TimelineSource {
 
     public TimelineItem getItem(String id);
 
@@ -23,8 +23,9 @@ public interface ItemProvider {
      * of the returned value will be computed from the relative time and the start of
      * {@link TimelineItem#relativeItemUuid}
      */
-    public TimelineItem addItem(TimelineItem item);
-
+    default TimelineItem addItem(TimelineItem item) {
+        throw new UnsupportedOperationException();
+    }
     /**
      * Update an item and return the updated item.
      * <p>
@@ -35,16 +36,21 @@ public interface ItemProvider {
      *             if the item does not exist, if the groupUuuid or relatimeTimeUuid properties create a circular
      *             dependency or other source specific error conditions
      */
-    public TimelineItem updateItem(TimelineItem item);
-
+    default TimelineItem updateItem(TimelineItem item) {
+        throw new UnsupportedOperationException();
+    }
     /**
      * Delete the item with the given uuid and return the deleted item.
      * <p>
      * If the item does not exist, return null
      */
-    public TimelineItem deleteItem(UUID id);
+    default TimelineItem deleteItem(UUID id) {
+        throw new UnsupportedOperationException();
+    }
 
-    public TimelineItem deleteTimelineGroup(UUID id);
+    default TimelineItem deleteTimelineGroup(UUID id) {
+        throw new UnsupportedOperationException();
+    }
 
     public TimelineSourceCapabilities getCapabilities();
 

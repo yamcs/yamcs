@@ -2,7 +2,7 @@ package org.yamcs.timeline;
 
 import java.util.List;
 
-import org.yamcs.protobuf.ItemFilter;
+import org.yamcs.protobuf.timeline.ItemFilter;
 import org.yamcs.utils.TimeInterval;
 
 public class RetrievalFilter {

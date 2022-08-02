@@ -14,39 +14,39 @@ import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.AbstractTimelineApi;
-import org.yamcs.protobuf.AddBandRequest;
-import org.yamcs.protobuf.AddItemLogRequest;
-import org.yamcs.protobuf.AddViewRequest;
-import org.yamcs.protobuf.CreateItemRequest;
-import org.yamcs.protobuf.DeleteBandRequest;
-import org.yamcs.protobuf.DeleteItemRequest;
-import org.yamcs.protobuf.DeleteTimelineGroupRequest;
-import org.yamcs.protobuf.DeleteViewRequest;
-import org.yamcs.protobuf.GetBandRequest;
-import org.yamcs.protobuf.GetItemLogRequest;
-import org.yamcs.protobuf.GetItemRequest;
-import org.yamcs.protobuf.GetViewRequest;
-import org.yamcs.protobuf.ListBandsRequest;
-import org.yamcs.protobuf.ListBandsResponse;
-import org.yamcs.protobuf.ListItemsRequest;
-import org.yamcs.protobuf.ListItemsResponse;
-import org.yamcs.protobuf.ListSourcesRequest;
-import org.yamcs.protobuf.ListSourcesResponse;
-import org.yamcs.protobuf.ListTimelineTagsRequest;
-import org.yamcs.protobuf.ListTimelineTagsResponse;
-import org.yamcs.protobuf.ListViewsRequest;
-import org.yamcs.protobuf.ListViewsResponse;
-import org.yamcs.protobuf.LogEntry;
-import org.yamcs.protobuf.RelativeTime;
-import org.yamcs.protobuf.TimelineBand;
-import org.yamcs.protobuf.TimelineItem;
-import org.yamcs.protobuf.TimelineItemLog;
-import org.yamcs.protobuf.TimelineItemType;
-import org.yamcs.protobuf.TimelineView;
-import org.yamcs.protobuf.UpdateBandRequest;
-import org.yamcs.protobuf.UpdateItemRequest;
-import org.yamcs.protobuf.UpdateViewRequest;
+import org.yamcs.protobuf.timeline.AbstractTimelineApi;
+import org.yamcs.protobuf.timeline.AddBandRequest;
+import org.yamcs.protobuf.timeline.AddItemLogRequest;
+import org.yamcs.protobuf.timeline.AddViewRequest;
+import org.yamcs.protobuf.timeline.CreateItemRequest;
+import org.yamcs.protobuf.timeline.DeleteBandRequest;
+import org.yamcs.protobuf.timeline.DeleteItemRequest;
+import org.yamcs.protobuf.timeline.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.timeline.DeleteViewRequest;
+import org.yamcs.protobuf.timeline.GetBandRequest;
+import org.yamcs.protobuf.timeline.GetItemLogRequest;
+import org.yamcs.protobuf.timeline.GetItemRequest;
+import org.yamcs.protobuf.timeline.GetViewRequest;
+import org.yamcs.protobuf.timeline.ListBandsRequest;
+import org.yamcs.protobuf.timeline.ListBandsResponse;
+import org.yamcs.protobuf.timeline.ListItemsRequest;
+import org.yamcs.protobuf.timeline.ListItemsResponse;
+import org.yamcs.protobuf.timeline.ListSourcesRequest;
+import org.yamcs.protobuf.timeline.ListSourcesResponse;
+import org.yamcs.protobuf.timeline.ListTimelineTagsRequest;
+import org.yamcs.protobuf.timeline.ListTimelineTagsResponse;
+import org.yamcs.protobuf.timeline.ListViewsRequest;
+import org.yamcs.protobuf.timeline.ListViewsResponse;
+import org.yamcs.protobuf.timeline.LogEntry;
+import org.yamcs.protobuf.timeline.RelativeTime;
+import org.yamcs.protobuf.timeline.TimelineBand;
+import org.yamcs.protobuf.timeline.TimelineItem;
+import org.yamcs.protobuf.timeline.TimelineItemLog;
+import org.yamcs.protobuf.timeline.TimelineItemType;
+import org.yamcs.protobuf.timeline.TimelineView;
+import org.yamcs.protobuf.timeline.UpdateBandRequest;
+import org.yamcs.protobuf.timeline.UpdateItemRequest;
+import org.yamcs.protobuf.timeline.UpdateViewRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.timeline.Activity;
 import org.yamcs.timeline.ActivityGroup;
@@ -55,7 +55,7 @@ import org.yamcs.timeline.BandListener;
 import org.yamcs.timeline.RetrievalFilter;
 import org.yamcs.timeline.ItemGroup;
 import org.yamcs.timeline.ItemListener;
-import org.yamcs.timeline.ItemProvider;
+import org.yamcs.timeline.TimelineSource;
 import org.yamcs.timeline.ManualActivity;
 import org.yamcs.timeline.TimelineBandDb;
 import org.yamcs.timeline.TimelineEvent;
@@ -78,7 +78,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void createItem(Context ctx, CreateItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         org.yamcs.timeline.TimelineItem item = req2Item(request);
@@ -94,7 +94,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void getItem(Context ctx, GetItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
@@ -113,7 +113,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void updateItem(Context ctx, UpdateItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
@@ -231,7 +231,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
         boolean details = request.hasDetails() && request.getDetails();
 
-        ItemProvider timelineSource;
+        TimelineSource timelineSource;
         RetrievalFilter filter;
         String source;
 
@@ -278,7 +278,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void getItemLog(Context ctx, GetItemLogRequest request, Observer<TimelineItemLog> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
@@ -297,7 +297,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void addItemLog(Context ctx, AddItemLogRequest request, Observer<LogEntry> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
         if (!request.hasId()) {
@@ -566,7 +566,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void deleteItem(Context ctx, DeleteItemRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         UUID uuid = verifyUuid(request.hasId(), request.getId());
 
@@ -581,6 +581,29 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         } else {
             observer.complete(item.toProtoBuf(true));
         }
+    }
+
+    @Override
+    public void startActivity(Context ctx, StartActivityRequest request, Observer<TimelineItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
+        TimelineService timelineService = verifyService(request.getInstance());
+        TimelineSource timelineSource = verifySource(timelineService,
+                request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
+
+
+        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(request.getId());
+
+    }
+
+    @Override
+    public void endActivity(Context ctx, EndActivityRequest request, Observer<TimelineItem> observer) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void skipActivity(Context ctx, SkipActivityRequest request, Observer<TimelineItem> observer) {
+        // TODO Auto-generated method stub
 
     }
 
@@ -588,7 +611,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     public void deleteTimelineGroup(Context ctx, DeleteTimelineGroupRequest request, Observer<TimelineItem> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
-        ItemProvider timelineSource = verifySource(timelineService,
+        TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         UUID uuid = verifyUuid(request.hasId(), request.getId());
 
@@ -616,8 +639,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         return band;
     }
 
-    private ItemProvider verifySource(TimelineService timelineService, String source) {
-        ItemProvider ts = timelineService.getSource(source);
+    private TimelineSource verifySource(TimelineService timelineService, String source) {
+        TimelineSource ts = timelineService.getSource(source);
         if (ts == null) {
             throw new BadRequestException("Invalid source '" + source + "'");
         }

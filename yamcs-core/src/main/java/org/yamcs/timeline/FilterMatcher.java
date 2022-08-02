@@ -1,7 +1,7 @@
 package org.yamcs.timeline;
 
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
 
 public abstract class FilterMatcher<T> {
     boolean matches(RetrievalFilter filter, T item) {

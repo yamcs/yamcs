@@ -5,8 +5,8 @@ import static org.yamcs.timeline.TimelineItemDb.*;
 import java.util.List;
 import java.util.UUID;
 
-import org.yamcs.protobuf.RelativeTime;
-import org.yamcs.protobuf.TimelineItemType;
+import org.yamcs.protobuf.timeline.RelativeTime;
+import org.yamcs.protobuf.timeline.TimelineItemType;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -153,10 +153,10 @@ public abstract class TimelineItem {
         this.tags = tags;
     }
 
-    protected abstract void addToProto(boolean detail, org.yamcs.protobuf.TimelineItem.Builder protob);
+    protected abstract void addToProto(boolean detail, org.yamcs.protobuf.timeline.TimelineItem.Builder protob);
 
-    public org.yamcs.protobuf.TimelineItem toProtoBuf(boolean detail) {
-        org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
+    public org.yamcs.protobuf.timeline.TimelineItem toProtoBuf(boolean detail) {
+        org.yamcs.protobuf.timeline.TimelineItem.Builder protob = org.yamcs.protobuf.timeline.TimelineItem.newBuilder();
         protob.setType(type);
         protob.setId(id.toString());
         protob.setStart(TimeEncoding.toProtobufTimestamp(start));

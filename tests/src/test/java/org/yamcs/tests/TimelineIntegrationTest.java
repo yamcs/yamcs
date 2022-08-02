@@ -21,15 +21,15 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
-import org.yamcs.protobuf.ExecutionStatus;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
-import org.yamcs.protobuf.TimelineBand;
-import org.yamcs.protobuf.TimelineBandType;
-import org.yamcs.protobuf.TimelineItem;
-import org.yamcs.protobuf.TimelineItemLog;
-import org.yamcs.protobuf.TimelineItemType;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.protobuf.activities.ExecutionStatus;
+import org.yamcs.protobuf.timeline.ItemFilter;
+import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.timeline.TimelineBand;
+import org.yamcs.protobuf.timeline.TimelineBandType;
+import org.yamcs.protobuf.timeline.TimelineItem;
+import org.yamcs.protobuf.timeline.TimelineItemLog;
+import org.yamcs.protobuf.timeline.TimelineItemType;
+import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -168,12 +168,12 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         item1a = timelineClient.addItem(item1a).get();
-        assertEquals(ExecutionStatus.PLANNED, item1a.getStatus());
+        assertEquals(ExecutionStatus.PLANNED, item1a.getActivityStatus());
 
-        TimelineItem item1b = item1a.toBuilder().setStatus(ExecutionStatus.IN_PROGRESS).build();
+        TimelineItem item1b = item1a.toBuilder().setActivityStatus(ExecutionStatus.IN_PROGRESS).build();
         item1b = timelineClient.updateItem(item1b).get();
 
-        assertEquals(ExecutionStatus.IN_PROGRESS, item1b.getStatus());
+        assertEquals(ExecutionStatus.IN_PROGRESS, item1b.getActivityStatus());
 
         TimelineItemLog log = timelineClient.getItemLog(item1b.getId()).get();
         assertEquals(1, log.getEntriesCount());
