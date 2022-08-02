@@ -220,7 +220,6 @@ public class TcpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     Thread.currentThread().interrupt();
                     break;
                 }
-                log.warn("'{}' thrown when reading from the TCP socket at {}, port {}. Retrying in 5 seconds.", e, host, port);
                 
             } catch (Exception e) {
                 log.error("Error processing frame", e);
