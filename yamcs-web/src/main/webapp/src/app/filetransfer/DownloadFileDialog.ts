@@ -16,8 +16,8 @@ import { RemoteFileSelector } from './RemoteFileSelector';
 })
 export class DownloadFileDialog implements OnDestroy {
 
-  isDownloadEnabled = false
-  isUploadEnabled = false
+  isDownloadEnabled = false;
+  isUploadEnabled = false;
   filesForm: FormGroup;
   optionsForm: FormGroup;
   service: FileTransferService;
@@ -29,6 +29,7 @@ export class DownloadFileDialog implements OnDestroy {
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
+  lastFileListTime$ = new BehaviorSubject<String>('-');
 
   private fileListSubscription: RemoteFileListSubscription;
 
@@ -63,6 +64,7 @@ export class DownloadFileDialog implements OnDestroy {
         const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
         if (fileList.remotePath == currentFolder) {
           this.remoteSelector.setFolderContent(currentFolder, fileList);
+          this.lastFileListTime$.next(fileList.listTime);
         }
       }
     });
@@ -243,6 +245,7 @@ export class DownloadFileDialog implements OnDestroy {
         destination: dest
       }).then(fileList => {
         this.remoteSelector.setFolderContent(prefix, fileList);
+        this.lastFileListTime$.next(fileList.listTime);
       });
     }
   }

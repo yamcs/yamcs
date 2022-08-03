@@ -321,4 +321,5 @@ message ListFilesResponse {
   repeated RemoteFile files = 1;
   optional string destination = 2;
   optional string remotePath = 3;
+  optional google.protobuf.Timestamp listTime = 4;
 }

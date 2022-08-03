@@ -9,6 +9,7 @@
 
     <div class="object-breadcrumb" *ngIf="breadcrumb$ | async as breadcrumb">
       <app-breadcrumb-trail>
+        <label class="table-caption">Local</label>
         <app-breadcrumb icon="account_tree" [action]="true"
                         (click)="changeLocalPrefix('')"></app-breadcrumb>
         <app-breadcrumb *ngFor="let item of breadcrumb"
@@ -20,6 +21,7 @@
 
     <div class="remote-breadcrumb" *ngIf="remoteBreadcrumb$ | async as breadcrumb">
       <app-breadcrumb-trail>
+        <label class="table-caption">Remote</label>
         <app-breadcrumb icon="account_tree" [action]="true"
                         (click)="changeRemotePrefix('')"></app-breadcrumb>
         <app-breadcrumb *ngFor="let item of breadcrumb"
@@ -33,7 +35,6 @@
   <div class="tables-container">
     <div class="bucket-table-wrapper">
       <table mat-table [dataSource]="dataSource" class="ya-data-table">
-
         <ng-container cdkColumnDef="name">
           <td mat-cell *cdkCellDef="let bucket">
             <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
@@ -77,37 +78,44 @@
 <div class="transfer-options mat-typography">
   <form [formGroup]="optionsForm" class="ya-form">
 
-  <div *ngIf="service.capabilities.remotePath">
+  <div class="option" *ngIf="service.capabilities.remotePath">
     <label>
       Filename
       <input type="text" formControlName="remotePath" id="filename" placeholder="Filename.dat">
     </label>
   </div>
 
-  <div *ngIf="service.capabilities.reliability">
+  <div class="option" *ngIf="service.capabilities.reliability">
     <label>
       <input type="checkbox" formControlName="reliable"> Reliable
     </label>
   </div>
 
-  <div>
+  <div class="option">
     <label>
       Local Entity
       <select formControlName="source">
         <option *ngFor="let entity of service.localEntities"
-                [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
+                [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
       </select>
     </label>
   </div>
 
-  <div>
+  <div class="option">
     <label>
       Remote Entity
       <select formControlName="destination">
         <option *ngFor="let entity of service.remoteEntities"
-                [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
+                [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
       </select>
     </label>
+  </div>
+
+  <div class="wider-option" *ngIf="service.capabilities.fileList">
+    <label>
+      Last File List
+    </label>
+    <span class="labeltext">{{ lastFileListTime$ | async | datetime }}</span>
   </div>
 
   </form>

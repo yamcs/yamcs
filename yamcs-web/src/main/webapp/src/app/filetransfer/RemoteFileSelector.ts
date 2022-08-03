@@ -69,7 +69,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     // Only clear folder (and get new file list) if we are entering a different folder.
     // If the user selects the same folder at the breadcrumb we must not clear the table.
     if (newPrefix !== this.currentPrefix$.value) {
-      const dir: ListFilesResponse = { files: [], destination: '', remotePath: '' };
+      const dir: ListFilesResponse = { files: [], destination: '', remotePath: '', listTime: '' };
       this.setFolderContent(prefix, dir);
     }
   }
