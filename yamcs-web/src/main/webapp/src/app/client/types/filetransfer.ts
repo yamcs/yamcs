@@ -70,6 +70,7 @@ export interface ListFilesResponse {
   files: RemoteFile[];
   destination: string;
   remotePath: string;
+  listTime: string;
 }
 
 export interface ServicesPage {

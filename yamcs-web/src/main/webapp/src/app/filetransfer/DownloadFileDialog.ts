@@ -3,11 +3,7 @@ import { Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-<<<<<<< HEAD
-import { Bucket, FileTransferService, ListFilesResponse, ListObjectsResponse, RemoteFileListSubscription, StorageClient } from '../client';
-=======
-import { Bucket, FileTransferService, RemoteFileListSubscription, ListFilesResponse, StorageClient } from '../client';
->>>>>>> a47a0a762 (Reverted ObjectSelector and added RemoteFileSelector; Spaces for tabs; Changes to file transfer URLs; Reverted prototype ordinal numbers; Added RemoteFile protobuf message)
+import { Bucket, FileTransferService, RemoteFileListSubscription, StorageClient } from '../client';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
@@ -33,6 +29,7 @@ export class DownloadFileDialog implements OnDestroy {
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
+  lastFileListTime$ = new BehaviorSubject<String>('-');
 
   private fileListSubscription: RemoteFileListSubscription;
 
@@ -67,6 +64,7 @@ export class DownloadFileDialog implements OnDestroy {
         const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
         if (fileList.remotePath == currentFolder) {
           this.remoteSelector.setFolderContent(currentFolder, fileList);
+          this.lastFileListTime$.next(fileList.listTime);
         }
       }
     });
@@ -247,6 +245,7 @@ export class DownloadFileDialog implements OnDestroy {
         destination: dest
       }).then(fileList => {
         this.remoteSelector.setFolderContent(prefix, fileList);
+        this.lastFileListTime$.next(fileList.listTime);
       });
     }
   }
