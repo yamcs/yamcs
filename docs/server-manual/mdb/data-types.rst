@@ -192,7 +192,7 @@ String data type
 
 In Yamcs the string data is represented as a java (unicode) String value. The encoding to/from the wire is performed using a string data encoding with one of the supported `Java Charsets <https://docs.oracle.com/javase/8/docs/api/java/nio/charset/Charset.html>`_ (UTF-8, ISO-8859-1, etc)
 
-In addition to converting the bytes to unicode character, a typical problem in decoding telemetry is to know the boundary of the string inside the packet. To comply with XTCE Yamcs implements a "string in a buffer" approach:
+In addition to converting the bytes to unicode characters, a typical problem in decoding telemetry is knowing the boundary of the string inside the packet. To comply with XTCE, Yamcs implements a "string in a buffer" approach:
 
 - conceptually the packet contains a buffer (or a box) where the string has to be extracted from or encoded into.
 - the buffer can be the same size with the string or larger than the string. If the buffer is larger than the string, it will be filled by Yamcs with 0 for commands or some filler which is ignored by Yamcs for telemetry.
