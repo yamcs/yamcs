@@ -118,6 +118,9 @@ enum ExecutionStatus {
     
     //activity has failed
     FAILED = 5;
+    
+    //activity has been skipped
+    SKIPPED = 6;
 }
 
 message EndActivityRequest {

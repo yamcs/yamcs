@@ -192,6 +192,31 @@ enum TimelineItemType {
 	ACTIVITY_GROUP = 5;
 }
 
+enum DependenceType {
+	//start to start
+	STS = 1;
+	//finish to start
+	FTS = 2;
+}
+
+// Models a dependency between two items.
+// Dependencies are used to express relative start times and also to control the starting of activities
+// This message is used inside the definition of item A to express its dependence on an item B
+message Dependence {
+    // Identifier of the item B
+	optional string id = 1;
+	
+	// If type = STS, the relativeStart is relative to the start of the item B
+	// If type = FTS, the relativeStart is relative to the end of the item B
+	DependenceType type = 2;
+	
+	optional google.protobuf.Duration relativeStart = 3;
+	
+	// For activities: the activity will be started only if the condition holds true
+	// The condition can be specified only if the type = FTS and item B is an activity (there is no execution status for a regular item)
+	// TOOD: define the condition
+	// repeated Condition condition = 4;
+}
 
 
 message TimelineItem {
@@ -213,10 +238,9 @@ message TimelineItem {
   //if this item is part of a group, this is the group identifier
   optional string groupId = 7;
     
-  //if this item time specification is relative to another item, relativeTime contains a reference
-  // to that item as well as the relative start (the duration is the same as given by the duration above)
-  //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
-  optional RelativeTime relativeTime = 8;
+  // the list of items this item depends on
+  // note that start of the item will be computed by the server
+  optional Dependence dependencies = 8;
 
   //item description
   optional string description = 9;
