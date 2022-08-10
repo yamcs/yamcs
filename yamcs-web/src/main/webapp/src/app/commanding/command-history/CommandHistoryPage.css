@@ -24,7 +24,7 @@
   cursor: pointer;
 }
 
-tr.failed td {
+tr.failed td, tr.failed td a {
   color: red;
 }
 

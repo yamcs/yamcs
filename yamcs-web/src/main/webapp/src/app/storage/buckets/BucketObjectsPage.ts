@@ -110,14 +110,14 @@ export class BucketObjectsPage implements OnDestroy {
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = this.dataSource.filteredData.length;
     return numSelected === numRows && numRows > 0;
   }
 
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: BrowseItem) {

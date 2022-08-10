@@ -66,7 +66,9 @@ export interface Sample {
   time: string;
   avg: number;
   min: number;
+  minTime: string;
   max: number;
+  maxTime: string;
   n: number;
 }
 
@@ -206,6 +208,7 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   count?: number;
   order?: 'asc' | 'desc';
+  fields?: Array<keyof Sample>;
 }
 
 export interface GetParameterRangesOptions {

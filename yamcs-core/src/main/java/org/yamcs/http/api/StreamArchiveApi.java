@@ -341,13 +341,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
-        b.setTime(TimeEncoding.toString(sample.t));
+        b.setTimeString(TimeEncoding.toString(sample.t));
+        b.setTime(TimeEncoding.toProtobufTimestamp(sample.t));
         b.setN(sample.n);
 
         if (sample.n > 0) {
             b.setAvg(sample.avg);
             b.setMin(sample.min);
             b.setMax(sample.max);
+            b.setMinTime(TimeEncoding.toProtobufTimestamp(sample.minTime));
+            b.setMaxTime(TimeEncoding.toProtobufTimestamp(sample.maxTime));
         }
 
         return b.build();

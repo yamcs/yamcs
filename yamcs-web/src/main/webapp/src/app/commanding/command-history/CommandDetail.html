@@ -9,7 +9,9 @@
   <table class="args">
     <tr *ngFor="let arg of command.userAssignments">
       <td class="key" width="1">{{ arg.name }}</td>
-      <td class="value">{{ arg.value | value }}</td>
+      <td class="value">
+        <app-value [value]="arg.value"></app-value>
+      </td>
     </tr>
   </table>
 </div>

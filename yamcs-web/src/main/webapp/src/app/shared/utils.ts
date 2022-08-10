@@ -249,7 +249,7 @@ export function printValue(value: Value) {
 function printValueWithoutPreview(value: Value): string {
   switch (value.type) {
     case 'AGGREGATE':
-      return 'aggregate';
+      return '{…}';
     case 'ARRAY':
       return 'array';
     case 'BOOLEAN':
