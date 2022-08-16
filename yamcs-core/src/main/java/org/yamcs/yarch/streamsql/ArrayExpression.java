@@ -16,8 +16,6 @@ public class ArrayExpression extends Expression {
             throw new GenericStreamSqlException("Empty arrays not supported");
         }
     }
-    
-
 
     @Override
     protected void doBind() throws StreamSqlException {

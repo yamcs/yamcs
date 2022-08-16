@@ -17,7 +17,7 @@ public class RetrievalFilter {
         this.itemFilters = itemFilters;
     }
 
-    TimeInterval getTimeInterval() {
+    public TimeInterval getTimeInterval() {
         return interval;
     }
 

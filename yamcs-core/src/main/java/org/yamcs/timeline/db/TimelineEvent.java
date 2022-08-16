@@ -1,4 +1,4 @@
-package org.yamcs.timeline;
+package org.yamcs.timeline.db;
 
 import org.yamcs.protobuf.timeline.TimelineItem.Builder;
 import org.yamcs.protobuf.timeline.TimelineItemType;
@@ -13,7 +13,7 @@ import org.yamcs.yarch.Tuple;
  * 
  *
  */
-public class TimelineEvent extends TimelineItem {
+public class TimelineEvent extends AbstractItem {
 
     public TimelineEvent(String id) {
         super(TimelineItemType.EVENT, id);

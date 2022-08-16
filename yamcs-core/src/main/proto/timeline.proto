@@ -1,8 +1,16 @@
 syntax = "proto2";
 
-option java_package = "org.yamcs.timeline.protobuf";
+option java_package = "org.yamcs.dbproto.timeline";
 option java_outer_classname = "TimelineProto";
 option java_multiple_files = true;
+
+import "yamcs/protobuf/timeline/timeline.proto";
+import "google/protobuf/duration.proto";
+
+message UUID {
+  required fixed64 h = 1;
+  required fixed64 l = 2;
+}
 
 //this is a copy of the message defined in the API but we define it separately so we can make the two 
 //different in the future if required
@@ -17,4 +25,20 @@ message BandFilter {
    }
    
    repeated ItemFilter filters = 1;
+}
+
+//this is a copy of the message defined in the API but we define it separately so we can make the two
+//different in the future if required
+message Dependency {
+  optional yamcs.protobuf.timeline.DependencyType type = 1;
+
+  // if type = ACTIVITY_START or ACTIVITY_END, this is the id of the activity B
+  optional UUID activityId = 2;
+
+  //if specified, the activity A will start after this time from the event
+  optional google.protobuf.Duration lagTime = 3;
+
+  // The activity will be started only if the conditions hold true
+  // If type = ACTIVITY_END, the condition may include the status of activity B
+  // repeated Condition conditions = 4;
 }

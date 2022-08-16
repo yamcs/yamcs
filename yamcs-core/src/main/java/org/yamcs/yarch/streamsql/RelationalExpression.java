@@ -62,7 +62,8 @@ public class RelationalExpression extends Expression {
         if (relOp == RelOp.OVERLAP) {
             if (!(ltype instanceof ArrayDataType) || !(rtype instanceof ArrayDataType)) {
                 throw new StreamSqlException(ErrCode.INCOMPATIBLE,
-                        "Overlap operator " + relOp.getSign() + " can only be used between two arrays");
+                        "Overlap operator " + relOp.getSign() + " can only be used between two arrays (not between "
+                                + ltype + " and " + rtype + ")");
             }
         }
         if (DataType.compatible(ltype, rtype)) {
@@ -87,7 +88,7 @@ public class RelationalExpression extends Expression {
                 return;
             } catch (IllegalArgumentException e) {
                 throw new StreamSqlException(ErrCode.INCOMPATIBLE,
-                        "Cannot convert " + children[0].getConstantValue() + " to " + ltype);
+                        "Cannot convert " + children[1].getConstantValue() + " to " + ltype);
             }
         }
 

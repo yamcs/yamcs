@@ -3,7 +3,6 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,7 +10,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.timeline.AbstractTimelineApi;
@@ -23,6 +21,7 @@ import org.yamcs.protobuf.timeline.DeleteBandRequest;
 import org.yamcs.protobuf.timeline.DeleteItemRequest;
 import org.yamcs.protobuf.timeline.DeleteTimelineGroupRequest;
 import org.yamcs.protobuf.timeline.DeleteViewRequest;
+import org.yamcs.protobuf.timeline.EndActivityRequest;
 import org.yamcs.protobuf.timeline.GetBandRequest;
 import org.yamcs.protobuf.timeline.GetItemLogRequest;
 import org.yamcs.protobuf.timeline.GetItemRequest;
@@ -38,36 +37,27 @@ import org.yamcs.protobuf.timeline.ListTimelineTagsResponse;
 import org.yamcs.protobuf.timeline.ListViewsRequest;
 import org.yamcs.protobuf.timeline.ListViewsResponse;
 import org.yamcs.protobuf.timeline.LogEntry;
-import org.yamcs.protobuf.timeline.RelativeTime;
+import org.yamcs.protobuf.timeline.StartActivityRequest;
 import org.yamcs.protobuf.timeline.TimelineBand;
 import org.yamcs.protobuf.timeline.TimelineItem;
 import org.yamcs.protobuf.timeline.TimelineItemLog;
-import org.yamcs.protobuf.timeline.TimelineItemType;
 import org.yamcs.protobuf.timeline.TimelineView;
 import org.yamcs.protobuf.timeline.UpdateBandRequest;
 import org.yamcs.protobuf.timeline.UpdateItemRequest;
 import org.yamcs.protobuf.timeline.UpdateViewRequest;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.timeline.Activity;
-import org.yamcs.timeline.ActivityGroup;
-import org.yamcs.timeline.AutomatedActivity;
 import org.yamcs.timeline.BandListener;
 import org.yamcs.timeline.RetrievalFilter;
-import org.yamcs.timeline.ItemGroup;
 import org.yamcs.timeline.ItemListener;
 import org.yamcs.timeline.TimelineSource;
-import org.yamcs.timeline.ManualActivity;
 import org.yamcs.timeline.TimelineBandDb;
-import org.yamcs.timeline.TimelineEvent;
-import org.yamcs.timeline.TimelineItemDb;
 import org.yamcs.timeline.TimelineService;
 import org.yamcs.timeline.TimelineViewDb;
 import org.yamcs.timeline.ViewListener;
+import org.yamcs.timeline.db.TimelineItemDb;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
-
-import com.google.protobuf.util.Durations;
 
 public class TimelineApi extends AbstractTimelineApi<Context> {
     static final String MSG_NO_ID = "No id specified";
@@ -81,9 +71,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
-        org.yamcs.timeline.TimelineItem item = req2Item(request);
         try {
-            item = timelineSource.addItem(item);
+            var item = timelineSource.createItem(ctx.user.getName(), request);
             observer.complete(item.toProtoBuf(true));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -101,7 +90,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new BadRequestException(MSG_NO_ID);
         }
         String id = request.getId();
-        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(id);
+        var item = timelineSource.getItem(id);
         if (item == null) {
             throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
         } else {
@@ -120,95 +109,8 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             throw new BadRequestException(MSG_NO_ID);
         }
 
-        String id = request.getId();
-        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(id);
-        if (item == null) {
-            throw new NotFoundException(MSG_ITEM_NOT_FOUND(id));
-        }
-
-        List<String> changeList = new ArrayList<>();
-        if (request.hasName() && !request.getName().equals(item.getName())) {
-            item.setName(request.getName());
-            changeList.add("name");
-        }
-
-        if (request.hasStart()) {
-            if (request.hasRelativeTime()) {
-                throw new BadRequestException("Cannot specify both start and relative time");
-            }
-            long newStart = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            if (item.getStart() != newStart) {
-                changeList.add("start");
-                item.setStart(newStart);
-            }
-            item.setRelativeItemUuid(null);
-
-        } else if (request.hasRelativeTime()) {
-            RelativeTime relt = request.getRelativeTime();
-            if (!relt.hasRelto()) {
-                throw new BadRequestException("relto item is required with relative time");
-            }
-            if (!relt.hasRelativeStart()) {
-                throw new BadRequestException("relative start is required in the relative time");
-            }
-            var relto = parseUuid(relt.getRelto());
-            if (!relto.equals(item.getRelativeItemUuid())) {
-                item.setRelativeItemUuid(relto);
-                changeList.add("relativeItemUuid");
-            }
-
-            long relstart = Durations.toMillis(relt.getRelativeStart());
-            if (relstart != item.getRelativeStart()) {
-                item.setRelativeStart(relstart);
-                changeList.add("relativeStart");
-            }
-        }
-
-        if (request.hasDuration()) {
-            long duration = Durations.toMillis(request.getDuration());
-            if (item.getDuration() != duration) {
-                item.setDuration(duration);
-                changeList.add("duration");
-            }
-        }
-        if (item instanceof Activity) {
-            Activity activity = (Activity) item;
-            if (request.hasStatus() && activity.getStatus() != request.getStatus()) {
-                activity.setStatus(request.getStatus());
-                changeList.add("status");
-            }
-            if (request.hasFailureReason() && !request.getFailureReason().equals(activity.getFailureReason())) {
-                activity.setFailureReason(request.getFailureReason());
-                changeList.add("failureReason");
-            }
-        }
-
-        if (request.hasGroupId()) {
-            UUID gid = request.getGroupId().isBlank() ? null : parseUuid(request.getGroupId());
-            if (!Objects.equals(gid, item.getGroupUuid())) {
-                item.setGroupUuid(gid);
-                changeList.add("groupUuid");
-            }
-        }
-        if (request.getTagsCount() > 0) {
-            List<String> tags = new ArrayList<>(request.getTagsList());
-            Collections.sort(tags);
-            if (!tags.equals(item.getTags())) {
-                item.setTags(tags);
-                changeList.add("tags");
-            }
-        } else if (request.hasClearTags() && request.getClearTags()) {
-            if (item.getTags() != null) {
-                item.setTags(null);
-                changeList.add("tags");
-            }
-        }
-
         try {
-            item = timelineSource.updateItem(item);
-
-            timelineSource.addItemLog(item.getId(), LogEntry.newBuilder().setUser(ctx.user.getName()).setType("update")
-                    .setMsg(changeList.toString()).build());
+            var item = timelineSource.updateItem(ctx.user.getName(), request);
             observer.complete(item.toProtoBuf(true));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e.getMessage());
@@ -570,7 +472,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         UUID uuid = verifyUuid(request.hasId(), request.getId());
 
-        org.yamcs.timeline.TimelineItem item;
+        org.yamcs.timeline.db.AbstractItem item;
         try {
             item = timelineSource.deleteItem(uuid);
         } catch (InvalidRequestException e) {
@@ -590,19 +492,11 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineSource timelineSource = verifySource(timelineService,
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
 
-
-        org.yamcs.timeline.TimelineItem item = timelineSource.getItem(request.getId());
-
+        var item = timelineSource.getItem(request.getId());
     }
 
     @Override
     public void endActivity(Context ctx, EndActivityRequest request, Observer<TimelineItem> observer) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void skipActivity(Context ctx, SkipActivityRequest request, Observer<TimelineItem> observer) {
         // TODO Auto-generated method stub
 
     }
@@ -615,7 +509,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
                 request.hasSource() ? request.getSource() : TimelineService.RDB_TIMELINE_SOURCE);
         UUID uuid = verifyUuid(request.hasId(), request.getId());
 
-        org.yamcs.timeline.TimelineItem item;
+        org.yamcs.timeline.db.AbstractItem item;
         try {
             item = timelineSource.deleteTimelineGroup(uuid);
         } catch (InvalidRequestException e) {
@@ -660,78 +554,6 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             }
             return cl.get(0);
         }
-    }
-
-    private org.yamcs.timeline.TimelineItem req2Item(CreateItemRequest request) {
-        if (!request.hasType()) {
-            throw new BadRequestException("Type is mandatory");
-        }
-        TimelineItemType type = request.getType();
-        org.yamcs.timeline.TimelineItem item;
-
-        UUID newId = UUID.randomUUID();
-        switch (type) {
-        case EVENT:
-            TimelineEvent event = new TimelineEvent(newId.toString());
-            item = event;
-            break;
-        case ITEM_GROUP:
-            ItemGroup itemGroup = new ItemGroup(newId);
-            item = itemGroup;
-            break;
-        case MANUAL_ACTIVITY:
-            ManualActivity manualActivity = new ManualActivity(newId);
-            item = manualActivity;
-            break;
-        case AUTO_ACTIVITY:
-            AutomatedActivity autoActivity = new AutomatedActivity(newId);
-            item = autoActivity;
-            break;
-        case ACTIVITY_GROUP:
-            ActivityGroup activityGroup = new ActivityGroup(newId);
-            item = activityGroup;
-            break;
-        default:
-            throw new InternalServerErrorException("Unknown item type " + type);
-        }
-
-        if (request.hasName()) {
-            item.setName(request.getName());
-        }
-
-        if (request.hasStart()) {
-            if (request.hasRelativeTime()) {
-                throw new BadRequestException("Cannot specify both start and relative time");
-            }
-            item.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
-
-        } else if (request.hasRelativeTime()) {
-            RelativeTime relt = request.getRelativeTime();
-            if (!relt.hasRelto()) {
-                throw new BadRequestException("relto item is required when using relative time");
-            }
-            if (!relt.hasRelativeStart()) {
-                throw new BadRequestException("relative start is required when using relative time");
-            }
-            item.setRelativeItemUuid(parseUuid(relt.getRelto()));
-            item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
-        } else {
-            throw new BadRequestException("One of start or relativeTime has to be specified");
-        }
-        if (!request.hasDuration()) {
-            throw new BadRequestException("Duration is mandatory");
-        }
-        item.setDuration(Durations.toMillis(request.getDuration()));
-
-        if (request.hasGroupId()) {
-            item.setGroupUuid(parseUuid(request.getGroupId()));
-        }
-        if (request.hasDescription()) {
-            item.setDescription(request.getDescription());
-        }
-
-        item.setTags(request.getTagsList());
-        return item;
     }
 
     private org.yamcs.timeline.TimelineBand req2Band(AddBandRequest request, String user) {
@@ -784,7 +606,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     }
 
-    private static UUID parseUuid(String uuid) {
+    public static UUID parseUuid(String uuid) {
         try {
             return UUID.fromString(uuid);
         } catch (IllegalArgumentException e) {

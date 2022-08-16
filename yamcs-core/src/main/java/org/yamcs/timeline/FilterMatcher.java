@@ -4,7 +4,7 @@ import org.yamcs.protobuf.timeline.ItemFilter;
 import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
 
 public abstract class FilterMatcher<T> {
-    boolean matches(RetrievalFilter filter, T item) {
+    public boolean matches(RetrievalFilter filter, T item) {
         var itemFilters = filter.getItemFilters();
 
         if (itemFilters == null || itemFilters.isEmpty()) {

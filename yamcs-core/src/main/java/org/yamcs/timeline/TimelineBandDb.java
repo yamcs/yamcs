@@ -8,8 +8,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
+import org.yamcs.dbproto.timeline.BandFilter;
 import org.yamcs.logging.Log;
-import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;

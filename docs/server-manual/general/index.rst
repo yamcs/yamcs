@@ -19,3 +19,4 @@ Yamcs is implemented entirely in Java, but it does rely on an external storage e
     model
     architecture
     time
+    scripting

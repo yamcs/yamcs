@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.yamcs.dbproto.timeline.BandFilter;
 import org.yamcs.protobuf.timeline.ItemFilter;
 import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.timeline.TimelineBandType;
-import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;

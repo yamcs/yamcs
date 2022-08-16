@@ -58,6 +58,7 @@ public class DataType {
         this.id = id;
         this.comparable = comparable;
     }
+
     protected DataType(_type t, byte id) {
         this(t, id, false);
     }
@@ -227,7 +228,7 @@ public class DataType {
 
     @Override
     public String toString() {
-        return val.toString();
+        return name();
     }
 
     /**

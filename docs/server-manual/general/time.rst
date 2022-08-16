@@ -1,7 +1,7 @@
 Time in Yamcs
 =============
 
-The text below documents several aspects of working with time in Yamcs.
+This section documents several aspects of working with time in Yamcs.
 
 
 Time Encoding

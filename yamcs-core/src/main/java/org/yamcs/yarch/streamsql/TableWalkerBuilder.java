@@ -48,6 +48,10 @@ public class TableWalkerBuilder implements FilterableTarget {
     @Override
     public void addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
         String columnName = cexpr.getName();
+        if (relOp == RelOp.OVERLAP) {
+            // no index available for arrays overlaps for the moment
+            return;
+        }
 
         TableColumnDefinition col0 = tableDefinition.getKeyDefinition().get(0);
         if (col0.getName().equals(columnName)) {
@@ -72,6 +76,7 @@ public class TableWalkerBuilder implements FilterableTarget {
             if (sidx != null && sidx.get(0).equals(columnName)) {
                 TableColumnDefinition tcd = tableDefinition.getColumnDefinition(columnName);
                 byte[] val = null;
+
                 try {
                     Object columnValue = DataType.castAs(tcd.getType(), value);
                     val = tcd.getSerializer().toByteArray(columnValue);

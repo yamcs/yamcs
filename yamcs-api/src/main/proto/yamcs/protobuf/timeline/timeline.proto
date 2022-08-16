@@ -11,6 +11,9 @@ import "google/protobuf/duration.proto";
 import "yamcs/protobuf/activities/activities.proto";
 
 //Methods related to the Timeline Service.
+// Note the relationship with the Activities service:
+// - the Timeline service is responsible for scheduling and starting the activities
+// - the Activities service is responsible for their definition and execution
 service TimelineApi {
 
   // Create an item
@@ -165,59 +168,82 @@ service TimelineApi {
       delete: "/api/timeline/{instance}/views/{id}"
     };
   }
+
+  // Start an activity. The activity must be in the PLANNED status
+  // For manual activities it just changes the status
+  // For automated activities it calls the start activity in the activity service
+  rpc StartActivity(StartActivityRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}"
+      body: "*"
+    };
+  }
+
+  // End a running activity.
+  // For manual activities it just changes the status
+  // For automated activities it calls the end activity in the activity service
+  rpc EndActivity(EndActivityRequest) returns (TimelineItem) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/{id}"
+      body: "*"
+    };
+  }
 }
 
 message RelativeTime {
-	// Identifier of the item that this time is relative to.
-	optional string relto = 1;
+  // Identifier of the item that this time is relative to.
+  optional string relto = 1;
 	
-	optional google.protobuf.Duration relativeStart = 2;
+  optional google.protobuf.Duration relativeStart = 2;
 }
 
 enum TimelineItemType {
-    //events are the most generic timeline items.
-	EVENT = 1;
+  //events are the most generic timeline items.
+  EVENT = 1;
 	
-	//unlike events, activities have an execution status
-	//manual activity's execution status is controlled by an operator
-	MANUAL_ACTIVITY = 2;
+  //unlike events, activities have an execution status
+  //manual activity's execution status is controlled by an operator
+  MANUAL_ACTIVITY = 2;
 	
-	//activity which is automatically executed on the server (the status changes automatically)
-	AUTO_ACTIVITY = 3;
+  //activity which is automatically executed on the server (the status changes automatically)
+  AUTO_ACTIVITY = 3;
 
-	//a grouping of other items (events and/or activities)
-	ITEM_GROUP = 4;
+  //a grouping of other items (events and/or activities)
+  ITEM_GROUP = 4;
 	
-	//a grouping of activities - unlike the ITEM_GROUP, this group in itself is an automated activity
-	ACTIVITY_GROUP = 5;
+  //a grouping of activities - unlike the ITEM_GROUP, this group in itself is an automated activity
+  ACTIVITY_GROUP = 5;
 }
 
-enum DependenceType {
-	//start to start
-	STS = 1;
-	//finish to start
-	FTS = 2;
+enum DependencyType {
+  //start to start
+  ACTIVITY_START = 1;
+  //finish to start
+  ACTIVITY_END = 2;
+
+  //other types of events:
+  // parameters
+  // packets
+  // alarms...
 }
 
-// Models a dependency between two items.
-// Dependencies are used to express relative start times and also to control the starting of activities
-// This message is used inside the definition of item A to express its dependence on an item B
-message Dependence {
-    // Identifier of the item B
-	optional string id = 1;
-	
-	// If type = STS, the relativeStart is relative to the start of the item B
-	// If type = FTS, the relativeStart is relative to the end of the item B
-	DependenceType type = 2;
-	
-	optional google.protobuf.Duration relativeStart = 3;
-	
-	// For activities: the activity will be started only if the condition holds true
-	// The condition can be specified only if the type = FTS and item B is an activity (there is no execution status for a regular item)
-	// TOOD: define the condition
-	// repeated Condition condition = 4;
-}
+// Models a dependency:
+//   activity A will start after activity B has started/completed
+//
+// This message is used inside the definition of activity A
+message Dependency {
+  optional DependencyType type = 1;
 
+  // if type = ACTIVITY_START or ACTIVITY_END, this is the id of the activity B
+  optional string activityId = 2;
+
+  //if specified, the activity A will start after this time from the event
+  optional google.protobuf.Duration lagTime = 3;
+
+  // The activity will be started only if the conditions hold true
+  // If type = ACTIVITY_END, the condition may include the status of activity B
+  // repeated Condition conditions = 4;
+}
 
 message TimelineItem {
   // Item identifier.
@@ -232,36 +258,55 @@ message TimelineItem {
   
   optional TimelineItemType type = 3;
   optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Duration duration = 5;
-  repeated string tags = 6;
+
+  // if this item time specification is relative to another item, relativeTime contains a reference
+  // to that item as well as the relative start (the duration is the same as given by the duration above)
+  //note that start of the item will be computed by the server based on the relativeStart before sending the item to the client
+  optional RelativeTime relativeStart = 5;
+
+  optional google.protobuf.Duration duration = 6;
+  repeated string tags = 7;
 
   //if this item is part of a group, this is the group identifier
-  optional string groupId = 7;
+  optional string groupId = 8;
     
-  // the list of items this item depends on
-  // note that start of the item will be computed by the server
-  optional Dependence dependencies = 8;
-
   //item description
   optional string description = 9;
 
   //The fields below are valid for activities
   
-  //details of the activity
-  optional yamcs.protobuf.activities.ActivityDetails activityDetails = 10;
+  //definition of the activity - defines its type and link to external resources (manual stack, script, etc)
+  optional yamcs.protobuf.activities.ActivityDefinition activityDefinition = 10;
+
+  // the list of activities this activity depends on
+  // If the list is not empty, the activity will be started only after all dependencies are satisfied
+  // If one dependency is not satisfied then this activity will be skipped
+  repeated Dependency dependencies = 11;
+
+  //if the dependencies list is not empty and this property is true, then start the activity as soon as all the dependencies are satisfied, ignoring the start time.
+  // if this is false, then the activity will be started after the start time (and after all dependencies are satisfied)
+  // if the dependency list is empty, this property has no effect
+  optional bool allowEarlyStart = 12;
+
+  //if true means the activity will automatically start when the time is due
+  // otherwise the activity has to be started manually. The operator should be informed in this case that the activity has to start.
+  // by default the flag is set to false for manual activities and true for automated activities
+  optional bool autoRun = 13;
   
   //The activity status.
-  // If the activity is automated and it has started, it is a duplicate of the status from the activityRun
-  // Otherwise it might be SCHEDULED or SKIPPED or for manual activities it is the status set by the operator
-  optional yamcs.protobuf.activities.ExecutionStatus activityStatus = 11;
+  optional yamcs.protobuf.activities.ExecutionStatus activityStatus = 14;
+
+  //if the activity has started this indicates the actual start time
+  optional google.protobuf.Timestamp actualStart = 15;
+
+  //if the activity has ended this indicates the actual end time
+  optional google.protobuf.Timestamp actualEnd = 16;
   
   //If the activity has failed this gives the reason
-  // For automated activities, it is a copy of the reason in the activityRun;
-  // For manual activities it is the text given by the operator
-  optional string failureReason = 12;
+  optional string failureReason = 17;
   
   //for automated activities which have been started, contains the runId from the activities service
-  optional string activityRunId = 13;
+  optional string activityRunId = 18;
 }
 
 message LogEntry {
@@ -398,27 +443,30 @@ message UpdateItemRequest {
   optional string name = 4;
 
   //new start time
+  // to keep the old value, leave out the property
+  // to clear, set the relativeStart
    optional google.protobuf.Timestamp start = 5;
 
+  //new relative start
+  // to keep the old value, leave out the property
+  // to clear, set the start
+  optional RelativeTime relativeStart = 6;
+
   //new duration
-  optional google.protobuf.Duration duration = 6;
+  optional google.protobuf.Duration duration = 7;
 
   //new tags
-  repeated string tags = 7;
+  repeated string tags = 8;
 
   //set this to true to remove completely all the tags
   // (required because in the protobuf we cannot distinguish between an empty tags list and a non existent list)
-  optional bool clearTags = 8;
+  optional bool clearTags = 9;
 
   //new group identifier.
   //to keep the old value, leave out
   // to clear the group, set to an empty string
-  optional string groupId = 9;
+  optional string groupId = 10;
 
-  //new relative time
-  // to keep the old value, leave out the property
-  // to clear, set the start
-  optional RelativeTime relativeTime = 10;
 
   //new status (valid for activities)
   optional yamcs.protobuf.activities.ExecutionStatus status = 11;
@@ -693,6 +741,38 @@ message ListViewsResponse {
 }
 /******************* End Views ***********************/
 
+/******************* Activities **********************/
+
+message StartActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Item source
+  optional string source = 2;
+
+  // Item identifier
+  optional string id = 3;
+}
+
+
+message EndActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Item source
+  optional string source = 2;
+
+  // Item identifier
+  optional string id = 3;
+
+  //one of the ABORTED, COMPLETED or FAILED
+  optional yamcs.protobuf.activities.ExecutionStatus endStatus = 4;
+
+  //if endStatus is FAILED or ABORTED, this may indicate the reason
+  optional string failureReason = 5;
+}
+
+/****************** End Activities *********************/
 
 //an item matches the filter if it matches any of the criteria from the list.
 //if the list is empty, the filter will not match

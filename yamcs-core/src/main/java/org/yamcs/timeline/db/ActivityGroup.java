@@ -1,4 +1,4 @@
-package org.yamcs.timeline;
+package org.yamcs.timeline.db;
 
 import java.util.UUID;
 
@@ -9,6 +9,7 @@ public class ActivityGroup extends Activity {
 
     public ActivityGroup(UUID id) {
         super(TimelineItemType.ACTIVITY_GROUP, id);
+        this.autoRun = true;
     }
 
     ActivityGroup(Tuple tuple) {

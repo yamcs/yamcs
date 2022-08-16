@@ -1,4 +1,4 @@
-package org.yamcs.timeline;
+package org.yamcs.timeline.db;
 
 import java.util.UUID;
 
@@ -6,7 +6,7 @@ import org.yamcs.protobuf.timeline.TimelineItem.Builder;
 import org.yamcs.protobuf.timeline.TimelineItemType;
 import org.yamcs.yarch.Tuple;
 
-public class ItemGroup extends TimelineItem {
+public class ItemGroup extends AbstractItem {
 
     public ItemGroup(UUID id) {
         super(TimelineItemType.ITEM_GROUP, id.toString());

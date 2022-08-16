@@ -71,8 +71,8 @@ public class TimelineClient {
         if (item.hasStart()) {
             requestb.setStart(item.getStart());
         }
-        if (item.hasRelativeTime()) {
-            requestb.setRelativeTime(item.getRelativeTime());
+        if (item.hasRelativeStart()) {
+            requestb.setRelativeTime(item.getRelativeStart());
         }
         if (item.hasDuration()) {
             requestb.setDuration(item.getDuration());
@@ -189,8 +189,8 @@ public class TimelineClient {
         if (item.hasStart()) {
             requestb.setStart(item.getStart());
         }
-        if (item.hasRelativeTime()) {
-            requestb.setRelativeTime(item.getRelativeTime());
+        if (item.hasRelativeStart()) {
+            requestb.setRelativeStart(item.getRelativeStart());
         }
         if (item.hasDuration()) {
             requestb.setDuration(item.getDuration());

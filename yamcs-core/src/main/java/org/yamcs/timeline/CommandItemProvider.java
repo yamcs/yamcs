@@ -1,7 +1,6 @@
 package org.yamcs.timeline;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.CommandHistoryRecorder;
@@ -11,6 +10,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.protobuf.timeline.ItemFilter;
 import org.yamcs.protobuf.timeline.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.SqlBuilder;
@@ -20,6 +20,8 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
+
+import com.google.protobuf.util.Durations;
 
 /**
  * Implements the "commands" timeline source providing items derived from the command history.
@@ -99,41 +101,19 @@ public class CommandItemProvider implements TimelineSource {
     }
 
     @Override
-    public TimelineItem addItem(TimelineItem item) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TimelineItem updateItem(TimelineItem item) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TimelineItem deleteItem(UUID uuid) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TimelineItem deleteTimelineGroup(UUID uuid) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public TimelineSourceCapabilities getCapabilities() {
         return TimelineSourceCapabilities.newBuilder()
                 .setReadOnly(true)
                 .build();
     }
 
-    private static TimelineEvent toItem(Tuple tuple) {
+    private static CommandItem toItem(Tuple tuple) {
         long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
         String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
         int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);
         String id = gentime + "-" + origin + "-" + sequenceNumber;
 
-        TimelineEvent event = new TimelineEvent(id);
-        event.setStart(gentime);
-        event.setName(tuple.getColumn(PreparedCommand.CNAME_CMDNAME));
+        CommandItem event = new CommandItem(id, tuple.getColumn(PreparedCommand.CNAME_CMDNAME), gentime);
         return event;
     }
 
@@ -150,5 +130,43 @@ public class CommandItemProvider implements TimelineSource {
                 return false;
             }
         }
+    }
+
+    private static class CommandItem implements TimelineItem {
+        final String cmdId;
+        final long start;
+        final String name;
+
+        CommandItem(String cmdId, String name, long start) {
+            this.cmdId = cmdId;
+            this.name = name;
+            this.start = start;
+        }
+
+        @Override
+        public long getStart() {
+            return start;
+        }
+
+        @Override
+        public long getDuration() {
+            return 0;
+        }
+
+        @Override
+        public org.yamcs.protobuf.timeline.TimelineItem toProtoBuf(boolean detail) {
+            return org.yamcs.protobuf.timeline.TimelineItem.newBuilder()
+                    .setStart(TimeEncoding.toProtobufTimestamp(start))
+                    .setId(cmdId)
+                    .setName(name)
+                    .setDuration(Durations.fromMillis(0))
+                    .build();
+        }
+
+        @Override
+        public String getId() {
+            return cmdId;
+        }
+
     }
 }

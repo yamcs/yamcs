@@ -7,6 +7,7 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.timeline.TimelineSourceCapabilities;
+import org.yamcs.timeline.db.TimelineItemDb;
 
 /**
  * This service manages the Yamcs timeline.

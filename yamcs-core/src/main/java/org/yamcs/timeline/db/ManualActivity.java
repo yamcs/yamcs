@@ -1,4 +1,4 @@
-package org.yamcs.timeline;
+package org.yamcs.timeline.db;
 
 import java.util.UUID;
 
@@ -8,6 +8,7 @@ import org.yamcs.yarch.Tuple;
 public class ManualActivity extends Activity {
     public ManualActivity(UUID id) {
         super(TimelineItemType.MANUAL_ACTIVITY, id);
+        this.autoRun = false;
     }
 
     public ManualActivity(Tuple tuple) {
