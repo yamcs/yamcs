@@ -15,6 +15,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -95,6 +96,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     }
 
     private void play(File fdir) throws InterruptedException {
+        Instant erp = timeService.getHresMissionTime();
         File[] files = fdir.listFiles();
         Arrays.sort(files);
         for (File f : files) {
@@ -112,7 +114,9 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {
                     updateStats(packet.length);
-                    TmPacket tmpkt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
+                    TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
+                    tmPacket.setEarthRceptionTime(erp);
+                    TmPacket tmpkt = packetPreprocessor.process(tmPacket);
                     minTime = Math.min(minTime, tmpkt.getGenerationTime());
                     maxTime = Math.max(maxTime, tmpkt.getGenerationTime());
                     count++;
