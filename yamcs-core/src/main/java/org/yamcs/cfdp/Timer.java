@@ -33,7 +33,7 @@ public class Timer {
             scheduledFuture.cancel(true);
         }
         
-        this.scheduledFuture = executor.scheduleAtFixedRate(() -> {
+        scheduledFuture = executor.scheduleAtFixedRate(() -> {
             if (maxNumAttempts < 0 || numAttempts < maxNumAttempts) {
                 onIntermediate.run();
             } else {
@@ -48,6 +48,11 @@ public class Timer {
     public void cancel() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
+            scheduledFuture = null;
         }
+    }
+
+    boolean isActive() {
+        return scheduledFuture != null;
     }
 }

@@ -62,7 +62,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private final boolean withCrc = false; // no CRCs are used
     private final CfdpHeader directiveHeader, dataHeader;
-    private final Timer eofTimer;
+    final Timer eofTimer;
     private final int entityIdLength;
     private final int seqNrSize;
     private final int maxDataSize;
@@ -304,6 +304,8 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     }
 
     private void processFinishedPacket(FinishedPacket finishedPacket) {
+        eofTimer.cancel();
+
         sendPacket(getAckPacket(finishedPacket.getConditionCode()));
 
         if (outTxState == OutTxState.COMPLETED) {

@@ -2,6 +2,7 @@ package org.yamcs.cfdp;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -221,6 +222,16 @@ public class CfdpDownlinkIntegrationTest {
     }
 
     @Test
+    public void testClass2EofAckDropped() throws Exception {
+        // org.yamcs.LoggingUtils.enableTracing();
+        byte[] data = new byte[1000];
+        random.nextBytes(data);
+
+        downloadAndCheck(config, "randomfile3", data, true, Arrays.asList(1),
+                TransferState.COMPLETED, TransferState.COMPLETED);
+    }
+
+    @Test
     public void testUnknownLocalEntity() throws Exception {
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 15, 13, 5);
         MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 1000, "invalid-local-entity",
@@ -324,6 +335,7 @@ public class CfdpDownlinkIntegrationTest {
             byte[] recdata = incomingBucket.getObject(tinfo.getObjectName());
             assertArrayEquals(data, recdata);
         }
+        assertFalse(sender.trsf.eofTimer.isActive());
     }
 
     TransferInfo getTransfer(int seqNum) throws InterruptedException, ExecutionException {
@@ -368,7 +380,7 @@ public class CfdpDownlinkIntegrationTest {
         }
     }
 
-    // this should retrieve the file
+
     class MyFileSender implements TransferMonitor {
         CfdpOutgoingTransfer trsf;
         int tcount = 0;
@@ -389,9 +401,9 @@ public class CfdpDownlinkIntegrationTest {
             cfdpOut.addSubscriber((stream, tuple) -> {
                 tcount++;
                 CfdpPacket packet = CfdpPacket.fromTuple(tuple);
-                // System.out.println("packet"+tcount+": "+packet);
+                // System.out.println("packet" + tcount + ": " + packet);
                 if (dropPackets.contains(tcount)) {
-                    // System.out.println("dropping packet"+tcount);
+                    // System.out.println("dropping packet" + tcount);
                     return;
                 }
 
