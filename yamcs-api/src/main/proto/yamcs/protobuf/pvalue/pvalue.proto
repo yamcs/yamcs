@@ -107,13 +107,37 @@ message ParameterData {
 
 message TimeSeries {
     message Sample {
-        optional string time = 1;
+        // Start time of the sample interval.
+        //
+        // Use ``time`` instead. The ``timeString`` field
+        // is temporarily kept for binary compatibility with
+        // protobuf-based clients.
+        optional string timeString = 1 [deprecated=true];
+
+        // Start time of the sample interval.
+        optional google.protobuf.Timestamp time = 6;
+
+        // Average numeric value during the sample interval.
         optional double avg = 2;
+
+        // Minimum numeric value during the sample interval.
         optional double min = 3;
+
+        // Maximum numeric value during the sample interval.
         optional double max = 4;
+
+        // Number of samples during the sample interval.
+        // If this value is zero, it indicates a gap.
         optional int32 n = 5;
+
+        // Generation time of the ``min`` value.
+        optional google.protobuf.Timestamp minTime = 7;
+
+        // Generation time of the ``max`` value.
+        optional google.protobuf.Timestamp maxTime = 8;
     }
 
+    // List of samples.
     repeated Sample sample = 1;
 }
 

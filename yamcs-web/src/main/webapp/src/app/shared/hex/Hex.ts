@@ -1,8 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, ViewChild } from '@angular/core';
+import { EventHandler, Graphics } from '@fqqb/timeline';
 import { BitRange } from '../BitRange';
-import { EventHandler } from '../draw/EventHandler';
-import { Graphics } from '../draw/Graphics';
 import { HexModel, Line } from './model';
 
 @Component({
@@ -11,7 +10,7 @@ import { HexModel, Line } from './model';
   styleUrls: ['./Hex.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Hex implements AfterViewInit, OnChanges {
+export class Hex implements AfterViewInit, OnChanges, OnDestroy {
 
   fontPreloaded$: Promise<boolean>;
 
@@ -34,6 +33,10 @@ export class Hex implements AfterViewInit, OnChanges {
   private selection?: BitRange;
   private pressStart?: BitRange;
 
+  private mediaQueryList?: MediaQueryList;
+  private mediaQueryListEventListener: () => void;
+  private animationFrameRequest?: number;
+
   constructor(@Inject(APP_BASE_HREF) baseHref: string) {
     const resourceUrl = `url(${baseHref}static/RobotoMono-Regular.woff2)`;
     this.fontPreloaded$ = new Promise(resolve => {
@@ -53,8 +56,17 @@ export class Hex implements AfterViewInit, OnChanges {
     this.charWidth = ctx.measureText('0').width;
 
     this.g = new Graphics(el);
-    window.requestAnimationFrame(() => this.redraw());
+
     new EventHandler(this.g.canvas, this.g.hitCanvas);
+
+    this.mediaQueryListEventListener = () => {
+      this.dirty = true;
+      this.mediaQueryList = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      this.mediaQueryList.addEventListener('change', this.mediaQueryListEventListener, { once: true });
+    };
+    this.mediaQueryListEventListener();
+
+    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
   }
 
   ngOnChanges() {
@@ -76,8 +88,8 @@ export class Hex implements AfterViewInit, OnChanges {
     this.highlight = undefined;
   }
 
-  private redraw() {
-    window.requestAnimationFrame(() => this.redraw());
+  private step() {
+    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
 
     if (!this.dirty) {
       return;
@@ -113,7 +125,7 @@ export class Hex implements AfterViewInit, OnChanges {
         this.highlight = line.range;
         this.dirty = true;
       },
-      mouseOut: () => {
+      mouseLeave: () => {
         this.highlight = undefined;
         this.dirty = true;
       },
@@ -156,7 +168,7 @@ export class Hex implements AfterViewInit, OnChanges {
             this.highlight = component.range;
             this.dirty = true;
           },
-          mouseOut: () => {
+          mouseLeave: () => {
             this.highlight = undefined;
             this.dirty = true;
           },
@@ -184,7 +196,7 @@ export class Hex implements AfterViewInit, OnChanges {
               y: Math.floor(y),
               width: Math.ceil(this.charWidth),
               height: this.fontSize,
-              color: bgColor,
+              fill: bgColor,
             });
           }
           this.g.fillText({
@@ -224,7 +236,7 @@ export class Hex implements AfterViewInit, OnChanges {
             y: Math.floor(y),
             width: Math.ceil(this.charWidth * component.content.length),
             height: this.fontSize,
-            color: bgColor,
+            fill: bgColor,
           });
         }
         x += component.content.length * this.charWidth;
@@ -251,7 +263,7 @@ export class Hex implements AfterViewInit, OnChanges {
               this.highlight = c.range;
               this.dirty = true;
             },
-            mouseOut: () => {
+            mouseLeave: () => {
               this.highlight = undefined;
               this.dirty = true;
             },
@@ -278,7 +290,7 @@ export class Hex implements AfterViewInit, OnChanges {
               y: Math.floor(y),
               width: Math.ceil(this.charWidth),
               height: this.fontSize,
-              color: bgColor,
+              fill: bgColor,
             });
           }
           this.g.fillText({
@@ -307,5 +319,10 @@ export class Hex implements AfterViewInit, OnChanges {
         }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
       }
     }
+  }
+
+  ngOnDestroy() {
+    this.mediaQueryList?.removeEventListener('change', this.mediaQueryListEventListener);
+    this.animationFrameRequest && window.cancelAnimationFrame(this.animationFrameRequest);
   }
 }

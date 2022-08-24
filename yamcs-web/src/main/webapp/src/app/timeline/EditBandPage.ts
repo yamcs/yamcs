@@ -63,8 +63,6 @@ export class EditBandPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.formSubscription) {
-      this.formSubscription.unsubscribe();
-    }
+    this.formSubscription?.unsubscribe();
   }
 }

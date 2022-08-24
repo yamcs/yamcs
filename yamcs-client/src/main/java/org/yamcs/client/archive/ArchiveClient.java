@@ -26,6 +26,7 @@ import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumRangeOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.CommandOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.EventSourceOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
@@ -211,7 +212,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamPacketIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamPacketIndexRequest.Builder requestb = StreamPacketIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -220,6 +221,17 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+
+        for (StreamOption option : options) {
+            if (option instanceof PacketOption) {
+                for (String packet : ((PacketOption) option).packets) {
+                    requestb.addNames(packet);
+                }
+            } else {
+                throw new IllegalArgumentException("Usupported option " + option.getClass());
+            }
+        }
+
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamPacketIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
 

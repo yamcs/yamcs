@@ -13,6 +13,7 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.UnsignedLong;
 
 /**
@@ -169,9 +170,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         lastSampleTime = entry.getKey();
         Sample sample = entry.getValue();
         if (sample == null) {
-            samplesByTime.put(entry.getKey(), new Sample(entry.getKey(), value, expireMillis));
+            samplesByTime.put(entry.getKey(), new Sample(entry.getKey(), time, value, expireMillis));
         } else {
-            sample.process(value, expireMillis);
+            sample.process(time, value, expireMillis);
         }
     }
 
@@ -213,31 +214,37 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         double max;
         double avg;
         int n;
+        long minTime;
+        long maxTime;
         long expireMillis; // Matching the 'last' value for this sample.
 
         // construct a gap
         Sample(long t) {
             this.t = t;
             min = avg = max = Double.NaN;
+            minTime = maxTime = TimeEncoding.INVALID_INSTANT;
             n = 0;
             expireMillis = -1;
         }
 
         // sample with one value
-        public Sample(long t, double value, long expireMillis) {
+        public Sample(long t, long valueTime, double value, long expireMillis) {
             this.t = t;
             this.expireMillis = expireMillis;
             min = avg = max = value;
+            minTime = maxTime = valueTime;
             n = 1;
         }
 
-        public void process(double value, long expireMillis) {
+        public void process(long valueTime, double value, long expireMillis) {
             this.expireMillis = expireMillis;
             if (value < min) {
                 min = value;
+                minTime = valueTime;
             }
             if (value > max) {
                 max = value;
+                maxTime = valueTime;
             }
             n++;
             avg -= (avg / n);

@@ -45,7 +45,7 @@ export class IndexGroupBand extends ItemBand {
       tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
 
-    this.addItemMouseOutListener(evt => {
+    this.addItemMouseLeaveListener(evt => {
       tooltipInstance.hide();
     });
   }

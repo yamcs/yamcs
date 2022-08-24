@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, Output, QueryList, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
@@ -18,7 +18,7 @@ import { ParameterSeries } from './ParameterSeries';
   styleUrls: ['./ParameterPlot.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterPlot implements AfterViewInit {
+export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   @Input()
   dataSource: DyDataSource;
@@ -576,5 +576,9 @@ export class ParameterPlot implements AfterViewInit {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
+  }
+
+  ngOnDestroy() {
+    this.dygraph?.destroy();
   }
 }

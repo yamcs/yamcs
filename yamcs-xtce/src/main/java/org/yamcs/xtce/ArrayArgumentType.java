@@ -29,11 +29,6 @@ public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
     }
 
     @Override
-    public String getTypeAsString() {
-        return null;
-    }
-
-    @Override
     public List<UnitType> getUnitSet() {
         return null;
     }
