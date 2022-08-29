@@ -82,4 +82,4 @@ jobs:
       - name: Generate Server Manual
         run: |
           cd docs/server-manual
-          make html
+          make man html

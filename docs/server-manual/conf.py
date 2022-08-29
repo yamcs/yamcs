@@ -5,9 +5,9 @@ tree = ET.ElementTree()
 tree.parse("../../pom.xml")
 yamcs_version_el = tree.getroot().find("{http://maven.apache.org/POM/4.0.0}version")
 
-project = u"Yamcs"
-copyright = u"2019-2022, Space Applications Services"
-author = u"Yamcs Team"
+project = "Yamcs"
+copyright = "2006-present, Space Applications Services"
+author = "Yamcs Team"
 
 # The short X.Y version
 version = yamcs_version_el.text
@@ -42,7 +42,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -93,3 +93,63 @@ latex_documents = [
 latex_show_pagerefs = True
 
 latex_show_urls = "footnote"
+
+man_pages = [
+    (
+        "programs/yamcsadmin",
+        "yamcsadmin",
+        "Tool for local Yamcs administration",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_backup",
+        "yamcsadmin-backup",
+        "Perform and restore backups",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_confcheck",
+        "yamcsadmin-confcheck",
+        "Check Yamcs configuration",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_mdb",
+        "yamcsadmin-mdb",
+        "Provides MDB information",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_parchive",
+        "yamcsadmin-parchive",
+        "Parameter Archive operations",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_password-hash",
+        "yamcsadmin-password-hash",
+        "Generate password hash for use in users.yaml",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_rocksdb",
+        "yamcsadmin-rocksdb",
+        "Provides low-level RocksDB data operations",
+        author,
+        1,
+    ),
+    (
+        "programs/yamcsadmin_users",
+        "yamcsadmin-users",
+        "User operations",
+        author,
+        1,
+    ),
+    ("programs/yamcsd", "yamcsd", "Yamcs Server", author, 1),
+]

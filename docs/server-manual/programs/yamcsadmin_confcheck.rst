@@ -1,11 +1,17 @@
 yamcsadmin confcheck
 ====================
 
-**NAME**
+.. program:: yamcsadmin confcheck
 
-    yamcsadmin confcheck - Check Yamcs configuration
+Synopsis
+--------
+
+.. rst-class:: synopsis
+    
+    | **yamcsadmin** confcheck
 
 
-**SYNOPSIS**
+Description
+-----------
 
-    ``yamcsadmin confcheck``
+Check Yamcs configuration.
