@@ -7,7 +7,9 @@
         Alarm Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail>
+        <app-alarm-detail [alarm]="selectedAlarm"
+                          (onAcknowledge)="onAcknowledge(selectedAlarm)"
+                          (onClear)="onClear(selectedAlarm)"></app-alarm-detail>
       </div>
     </ng-container>
     <ng-template #noSelection>
@@ -20,7 +22,7 @@
   <div class="table-wrapper">
     <div class="panel-content">
       <table mat-table
-             *ngIf="!dataSource.isEmpty(); else empty"
+             *ngIf="!(dataSource.empty$ | async); else empty"
              [dataSource]="dataSource"
              [trackBy]="tableTrackerFn"
              class="ya-data-table"

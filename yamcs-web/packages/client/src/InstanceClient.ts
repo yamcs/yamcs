@@ -281,6 +281,28 @@ export class InstanceClient {
     return wrapper.alarm || [];
   }
 
+  async acknowledgeAlarm(processorName: string, qualifiedName: string, seqNum: number) {
+    const body = JSON.stringify({
+      state: 'acknowledged'
+    });
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/parameters${qualifiedName}/alarms/${seqNum}`;
+    return this.yamcs.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async clearAlarm(processorName: string, qualifiedName: string, seqNum: number) {
+    const body = JSON.stringify({
+      state: 'cleared'
+    });
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/parameters${qualifiedName}/alarms/${seqNum}`;
+    return this.yamcs.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
   async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getAlarmUpdates();

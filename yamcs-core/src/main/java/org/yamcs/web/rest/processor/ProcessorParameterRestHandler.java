@@ -90,6 +90,10 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 throw new BadRequestException(e.getMessage());
             }
             break;
+        case "cleared":
+            alarmServer.clear(p, seqNum);
+            completeOK(req);
+            break;
         default:
             throw new BadRequestException("Unsupported state '" + state + "'");
         }
@@ -102,7 +106,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
         SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, p.getDataSource());
-      
+
         Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
         try {
             mgr.updateParameter(p, v);
@@ -127,13 +131,14 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter, p.getQualifiedName());
                 org.yamcs.parameter.ParameterValue pv = new org.yamcs.parameter.ParameterValue(p);
                 pv.setEngineeringValue(ValueUtility.fromGpb(r.getValue()));
-                List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(), k -> new ArrayList<>());
+                List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
+                        k -> new ArrayList<>());
                 l.add(pv);
             } catch (InvalidIdentification e) {
                 throw new BadRequestException("InvalidIdentification: " + e.getMessage());
             }
         }
-        for(Map.Entry<DataSource, List<org.yamcs.parameter.ParameterValue>> me: pvmap.entrySet()) {
+        for (Map.Entry<DataSource, List<org.yamcs.parameter.ParameterValue>> me : pvmap.entrySet()) {
             List<org.yamcs.parameter.ParameterValue> l = me.getValue();
             DataSource ds = me.getKey();
             SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, ds);
@@ -277,7 +282,8 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
     }
 
-    private SoftwareParameterManagerIf verifySoftwareParameterManager(Processor processor, DataSource ds) throws BadRequestException {
+    private SoftwareParameterManagerIf verifySoftwareParameterManager(Processor processor, DataSource ds)
+            throws BadRequestException {
         SoftwareParameterManagerIf mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
         if (mgr == null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this processor");

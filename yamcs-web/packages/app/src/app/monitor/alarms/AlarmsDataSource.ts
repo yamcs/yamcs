@@ -3,11 +3,15 @@ import { DataSource } from '@angular/cdk/table';
 import { Alarm } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
+import { map } from 'rxjs/operators';
 
 export class AlarmsDataSource extends DataSource<Alarm> {
 
   alarms$ = new BehaviorSubject<Alarm[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
+  empty$ = this.alarms$.pipe(
+    map(alarms => alarms.length === 0),
+  );
 
   alarmSubscription: Subscription;
 
@@ -41,6 +45,9 @@ export class AlarmsDataSource extends DataSource<Alarm> {
   }
 
   disconnect(collectionViewer: CollectionViewer) {
+  }
+
+  destroy() {
     this.alarms$.complete();
     this.loading$.complete();
     if (this.alarmSubscription) {

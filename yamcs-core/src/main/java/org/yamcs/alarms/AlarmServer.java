@@ -8,9 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.DataType;
@@ -119,13 +119,12 @@ public class AlarmServer extends AbstractService {
         boolean noAlarm = (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
                 || pv.getMonitoringResult() == null
                 || pv.getMonitoringResult() == MonitoringResult.DISABLED);
-        
 
         if (noAlarm) {
             if (activeAlarm == null) {
                 return;
-            } 
-                    
+            }
+
             if (activeAlarm.violations < minViolations) {
                 log.debug("Clearing glitch for {}", param.getQualifiedName());
                 activeAlarms.remove(param);
@@ -203,6 +202,15 @@ public class AlarmServer extends AbstractService {
             alarmListeners.forEach(l -> l.notifyCleared(aa));
         }
 
+        return aa;
+    }
+
+    public ActiveAlarm clear(Parameter p, int id) {
+        ActiveAlarm aa = activeAlarms.get(p);
+        if (aa != null && aa.id == id) {
+            activeAlarms.remove(p);
+            alarmListeners.forEach(l -> l.notifyCleared(aa));
+        }
         return aa;
     }
 

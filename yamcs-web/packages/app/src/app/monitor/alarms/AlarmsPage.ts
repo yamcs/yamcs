@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 
 import { Alarm, Instance } from '@yamcs/client';
 
@@ -12,7 +12,7 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./AlarmsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlarmsPage implements OnInit {
+export class AlarmsPage implements OnInit, OnDestroy {
 
   instance: Instance;
 
@@ -45,5 +45,19 @@ export class AlarmsPage implements OnInit {
 
   selectAlarm(alarm: Alarm) {
     this.selectedAlarm$.next(alarm);
+  }
+
+  onAcknowledge(alarm: Alarm) {
+    this.selectedAlarm$.next(null);
+    this.yamcs.getInstanceClient()!.acknowledgeAlarm('realtime', alarm.parameter.qualifiedName, alarm.seqNum);
+  }
+
+  onClear(alarm: Alarm) {
+    this.selectedAlarm$.next(null);
+    this.yamcs.getInstanceClient()!.clearAlarm('realtime', alarm.parameter.qualifiedName, alarm.seqNum);
+  }
+
+  ngOnDestroy() {
+    this.dataSource.destroy();
   }
 }

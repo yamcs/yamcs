@@ -9,8 +9,19 @@
 {{ alarm.triggerValue.engValue | value }}<br>
 on {{ alarm.triggerValue.generationTimeUTC | datetime }}
 
+<br>
+<br>
 <mat-divider></mat-divider>
+<br>
 
 <h3>Most Severe Level</h3>
 {{ alarm.mostSevereValue.engValue | value }}<br>
 on {{ alarm.mostSevereValue.generationTimeUTC | datetime }}
+
+<br>
+<br>
+<mat-divider></mat-divider>
+<br>
+
+<button class="ya-button" (click)="onAcknowledge.emit()">ACKNOWLEDGE</button>&nbsp;
+<button class="ya-button" (click)="onClear.emit()">CLEAR</button>

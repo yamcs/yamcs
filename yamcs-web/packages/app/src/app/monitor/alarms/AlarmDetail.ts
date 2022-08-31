@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { Alarm } from '@yamcs/client';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 
@@ -14,4 +14,10 @@ export class AlarmDetail {
 
   @Input()
   plotDataSource: DyDataSource;
+
+  @Output()
+  onAcknowledge = new EventEmitter<void>();
+
+  @Output()
+  onClear = new EventEmitter<void>();
 }
