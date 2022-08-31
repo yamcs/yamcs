@@ -9,7 +9,6 @@ Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: AGPL (client) + LGPL (API)
 URL: https://yamcs.org
-Prefix: /opt/packet-viewer
 BuildArch: noarch
 
 
@@ -23,16 +22,19 @@ cd %{name}-%{version}-%{release}
 mkdir -p %{buildroot}
 cp -r opt %{buildroot}
 
-rm %{buildroot}/%{prefix}/bin/*.bat
+mkdir -p %{buildroot}%{_bindir}
+ln -fs /opt/packet-viewer/bin/packet-viewer.sh %{buildroot}%{_bindir}/packet-viewer
+rm %{buildroot}/opt/packet-viewer/bin/*.bat
 
 
 %files
 %defattr(-,root,root)
 
-%dir %{prefix}
-%config %{prefix}/mdb
-%config %{prefix}/etc
-%{prefix}/lib
+%dir /opt/packet-viewer
+%config /opt/packet-viewer/mdb
+%config /opt/packet-viewer/etc
+/opt/packet-viewer/lib
 
-%dir %{prefix}/bin
-%attr(755, root, root) %{prefix}/bin/*
+%dir /opt/packet-viewer/bin
+%attr(755, root, root) /opt/packet-viewer/bin/*
+%{_bindir}/packet-viewer

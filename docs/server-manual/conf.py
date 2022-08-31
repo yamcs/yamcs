@@ -152,4 +152,5 @@ man_pages = [
         1,
     ),
     ("programs/yamcsd", "yamcsd", "Yamcs Server", author, 1),
+    ("programs/packet-viewer", "packet-viewer", "Packet Viewer", author, 1),
 ]
