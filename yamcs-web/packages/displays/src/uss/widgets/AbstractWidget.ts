@@ -109,6 +109,8 @@ export abstract class AbstractWidget {
       return;
     }
 
+    const typeNode = utils.findChild(ds, 'Type');
+    binding.valueType = utils.parseStringChild(typeNode, 'Name');
     binding.usingRaw = utils.parseBooleanChild(ds, 'UsingRaw');
     binding.dynamicProperty = utils.parseStringChild(node, 'DynamicProperty');
     this.registerBinding(binding);

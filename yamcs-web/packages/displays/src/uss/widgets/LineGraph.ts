@@ -75,6 +75,14 @@ export class LineGraph extends AbstractWidget {
 
   private legendDataSet: LegendData[] = [];
 
+  /**
+   * A discrete plot shows discrete values evenly spread on the Y-axis.
+   * (A-Z from bottom to top)
+   */
+  private isDiscretePlot() {
+    return this.valueBindings.length === 1 && this.valueBindings[0].valueType === 'String';
+  }
+
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
     this.graphBackgroundColor = utils.parseColorChild(this.node, 'GraphBackgroundColor', Color.WHITE);
@@ -155,6 +163,23 @@ export class LineGraph extends AbstractWidget {
       axisLabelFontSize: 12,
       pixelsPerLabel: 12,
     };
+
+    if (this.isDiscretePlot()) {
+      this.yAxisOptions.axisLabelWidth = 100;
+      this.yAxisOptions.ticker = () => {
+        const binding = this.valueBindings[0].plotValues;
+        const ticks: any[] = [];
+        for (let i = 0; i < binding.length; i++) {
+          ticks.push({v: i, label: binding[i]});
+        }
+        return ticks;
+      };
+      this.yAxisOptions.valueFormatter = (num: number) => {
+        const binding = this.valueBindings[0];
+        return binding.plotValues[num];
+      };
+    }
+
     const rangeGrid = utils.findChild(this.node, 'RangeGridlineDrawStyle');
     this.yAxisOptions['gridLineColor'] = utils.parseColorChild(rangeGrid, 'Color');
     this.yAxisOptions['gridLineWidth'] = utils.parseFloatChild(rangeGrid, 'Width');
@@ -363,6 +388,7 @@ export class LineGraph extends AbstractWidget {
         x: this.xAxisOptions,
         y: this.yAxisOptions,
       },
+      yRangePad: this.isDiscretePlot() ? 20 : undefined,
       underlayCallback: (ctx: CanvasRenderingContext2D, area: any, g: any) => {
         ctx.globalAlpha = 1;
 
@@ -467,7 +493,12 @@ export class LineGraph extends AbstractWidget {
     if (this.pendingDelivery) {
       const values: Array<number | null> = [];
       for (const binding of this.valueBindings) {
-        values.push(isNaN(binding.value) ? null : binding.value);
+        if (this.isDiscretePlot()) {
+          binding.remapPlotValues();
+          values.push(binding.plotValue);
+        } else {
+          values.push(isNaN(binding.value) ? null : binding.value);
+        }
       }
       this.buffer.push([this.pendingDelivery, ...values] as Sample);
 
@@ -490,7 +521,11 @@ export class LineGraph extends AbstractWidget {
           const sample = valueBinding.sample;
           const cdmcsMonitoringResult = convertMonitoringResult(sample);
           let v = valueBinding.value;
-          if (isNaN(v) || v === null || v === undefined) {
+          if (v === null || v === undefined) {
+            legendEl!.textContent = '';
+          } else if (this.isDiscretePlot()) {
+            legendEl!.textContent = valueBinding.plotValues[valueBinding.plotValue];
+          } else if (isNaN(v)) {
             legendEl!.textContent = '';
           } else {
             v = v.toFixed(this.legendDecimals);
