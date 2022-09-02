@@ -75,6 +75,24 @@ Options
    Show usage.
 
 
+Environment
+-----------
+
+The following environment variables may be specified.
+
+.. describe:: YAMCS_DATA_DIR
+
+    Path to data directory.
+
+.. describe:: YAMCS_ETC_DIR
+
+    Path to configuration directory.
+
+.. describe:: YAMCS_NO_COLOR, NO_COLOR
+
+    Suppress colorized output. The ``NO_COLOR`` alias is a convention used by many other programs.
+
+
 Log Config Example
 ------------------
 
