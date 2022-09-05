@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentType, Command, CommandOption, CommandOptionType, Member, Value } from '../../client';
+import { AggregateValue, Argument, ArgumentMember, ArgumentType, Command, CommandOption, CommandOptionType, Member, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { maxHexLengthValidator, minHexLengthValidator, requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
@@ -20,6 +20,19 @@ function renderAggregateControlValues(prefix: string, value: AggregateValue): { 
       result = { ...result, ...renderAggregateControlValues(prefix + entryKey + '.', entryValue.aggregateValue!) };
     } else {
       result[prefix + entryKey] = renderValue(entryValue)!;
+    }
+  }
+  return result;
+}
+
+function renderAggregateControlValuesFromJSON(prefix: string, value: { [key: string]: any; }): { [key: string]: string; } {
+  let result: { [key: string]: string; } = {};
+  for (const entryKey in value) {
+    const entryValue = value[entryKey];
+    if (typeof entryValue === 'object') {
+      result = { ...result, ...renderAggregateControlValuesFromJSON(prefix + entryKey + '.', entryValue) };
+    } else {
+      result[prefix + entryKey] = '' + entryValue;
     }
   }
   return result;
@@ -151,7 +164,13 @@ export class CommandForm implements OnChanges {
             }
           }
 
-          if (argument.initialValue !== undefined) {
+          let initialized = (argument.initialValue !== undefined);
+          if (initialized && argument.type.engType === 'aggregate') {
+            const aggregateValue = JSON.parse(argument.initialValue!);
+            initialized = this.isAggregateFullyInitialized(argument, aggregateValue);
+          }
+
+          if (initialized) {
             this.argumentsWithInitial.push(argument);
           } else {
             this.arguments.push(argument);
@@ -296,7 +315,16 @@ export class CommandForm implements OnChanges {
   private addAggregateControl(argument: Argument, templateProvider?: TemplateProvider) {
     this.addMemberControls(argument.name + '.', argument.type.member || []);
 
-    // let initialValueJSON = argument.initialValue;
+    if (argument.initialValue) {
+      const initialValue: { [key: string]: any; } = JSON.parse(argument.initialValue);
+      const flattenedValues = renderAggregateControlValuesFromJSON(argument.name + '.', initialValue);
+      for (const controlName in flattenedValues) {
+        if (controlName in this.form.controls) {
+          this.form.controls[controlName].setValue(flattenedValues[controlName]);
+        }
+      }
+    }
+
     if (templateProvider) {
       const previousValue = templateProvider.getAssignment(argument.name);
       if (previousValue !== undefined) {
@@ -319,8 +347,9 @@ export class CommandForm implements OnChanges {
       } else {
         const controlName = prefix + member.name;
         const validators = this.getValidatorsForType(member.type as ArgumentType);
+        const initialValue = member.initialValue ?? '';
         this.form.addControl(
-          controlName, new UntypedFormControl('', validators));
+          controlName, new UntypedFormControl(initialValue, validators));
       }
     }
   }
@@ -366,5 +395,19 @@ export class CommandForm implements OnChanges {
       }
     }
     return false;
+  }
+
+  private isAggregateFullyInitialized(argument: Argument | ArgumentMember, value: { [key: string]: any; }) {
+    for (const member of argument.type.member) {
+      if (!value.hasOwnProperty(member.name) && argument.initialValue === undefined) {
+        return false;
+      } else if (member.type.engType === 'aggregate') {
+        const subValue: { [key: string]: any; } = value[member.name];
+        if (!this.isAggregateFullyInitialized(member, subValue)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

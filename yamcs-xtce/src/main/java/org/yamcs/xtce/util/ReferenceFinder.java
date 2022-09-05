@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.yamcs.xtce.AggregateArgumentType;
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Argument;
@@ -202,11 +203,11 @@ public class ReferenceFinder {
         case ALGORITHM:
             return findSimpleReference(ss.getAlgorithm(name));
         case ARGUMENT_TYPE:
-            return findSimpleReference((NameDescription) ss.getArgumentType(name));
+            return findArgumentTypeReference(ss, name);
         case ARGUMENT:
             return findArgumentReference((ArgumentReference) nr);
         default:
-            throw new IllegalStateException("Unknonwn reference of type " + nr.getType());
+            throw new IllegalStateException("Unknown reference of type " + nr.getType());
         }
     }
 
@@ -249,6 +250,32 @@ public class ReferenceFinder {
         }
 
         return new FoundReference(arg, argRef.getPath());
+    }
+
+    public static FoundReference findArgumentTypeReference(SpaceSystem ss, String name) {
+        ArgumentType argumentType = ss.getArgumentType(name);
+
+        // For aggregate types, we expect all members to have a resolved type
+        if (argumentType != null && (argumentType instanceof AggregateArgumentType)) {
+            AggregateArgumentType aggregateArgumentType = (AggregateArgumentType) argumentType;
+            if (!isAggregateArgumentTypeResolved(aggregateArgumentType)) {
+                return null;
+            }
+        }
+
+        return findSimpleReference((NameDescription) ss.getArgumentType(name));
+    }
+
+    private static boolean isAggregateArgumentTypeResolved(AggregateArgumentType argumentType) {
+        for (Member member : argumentType.getMemberList()) {
+            if (member.getType() == null) {
+                return false;
+            } else if (member.getType() instanceof AggregateArgumentType) {
+                return isAggregateArgumentTypeResolved((AggregateArgumentType) member.getType());
+            }
+        }
+
+        return true; // All members (at any depth) have a type
     }
 
     public static PathElement[] parseReference(String name) {

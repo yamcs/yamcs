@@ -866,6 +866,13 @@ public class XtceToGpbAssembler {
                 if (member.getType() instanceof ArgumentType) {
                     ArgumentType ptype = (ArgumentType) member.getType();
                     memberb.setType(toArgumentTypeInfo(ptype));
+                    if (member.getInitialValue() != null) {
+                        String initialValue = ptype.toString(member.getInitialValue());
+                        memberb.setInitialValue(initialValue);
+                    } else if (ptype.getInitialValue() != null) {
+                        String initialValue = ptype.toString(ptype.getInitialValue());
+                        memberb.setInitialValue(initialValue);
+                    }
                 }
                 if (member.getShortDescription() != null) {
                     memberb.setShortDescription(member.getShortDescription());

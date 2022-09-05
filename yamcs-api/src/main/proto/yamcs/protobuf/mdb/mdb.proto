@@ -310,6 +310,7 @@ message ArgumentMemberInfo {
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;
   optional ArgumentTypeInfo type = 6;
+  optional string initialValue = 7;
 }
 
 message ParameterDimensionInfo {
@@ -394,9 +395,7 @@ message ArgumentTypeInfo {
 message ArgumentInfo {
   optional string name = 1;
   optional string description = 2;
-  //optional string type = 3;
   optional string initialValue = 4;
-  // repeated UnitInfo unitSet = 5;
   optional ArgumentTypeInfo type = 6;
 }
 

@@ -91,6 +91,7 @@ export interface ArrayInfo {
 export interface Member {
   name: string;
   type: ParameterType | ArgumentType;
+  initialValue?: string;
 }
 
 export interface ArgumentMember extends Member {
