@@ -3465,6 +3465,7 @@ public class XtceStaxReader {
         NameReference nr = new NameReference(refName, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
             typeBuilder.setElementType((ArgumentType) nd);
         });
+        incompleteType.addReference(nr);
         spaceSystem.addUnresolvedReference(nr);
 
         int dim;

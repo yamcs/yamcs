@@ -1,0 +1,67 @@
+<label>
+  <div class="meta">
+    <div class="item">aggregate</div>
+  </div>
+
+  {{ label }}
+
+  <div class="members" [formGroupName]="name">
+    <ng-container *ngFor="let member of type.member; index as i"
+                  [ngSwitch]="member.type.engType">
+
+      <app-aggregate-argument *ngSwitchCase="'aggregate'"
+                              [name]="member.name"
+                              [type]="member.type"
+                              [initialValue]="memberInitialValues[i]">
+      </app-aggregate-argument>
+
+      <app-binary-argument *ngSwitchCase="'binary'"
+                           [name]="member.name"
+                           [type]="member.type"
+                           [formControlName]="member.name">
+      </app-binary-argument>
+
+      <app-boolean-argument *ngSwitchCase="'boolean'"
+                            [name]="member.name"
+                            [type]="member.type"
+                            [formControlName]="member.name">
+      </app-boolean-argument>
+
+      <app-enumeration-argument *ngSwitchCase="'enumeration'"
+                                [name]="member.name"
+                                [type]="member.type"
+                                [formControlName]="member.name">
+      </app-enumeration-argument>
+
+      <app-float-argument *ngSwitchCase="'float'"
+                          [name]="member.name"
+                          [type]="member.type"
+                          [formControlName]="member.name">
+      </app-float-argument>
+
+      <app-integer-argument *ngSwitchCase="'integer'"
+                            [name]="member.name"
+                            [type]="member.type"
+                            [formControlName]="member.name">
+      </app-integer-argument>
+
+      <app-string-argument *ngSwitchCase="'string'"
+                           [name]="member.name"
+                           [type]="member.type"
+                           [formControlName]="member.name">
+      </app-string-argument>
+
+      <app-time-argument *ngSwitchCase="'time'"
+                         [name]="member.name"
+                         [type]="member.type"
+                         [formControlName]="member.name">
+      </app-time-argument>
+
+      <app-array-argument *ngSwitchCase="member.type.engType.endsWith('[]') ? member.type.engType : ''"
+                          [name]="member.name"
+                          [type]="member.type"
+                          [initialValue]="memberInitialValues[i]">
+      </app-array-argument>
+    </ng-container>
+  </div>
+</label>

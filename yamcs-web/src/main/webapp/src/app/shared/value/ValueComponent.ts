@@ -64,7 +64,6 @@ export class ValueComponent implements OnChanges {
     const directChildren: ValueNode[] = [];
     for (let i = 0; i < arrayValue.length; i++) {
       const value = arrayValue[i];
-      console.log('valu', value);
       const child = this.processValue(value, false, appendTo, parent);
       child.key = String(i);
       directChildren.push(child);

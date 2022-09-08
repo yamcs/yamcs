@@ -1,70 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, UntypedFormControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { AggregateValue, Argument, ArgumentMember, ArgumentType, Command, CommandOption, CommandOptionType, Member, Value } from '../../client';
+import { Argument, ArgumentMember, ArgumentType, Command, CommandOption, CommandOptionType, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { maxHexLengthValidator, minHexLengthValidator, requireFloat, requireInteger, requireUnsigned } from '../../shared/forms/validators';
 import { User } from '../../shared/User';
-import * as utils from '../../shared/utils';
-
-/**
- * Returns a flat JavaScript object where keys are stringified initial form values.
- */
-function renderAggregateControlValues(prefix: string, value: AggregateValue): { [key: string]: string; } {
-  let result: { [key: string]: string; } = {};
-  for (let i = 0; i < value.name.length; i++) {
-    const entryKey = value.name[i];
-    const entryValue = value.value[i];
-    if (entryValue.type === 'AGGREGATE') {
-      result = { ...result, ...renderAggregateControlValues(prefix + entryKey + '.', entryValue.aggregateValue!) };
-    } else {
-      result[prefix + entryKey] = renderValue(entryValue)!;
-    }
-  }
-  return result;
-}
-
-function renderAggregateControlValuesFromJSON(prefix: string, value: { [key: string]: any; }): { [key: string]: string; } {
-  let result: { [key: string]: string; } = {};
-  for (const entryKey in value) {
-    const entryValue = value[entryKey];
-    if (typeof entryValue === 'object') {
-      result = { ...result, ...renderAggregateControlValuesFromJSON(prefix + entryKey + '.', entryValue) };
-    } else {
-      result[prefix + entryKey] = '' + entryValue;
-    }
-  }
-  return result;
-}
-
-/**
- * Returns the stringified initial form value for a Value object.
- */
-function renderValue(value: Value) {
-  switch (value.type) {
-    case 'BOOLEAN':
-      return '' + value.booleanValue;
-    case 'FLOAT':
-      return '' + value.floatValue;
-    case 'DOUBLE':
-      return '' + value.doubleValue;
-    case 'UINT32':
-      return '' + value.uint32Value;
-    case 'SINT32':
-      return '' + value.sint32Value;
-    case 'BINARY':
-      return utils.convertBase64ToHex(value.binaryValue!);
-    case 'ENUMERATED':
-    case 'STRING':
-    case 'TIMESTAMP':
-      return value.stringValue!;
-    case 'UINT64':
-      return '' + value.uint64Value;
-    case 'SINT64':
-      return '' + value.sint64Value;
-  }
-}
+import { renderValue } from './arguments/argument/ArgumentComponent';
 
 export interface TemplateProvider {
   getAssignment(name: string): Value | void;
@@ -93,13 +34,20 @@ export class CommandForm implements OnChanges {
   argumentsWithInitial: Argument[] = [];
   showAll$ = new BehaviorSubject<boolean>(false);
 
-  form = new UntypedFormGroup({});
+  form: FormGroup;
   config: WebsiteConfig;
 
-  constructor(configService: ConfigService, authService: AuthService) {
+  constructor(
+    configService: ConfigService,
+    authService: AuthService,
+    formBuilder: FormBuilder,
+  ) {
+    this.form = formBuilder.group({
+      args: formBuilder.group({}),
+    });
     this.user = authService.getUser()!;
     this.commandOptions = configService.getCommandOptions();
-    this.form.addControl('extra__comment', new UntypedFormControl(''));
+    this.form.addControl('comment', new FormControl(''));
     for (const option of this.commandOptions) {
       this.form.addControl('extra__' + option.id, new UntypedFormControl(''));
     }
@@ -107,19 +55,21 @@ export class CommandForm implements OnChanges {
     this.showAll$.next(!this.config.collapseInitializedArguments);
   }
 
+  get argsGroup() {
+    return this.form.get('args') as FormGroup;
+  }
+
   ngOnChanges() {
     this.arguments = [];
     this.argumentsWithInitial = [];
     this.showAll$.next(!this.config.collapseInitializedArguments);
-    for (const key in this.form.controls) {
-      if (!key.startsWith('extra__')) {
-        this.form.removeControl(key);
-      }
+    for (const key in this.argsGroup.controls) {
+      this.argsGroup.removeControl(key);
     }
     this.form.reset();
 
     const comment = this.templateProvider?.getComment() || '';
-    this.form.controls['extra__comment'].setValue(comment);
+    this.form.controls['comment'].setValue(comment);
 
     if (!this.command) {
       return;
@@ -200,18 +150,21 @@ export class CommandForm implements OnChanges {
     const assignments: { [key: string]: any; } = {};
     for (const arg of [...this.arguments, ...this.argumentsWithInitial]) {
       if (arg.type.engType === 'aggregate') {
-        const value = this.getMemberAssignments(arg.name + '.', arg);
-        assignments[arg.name] = value;
+        const subform = this.argsGroup.get(arg.name) as FormGroup;
+        assignments[arg.name] = this.getMemberAssignments(subform, arg.type);
+      } else if (arg.type.engType.endsWith('[]')) {
+        const subarray = this.argsGroup.get(arg.name) as FormArray;
+        assignments[arg.name] = this.getArrayAssignment(subarray, arg.type.elementType);
       } else {
-        const control = this.form.controls[arg.name];
+        const control = this.argsGroup.controls[arg.name];
         if (!this.isArgumentWithInitialValue(arg.name) || control.dirty) {
           if (arg.type.engType === 'boolean') {
-            assignments[arg.name] = (this.form.value[arg.name] === 'true');
+            assignments[arg.name] = (this.argsGroup.value[arg.name] === 'true');
           } else {
             // String is better at representing large numbers or precision
             // to the server. Some inputs (hex) store a non-string value,
             // so convert it here.
-            assignments[arg.name] = String(this.form.value[arg.name]);
+            assignments[arg.name] = String(this.argsGroup.value[arg.name]);
           }
         }
       }
@@ -219,37 +172,52 @@ export class CommandForm implements OnChanges {
     return assignments;
   }
 
-  getMemberAssignments(prefix: string, argument: Argument | Member) {
+  getMemberAssignments(form: FormGroup, argumentType: ArgumentType) {
     const result: { [key: string]: any; } = {};
-    for (const member of argument.type.member || []) {
+    for (const member of argumentType.member || []) {
       if (member.type.engType === 'aggregate') {
-        result[member.name] = this.getMemberAssignments(prefix + member.name + '.', member);
+        const subform = form.get(member.name) as FormGroup;
+        result[member.name] = this.getMemberAssignments(subform, member.type);
+      } else if (member.type.engType.endsWith('[]')) {
+        const subarray = form.get(member.name) as FormArray;
+        result[member.name] = this.getArrayAssignment(subarray, member.type.elementType);
+      } else if (member.type.engType === 'boolean') {
+        const control = form.get(member.name) as FormControl;
+        result[member.name] = (control.value === 'true');
       } else {
-        const control = this.form.controls[prefix + member.name];
-        switch (member.type.engType) {
-          case 'boolean':
-            result[member.name] = (control.value === 'true');
-          case 'float':
-          case 'double':
-          case 'integer':
-            result[member.name] = Number(control.value);
-            break;
-          default:
-            result[member.name] = control.value;
-        }
+        const control = form.get(member.name) as FormControl;
+        result[member.name] = control.value;
+      }
+    }
+    return result;
+  }
+
+  getArrayAssignment(array: FormArray, elementType: ArgumentType) {
+    let result: { [key: string]: any; } = [];
+    for (const control of array.controls) {
+      if (elementType.engType === 'aggregate') {
+        const subform = control as FormGroup;
+        result.push(this.getMemberAssignments(subform, elementType));
+      } else if (elementType.engType.endsWith('[]')) {
+        const subarray = control as FormArray;
+        result.push(this.getArrayAssignment(subarray, elementType));
+      } else if (elementType.engType === 'boolean') {
+        result.push(control.value === 'true');
+      } else {
+        result.push(control.value);
       }
     }
     return result;
   }
 
   getComment(): string | undefined {
-    return this.form.value['extra__comment'] || undefined;
+    return this.form.value['comment'] || undefined;
   }
 
   getExtraOptions() {
     const extra: { [key: string]: Value; } = {};
     for (const id in this.form.controls) {
-      if (id.startsWith('extra__') && id !== 'extra__comment') {
+      if (id.startsWith('extra__')) {
         const control = this.form.controls[id];
         if (control.value !== null) {
           const optionId = id.replace('extra__', '');
@@ -286,7 +254,10 @@ export class CommandForm implements OnChanges {
 
   private addControl(argument: Argument, templateProvider: TemplateProvider) {
     if (argument.type.engType === 'aggregate') {
-      this.addAggregateControl(argument, templateProvider);
+      // this.argsGroup.addControl(argument.name, new UntypedFormGroup({}));
+      // this.addAggregateControl(argument, templateProvider);
+    } else if (argument.type.engType.endsWith('[]')) {
+      // this.argsGroup.addControl(argument.name, new UntypedFormArray([]));
     } else {
       let initialValue;
       if (argument.type.engType === 'boolean' && argument.initialValue) {
@@ -306,86 +277,9 @@ export class CommandForm implements OnChanges {
         initialValue = '';
       }
 
-      const validators = this.getValidatorsForType(argument.type);
-      this.form.addControl(
-        argument.name, new UntypedFormControl(initialValue, validators));
+      this.argsGroup.addControl(
+        argument.name, new UntypedFormControl(initialValue));
     }
-  }
-
-  private addAggregateControl(argument: Argument, templateProvider?: TemplateProvider) {
-    this.addMemberControls(argument.name + '.', argument.type.member || []);
-
-    if (argument.initialValue) {
-      const initialValue: { [key: string]: any; } = JSON.parse(argument.initialValue);
-      const flattenedValues = renderAggregateControlValuesFromJSON(argument.name + '.', initialValue);
-      for (const controlName in flattenedValues) {
-        if (controlName in this.form.controls) {
-          this.form.controls[controlName].setValue(flattenedValues[controlName]);
-        }
-      }
-    }
-
-    if (templateProvider) {
-      const previousValue = templateProvider.getAssignment(argument.name);
-      if (previousValue !== undefined) {
-        if (previousValue.type === 'AGGREGATE') {
-          const initialValues = renderAggregateControlValues(argument.name + '.', previousValue.aggregateValue!);
-          for (const controlName in initialValues) {
-            if (controlName in this.form.controls) {
-              this.form.controls[controlName].setValue(initialValues[controlName]);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private addMemberControls(prefix: string, members: Member[]) {
-    for (const member of members) {
-      if (member.type.engType === 'aggregate') {
-        this.addMemberControls(prefix + member.name + '.', member.type.member || []);
-      } else {
-        const controlName = prefix + member.name;
-        const validators = this.getValidatorsForType(member.type as ArgumentType);
-        const initialValue = member.initialValue ?? '';
-        this.form.addControl(
-          controlName, new UntypedFormControl(initialValue, validators));
-      }
-    }
-  }
-
-  private getValidatorsForType(type: ArgumentType) {
-    const validators = [];
-    if (type.minChars !== 0 && type.minBytes !== 0) {
-      validators.push(Validators.required);
-    }
-    if (type.engType === 'integer') {
-      validators.push(requireInteger);
-    } else if (type.engType === 'float') {
-      validators.push(requireFloat);
-    }
-    if (type.signed === false) {
-      validators.push(requireUnsigned);
-    }
-    if (type.rangeMax !== undefined) {
-      validators.push(Validators.max(type.rangeMax));
-    }
-    if (type.rangeMin !== undefined) {
-      validators.push(Validators.min(type.rangeMin));
-    }
-    if (type.minChars !== undefined) {
-      validators.push(Validators.minLength(type.minChars));
-    }
-    if (type.maxChars !== undefined) {
-      validators.push(Validators.maxLength(type.maxChars));
-    }
-    if (type.minBytes !== undefined) {
-      validators.push(minHexLengthValidator(type.minBytes));
-    }
-    if (type.maxBytes !== undefined) {
-      validators.push(maxHexLengthValidator(type.maxBytes));
-    }
-    return validators;
   }
 
   private isArgumentWithInitialValue(argumentName: string) {

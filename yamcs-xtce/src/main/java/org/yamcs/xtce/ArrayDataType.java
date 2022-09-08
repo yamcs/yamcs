@@ -78,7 +78,7 @@ public class ArrayDataType extends NameDescription implements DataType {
     @Override
     public String getTypeAsString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(type.getName());
+        sb.append(type.getTypeAsString().replace("[]", ""));
         for (int i = 0; i < numberOfDimensions; i++) {
             sb.append("[]");
         }

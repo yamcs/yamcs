@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { Argument, EnumValue } from '../../client';
+import { ArgumentType, EnumValue } from '../../client';
 
 @Component({
   selector: 'app-select-enumeration-dialog',
@@ -31,8 +31,8 @@ export class SelectEnumerationDialog implements AfterViewInit {
     private dialogRef: MatDialogRef<SelectEnumerationDialog>,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-    const argument = data.argument as Argument;
-    const isHex = argument.type.dataEncoding?.encoding === 'UNSIGNED';
+    const argumentType = data.type as ArgumentType;
+    const isHex = argumentType.dataEncoding?.encoding === 'UNSIGNED';
     this.dataSource.filterPredicate = (enumValue, filter) => {
       const { label, value } = enumValue;
       return label.toLowerCase().indexOf(filter) >= 0
@@ -40,7 +40,7 @@ export class SelectEnumerationDialog implements AfterViewInit {
         || (isHex && Number(value).toString(16).indexOf(filter) >= 0);
     };
 
-    this.dataSource.data = argument.type.enumValue || [];
+    this.dataSource.data = argumentType.enumValue || [];
     if (isHex) {
       this.displayedColumns.push('hex');
     }

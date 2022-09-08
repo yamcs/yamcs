@@ -1,0 +1,7 @@
+:host.ng-invalid:not(.ng-pristine) ::ng-deep input {
+  border-color: crimson !important;
+}
+
+.label {
+  position: relative;
+}

@@ -22,6 +22,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.AncillaryDataInfo;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
+import org.yamcs.protobuf.Mdb.ArgumentDimensionInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentMemberInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
@@ -72,6 +73,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayArgumentType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
@@ -889,9 +891,43 @@ public class XtceToGpbAssembler {
                 }
                 infob.addMember(memberb);
             }
-        }
-
-        if (argumentType instanceof IntegerArgumentType) {
+        } else if (argumentType instanceof ArrayArgumentType) {
+            ArrayArgumentType aat = (ArrayArgumentType) argumentType;
+            for (int i = 0; i < aat.getNumberOfDimensions(); i++) {
+                ArgumentDimensionInfo.Builder dimensionb = ArgumentDimensionInfo.newBuilder();
+                IntegerValue dimension = aat.getDimension(i);
+                if (dimension instanceof FixedIntegerValue) {
+                    var fixedIntegerValue = (FixedIntegerValue) dimension;
+                    dimensionb.setFixedValue(fixedIntegerValue.getValue());
+                } else if (dimension instanceof DynamicIntegerValue) {
+                    var dynamicIntegerValue = (DynamicIntegerValue) dimension;
+                    ParameterOrArgumentRef ref = dynamicIntegerValue.getDynamicInstanceRef();
+                    if (ref instanceof ParameterInstanceRef) {
+                        ParameterInstanceRef parameterRef = (ParameterInstanceRef) ref;
+                        dimensionb.setParameter(toParameterInfo(parameterRef.getParameter(), DetailLevel.SUMMARY));
+                    } else if (ref instanceof ArgumentInstanceRef) {
+                        ArgumentInstanceRef argumentRef = (ArgumentInstanceRef) ref;
+                        PathElement[] path = ref.getMemberPath();
+                        if (path == null) {
+                            dimensionb.setArgument(argumentRef.getName());
+                        } else {
+                            String memberPath = "";
+                            for (PathElement el : path) {
+                                memberPath += "." + el.toString();
+                            }
+                            dimensionb.setArgument(argumentRef.getName() + memberPath);
+                        }
+                    }
+                    dimensionb.setSlope(dynamicIntegerValue.getSlope());
+                    dimensionb.setIntercept(dynamicIntegerValue.getIntercept());
+                }
+                if (aat.getElementType() instanceof ArgumentType) {
+                    ArgumentType elementType = (ArgumentType) aat.getElementType();
+                    infob.setElementType(toArgumentTypeInfo(elementType));
+                }
+                infob.addDimensions(dimensionb);
+            }
+        } else if (argumentType instanceof IntegerArgumentType) {
             IntegerArgumentType iat = (IntegerArgumentType) argumentType;
             infob.setSigned(iat.isSigned());
             if (iat.getValidRange() != null) {

@@ -8,8 +8,17 @@ import { CommandHistoryPrintable } from './command-history/CommandHistoryPrintab
 import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgmentsTable';
 import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
+import { AggregateArgument } from './command-sender/arguments/aggregate/AggregateArgument';
+import { ArgumentComponent } from './command-sender/arguments/argument/ArgumentComponent';
+import { ArrayArgument } from './command-sender/arguments/array/ArrayArgument';
+import { BinaryArgument } from './command-sender/arguments/binary/BinaryArgument';
+import { BooleanArgument } from './command-sender/arguments/boolean/BooleanArgument';
+import { EnumerationArgument } from './command-sender/arguments/enumeration/EnumerationArgument';
+import { FloatArgument } from './command-sender/arguments/float/FloatArgument';
+import { IntegerArgument } from './command-sender/arguments/integer/IntegerArgument';
+import { StringArgument } from './command-sender/arguments/string/StringArgument';
+import { TimeArgument } from './command-sender/arguments/time/TimeArgument';
 import { CommandForm } from './command-sender/CommandForm';
-import { CommandFormArgument } from './command-sender/CommandFormArgument';
 import { SelectEnumerationDialog } from './command-sender/SelectEnumerationDialog';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
@@ -35,22 +44,31 @@ const pipes = [
     routingComponents,
     pipes,
     AcknowledgmentIcon,
+    AggregateArgument,
+    ArgumentComponent,
+    ArrayArgument,
+    BinaryArgument,
+    BooleanArgument,
     EditStackEntryDialog,
     ChangeLevelDialog,
     ClearancesPageTabs,
     CommandDetail,
     CommandForm,
-    CommandFormArgument,
     CommandHistoryPrintable,
     CreateFolderDialog,
     CreateStackDialog,
+    EnumerationArgument,
     ExtraAcknowledgmentsTable,
+    FloatArgument,
+    IntegerArgument,
     QueuedCommandsTable,
     RenameStackDialog,
     SelectEnumerationDialog,
     SendCommandWizardStep,
     StackedCommandDetail,
     StackFilePageDirtyDialog,
+    StringArgument,
+    TimeArgument,
     TransmissionConstraintsIcon,
     YamcsAcknowledgmentsTable,
   ],
