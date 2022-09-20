@@ -82,17 +82,28 @@ public class TaiUtcConverter {
             lineNum++;
             Matcher m = p.matcher(line);
             if (m.matches()) {
+
                 String year = m.group(1);
                 if (year == null) {
                     year = prevYear;
                 }
                 Date d = sdf.parse(year + " " + m.group(2) + " " + m.group(3));
-                tmp1.add(d.getTime());
+
                 int ls = Integer.valueOf(m.group(8));
-                if ((diffTaiUtc != -1) && (ls != diffTaiUtc + 1)) {
+                if (diffTaiUtc == -1) {
+                    // In 1972 there were 10 leap seconds added at once,
+                    // we distribute them over them over the previous 10 days
+                    // UTC before 1972 is not defined with leap seconds so it's all approximative
+                    for (int i = 1; i < ls; i++) {
+                        tmp1.add(d.getTime() - 86400_000 * (ls - i));
+                    }
+                } else if (ls != diffTaiUtc + 1) {
                     throw new RuntimeException("Error reading line " + lineNum
                             + " of UTC-TAI.history: only positive leap seconds are supported");
                 }
+
+                tmp1.add(d.getTime());
+
                 diffTaiUtc = ls;
                 prevYear = year;
                 lines.add(new ValidityLine(d.getTime(), ls));

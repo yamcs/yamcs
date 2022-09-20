@@ -209,9 +209,29 @@ public class TimeEncodingTest {
     }
 
     @Test
+    public void testTaiOffset1() {
+        java.time.Instant t1 = java.time.Instant.parse("1958-01-01T00:00:00Z");
+        java.time.Instant t2 = java.time.Instant.parse("2022-01-01T00:00:00Z");
+
+        long instant = TimeEncoding.fromTaiMillisec(t2.toEpochMilli() - t1.toEpochMilli());
+        assertEquals(TimeEncoding.parse("2021-12-31T23:59:23"), instant);
+    }
+
+    @Test
     public void testJ2000Offset() {
         long instant = TimeEncoding.fromJ2000Millisec(0);
         assertEquals(TimeEncoding.parse("2000-01-01T11:58:55.816"), instant);
+    }
+
+    @Test
+    public void test1972() {
+        long instant = TimeEncoding.parse("1972-01-01T00:00:01.000Z");
+        for (int i = 0; i < 1000; i++) {
+            String s = TimeEncoding.toString(instant);
+            long x = TimeEncoding.parse(s);
+            assertEquals(instant, x);
+            instant -= 1000;
+        }
     }
 
     @Test
