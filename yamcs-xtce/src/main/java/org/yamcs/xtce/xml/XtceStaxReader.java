@@ -3465,6 +3465,7 @@ public class XtceStaxReader {
         NameReference nr = new NameReference(refName, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
             typeBuilder.setElementType((ArgumentType) nd);
         });
+        incompleteType.addReference(nr);
         spaceSystem.addUnresolvedReference(nr);
 
         int dim;
@@ -3683,24 +3684,17 @@ public class XtceStaxReader {
         String initialValue = readAttribute(ATTR_INITIAL_VALUE, element, null);
 
         String argumentTypeRef = readMandatoryAttribute("argumentTypeRef", element);
-        ArgumentType atype = spaceSystem.getArgumentType(argumentTypeRef);
-        if (atype != null) {
-            arg.setArgumentType(atype);
-            if (initialValue != null) {
-                arg.setInitialValue(atype.convertType(initialValue));
-            }
-        } else {
-            final Argument arg1 = arg;
-            NameReference nr = new NameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
-                    .addResolvedAction(nd -> {
-                        ArgumentType atype1 = (ArgumentType) nd;
-                        if (initialValue != null) {
-                            arg1.setInitialValue(atype1.convertType(initialValue));
-                        }
-                        arg1.setArgumentType(atype1);
-                    });
-            spaceSystem.addUnresolvedReference(nr);
-        }
+
+        final Argument arg1 = arg;
+        NameReference nr = new NameReference(argumentTypeRef, Type.ARGUMENT_TYPE)
+                .addResolvedAction(nd -> {
+                    ArgumentType atype1 = (ArgumentType) nd;
+                    if (initialValue != null) {
+                        arg1.setInitialValue(atype1.convertType(initialValue));
+                    }
+                    arg1.setArgumentType(atype1);
+                });
+        spaceSystem.addUnresolvedReference(nr);
 
         arg.setShortDescription(readAttribute(ATTR_SHORT_DESCRIPTION, element, null));
 

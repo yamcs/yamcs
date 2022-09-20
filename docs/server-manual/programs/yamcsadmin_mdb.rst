@@ -1,66 +1,30 @@
 yamcsadmin mdb
-=================
+==============
 
-**NAME**
+.. program:: yamcsadmin mdb
 
-    yamcsadmin mdb - Provides MDB information
+Synopsis
+--------
 
+.. rst-class:: synopsis
 
-**SYNOPSIS**
-
-    ``yamcsadmin mdb COMMAND``
-
-
-**COMMANDS**
-
-    .. describe:: print
-
-        Print MDB content
-
-    .. describe:: verify
-
-        Verify that the MDB can be loaded
+    | **yamcsadmin mdb** print <*INSTANCE*>
+    | **yamcsadmin mdb** verify <*INSTANCE*>
 
 
-yamcsadmin mdb print
---------------------
+Description
+-----------
 
-**NAME**
-
-    yamcsadmin mdb print - Print MDB content
+Groups operations on a the Mission Database (MDB) of a specific Yamcs instance.
 
 
-**SYNOPSIS**
+Commands
+--------
 
-    ``yamcsadmin mdb print INSTANCE``
+.. describe:: print <INSTANCE>
 
+    Print MDB content
 
-**POSITIONAL ARGUMENTS**
+.. describe:: verify <INSTANCE>
 
-    .. program:: yamcsadmin mdb print
-
-    .. option:: INSTANCE
-
-        Instance name.
-
-
-yamcsadmin mdb verify
----------------------
-
-**NAME**
-
-    yamcsadmin mdb verify - Verify that the MDB can be loaded
-
-
-**SYNOPSIS**
-
-    ``yamcsadmin mdb verify INSTANCE``
-
-
-**POSITIONAL ARGUMENTS**
-
-    .. program:: yamcsadmin mdb verify
-
-    .. option:: INSTANCE
-
-        Instance name.
+    Verify that the MDB can be loaded

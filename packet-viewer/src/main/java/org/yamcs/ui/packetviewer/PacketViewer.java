@@ -1145,8 +1145,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     private static void printUsageAndExit(boolean full) {
-        System.err.println("usage: packetviewer.sh [-h] [-l n] -x MDB FILE");
-        System.err.println("   or: packetviewer.sh [-h] [-l n] [-x MDB] -i INSTANCE [-s STREAM] URL");
+        System.err.println("usage: packet-viewer [-h] [-l n] -x MDB FILE");
+        System.err.println("   or: packet-viewer [-h] [-l n] [-x MDB] -i INSTANCE [-s STREAM] URL");
         if (full) {
             System.err.println();
             System.err.println("    FILE         The file to open at startup. Requires the use of -x");
@@ -1171,8 +1171,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             System.err.println("    -s STREAM    Yamcs stream name. Default: tm_realtime.");
             System.err.println();
             System.err.println("EXAMPLES");
-            System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
-            System.err.println("        packetviewer.sh -l 50 -i simulator http://localhost:8090");
+            System.err.println("        packet-viewer -l 50 -x my-db packet-file");
+            System.err.println("        packet-viewer -l 50 -i simulator http://localhost:8090");
         }
         System.exit(1);
     }

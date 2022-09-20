@@ -8,3 +8,4 @@ Programs
     yamcsadmin
     yamcsd
     systemd-unit
+    packet-viewer

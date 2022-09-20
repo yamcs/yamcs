@@ -132,7 +132,6 @@ public class AggregateDataType extends NameDescription implements DataType {
      *             if the string cannot be parsed or if values cannot be determined for all members
      */
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String, Object> convertType(Object value) {
         if (value instanceof String) {
             // Parse as JSON
@@ -154,10 +153,12 @@ public class AggregateDataType extends NameDescription implements DataType {
     }
 
     private Map<String, Object> fromJson(JsonObject jobj) {
+        // Copy, so that we can remove
+        JsonObject input = jobj.deepCopy();
         Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
-            if (jobj.has(memb.getName())) {
-                JsonElement jsel = jobj.remove(memb.getName());
+            if (input.has(memb.getName())) {
+                JsonElement jsel = input.remove(memb.getName());
                 String v;
                 if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
                     v = jsel.getAsString();
@@ -177,9 +178,9 @@ public class AggregateDataType extends NameDescription implements DataType {
                 r.put(memb.getName(), v);
             }
         }
-        if (jobj.size() > 0) {
+        if (input.size() > 0) {
             throw new IllegalArgumentException("Unknown members "
-                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+                    + input.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
         }
         return r;
     }
@@ -226,10 +227,12 @@ public class AggregateDataType extends NameDescription implements DataType {
     }
 
     private Map<String, Object> fromJsonRaw(JsonObject jobj) {
+        // Copy, so that we can remove
+        JsonObject input = jobj.deepCopy();
         Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
-            if (jobj.has(memb.getName())) {
-                JsonElement jsel = jobj.remove(memb.getName());
+            if (input.has(memb.getName())) {
+                JsonElement jsel = input.remove(memb.getName());
                 String v;
                 if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
                     v = jsel.getAsString();
@@ -241,9 +244,9 @@ public class AggregateDataType extends NameDescription implements DataType {
                 throw new IllegalArgumentException("No value for member '" + memb.getName() + "'");
             }
         }
-        if (jobj.size() > 0) {
+        if (input.size() > 0) {
             throw new IllegalArgumentException("Unknown members "
-                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.joining(",", "[", "]")));
+                    + input.entrySet().stream().map(e -> e.getKey()).collect(Collectors.joining(",", "[", "]")));
         }
         return r;
     }
@@ -275,12 +278,14 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     // convert the map m to another one with the leafs converted to strings or primitive types
     // also verifies that the m is valid for this type (all members present and no extra member)
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getMapStr(Object v) {
 
         if (!(v instanceof Map)) {
             throw new IllegalArgumentException("Can only convert maps; got: " + v);
         }
-        Map<String, Object> m = (Map<String, Object>) v;
+        // Copy, so that we can remove
+        Map<String, Object> m = new HashMap<>((Map<String, Object>) v);
 
         Map<String, Object> r = new HashMap<>();
 

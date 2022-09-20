@@ -310,6 +310,7 @@ message ArgumentMemberInfo {
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;
   optional ArgumentTypeInfo type = 6;
+  optional string initialValue = 7;
 }
 
 message ParameterDimensionInfo {
@@ -389,14 +390,44 @@ message ArgumentTypeInfo {
   
   // Maximum character count (only used by binary arguments)
   optional int32 maxBytes = 15;
+
+  // Length of each dimension (only used by array arguments)
+  repeated ArgumentDimensionInfo dimensions = 16;
+
+  // Type of array entries (only used by array arguments)
+  optional ArgumentTypeInfo elementType = 17;
+}
+
+message ArgumentDimensionInfo {
+  // Use a fixed integer value. If set, no other options are applicable.
+  // This value describes the length.
+  optional int64 fixedValue = 1;
+
+  // Use the value of the referenced parameter.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value ``v``, the dimension's length is determined
+  // as: ``(v * slope) + intercept``. 
+  optional ParameterInfo parameter = 2;
+
+  // Use the value of the referenced argument.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value ``v``, the dimension's length is determined
+  // as: ``(v * slope) + intercept``.
+  optional string argument = 3;
+
+  // Scale the value obtained from a parameter or argument reference.
+  optional int64 slope = 4;
+
+  // Shift the value obtained from a parameter or argument reference.
+  optional int64 intercept = 5;
 }
 
 message ArgumentInfo {
   optional string name = 1;
   optional string description = 2;
-  //optional string type = 3;
   optional string initialValue = 4;
-  // repeated UnitInfo unitSet = 5;
   optional ArgumentTypeInfo type = 6;
 }
 

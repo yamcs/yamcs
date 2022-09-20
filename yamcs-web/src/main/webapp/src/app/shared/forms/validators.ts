@@ -16,6 +16,14 @@ export const requireFloat: ValidatorFn = (control: AbstractControl): ValidationE
   return allowed ? null : { 'notFloat': { value: control.value } };
 };
 
+export const requireHex: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  if (!control.value) {
+    return null;  // don't validate empty values to allow optional controls
+  }
+  const value: string = control.value;
+  return /^[a-fA-F0-9]+$/.test(value) ? null : { 'notHex': true };
+};
+
 export function minHexLengthValidator(minBytes: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     if (isEmptyInputValue(control.value) || !hasValidLength(control.value)) {

@@ -80,11 +80,7 @@ export class LiveExpression implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.cancel();
-    }
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.subscription?.cancel();
+    this.syncSubscription?.unsubscribe();
   }
 }

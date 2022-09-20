@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 import com.beust.jcommander.IStringConverter;
@@ -27,7 +26,7 @@ public class YamcsServerOptions {
     Path logConfig;
 
     @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
-    Path configDirectory = Paths.get("etc").toAbsolutePath();
+    Path configDirectory;
 
     @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
     Path dataDir;
@@ -43,6 +42,20 @@ public class YamcsServerOptions {
 
     @Parameter(names = { "-h", "--help" }, help = true, hidden = true)
     boolean help;
+
+    public YamcsServerOptions() {
+        String envNoColor = System.getenv("YAMCS_NO_COLOR");
+        if (envNoColor == null) { // envvar used by many other programs too
+            envNoColor = System.getenv("NO_COLOR");
+        }
+        noColor = (envNoColor != null) ? !envNoColor.isEmpty() : false;
+
+        String envEtcDir = System.getenv("YAMCS_ETC_DIR");
+        configDirectory = Path.of(envEtcDir != null ? envEtcDir : "etc").toAbsolutePath();
+
+        String envDataDir = System.getenv("YAMCS_DATA_DIR");
+        dataDir = (envDataDir != null) ? Path.of(envDataDir).toAbsolutePath() : null;
+    }
 
     // Keep public, required by JCommander
     public static class LeakLevelConverter implements IStringConverter<ResourceLeakDetector.Level> {
