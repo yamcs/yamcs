@@ -211,6 +211,20 @@ public class CfdpUplinkIntegrationTest {
     }
 
     @Test
+    public void testClass2WithDeadReceiver() throws Exception {
+        byte[] data = createObject("randomfile72", 1000);
+        uploadAndCheck(config, "randomfile72", data, true, Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7),
+                TransferState.FAILED, null);
+    }
+
+    @Test
+    public void testClass2WithLostFinAck() throws Exception {
+        byte[] data = createObject("randomfile72", 1000);
+        uploadAndCheck(config, "randomfile72", data, true, Arrays.asList(6, 7, 8),
+                TransferState.COMPLETED, TransferState.FAILED);
+    }
+
+    @Test
     public void testClass2WithNackLimitReached() throws Exception {
         byte[] data = createObject("randomfile81", 1000);
         // lose the first data packet, and then all retransmissions
@@ -296,11 +310,13 @@ public class CfdpUplinkIntegrationTest {
 
         TransferInfo tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
         assertEquals(expectedSenderState, tinfo1.getState());
-        assertEquals(expectedReceiverState, rec.trsf.getTransferState());
+        if (expectedReceiverState != null) {
+            assertEquals(expectedReceiverState, rec.trsf.getTransferState());
 
-        if (expectedReceiverState == TransferState.COMPLETED) {
-            byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
-            assertArrayEquals(data, recdata);
+            if (expectedReceiverState == TransferState.COMPLETED) {
+                byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
+                assertArrayEquals(data, recdata);
+            }
         }
         return tinfo1;
     }
@@ -309,7 +325,8 @@ public class CfdpUplinkIntegrationTest {
         for (int i = 0; i < 10; i++) {
             Thread.sleep(1000);
             TransferInfo tinfo1 = cfdpClient.getTransfer(id).get();
-            if (isFinished(tinfo1.getState()) && isFinished(rec.trsf.getTransferState())) {
+
+            if (isFinished(tinfo1.getState()) && (rec.trsf == null || isFinished(rec.trsf.getTransferState()))) {
                 break;
             }
         }

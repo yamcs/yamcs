@@ -121,7 +121,8 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      *            - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the
      *            default behaviour to cancel the transaction will be used.
      */
-    public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor, PutRequest request,
+    public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
+            PutRequest request,
             Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime, executor, config, makeTransactionId(request.getSourceId(), config, id),
@@ -189,7 +190,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         switch (outTxState) {
         case START:
             metadata = getMetadataPacket();
-            sendInfoEvent(ETYPE_TRANSFER_META, "Sending metadata: "+toEventMsg(metadata));
+            sendInfoEvent(ETYPE_TRANSFER_META, "Sending metadata: " + toEventMsg(metadata));
             sendPacket(metadata);
             this.outTxState = OutTxState.SENDING_DATA;
             offset = 0; // first file data packet starts at the start of the data
@@ -257,11 +258,15 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private void doProcessPacket(CfdpPacket packet) {
         if (log.isDebugEnabled()) {
-            log.debug("TXID{} received PDU: {}", cfdpTransactionId, packet);
+            log.debug("TXID{} state:{}, received PDU: {}", cfdpTransactionId, state, packet);
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
         if (state == TransferState.COMPLETED || state == TransferState.FAILED) {
-            log.info("Ignoring PDU {} for finished transaction {}", packet, cfdpTransactionId);
+            if (packet instanceof FinishedPacket) {
+                sendPacket(getAckPacket(((FinishedPacket) packet).getConditionCode()));
+            } else {
+                log.info("Ignoring PDU {} for finished transaction {}", packet, cfdpTransactionId);
+            }
             return;
         }
         if (eofAckReceived) {
@@ -415,13 +420,14 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     @Override
     protected void cancel(ConditionCode conditionCode) {
+        log.debug("TXID{} Cancelling with code {}", cfdpTransactionId, conditionCode);
         switch (outTxState) {
         case START:
         case SENDING_DATA:
             reasonForCancellation = conditionCode;
             suspended = false; // wake up if sleeping
             outTxState = OutTxState.CANCELING;
-			changeState(TransferState.CANCELLING);
+            changeState(TransferState.CANCELLING);
             sendEof(conditionCode);
             break;
         case CANCELING:
@@ -431,6 +437,8 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     }
 
     private void handleFault(ConditionCode conditionCode) {
+        log.debug("TXID{} Handling fault {}", cfdpTransactionId, conditionCode);
+
         if (outTxState == OutTxState.CANCELING) {
             complete(conditionCode);
         } else {
@@ -487,13 +495,10 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             checksum = request.getChecksum();
             filesize = request.getFileLength();
             tlv = null;
-        } else if (code == ConditionCode.CANCEL_REQUEST_RECEIVED) {
+        } else {
             filesize = getTransferredSize();
             checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
             tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
-        } else {
-            throw new java.lang.UnsupportedOperationException(
-                    "CFDP ConditionCode " + code + " not supported for EOF packets");
         }
 
         return new EofPacket(code, checksum, filesize, tlv, directiveHeader);
