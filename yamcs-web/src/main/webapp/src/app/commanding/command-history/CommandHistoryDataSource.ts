@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetCommandHistoryOptions } from '../../client';
+import { GetCommandHistoryOptions, CommandSubscription } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
@@ -21,7 +21,9 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
   private buffer: CommandHistoryBuffer;
 
   loading$ = new BehaviorSubject<boolean>(false);
+  public streaming$ = new BehaviorSubject<boolean>(false);
 
+  private realtimeSubscription: CommandSubscription;
   private syncSubscription: Subscription;
 
   constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
@@ -33,7 +35,14 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
       }
     });
 
-    this.buffer = new CommandHistoryBuffer();
+    this.buffer = new CommandHistoryBuffer(() => {
+
+      // Best solution for now, alternative is to re-establish
+      // the offscreenRecord after compacting.
+      this.blockHasMore = true;
+
+      this.buffer.compact(500);
+    });
   }
 
   connect() {
@@ -76,6 +85,25 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
     }).then(entries => {
       this.buffer.addArchiveData(entries.map(entry => new CommandHistoryRecord(entry)));
     });
+  }
+
+  startStreaming() {
+    this.streaming$.next(true);
+    this.realtimeSubscription = this.yamcs.yamcsClient.createCommandSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
+    }, entry => {
+      if (!this.loading$.getValue()) {
+        this.buffer.addRealtimeCommand(entry);
+      }
+    });
+  }
+
+  stopStreaming() {
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.cancel();
+    }
+    this.streaming$.next(false);
   }
 
   disconnect() {
