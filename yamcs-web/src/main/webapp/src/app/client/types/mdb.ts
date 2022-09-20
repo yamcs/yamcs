@@ -91,6 +91,8 @@ export interface ArrayInfo {
 export interface Member {
   name: string;
   type: ParameterType | ArgumentType;
+  initialValue?: string;
+  description: string;
 }
 
 export interface ArgumentMember extends Member {
@@ -212,6 +214,16 @@ export interface ArgumentType {
   member: ArgumentMember[];
   zeroStringValue: string;
   oneStringValue: string;
+  dimensions: ArgumentDimension[];
+  elementType: ArgumentType;
+}
+
+export interface ArgumentDimension {
+  fixedValue: string;
+  argument: string;
+  parameter: Parameter;
+  slope: string;
+  intercept: string;
 }
 
 export interface ArgumentAssignment {

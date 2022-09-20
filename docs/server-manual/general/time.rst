@@ -21,7 +21,7 @@ The class that allows working with times, offering conversion functionality betw
 
 
 Wall clock time
---------------
+---------------
 
 The wall clock time is the computer time converted to Yamcs format. The getWallclockTime() function in the TimeEncoding can be used to get the current wallclock time. In practice, in 2022, the following is true:
 

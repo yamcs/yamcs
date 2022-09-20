@@ -171,7 +171,6 @@ export function convertValue(value: Value) {
       }
       return arrayValue;
     default:
-      console.log('convert', value);
       throw new Error(`Unexpected value type ${value.type}`);
   }
 }
@@ -389,6 +388,26 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
 
 export function lpad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
+}
+
+export function unflattenIndex(flatIndex: number, dimensions: number[]) {
+  let n = flatIndex;
+
+  let d = 1;
+  for (let i = 1; i < dimensions.length; i++) {
+    d *= dimensions[i];
+  }
+
+  let result = [];
+
+  let k;
+  for (k = 0; k < dimensions.length - 1; k++) {
+    result[k] = Math.floor(n / d);
+    n = n - d * result[k];
+    d = Math.floor(d / dimensions[k + 1]);
+  }
+  result[k] = n;
+  return result;
 }
 
 export function objectCompareFn(...fields: string[]) {

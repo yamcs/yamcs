@@ -3,18 +3,23 @@ yamcsadmin password-hash
 
 .. program:: yamcsadmin password-hash
 
-**NAME**
+Synopsis
+--------
 
-    yamcsadmin password-hash - Generate password hash for use in users.yaml
+.. rst-class:: synopsis
 
-
-**SYNOPSIS**
-
-    ``yamcsadmin password-hash``
+    | **yamcsadmin** password-hash
 
 
-**DESCRIPTION**
+Description
+-----------
 
-    Prompts to enter and confirm a password, and generates a randomly salted PBKDF2 hash of this password. This hash may be used in users.yaml instead of the actual password, and allows verifying user passwords without storing them.
+Prompts to enter and confirm a password, and generates a randomly salted PBKDF2 hash of this password. This hash may be used in users.yaml instead of the actual password, and allows verifying user passwords without storing them.
 
-    The command may be used in non-interactive mode by setting the password with the environment variable ``YAMCSADMIN_PASSWORD``
+
+Environment
+-----------
+
+.. describe:: YAMCSADMIN_PASSWORD
+
+   Provide the password through the environment, thereby avoiding prompts.

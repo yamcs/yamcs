@@ -5,7 +5,7 @@ tree.parse("../../pom.xml")
 yamcs_version_el = tree.getroot().find("{http://maven.apache.org/POM/4.0.0}version")
 
 project = "Yamcs"
-copyright = "2019-present, Space Applications Services"
+copyright = "2006-present, Space Applications Services"
 author = "Yamcs Team"
 version = yamcs_version_el.text
 release = version
