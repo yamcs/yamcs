@@ -8,6 +8,7 @@
         Print report
       </button>
     </mat-menu>
+
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
             color="primary"
@@ -16,12 +17,31 @@
       <mat-icon>save_alt</mat-icon>
       EXPORT
     </button>
+
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-button
+            color="primary"
+            (click)="startStreaming()">
+      <mat-icon>play_arrow</mat-icon>
+      START STREAMING
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
+      STOP STREAMING
+    </button>
+
     <button mat-button
             matTooltip="Jump to now"
             color="primary"
             (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
     </button>
+
   </app-instance-toolbar>
 
   <app-detail-pane>
@@ -84,6 +104,11 @@
 
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
+
+          <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
+            Listening for commands
+            <app-dots fontSize="16px" color="#1b61b9"></app-dots>
+          </div>
         </div>
       </form>
 
