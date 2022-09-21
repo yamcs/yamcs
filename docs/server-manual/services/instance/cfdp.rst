@@ -9,7 +9,7 @@ The service uploads and downloads files between a spacecraft (or a remote device
 
 The protocol specification can be found in  `CCSDS 727.0-B-5 <https://public.ccsds.org/Pubs/727x0b5.pdf>`_ The following description summarizes the specs and provide details on the parts implemented/not implemented by this service.
 
-The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by an metadata PDU (Protocol Data Unit) and finished with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
+The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by a metadata PDU (Protocol Data Unit) and finished with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
 
 The class 1 (unreliable transfer) will upload/download all the segments without the possibility of retransmission. The EOF is not acknowledged by the Receiver. The Issue 5 of the CFDP standard introduces an option "Closure Requested" which requests the class 1 Receiver to send a Finished PDU upon receiving all the data (or when the canceling the transfer).  The Finished PDU is not acknowledged by the Sender. This option is useful when the underlying communication protocol is reliable.   
 
@@ -28,7 +28,7 @@ The CFDP transfers can be suspended and resumed. Suspending means that no PDU is
 
 
 Several peculiarities and limitations of the implementation can be noted:
- * The NAK PDUs issued by Sender always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
+ * The NAK PDUs issued by the Sender always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
  * The Receiver will overwrite the list of segments to resend with the list received in the latest NAK.
  * Keep Alive PDU and Prompt PDU are not used.
  * Filestore requests are not supported.
@@ -130,12 +130,12 @@ maxPduSize (integer)
 sleepBetweenPdus (integer)
     The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
 
-inactivityTimeout (integer) 
-    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered ad the transaction may be canceled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
+inactivityTimeout (integer)
+    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
     Default: ``10000`` (10 seconds).
 
 eofAckTimeout (integer) 
-    Valid for class 2 transfers; the time in milliseconds used by the sender to wait for the EOF PDU acknowledgment. The sender sends the EOF PDU to indicate that it has completed transmitting the file. It expects to receive an acknowledged indicating the reception of the EOF PDU (not of the file!, the Finished PDU is used for that). The EOF PDU is retransmitted if no acknowledgment has been received in this time.
+    Valid for class 2 transfers; the time in milliseconds used by the sender to wait for the EOF PDU acknowledgment. The sender sends the EOF PDU to indicate that it has completed transmitting the file. It expects to receive an acknowledgement indicating the reception of the EOF PDU (not of the file!, the Finished PDU is used for that). The EOF PDU is retransmitted if no acknowledgment has been received in this time.
     Default: ``3000`` (3 seconds).
 
 eofAckLimit (integer)
@@ -160,7 +160,7 @@ nakLimit (integer)
  
 
 senderFaultHandlers (map)
-    A definitions of the actions to be taken when the sender encounters different faults. The definitions are in the form of ``conditionCode -> action`` map. The possible condition codes are:  
+    A definition of the actions to be taken when the sender encounters different faults. The definitions are in the form of ``conditionCode -> action`` map. The possible condition codes are:  
     AckLimitReached, KeepAliveLimitReached, InvalidTransmissionMode, FilestoreRejection, FileChecksumFailure, FileSizeError, NakLimitReached, InactivityDetected, InvalidFileStructure, CheckLimitReached and UnsupportedChecksum.
     The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is established again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
     Note that the error can be generated locally or received from the peer in a FIN PDU.
@@ -178,8 +178,8 @@ directoryTerminators (list)
     When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]``
 
 allowConcurrentFileOverwrites (boolean)
-    If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case of multiple files are uploaded from the yamcs-web. Default: ``true``
+    If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
 
 pendingAfterCompletion (integer)
-    Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: 600000 (10 minutes).
+    Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).
     Consequentially if a new transfer would start with the same id (for example following an on-board computer reboot), the transfer will not be recognized as new before this timer has expired.
