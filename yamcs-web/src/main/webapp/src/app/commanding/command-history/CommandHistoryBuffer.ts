@@ -1,4 +1,4 @@
-import { CommandHistoryEntry } from 'src/lib';
+import { CommandHistoryEntry } from '../../client';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 export type WatermarkObserver = () => void;
@@ -66,7 +66,11 @@ export class CommandHistoryBuffer {
     })
 
     splicedRecords.sort((r1, r2) => {
-        return -r1.generationTime.localeCompare(r2.generationTime);
+        let res = -r1.generationTime.localeCompare(r2.generationTime);
+        if (res === 0) {
+          res = -r1.origin.localeCompare(r2.origin);
+        }
+        return res !== 0 ? res : (r2.sequenceNumber - r1.sequenceNumber);
       });
     return splicedRecords;
   }
