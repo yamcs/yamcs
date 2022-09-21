@@ -106,7 +106,7 @@ public class ArrayValue extends Value {
 
         int n = idx[0];
         for (int i = 1; i < dim.length; i++) {
-            n = n * dim[i - 1] + idx[i];
+            n = n * dim[i] + idx[i];
         }
         return n;
     }
@@ -141,8 +141,8 @@ public class ArrayValue extends Value {
         }
         int n = flatIndex;
 
-        int d = dim[0];
-        for (int i = 1; i < dim.length - 1; i++) {
+        int d = 1;
+        for (int i = 1; i < dim.length; i++) {
             d *= dim[i];
         }
 
@@ -150,7 +150,7 @@ public class ArrayValue extends Value {
         for (k = 0; k < dim.length - 1; k++) {
             idx[k] = n / d;
             n = n - d * idx[k];
-            d /= dim[k];
+            d /= dim[k + 1];
         }
         idx[k] = n;
     }
