@@ -65,12 +65,11 @@ public class HistogramStreamTest extends YarchTestCase {
         String query = "create stream test_out as select * from test0 histogram(name)";
         execute(query);
         final List<Tuple> tuples = fetchAll("test_out");
-        assertEquals(4, tuples.size());
+        assertEquals(3, tuples.size());
 
-        verifyEquals("histotest0", 0, 8000, 9, tuples.get(0));
-        verifyEquals("histotest0", 9000, 19000, 11, tuples.get(1));
-        verifyEquals("histotest0", 40000, 59000, 20, tuples.get(2));
-        verifyEquals("histotest1m", 100000000, 100000000, 1, tuples.get(3));
+        verifyEquals("histotest0", 0, 19000, 20, tuples.get(0));
+        verifyEquals("histotest0", 40000, 59000, 20, tuples.get(1));
+        verifyEquals("histotest1m", 100000000, 100000000, 1, tuples.get(2));
         execute("drop table test0");
     }
 

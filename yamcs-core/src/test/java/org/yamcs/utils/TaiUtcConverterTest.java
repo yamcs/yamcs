@@ -20,12 +20,12 @@ public class TaiUtcConverterTest {
     public void test0() throws Exception {
         TaiUtcConverter tuc = new TaiUtcConverter();
         DateTimeComponents dtc = tuc.instantToUtc(0);
-        assertEquals(1969, dtc.year);
-        assertEquals(12, dtc.month);
-        assertEquals(31, dtc.day);
-        assertEquals(23, dtc.hour);
-        assertEquals(59, dtc.minute);
-        assertEquals(51, dtc.second);
+        assertEquals(1970, dtc.year);
+        assertEquals(1, dtc.month);
+        assertEquals(1, dtc.day);
+        assertEquals(0, dtc.hour);
+        assertEquals(0, dtc.minute);
+        assertEquals(0, dtc.second);
     }
 
     @Test
