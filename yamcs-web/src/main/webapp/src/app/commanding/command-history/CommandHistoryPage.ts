@@ -199,6 +199,15 @@ export class CommandHistoryPage {
     }
   }
 
+  startStreaming() {
+    this.filterForm.get('interval')!.setValue('NO_LIMIT');
+    this.dataSource.startStreaming();
+  }
+
+  stopStreaming() {
+    this.dataSource.stopStreaming();
+  }
+
   // Used in table trackBy to prevent continuous row recreation
   // tableTrackerFn = (index: number, entry: CommandHistoryEntry) => ;
 
