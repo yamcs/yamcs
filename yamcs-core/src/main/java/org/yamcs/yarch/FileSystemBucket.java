@@ -25,6 +25,8 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 
 public class FileSystemBucket implements Bucket {
 
+    // TODO: Check for directory escalation!!!
+
     private static final long DEFAULT_MAX_SIZE = 100L * 1024 * 1024; // 100MB
     private static final int DEFAULT_MAX_OBJECTS = 1000;
 
@@ -141,6 +143,8 @@ public class FileSystemBucket implements Bucket {
     @Override
     public void putObject(String objectName, String contentType, Map<String, String> metadata, byte[] objectData)
             throws IOException {
+        // TODO: do something with metadata
+
         if (objectName.endsWith("/")) {
             Path path = root.resolve(objectName);
             if (!Files.exists(path)) {

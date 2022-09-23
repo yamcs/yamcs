@@ -213,6 +213,21 @@ message CreateTransferRequest {
     optional bool closureRequested = 4;
   }
   message DownloadOptions {
+    // Set to ``True`` if an already existing destination should be overwritten.
+    // Default: ``True``.
+    optional bool overwrite = 1;
+
+    // Set to ``True`` if the destination path should be created if it does not exist.
+    // Default: ``True``.
+    optional bool createPath = 2;
+
+    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
+    // otherwise unreliable (class 1). Default: ``False``.
+    optional bool reliable = 3;
+
+    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
+    // Requests the receiver to send a Finished PDU at the end of the transfer
+    optional bool closureRequested = 4;
   }
 
   optional string instance = 1;

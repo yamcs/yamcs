@@ -37,12 +37,7 @@ import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.PduDecodingException;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.filetransfer.FileTransfer;
-import org.yamcs.filetransfer.FileTransferService;
-import org.yamcs.filetransfer.InvalidRequestException;
-import org.yamcs.filetransfer.TransferMonitor;
-import org.yamcs.filetransfer.RemoteFileListMonitor;
-import org.yamcs.filetransfer.TransferOptions;
+import org.yamcs.filetransfer.*;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
@@ -99,7 +94,7 @@ public class CfdpService extends AbstractYamcsService
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
     Stream cfdpIn;
     Stream cfdpOut;
-    Bucket incomingBucket;
+    Bucket defaultIncomingBucket;
 
     EventProducer eventProducer;
 
@@ -197,7 +192,8 @@ public class CfdpService extends AbstractYamcsService
             throw new ConfigurationException("cannot find stream " + outStream);
         }
 
-        incomingBucket = getBucket(config.getString("incomingBucket"), true);
+        defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
+
         maxNumPendingDownloads = config.getInt("maxNumPendingDownloads");
         maxNumPendingUploads = config.getInt("maxNumPendingUploads");
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
@@ -526,7 +522,7 @@ public class CfdpService extends AbstractYamcsService
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                 "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
 
-        Bucket bucket = incomingBucket;
+        Bucket bucket = defaultIncomingBucket;
 
         if (localEntity.bucket != null) {
             bucket = localEntity.bucket;
@@ -534,10 +530,14 @@ public class CfdpService extends AbstractYamcsService
             bucket = remoteEntity.bucket;
         }
 
+        // TODO: allow bucket selection options
+
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
+        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket);
+
         return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor,
-                config, packet.getHeader(), cfdpOut, bucket, eventProducer, this, receiverFaultHandlers);
+                config, packet.getHeader(), cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers);
     }
 
     public EntityConf getRemoteEntity(long entityId) {
@@ -604,6 +604,7 @@ public class CfdpService extends AbstractYamcsService
     public void stateChanged(FileTransfer ft) {
         CfdpFileTransfer cfdpTransfer = (CfdpFileTransfer) ft;
         dbStream.emitTuple(CompletedTransfer.toUpdateTuple(cfdpTransfer));
+
         // Notify downstream listeners
         transferListeners.forEach(l -> l.stateChanged(cfdpTransfer));
 
@@ -744,6 +745,7 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+        // proxy put request = put request inside put request
         throw new InvalidRequestException("Download not implemented");
     }
 
@@ -751,7 +753,7 @@ public class CfdpService extends AbstractYamcsService
     public FileTransferCapabilities getCapabilities() {
         return FileTransferCapabilities
                 .newBuilder()
-                .setDownload(false)
+                .setDownload(true)
                 .setUpload(true)
                 .setReliability(true)
                 .setRemotePath(true)
