@@ -107,6 +107,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         String bucketName = request.getBucket();
         BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
 
+
+
         String objectName = request.getObjectName();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);

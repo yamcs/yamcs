@@ -31,6 +31,7 @@ import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions;
 import org.yamcs.client.storage.ObjectId;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.EntityInfo;
@@ -388,8 +389,10 @@ public class CfdpUplinkIntegrationTest {
                     }
 
                     if (trsf == null) {
+                        FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, incomingBucket);
+
                         trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,
-                                packet.getHeader(), cfdpIn, incomingBucket, eventProducer, MyFileReceiver.this,
+                                packet.getHeader(), cfdpIn, fileSaveHandler, eventProducer, MyFileReceiver.this,
                                 Collections.emptyMap());
                     }
                     // System.out.println("processing packet "+packet);

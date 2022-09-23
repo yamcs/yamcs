@@ -177,6 +177,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, SERVER_ID);
+        t.addColumn(COL_BUCKET, transfer.getBucketName());
         t.addTimestampColumn(COL_START_TIME, transfer.getStartTime());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
