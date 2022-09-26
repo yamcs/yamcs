@@ -1,8 +1,11 @@
 package org.yamcs.filetransfer;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.DataFile;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -12,12 +15,23 @@ public class FileSaveHandler {
 
     private final Log log;
     private final Bucket defaultBucket;
+    private final boolean allowRemoteProvidedBucket;
+    private final boolean allowRemoteProvidedSubdirectory;
+    private final String yamcsInstance;
     private Bucket bucket;
     private String objectName;
 
-    public FileSaveHandler(String yamcsInstance, Bucket defaultBucket) {
+    public FileSaveHandler(String yamcsInstance, Bucket defaultBucket, boolean allowRemoteProvidedBucket,
+            boolean allowRemoteProvidedSubdirectory) {
+        this.yamcsInstance = yamcsInstance;
         this.log = new Log(this.getClass(), yamcsInstance);
         this.defaultBucket = defaultBucket;
+        this.allowRemoteProvidedBucket = allowRemoteProvidedBucket;
+        this.allowRemoteProvidedSubdirectory = allowRemoteProvidedSubdirectory;
+    }
+
+    public FileSaveHandler(String yamcsInstance, Bucket defaultBucket) {
+        this(yamcsInstance, defaultBucket, false, false);
     }
 
     public void saveFile(String objectName, DataFile file, Map<String, String> metadata) {
@@ -41,9 +55,23 @@ public class FileSaveHandler {
          */
         bucket = defaultBucket;
 
-        System.out.println(name);
+        if(allowRemoteProvidedBucket) {
+            String[] split = name.split(":", 2);
+            if(split.length == 2) {
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+
+                System.out.println(ydb.listBuckets());
+                Bucket customBucket = ydb.getBucket(split[0]);
+                System.out.println(customBucket);
+                if(customBucket != null) {
+                    System.out.println(customBucket.getName());
+                    this.bucket = customBucket;
+                    name = split[1];
+                }
+            }
+        }
+
         name = name.replace("/", "_");
-        System.out.println(name);
         if (bucket.findObject(name) == null) {
             return name;
         }

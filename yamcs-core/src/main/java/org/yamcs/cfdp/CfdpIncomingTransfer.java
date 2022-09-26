@@ -34,7 +34,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
-    private FileSaveHandler fileSaveHandler;
+    private final FileSaveHandler fileSaveHandler;
 
     private enum InTxState {
         /**

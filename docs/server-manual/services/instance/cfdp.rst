@@ -99,6 +99,12 @@ outStream (string)
 incomingBucket (string)
     The name of the bucket where the CFDP incoming files are saved if no specific ones are defined per local or remote entity. Default: ``cfdpDown``
 
+allowRemoteProvidedBucket (boolean)
+    Enable setting the bucket for incoming remote files with the ``bucketName:filename`` syntax for the received object name. Default: ``false``
+
+allowRemoteProvidedSubdirectory (boolean)
+    Enable subdirectory comprehension from incoming remote object names containing directory delimiters. **Be wary of directory traversal depending on the bucket type**, FileSystemBucket should be safe. Default: ``false``
+
 localEntities (map)
     A list of entity definitions used to give names to the local (Yamcs) entity identifiers as well as to configure which bucket is used for storing the files received for that entity. The names can be used in the REST calls when initiating transfers. The list has to contain all identifiers which will be used by the remote system to send files.  If a PDU is received to an identifier not in this map, the PDU will be dropped and no transaction will be started.
     The ``bucket`` is optional; if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too in the general bucket configured with the ``incomingBucket``.
@@ -141,7 +147,6 @@ finAckTimeout (integer)
 
 finAckLimit (integer)
      The number of times to retry sending the Finished PDU before declaring a fault. Zero means that only one PDU will be sent (no retry). Negative value means no limit. Default: ``5``.
-
 
 immediateNak (boolean)
      Valid for class 2 transfers; if true, the receiver will send NAK PDUs as soon as a missing segment is detected. The NAK PDU contains the list of segments that are missing at the receiver side. If the EOF PDU has not been received, the NAK PDU covers only the segments missing up to the last one recieved.

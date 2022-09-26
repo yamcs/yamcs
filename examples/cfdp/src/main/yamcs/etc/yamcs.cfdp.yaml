@@ -35,6 +35,8 @@ services:
      sequenceNrLength: 4
      maxPduSize: 512
      incomingBucket: "cfdpDown"
+     allowRemoteProvidedBucket: false
+     allowRemoteProvidedSubdirectory: false
      eofAckTimeout: 3000
      eofAckLimit: 5
      #Note that the simulator does not process commands faster than 1/second.
