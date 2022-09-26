@@ -25,8 +25,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 
 public class FileSystemBucket implements Bucket {
 
-    // TODO: Check for directory escalation!!!
-
     private static final long DEFAULT_MAX_SIZE = 100L * 1024 * 1024; // 100MB
     private static final int DEFAULT_MAX_OBJECTS = 1000;
 
@@ -145,8 +143,13 @@ public class FileSystemBucket implements Bucket {
             throws IOException {
         // TODO: do something with metadata
 
+        // Prevent directory traversal
+        Path path = root.resolve(objectName);
+        if (!path.toFile().getCanonicalPath().startsWith(root.toFile().getCanonicalPath())) {
+            throw new IOException("Directory traversal attempted: " + path);
+        }
+
         if (objectName.endsWith("/")) {
-            Path path = root.resolve(objectName);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             } else if (!Files.isDirectory(path)) {
@@ -155,8 +158,6 @@ public class FileSystemBucket implements Bucket {
         } else {
             // Current implementation ignores specified contentType, instead deriving
             // MIME type from the filename extension.
-
-            Path path = root.resolve(objectName);
             boolean fileExists = Files.isRegularFile(path);
 
             // Verify limits
