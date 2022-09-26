@@ -102,6 +102,10 @@ public class CfdpService extends AbstractYamcsService
     private Map<String, EntityConf> localEntities = new LinkedHashMap<>();
     private Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
 
+
+    private boolean allowRemoteProvidedBucket;
+    private boolean allowRemoteProvidedSubdirectory;
+
     boolean nakMetadata;
     int maxNumPendingDownloads;
     int maxNumPendingUploads;
@@ -147,6 +151,8 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("destinationId", OptionType.INTEGER)
                 .withDeprecationMessage("please use the remoteEntities");
         spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
+        spec.addOption("allowRemoteProvidedBucket", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("allowRemoteProvidedSubdirectory", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
@@ -194,6 +200,8 @@ public class CfdpService extends AbstractYamcsService
 
         defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
 
+        allowRemoteProvidedBucket = config.getBoolean("allowRemoteProvidedBucket", false);
+        allowRemoteProvidedSubdirectory = config.getBoolean("allowRemoteProvidedSubdirectory", false);
         maxNumPendingDownloads = config.getInt("maxNumPendingDownloads");
         maxNumPendingUploads = config.getInt("maxNumPendingUploads");
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
@@ -522,7 +530,7 @@ public class CfdpService extends AbstractYamcsService
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                 "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
 
-        Bucket bucket = defaultIncomingBucket;
+        Bucket bucket = defaultIncomingBucket; // TODO: bucket?
 
         if (localEntity.bucket != null) {
             bucket = localEntity.bucket;
@@ -534,7 +542,7 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket);
+        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory);
 
         return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor,
                 config, packet.getHeader(), cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers);
