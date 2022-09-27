@@ -105,6 +105,9 @@ public class CfdpService extends AbstractYamcsService
     private boolean allowRemoteProvidedBucket;
     private boolean allowRemoteProvidedSubdirectory;
 
+    private boolean allowDownloadOverwrites;
+    private int maxExistingFileRenames;
+
     boolean nakMetadata;
     int maxNumPendingDownloads;
     int maxNumPendingUploads;
@@ -152,6 +155,8 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
         spec.addOption("allowRemoteProvidedBucket", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("allowRemoteProvidedSubdirectory", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("allowDownloadOverwrites", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("maxExistingFileRenames", OptionType.INTEGER).withDefault(1000);
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
@@ -201,6 +206,8 @@ public class CfdpService extends AbstractYamcsService
 
         allowRemoteProvidedBucket = config.getBoolean("allowRemoteProvidedBucket", false);
         allowRemoteProvidedSubdirectory = config.getBoolean("allowRemoteProvidedSubdirectory", false);
+        allowDownloadOverwrites = config.getBoolean("allowDownloadOverwrites", false);
+        maxExistingFileRenames = config.getInt("maxExistingFileRenames", 1000);
         maxNumPendingDownloads = config.getInt("maxNumPendingDownloads");
         maxNumPendingUploads = config.getInt("maxNumPendingUploads");
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
@@ -541,7 +548,7 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory);
+        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
 
         return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor,
                 config, packet.getHeader(), cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers);

@@ -9,6 +9,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Map;
 
 public class FileSaveHandler {
@@ -17,42 +18,48 @@ public class FileSaveHandler {
     private final Bucket defaultBucket;
     private final boolean allowRemoteProvidedBucket;
     private final boolean allowRemoteProvidedSubdirectory;
+    private final boolean allowDownloadOverwrites;
+    private final int maxExistingFileRenames;
     private final String yamcsInstance;
     private Bucket bucket;
     private String objectName;
 
     public FileSaveHandler(String yamcsInstance, Bucket defaultBucket, boolean allowRemoteProvidedBucket,
-            boolean allowRemoteProvidedSubdirectory) {
+            boolean allowRemoteProvidedSubdirectory, boolean allowDownloadOverwrites, int maxExistingFileRenames) {
         this.yamcsInstance = yamcsInstance;
         this.log = new Log(this.getClass(), yamcsInstance);
         this.defaultBucket = defaultBucket;
         this.allowRemoteProvidedBucket = allowRemoteProvidedBucket;
         this.allowRemoteProvidedSubdirectory = allowRemoteProvidedSubdirectory;
+        this.allowDownloadOverwrites = allowDownloadOverwrites;
+        this.maxExistingFileRenames = maxExistingFileRenames;
     }
 
     public FileSaveHandler(String yamcsInstance, Bucket defaultBucket) {
-        this(yamcsInstance, defaultBucket, false, false);
+        this(yamcsInstance, defaultBucket, false, false, false, 1000);
     }
 
-    public void saveFile(String objectName, DataFile file, Map<String, String> metadata) {
+    public void saveFile(String objectName, DataFile file, Map<String, String> metadata)
+            throws FileAlreadyExistsException {
         setObjectName(objectName);
         saveFile(file, metadata);
     }
 
     public void saveFile(DataFile file, Map<String, String> metadata) {
+        if(objectName == null) {
+            log.warn("File name not set, not saving");
+            return;
+        }
         if(bucket == null) { bucket = defaultBucket; }
 
         try {
             bucket.putObject(this.objectName, null, metadata, file.getData());
         } catch (IOException e) {
-            throw new UncheckedIOException("cannot save incoming file in bucket " + bucket.getName(), e);
+            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName + (bucket != null ? " -> " + bucket.getName() : ""), e);
         }
     }
 
     private String parseObjectName(String name) throws IOException {
-        /**
-         *@todo This assumes that filesystem separator is "/". Shouldn't this be configurable?
-         */
         bucket = defaultBucket;
 
         if(allowRemoteProvidedBucket) {
@@ -71,28 +78,38 @@ public class FileSaveHandler {
             }
         }
 
-        name = name.replace("/", "_");
-        if (bucket.findObject(name) == null) {
+        if(!allowRemoteProvidedSubdirectory) {
+            name = name.replaceAll("[/\\\\]", "_");
+        } else {
+            // Removing leading slashes, spaces and dots (permitting ".filename")
+            name = name.replaceAll("^(?![.]\\w)[./\\\\ ]+", "");
+            // Removing directory traversal characters
+            name = name.replaceAll("[.]{2,}[/\\\\]", "");
+        }
+
+        name = name.trim();
+
+        if (allowDownloadOverwrites || bucket.findObject(name) == null) {
             return name;
         }
-        /**
-         *@note Any chance we can make this "10000" configurable?
-         */
-        for (int i = 1; i < 10000; i++) {
+
+        for (int i = 1; i < maxExistingFileRenames; i++) {
             String namei = name + "(" + i + ")";
             if (bucket.findObject(namei) == null) {
                 return namei;
             }
         }
-        log.warn("Cannot find a new name for {}, overwirting object", name);
-        return name;
+
+        throw new FileAlreadyExistsException("CANCELLED: \"" + name + "\" already exists in bucket \"" + bucket.getName() + "\"");
     }
 
-    public void setObjectName(String objectName) {
+    public void setObjectName(String objectName) throws FileAlreadyExistsException {
         try {
             this.objectName = parseObjectName(objectName);
+        } catch (FileAlreadyExistsException e) {
+            throw e;
         } catch (IOException e) {
-            throw new UncheckedIOException("cannot save incoming file in bucket " + bucket.getName(), e);
+            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName + (bucket != null ? " -> " + bucket.getName() : ""), e);
         }
     }
 

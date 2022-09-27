@@ -7,7 +7,7 @@ Class 3 and 4 (transfers via one or more waypoints) are not supported.
 
 The service uploads and downloads files between a spacecraft (or a remote device) and a Yamcs bucket. In the description below, the entity that sends the file is called the Sender and the entity that receives the file is called the Receiver.
 
-The protocol specification can be found in  `CCSDS 727.0-B-5 <https://public.ccsds.org/Pubs/727x0b5.pdf>`_ The following description summarizes the specs and provide details on the parts implented/not implemented by this service.
+The protocol specification can be found in  `CCSDS 727.0-B-5 <https://public.ccsds.org/Pubs/727x0b5.pdf>`_ The following description summarizes the specs and provide details on the parts implemented/not implemented by this service.
 
 The upload/download works by splitting the file into segments and uploading/downloading each segment individually (usually embedded as part of a TC/TM packet). The transmission is preceded by a metadata PDU (Protocol Data Unit) and finished with an EOF PDU. The Receiver will send the Finished PDU to let the Sender know that all PDUs have been received.
 
@@ -105,6 +105,12 @@ allowRemoteProvidedBucket (boolean)
 allowRemoteProvidedSubdirectory (boolean)
     Enable subdirectory comprehension from incoming remote object names containing directory delimiters. **Be wary of directory traversal depending on the bucket type**, FileSystemBucket should be safe. Default: ``false``
 
+allowDownloadOverwrites (boolean)
+    Permit overwriting incoming files if their names match. If false, will append an incremented number (up to ``maxExistingFileRenames``) to the received file name. Default: ``false``
+
+maxExistingFileRenames (integer)
+    Maximum number appended to incoming file names in case of matching names (when ``allowDownloadOverwrites`` is false). Default: ``1000``
+
 localEntities (map)
     A list of entity definitions used to give names to the local (Yamcs) entity identifiers as well as to configure which bucket is used for storing the files received for that entity. The names can be used in the REST calls when initiating transfers. The list has to contain all identifiers which will be used by the remote system to send files.  If a PDU is received to an identifier not in this map, the PDU will be dropped and no transaction will be started.
     The ``bucket`` is optional; if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too in the general bucket configured with the ``incomingBucket``.
@@ -131,7 +137,7 @@ sleepBetweenPdus (integer)
     The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
 
 inactivityTimeout (integer) 
-    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be trigggred and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
+    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
     Default: ``10000`` (10 seconds).
 
 eofAckTimeout (integer) 
@@ -163,13 +169,13 @@ senderFaultHandlers (map)
     A definition of the actions to be taken when the sender encounters different faults. The definitions are in the form of ``conditionCode -> action`` map. The possible condition codes are:  
     AckLimitReached, KeepAliveLimitReached, InvalidTransmissionMode, FilestoreRejection, FileChecksumFailure, FileSizeError, NakLimitReached, InactivityDetected, InvalidFileStructure, CheckLimitReached and UnsupportedChecksum.
     The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is established again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
-    Note that the error can be generated locally or recieved from the peer in a FIN PDU.
+    Note that the error can be generated locally or received from the peer in a FIN PDU.
 
 receiverFaultHandlers (map)
     Similar with ``senderFaultHandlers`` but applies when the service works as Receiver (i.e. for downlinks). 
 
 maxNumPendingDownloads (integer)
-    The maximum number of allowed concurrent downloads. If this limit is reached, any PDU that would start a new dowload is dropped and an event message generated. Default: ``100``
+    The maximum number of allowed concurrent downloads. If this limit is reached, any PDU that would start a new download is dropped and an event message generated. Default: ``100``
 
 maxNumPendingUploads (integer)
     The maximum number of allowed concurrent uploads. If this limit is reached, the new uploads are queued. Default: ``10``
@@ -178,7 +184,7 @@ directoryTerminators (list)
     When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]``
 
 allowConcurrentFileOverwrites (boolean)
-    If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
+    If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
 
 pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).

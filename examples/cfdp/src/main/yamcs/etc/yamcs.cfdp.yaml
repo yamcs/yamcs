@@ -37,6 +37,8 @@ services:
      incomingBucket: "cfdpDown"
      allowRemoteProvidedBucket: false
      allowRemoteProvidedSubdirectory: false
+     allowDownloadOverwrites: false
+     maxExistingFileRenames: 1000
      eofAckTimeout: 3000
      eofAckLimit: 5
      #Note that the simulator does not process commands faster than 1/second.
