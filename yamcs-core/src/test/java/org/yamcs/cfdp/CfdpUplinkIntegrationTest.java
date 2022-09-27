@@ -389,7 +389,7 @@ public class CfdpUplinkIntegrationTest {
 
                     if (trsf == null) {
                         FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, incomingBucket, false,
-                                false);
+                                false, false, 1000);
 
                         trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,
                                 packet.getHeader(), cfdpIn, fileSaveHandler, eventProducer, MyFileReceiver.this,

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
+import { Transfer } from '../client';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
-import { Transfer } from '../client';
 
 @Component({
   selector: 'app-file-transfer-table',

@@ -105,6 +105,12 @@ allowRemoteProvidedBucket (boolean)
 allowRemoteProvidedSubdirectory (boolean)
     Enable subdirectory comprehension from incoming remote object names containing directory delimiters. **Be wary of directory traversal depending on the bucket type**, FileSystemBucket should be safe. Default: ``false``
 
+allowDownloadOverwrites (boolean)
+    Permit overwriting incoming files if their names match. If false, will append an incremented number (up to ``maxExistingFileRenames``) to the received file name. Default: ``false``
+
+maxExistingFileRenames (integer)
+    Maximum number appended to incoming file names in case of matching names (when ``allowDownloadOverwrites`` is false). Default: ``1000``
+
 localEntities (map)
     A list of entity definitions used to give names to the local (Yamcs) entity identifiers as well as to configure which bucket is used for storing the files received for that entity. The names can be used in the REST calls when initiating transfers. The list has to contain all identifiers which will be used by the remote system to send files.  If a PDU is received to an identifier not in this map, the PDU will be dropped and no transaction will be started.
     The ``bucket`` is optional; if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too in the general bucket configured with the ``incomingBucket``.
@@ -178,7 +184,7 @@ directoryTerminators (list)
     When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]``
 
 allowConcurrentFileOverwrites (boolean)
-    If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
+    If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
 
 pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).

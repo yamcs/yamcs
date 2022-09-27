@@ -13,10 +13,11 @@
   <ng-container matColumnDef="localFile">
     <th mat-header-cell *matHeaderCellDef style="width: 200px">Local file</th>
     <td mat-cell *matCellDef="let item">
-      <ng-container *ngIf="item.objectUrl">
+      <span *ngIf="item.transfer.direction === 'DOWNLOAD' && item.transfer.state !== 'COMPLETED'; else clickable">{{
+        item.transfer.objectName }}</span>
+      <ng-template #clickable>
         <a [href]="item.objectUrl" download>{{ item.transfer.objectName }}</a>
-      </ng-container>
-      <ng-container *ngIf="!item.objectUrl">-</ng-container>
+      </ng-template>
     </td>
   </ng-container>
 
@@ -42,7 +43,7 @@
     <th mat-header-cell *matHeaderCellDef style="width: 100px">Status</th>
     <td mat-cell *matCellDef="let item">
       <ng-container *ngIf="item.state$ | async as state">
-          {{ (state | titlecase) || '-' }}
+        {{ (state | titlecase) || '-' }}
       </ng-container>
     </td>
   </ng-container>
@@ -52,9 +53,9 @@
     <td mat-cell *matCellDef="let item">
       <ng-container *ngIf="item.state$ | async as state">
         <app-text-action *ngIf="state === 'RUNNING'" icon="pause_circle_outline"
-                        (click)="pauseTransfer(item)">PAUSE</app-text-action>
+                         (click)="pauseTransfer(item)">PAUSE</app-text-action>
         <app-text-action *ngIf="state === 'PAUSED'" icon="play_circle_outline"
-                        (click)="resumeTransfer(item)">RESUME</app-text-action>
+                         (click)="resumeTransfer(item)">RESUME</app-text-action>
         <app-text-action icon="not_interested" (click)="cancelTransfer(item)">CANCEL</app-text-action>
       </ng-container>
     </td>
@@ -63,17 +64,17 @@
   <ng-container matColumnDef="detail">
     <td mat-cell *matCellDef="let item"
         [attr.colspan]="(displayedColumns$ | async)!.length">
-        <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
-          {{ transferPercent(transfer) | percent:'1.1' }}
-          <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
-                            style="width: 200px"
-                            [value]="transferPercent(transfer)*100">
-          </mat-progress-bar>
-          <span>{{ transfer.sizeTransferred | formatBytes }}</span>
-          <span class="error" *ngIf="transfer.failureReason">
-            {{ transfer.failureReason }}
-          </span>
-        </div>
+      <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
+        {{ transferPercent(transfer) | percent:'1.1' }}
+        <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
+                          style="width: 200px"
+                          [value]="transferPercent(transfer)*100">
+        </mat-progress-bar>
+        <span>{{ transfer.sizeTransferred | formatBytes }}</span>
+        <span class="error" *ngIf="transfer.failureReason">
+          {{ transfer.failureReason }}
+        </span>
+      </div>
     </td>
   </ng-container>
 

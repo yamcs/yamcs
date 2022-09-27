@@ -2,6 +2,7 @@ package org.yamcs.cfdp;
 
 import static org.yamcs.cfdp.CfdpService.*;
 
+import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -262,10 +263,15 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         this.acknowledged = packet.getHeader().isAcknowledged();
         originalObjectName = packet.getDestinationFilename();
-        fileSaveHandler.setObjectName(originalObjectName);
-
-        sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
-        checkFileComplete();
+        try {
+            fileSaveHandler.setObjectName(originalObjectName);
+            sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
+            checkFileComplete();
+        } catch (FileAlreadyExistsException e) {
+            cancel(ConditionCode.FILESTORE_REJECTION);
+            log.warn(e.getMessage());
+            pushError(e.getMessage());
+        }
     }
 
     private void processAckPacket(AckPacket ack) {
@@ -578,7 +584,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getObjectName() {
-        return fileSaveHandler.getObjectName();
+        return fileSaveHandler.getObjectName() != null ? fileSaveHandler.getObjectName() : originalObjectName;
     }
 
     public String getOriginalObjectName() {
