@@ -6,8 +6,9 @@
   {{ label }}
 
   <div class="members" [formGroupName]="name">
-    <ng-container *ngFor="let member of type.member; index as i"
-                  [ngSwitch]="member.type.engType">
+    <div *ngFor="let member of type.member; index as i; first as isFirst"
+         [ngSwitch]="member.type.engType"
+         [style.paddingTop.px]="isFirst ? 0 : 5">
 
       <app-aggregate-argument *ngSwitchCase="'aggregate'"
                               [name]="member.name"
@@ -62,6 +63,6 @@
                           [type]="member.type"
                           [initialValue]="memberInitialValues[i]">
       </app-array-argument>
-    </ng-container>
+    </div>
   </div>
 </label>

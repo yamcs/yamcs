@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CommandSubscription, StorageClient, Value } from '../../client';
+import { Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -166,9 +166,34 @@ export class StackFilePage implements OnDestroy {
         }
       }
 
+      // Convert arrays/aggregates from JSON to JavaScript
+      for (const entry of entries) {
+        if (entry.command) {
+          for (const argumentName in entry.args) {
+            if (this.isComplex(argumentName, entry.command)) {
+              entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+            }
+          }
+        }
+      }
+
       // Only now, update the page
       this.entries$.next(entries);
       this.selectedEntry$.next(entries.length ? entries[0] : null);
+    }
+  }
+
+  private isComplex(argumentName: string, info: Command): boolean {
+    for (const argument of (info.argument || [])) {
+      if (argument.name === argumentName) {
+        return argument.type.engType === 'aggregate'
+          || argument.type.engType.endsWith('[]');
+      }
+    }
+    if (info.baseCommand) {
+      return this.isComplex(argumentName, info.baseCommand);
+    } else {
+      return false;
     }
   }
 

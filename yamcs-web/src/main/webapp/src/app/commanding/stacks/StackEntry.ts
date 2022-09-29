@@ -3,7 +3,7 @@ import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 
 export interface StackEntry {
   name: string;
-  args: {[key: string]: any};
+  args: { [key: string]: any; };
   comment?: string;
   extra?: { [key: string]: Value; };
 
@@ -14,3 +14,4 @@ export interface StackEntry {
   record?: CommandHistoryRecord;
   err?: string;
 }
+

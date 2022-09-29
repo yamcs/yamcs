@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetCommandHistoryOptions, CommandSubscription } from '../../client';
+import { CommandSubscription, GetCommandHistoryOptions } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
@@ -112,6 +112,7 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
     }
     this.records$.complete();
     this.loading$.complete();
+    this.streaming$.complete();
   }
 
   isEmpty() {
