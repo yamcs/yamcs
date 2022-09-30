@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,7 +84,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected static void setupYamcs() throws Exception {
-        Path dataDir = Paths.get("/tmp/yamcs-IntegrationTest-data");
+        Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-IntegrationTest-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
 
         YConfiguration.setupTest("IntegrationTest");

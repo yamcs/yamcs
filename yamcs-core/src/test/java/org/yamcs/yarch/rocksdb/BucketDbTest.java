@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 public class BucketDbTest {
 
-    static String testDir = "/tmp/BucketDbTest";
+    static Path testDir = Path.of(System.getProperty("java.io.tmpdir"), "BucketDbTest");
     Random random = new Random();
 
     @BeforeAll
@@ -32,12 +33,12 @@ public class BucketDbTest {
 
     @BeforeEach
     public void cleanup() throws Exception {
-        FileUtils.deleteRecursivelyIfExists(Paths.get(testDir));
+        FileUtils.deleteRecursivelyIfExists(testDir);
     }
 
     @Test
     public void test1() throws Exception {
-        String dir = testDir + "/tablespace1";
+        String dir = testDir + File.separator + "tablespace1";
         Tablespace tablespace = new Tablespace("tablespace1");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
@@ -110,7 +111,7 @@ public class BucketDbTest {
 
     @Test
     public void test2() throws Exception {
-        String dir = testDir + "/tablespace2";
+        String dir = testDir + File.separator + "tablespace2";
         Tablespace tablespace = new Tablespace("tablespace2");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
@@ -137,6 +138,7 @@ public class BucketDbTest {
         bucketDb = new RdbBucketDatabase("test", tablespace);
         bucket = bucketDb.getBucket("bucket1");
         assertNull(bucket);
+        tablespace.close();
     }
 
     @Test
@@ -155,6 +157,7 @@ public class BucketDbTest {
         assertNotNull(e);
         b.deleteObject("obj0");
         b.putObject("newobj", null, null, new byte[10]);
+        bucketDb.getTablespace().close();
     }
 
     @Test
@@ -173,14 +176,14 @@ public class BucketDbTest {
         assertNotNull(e);
         b.deleteObject("obj0");
         b.putObject("newobj", null, null, new byte[1024 * 1024]);
+        bucketDb.getTablespace().close();
     }
 
     private RdbBucketDatabase createDb(int n) throws Exception {
-        String dir = testDir + "/tablespace" + n;
+        String dir = testDir + File.separator + "tablespace" + n;
         Tablespace tablespace = new Tablespace("tablespace" + n);
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         return new RdbBucketDatabase("test", tablespace);
     }
-
 }

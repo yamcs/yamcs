@@ -21,6 +21,8 @@ import java.util.zip.CRC32;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
 
+import io.netty.util.internal.PlatformDependent;
+
 /**
  * Stores transactions in a memory mapped file. The data is split into pages, each page has a fixed number of
  * transactions.
@@ -66,11 +68,9 @@ import org.yamcs.utils.StringConverter;
  * </pre>
  * 
  * <p>
- * The methods of this class throw {@link UncheckedIOException} instead of {@link IOException}. When
- * working with memory mapped files in java, an IO error will cause an unspecified unchecked exception or even crash of
- * Java (because
- * file data is accessed using memory reads/writes). Therefore we prefer not to give a false sense of security by
- * throwing
+ * The methods of this class throw {@link UncheckedIOException} instead of {@link IOException}. When working with memory
+ * mapped files in java, an IO error will cause an unspecified unchecked exception or even crash of Java (because file
+ * data is accessed using memory reads/writes). Therefore we prefer not to give a false sense of security by throwing
  * IOException only in some limited situations and converted all these to {@link UncheckedIOException}..
  * 
  * <p>
@@ -538,8 +538,8 @@ public class ReplicationFile implements Closeable {
      * <p>
      * If the txId is greater than the highest transaction in this file plus 1, null is returned
      * <p>
-     * If the txId is the highest transaction in this file plus one, a tail with 0 transactions (i.e. position=limit in the buffer) is
-     * returned; it can be used later to get more data.
+     * If the txId is the highest transaction in this file plus one, a tail with 0 transactions (i.e. position=limit in
+     * the buffer) is returned; it can be used later to get more data.
      * 
      * @param txId
      * @return
@@ -593,8 +593,8 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
-     * Get the position of the txNum th transaction in the file according to the index
-     * return -1 if the transaction is beyond the end of the file.
+     * Get the position of the txNum th transaction in the file according to the index return -1 if the transaction is
+     * beyond the end of the file.
      */
     private int getPosition(int txNum) {
         int nfp = txNum / hdr1.pageSize;
@@ -643,8 +643,7 @@ public class ReplicationFile implements Closeable {
      * Force writing the content on disk.
      * <p>
      * The method will call first {@link FileChannel#force(boolean)}, write the number of transactions to the header and
-     * then call again
-     * {@link FileChannel#force(boolean)} to force also the header on the disk.
+     * then call again {@link FileChannel#force(boolean)} to force also the header on the disk.
      * <p>
      * This way should guarantee that the transaction data is written on the disk before the header
      */
@@ -673,7 +672,14 @@ public class ReplicationFile implements Closeable {
         try {
             if (!readOnly) {
                 hdr2.write();
+
+                // Required to unmap on Windows, else truncate fails
+                PlatformDependent.freeDirectBuffer(buf);
+
                 fc.truncate(buf.position());
+            } else {
+                // Required on Windows
+                PlatformDependent.freeDirectBuffer(buf);
             }
             fc.close();
         } catch (IOException e) {
@@ -705,8 +711,7 @@ public class ReplicationFile implements Closeable {
         }
 
         /**
-         * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it
-         * ends
+         * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it ends
          * <p>
          * The structure of the metadata is
          * 

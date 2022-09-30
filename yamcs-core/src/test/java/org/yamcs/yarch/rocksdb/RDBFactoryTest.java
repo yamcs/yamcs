@@ -3,12 +3,12 @@ package org.yamcs.yarch.rocksdb;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.nio.file.FileSystemException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -32,10 +32,11 @@ public class RDBFactoryTest {
     @Test
     public void testDispose() throws Exception {
         YRDB[] dbs = new YRDB[RDBFactory.maxOpenDbs * 2];
-        RDBFactory rdbf = new RDBFactory("testDispose", new ScheduledThreadPoolExecutor(1));
+        Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "testDispose");
+        RDBFactory rdbf = new RDBFactory(dataDir.toString(), new ScheduledThreadPoolExecutor(1));
 
         for (int i = 0; i < RDBFactory.maxOpenDbs; i++) {
-            dbs[i] = rdbf.getRdb("/tmp/rdbfactorytest" + i, false);
+            dbs[i] = rdbf.getRdb("rdbfactorytest" + i, false);
         }
         for (int i = 0; i < RDBFactory.maxOpenDbs / 2; i++) {
             rdbf.dispose(dbs[i]);
@@ -44,7 +45,7 @@ public class RDBFactoryTest {
             assertTrue(isOpen(dbs[i]));
         }
         for (int i = RDBFactory.maxOpenDbs; i < 2 * RDBFactory.maxOpenDbs; i++) {
-            dbs[i] = rdbf.getRdb("/tmp/rdbfactorytest" + i, false);
+            dbs[i] = rdbf.getRdb("rdbfactorytest" + i, false);
         }
         for (int i = 0; i < RDBFactory.maxOpenDbs / 2; i++) {
             assertFalse(isOpen(dbs[i]));
@@ -53,16 +54,18 @@ public class RDBFactoryTest {
             assertTrue(isOpen(dbs[i]));
         }
         // cleanup
+
         for (int i = 0; i < 2 * RDBFactory.maxOpenDbs; i++) {
-            Path d = Paths.get("/tmp/rdbfactorytest" + i);
+            rdbf.closeIfOpen("rdbfactorytest" + i);
+            Path d = dataDir.resolve("rdbfactorytest" + i);
             FileUtils.deleteRecursivelyIfExists(d);
         }
     }
 
     @Test
     public void testBackup() throws Exception {
-        String dir = "/tmp/rdb_backup_test/";
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dir));
+        Path dir = Path.of(System.getProperty("java.io.tmpdir"), "rdb_backup_test");
+        FileUtils.deleteRecursivelyIfExists(dir);
         RDBFactory rdbf = new RDBFactory(dir.toString(), new ScheduledThreadPoolExecutor(1));
 
         YRDB db1 = rdbf.getRdb("db1", false);
@@ -71,28 +74,28 @@ public class RDBFactoryTest {
 
         db1.createColumnFamily("c2");
 
-        new File(dir, "db1_back").mkdirs();
-        rdbf.doBackup("db1", dir + "/db1_back").get();
+        Path backupDir = dir.resolve("db1_back");
+        Files.createDirectories(backupDir);
+        rdbf.doBackup("db1", backupDir.toString()).get();
 
         db1.createColumnFamily("c3");
-        rdbf.doBackup("db1", dir + "/db1_back").get();
+        rdbf.doBackup("db1", backupDir.toString()).get();
 
         // try to backup on top of existing non backup directory -> should throw an exception
-        Throwable e = null;
-        try {
-            rdbf.doBackup("db1", dir + "/db1").get();
-        } catch (ExecutionException e1) {
-            e = e1.getCause();
-        }
-        assertNotNull(e);
-        assertTrue(e instanceof FileSystemException);
+        assertThrows(FileSystemException.class, () -> {
+            try {
+                rdbf.doBackup("db1", dir.resolve("db1").toString()).get();
+            } catch (ExecutionException e1) {
+                throw e1.getCause();
+            }
+        });
 
         db1.put(cfh, "aaa1".getBytes(), "bbb1".getBytes());
         byte[] b = db1.get(cfh, "aaa1".getBytes());
         assertNotNull(b);
         rdbf.close(db1);
 
-        rdbf.restoreBackup(1, dir + "/db1_back", "db2").get();
+        rdbf.restoreBackup(1, backupDir.toString(), "db2").get();
         YRDB db2 = rdbf.getRdb("db2", false);
 
         assertNotNull(db2.getColumnFamilyHandle("c2"));
@@ -106,7 +109,7 @@ public class RDBFactoryTest {
         b = db2.get(cfh_db2, "aaa1".getBytes());
         assertNull(b);
 
-        rdbf.restoreBackup(-1, dir + "/db1_back", "db3").get();
+        rdbf.restoreBackup(-1, backupDir.toString(), "db3").get();
         YRDB db3 = rdbf.getRdb("db3", false);
 
         assertNotNull(db3.getColumnFamilyHandle("c2"));

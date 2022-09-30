@@ -211,7 +211,7 @@ public class YarchDatabaseInstance {
         if (dirFiles.length == 0) {
             return;
         }
-        File oldTblDefs = new File(dir.getAbsolutePath() + "/" + "old-tbl-defs");
+        File oldTblDefs = new File(dir.getAbsolutePath(), "old-tbl-defs");
         oldTblDefs.mkdir();
 
         for (File f : dirFiles) {
@@ -417,7 +417,7 @@ public class YarchDatabaseInstance {
      * Returns the root directory for this database instance. It is usually home/instance_name.
      */
     public String getRoot() {
-        return YarchDatabase.getHome() + "/" + instanceName;
+        return YarchDatabase.getHome() + File.separator + instanceName;
     }
 
     public StreamSqlStatement createStatement(String query, Object... args) throws StreamSqlException, ParseException {

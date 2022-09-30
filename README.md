@@ -46,6 +46,11 @@ This configuration stores data to `/storage/yamcs-data`. Ensure this folder exis
 
 When Yamcs started successfully, you can visit the built-in web interface by navigating to `http://localhost:8090`.
 
+**Note to Windows users:** This repository uses some relative symbolic links. To support this on Windows:
+* Enable "Developer Mode" in Windows (allows to use `mklink` without administrative privileges).
+* Enable msysgit symlink support: `git config --global core.symlinks true`
+* If you already cloned the repository prior to these steps, `git status` will tell you how to convert the symlinks. 
+
 
 ## Contributions
 

@@ -219,6 +219,10 @@ public class RdbBucket implements Bucket {
         return bucketProps.getName();
     }
 
+    public Tablespace getTablespace() {
+        return tablespace;
+    }
+
     public int getTbsIndex() {
         return tbsIndex;
     }

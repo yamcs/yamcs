@@ -1,7 +1,7 @@
 package org.yamcs.parameterarchive;
 
-import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -19,9 +19,8 @@ public class TestCompression {
     @Test
     @Disabled
     public void test() throws Exception {
-        String path = "/tmp/testcompression";
-        File file = new File(path);
-        FileUtils.deleteRecursivelyIfExists(file.toPath());
+        Path path = Path.of(System.getProperty("java.io.tmpdir"), "testcompression");
+        FileUtils.deleteRecursivelyIfExists(path);
 
         Options options = new Options();
         options.setCreateIfMissing(true);
@@ -31,7 +30,7 @@ public class TestCompression {
         ColumnFamilyOptions cfo = new ColumnFamilyOptions();
         cfo.setCompressionType(CompressionType.SNAPPY_COMPRESSION);
         //
-        RocksDB rdb = RocksDB.open(options, path);
+        RocksDB rdb = RocksDB.open(options, path.toString());
         int numparam = 1;
         int pphour = 3600;
         int nhours = 10000;

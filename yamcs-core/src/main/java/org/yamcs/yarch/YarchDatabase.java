@@ -2,6 +2,7 @@ package org.yamcs.yarch;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public class YarchDatabase {
     static {
         config = YConfiguration.getConfiguration("yamcs");
         if (config.containsKey("dataDir")) {
-            home = config.getString("dataDir");
+            Path dataDir = Path.of(config.getString("dataDir")).toAbsolutePath().normalize();
+            home = dataDir.toString();
         }
 
         List<String> se;
@@ -113,7 +115,7 @@ public class YarchDatabase {
     }
 
     public static boolean instanceExistsOnDisk(String yamcsInstance) {
-        File dir = new File(getHome() + "/" + yamcsInstance);
+        File dir = new File(getHome(), yamcsInstance);
         return dir.exists() && dir.isDirectory();
     }
 

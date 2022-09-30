@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,11 +18,11 @@ public class ParameterIdDbTest {
 
     @BeforeEach
     public void before() throws Exception {
-        File f = new File("/tmp/TestParameterIdDb");
-        FileUtils.deleteRecursivelyIfExists(f.toPath());
+        Path f = Path.of(System.getProperty("java.io.tmpdir"), "TestParameterIdDb");
+        FileUtils.deleteRecursivelyIfExists(f);
 
         tablespace = new Tablespace("test1");
-        tablespace.setCustomDataDir(f.getAbsolutePath());
+        tablespace.setCustomDataDir(f.toString());
 
         tablespace.loadDb(false);
     }

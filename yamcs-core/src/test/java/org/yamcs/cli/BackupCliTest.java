@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
@@ -19,6 +20,7 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
+import org.yamcs.yarch.rocksdb.RdbBucket;
 import org.yamcs.yarch.rocksdb.RdbBucketDatabase;
 import org.yamcs.yarch.rocksdb.Tablespace;
 
@@ -52,7 +54,7 @@ public class BackupCliTest extends AbstractCliTest {
         String restore2Dir = etcdata.resolve("restore2").toString();
 
         Tablespace tbl = new Tablespace("test");
-        tbl.setCustomDataDir(dataDir + "/test.rdb");
+        tbl.setCustomDataDir(dataDir + File.separator + "test.rdb");
         tbl.loadDb(false);
         BucketDatabase bdb = new RdbBucketDatabase("test", tbl);
         Bucket bucket = bdb.createBucket("mybucket");
@@ -78,18 +80,20 @@ public class BackupCliTest extends AbstractCliTest {
         verifyBackupList(backupDir, 1, 2);
 
         // restore backup1
-        Bucket rbucket1 = restoreBackup(backupDir, restore1Dir, 1);
+        RdbBucket rbucket1 = restoreBackup(backupDir, restore1Dir, 1);
         byte[] robj1 = rbucket1.getObject("obj1");
         assertArrayEquals(obj1, robj1);
         assertNull(rbucket1.getObject("obj2"));
+        rbucket1.getTablespace().close();
 
         // restore backup 2
-        Bucket rbucket2 = restoreBackup(backupDir, restore2Dir, 2);
+        RdbBucket rbucket2 = restoreBackup(backupDir, restore2Dir, 2);
         robj1 = rbucket2.getObject("obj1");
         assertArrayEquals(obj1, robj1);
 
         byte[] robj2 = rbucket2.getObject("obj2");
         assertArrayEquals(obj2, robj2);
+        rbucket2.getTablespace().close();
 
         // create backup 3
         mconsole.reset();
@@ -112,7 +116,6 @@ public class BackupCliTest extends AbstractCliTest {
 
         assertTrue(mconsole.output().contains("Purged operation successfull"));
         verifyBackupList(backupDir, 3);
-
     }
 
     void verifyBackupList(String backupDir, int... id) {
@@ -125,7 +128,7 @@ public class BackupCliTest extends AbstractCliTest {
         }
     }
 
-    Bucket restoreBackup(String backupDir, String restoreDir, int id) throws RocksDBException, IOException {
+    RdbBucket restoreBackup(String backupDir, String restoreDir, int id) throws RocksDBException, IOException {
         mconsole.reset();
         runMain("backup", "restore", "--backup-dir", backupDir, "--restore-dir", restoreDir,
                 Integer.toString(id));
@@ -133,8 +136,8 @@ public class BackupCliTest extends AbstractCliTest {
         rtbl.setCustomDataDir(restoreDir);
         rtbl.loadDb(false);
 
-        BucketDatabase bdb = new RdbBucketDatabase("restore" + id, rtbl);
-        Bucket rbucket = bdb.getBucket("mybucket");
+        RdbBucketDatabase bdb = new RdbBucketDatabase("restore" + id, rtbl);
+        RdbBucket rbucket = bdb.getBucket("mybucket");
         assertNotNull(rbucket);
         return rbucket;
     }

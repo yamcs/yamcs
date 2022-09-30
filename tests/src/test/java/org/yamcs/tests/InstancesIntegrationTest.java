@@ -68,16 +68,18 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
                 .putLabels("label2", "labelValue2")
                 .build();
 
+        String tmpdir = System.getProperty("java.io.tmpdir");
+
         YamcsInstance yi = yamcsClient.createInstance(cir).get();
-        assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
-        assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.metadata").exists());
+        assertTrue(new File(tmpdir, "yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
+        assertTrue(new File(tmpdir, "yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.metadata").exists());
         assertEquals(InstanceState.RUNNING, yi.getState());
 
         yi = yamcsClient.stopInstance("inst-test1").get();
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
-        assertFalse(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
-        assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml.offline").exists());
+        assertFalse(new File(tmpdir, "yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
+        assertTrue(new File(tmpdir, "yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml.offline").exists());
 
         InstanceFilter filter = new InstanceFilter();
         filter.addLabel("label1", "labelValue1");

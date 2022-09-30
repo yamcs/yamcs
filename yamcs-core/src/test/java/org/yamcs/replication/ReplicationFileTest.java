@@ -233,9 +233,8 @@ public class ReplicationFileTest {
         ReplicationFile rf1 = ReplicationFile.openReadOnly("test", file1, 0);
         assertEquals(2, rf1.numTx());
 
-        rf.close();
         rf1.close();
-
+        rf.close();
     }
 
     @Test

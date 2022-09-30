@@ -7,7 +7,7 @@ services:
     args:
       port: 9190
 
-incomingDir: /tmp/yamcs-incoming
-dataDir: /tmp/yamcs-IntegrationTest-data
+incomingDir: ${java.io.tmpdir}/yamcs-incoming
+dataDir: ${java.io.tmpdir}/yamcs-IntegrationTest-data
 
 secretKey: testtest

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,10 +71,11 @@ public class ParameterArchiveTest {
     }
 
     public void openDb(String partitioningSchema) throws Exception {
-        String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
+        Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
+        FileUtils.deleteRecursivelyIfExists(dbroot);
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".tbs"));
+
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);
