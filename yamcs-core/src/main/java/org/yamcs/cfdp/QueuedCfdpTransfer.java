@@ -5,13 +5,13 @@ import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.TimeEncoding;
 
 public class QueuedCfdpTransfer implements CfdpFileTransfer {
-    final PutRequest putRequest;
+    final FilePutRequest putRequest;
     final long id;
     TransferState state = TransferState.QUEUED;
     String failureReason;
     long creationTime;
 
-    public QueuedCfdpTransfer(long id, long creationTime, PutRequest putRequest) {
+    public QueuedCfdpTransfer(long id, long creationTime, FilePutRequest putRequest) {
         this.id = id;
         this.putRequest = putRequest;
         this.creationTime = creationTime;
@@ -24,12 +24,12 @@ public class QueuedCfdpTransfer implements CfdpFileTransfer {
 
     @Override
     public String getObjectName() {
-        return putRequest.getObjectName();
+        return putRequest.getSourceFileName();
     }
 
     @Override
     public String getRemotePath() {
-        return putRequest.getTargetPath();
+        return putRequest.getDestinationFileName();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class QueuedCfdpTransfer implements CfdpFileTransfer {
 
     @Override
     public long getDestinationId() {
-        return putRequest.getDestinationId();
+        return putRequest.getDestinationCfdpEntityId();
     }
 
     public void setTransferState(TransferState state) {

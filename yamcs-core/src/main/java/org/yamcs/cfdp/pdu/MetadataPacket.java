@@ -1,6 +1,7 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.ChecksumType;
@@ -10,23 +11,26 @@ import org.yamcs.logging.Log;
 public class MetadataPacket extends CfdpPacket implements FileDirective {
     static final Log log = new Log(MetadataPacket.class);
 
+    private boolean closureRequested;
+    private ChecksumType checksumType;
     private long fileSize;
     private LV sourceFileName;
     private LV destinationFileName;
-    private boolean closureRequested;
-    private ChecksumType checksumType;
+    private List<TLV> options;
 
     public MetadataPacket(boolean closureRequested, ChecksumType checksumType, int fileSize,
-            String source, String destination, CfdpHeader header) {
+            String source, String destination, List<TLV> options, CfdpHeader header) {
         super(header);
         if (fileSize == 0) {
-            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
+            // TODO: re-add check for unbound file size
+//            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
+        this.closureRequested = closureRequested;
+        this.checksumType = checksumType;
         this.fileSize = fileSize;
         this.sourceFileName = new LV(source);
         this.destinationFileName = new LV(destination);
-        this.closureRequested = closureRequested;
-        this.checksumType = checksumType;
+        this.options = options;
     }
 
     /**
@@ -67,6 +71,12 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
 
         toReturn += 3;
 
+        if(options != null) {
+            for (TLV option : options) {
+                toReturn += option.getBytes().length;
+            }
+        }
+
         return toReturn;
     }
 
@@ -83,6 +93,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
         destinationFileName.writeToBuffer(buffer);
+        if(options != null) {
+            options.forEach(option -> buffer.put(option.getBytes()));
+        }
     }
 
     @Override

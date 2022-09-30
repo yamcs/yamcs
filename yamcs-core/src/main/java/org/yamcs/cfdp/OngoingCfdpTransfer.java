@@ -50,6 +50,13 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     // accumulate the errors
     List<String> errors = new ArrayList<>();
     enum FaultHandlingAction {
+        // "Handler code" in protocol?
+        //‘0000’ — reserved for future expansion
+        //‘0001’ — issue Notice of Cancellation
+        //‘0010’ — issue Notice of Suspension
+        //‘0011’ — Ignore error
+        //‘0100’ — Abandon transaction
+        //‘0101’–‘1111’ — reserved
         SUSPEND, CANCEL, ABANDON;
 
         public static FaultHandlingAction fromString(String str) {

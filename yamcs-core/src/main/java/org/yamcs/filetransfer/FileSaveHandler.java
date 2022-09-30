@@ -67,11 +67,8 @@ public class FileSaveHandler {
             if(split.length == 2) {
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
 
-                System.out.println(ydb.listBuckets());
                 Bucket customBucket = ydb.getBucket(split[0]);
-                System.out.println(customBucket);
                 if(customBucket != null) {
-                    System.out.println(customBucket.getName());
                     this.bucket = customBucket;
                     name = split[1];
                 }
