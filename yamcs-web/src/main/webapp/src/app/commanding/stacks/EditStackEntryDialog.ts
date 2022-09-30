@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
+import { utils } from '../../../lib';
 import { Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
@@ -25,7 +26,7 @@ export class StackEntryTemplateProvider implements TemplateProvider {
     for (const argName in this.entry.args) {
       if (argName === argumentName) {
         const value = this.entry.args[argName];
-        return { type: 'STRING', stringValue: value } as Value;
+        return utils.toValue(value);
       }
     }
   }

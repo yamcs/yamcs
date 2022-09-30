@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { fromEvent, merge, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
@@ -49,6 +49,9 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
 
   private onChange = (_: string | null) => { };
 
+  constructor(private changeDetection: ChangeDetectorRef) {
+  }
+
   ngAfterViewInit() {
     const keyObservable = fromEvent(this.filter.nativeElement, 'keyup').pipe(
       debounceTime(this.debounceTime),
@@ -56,6 +59,8 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
     );
 
     this.showClear$.next(!!this.getValue());
+    this.changeDetection.detectChanges();
+
     this.eventSubscription = merge(keyObservable, this.setEvent$).pipe(
       distinctUntilChanged(),
     ).subscribe(value => {

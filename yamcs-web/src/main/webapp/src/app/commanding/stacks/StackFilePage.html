@@ -113,7 +113,9 @@
                   <td class="key" width="1">
                     {{ arg.key }}
                   </td>
-                  <td class="value">{{ arg.value }}</td>
+                  <td class="value">
+                    <app-value [value]="arg.value | tovalue"></app-value>
+                  </td>
                 </tr>
               </table>
             </div>

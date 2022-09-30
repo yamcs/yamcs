@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.Observer;
+import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 import org.yamcs.http.WebSocketServerMessageHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
-import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 
 import com.google.protobuf.Message;
 
@@ -48,13 +48,15 @@ public class WebSocketObserver implements Observer<Message> {
         }
     }
 
+    /*
+     * Synchronize because we may get called from different threads and messages
+     * should be passed in-order to netty, matching messageCount.
+     */
     @Override
-    public void next(Message message) {
-        synchronized (this) {
-            if (!replied) {
-                pendingMessages.add(message);
-                return;
-            }
+    public synchronized void next(Message message) {
+        if (!replied) {
+            pendingMessages.add(message);
+            return;
         }
 
         messageCount++;

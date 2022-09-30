@@ -141,6 +141,26 @@ export function convertHexToBase64(hex: string) {
   return btoa(str);
 }
 
+export function toValue(value: any): Value {
+  if (Array.isArray(value)) {
+    const arrayValue: Value[] = [];
+    for (const item of value) {
+      arrayValue.push(toValue(item));
+    }
+    return { type: 'ARRAY', arrayValue };
+  } else if (typeof value === 'object') {
+    const names = [];
+    const values = [];
+    for (const name in value) {
+      names.push(name);
+      values.push(toValue(value[name]));
+    }
+    return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
+  } else {
+    return { type: 'STRING', stringValue: value };
+  }
+}
+
 export function convertValue(value: Value) {
   switch (value.type) {
     case 'FLOAT':

@@ -93,6 +93,7 @@ import { ReversePipe } from './pipes/ReversePipe';
 import { ShortNamePipe } from './pipes/ShortNamePipe';
 import { SpaceSystemPipe } from './pipes/SpaceSystemPipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
+import { ToValuePipe } from './pipes/ToValuePipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { PrintableDirective } from './print/PrintableDirective';
@@ -271,6 +272,7 @@ const pipes = [
   ShortNamePipe,
   SpaceSystemPipe,
   SuperuserPipe,
+  ToValuePipe,
   UnitsPipe,
   ValuePipe,
 ];

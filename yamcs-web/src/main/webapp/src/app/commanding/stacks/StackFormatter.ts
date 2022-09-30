@@ -71,7 +71,8 @@ export class StackFormatter {
       for (const argName in entry.args) {
         const argumentEl = doc.createElement('commandArgument');
         argumentEl.setAttribute('argumentName', argName);
-        argumentEl.setAttribute('argumentValue', entry.args[argName]);
+        const argValue = this.formatValue(entry.args[argName]);
+        argumentEl.setAttribute('argumentValue', argValue);
         entryEl.appendChild(argumentEl);
       }
       rootEl.appendChild(entryEl);
@@ -79,6 +80,16 @@ export class StackFormatter {
 
     let xmlString = new XMLSerializer().serializeToString(rootEl);
     return this.formatXml(xmlString);
+  }
+
+  private formatValue(value: any) {
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
+    } else if (typeof value === 'object') {
+      return JSON.stringify(value);
+    } else {
+      return String(value);
+    }
   }
 
   private formatXml(xml: string) {

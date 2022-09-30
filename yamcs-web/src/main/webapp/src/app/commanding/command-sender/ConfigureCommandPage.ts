@@ -112,10 +112,6 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
     const qname = this.command$.value!.qualifiedName;
 
-    if (true) {
-      console.log('args', args);
-      // return;
-    }
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       args,
       comment,
