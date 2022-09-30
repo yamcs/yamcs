@@ -581,6 +581,7 @@ public class CfdpService extends AbstractYamcsService
             }
         }
         executor.shutdown();
+        cfdpIn.removeSubscriber(this);
         notifyStopped();
     }
 
