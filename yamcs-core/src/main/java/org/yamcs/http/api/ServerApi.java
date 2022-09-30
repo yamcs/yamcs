@@ -74,7 +74,6 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void getServerInfo(Context ctx, Empty request, Observer<GetServerInfoResponse> observer) {
-        System.gc();
         GetServerInfoResponse.Builder responseb = GetServerInfoResponse.newBuilder();
         if (YamcsVersion.VERSION != null) {
             responseb.setYamcsVersion(YamcsVersion.VERSION);
