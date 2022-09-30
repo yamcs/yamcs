@@ -132,7 +132,12 @@
             </span>
           </td>
           <td>{{ (parameter | entryForOffset:memberOffset)?.shortDescription || '-' }}</td>
-          <td>{{ value.aggregateValue!.value[i] | value }}</td>
+          <td>
+            {{ value.aggregateValue!.value[i] | value }}
+            <ng-container *ngIf="(parameter | entryForOffset:memberOffset)?.type?.unitSet as unitSet">
+              {{ unitSet | units }}
+            </ng-container>
+          </td>
         </ng-container>
       </tr>
     </table>
@@ -155,7 +160,9 @@
           <app-alarm-level [level]="pval.monitoringResult"></app-alarm-level>&nbsp;
         </ng-container>
         {{ value | value }}
-        <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+        <ng-container *ngIf="(parameter | parameterTypeForPath)?.unitSet as unitSet">
+          {{ unitSet | units }}
+        </ng-container>
       </app-expirable>
     </span>
     <br>

@@ -3,17 +3,21 @@ package org.yamcs.parameter;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.UnitType;
 
 /**
  * Generates parameters containing information about the system disks: total space, available space and percentage used.
@@ -27,30 +31,60 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
 
     private AggregateParameterType fileStoreAggrType;
 
-    public FileStoreParameterProducer(SystemParametersService sysParamsService) {
+    public FileStoreParameterProducer(SystemParametersService sysParamsService) throws IOException {
+        UnitType kbunit = new UnitType("KB");
+        UnitType pctunit = new UnitType("%");
+
+        Member totalMember = new Member("total", sysParamsService.getBasicType(Type.SINT64, kbunit));
+        totalMember.setShortDescription("Size of the file store");
+
+        Member availableMember = new Member("available", sysParamsService.getBasicType(Type.SINT64, kbunit));
+        availableMember.setShortDescription(
+                "The number of bytes available to this Java Virtual Machine on the file store");
+
+        Member percentageUseMember = new Member("percentageUse", sysParamsService.getBasicType(Type.FLOAT, pctunit));
+        percentageUseMember.setShortDescription("Percentage of bytes used on the file store");
+
         fileStoreAggrType = new AggregateParameterType.Builder().setName("FileStore")
-                .addMember(new Member("total", sysParamsService.getBasicType(Type.SINT64)))
-                .addMember(new Member("available", sysParamsService.getBasicType(Type.SINT64)))
-                .addMember(new Member("percentageUse", sysParamsService.getBasicType(Type.FLOAT)))
+                .addMember(totalMember)
+                .addMember(availableMember)
+                .addMember(percentageUseMember)
                 .build();
 
-
         fileStores = new ArrayList<>();
-        for (FileStore store : FileSystems.getDefault().getFileStores()) {
-            if (FILE_SYSTEM_TYPES.contains(store.type())) {
-                if (fileStores.stream()
-                        .filter(fs -> fs.store.name().equals(store.name())).findFirst()
-                        .isPresent()) {
-                    // sometimes (e.g. docker) the same filesystem is mounted multiple times in different locations
-                    log.debug("Do not adding duplicate store '{}' to the file stores to be monitored", store);
-                } else {
-                    log.debug("Adding store '{}' to the file stores to be monitored", store);
-                    Parameter p = sysParamsService.createSystemParameter("df/" + store.name(), fileStoreAggrType,
-                            "Information about disk usage");
-                    fileStores.add(new FileStoreParam(store, p));
+
+        if (isWindows()) {
+            Path dataDirectory = YamcsServer.getServer().getDataDirectory().toAbsolutePath().getRoot();
+            FileStore store = Files.getFileStore(dataDirectory);
+            // store.name() returns the name of the drive, which can be empty, so prefer drive letter
+            String displayName = dataDirectory.getRoot().toString();
+            String driveLetter = displayName.replace(":\\", ""); // Change C:\ to C
+            addFileStore(store, driveLetter, displayName, sysParamsService);
+        } else if (isMac()) {
+            FileStore store = Files.getFileStore(YamcsServer.getServer().getDataDirectory());
+            addFileStore(store, store.name(), store.name(), sysParamsService);
+        } else {
+            for (FileStore store : FileSystems.getDefault().getFileStores()) {
+                if (FILE_SYSTEM_TYPES.contains(store.type())) {
+                    if (fileStores.stream()
+                            .filter(fs -> fs.store.name().equals(store.name())).findFirst()
+                            .isPresent()) {
+                        // sometimes (e.g. docker) the same filesystem is mounted multiple times in different locations
+                        log.debug("Not adding duplicate store '{}' to the file stores to be monitored", store);
+                    } else {
+                        addFileStore(store, store.name(), store.name(), sysParamsService);
+                    }
                 }
             }
         }
+    }
+
+    private void addFileStore(FileStore store, String name, String displayName,
+            SystemParametersService sysParamsService) {
+        log.debug("Adding store '{}' to the file stores to be monitored", store);
+        Parameter p = sysParamsService.createSystemParameter("df/" + name, fileStoreAggrType,
+                "Information about disk usage for the " + displayName + " file store of type " + store.type());
+        fileStores.add(new FileStoreParam(store, p));
     }
 
     @Override
@@ -70,7 +104,7 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
 
                 ParameterValue pv = new ParameterValue(storep.param);
                 pv.setGenerationTime(gentime);
-                pv.setEngineeringValue(v);
+                pv.setEngValue(v);
                 pvlist.add(pv);
             } catch (IOException e) {
                 log.error("Failed to collect information about the file store {}", store, e);
@@ -83,6 +117,16 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
     @Override
     public int getFrequency() {
         return 60;
+    }
+
+    private static boolean isWindows() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return os.contains("win");
+    }
+
+    private static boolean isMac() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return os.contains("mac");
     }
 
     static class FileStoreParam {
