@@ -145,7 +145,7 @@ public class CfdpDownlinkIntegrationTest {
         // send a metadata packet with a file larger than max
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 15, 12, ++seqNum);
         MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 101 * 1024 * 1024, "large-file",
-                "large-file", header);
+                "large-file", null, header);
         cfdpIn.emitTuple(mp.toTuple(header.getTransactionId(), TimeEncoding.getWallclockTime()));
 
         synchWithExecutors(1);
@@ -233,7 +233,7 @@ public class CfdpDownlinkIntegrationTest {
     public void testUnknownLocalEntity() throws Exception {
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 15, 13, 5);
         MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 1000, "invalid-local-entity",
-                "large-file", header);
+                "large-file", null, header);
         Tuple t = mp.toTuple(TimeEncoding.getWallclockTime());
         cfdpIn.emitTuple(t);
 
@@ -244,7 +244,7 @@ public class CfdpDownlinkIntegrationTest {
     public void testUnknownRemoteEntity() throws Exception {
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 16, 12, 5);
         MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 1000, "invalid-remote-entity",
-                "large-file", header);
+                "large-file", null, header);
         Tuple t = mp.toTuple(TimeEncoding.getWallclockTime());
         cfdpIn.emitTuple(t);
 
@@ -256,7 +256,7 @@ public class CfdpDownlinkIntegrationTest {
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 15, 12, 5);
         header.setLargeFile(true);
         MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, -1, "large-file",
-                "large-file", header);
+                "large-file", null, header);
         Tuple t = mp.toTuple(TimeEncoding.getWallclockTime());
         cfdpIn.emitTuple(t);
 
@@ -313,7 +313,7 @@ public class CfdpDownlinkIntegrationTest {
     private void startDownlink(int seqNum) {
         CfdpHeader header = new CfdpHeader(true, true, true, false, 2, 3, 15, 12, seqNum);
         String name = "limit-test" + seqNum;
-        MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 1000, name, name, header);
+        MetadataPacket mp = new MetadataPacket(false, ChecksumType.MODULAR, 1000, name, name, null, header);
         cfdpIn.emitTuple(mp.toTuple(TimeEncoding.getWallclockTime()));
     }
 
@@ -389,7 +389,7 @@ public class CfdpDownlinkIntegrationTest {
             this.dropPackets = dropPackets;
             EventProducer eventProducer = EventProducerFactory.getEventProducer();
             eventProducer.setSource("unit-test");
-            PutRequest putRequest = new PutRequest(15, 12, objName, objName, false, reliable, false, false,
+            FilePutRequest putRequest = new FilePutRequest(15, 12, objName, objName, false, reliable, false, false,
                     incomingBucket, data);
 
             trsf = new CfdpOutgoingTransfer(yamcsInstance, seqNum, TimeEncoding.getWallclockTime(), myExecutor,

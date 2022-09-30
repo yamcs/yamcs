@@ -3,17 +3,7 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -21,6 +11,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.common.primitives.Bytes;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -29,12 +20,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.PduDecodingException;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.filetransfer.FileSaveHandler;
@@ -395,7 +381,7 @@ public class CfdpService extends AbstractYamcsService
         }
     }
 
-    private CfdpFileTransfer processPutRequest(long id, long creationTime, PutRequest request) {
+    private CfdpFileTransfer processPutRequest(long id, long creationTime, FilePutRequest request) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, id, creationTime, executor, request,
                 cfdpOut, config, eventProducer, this, senderFaultHandlers);
 
@@ -551,8 +537,6 @@ public class CfdpService extends AbstractYamcsService
             bucket = remoteEntity.bucket;
         }
 
-        // TODO: allow bucket selection options
-
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
@@ -705,7 +689,7 @@ public class CfdpService extends AbstractYamcsService
             destinationId = remoteEntities.get(destination).id;
         }
 
-        PutRequest request = new PutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
+        FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
                 options.isOverwrite(), options.isReliable(), options.isClosureRequested(), options.isCreatePath(),
                 bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
@@ -766,7 +750,48 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
-        // proxy put request = put request inside put request
+        long sourceId, destinationId;
+
+        if(destinationEntity == null) {
+            destinationId = localEntities.values().iterator().next().id;
+        } else {
+            if (!localEntities.containsKey(destinationEntity)) {
+                throw new InvalidRequestException("Invalid destination '" + destinationEntity + "'");
+            }
+            destinationId = localEntities.get(destinationEntity).id;
+        }
+
+        if (sourceEntity == null) {
+            sourceId = remoteEntities.values().iterator().next().id;
+        } else {
+            if (!remoteEntities.containsKey(sourceEntity)) {
+                throw new InvalidRequestException("Invalid source '" + sourceEntity + "'");
+            }
+            sourceId = remoteEntities.get(sourceEntity).id;
+        }
+
+
+        PutRequest request = new PutRequest(sourceId,
+                options.isReliable() ? PutRequest.TransmissionMode.ACKNOWLEDGED : PutRequest.TransmissionMode.UNACKNOWLEDGED,
+                List.of(new ProxyPutRequest(destinationId, sourcePath, objectName))
+        );
+
+        request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
+
+        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+
+//        if (numPendingUploads() < maxNumPendingUploads) {
+//            return processPutRequest(idSeq.next(), creationTime, request);
+//        } else {
+//            QueuedCfdpTransfer transfer = new QueuedCfdpTransfer(idSeq.next(), creationTime, request);
+//            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
+//            queuedTransfers.add(transfer);
+//            transferListeners.forEach(l -> l.stateChanged(transfer));
+//
+//            executor.submit(this::tryStartQueuedTransfer);
+//            return transfer;
+//        }
+
         throw new InvalidRequestException("Download not implemented");
     }
 

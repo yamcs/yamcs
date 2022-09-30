@@ -27,6 +27,7 @@ import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.CreateTransferRequest.DownloadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListFilesRequest;
@@ -167,8 +168,25 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             TransferOptions transferOptions = new TransferOptions();
+
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
+            if (request.hasDownloadOptions()) {
+                DownloadOptions opts = request.getDownloadOptions();
+                if (opts.hasOverwrite()) {
+                    transferOptions.setOverwrite(opts.getOverwrite());
+                }
+                if (opts.hasCreatePath()) {
+                    transferOptions.setCreatePath(opts.getCreatePath());
+                }
+                if (opts.hasReliable()) {
+                    transferOptions.setReliable(opts.getReliable());
+                }
+                if (opts.hasClosureRequested()) {
+                    transferOptions.setClosureRequested(opts.getClosureRequested());
+                }
+            }
+
 
             if (request.hasUploadOptions()) {
                 UploadOptions opts = request.getUploadOptions();

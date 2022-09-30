@@ -1,6 +1,9 @@
 package org.yamcs.cfdp;
 
+import com.google.common.primitives.Longs;
+
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class CfdpUtils {
 
@@ -23,10 +26,18 @@ public class CfdpUtils {
     }
 
     /*
-     * write the given short as an unsigned byte to the given buffer at its current position
+     * write the given int as an unsigned byte to the given buffer at its current position
      */
     public static void writeUnsignedByte(ByteBuffer buffer, int input) {
-        buffer.put((byte) (input & 0xff));
+        buffer.put(intToUnsignedByte(input));
+    }
+
+    /*
+     * get the given int as an unsigned byte to the given buffer at its current position
+     */
+    public static byte intToUnsignedByte(int input) {
+        // TODO: would make more sense if char/check > 255
+        return (byte) (input & 0xff);
     }
 
     /*
@@ -82,12 +93,22 @@ public class CfdpUtils {
         return toReturn;
     }
 
-    public static byte[] longToBytes(long input, int length) {
+    public static byte[] longToBytesFixed(long input, int length) {
         byte[] toReturn = new byte[length];
         for (int i = length - 1; i >= 0; i--) {
             toReturn[i] = (byte) (input & 0xFF);
             input >>= 8;
         }
         return toReturn;
+    }
+
+    public static byte[] longToTrimmedBytes(long input) {
+        byte[] array = Longs.toByteArray(input);
+        for (int i = 0; i < array.length; i++) {
+            if (array[i]!= 0) {
+                return Arrays.copyOfRange(array, i, array.length);
+            }
+        }
+        return new byte[] {0};
     }
 }

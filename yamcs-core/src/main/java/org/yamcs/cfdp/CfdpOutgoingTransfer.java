@@ -80,7 +80,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     private boolean suspended = false;
     private final ChecksumType checksumType = ChecksumType.MODULAR;
 
-    private PutRequest request;
+    private FilePutRequest request;
     private ScheduledFuture<?> pduSendingSchedule;
     FinishedPacket finishedPacket;
 
@@ -122,11 +122,11 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      *            default behaviour to cancel the transaction will be used.
      */
     public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            PutRequest request,
+            FilePutRequest request,
             Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime, executor, config, makeTransactionId(request.getSourceId(), config, id),
-                request.getDestinationId(), cfdpOut,
+                request.getDestinationCfdpEntityId(), cfdpOut,
                 eventProducer, monitor, faultHandlerActions);
         this.request = request;
         entityIdLength = config.getInt("entityIdLength");
@@ -152,7 +152,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 entityIdLength,
                 seqNrSize,
                 cfdpTransactionId.getInitiatorEntity(), // my Entity Id
-                request.getDestinationId(), // the id of the target
+                request.getDestinationCfdpEntityId(), // the id of the target
                 cfdpTransactionId.getSequenceNumber());
 
         dataHeader = new CfdpHeader(
@@ -163,7 +163,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 entityIdLength,
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
-                request.getDestinationId(), // the id of the target
+                request.getDestinationCfdpEntityId(), // the id of the target
                 this.cfdpTransactionId.getSequenceNumber());
 
     }
@@ -406,15 +406,15 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished successfully in " + duration + " seconds: "
-                            + request.getObjectName() + " -> "
-                            + request.getTargetPath());
+                            + request.getSourceFileName() + " -> "
+                            + request.getDestinationFileName());
         } else {
             failTransfer(conditionCode.toString());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished with error in " + duration + " seconds: "
-                            + request.getObjectName()
+                            + request.getSourceFileName()
                             + " -> "
-                            + request.getTargetPath() + " error: " + finishedPacket.getConditionCode());
+                            + request.getDestinationFileName() + " error: " + finishedPacket.getConditionCode());
         }
     }
 
@@ -473,12 +473,12 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getObjectName() {
-        return request.getObjectName();
+        return request.getSourceFileName();
     }
 
     @Override
     public String getRemotePath() {
-        return request.getTargetPath();
+        return request.getDestinationFileName();
     }
 
     @Override
@@ -508,9 +508,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         return new MetadataPacket(
                 closureRequested, checksumType,
                 request.getFileLength(),
-                request.getObjectName(),
-                request.getTargetPath(),
-                directiveHeader);
+                request.getSourceFileName(),
+                request.getDestinationFileName(),
+                null, directiveHeader);
     }
 
     private FileDataPacket getNextFileDataPacket() {

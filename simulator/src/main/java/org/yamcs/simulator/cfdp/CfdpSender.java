@@ -216,7 +216,7 @@ public class CfdpSender {
 
     private void sendMetadata() {
         MetadataPacket metadata = new MetadataPacket(false, ChecksumType.MODULAR, fileSize,
-                file.getPath(), file.getPath(), directiveHeader);
+                file.getPath(), file.getPath(), null, directiveHeader);
         transmitCfdp(metadata);
     }
 
