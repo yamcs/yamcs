@@ -41,4 +41,9 @@ public class SegmentRequest {
         CfdpUtils.writeUnsignedInt(buffer, segmentStart);
         CfdpUtils.writeUnsignedInt(buffer, segmentEnd);
     }
+
+    @Override
+    public String toString() {
+        return segmentStart + "-" + segmentEnd;
+    }
 }
