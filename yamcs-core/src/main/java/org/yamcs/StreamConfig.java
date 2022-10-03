@@ -25,10 +25,10 @@ import org.yamcs.xtce.XtceDb;
 public class StreamConfig {
     public enum StandardStreamType {
         CMD_HIST, TM, PARAM, TC, EVENT, PARAMETER_ALARM, EVENT_ALARM, SQL_FILE, INVALID_TM;
-        
+
         public static StandardStreamType fromString(String s) {
-            for(StandardStreamType v: values()) {
-                if(v.name().replace("_", "").equals(s.toUpperCase())) {
+            for (StandardStreamType v : values()) {
+                if (v.name().replace("_", "").equals(s.toUpperCase())) {
                     return v;
                 }
             }
@@ -108,13 +108,11 @@ public class StreamConfig {
 
         SequenceContainer rootContainer = null;
 
-        
-
         String processor = streamConf.getString("processor", null);
 
         if (type == StandardStreamType.TM) {
             if (streamConf.containsKey("rootContainer")) {
-                String containerName = (String) streamConf.get("rootContainer");
+                String containerName = streamConf.getString("rootContainer");
                 rootContainer = xtceDb.getSequenceContainer(containerName);
                 if (rootContainer == null) {
                     throw new ConfigurationException("Unknown sequence container: " + containerName);
@@ -123,7 +121,7 @@ public class StreamConfig {
             entry = new TmStreamConfigEntry(streamName, processor, rootContainer, async);
         } else if (type == StandardStreamType.TC) {
             if (streamConf.containsKey("tcPatterns")) {
-                List<String> patterns =  streamConf.getList("tcPatterns");
+                List<String> patterns = streamConf.getList("tcPatterns");
                 List<Pattern> patterns1 = patterns.stream().map(Pattern::compile).collect(Collectors.toList());
                 entry = new TcStreamConfigEntry(streamName, processor, patterns1);
             } else {
@@ -185,8 +183,6 @@ public class StreamConfig {
         // name of the stream or of the file to be loaded if the type is sqlFile
         String name;
 
-        
-
         /**
          * processor name see. If configured, it will be checked by {@link StreamTmPacketProvider} to select the stream
          * to connect to the given processor
@@ -212,8 +208,6 @@ public class StreamConfig {
             return name;
         }
 
-        
-
         /**
          * Return the name of the processor where this stream should be connected to or null if no such processor exists
          * 
@@ -229,12 +223,11 @@ public class StreamConfig {
         return (TmStreamConfigEntry) sce;
     }
 
-    
     public List<TmStreamConfigEntry> getTmEntries() {
         return entries.stream().filter(TmStreamConfigEntry.class::isInstance).map(TmStreamConfigEntry.class::cast)
                 .collect(Collectors.toList());
     }
-    
+
     public TcStreamConfigEntry getTcEntry(String streamName) {
         StreamConfigEntry sce = getEntry(StandardStreamType.TC, streamName);
         return (TcStreamConfigEntry) sce;
@@ -245,9 +238,8 @@ public class StreamConfig {
                 .collect(Collectors.toList());
     }
 
-
     public class TmStreamConfigEntry extends StreamConfigEntry {
-        //used by the XtceTmRecoder to block or not the thread that provides the TM packet wh
+        // used by the XtceTmRecoder to block or not the thread that provides the TM packet wh
         boolean async;
         // root container used for telemetry processing
         SequenceContainer rootContainer;
@@ -266,9 +258,9 @@ public class StreamConfig {
         public SequenceContainer getRootContainer() {
             return rootContainer;
         }
-        
+
         public boolean isAsync() {
-            
+
             return async;
         }
     }

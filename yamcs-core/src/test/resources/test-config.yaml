@@ -3,3 +3,12 @@ binary1: 01AB
 binary2: !!binary "As0D"
 
 invalid-binary1: 01AB0X
+
+property1: ${foo}
+property2: "${foo}"
+property3: ${foo:defaultValue}
+property4: ${foo:true}
+property5: ${foo:false}
+property6: ${foo:20}
+property7: "${foo}/${bar}"
+property8: ["${foo}", "${bar}"]
