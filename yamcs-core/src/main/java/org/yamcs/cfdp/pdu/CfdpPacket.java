@@ -200,4 +200,19 @@ public abstract class CfdpPacket {
     private void calculateAndAddCrc(ByteBuffer buffer) {
         throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
     }
+
+    public enum TransmissionMode {
+        ACKNOWLEDGED(0),
+        UNACKNOWLEDGED(1);
+
+        private final int value;
+
+        TransmissionMode(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 }

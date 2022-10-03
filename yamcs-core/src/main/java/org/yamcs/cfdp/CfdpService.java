@@ -11,7 +11,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.google.common.primitives.Bytes;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -28,7 +27,6 @@ import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
-import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -759,17 +757,26 @@ public class CfdpService extends AbstractYamcsService
         }
 
 
-        PutRequest request = new PutRequest(sourceId,
-                options.isReliable() ? PutRequest.TransmissionMode.ACKNOWLEDGED : PutRequest.TransmissionMode.UNACKNOWLEDGED,
-                List.of(new ProxyPutRequest(destinationId, sourcePath, objectName))
-        );
+        ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
+                List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
+        // Verify correct implementation of ProxyTransmissionMode and ProxyClosureRequest
+        if(options.isReliableSet()) {
+            messagesToUser.add(new ProxyTransmissionMode(options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED));
+        }
+        if(options.isClosureRequestedSet()) {
+            messagesToUser.add(new ProxyClosureRequest(options.isClosureRequested()));
+        }
 
-        request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
+        PutRequest request = new PutRequest(sourceId,
+                options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
+                messagesToUser
+        );
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-//        if (numPendingUploads() < maxNumPendingUploads) {
-//            return processPutRequest(idSeq.next(), creationTime, request);
+        // TODO: check maxNumPendingDownloads / CfdpFileTransfer implementation
+//        if (numPendingDownloads() < maxNumPendingDownloads) {
+//            return request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
 //        } else {
 //            QueuedCfdpTransfer transfer = new QueuedCfdpTransfer(idSeq.next(), creationTime, request);
 //            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
@@ -779,8 +786,7 @@ public class CfdpService extends AbstractYamcsService
 //            executor.submit(this::tryStartQueuedTransfer);
 //            return transfer;
 //        }
-
-        throw new InvalidRequestException("Download not implemented");
+        return null;
     }
 
     @Override

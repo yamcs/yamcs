@@ -1,5 +1,6 @@
 package org.yamcs.cfdp;
 
+import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -20,7 +21,7 @@ public class FilePutRequest extends PutRequest {
     public FilePutRequest(long sourceId, long destinationCFDPEntityId, String sourceFileName, String destinationFileName, boolean overwrite,
             boolean acknowledged, boolean closureRequested, boolean createpath, Bucket b, byte[] data) {
         super(destinationCFDPEntityId, sourceFileName, destinationFileName, null, null,
-                null, acknowledged ? TransmissionMode.ACKNOWLEDGED : TransmissionMode.UNACKNOWLEDGED,
+                null, acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
                 closureRequested, null, null);
         this.sourceId = sourceId;
         this.overwrite = overwrite;
