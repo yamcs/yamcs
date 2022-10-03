@@ -6,10 +6,23 @@ jobs:
   java:
     name: Java ${{ matrix.platform }} ${{ matrix.java }}
     runs-on: ${{ matrix.platform }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
+      fail-fast: false
       matrix:
         java: ['11', '17']
-        platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-latest]
+        mvn_opts: ['-Dsurefire.useFile=false']
+        experimental: [false]
+        include:
+          - platform: macos-latest
+            java: '11'
+            mvn_opts: '-Dsurefire.useFile=false'
+            experimental: true
+          - platform: windows-latest
+            java: '11'
+            mvn_opts: '"-Dsurefire.useFile=false"'
+            experimental: true
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -17,7 +30,7 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
       - name: Run test suite
-        run: mvn -B --no-transfer-progress -Dsurefire.useFile=false test
+        run: mvn -B --no-transfer-progress ${{ matrix.mvn_opts }} test
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
