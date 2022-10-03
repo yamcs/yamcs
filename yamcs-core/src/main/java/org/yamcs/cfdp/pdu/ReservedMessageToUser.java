@@ -74,4 +74,5 @@ public class ReservedMessageToUser extends MessageToUser {
     public ReservedMessageToUser(MessageType messageType, byte[] value) {
         super(Bytes.concat(MESSAGE_IDENTIFIER.getBytes(), messageType.getBytes(), value));
     }
+
 }

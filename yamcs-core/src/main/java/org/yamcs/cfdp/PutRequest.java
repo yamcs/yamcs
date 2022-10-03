@@ -3,10 +3,8 @@ package org.yamcs.cfdp;
 import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
-import org.yamcs.utils.StringConverter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +31,7 @@ public class PutRequest extends CfdpRequest{
     private SegmentationControl segmentationControl; // NOT IMPLEMENTED
     private Map<ConditionCode, FaultHandlingAction> faultHandlerOverride; // [[condition code, handler code],...] NOT IMPLEMENTED
     private String flowLabel; // NOT IMPLEMENTED
-    private TransmissionMode transmissionMode;
+    private CfdpPacket.TransmissionMode transmissionMode;
     private boolean closureRequested = false;
     private List<MessageToUser> messagesToUser;
     private List<FileStoreRequest> fileStoreRequests; // NOT IMPLEMENTED
@@ -53,21 +51,6 @@ public class PutRequest extends CfdpRequest{
         }
     }
 
-    public enum TransmissionMode {
-        ACKNOWLEDGED(0),
-        UNACKNOWLEDGED(1);
-
-        private final int value;
-
-        TransmissionMode(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
-
     protected PutRequest(long destinationCfdpEntityId) {
         super(CfdpRequestType.PUT);
         this.destinationCfdpEntityId = destinationCfdpEntityId;
@@ -75,7 +58,7 @@ public class PutRequest extends CfdpRequest{
 
     protected PutRequest(long destinationCfdpEntityId, String sourceFileName, String destinationFileName,
             SegmentationControl segmentationControl, Map<ConditionCode, FaultHandlingAction> faultHandlerOverride,
-            String flowLabel, TransmissionMode transmissionMode, boolean closureRequested,
+            String flowLabel, CfdpPacket.TransmissionMode transmissionMode, boolean closureRequested,
             List<MessageToUser> messagesToUser, List<FileStoreRequest> fileStoreRequests) {
         this(destinationCfdpEntityId);
         this.sourceFileName = sourceFileName;
@@ -90,7 +73,7 @@ public class PutRequest extends CfdpRequest{
     }
 
     // Constructor for messages to user
-    protected PutRequest(long destinationCfdpEntityId, TransmissionMode transmissionMode, List<MessageToUser> messagesToUser) {
+    protected PutRequest(long destinationCfdpEntityId, CfdpPacket.TransmissionMode transmissionMode, List<MessageToUser> messagesToUser) {
         this(destinationCfdpEntityId);
         this.transmissionMode = transmissionMode;
         this.messagesToUser = messagesToUser;
@@ -130,6 +113,7 @@ public class PutRequest extends CfdpRequest{
                 header
         );
 
+
         // TODO: send put request
 
         return transactionId;
@@ -159,12 +143,12 @@ public class PutRequest extends CfdpRequest{
         return flowLabel;
     }
 
-    public TransmissionMode getTransmissionMode() {
+    public CfdpPacket.TransmissionMode getTransmissionMode() {
         return transmissionMode;
     }
 
     public boolean isAcknowledged() {
-        return transmissionMode == TransmissionMode.ACKNOWLEDGED;
+        return transmissionMode == CfdpPacket.TransmissionMode.ACKNOWLEDGED;
     }
 
     public boolean isClosureRequested() {
