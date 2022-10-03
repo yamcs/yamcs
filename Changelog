@@ -1,3 +1,11 @@
+Version 5.7.7 released 3-Oct-2022
+- some fixes in the CFDP implementation:
+ - when the FIN ACK is lost: the sender will keep sending FIN ACK for each FIN packet received (even if the transaction from the sender point of view is completed)
+ - when the receiver is dead (or it does not acknowledge the EOF case). In that case Yamcs wanted to cancel the transaction but it got stuck
+ - when the service is stopped, do not process incoming packets
+- add support for (variable length) array command arguments (only one-dimensional arrays supported for now)
+- various tweaks and fixes
+
 Version 5.7.6 released 27-Jul-2022
 - added a low priority option when subscribing via websocket. This allows the yamcs-web to keep connected if there is high incoming data rate, at the expense of some of the messages not displayed.
 - bug fix parameter archive retrieval end conditions (sometimes it would send data that was past the stop time of the request)
@@ -23,7 +31,7 @@ Version 5.7.3 released 9-Jun-2022
   - Add group action for queues
   - Show process tree on system page
   - Add Command detail page
-
+)
 Version 5.7.2 released 3-Jun-2022
 - yamcs-web: fix render issue with enumerated and command aggregate arguments
 
