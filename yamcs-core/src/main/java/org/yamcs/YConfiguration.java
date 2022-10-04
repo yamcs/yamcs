@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -103,6 +104,12 @@ public class YConfiguration {
             staticConfPaths.put(root, confpath);
         } catch (YAMLException e) {
             throw new ConfigurationException(confpath, e.toString(), e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
         configurations.put(subsystem, this);
     }
@@ -149,8 +156,8 @@ public class YConfiguration {
      */
     public synchronized static void setupTool(File configDirectory) {
         if (System.getProperty("java.util.logging.config.file") == null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            try (InputStream in = resolver.getConfigurationStream("/logging.properties")) {
+                LogManager.getLogManager().readConfiguration(in);
             } catch (Exception e) {
                 // do nothing, the default java builtin logging is used
             }
@@ -185,8 +192,8 @@ public class YConfiguration {
         resolver = new DefaultConfigurationResolver();
 
         if (System.getProperty("java.util.logging.config.file") == null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            try (InputStream in = resolver.getConfigurationStream("/logging.properties")) {
+                LogManager.getLogManager().readConfiguration(in);
             } catch (Exception e) {
                 // do nothing, the default java builtin logging is used
             }
