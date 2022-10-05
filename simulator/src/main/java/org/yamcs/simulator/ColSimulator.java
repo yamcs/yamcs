@@ -2,7 +2,6 @@ package org.yamcs.simulator;
 
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -369,19 +368,31 @@ public class ColSimulator extends AbstractSimulator {
         }
         Arrays.sort(skippedPdus);
 
-        if (checkFile(fileName)) {
-            File f = new File(dataDir, fileName);
+        if (!checkFile(fileName)) {
+            log.warn("Invalid filename {}", fileName);
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+            return;
+        }
+
+        File f = new File(dataDir, fileName);
+        if (!f.exists()) {
+            log.warn("File does not exist or is not readable: {}", f.getAbsoluteFile());
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+        } else if (f.length() == 0) {
+            log.warn(
+                    "Empty files not supported due to the file length in metadata = 0 indicating unbounded file: {}",
+                    f.getAbsoluteFile());
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+        } else {
             log.info("CFDP download file {} skippedPdus: {}", fileName, Arrays.toString(skippedPdus));
             try {
                 cfdpSender = new CfdpSender(this, f, destinationId, skippedPdus);
                 cfdpSender.start();
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 log.warn("File does not exist or is not readable: {}", f.getAbsoluteFile());
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
             }
-        } else {
-            log.warn("Invalid filename {}", fileName);
         }
     }
 
@@ -435,12 +446,12 @@ public class ColSimulator extends AbstractSimulator {
     }
 
     public void processTc(SimulatorCcsdsPacket tc) {
-       
+
         if (tc.getAPID() == CfdpCcsdsPacket.APID) {
             byte b0 = tc.getUserDataBuffer().get();
             if ((b0 & 0x08) == 0) { // towards receiver
                 cfdpReceiver.processCfdp(tc.getUserDataBuffer());
-            } else {//towards sender
+            } else {// towards sender
                 if (cfdpSender != null) {
                     cfdpSender.processCfdp(tc.getUserDataBuffer());
                 } else {
