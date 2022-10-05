@@ -317,7 +317,7 @@ public class LinkManager {
         });
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
-                log.debug("Awaiting termination of link {}", link.getName());
+                log.info("Awaiting termination of link {}", link.getName());
                 ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });

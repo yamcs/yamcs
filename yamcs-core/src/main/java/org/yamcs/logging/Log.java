@@ -32,18 +32,27 @@ public class Log {
         this.context = context;
     }
 
+    /**
+     * Send a log message at INFO level.
+     */
     public void info(String msg) {
         if (julLogger.isLoggable(Level.INFO)) {
             log(Level.INFO, msg, null);
         }
     }
 
+    /**
+     * Send a log message at INFO level.
+     */
     public void info(String msg, Throwable t) {
         if (julLogger.isLoggable(Level.INFO)) {
             log(Level.INFO, msg, t);
         }
     }
 
+    /**
+     * Send a log message at INFO level using SLF4J-style formatting. The last argument may be a {@link Throwable}.
+     */
     public void info(String msg, Object... args) {
         if (julLogger.isLoggable(Level.INFO)) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, args);
@@ -55,18 +64,27 @@ public class Log {
         return julLogger.isLoggable(Level.FINE);
     }
 
+    /**
+     * Send a log message at DEBUG level.
+     */
     public void debug(String msg) {
         if (julLogger.isLoggable(Level.FINE)) {
             log(Level.FINE, msg, null);
         }
     }
 
+    /**
+     * Send a log message at DEBUG level.
+     */
     public void debug(String msg, Throwable t) {
         if (julLogger.isLoggable(Level.FINE)) {
             log(Level.FINE, msg, t);
         }
     }
 
+    /**
+     * Send a log message at DEBUG level using SLF4J-style formatting. The last argument may be a {@link Throwable}.
+     */
     public void debug(String msg, Object... args) {
         if (julLogger.isLoggable(Level.FINE)) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, args);
@@ -78,18 +96,27 @@ public class Log {
         return julLogger.isLoggable(Level.FINEST);
     }
 
+    /**
+     * Send a log message at TRACE level.
+     */
     public void trace(String msg) {
         if (julLogger.isLoggable(Level.FINEST)) {
             log(Level.FINEST, msg, null);
         }
     }
 
+    /**
+     * Send a log message at TRACE level.
+     */
     public void trace(String msg, Throwable t) {
         if (julLogger.isLoggable(Level.FINEST)) {
             log(Level.FINEST, msg, t);
         }
     }
 
+    /**
+     * Send a log message at TRACE level using SLF4J-style formatting. The last argument may be a {@link Throwable}.
+     */
     public void trace(String msg, Object... args) {
         if (julLogger.isLoggable(Level.FINEST)) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, args);
@@ -97,18 +124,27 @@ public class Log {
         }
     }
 
+    /**
+     * Send a log message at WARN level.
+     */
     public void warn(String msg) {
         if (julLogger.isLoggable(Level.WARNING)) {
             log(Level.WARNING, msg, null);
         }
     }
 
+    /**
+     * Send a log message at WARN level.
+     */
     public void warn(String msg, Throwable t) {
         if (julLogger.isLoggable(Level.WARNING)) {
             log(Level.WARNING, msg, t);
         }
     }
 
+    /**
+     * Send a log message at WARN level using SLF4J-style formatting. The last argument may be a {@link Throwable}.
+     */
     public void warn(String msg, Object... args) {
         if (julLogger.isLoggable(Level.WARNING)) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, args);
@@ -116,18 +152,27 @@ public class Log {
         }
     }
 
+    /**
+     * Send a log message at ERROR level.
+     */
     public void error(String msg) {
         if (julLogger.isLoggable(Level.SEVERE)) {
             log(Level.SEVERE, msg, null);
         }
     }
 
+    /**
+     * Send a log message at ERROR level.
+     */
     public void error(String msg, Throwable t) {
         if (julLogger.isLoggable(Level.SEVERE)) {
             log(Level.SEVERE, msg, t);
         }
     }
 
+    /**
+     * Send a log message at ERROR level using SLF4J-style formatting. The last argument may be a {@link Throwable}.
+     */
     public void error(String msg, Object... args) {
         if (julLogger.isLoggable(Level.SEVERE)) {
             FormattingTuple ft = MessageFormatter.arrayFormat(msg, args);

@@ -242,20 +242,21 @@ public class YamcsServer {
 
     public void shutDown() {
         long t0 = System.nanoTime();
-        LOG.debug("Yamcs is shutting down");
+        LOG.info("Yamcs is shutting down");
         for (YamcsServerInstance ys : instances.values()) {
             ys.stopAsync();
         }
         for (YamcsServerInstance ys : instances.values()) {
             LOG.debug("Awaiting termination of instance {}", ys.getName());
             ys.awaitOffline();
+            LOG.info("Stopped instance '{}'", ys.getName());
         }
         if (globalServiceList != null) {
             for (ServiceWithConfig swc : globalServiceList) {
                 swc.getService().stopAsync();
             }
             for (ServiceWithConfig swc : globalServiceList) {
-                LOG.debug("Awaiting termination of service {}", swc.getName());
+                LOG.info("Awaiting termination of service {}", swc.getName());
                 swc.getService().awaitTerminated();
             }
         }
@@ -263,7 +264,7 @@ public class YamcsServer {
         RdbStorageEngine.getInstance().shutdown();
 
         long stopTime = System.nanoTime() - t0;
-        LOG.debug("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
+        LOG.info("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
         YamcsLogManager.shutdown();
         timer.shutdown();
     }

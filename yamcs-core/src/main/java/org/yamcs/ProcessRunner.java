@@ -150,7 +150,7 @@ public class ProcessRunner extends AbstractYamcsService {
 
         // Start a thread for reading process output. The thread lifecycle is linked to the process.
         new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(line -> {
                     line = CharMatcher.whitespace().trimTrailingFrom(line);
                     switch (logLevel) {
@@ -174,7 +174,7 @@ public class ProcessRunner extends AbstractYamcsService {
             } catch (IOException e) {
                 log.error("Exception while gobbling process output", e);
             }
-        }).start();
+        }, getClass().getSimpleName() + " Gobbler").start();
     }
 
     protected void onProcessOutput(String line) {

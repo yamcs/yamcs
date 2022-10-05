@@ -90,7 +90,7 @@ import com.google.protobuf.TextFormat;
  * </ul>
  */
 public class Tablespace {
-    static Log log = new Log(Tablespace.class);
+    private Log log;
 
     // unique name for this tablespace
     private final String name;
@@ -125,6 +125,8 @@ public class Tablespace {
     Map<String, RdbSequence> sequences = new HashMap<>();
 
     public Tablespace(String name) {
+        log = new Log(Tablespace.class);
+        log.setContext(name);
         this.name = name;
         this.executor = new ScheduledThreadPoolExecutor(1,
                 new ThreadFactoryBuilder().setNameFormat("Tablespace-" + name).build());
@@ -156,8 +158,9 @@ public class Tablespace {
                             "Wrong metadata version " + value[0] + " expected " + METADATA_VERSION);
                 }
                 maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
-                log.info("Opened tablespace database {}, num records:{}, num metadata records: {}, maxTbsIndex: {}",
-                        dbDir, db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
+                log.info("Opened tablespace database {}", dbDir);
+                log.info("Records: ~{}, metadata records: ~{}, maxTbsIndex: {}",
+                        db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
             } else {
                 if (readonly) {
                     throw new IllegalStateException("Cannot create a new db when readonly is set to true");
@@ -615,7 +618,7 @@ public class Tablespace {
         for (TablespaceRecord tr : filter(Type.TABLE_DEFINITION, yamcsInstance, tr -> true)) {
             if (!tr.hasTableName()) {
                 throw new DatabaseCorruptionException(
-                        "Found table definition metadata record without a table name :" + tr);
+                        "Found table definition metadata record without a table name:" + tr);
             }
 
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
@@ -630,7 +633,7 @@ public class Tablespace {
             list.add(tblDef);
             log.debug("Loaded table {}", tblDef);
         }
-        log.info("Tablespace {}: loaded {} tables for instance {}", name, list.size(), yamcsInstance);
+        log.info("Loaded {} tables for instance {}", list.size(), yamcsInstance);
         return list;
     }
 

@@ -179,7 +179,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         for (ServiceWithConfig swc : services) {
             stopFutures.add(serviceStoppers.submit(() -> {
                 swc.service.stopAsync();
-                log.debug("Awaiting termination of service {}", swc.getName());
+                log.info("Awaiting termination of service {}", swc.getName());
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
@@ -188,6 +188,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
+                log.info("Stopping Yamcs DB");
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
                 ydb.close();
                 YarchDatabase.removeInstance(name);
