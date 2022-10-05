@@ -1,3 +1,6 @@
+Version 5.7.8 released 5-Oct-2022
+- Fix for a case when CFDP service was configured with enableAtStartup: false. Before the fix, the service was still processing incoming PDUs.
+
 Version 5.7.7 released 3-Oct-2022
 - some fixes in the CFDP implementation:
  - when the FIN ACK is lost: the sender will keep sending FIN ACK for each FIN packet received (even if the transaction from the sender point of view is completed)
