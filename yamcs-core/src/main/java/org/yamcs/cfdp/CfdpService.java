@@ -195,8 +195,6 @@ public class CfdpService extends AbstractYamcsService
             throw new ConfigurationException("cannot find stream " + outStream);
         }
 
-        cfdpIn.addSubscriber(this);
-
         incomingBucket = getBucket(config.getString("incomingBucket"), true);
         maxNumPendingDownloads = config.getInt("maxNumPendingDownloads");
         maxNumPendingUploads = config.getInt("maxNumPendingUploads");
@@ -570,6 +568,7 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     protected void doStart() {
+        cfdpIn.addSubscriber(this);
         notifyStarted();
     }
 
