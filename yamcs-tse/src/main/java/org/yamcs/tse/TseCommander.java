@@ -60,12 +60,14 @@ public class TseCommander extends ProcessRunner {
             Map<String, Object> processRunnerConfig = new HashMap<>();
             processRunnerConfig.put("command", Arrays.asList(
                     new File(System.getProperty("java.home"), "bin/java").toString(),
-                    "-cp", System.getProperty("java.class.path"),
                     TseCommander.class.getName(),
                     "--etc-dir", configDirectory.toString(),
                     "--telnet-port", "" + telnetPort,
                     "--tctm-port", "" + tctmPort));
             processRunnerConfig.put("logPrefix", "");
+            Map<String, Object> processEnvironment = new HashMap<>();
+            processEnvironment.put("CLASSPATH", System.getProperty("java.class.path"));
+            processRunnerConfig.put("environment", processEnvironment);
             processRunnerConfig = super.getSpec().validate(processRunnerConfig);
             super.init(yamcsInstance, serviceName, YConfiguration.wrap(processRunnerConfig));
         } catch (ValidationException e) {

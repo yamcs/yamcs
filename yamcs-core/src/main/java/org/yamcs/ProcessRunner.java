@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +67,7 @@ public class ProcessRunner extends AbstractYamcsService {
         spec.addOption("successExitCode", OptionType.LIST_OR_ELEMENT)
                 .withElementType(OptionType.INTEGER)
                 .withDefault(0);
+        spec.addOption("environment", OptionType.MAP).withSpec(Spec.ANY);
         return spec;
     }
 
@@ -81,6 +83,13 @@ public class ProcessRunner extends AbstractYamcsService {
 
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
+
+        if (config.containsKey("environment")) {
+            Map<String, Object> map = config.getMap("environment");
+            for (var entry : map.entrySet()) {
+                pb.environment().put(entry.getKey(), "" + entry.getValue());
+            }
+        }
 
         if (config.containsKey("directory")) {
             pb.directory(new File(config.getString("directory")));

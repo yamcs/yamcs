@@ -79,8 +79,6 @@ public class SimulatorCommander extends ProcessRunner {
         List<String> cmdl = new ArrayList<>();
 
         cmdl.add(new File(System.getProperty("java.home"), "bin/java").toString());
-        cmdl.add("-cp");
-        cmdl.add(System.getProperty("java.class.path"));
         cmdl.add(SimulatorCommander.class.getName());
         if (config.containsKey("telnet")) {
             YConfiguration telnetArgs = config.getConfig("telnet");
@@ -140,6 +138,9 @@ public class SimulatorCommander extends ProcessRunner {
             Map<String, Object> processRunnerConfig = new HashMap<>();
             processRunnerConfig.put("command", cmdl);
             processRunnerConfig.put("logPrefix", "");
+            Map<String, Object> processEnvironment = new HashMap<>();
+            processEnvironment.put("CLASSPATH", System.getProperty("java.class.path"));
+            processRunnerConfig.put("environment", processEnvironment);
             processRunnerConfig = super.getSpec().validate(processRunnerConfig);
             super.init(yamcsInstance, serviceName, YConfiguration.wrap(processRunnerConfig));
         } catch (ValidationException e) {
