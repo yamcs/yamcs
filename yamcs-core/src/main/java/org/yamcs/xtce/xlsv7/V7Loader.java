@@ -2387,13 +2387,13 @@ public class V7Loader extends V7LoaderBase {
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof FloatParameterType) {
+            } else if (ptypeb instanceof FloatParameterType.Builder) {
                 FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 alarm = (context == null) ? fpt.getDefaultAlarm() : fpt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof EnumeratedParameterType) {
+            } else if (ptypeb instanceof EnumeratedParameterType.Builder) {
                 EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptypeb;
                 alarm = (context == null) ? ept.getDefaultAlarm() : ept.getContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
