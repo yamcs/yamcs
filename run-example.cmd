@@ -33,6 +33,6 @@ exit /B 0
 
 
 :printExampleList
-for /f %%i in ( 'dir /a:d /b examples ^| find /V "snippets" ^| find /V ".*"' ) do (
+for /f %%i in ( 'dir /a:d /b examples ^| find /V "snippets" ^| findstr /V "\..*"' ) do (
     echo.    %%i
 )
