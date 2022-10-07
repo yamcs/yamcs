@@ -18,9 +18,9 @@ public class FilePutRequest extends PutRequest {
     private boolean createpath;
     private long checksum;
 
-    public FilePutRequest(long sourceId, long destinationCFDPEntityId, String sourceFileName, String destinationFileName, boolean overwrite,
+    public FilePutRequest(long sourceId, long destinationCfdpEntityId, String sourceFileName, String destinationFileName, boolean overwrite,
             boolean acknowledged, boolean closureRequested, boolean createpath, Bucket b, byte[] data) {
-        super(destinationCFDPEntityId, sourceFileName, destinationFileName, null, null,
+        super(destinationCfdpEntityId, sourceFileName, destinationFileName, null, null,
                 null, acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
                 closureRequested, null, null);
         this.sourceId = sourceId;
@@ -35,14 +35,17 @@ public class FilePutRequest extends PutRequest {
         return this.sourceId;
     }
 
+    @Override
     public int getFileLength() {
         return fileData.length;
     }
 
+    @Override
     public long getChecksum() {
         return this.checksum;
     }
 
+    @Override
     public byte[] getFileData() {
         return fileData;
     }

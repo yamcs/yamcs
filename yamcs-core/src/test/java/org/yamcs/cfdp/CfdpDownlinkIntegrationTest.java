@@ -395,8 +395,8 @@ public class CfdpDownlinkIntegrationTest {
             FilePutRequest putRequest = new FilePutRequest(15, 12, objName, objName, false, reliable, false, false,
                     incomingBucket, data);
 
-            trsf = new CfdpOutgoingTransfer(yamcsInstance, seqNum, TimeEncoding.getWallclockTime(), myExecutor,
-                    putRequest, cfdpIn, config, eventProducer, this, null);
+            trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum, TimeEncoding.getWallclockTime(),
+                    myExecutor, putRequest, cfdpIn, config, null, eventProducer, this, null);
 
             cfdpOut.addSubscriber((stream, tuple) -> {
                 tcount++;

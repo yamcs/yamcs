@@ -60,17 +60,19 @@ public class FileSaveHandler {
     }
 
     private String parseObjectName(String name) throws IOException {
-        bucket = defaultBucket;
+        if(bucket == null) {
+            bucket = defaultBucket;
 
-        if(allowRemoteProvidedBucket) {
-            String[] split = name.split(":", 2);
-            if(split.length == 2) {
-                YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+            if(allowRemoteProvidedBucket) {
+                String[] split = name.split(":", 2);
+                if(split.length == 2) {
+                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
 
-                Bucket customBucket = ydb.getBucket(split[0]);
-                if(customBucket != null) {
-                    this.bucket = customBucket;
-                    name = split[1];
+                    Bucket customBucket = ydb.getBucket(split[0]);
+                    if(customBucket != null) {
+                        this.bucket = customBucket;
+                        name = split[1];
+                    }
                 }
             }
         }
@@ -116,6 +118,10 @@ public class FileSaveHandler {
 
     public String getObjectName() {
         return objectName;
+    }
+
+    public void setBucket(Bucket bucket) {
+        this.bucket = bucket;
     }
 
 }

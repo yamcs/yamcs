@@ -86,4 +86,8 @@ public class TLV {
     public String toString() {
         return "TLV [type=" + type + ", value=" + StringConverter.arrayToHexString(value) + "]";
     }
+
+    public String toJson() {
+        return "{type=" + type + ", length=" + value.length + ", value=" + StringConverter.arrayToHexString(value) + "}";
+    }
 }

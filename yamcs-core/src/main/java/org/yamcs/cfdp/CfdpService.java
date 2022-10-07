@@ -71,7 +71,7 @@ public class CfdpService extends AbstractYamcsService
 
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
 
-    Queue<QueuedCfdpTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
+    Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
@@ -373,9 +373,10 @@ public class CfdpService extends AbstractYamcsService
         }
     }
 
-    private CfdpFileTransfer processPutRequest(long id, long creationTime, FilePutRequest request) {
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, id, creationTime, executor, request,
-                cfdpOut, config, eventProducer, this, senderFaultHandlers);
+    private CfdpFileTransfer processPutRequest(long initiatorEntityId, long seqNum, long creationTime, PutRequest request,
+            Bucket bucket) {
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, initiatorEntityId, seqNum, creationTime, executor, request,
+                cfdpOut, config, bucket, eventProducer, this, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -395,9 +396,9 @@ public class CfdpService extends AbstractYamcsService
             return;
         }
 
-        QueuedCfdpTransfer trsf = queuedTransfers.poll();
+        QueuedCfdpOutgoingTransfer trsf = queuedTransfers.poll();
         if (trsf != null) {
-            processPutRequest(trsf.getId(), trsf.creationTime, trsf.putRequest);
+            processPutRequest(trsf.getInitiatorEntityId(), trsf.getId(), trsf.getCreationTime(), trsf.getPutRequest(), trsf.getBucket());
         }
     }
 
@@ -681,9 +682,9 @@ public class CfdpService extends AbstractYamcsService
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(idSeq.next(), creationTime, request);
+            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket);
         } else {
-            QueuedCfdpTransfer transfer = new QueuedCfdpTransfer(idSeq.next(), creationTime, request);
+            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, idSeq.next(), creationTime, request, bucket);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -721,8 +722,8 @@ public class CfdpService extends AbstractYamcsService
     public void cancel(FileTransfer transfer) {
         if (transfer instanceof OngoingCfdpTransfer) {
             processCancelRequest(new CancelRequest(transfer));
-        } else if (transfer instanceof QueuedCfdpTransfer) {
-            QueuedCfdpTransfer trsf = (QueuedCfdpTransfer) transfer;
+        } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
+            QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
             if (queuedTransfers.remove(trsf)) {
                 trsf.setTransferState(TransferState.FAILED);
                 trsf.setFailureReason("Cancelled while queued");
@@ -736,6 +737,7 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+
         long sourceId, destinationId;
 
         if(destinationEntity == null) {
@@ -756,7 +758,7 @@ public class CfdpService extends AbstractYamcsService
             sourceId = remoteEntities.get(sourceEntity).id;
         }
 
-
+        // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
         // Verify correct implementation of ProxyTransmissionMode and ProxyClosureRequest
@@ -771,22 +773,22 @@ public class CfdpService extends AbstractYamcsService
                 options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
                 messagesToUser
         );
+        request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        // TODO: check maxNumPendingDownloads / CfdpFileTransfer implementation
-//        if (numPendingDownloads() < maxNumPendingDownloads) {
-//            return request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
-//        } else {
-//            QueuedCfdpTransfer transfer = new QueuedCfdpTransfer(idSeq.next(), creationTime, request);
-//            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
-//            queuedTransfers.add(transfer);
-//            transferListeners.forEach(l -> l.stateChanged(transfer));
-//
-//            executor.submit(this::tryStartQueuedTransfer);
-//            return transfer;
-//        }
-        return null;
+        if (numPendingUploads() < maxNumPendingUploads) {
+            return processPutRequest(destinationId, idSeq.next(), creationTime, request, bucket);
+        } else {
+            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, idSeq.next(), creationTime, request, bucket);
+            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
+            queuedTransfers.add(transfer);
+            transferListeners.forEach(l -> l.stateChanged(transfer));
+
+            executor.submit(this::tryStartQueuedTransfer);
+            return transfer;
+        }
+
     }
 
     @Override

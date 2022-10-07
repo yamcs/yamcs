@@ -162,7 +162,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addEnumColumn(COL_DIRECTION, transfer.getDirection().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_RELIABLE, transfer.isReliable());
-        t.addColumn(COL_SOURCE_ID, transfer.getSourceId());
+        t.addColumn(COL_SOURCE_ID, transfer.getInitiatorEntityId());
 
         CfdpTransactionId txId = transfer.getTransactionId();
         if (txId != null) {// queued transfers have no transaction id
@@ -208,7 +208,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
     }
 
     @Override
-    public long getSourceId() {
+    public long getInitiatorEntityId() {
         return tuple.getLongColumn(COL_SOURCE_ID);
     }
 

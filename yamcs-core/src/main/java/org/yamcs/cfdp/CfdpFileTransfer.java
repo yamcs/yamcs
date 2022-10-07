@@ -10,7 +10,7 @@ public interface CfdpFileTransfer extends FileTransfer {
      */
     CfdpTransactionId getTransactionId();
 
-    long getSourceId();
+    long getInitiatorEntityId();
 
     long getDestinationId();
 }
