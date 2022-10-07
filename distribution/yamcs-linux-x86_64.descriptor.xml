@@ -18,12 +18,17 @@
         <include>yamcsd</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <directory>target</directory>
-      <outputDirectory>lib</outputDirectory>
-      <includes>
-        <include>rocksdbjni-linux-x86_64.jar</include>
-      </includes>
-    </fileSet>
   </fileSets>
+
+  <files>
+    <file>
+      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-linux64.so</source>
+      <outputDirectory>lib</outputDirectory>
+      <!--
+        Named so that System.loadLibrary("rocksdbjni") can find it when lib
+        is added to java.library.path.
+      -->
+      <destName>librocksdbjni.so</destName>
+    </file>
+  </files>
 </assembly>
