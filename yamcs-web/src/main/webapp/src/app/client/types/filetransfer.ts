@@ -41,6 +41,12 @@ export interface UploadOptions {
   reliable?: boolean;
 }
 
+export interface DownloadOptions {
+  overwrite?: boolean;
+  createPath?: boolean;
+  reliable?: boolean;
+}
+
 export interface CreateTransferRequest {
   direction: 'UPLOAD' | 'DOWNLOAD';
   bucket: string;
@@ -49,6 +55,7 @@ export interface CreateTransferRequest {
   source: string;
   destination: string;
   uploadOptions?: UploadOptions;
+  downloadOptions?: DownloadOptions;
 }
 
 export interface TransfersPage {

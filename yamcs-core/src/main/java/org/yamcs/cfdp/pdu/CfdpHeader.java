@@ -49,6 +49,22 @@ public class CfdpHeader {
         readPduHeader(buffer);
     }
 
+    public CfdpHeader copy() {
+        return copy(fileDirective, towardsSender);
+    }
+
+    public CfdpHeader copy(boolean fileDirective) {
+        return copy(fileDirective, towardsSender);
+    }
+
+    public CfdpHeader copy(boolean fileDirective, boolean towardsSender) {
+        return new CfdpHeader(fileDirective, towardsSender, acknowledged, withCrc, entityIdLength, sequenceNumberLength, sourceId, destinationId, sequenceNr);
+    }
+
+    public CfdpHeader copyDirectionInverted() {
+        return copy(fileDirective, !towardsSender);
+    }
+
     public CfdpTransactionId getTransactionId() {
         return new CfdpTransactionId(this.sourceId, this.sequenceNr);
     }
@@ -152,7 +168,7 @@ public class CfdpHeader {
 
     public String toJson() {
         return " {\n"
-                + "        fileDirective: " + fileDirective + ",\n"
+                + "        fileDirective=" + fileDirective + ",\n"
                 + "        towardsSender=" + towardsSender + ",\n"
                 + "        acknowledged=" + acknowledged + ",\n"
                 + "        withCrc=" + withCrc + ",\n"

@@ -1,10 +1,13 @@
 package org.yamcs.cfdp.pdu;
 
 import com.google.common.primitives.Bytes;
+import org.yamcs.utils.StringConverter;
 
 public class ReservedMessageToUser extends MessageToUser {
 
     public final static String MESSAGE_IDENTIFIER = "cfdp";
+    private final MessageType messageType;
+    private final byte[] content;
 
     public enum MessageType {
         //00 Proxy Put Request
@@ -69,10 +72,24 @@ public class ReservedMessageToUser extends MessageToUser {
         public byte[] getBytes() {
             return bytes;
         }
+
     }
 
-    public ReservedMessageToUser(MessageType messageType, byte[] value) {
-        super(Bytes.concat(MESSAGE_IDENTIFIER.getBytes(), messageType.getBytes(), value));
+    public ReservedMessageToUser(MessageType messageType, byte[] content) {
+        super(Bytes.concat(MESSAGE_IDENTIFIER.getBytes(), messageType.getBytes(), content));
+
+        this.messageType = messageType;
+        this.content = content;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    @Override
+    public String toJson() {
+        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + messageType + ", content="
+                + StringConverter.arrayToHexString(content) + "}";
     }
 
 }

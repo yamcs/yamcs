@@ -2,6 +2,7 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.ChecksumType;
@@ -130,6 +131,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
                 + "    checksumType=" + checksumType + ",\n"
                 + "    sourceFileName=" + sourceFileName + ",\n"
                 + "    destinationFileName=" + destinationFileName + ",\n"
+                + "    options=[" + (options == null ? "" : "\n"
+                + "        " + options.stream().map(TLV::toJson).collect(Collectors.joining(",\n        ")))
+                + "],\n"
                 + "}";
     }
 }

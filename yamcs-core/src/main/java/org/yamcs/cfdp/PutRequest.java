@@ -36,6 +36,11 @@ public class PutRequest extends CfdpRequest{
     private List<MessageToUser> messagesToUser;
     private List<FileStoreRequest> fileStoreRequests; // NOT IMPLEMENTED
 
+    // ========== Extra fields ==========
+    private CfdpHeader header;
+    private MetadataPacket metadata;
+    // ==================================
+
     public enum SegmentationControl {
         RECORD_BOUNDARIES_NOT_PRESERVED(0),
         RECORD_BOUNDARIES_PRESERVED(1);
@@ -79,9 +84,17 @@ public class PutRequest extends CfdpRequest{
         this.messagesToUser = messagesToUser;
     }
 
+    /**
+     * Generate relevant header and metadata the put request
+     * (Only implemented for Messages To User currently)
+     * @param initiatorEntityId
+     * @param sequenceNumber
+     * @param checksumType
+     * @param config
+     * @return
+     */
     public CfdpTransactionId process(long initiatorEntityId, long sequenceNumber, ChecksumType checksumType,
             YConfiguration config) {
-        // Transaction Start Notification procedure
         CfdpTransactionId transactionId = new CfdpTransactionId(initiatorEntityId, sequenceNumber);
         // Copy File Procedure
             // fault handlers from PR
@@ -90,8 +103,8 @@ public class PutRequest extends CfdpRequest{
             // transmission mode from PR if specified (Management Information Base otherwise)
             // closure requested from PR if specified (Management Information Base otherwise)
 
-        // TODO: Generalise, only implemented for Message To User only transaction at the moment
-        CfdpHeader header = new CfdpHeader(
+        // TODO: Generalise, only implemented for Messages To User only transaction at the moment
+        header = new CfdpHeader(
                 true, // file directive
                 false, // towards receiver
                 isAcknowledged(),
@@ -103,7 +116,7 @@ public class PutRequest extends CfdpRequest{
                 sequenceNumber
         );
 
-        MetadataPacket metadata = new MetadataPacket(
+        metadata = new MetadataPacket(
                 closureRequested,
                 checksumType,
                 0,
@@ -112,9 +125,6 @@ public class PutRequest extends CfdpRequest{
                 new ArrayList<>(messagesToUser),
                 header
         );
-
-
-        // TODO: send put request
 
         return transactionId;
     }
@@ -162,5 +172,27 @@ public class PutRequest extends CfdpRequest{
     public List<FileStoreRequest> getFileStoreRequests() {
         return fileStoreRequests;
     }
+
+    // ========== Extra getters ==========
+    public CfdpHeader getHeader() {
+        return header;
+    }
+
+    public MetadataPacket getMetadata() {
+        return metadata;
+    }
+
+    public int getFileLength() {
+        return 0;
+    }
+
+    public byte[] getFileData() {
+        return new byte[0];
+    }
+
+    public long getChecksum() {
+        return 0;
+    }
+    // ===================================
 
 }

@@ -49,6 +49,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     // accumulate the errors
     List<String> errors = new ArrayList<>();
+
     enum FaultHandlingAction {
         // "Handler code" in protocol?
         //‘0000’ — reserved for future expansion
@@ -227,7 +228,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
      *
      * @return
      */
-    public long getSourceId() {
+    public long getInitiatorId() {
         return cfdpTransactionId.getInitiatorEntity();
     }
 

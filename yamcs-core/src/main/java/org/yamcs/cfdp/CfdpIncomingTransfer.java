@@ -36,7 +36,6 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
-
     private enum InTxState {
         /**
          * Receives metadata, data and EOF.
@@ -71,7 +70,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     FinishedPacket finPacket;
 
-    final CfdpHeader directiveHeader;
+    CfdpHeader directiveHeader;
 
     final long maxFileSize;
     /**
@@ -575,6 +574,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     private boolean eofReceived() {
         return eofPacket != null;
+    }
+
+    @Override
+    public long getInitiatorEntityId() {
+        return directiveHeader.getSourceId();
     }
 
     @Override
