@@ -106,16 +106,7 @@ public class LinkManager {
 
     private void createDataLink(YConfiguration linkConfig) throws IOException {
         String className = linkConfig.getString("class");
-        YConfiguration args = null;
         String linkName = linkConfig.getString("name");
-        if (linkConfig.containsKey("args")) {
-            args = linkConfig.getConfig("args");
-            log.warn(
-                    "Deprecation warning: the 'args' parameter in the link {} configuration is deprecated; please move all properties one level up",
-                    linkName);
-            mergeConfig(linkConfig, args);
-        }
-
         if (linksByName.containsKey(linkName)) {
             throw new ConfigurationException(
                     "Instance " + yamcsInstance + ": there is already a link named '" + linkName + "'");
@@ -151,16 +142,6 @@ public class LinkManager {
             link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkName, linkConfig);
         }
         return link;
-    }
-
-    private void mergeConfig(YConfiguration linkConfig, YConfiguration args) {
-        for (String k : args.getKeys()) {
-            if (linkConfig.containsKey(k)) {
-                throw new ConfigurationException(linkConfig, "key '" + k
-                        + "' present both in link config and args; these two are merged together and this is not allowed");
-            }
-            linkConfig.getRoot().put(k, args.get(k));
-        }
     }
 
     void configureDataLink(Link link, YConfiguration linkArgs) {

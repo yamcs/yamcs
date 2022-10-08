@@ -45,9 +45,9 @@ import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-import org.yamcs.xtce.util.NameReference.Type;
 
 public class XtceDbFactory {
 
@@ -503,12 +503,6 @@ public class XtceDbFactory {
                 instance2Db.put(yamcsInstance, db);
             } else if (instanceConfig.isList("mdb")) {
                 db = createInstance(instanceConfig.getConfigList("mdb"), true, true);
-                instance2Db.put(yamcsInstance, db);
-            } else {
-                log.warn(String.format(
-                        "DEPRECATION: [yamcs.%s.yaml] Use 'mdbSpec' instead of 'mdb' if the value refers to an entry in mdb.yaml",
-                        yamcsInstance));
-                db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdb"));
                 instance2Db.put(yamcsInstance, db);
             }
         }

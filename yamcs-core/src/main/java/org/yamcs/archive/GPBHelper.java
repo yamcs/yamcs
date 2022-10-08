@@ -69,7 +69,6 @@ public final class GPBHelper {
                                 .setValue(assignment.getValue())
                                 .setUserInput(assignment.hasUserInput() && assignment.getUserInput())
                                 .build();
-                        che.addAssignment(commandAssignment);
                         che.addAssignments(commandAssignment);
                     }
                 }

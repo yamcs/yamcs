@@ -360,7 +360,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 .setOrigin(pc.getOrigin())
                 .setSequenceNumber(pc.getSequenceNumber())
                 .setCommandName(pc.getCommandName())
-                .setSource(pc.getSource())
                 .setPendingTransmissionConstraints(activeCommand.isPendingTransmissionConstraints())
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
