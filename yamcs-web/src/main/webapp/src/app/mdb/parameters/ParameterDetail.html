@@ -86,6 +86,13 @@
       </span>
     </dd>
 
+    <ng-container *ngIf="parameter.type?.signed !== undefined">
+      <dt>Signed</dt>
+      <dd>
+        {{ parameter.type?.signed ?? '-' }}
+      </dd>
+    </ng-container>
+
     <ng-container *ngIf="!offset">
       <dt>Source</dt>
       <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>

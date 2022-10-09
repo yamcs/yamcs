@@ -27,6 +27,13 @@
     </span>
   </dd>
 
+  <ng-container *ngIf="ptype$ | async as ptype">
+    <ng-container *ngIf="ptype.signed !== undefined">
+      <dt>Signed</dt>
+      <dd>{{ ptype.signed }}</dd>
+    </ng-container>
+  </ng-container>
+
   <dt>Source</dt>
   <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
 
@@ -87,6 +94,11 @@
       {{ engType }}
     </span>
   </dd>
+
+  <ng-container *ngIf="parameter.type?.signed !== undefined">
+    <dt>Signed</dt>
+    <dd>{{ parameter.type?.signed }}</dd>
+  </ng-container>
 
   <ng-container *ngIf="!offset">
     <dt>Source</dt>

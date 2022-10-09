@@ -264,6 +264,7 @@ message ParameterTypeInfo {
   // Provides hints on how to format the engineering
   // value as a string.
   optional NumberFormatTypeInfo numberFormat = 11;
+  optional bool signed = 12;
 }
 
 message NumberFormatTypeInfo {
