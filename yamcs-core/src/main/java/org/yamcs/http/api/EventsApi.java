@@ -228,7 +228,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             for (Entry<String, Short> entry : enumValues.entrySet()) {
                 unsortedSources.add(entry.getKey());
             }
-            Collections.sort(unsortedSources);
+            Collections.sort(unsortedSources, String.CASE_INSENSITIVE_ORDER);
             responseb.addAllSource(unsortedSources);
         }
         observer.complete(responseb.build());
