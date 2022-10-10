@@ -522,7 +522,7 @@ public class CfdpService extends AbstractYamcsService
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                 "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
 
-        Bucket bucket = defaultIncomingBucket; // TODO: bucket?
+        Bucket bucket = defaultIncomingBucket;
 
         if (localEntity.bucket != null) {
             bucket = localEntity.bucket;
@@ -532,7 +532,7 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, defaultIncomingBucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
+        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
 
         return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor,
                 config, packet.getHeader(), cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers);
@@ -761,7 +761,6 @@ public class CfdpService extends AbstractYamcsService
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
-        // Verify correct implementation of ProxyTransmissionMode and ProxyClosureRequest
         if(options.isReliableSet()) {
             messagesToUser.add(new ProxyTransmissionMode(options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED));
         }
@@ -773,14 +772,14 @@ public class CfdpService extends AbstractYamcsService
                 options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
                 messagesToUser
         );
-        request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
+        CfdpTransactionId transactionId = request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(destinationId, idSeq.next(), creationTime, request, bucket);
+            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket);
         } else {
-            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, idSeq.next(), creationTime, request, bucket);
+            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -789,6 +788,7 @@ public class CfdpService extends AbstractYamcsService
             return transfer;
         }
 
+        // TODO: download list and association
     }
 
     @Override

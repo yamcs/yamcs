@@ -1,6 +1,7 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,8 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     public MetadataPacket(boolean closureRequested, ChecksumType checksumType, int fileSize,
             String source, String destination, List<TLV> options, CfdpHeader header) {
         super(header);
-        if (fileSize == 0) {
-            // TODO: re-add check for unbound file size
-//            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
+        if (fileSize == 0 && header.isLargeFile()) {
+            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
         this.closureRequested = closureRequested;
         this.checksumType = checksumType;
@@ -48,15 +48,25 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         }
 
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
-        if (this.fileSize == 0) {
+
+        if (this.fileSize == 0 && header.isLargeFile()) {
             throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
+
         this.sourceFileName = LV.readLV(buffer);
         this.destinationFileName = LV.readLV(buffer);
 
         if (buffer.hasRemaining()) {
-            log.warn("Ignoring " + buffer.remaining() + " TLV bytes");
+            options = new ArrayList<>();
+            while (buffer.hasRemaining()) {
+                try {
+                    options.add(TLV.readTLV(buffer));
+                } catch (IndexOutOfBoundsException e) {
+                    throw new PduDecodingException("TLV options in Metadata packet wrongly formatted", buffer.array(), e);
+                }
+            }
         }
+
         buffer.position(buffer.limit());
     }
 
@@ -114,6 +124,10 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
 
     public ChecksumType getChecksumType() {
         return checksumType;
+    }
+
+    public List<TLV> getOptions() {
+        return options;
     }
 
     @Override

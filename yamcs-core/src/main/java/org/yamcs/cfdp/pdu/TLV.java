@@ -13,7 +13,7 @@ import org.yamcs.utils.StringConverter;
 public class TLV {
     static final byte TYPE_FILE_STORE_REQUEST= 0x00;
     static final byte TYPE_FILE_STORE_RESPONSE = 0x01;
-    static final byte TYPE_MESSAGE_TO_USER = 0x02;
+    public static final byte TYPE_MESSAGE_TO_USER = 0x02;
     static final byte TYPE_FAULT_HANDLER_OVERRIDE = 0x04;
     static final byte TYPE_FLOW_LABEL = 0x05;
     static final byte TYPE_ENTITY_ID= 0x06;
