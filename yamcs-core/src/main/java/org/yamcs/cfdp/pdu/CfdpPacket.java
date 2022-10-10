@@ -214,5 +214,13 @@ public abstract class CfdpPacket {
         public int getValue() {
             return value;
         }
+
+        public static TransmissionMode fromValue(int value) {
+            switch (value) {
+                case 0: return ACKNOWLEDGED;
+                case 1: return UNACKNOWLEDGED;
+                default: return null;
+            }
+        }
     }
 }

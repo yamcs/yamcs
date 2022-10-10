@@ -3,6 +3,8 @@ package org.yamcs.cfdp.pdu;
 import com.google.common.primitives.Bytes;
 import org.yamcs.utils.StringConverter;
 
+import java.nio.ByteBuffer;
+
 public class ReservedMessageToUser extends MessageToUser {
 
     public final static String MESSAGE_IDENTIFIER = "cfdp";
@@ -73,6 +75,38 @@ public class ReservedMessageToUser extends MessageToUser {
             return bytes;
         }
 
+        public static MessageType fromByte(byte b) {
+            switch (b) {
+                case 0x00: return PROXY_PUT_REQUEST;
+                case 0x01: return PROXY_MESSAGE_TO_USER;
+                case 0x02: return PROXY_FILESTORE_REQUEST;
+                case 0x03: return PROXY_FAULT_HANDLER_OVERRIDE;
+                case 0x04: return PROXY_TRANSMISSION_MODE;
+                case 0x05: return PROXY_FLOW_LABEL;
+                case 0x06: return PROXY_SEGMENTATION_CONTROL;
+                case 0x07: return PROXY_PUT_RESPONSE;
+                case 0x08: return PROXY_FILESTORE_RESPONSE;
+                case 0x09: return PROXY_PUT_CANCEL;
+                case 0x0B: return PROXY_CLOSURE_REQUEST;
+                case 0x10: return DIRECTORY_LISTING_REQUEST;
+                case 0x11: return DIRECTORY_LISTING_RESPONSE;
+                case 0x20: return REMOTE_STATUS_REPORT_REQUEST;
+                case 0x21: return REMOTE_STATUS_REPORT_RESPONSE;
+                case 0x30: return REMOTE_SUSPEND_REQUEST;
+                case 0x31: return REMOTE_SUSPEND_RESPONSE;
+                case 0x38: return REMOTE_RESUME_REQUEST;
+                case 0x39: return REMOTE_RESUME_RESPONSE;
+                case 0x40: return SFO_REQUEST;
+                case 0x41: return SFO_MESSAGE_TO_USER;
+                case 0x42: return SFO_FLOW_LABEL;
+                case 0x43: return SFO_FAULT_HANDLER_OVERRIDE;
+                case 0x44: return SFO_FILESTORE_REQUEST;
+                case 0x45: return SFO_REPORT;
+                case 0x46: return SFO_FILESTORE_RESPONSE;
+                default: return null;
+            }
+        }
+
     }
 
     public ReservedMessageToUser(MessageType messageType, byte[] content) {
@@ -82,8 +116,21 @@ public class ReservedMessageToUser extends MessageToUser {
         this.content = content;
     }
 
+    public ReservedMessageToUser(ByteBuffer buffer) {
+        super(buffer.array());
+
+        this.messageType = MessageType.fromByte(buffer.get(4));
+        buffer.position(5);
+        this.content = new byte[buffer.remaining()];
+        buffer.get(content);
+    }
+
     public MessageType getMessageType() {
         return messageType;
+    }
+
+    public byte[] getContent() {
+        return content;
     }
 
     @Override

@@ -70,6 +70,10 @@ public class ColSimulator extends AbstractSimulator {
 
     private CfdpSender cfdpSender;
 
+    public void setCfdpSender(CfdpSender cfdpSender) {
+        this.cfdpSender = cfdpSender;
+    }
+
     public ColSimulator(File losDir, File dataDir) {
         losRecorder = new LosRecorder(losDir);
         powerDataHandler = new PowerHandler();
