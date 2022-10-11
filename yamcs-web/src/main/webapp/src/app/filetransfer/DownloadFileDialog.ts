@@ -47,8 +47,8 @@ export class DownloadFileDialog implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
-    const firstSource = this.service.localEntities.length ? this.service.localEntities[0].name : '';
-    const firstDestination = this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
+    const firstDestination = this.service.localEntities.length ? this.service.localEntities[0].name : '';
+    const firstSource = this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
 
     this.storageClient = yamcs.createStorageClient();
     this.storageClient.getBuckets('_global').then(buckets => {

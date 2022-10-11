@@ -77,8 +77,9 @@ public class CfdpService extends AbstractYamcsService
     static final String SEQUENCE_NAME = "cfdp";
 
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
-
     Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
+
+    FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
@@ -539,8 +540,8 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, allowRemoteProvidedBucket,
-                allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
+        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, fileDownloadRequests,
+                allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites, maxExistingFileRenames);
 
         return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor, config, packet.getHeader(),
                 cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers
@@ -792,6 +793,7 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
+        fileDownloadRequests.addTransfer(transactionId, bucket.getName());
         if (numPendingUploads() < maxNumPendingUploads) {
             return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket);
         } else {
@@ -804,8 +806,6 @@ public class CfdpService extends AbstractYamcsService
             executor.submit(this::tryStartQueuedTransfer);
             return transfer;
         }
-
-        // TODO: download list and association
     }
 
     @Override

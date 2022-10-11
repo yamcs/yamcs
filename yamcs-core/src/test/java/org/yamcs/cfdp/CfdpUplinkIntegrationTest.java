@@ -388,7 +388,8 @@ public class CfdpUplinkIntegrationTest {
                     }
 
                     if (trsf == null) {
-                        FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, incomingBucket, false,
+                        FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, incomingBucket,
+                                null, false,
                                 false, false, 1000);
 
                         trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,

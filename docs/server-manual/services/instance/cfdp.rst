@@ -178,7 +178,7 @@ maxNumPendingDownloads (integer)
     The maximum number of allowed concurrent downloads. If this limit is reached, any PDU that would start a new download is dropped and an event message generated. Default: ``100``
 
 maxNumPendingUploads (integer)
-    The maximum number of allowed concurrent uploads. If this limit is reached, the new uploads are queued. Default: ``10``
+    The maximum number of allowed concurrent uploads (including download requests and directory listing requests). If this limit is reached, the new uploads are queued. Default: ``10``
 
 directoryTerminators (list)
     When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]``

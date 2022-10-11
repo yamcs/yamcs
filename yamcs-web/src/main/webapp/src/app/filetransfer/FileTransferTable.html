@@ -17,6 +17,7 @@
             *ngIf="(item.transfer.direction === 'DOWNLOAD' && item.transfer.state !== 'COMPLETED') || !item.objectUrl; else clickable">{{
         item.transfer.objectName || '-'}}</span>
       <ng-template #clickable>
+        <!-- TODO: only show links if object still in bucket -->
         <a [href]="item.objectUrl" download>{{ item.transfer.objectName || '-' }}</a>
       </ng-template>
     </td>
