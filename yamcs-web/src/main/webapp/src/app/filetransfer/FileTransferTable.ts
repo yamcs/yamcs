@@ -21,6 +21,7 @@ export class FileTransferTable implements OnChanges {
     'remoteFile',
     'size',
     'status',
+    'transferType'
   ];
 
   displayedColumns$ = new BehaviorSubject<String[]>(this.defaultColumns);

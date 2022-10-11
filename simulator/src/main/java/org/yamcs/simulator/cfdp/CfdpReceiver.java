@@ -110,13 +110,13 @@ public class CfdpReceiver {
                             } else throw new PduDecodingException("Multiple Proxy Put Request messages found in metadata packet",
                                     reservedMessage.getContent());
                             break;
-                            case PROXY_TRANSMISSION_MODE:
+                        case PROXY_TRANSMISSION_MODE:
                             if(proxyTransmissionMode == null) {
                                 proxyTransmissionMode = new ProxyTransmissionMode(reservedMessage.getContent());
                             } else throw new PduDecodingException("Multiple Proxy Transmission Mode messages found in metadata packet",
                                     reservedMessage.getContent());
                             break;
-                            case PROXY_CLOSURE_REQUEST:
+                        case PROXY_CLOSURE_REQUEST:
                                 if(proxyClosureRequest == null) {
                                     proxyClosureRequest = new ProxyClosureRequest(reservedMessage.getContent());
                                 } else throw new PduDecodingException("Multiple Proxy Closure Request messages found in metadata packet",
@@ -147,6 +147,8 @@ public class CfdpReceiver {
             }
 
             try {
+                // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
+                // TODO: include transaction ID
                 CfdpSender sender = new CfdpSender(simulator, new File(dataDir, proxyPutRequest.getSourceFileName()), (int) proxyPutRequest.getDestinationEntityId(), new int[0]);
                 ((ColSimulator) simulator).setCfdpSender(sender); // WARNING Unchecked cast
                 sender.start();

@@ -1,5 +1,6 @@
 package org.yamcs.cfdp;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,9 +12,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.logging.Log;
@@ -32,7 +31,9 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected final long startTime;
     protected final long wallclockStartTime;
     protected final long creationTime;
-    
+
+    protected String transferType = PredefinedTransferTypes.UNKNOWN.toString();
+
     final TransferMonitor monitor;
     final long destinationId;
 
@@ -100,6 +101,54 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
         this.maxAckSendFreqNanos = config.getLong("maxAckSendFreq", 500) * 1_000_000;
         this.faultHandlerActions = faultHandlerActions;
+    }
+
+    /**
+     * Sets the transfer type fom the metadata packet
+     * @param metadata Metadata packet
+     */
+    protected static String getTransferType(MetadataPacket metadata) {
+        if (metadata == null) return PredefinedTransferTypes.UNKNOWN.toString();
+
+        String transferType;
+        if(metadata.getFileLength() == 0) {
+            if(!metadata.getHeader().isLargeFile()) {
+                if(metadata.getOptions() != null && metadata.getOptions().size() > 0) { // TODO: maybe put it outside of file checks?
+                    transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_OPTIONS.toString();
+                    for (TLV option : metadata.getOptions()) {
+                        if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
+                            transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_MESSAGE.toString();
+
+                            byte[] value = option.getValue();
+                            if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals("cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
+                                transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_RESERVED_MESSAGES.toString();
+
+                                ReservedMessageToUser reservedMessage = new ReservedMessageToUser(
+                                        ByteBuffer.wrap(value));
+                                switch (reservedMessage.getMessageType()) {
+                                case PROXY_PUT_REQUEST:
+                                    return PredefinedTransferTypes.DOWNLOAD_REQUEST.toString();
+                                case PROXY_PUT_RESPONSE:
+                                    return PredefinedTransferTypes.DOWNLOAD_REQUEST_RESPONSE.toString();
+                                case DIRECTORY_LISTING_REQUEST:
+                                    return PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString();
+                                case DIRECTORY_LISTING_RESPONSE:
+                                    return PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString();
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    transferType = PredefinedTransferTypes.UNKNOWN_EMPTY_FILE.toString();
+                }
+            } else {
+                transferType = PredefinedTransferTypes.LARGE_FILE_TRANSFER.toString();
+            }
+        } else {
+            transferType = PredefinedTransferTypes.FILE_TRANSFER.toString();
+        }
+        return transferType;
     }
 
     public abstract void processPacket(CfdpPacket packet);
@@ -239,6 +288,11 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
      */
     public long getDestinationId() {
         return destinationId;
+    }
+
+    @Override
+    public String getTransferType() {
+        return transferType;
     }
     
     protected void sendInfoEvent(String type, String msg) {

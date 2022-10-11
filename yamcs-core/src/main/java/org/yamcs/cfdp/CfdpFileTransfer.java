@@ -3,6 +3,33 @@ package org.yamcs.cfdp;
 import org.yamcs.filetransfer.FileTransfer;
 
 public interface CfdpFileTransfer extends FileTransfer {
+
+    enum PredefinedTransferTypes {
+        FILE_TRANSFER("File Transfer"),
+        LARGE_FILE_TRANSFER("Large File Transfer"),
+        DOWNLOAD_REQUEST("Download Request"),
+        DOWNLOAD_REQUEST_RESPONSE("Download Request Response"),
+        DIRECTORY_LISTING_REQUEST("Directory Listing Request"),
+        DIRECTORY_LISTING_RESPONSE("Directory Listing Response"),
+        UNSUPPORTED_METADATA_OPTIONS("Unsupported Metadata Options"),
+        UNSUPPORTED_METADATA_MESSAGE("Unsupported Metadata Messages"),
+
+        UNSUPPORTED_METADATA_RESERVED_MESSAGES("Unsupported Metadata Reserved Messages"),
+        UNKNOWN_EMPTY_FILE("Unknown Empty File"),
+        UNKNOWN("Unknown");
+
+        private final String value;
+
+        PredefinedTransferTypes(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+    }
+
     /**
      * Get the CFDP transaction id. Returns null for queued transfers.
      * 
@@ -13,4 +40,5 @@ public interface CfdpFileTransfer extends FileTransfer {
     long getInitiatorEntityId();
 
     long getDestinationId();
+
 }
