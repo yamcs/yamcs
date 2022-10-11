@@ -13,6 +13,7 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
     private String failureReason;
     private final long creationTime;
     private final Bucket bucket;
+    private final String transferType;
 
     public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest, Bucket bucket) {
         this.initiatorEntityId = initiatorEntityId;
@@ -20,6 +21,7 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
         this.putRequest = putRequest;
         this.creationTime = creationTime;
         this.bucket = bucket;
+        this.transferType = OngoingCfdpTransfer.getTransferType(putRequest.getMetadata());
     }
 
     @Override
@@ -95,6 +97,11 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
     @Override
     public long getDestinationId() {
         return putRequest.getDestinationCfdpEntityId();
+    }
+
+    @Override
+    public String getTransferType() {
+        return transferType;
     }
 
     public void setTransferState(TransferState state) {

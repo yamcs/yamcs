@@ -38,6 +38,8 @@ public class CompletedTransfer implements CfdpFileTransfer {
     static final String COL_SEQUENCE_NUMBER = "sequenceNumber";
     static final String COL_TRANSFER_STATE = "transferState";
     static final String COL_FAILURE_REASON = "failureReason";
+    static final String COL_TRANSFER_TYPE = "transferType";
+
     static final String SERVER_ID = YamcsServer.getServer().getServerId();
 
     static {
@@ -56,6 +58,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         TDEF.addColumn(COL_RELIABLE, DataType.BOOLEAN);
         TDEF.addColumn(COL_TRANSFER_STATE, DataType.STRING);
         TDEF.addColumn(COL_CREATION_TIME, DataType.TIMESTAMP);
+        TDEF.addColumn(COL_TRANSFER_TYPE, DataType.STRING);
     }
     final Tuple tuple;
 
@@ -170,6 +173,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         }
         t.addColumn(COL_DESTINATION_ID, transfer.getDestinationId());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
+        t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
         return t;
     }
 
@@ -182,6 +186,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_TRANSFERED_SIZE, transfer.getTransferredSize());
+        t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
 
         t.addColumn(COL_FAILURE_REASON, transfer.getFailuredReason());
         if (transfer.getDirection() == TransferDirection.DOWNLOAD) {
@@ -224,5 +229,10 @@ public class CompletedTransfer implements CfdpFileTransfer {
         } else {
             return TimeEncoding.INVALID_INSTANT;
         }
+    }
+
+    @Override
+    public String getTransferType() {
+        return tuple.getColumn(COL_TRANSFER_TYPE);
     }
 }

@@ -166,6 +166,9 @@ message TransferInfo {
   
   // when the transfer has been created. 
   optional google.protobuf.Timestamp creationTime = 13;
+
+  // depending on the implementation, can mean normal file transfer, directory listing request, file download request, etc.
+  optional string transferType = 14;
 }
 
 message CreateTransferRequest {

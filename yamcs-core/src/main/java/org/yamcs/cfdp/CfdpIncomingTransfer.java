@@ -12,20 +12,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.cfdp.pdu.AckPacket;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
-import org.yamcs.cfdp.pdu.CfdpHeader;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.NakPacket;
-import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -255,6 +245,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             return;
         }
         this.metadataPacket = packet;
+
+        transferType = getTransferType(metadataPacket);
 
         needsFinish = acknowledged || packet.closureRequested();
 

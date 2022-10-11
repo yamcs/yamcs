@@ -32,6 +32,7 @@ export interface Transfer {
   totalSize: number;
   sizeTransferred: number;
   failureReason?: string;
+  transferType?: string;
 }
 
 export interface UploadOptions {

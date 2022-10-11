@@ -327,6 +327,10 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             tib.setFailureReason(failureReason);
         }
 
+        if (transfer.getTransferType() != null) {
+            tib.setTransferType(transfer.getTransferType());
+        }
+
         return tib.build();
     }
 

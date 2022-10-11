@@ -125,15 +125,18 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      *         - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the default
      *         behaviour to cancel the transaction will be used.
      */
-    public CfdpOutgoingTransfer(String yamcsInstance, long initiatorEntityId, long id, long creationTime, ScheduledThreadPoolExecutor executor,
+    public CfdpOutgoingTransfer(String yamcsInstance, long initiatorEntityId, long id, long creationTime,
+            ScheduledThreadPoolExecutor executor,
             PutRequest request, Stream cfdpOut, YConfiguration config, Bucket bucket,
             EventProducer eventProducer,
             TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, creationTime, executor, config, makeTransactionId(initiatorEntityId, config, id),
+        super(yamcsInstance, id, creationTime,
+                executor, config, makeTransactionId(initiatorEntityId, config, id),
                 request.getDestinationCfdpEntityId(), cfdpOut,
                 eventProducer, monitor, faultHandlerActions);
         this.request = request;
         this.metadata = request.getMetadata();
+        transferType = getTransferType(metadata);
         this.bucket = bucket;
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
@@ -202,6 +205,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         case START:
             if(metadata == null) {
                 metadata = getMetadataPacket();
+                transferType = getTransferType(metadata);
             }
             sendInfoEvent(ETYPE_TRANSFER_META, "Sending metadata: " + toEventMsg(metadata));
             sendPacket(metadata);

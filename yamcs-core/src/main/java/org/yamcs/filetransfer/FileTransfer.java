@@ -53,6 +53,8 @@ public interface FileTransfer {
 
     long getStartTime();
 
+    String getTransferType();
+
     boolean pausable();
 
     boolean cancellable();
