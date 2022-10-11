@@ -25,12 +25,11 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.logging.Log;
-import org.yamcs.security.AuthModule;
+import org.yamcs.security.AbstractHttpRequestAuthModule;
+import org.yamcs.security.AbstractHttpRequestAuthModule.HttpRequestToken;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.RemoteUserAuthModule;
-import org.yamcs.security.RemoteUserToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
@@ -245,13 +244,25 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
         }
 
-        // Instances of RemoteUserAuthModule derive the user from custom HTTP headers
-        // (anything other than Authorization)
-        for (AuthModule authModule : securityStore.getAuthModules()) {
-            if (authModule instanceof RemoteUserAuthModule) {
-                String headerName = ((RemoteUserAuthModule) authModule).getHeader();
-                if (req.headers().contains(headerName)) {
-                    return handleRemoteUserAuth(ctx, req, headerName);
+        // Instances of AbstractHttpRequestAuthModule derive the user
+        // from custom HTTP request information, typically headers.
+        var isHttpRequestAuth = securityStore.getAuthModules().stream().anyMatch(module -> {
+            return module instanceof AbstractHttpRequestAuthModule
+                    && ((AbstractHttpRequestAuthModule) module).handles(ctx, req);
+        });
+        if (isHttpRequestAuth) {
+            try {
+                var token = new HttpRequestToken(ctx, req);
+                var authenticationInfo = securityStore.login(token).get();
+                return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof AuthenticationException) {
+                    throw new UnauthorizedException(e.getCause().getMessage());
+                } else {
+                    throw new InternalServerErrorException(e.getCause());
                 }
             }
         }
@@ -532,25 +543,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         try {
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
-            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
-            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof AuthenticationException) {
-                throw new UnauthorizedException(e.getCause().getMessage());
-            } else {
-                throw new InternalServerErrorException(e.getCause());
-            }
-        }
-    }
-
-    private User handleRemoteUserAuth(ChannelHandlerContext ctx, HttpRequest req, String headerName)
-            throws HttpException {
-        String username = req.headers().get(headerName);
-        try {
-            AuthenticationToken token = new RemoteUserToken(headerName, username);
             AuthenticationInfo authenticationInfo = securityStore.login(token).get();
             return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
         } catch (InterruptedException e) {

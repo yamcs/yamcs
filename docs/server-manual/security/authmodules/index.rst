@@ -8,6 +8,7 @@ AuthModules
     yaml
     kerberos
     remote-user
+    ip-address
     spnego
     openid
 
@@ -24,6 +25,8 @@ The default set of AuthModules include:
     Supports authenticating against a Kerberos server.
 :doc:`remote-user`
     Supports authentication based on a custom HTTP header.
+:doc:`ip-address`
+    Supports authentication based on the remote IP address.
 :doc:`spnego`
     Supports authenticating against a Kerberos server using Single Sign On from a web context.
 :doc:`openid`
