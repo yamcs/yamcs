@@ -2,12 +2,9 @@ package org.yamcs.cfdp;
 
 import static org.yamcs.cfdp.CfdpService.*;
 
+import java.nio.ByteBuffer;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +23,8 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
+    private CfdpTransactionId originatingTransactionID;
+
     private enum InTxState {
         /**
          * Receives metadata, data and EOF.
@@ -96,8 +95,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     List<CfdpPacket> queuedPackets = new ArrayList<>();
 
     public CfdpIncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, CfdpHeader hdr, Stream cfdpOut, FileSaveHandler fileSaveHandler, EventProducer eventProducer,
-            TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
+            YConfiguration config, CfdpHeader hdr, Stream cfdpOut, FileSaveHandler fileSaveHandler,
+            EventProducer eventProducer, TransferMonitor monitor,
+            Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime, executor, config, hdr.getTransactionId(), hdr.getDestinationId(),
                 cfdpOut, eventProducer, monitor, faultHandlerActions);
         this.fileSaveHandler = fileSaveHandler;
@@ -248,12 +248,28 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         transferType = getTransferType(metadataPacket);
 
+        if(metadataPacket.getOptions() != null && metadataPacket.getOptions().size() > 0) {
+            for (TLV option : metadataPacket.getOptions()) {
+                if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
+                    byte[] value = option.getValue();
+                    if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals("cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
+                        ReservedMessageToUser reservedMessage = new ReservedMessageToUser(ByteBuffer.wrap(value));
+                        if(reservedMessage.getMessageType() == ReservedMessageToUser.MessageType.ORIGINATING_TRANSACTION_ID) {
+                            OriginatingTransactionId originatingTransactionID = new OriginatingTransactionId(reservedMessage.getContent());
+                            this.originatingTransactionID = new CfdpTransactionId(originatingTransactionID.getSourceEntityId(), originatingTransactionID.getTransactionSequenceNumber());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         needsFinish = acknowledged || packet.closureRequested();
 
         incomingDataFile.setSize(fileSize);
 
         this.acknowledged = packet.getHeader().isAcknowledged();
-        originalObjectName = packet.getDestinationFilename();
+        originalObjectName = !packet.getDestinationFilename().equals("") ? packet.getDestinationFilename() : packet.getSourceFilename();
         try {
             fileSaveHandler.setObjectName(originalObjectName);
             sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
@@ -526,7 +542,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         // TODO: source data in metadata
 
-        fileSaveHandler.saveFile(incomingDataFile, metadata);
+        fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionID);
     }
 
     private AckPacket getAckEofPacket(ConditionCode code) {

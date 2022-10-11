@@ -148,8 +148,10 @@ public class CfdpReceiver {
 
             try {
                 // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
-                // TODO: include transaction ID
-                CfdpSender sender = new CfdpSender(simulator, new File(dataDir, proxyPutRequest.getSourceFileName()), (int) proxyPutRequest.getDestinationEntityId(), new int[0]);
+                CfdpSender sender = new CfdpSender(simulator, (int) proxyPutRequest.getDestinationEntityId(),
+                        new File(dataDir, proxyPutRequest.getSourceFileName()), proxyPutRequest.getDestinationFileName(),
+                        List.of(new OriginatingTransactionId(packet.getHeader().getSourceId(), packet.getHeader().getSequenceNumber())),
+                        new int[0]);
                 ((ColSimulator) simulator).setCfdpSender(sender); // WARNING Unchecked cast
                 sender.start();
             } catch (FileNotFoundException e) {

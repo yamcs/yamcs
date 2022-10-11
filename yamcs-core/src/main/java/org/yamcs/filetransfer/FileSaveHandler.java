@@ -1,7 +1,9 @@
 package org.yamcs.filetransfer;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.DataFile;
+import org.yamcs.cfdp.FileDownloadRequests;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
@@ -16,6 +18,7 @@ public class FileSaveHandler {
 
     private final Log log;
     private final Bucket defaultBucket;
+    private FileDownloadRequests fileDownloadRequests;
     private final boolean allowRemoteProvidedBucket;
     private final boolean allowRemoteProvidedSubdirectory;
     private final boolean allowDownloadOverwrites;
@@ -24,11 +27,13 @@ public class FileSaveHandler {
     private Bucket bucket;
     private String objectName;
 
-    public FileSaveHandler(String yamcsInstance, Bucket defaultBucket, boolean allowRemoteProvidedBucket,
+    public FileSaveHandler(String yamcsInstance, Bucket defaultBucket, FileDownloadRequests fileDownloadRequests,
+            boolean allowRemoteProvidedBucket,
             boolean allowRemoteProvidedSubdirectory, boolean allowDownloadOverwrites, int maxExistingFileRenames) {
         this.yamcsInstance = yamcsInstance;
         this.log = new Log(this.getClass(), yamcsInstance);
         this.defaultBucket = defaultBucket;
+        this.fileDownloadRequests = fileDownloadRequests;
         this.allowRemoteProvidedBucket = allowRemoteProvidedBucket;
         this.allowRemoteProvidedSubdirectory = allowRemoteProvidedSubdirectory;
         this.allowDownloadOverwrites = allowDownloadOverwrites;
@@ -36,21 +41,34 @@ public class FileSaveHandler {
     }
 
     public FileSaveHandler(String yamcsInstance, Bucket defaultBucket) {
-        this(yamcsInstance, defaultBucket, false, false, false, 1000);
+        this(yamcsInstance, defaultBucket, null, false, false, false, 1000);
     }
 
-    public void saveFile(String objectName, DataFile file, Map<String, String> metadata)
+    public void saveFile(String objectName, DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId)
             throws FileAlreadyExistsException {
         setObjectName(objectName);
-        saveFile(file, metadata);
+        saveFile(file, metadata, originatingTransactionId);
     }
 
-    public void saveFile(DataFile file, Map<String, String> metadata) {
+    public void saveFile(DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId) {
         if(objectName == null) {
             log.warn("File name not set, not saving");
             return;
         }
         if(bucket == null) { bucket = defaultBucket; }
+
+        if(originatingTransactionId != null) {
+            String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
+            fileDownloadRequests.removeTransfer(originatingTransactionId);
+            if(bucketName != null) {
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+                try {
+                    bucket = ydb.getBucket(bucketName);
+                } catch (IOException e) {
+                    log.warn("Recognised originating transaction id from incoming transfer but bucket does not exist");
+                }
+            }
+        }
 
         try {
             bucket.putObject(this.objectName, null, metadata, file.getData());

@@ -48,6 +48,7 @@ public class ReservedMessageToUser extends MessageToUser {
         PROXY_PUT_RESPONSE((byte) 0x07),
         PROXY_FILESTORE_RESPONSE((byte) 0x08),
         PROXY_PUT_CANCEL((byte) 0x09),
+        ORIGINATING_TRANSACTION_ID((byte) 0x0A),
         PROXY_CLOSURE_REQUEST((byte) 0x0B),
         DIRECTORY_LISTING_REQUEST((byte) 0x10),
         DIRECTORY_LISTING_RESPONSE((byte) 0x11),
@@ -87,6 +88,7 @@ public class ReservedMessageToUser extends MessageToUser {
                 case 0x07: return PROXY_PUT_RESPONSE;
                 case 0x08: return PROXY_FILESTORE_RESPONSE;
                 case 0x09: return PROXY_PUT_CANCEL;
+                case 0x0A: return ORIGINATING_TRANSACTION_ID;
                 case 0x0B: return PROXY_CLOSURE_REQUEST;
                 case 0x10: return DIRECTORY_LISTING_REQUEST;
                 case 0x11: return DIRECTORY_LISTING_RESPONSE;
