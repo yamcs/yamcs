@@ -98,8 +98,6 @@ public class SecurityStore {
             }
         }
 
-        authModules.add(new DirectoryAuthModule());
-
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
@@ -114,6 +112,9 @@ public class SecurityStore {
                 authModules.add(authModule);
             }
         }
+
+        // Add last, so external modules have a chance to redefine the user named 'admin'.
+        authModules.add(new DirectoryAuthModule());
     }
 
     /**

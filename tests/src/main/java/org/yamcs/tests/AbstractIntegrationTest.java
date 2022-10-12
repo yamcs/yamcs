@@ -69,7 +69,7 @@ public abstract class AbstractIntegrationTest {
                 .withUserAgent("it-junit")
                 .build();
         yamcsClient.addConnectionListener(connectionListener);
-        if (!yamcs.getSecurityStore().getGuestUser().isActive()) {
+        if (yamcs.getSecurityStore().isEnabled()) {
             yamcsClient.login(adminUsername, adminPassword);
         }
         yamcsClient.connectWebSocket();
