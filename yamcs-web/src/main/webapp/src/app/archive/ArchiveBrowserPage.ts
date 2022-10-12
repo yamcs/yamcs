@@ -159,6 +159,15 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       });
     });
 
+    this.timeline.addViewportDoubleClickListener(event => {
+      const processor = this.yamcs.getProcessor();
+      if (processor?.replay) {
+        this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, {
+          seek: new Date(event.time).toISOString(),
+        }).catch(err => this.messageService.showError(err));
+      }
+    });
+
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.get('start') && queryParams.get('stop')) {
       const start = utils.toDate(queryParams.get('start'));
