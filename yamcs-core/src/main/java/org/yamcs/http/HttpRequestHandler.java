@@ -232,56 +232,58 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        // Handle common case first: presence of an "Authorization" header
-        if (req.headers().contains(AUTHORIZATION)) {
-            String authorizationHeader = req.headers().get(AUTHORIZATION);
-            if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
-                return handleBasicAuth(ctx, req);
-            } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
-                return handleBearerAuth(ctx, req);
-            } else {
-                throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
-            }
-        }
-
-        // Instances of AbstractHttpRequestAuthModule derive the user
-        // from custom HTTP request information, typically headers.
-        var isHttpRequestAuth = securityStore.getAuthModules().stream().anyMatch(module -> {
-            return module instanceof AbstractHttpRequestAuthModule
-                    && ((AbstractHttpRequestAuthModule) module).handles(ctx, req);
-        });
-        if (isHttpRequestAuth) {
-            try {
-                var token = new HttpRequestToken(ctx, req);
-                var authenticationInfo = securityStore.login(token).get();
-                return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return null;
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof AuthenticationException) {
-                    throw new UnauthorizedException(e.getCause().getMessage());
+        if (securityStore.isEnabled()) {
+            // Handle common case first: presence of an "Authorization" header
+            if (req.headers().contains(AUTHORIZATION)) {
+                String authorizationHeader = req.headers().get(AUTHORIZATION);
+                if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
+                    return handleBasicAuth(ctx, req);
+                } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+                    return handleBearerAuth(ctx, req);
                 } else {
-                    throw new InternalServerErrorException(e.getCause());
+                    throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
                 }
             }
-        }
 
-        // Last resort:
-        // There may be an access token in the cookie. This use case is added because
-        // of web socket requests coming from the browser where it is not possible to
-        // set custom authorization headers. It'd be interesting if we communicate the
-        // access token via the websocket subprotocol instead (e.g. via temp. route).
-        String accessToken = getAccessTokenFromCookie(req);
-        if (accessToken != null) {
-            return handleAccessToken(ctx, req, accessToken);
+            // Instances of AbstractHttpRequestAuthModule derive the user
+            // from custom HTTP request information, typically headers.
+            var isHttpRequestAuth = securityStore.getAuthModules().stream().anyMatch(module -> {
+                return module instanceof AbstractHttpRequestAuthModule
+                        && ((AbstractHttpRequestAuthModule) module).handles(ctx, req);
+            });
+            if (isHttpRequestAuth) {
+                try {
+                    var token = new HttpRequestToken(ctx, req);
+                    var authenticationInfo = securityStore.login(token).get();
+                    return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof AuthenticationException) {
+                        throw new UnauthorizedException(e.getCause().getMessage());
+                    } else {
+                        throw new InternalServerErrorException(e.getCause());
+                    }
+                }
+            }
+
+            // Last resort:
+            // There may be an access token in the cookie. This use case is added because
+            // of web socket requests coming from the browser where it is not possible to
+            // set custom authorization headers. It'd be interesting if we communicate the
+            // access token via the websocket subprotocol instead (e.g. via temp. route).
+            String accessToken = getAccessTokenFromCookie(req);
+            if (accessToken != null) {
+                return handleAccessToken(ctx, req, accessToken);
+            }
         }
 
         if (securityStore.getGuestUser().isActive()) {
             return securityStore.getGuestUser();
-        } else {
-            throw new UnauthorizedException("Missing authentication");
         }
+
+        throw new UnauthorizedException("Missing authentication");
     }
 
     /**
