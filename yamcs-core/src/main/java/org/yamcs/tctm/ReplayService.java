@@ -147,6 +147,7 @@ public class ReplayService extends AbstractProcessorService
             }
             break;
         case PP:
+            @SuppressWarnings("unchecked")
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
                 replayTime = pvals.get(0).getGenerationTime();
@@ -316,7 +317,9 @@ public class ReplayService extends AbstractProcessorService
             return;
         }
 
-        yarchReplay.start();
+        if (originalReplayRequest.isAutostart()) {
+            yarchReplay.start();
+        }
         notifyStarted();
     }
 

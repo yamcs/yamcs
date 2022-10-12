@@ -92,7 +92,7 @@ message ReplayRequest {
   // **Required.** The time at which the replay should start. 
   optional google.protobuf.Timestamp start = 13;
   
-  // The time at which the replay should stop. 
+  // The time at which the replay should stop.
   // If unspecified, the replay will keep going as long  as there is remaining data.
   optional google.protobuf.Timestamp stop = 14;
 
@@ -113,6 +113,10 @@ message ReplayRequest {
   optional EventReplayRequest eventRequest = 10;
   optional CommandHistoryReplayRequest commandHistoryRequest = 11;
   optional PpReplayRequest ppRequest = 12;
+
+  // Start the replay following initialization
+  // Defaults to true, if unspecified
+  optional bool autostart = 16 [default=true];
 }
 
 message ParameterReplayRequest {

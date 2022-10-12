@@ -17,6 +17,7 @@ public class ReplayOptions {
     EndAction endAction;
     ReplaySpeed speed;
     boolean reverse;
+    boolean autostart = true;
 
     // if all request objects are null -> replay all
     // if at least one of them is not null -> replay that type
@@ -50,6 +51,7 @@ public class ReplayOptions {
         if (protoRequest.hasPpRequest()) {
             this.ppRequest = protoRequest.getPpRequest();
         }
+        autostart = protoRequest.getAutostart();
     }
 
     public ReplayOptions(long start, long stop) {
@@ -66,6 +68,7 @@ public class ReplayOptions {
         this.speed = other.speed;
         this.endAction = other.endAction;
         this.reverse = other.reverse;
+        this.autostart = other.autostart;
 
         this.packetReplayRequest = other.packetReplayRequest;
         this.ppRequest = other.ppRequest;
@@ -116,6 +119,7 @@ public class ReplayOptions {
         rr.setSpeed(speed);
         rr.setEndAction(endAction);
         rr.setReverse(reverse);
+        rr.setAutostart(autostart);
         if (packetReplayRequest != null) {
             rr.setPacketRequest(packetReplayRequest);
         }
@@ -135,6 +139,10 @@ public class ReplayOptions {
         }
 
         return rr.build();
+    }
+
+    public boolean isAutostart() {
+        return autostart;
     }
 
     public EndAction getEndAction() {
@@ -189,16 +197,15 @@ public class ReplayOptions {
     public PacketReplayRequest getPacketRequest() {
         return packetReplayRequest == null ? PacketReplayRequest.getDefaultInstance() : packetReplayRequest;
     }
-    
+
     public boolean hasPacketRequest() {
         return packetReplayRequest != null;
     }
-    
+
     public void setPacketRequest(PacketReplayRequest packetReplayRequest) {
         this.packetReplayRequest = packetReplayRequest;
     }
 
-    
     public ParameterReplayRequest getParameterRequest() {
         return parameterReplayRequest == null ? ParameterReplayRequest.getDefaultInstance() : parameterReplayRequest;
     }
@@ -217,6 +224,10 @@ public class ReplayOptions {
 
     public void setReverse(boolean reverse) {
         this.reverse = reverse;
+    }
+
+    public void setAutostart(boolean autostart) {
+        this.autostart = autostart;
     }
 
     public CommandHistoryReplayRequest getCommandHistoryRequest() {

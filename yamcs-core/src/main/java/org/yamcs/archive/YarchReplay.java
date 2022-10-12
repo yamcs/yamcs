@@ -151,7 +151,7 @@ public class YarchReplay implements StreamSubscriber {
         if (handlers.size() > 1) {
             sb.append("MERGE ");
         }
-        List<Object> args = new ArrayList<Object>();
+        List<Object> args = new ArrayList<>();
 
         boolean first = true;
         for (ReplayHandler rh : handlers.values()) {
@@ -253,6 +253,9 @@ public class YarchReplay implements StreamSubscriber {
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream s = ydb.getStream(streamName);
+        if (s == null) {
+            throw new IllegalStateException("Cannot change speed while not started");
+        }
         if (!(s instanceof SpeedLimitStream)) {
             throw new IllegalStateException("Cannot change speed on a " + s.getClass() + " stream");
         } else {
@@ -297,7 +300,7 @@ public class YarchReplay implements StreamSubscriber {
                 db.execute("close stream " + streamName);
             }
         } catch (Exception e) {
-            log.error("Exception whilst quitting", e);
+            log.error("Exception while quitting", e);
         }
         replayServer.replayFinished();
     }
