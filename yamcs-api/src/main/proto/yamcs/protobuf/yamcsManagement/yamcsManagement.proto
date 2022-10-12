@@ -261,6 +261,9 @@ message ProcessorInfo {
   optional google.protobuf.Timestamp time = 18;
   optional bool replay = 19;
   optional bool checkCommandClearance = 20;
+
+  // If true, this processor can not be deleted.
+  optional bool protected = 21;
 }
 
 message TmStatistics {

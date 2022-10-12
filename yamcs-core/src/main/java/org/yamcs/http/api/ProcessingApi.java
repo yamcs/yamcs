@@ -125,8 +125,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
 
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        if (!processor.isReplay()) {
-            throw new BadRequestException("Cannot delete a non-replay processor");
+        if (processor.isProtected()) {
+            throw new BadRequestException("Cannot delete a protected processor");
         }
 
         processor.quit();

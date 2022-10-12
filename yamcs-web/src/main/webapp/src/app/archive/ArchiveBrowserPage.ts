@@ -47,7 +47,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   legendOptions = [
     { id: 'packets', name: 'Packets', bg: PACKETS_BG, fg: PACKETS_FG, checked: true },
-    { id: 'parameters', name: 'Parameters', bg: PARAMETERS_BG, fg: PARAMETERS_FG, checked: true },
+    { id: 'parameters', name: 'Parameter Groups', bg: PARAMETERS_BG, fg: PARAMETERS_FG, checked: true },
     { id: 'commands', name: 'Commands', bg: COMMANDS_BG, fg: COMMANDS_FG, checked: false },
     { id: 'events', name: 'Events', bg: EVENTS_BG, fg: EVENTS_FG, checked: false },
   ];

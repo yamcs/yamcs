@@ -83,6 +83,7 @@ public class Processor extends AbstractService {
 
     private String creator = "system";
     private boolean persistent = false;
+    private boolean protected_ = false;
 
     final Log log;
     static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
@@ -427,6 +428,17 @@ public class Processor extends AbstractService {
 
     public void setPersistent(boolean systemSession) {
         this.persistent = systemSession;
+    }
+
+    /**
+     * Returns if this processor is protected. A protected processor may not be deleted.
+     */
+    public boolean isProtected() {
+        return protected_;
+    }
+
+    public void setProtected(boolean protected_) {
+        this.protected_ = protected_;
     }
 
     public boolean isSynchronous() {

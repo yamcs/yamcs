@@ -33,6 +33,7 @@ public final class ManagementGpbHelper {
                 .setHasAlarms(processor.hasAlarmServer())
                 .setState(processor.getState())
                 .setPersistent(processor.isPersistent())
+                .setProtected(processor.isProtected())
                 .setTime(TimeEncoding.toProtobufTimestamp(processor.getCurrentTime()))
                 .setReplay(processor.isReplay())
                 .setCheckCommandClearance(processor.getConfig().checkCommandClearance());

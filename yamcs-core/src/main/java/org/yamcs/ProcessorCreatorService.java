@@ -51,6 +51,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
             throw new InitException(e);
         }
         processor.setPersistent(true);
+        processor.setProtected(true);
     }
 
     @Override

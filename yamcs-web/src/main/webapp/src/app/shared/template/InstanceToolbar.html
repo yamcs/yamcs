@@ -77,7 +77,7 @@
         </button>
         <ng-container *ngIf="processor.replay">
           <mat-divider></mat-divider>
-          <button mat-menu-item (click)="leaveAndCloseReplay()">
+          <button mat-menu-item (click)="leaveAndCloseReplay()" [disabled]="processor.protected">
             <mat-icon>exit_to_app</mat-icon>
             Leave &amp; close replay
           </button>
