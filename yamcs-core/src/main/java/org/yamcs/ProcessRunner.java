@@ -110,9 +110,10 @@ public class ProcessRunner extends AbstractYamcsService {
             return;
         }
 
-        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        YamcsServer yamcs = YamcsServer.getServer();
+        ScheduledExecutorService exec = yamcs.getThreadPoolExecutor();
         watchdog = exec.scheduleWithFixedDelay(() -> {
-            if (!process.isAlive() && isRunning()) {
+            if (!process.isAlive() && isRunning() && !yamcs.isShuttingDown()) {
                 int code = process.exitValue();
 
                 boolean restart = false;

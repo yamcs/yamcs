@@ -130,6 +130,9 @@ public class YamcsServer {
     Path cacheDir;
     Path instanceDefDir;
 
+    // Set when the shutdown hook triggers
+    private boolean shuttingDown = false;
+
     /**
      * Creates services at global (if instance is null) or instance level. The services are not yet initialized. This
      * must be done in a second step, so that components can ask YamcsServer for other service instantiations.
@@ -1200,6 +1203,7 @@ public class YamcsServer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                shuttingDown = true;
                 shutDown();
             }
         });
@@ -1213,6 +1217,13 @@ public class YamcsServer {
             LOG.error(msg);
             globalCrashHandler.handleCrash("UncaughtException", msg);
         });
+    }
+
+    /**
+     * Returns true when Yamcs is shutting down.
+     */
+    public boolean isShuttingDown() {
+        return shuttingDown;
     }
 
     private void discoverTemplates() throws IOException {
