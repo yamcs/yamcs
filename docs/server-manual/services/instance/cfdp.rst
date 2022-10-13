@@ -32,7 +32,7 @@ Several peculiarities and limitations of the implementation can be noted:
  * The Receiver will overwrite the list of segments to resend with the list received in the latest NAK.
  * Keep Alive PDU and Prompt PDU are not used.
  * Filestore requests are not supported.
- * User operations (proxy, directory, remote status) as per chapter 6 of the CCSDS 727.0-B-5 are not supported.
+ * Only proxy put requests are supported, other user operations (proxy, directory, remote status) as per chapter 6 of the CCSDS 727.0-B-5 are not supported.
  * Remote suspend/resume operations are not supported. Note that local suspend/resume operations are supported; this means that suspending a transfer has to be done concurrently on this service and remotely with a different mechanism (e.g. sending a telecommand).
 
 Usage
