@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
@@ -47,6 +49,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.WriteBufferWaterMark;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -406,6 +409,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             log.info("{} Closing channel: expected a TLS/SSL packet", channelId);
         } else if (cause instanceof IOException && cause.getMessage().contains("reset by peer")) {
             // Unclean client close. Don't care about stack trace
+            log.info("{} Closing channel: {}", channelId, cause.getMessage());
+        } else if (cause instanceof DecoderException
+                && ((DecoderException) cause).getCause() instanceof SSLHandshakeException) {
+            // Very common when using Chrome and unknown certificates. Don't care about stack trace
             log.info("{} Closing channel: {}", channelId, cause.getMessage());
         } else {
             log.error("{} Closing channel: {}", channelId, cause.getMessage(), cause);
