@@ -56,13 +56,17 @@ Commands
     User operations. See :manpage:`yamcsadmin-users(1)`.
 
 
-.. toctree::
-    :hidden:
+.. only:: json and html
 
-    backup <yamcsadmin_backup>
-    confcheck <yamcsadmin_confcheck>
-    mdb <yamcsadmin_mdb>
-    parchive <yamcsadmin_parchive>
-    password-hash <yamcsadmin_password-hash>
-    rocksdb <yamcsadmin_rocksdb>
-    users <yamcsadmin_users>
+    .. Purpose of "only" is to hide toctree content from the man builder
+
+    .. toctree::
+        :hidden:
+
+        backup <yamcsadmin_backup>
+        confcheck <yamcsadmin_confcheck>
+        mdb <yamcsadmin_mdb>
+        parchive <yamcsadmin_parchive>
+        password-hash <yamcsadmin_password-hash>
+        rocksdb <yamcsadmin_rocksdb>
+        users <yamcsadmin_users>
