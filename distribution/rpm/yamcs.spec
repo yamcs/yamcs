@@ -12,8 +12,6 @@ URL: https://yamcs.org
 Prefix: /opt/yamcs
 BuildArch: x86_64
 
-Requires: socat
-
 
 %description
 Yamcs Mission Control

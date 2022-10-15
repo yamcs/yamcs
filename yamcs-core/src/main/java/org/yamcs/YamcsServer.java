@@ -55,6 +55,7 @@ import org.yamcs.templating.Variable;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
+import org.yamcs.utils.SDNotify;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.YarchDatabase;
@@ -246,6 +247,9 @@ public class YamcsServer {
     public void shutDown() {
         long t0 = System.nanoTime();
         LOG.info("Yamcs is shutting down");
+        if (SDNotify.isSupported()) {
+            SDNotify.sendStoppingNotification();
+        }
         for (YamcsServerInstance ys : instances.values()) {
             ys.stopAsync();
         }
@@ -986,12 +990,11 @@ public class YamcsServer {
         try {
             LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
             YAMCS.start();
+            YAMCS.reportReady(System.nanoTime() - t0);
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
             System.exit(-1);
         }
-
-        YAMCS.reportReady(System.nanoTime() - t0);
     }
 
     private static void parseArgs(String[] args) {
@@ -1315,6 +1318,7 @@ public class YamcsServer {
 
         try {
             securityStore = new SecurityStore();
+            LOG.debug("Security: " + (securityStore.isEnabled() ? "enabled" : "disabled"));
         } catch (InitException e) {
             if (e.getCause() instanceof ValidationException) {
                 throw (ValidationException) e.getCause();
@@ -1388,7 +1392,7 @@ public class YamcsServer {
         }
     }
 
-    private void reportReady(long bootTime) {
+    private void reportReady(long bootTime) throws IOException {
         int instanceCount = getOnlineInstanceCount();
         int serviceCount = globalServiceList.size() + getInstances().stream()
                 .map(instance -> instance.services != null ? instance.services.size() : 0)
@@ -1404,19 +1408,8 @@ public class YamcsServer {
             LOG.info(msg);
         }
 
-        // If started through systemd with Type=notify, Yamcs will have NOTIFY_SOCKET
-        // env set.
-
-        // Normally we would use systemd-notify to report success, but it suffers from
-        // a race condition. See https://www.lukeshu.com/blog/x11-systemd.html
-        String notifySocket = System.getenv("NOTIFY_SOCKET");
-        if (notifySocket != null) {
-            try {
-                String cmd = String.format("echo 'READY=1' | socat STDIO UNIX-SENDTO:%s", notifySocket);
-                new ProcessBuilder("sh", "-c", cmd).inheritIO().start();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        if (SDNotify.isSupported()) {
+            SDNotify.sendStartupNotification();
         }
 
         // Report start success to internal listeners
