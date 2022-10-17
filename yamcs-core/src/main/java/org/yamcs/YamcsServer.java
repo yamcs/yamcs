@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -128,7 +127,6 @@ public class YamcsServer {
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
     Path incomingDir;
-    Path cacheDir;
     Path instanceDefDir;
 
     // Set when the shutdown hook triggers
@@ -920,7 +918,7 @@ public class YamcsServer {
     }
 
     public Path getCacheDirectory() {
-        return cacheDir;
+        return options.cacheDir;
     }
 
     /**
@@ -1293,18 +1291,18 @@ public class YamcsServer {
             globalCrashHandler = new LogCrashHandler();
         }
         if (options.dataDir == null) {
-            options.dataDir = Paths.get(config.getString("dataDir"));
+            options.dataDir = Path.of(config.getString("dataDir"));
         }
-        YarchDatabase.setHome(options.dataDir.toAbsolutePath().toString());
-        incomingDir = Paths.get(config.getString("incomingDir"));
+        YarchDatabase.setHome(options.dataDir.toString());
+        incomingDir = Path.of(config.getString("incomingDir"));
         instanceDefDir = options.dataDir.resolve("instance-def");
 
         if (YConfiguration.configDirectory != null) {
-            cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
-        } else {
-            cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
+            options.cacheDir = YConfiguration.configDirectory.toPath().toAbsolutePath();
+        } else if (options.cacheDir == null) {
+            options.cacheDir = Path.of(config.getString("cacheDir")).toAbsolutePath();
         }
-        Files.createDirectories(cacheDir);
+        Files.createDirectories(options.cacheDir);
 
         Path globalDir = options.dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);
