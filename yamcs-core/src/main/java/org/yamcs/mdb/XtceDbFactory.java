@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -131,8 +132,11 @@ public class XtceDbFactory {
             try {
                 db = loadSerializedInstance(serializedFile);
                 serializedLoaded = true;
+            } catch (InvalidClassException e) {
+                log.debug("Cannot load serialized database: " + e.getMessage());
+                db = null;
             } catch (Exception e) {
-                log.info("Cannot load serialized database", e);
+                log.warn("Cannot load serialized database", e);
                 db = null;
             }
         }
