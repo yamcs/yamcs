@@ -42,7 +42,8 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * the most specific (lowest in the XTCE hierarchy) container matching the telemetry packet.
  * 
  * <p>
- * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams defined
+ * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams
+ * defined
  * in the instance (streamConfig section of the instance configuration).
  * 
  * @author nm
@@ -278,7 +279,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
 
         /**
-         * saves a TM tuple. The definition is in * TmProviderAdapter
+         * saves a TM tuple. The definition is in {@link StandardTupleDefinitions#TM}
          * 
          * it finds the XTCE names and puts them inside the recording
          * 
@@ -287,10 +288,12 @@ public class XtceTmRecorder extends AbstractYamcsService {
         protected void saveTuple(Tuple t) {
             long gentime = (Long) t.getColumn(0);
             byte[] packet = (byte[]) t.getColumn(4);
+            int seqCount = (Integer) t.getColumn(1);
+
             totalNumPackets++;
 
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
-                    rootSequenceContainer);
+                    seqCount, rootSequenceContainer);
 
             String pname = deriveArchivePartition(cpr);
 

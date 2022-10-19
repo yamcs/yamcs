@@ -31,7 +31,7 @@ public class SequenceContainerProcessor {
         if (pcontext.provideContainerResult) {
             result.containers.add(new ContainerExtractionResult(containerDef,
                     buf.array(), buf.offset(), buf.getPosition(),
-                    result.acquisitionTime, result.generationTime, pcontext.derivedFromRoot));
+                    result.acquisitionTime, result.generationTime, result.seqCount, pcontext.derivedFromRoot));
         }
 
         RateInStream ris = containerDef.getRateInStream();

@@ -32,7 +32,10 @@ public class CommandSubscription extends AbstractSubscription<SubscribeCommandsR
                         entry.getCommandName(), entry.getAssignmentsList(), entry.getOrigin(),
                         entry.getSequenceNumber(), generationTime));
                 command.merge(entry);
-                commandListeners.forEach(l -> l.onUpdate(command));
+                commandListeners.forEach(l -> {
+                    l.onUpdate(command);
+                    l.onUpdate(command, entry);
+                });
             }
 
             @Override

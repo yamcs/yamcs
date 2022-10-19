@@ -12,16 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class XtceBooleansTest {
@@ -48,8 +44,7 @@ public class XtceBooleansTest {
     @Test
     public void testNumericParaFalse() {
         byte[] buf = new byte[] { 0 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/Booleans/packet1"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/Booleans/packet1"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
@@ -60,8 +55,7 @@ public class XtceBooleansTest {
     @Test
     public void testNumericParaTrue() {
         byte[] buf = new byte[] { 5 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/Booleans/packet1"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/Booleans/packet1"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
@@ -72,8 +66,7 @@ public class XtceBooleansTest {
     @Test
     public void testStringParaTrue() {
         byte[] buf = new byte[] { 'Y', 'e', 's', '!' };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/Booleans/packet2"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/Booleans/packet2"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
@@ -84,8 +77,7 @@ public class XtceBooleansTest {
     @Test
     public void testStringParaFalse() {
         byte[] buf = new byte[] { 'N', 'o', 'o', 'o' };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/Booleans/packet2"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/Booleans/packet2"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
@@ -161,5 +153,9 @@ public class XtceBooleansTest {
 
     private Parameter param(String name) {
         return mdb.getParameter("/Booleans/" + name);
+    }
+
+    private ContainerProcessingResult processPacket(byte[] buf, SequenceContainer sc) {
+        return extractor.processPacket(buf, now, now, 0, sc);
     }
 }

@@ -8,13 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class XtceStringDecodingTest {
@@ -38,8 +36,7 @@ public class XtceStringDecodingTest {
     // null terminated string in fixed size buffer
     public void testFixedSizeString1() {
         byte[] buf = new byte[] { 'a', 'b', 0, 0, 0, 0, 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet1"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet1"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
@@ -53,8 +50,7 @@ public class XtceStringDecodingTest {
     // null terminated string in fixed size buffer but the string is as long as the buffer so there is no terminator
     public void testFixedSizeString1_noterminator() {
         byte[] buf = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet1"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet1"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
@@ -69,8 +65,7 @@ public class XtceStringDecodingTest {
     // fixed size string in fixed size buffer
     public void testFixedSizeString2() {
         byte[] buf = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet2"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet2"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
@@ -84,8 +79,7 @@ public class XtceStringDecodingTest {
     // null terminated string in undefined buffer
     public void testFixedSizeString3() {
         byte[] buf = new byte[] { 'a', 'b', 0, 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet3"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet3"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
@@ -99,8 +93,7 @@ public class XtceStringDecodingTest {
     // non terminated string in undefined buffer -> error
     public void testFixedSizeString3_no_terminator() {
         byte[] buf = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet3"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet3"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(0, pvl.size());
@@ -117,8 +110,7 @@ public class XtceStringDecodingTest {
                 'x', 'x', // filler at the end of the buffer
                 0x01, 0x02 // uint16_param1 coming after the string
         };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet4"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet4"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(3, pvl.size());
@@ -132,8 +124,7 @@ public class XtceStringDecodingTest {
     // prefixed size string in undefined buffer
     public void testFixedSizeString5() {
         byte[] buf = new byte[] { 0x00, 0x02, 'a', 'b', 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet5"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet5"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
@@ -147,8 +138,7 @@ public class XtceStringDecodingTest {
     // prefixed size string in undefined buffer, exceeding the max size
     public void testFixedSizeString5_too_long() {
         byte[] buf = new byte[] { 0x00, 0x05, 'a', 'b', 'c', 'd', 'e', 0x01, 0x02 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                xtcedb.getSequenceContainer("/StringsTm/packet5"));
+        ContainerProcessingResult cpr = processPacket(buf, xtcedb.getSequenceContainer("/StringsTm/packet5"));
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(0, pvl.size());
@@ -157,5 +147,9 @@ public class XtceStringDecodingTest {
 
     private Parameter param(String name) {
         return xtcedb.getParameter("/StringsTm/" + name);
+    }
+
+    private ContainerProcessingResult processPacket(byte[] buf, SequenceContainer sc) {
+        return extractor.processPacket(buf, now, now, 0, sc);
     }
 }

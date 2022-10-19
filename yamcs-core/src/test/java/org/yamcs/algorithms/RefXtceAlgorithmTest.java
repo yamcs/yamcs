@@ -122,7 +122,7 @@ public class RefXtceAlgorithmTest {
         }
 
         public void injectPacket(byte[] array, String name) {
-            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, db.getSequenceContainer(name));
+            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, 0, db.getSequenceContainer(name));
             ppm.process(cpr);
         }
 

@@ -1,6 +1,6 @@
 package org.yamcs.management;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -215,7 +215,10 @@ public class LinkManager {
         }
 
         linksByName.put(link.getName(), link);
-        String json = new Gson().toJson(linkArgs.toMap());
+        String json = null;
+        if (!linkArgs.toMap().isEmpty()) {
+            json = new Gson().toJson(linkArgs.toMap());
+        }
         registerLink(link.getName(), json, link);
     }
 
@@ -533,7 +536,7 @@ public class LinkManager {
                 CommandId commandId = pc.getCommandId();
                 log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
                 long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-                cmdHistPublisher.publishAck(commandId, AcknowledgeSent,
+                cmdHistPublisher.publishAck(commandId, AcknowledgeSent_KEY,
                         currentTime, AckStatus.NOK, reason);
                 cmdHistPublisher.commandFailed(commandId, currentTime, reason);
             }

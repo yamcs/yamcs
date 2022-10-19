@@ -43,7 +43,6 @@ public class ArrayValueTest {
         int[] idx = new int[4];
         for (int i = 0; i < 40; i++) {
             ArrayValue.unFlattenIndex(i, dim, idx);
-            System.out.println(Arrays.toString(idx));
         }
     }
 }

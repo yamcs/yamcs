@@ -133,14 +133,14 @@ public class XtceTmProcessor extends AbstractProcessorService
      */
 
     @Override
-    public void processPacket(TmPacket pwrt, SequenceContainer sc) {
+    public void processPacket(TmPacket pkt, SequenceContainer sc) {
         try {
-            long rectime = pwrt.getReceptionTime();
+            long rectime = pkt.getReceptionTime();
             if (rectime == TimeEncoding.INVALID_INSTANT) {
                 rectime = TimeEncoding.getWallclockTime();
             }
-            ContainerProcessingResult result = tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(),
-                    rectime, sc);
+            ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
+                    rectime, pkt.getSeqCount(), sc);
 
             ParameterValueList paramResult = result.getTmParams();
             List<ContainerExtractionResult> containerResult = result.containers;

@@ -43,7 +43,7 @@ public class XtceDecodingSnippet {
         }; // 4 Samples
 
         long t = TimeEncoding.getWallclockTime();
-        ContainerProcessingResult result = extractor.processPacket(new BitBuffer(p1), t, t);
+        ContainerProcessingResult result = extractor.processPacket(new BitBuffer(p1), t, t, 0);
 
         System.out.printf("%-30s %-15s %-15s\n", "Parameter", "Engineering", "Raw");
         System.out.printf("%-30s %-15s %-15s\n", "---------", "-----------", "---");

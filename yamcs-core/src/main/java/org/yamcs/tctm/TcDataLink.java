@@ -24,11 +24,11 @@ public interface TcDataLink extends Link {
      * <p>
      * If false is returned, the {@link LinkManager} will attempt to send the command via the next TC link (if any).
      * <p>
-     * The link is expected to update the {@link CommandHistoryPublisher#AcknowledgeSent} ack in the command history if
+     * The link is expected to update the {@link CommandHistoryPublisher#AcknowledgeSent_KEY} ack in the command history if
      * the method returned true. If it returned false, the ack should not be updated (it will be updated by the next
      * link or by the Link Manager if there is other no link).
      * <p>
-     * The link can update the {@link CommandHistoryPublisher#AcknowledgeSent} ack with a negative ack and return true
+     * The link can update the {@link CommandHistoryPublisher#AcknowledgeSent_KEY} ack with a negative ack and return true
      * (i.e. the command has not been really sent but it has finished processing).
      * <p>
      * The return true/false has been introduced in Yamcs 5.6.0. Before that version, the old method sendTc was

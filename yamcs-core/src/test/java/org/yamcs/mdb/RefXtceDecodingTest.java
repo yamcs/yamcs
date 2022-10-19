@@ -6,19 +6,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
-import org.yamcs.LoggingUtils;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class RefXtceDecodingTest {
@@ -43,8 +38,7 @@ public class RefXtceDecodingTest {
     @Test
     public void testBinaryLeadingSize() {
         byte[] buf = new byte[] { 0x03, 0x01, 0x02, 0x03 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/RefXtce/packet1"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/RefXtce/packet1"));
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
         ParameterValue pv = pvl.getFirstInserted(mdb.getParameter("/RefXtce/param1"));
@@ -54,8 +48,7 @@ public class RefXtceDecodingTest {
     @Test
     public void testFixedSizeArray() {
         byte[] buf = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/RefXtce/packet3"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/RefXtce/packet3"));
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(1, pvl.size());
         ParameterValue pv = pvl.getFirstInserted(mdb.getParameter("/RefXtce/param8"));
@@ -71,8 +64,7 @@ public class RefXtceDecodingTest {
     public void testNumericStringEncoding() {
         byte[] buf = new byte[] { '1', '0', '0', 0, 0, 0,
                 '-', '3', '.', '1', '4', 0 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now,
-                mdb.getSequenceContainer("/RefXtce/packet4"));
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/RefXtce/packet4"));
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(2, pvl.size());
         ParameterValue pv9 = pvl.getFirstInserted(mdb.getParameter("/RefXtce/param9"));
@@ -81,5 +73,9 @@ public class RefXtceDecodingTest {
         ParameterValue pv10 = pvl.getFirstInserted(mdb.getParameter("/RefXtce/param10"));
         assertEquals("-3.14", pv10.getRawValue().getStringValue());
         assertEquals(-3.14, pv10.getEngValue().getFloatValue(), 1e-5);
+    }
+
+    private ContainerProcessingResult processPacket(byte[] buf, SequenceContainer sc) {
+        return extractor.processPacket(buf, now, now, 0, sc);
     }
 }

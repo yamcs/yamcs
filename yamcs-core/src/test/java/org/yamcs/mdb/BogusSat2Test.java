@@ -10,12 +10,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
@@ -32,6 +30,7 @@ import org.yamcs.xtce.XtceDb;
 public class BogusSat2Test {
     static XtceDb db;
     long now = TimeEncoding.getWallclockTime();
+    XtceTmExtractor extractor;
 
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
@@ -39,18 +38,21 @@ public class BogusSat2Test {
         db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
     }
 
+    @BeforeEach
+    public void before() {
+        extractor = new XtceTmExtractor(db);
+        extractor.provideAll();
+    }
+
     @Test
     public void test1() {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
-        extractor.provideAll();
-
         byte[] buf = new byte[] { 0x08, 0x23, // CCSDS_Packet_ID {version=0, type = 0, SecHdrFlag = 1, apid=0x23
                 (byte) 0xC0, 0x56, // CCSDS_Packet_Sequence {GroupFlags=3, count = 0x56}
                 0, 5, // length 5
                 0x35, 0x10, 0x20, 0x03, 0x05, // PUS_Data_Field_Header {Spare1 = 0, Version=3, Spare4=5, Service = 0x10,
                                               // Subservice=0x20, SeqCount = 3, Destination=5}
                 0, 0 };
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(4, pvl.size());
         ParameterValue pushdr = pvl.getFirstInserted(db.getParameter("/BogusSAT/PUS_Data_Field_Header"));
@@ -72,7 +74,7 @@ public class BogusSat2Test {
                                          // Voltage_2=16
                 x[0], x[1], x[2], x[3], // Battery_Voltage
                 x[0], x[1], x[2], x[3] }; // Battery Current
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(8, pvl.size());
         assertNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_1")));
@@ -136,7 +138,7 @@ public class BogusSat2Test {
                 (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xF9, // Basic_int32_onescomp
         };
 
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(17, pvl.size());
 
@@ -193,5 +195,9 @@ public class BogusSat2Test {
     public void testArchivePartition() {
         SequenceContainer seq = db.getSequenceContainer("/BogusSAT/SC001/Payload1/IncludedContainer1");
         assertFalse(seq.useAsArchivePartition());
+    }
+
+    private ContainerProcessingResult processPacket(byte[] buf) {
+        return extractor.processPacket(buf, now, now, 0);
     }
 }

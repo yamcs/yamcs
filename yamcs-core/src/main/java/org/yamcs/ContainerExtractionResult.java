@@ -13,6 +13,8 @@ public class ContainerExtractionResult {
 
     private final long acquisitionTime;
     private final long generationTime;
+    private final int seqCount;
+
     final boolean derivedFromRoot;
 
     public ContainerExtractionResult(SequenceContainer container,
@@ -21,6 +23,7 @@ public class ContainerExtractionResult {
             int bitPosition,
             long acquisitionTime,
             long generationTime,
+            int seqCount,
             boolean derivedFromRoot) {
         this.container = container;
         this.containerContent = containerContent;
@@ -28,6 +31,7 @@ public class ContainerExtractionResult {
         this.bitPosition = bitPosition;
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
+        this.seqCount = seqCount;
         this.derivedFromRoot = derivedFromRoot;
     }
 
@@ -73,8 +77,14 @@ public class ContainerExtractionResult {
         return derivedFromRoot;
     }
 
+    public int getSeqCount() {
+        return seqCount;
+    }
+
     @Override
     public String toString() {
         return container.toString();
     }
+
+
 }

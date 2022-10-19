@@ -10,8 +10,11 @@ import org.yamcs.api.Observer;
 import org.yamcs.client.Page;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
+import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.DetailsOption;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.LimitOption;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.ListOption;
+import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.QOption;
+import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.SystemOption;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
@@ -58,20 +61,17 @@ public class MissionDatabaseClient {
         for (ListOption option : options) {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
+            } else if (option instanceof SystemOption) {
+                requestb.setSystem(((SystemOption) option).system);
+            } else if (option instanceof QOption) {
+                requestb.setQ(((QOption) option).q);
+            } else if (option instanceof DetailsOption) {
+                requestb.setDetails(((DetailsOption) option).details);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new ParameterPage(requestb.build()).future();
-    }
-
-    @SuppressWarnings("unchecked")
-    public CompletableFuture<SystemPage<ParameterInfo>> listParametersForSystem(String system) {
-        ListParametersRequest request = ListParametersRequest.newBuilder()
-                .setInstance(instance)
-                .setDetails(true)
-                .build();
-        return (CompletableFuture<SystemPage<ParameterInfo>>) (Object) new ParameterPage(request).future();
     }
 
     public CompletableFuture<ContainerInfo> getContainer(String name) {
@@ -115,7 +115,7 @@ public class MissionDatabaseClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new CommandPage(requestb.build()).future();
@@ -201,11 +201,47 @@ public class MissionDatabaseClient {
             return new LimitOption(limit);
         }
 
+        public static SystemOption system(String system) {
+            return new SystemOption(system);
+        }
+
+        public static QOption q(String q) {
+            return new QOption(q);
+        }
+
+        public static DetailsOption details(boolean details) {
+            return new DetailsOption(details);
+        }
+
         static final class LimitOption implements ListOption {
             final int limit;
 
             public LimitOption(int limit) {
                 this.limit = limit;
+            }
+        }
+
+        static final class SystemOption implements ListOption {
+            final String system;
+
+            public SystemOption(String system) {
+                this.system = system;
+            }
+        }
+
+        static final class QOption implements ListOption {
+            final String q;
+
+            public QOption(String q) {
+                this.q = q;
+            }
+        }
+
+        static final class DetailsOption implements ListOption {
+            final boolean details;
+
+            public DetailsOption(boolean details) {
+                this.details = details;
             }
         }
     }

@@ -264,8 +264,7 @@ public class XtceTmExtractorTest {
         tmExtractor.startProviding(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
 
         byte[] bb = tmGenerator.generate_PKT1_1();
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb);
 
         List<ContainerExtractionResult> received = cpr.containers;
         assertEquals(2, received.size());
@@ -417,10 +416,7 @@ public class XtceTmExtractorTest {
         tmExtractor.provideAll();
 
         SequenceContainer startContainer = xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT2");
-        ContainerProcessingResult cpr = tmExtractor.processPacket(tmGenerator.generate_PKT2(),
-                TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime(),
-                startContainer);
+        ContainerProcessingResult cpr = processPacket(tmExtractor, tmGenerator.generate_PKT2(), startContainer);
 
         ParameterValueList received = cpr.getParameterResult();
 
@@ -439,8 +435,7 @@ public class XtceTmExtractorTest {
         tmExtractor.provideAll();
 
         ByteBuffer bb = tmGenerator.generate_PKT1_List();
-        ContainerProcessingResult result = tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult result = processPacket(tmExtractor, bb.array());
 
         List<ContainerExtractionResult> containers = result.containers;
         ;
@@ -458,8 +453,7 @@ public class XtceTmExtractorTest {
         tmExtractor.provideAll();
 
         ByteBuffer bb = tmGenerator.generate_PKT1_AND();
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb.array());
 
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
@@ -477,8 +471,7 @@ public class XtceTmExtractorTest {
 
         // first condition
         ByteBuffer bb = tmGenerator.generate_PKT1_OR_1();
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb.array());
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_OR", container.getName());
@@ -486,6 +479,8 @@ public class XtceTmExtractorTest {
         assertEquals(received.size(), 6);
 
     }
+
+
 
     @Test
     public void testPKT1_PKT1_AND_OR() {
@@ -495,8 +490,7 @@ public class XtceTmExtractorTest {
 
         // first condition
         ByteBuffer bb = tmGenerator.generate_PKT1_AND_OR_1();
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb.array());
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_AND_OR", container.getName());
@@ -505,7 +499,7 @@ public class XtceTmExtractorTest {
 
         // second condition
         bb = tmGenerator.generate_PKT1_AND_OR_2();
-        cpr = tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        cpr = processPacket(tmExtractor, bb.array());
         containers = cpr.getContainerResult();
         container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_AND_OR", container.getName());
@@ -521,8 +515,7 @@ public class XtceTmExtractorTest {
 
         // or condition 1
         byte[] bb = tmGenerator.generate_PKT1(0, 0, (short) 1);
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb);
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_OR_AND", container.getName());
@@ -531,7 +524,7 @@ public class XtceTmExtractorTest {
 
         // or condition 3
         bb = tmGenerator.generate_PKT1(0, 0, (short) 3);
-        cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        cpr = processPacket(tmExtractor, bb);
         containers = cpr.getContainerResult();
         container = cpr.getContainerResult().get(containers.size() - 1).getContainer();
         assertEquals("PKT1_OR_AND", container.getName());
@@ -540,7 +533,7 @@ public class XtceTmExtractorTest {
 
         // does not match
         bb = tmGenerator.generate_PKT1(0, 0, (short) 4);
-        cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        cpr = processPacket(tmExtractor, bb);
         containers = cpr.getContainerResult();
         container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1", container.getName());
@@ -556,8 +549,7 @@ public class XtceTmExtractorTest {
 
         // in range ]0xA, 0xC[
         byte[] bb = tmGenerator.generate_PKT1(0, 0, (short) 11);
-        ContainerProcessingResult cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
+        ContainerProcessingResult cpr = processPacket(tmExtractor, bb);
         List<ContainerExtractionResult> containers = cpr.getContainerResult();
         SequenceContainer container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1_RANGE", container.getName());
@@ -566,7 +558,7 @@ public class XtceTmExtractorTest {
 
         // out of range
         bb = tmGenerator.generate_PKT1(0, 0, (short) 12);
-        cpr = tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        cpr = processPacket(tmExtractor, bb);
         containers = cpr.getContainerResult();
         container = containers.get(containers.size() - 1).getContainer();
         assertEquals("PKT1", container.getName());
@@ -776,9 +768,7 @@ public class XtceTmExtractorTest {
     }
 
     private ParameterValueList processTm(XtceTmExtractor tmExtractor, byte[] pkt) {
-        ContainerProcessingResult cpr = tmExtractor.processPacket(pkt, TimeEncoding.getWallclockTime(),
-                TimeEncoding.getWallclockTime());
-
+        ContainerProcessingResult cpr = processPacket(tmExtractor, pkt);
         return cpr.getParameterResult();
     }
 
@@ -789,6 +779,16 @@ public class XtceTmExtractorTest {
             System.out.println(String.format("%-30s %10s %10s", pv.getParameter().getName(),
                     pv.getEngValue().toString(), pv.getRawValue().toString()));
         }
+    }
+
+    ContainerProcessingResult processPacket(XtceTmExtractor tmExtractor, byte[] pkt) {
+        return tmExtractor.processPacket(pkt, TimeEncoding.getWallclockTime(),
+                TimeEncoding.getWallclockTime(), 0);
+    }
+
+    ContainerProcessingResult processPacket(XtceTmExtractor tmExtractor, byte[] pkt, SequenceContainer startContainer) {
+        return tmExtractor.processPacket(pkt, TimeEncoding.getWallclockTime(),
+                TimeEncoding.getWallclockTime(), 0, startContainer);
     }
 
     private String byteBufferToHexString(ByteBuffer bb) {

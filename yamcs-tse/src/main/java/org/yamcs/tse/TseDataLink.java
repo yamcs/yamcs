@@ -181,10 +181,10 @@ public class TseDataLink extends AbstractLink {
         channel.writeAndFlush(command).addListener(f -> {
             long missionTime = timeService.getMissionTime();
             if (f.isSuccess()) {
-                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent,
+                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
                         missionTime, AckStatus.OK);
             } else {
-                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent,
+                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
                         missionTime, AckStatus.NOK);
             }
         });

@@ -260,6 +260,9 @@ message StreamPacketIndexRequest {
   optional google.protobuf.Timestamp stop = 3;
 
   repeated string names = 4;
+  
+  //merge records which have less than this gap (in milliseconds) in between
+  optional uint32 mergeTime = 5;
 }
 
 message StreamParameterIndexRequest {

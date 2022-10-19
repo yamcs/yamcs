@@ -98,32 +98,33 @@ public class XtceTmExtractor {
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime) {
-        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, rootContainer);
+    public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime, int seqCount) {
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime) {
-        return processPacket(buf, generationTime, acquisitionTime, rootContainer);
+    public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
+            int seqCount) {
+        return processPacket(buf, generationTime, acquisitionTime, seqCount, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the specified container.
      */
     public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime,
-            SequenceContainer startContainer) {
-        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, startContainer);
+            int seqCount, SequenceContainer startContainer) {
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, startContainer);
     }
 
     /**
      * Extract one packet, starting at the specified container.
      */
     public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
-            SequenceContainer startContainer) {
+            int seqCount, SequenceContainer startContainer) {
 
-        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime,
+        ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, seqCount,
                 pdata.getLastValueCache());
         try {
             synchronized (subscription) {

@@ -1,6 +1,7 @@
 package org.yamcs.client;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -610,6 +611,10 @@ public class YamcsClient {
         return new LinkSubscription(methodHandler);
     }
 
+    public ContainerSubscription createContainerSubscription() {
+        return new ContainerSubscription(methodHandler);
+    }
+
     public void close() {
         if (closed) {
             return;
@@ -698,7 +703,11 @@ public class YamcsClient {
     }
 
     private void logConnectionFailed(Throwable cause) {
-        log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+        if (cause instanceof SocketException) {
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed: " + cause.getMessage());
+        } else {
+            log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
+        }
     }
 
 }

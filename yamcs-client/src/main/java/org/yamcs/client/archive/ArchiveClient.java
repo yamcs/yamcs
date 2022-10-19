@@ -26,6 +26,7 @@ import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumRangeOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.CommandOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.EventSourceOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.MergeTimeOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
 import org.yamcs.client.base.AbstractPage;
@@ -227,6 +228,8 @@ public class ArchiveClient {
                 for (String packet : ((PacketOption) option).packets) {
                     requestb.addNames(packet);
                 }
+            } else if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
             } else {
                 throw new IllegalArgumentException("Usupported option " + option.getClass());
             }
@@ -975,6 +978,10 @@ public class ArchiveClient {
             return new PacketOption(packets);
         }
 
+        public static StreamOption mergeTime(int mergeTime) {
+            return new MergeTimeOption(mergeTime);
+        }
+
         static final class CommandOption implements StreamOption {
             final String[] commands;
 
@@ -996,6 +1003,14 @@ public class ArchiveClient {
 
             public PacketOption(String... packets) {
                 this.packets = packets;
+            }
+        }
+
+        static final class MergeTimeOption implements StreamOption {
+            final int mergeTime;
+
+            public MergeTimeOption(int mergeTime) {
+                this.mergeTime = mergeTime;
             }
         }
     }

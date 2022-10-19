@@ -391,6 +391,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");
         }
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNamesList());
 
         List<SequenceContainer> containers = new ArrayList<>(request.getNamesCount());
         for (String name : request.getNamesList()) {
@@ -409,6 +410,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     .setBinary(ByteString.copyFrom(result.getContainerContent()))
                     .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
                     .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                    .setSeqCount(result.getSeqCount())
                     .build();
             observer.next(packet);
         };

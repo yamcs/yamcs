@@ -474,6 +474,13 @@ public class ProcessorClient {
             commandService.issueCommand(null, request, new ResponseObserver<>(f));
             return f.thenApply(Command::new);
         }
+
+        @Override
+        public String toString() {
+            return "CommandBuilder [commandService=" + commandService + ", requestb=" + requestb + ", argsb=" + argsb
+                    + "]";
+        }
+
     }
 
     public static final class GetOptions {
@@ -505,4 +512,6 @@ public class ProcessorClient {
             }
         }
     }
+
+
 }

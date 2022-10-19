@@ -75,3 +75,4 @@ Other options are link-specific and documented in their respective sections.
     udp-tc-data-link
     udp-tm-data-link
     ccsds-frame-processing
+    yamcs-cascading

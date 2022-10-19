@@ -1,6 +1,6 @@
 package org.yamcs.tctm.cfs;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,7 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
             String msg = ("Short command received, length:"+binary.length+", expected minimum length: "+MIN_CMD_LENGTH);
             log.warn(msg);
             long t = TimeEncoding.getWallclockTime();
-            commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent, t, AckStatus.NOK, msg);
+            commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, t, AckStatus.NOK, msg);
             commandHistoryPublisher.commandFailed(pc.getCommandId(), t, msg);
             return null;
         }

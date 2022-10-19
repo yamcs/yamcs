@@ -3,6 +3,7 @@ package org.yamcs.mdb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
@@ -13,6 +14,7 @@ import org.yamcs.xtce.XtceDb;
 public class CcsdsGreenBookTmTest {
     static XtceDb db;
     long now = TimeEncoding.getWallclockTime();
+    XtceTmExtractor extractor;
 
     @BeforeAll
     public static void setupTimeencoding() {
@@ -20,15 +22,18 @@ public class CcsdsGreenBookTmTest {
         db = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
     }
 
+    @BeforeEach
+    public void before() {
+        extractor = new XtceTmExtractor(db);
+    }
+
     @Test
     public void testIncludeCondition() throws Exception {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
-        extractor.provideAll();
-
         byte[] buf = new byte[] { 24, (byte) 0x01, 0, 0, // Header1 SecH -> no secondary header
                 0, 0, // PBATMTEMP
                 0, 0 }; // PSWHLTIMFLG
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        extractor.provideAll();
+        ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(6, pvl.size());
         ParameterValue pvSech = pvl.getFirstInserted(db.getParameter("/SpaceVehicle/SecH"));
@@ -37,15 +42,13 @@ public class CcsdsGreenBookTmTest {
 
     @Test
     public void test1() throws Exception {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
-        extractor.provideAll();
-
         byte[] buf = new byte[] { 24, (byte) 0x81, 0, 12, // Header1
                 0x16, (byte) 0x92, 0x5E, (byte) 0x80, // Seconds
                 0, 50, // Milliseconds
                 0, 0, // PBATMTEMP
                 0, 0 }; // PSWHLTIMFLG
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+        extractor.provideAll();
+        ContainerProcessingResult cpr = processPacket(buf);
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(8, pvl.size());
@@ -60,15 +63,14 @@ public class CcsdsGreenBookTmTest {
     public void test2() throws Exception {
         Parameter psec = db.getParameter("/SpaceVehicle/MilliSeconds");
 
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
-        extractor.startProviding(psec);
-
         byte[] buf = new byte[] { 24, (byte) 0x81, 0, 12, // Header1
                 0x16, (byte) 0x92, 0x5E, (byte) 0x80, // Seconds
                 0, 50, // Milliseconds
                 0, 0, // PBATMTEMP
                 0, 0 }; // PSWHLTIMFLG
-        ContainerProcessingResult cpr = extractor.processPacket(buf, now, now);
+
+        extractor.startProviding(psec);
+        ContainerProcessingResult cpr = processPacket(buf);
 
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(6, pvl.size());
@@ -77,5 +79,9 @@ public class CcsdsGreenBookTmTest {
 
         ParameterValue pvMillisec = pvl.getFirstInserted(psec);
         assertEquals("1970-01-01T00:00:00.050Z", pvMillisec.getEngValue().toString());
+    }
+
+    private ContainerProcessingResult processPacket(byte[] buf) {
+        return extractor.processPacket(buf, now, now, 0);
     }
 }

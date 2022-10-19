@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -126,7 +126,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent,
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY,
                 currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
@@ -137,7 +137,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(),
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(),
                 AckStatus.OK);
     }
 

@@ -18,13 +18,16 @@ public class ContainerProcessingResult extends ProcessingData {
     List<ContainerExtractionResult> containers = new ArrayList<>();
     long acquisitionTime;
     long generationTime;
+    final int seqCount;
     long expireMillis = -1; // -1 means not defined
     XtceProcessingException exception;
 
-    public ContainerProcessingResult(long aquisitionTime, long generationTime, LastValueCache procLastValueCache) {
+    public ContainerProcessingResult(long aquisitionTime, long generationTime, int seqCount,
+            LastValueCache procLastValueCache) {
         super(procLastValueCache, new ParameterValueList(), null, null, null);
         this.acquisitionTime = aquisitionTime;
         this.generationTime = generationTime;
+        this.seqCount = seqCount;
     }
 
     public ParameterValueList getParameterResult() {

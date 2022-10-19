@@ -218,6 +218,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.getTmPackets().add(NamedObjectId.newBuilder().setName(name).build());
         }
         indexRequest.setSendAllTm(request.getNamesCount() == 0);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
         streamArchiveRecords(null, indexRequest, observer);
     }
 

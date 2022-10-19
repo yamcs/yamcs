@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -243,7 +243,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, currentTime, AckStatus.NOK, reason);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
 
@@ -253,7 +253,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(), AckStatus.OK);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(), AckStatus.OK);
     }
 
     // MARK: - AbstractService (com.google.common.util.concurrent.AbstractService)

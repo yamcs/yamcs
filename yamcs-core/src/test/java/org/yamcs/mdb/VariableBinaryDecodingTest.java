@@ -13,9 +13,6 @@ import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
@@ -52,7 +49,7 @@ public class VariableBinaryDecodingTest {
         byte[] b = createPacket(data, 3.14F);
         long now = TimeEncoding.getWallclockTime();
         ContainerProcessingResult result = extractor.processPacket(b, now,
-                now);
+                now, 0);
 
         ParameterValueList pvl = result.getParameterResult();
         assertEquals(1, pvl.count(db.getParameter(SIZE_QN)));

@@ -530,7 +530,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         packet.setGenerationTime(gentime);
         SequenceContainer rootContainer = packetViewer.getCurrentRootContainer();
         ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime(),
-                rootContainer);
+                data.getSeqCount(), rootContainer);
         ParameterValueList pvlist = cpr.getParameterResult();
         packet.setColumnParameters(pvlist);
 
