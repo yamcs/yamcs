@@ -58,6 +58,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -1608,6 +1609,15 @@ public class V7Loader extends V7LoaderBase {
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
+
+            // Allow Excel true/false to be case-insensitive
+            if (atype instanceof BooleanArgumentType) {
+                if ("true".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+                } else if ("false".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
+                }
+            }
             arg.setInitialValue(atype.convertType(v));
         }
 
