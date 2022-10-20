@@ -232,7 +232,7 @@ public class TseDataLink extends AbstractLink {
                 .group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
-                .handler(new ChannelInitializer<Channel>() {
+                .handler(new ChannelInitializer<>() {
 
                     @Override
                     protected void initChannel(Channel ch) throws Exception {

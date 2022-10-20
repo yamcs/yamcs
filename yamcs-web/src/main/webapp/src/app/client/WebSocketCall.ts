@@ -10,6 +10,7 @@ export class WebSocketCall<O, D> {
   private seq = 0; // Mirror of received seq count on server messages
   private _frameLoss = false;
   private frameLossListeners = new Set<() => void>();
+  private replyListeners = new Set<() => void>();
 
   constructor(
     private client: WebSocketClient,
@@ -45,6 +46,21 @@ export class WebSocketCall<O, D> {
     this.frameLossListeners.delete(frameLossListener);
   }
 
+  /**
+   * Receive a notification when the WebSocket call was replied to.
+   * Only one such notification is sent.
+   */
+  addReplyListener(replyListener: () => void) {
+    this.replyListeners.add(replyListener);
+    if (this._id) { // Already replied to
+      replyListener();
+    }
+  }
+
+  removeReplyListener(replyListener: () => void) {
+    this.replyListeners.delete(replyListener);
+  }
+
   sendMessage(options: O) {
     if (this._id !== undefined) {
       this.client.sendMessage({
@@ -71,6 +87,7 @@ export class WebSocketCall<O, D> {
         const errDetail = msg.data.exception['msg'];
         console.error(`Received ${errCode} ${errType} for topic '${this.type}': ${errDetail}`);
       }
+      this.replyListeners.forEach(listener => listener());
     } else if (msg.type === this.type && msg.call === this.id) {
       if (!this.frameLoss && (this.seq + 1 !== msg.seq)) {
         this._frameLoss = true;

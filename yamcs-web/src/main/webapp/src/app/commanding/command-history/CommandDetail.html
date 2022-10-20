@@ -97,3 +97,29 @@
   </ng-container>
   <ng-container *ngIf="!command.completed">-</ng-container>
 </div>
+
+<ng-container *ngFor="let upstream of command.cascadedRecordsByPrefix | keyvalue">
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <div class="block-title" style="padding-top: 0">{{ upstream.key | cascadingPrefix }} acknowledgments</div>
+  <div class="block">
+    <app-yamcs-acknowledgments-table [command]="upstream.value"
+                                     [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
+  </div>
+
+  <ng-container *ngIf="upstream.value.extraAcks.length">
+    <div class="block-title">{{ upstream.key | cascadingPrefix }} extra acknowledgments</div>
+    <div class="block">
+      <app-extra-acknowledgments-table [command]="upstream.value"
+                                       [showIcons]="showIcons"></app-extra-acknowledgments-table>
+    </div>
+  </ng-container>
+
+  <div class="block-title">{{ upstream.key | cascadingPrefix }} completion</div>
+  <div class="block">
+    <ng-container *ngIf="upstream.value.completed?.status === 'OK'">SUCCESS</ng-container>
+    <ng-container *ngIf="upstream.value.completed?.status === 'NOK'">
+      FAILURE: {{ upstream.value.completed?.message }}
+    </ng-container>
+    <ng-container *ngIf="!upstream.value.completed">-</ng-container>
+  </div>
+</ng-container>
