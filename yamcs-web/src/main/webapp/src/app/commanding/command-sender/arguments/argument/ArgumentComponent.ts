@@ -85,7 +85,13 @@ export class ArgumentComponent implements OnInit {
 
   ngOnInit() {
     if (this.initialValue) {
-      this.parsedInitialValue = renderJsonElement(JSON.parse(this.initialValue));
+      if (this.type.engType === 'AGGREGATE' || this.type.engType === 'ARRAY') {
+        this.parsedInitialValue = renderJsonElement(JSON.parse(this.initialValue));
+      } else if (this.type.engType === 'BOOLEAN') {
+        this.parsedInitialValue = '' + (this.initialValue === this.type.oneStringValue);
+      } else {
+        this.parsedInitialValue = this.initialValue;
+      }
     }
 
     if (this.templateProvider) {

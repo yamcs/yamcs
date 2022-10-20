@@ -102,7 +102,7 @@ export class CommandForm implements OnChanges {
             if (previousValue !== undefined) {
               const stringValue = renderValue(previousValue);
               let initialValue = argument.initialValue;
-              if (argument.type.engType === 'boolean') {
+              if (argument.type.engType === 'boolean' && initialValue !== undefined) {
                 initialValue = '' + (argument.type.oneStringValue === initialValue);
               }
               if (stringValue === initialValue) {
